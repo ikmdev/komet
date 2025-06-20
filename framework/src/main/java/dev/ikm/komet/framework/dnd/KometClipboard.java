@@ -36,6 +36,7 @@ import java.util.function.Function;
 public class KometClipboard
         extends ClipboardContent {
 
+    public static final DataFormat MULTI_PARENT_GRAPH_DRAG_FORMAT = new DataFormat("application/multi-parent-graph-format");
     public static final DataFormat KOMET_PROXY_LIST = new DataFormat("application/komet-proxy-list");
     public static final DataFormat KOMET_CONCEPT_PROXY = new DataFormat("application/komet-concept-proxy");
     public static final DataFormat KOMET_PATTERN_PROXY = new DataFormat("application/komet-pattern-proxy");

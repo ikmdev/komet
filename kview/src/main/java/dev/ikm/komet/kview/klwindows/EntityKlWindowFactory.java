@@ -16,17 +16,33 @@
 package dev.ikm.komet.kview.klwindows;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.layout.KlFactory;
 import dev.ikm.komet.layout.window.KlJournalWindow;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
+import dev.ikm.tinkar.terms.SemanticFacade;
+import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.UUID;
+
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.CONCEPT;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.GEN_EDITING;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.PATTERN;
 
 /**
  * Factory interface for creating entity chapter windows within the Journal workspace.
@@ -113,11 +129,143 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
         }
 
         /**
-         * Creates a chapter window for the specified window type using its registered factory.
+         * Creates a chapter window from a UUID array representing an entity.
          * <p>
-         * This method synchronously creates a window instance of the specified type
-         * and initializes it with the provided entity and settings. The window is fully
-         * initialized when this method returns.
+         * This method resolves the entity from the UUID array, determines the appropriate
+         * window type, and creates the corresponding window.
+         *
+         * @param uuids          the UUID array identifying the entity
+         * @param journalTopic   the UUID of the owning journal topic
+         * @param viewProperties properties for querying and formatting view data
+         * @param preferences    preferences for persisting window settings
+         * @return a new {@link AbstractEntityChapterKlWindow} instance, or null if creation fails
+         */
+        public static AbstractEntityChapterKlWindow createFromUuids(UUID[] uuids,
+                                                                    UUID journalTopic,
+                                                                    ViewProperties viewProperties,
+                                                                    KometPreferences preferences) {
+            if (uuids == null || uuids.length == 0) {
+                LOG.warn("Cannot create window: UUID array is null or empty");
+                return null;
+            }
+
+            try {
+                Entity<?> entity = EntityService.get().getEntityFast(uuids);
+                if (entity == null) {
+                    LOG.warn("No entity found for UUID array: {}", ArrayIterate.makeString(uuids));
+                    return null;
+                }
+
+                EntityFacade facade = createFacadeForEntity(entity);
+                return createFromEntity(facade, journalTopic, viewProperties, preferences);
+
+            } catch (Exception e) {
+                LOG.error("Error creating window from UUID array: {}", ArrayIterate.makeString(uuids), e);
+                return null;
+            }
+        }
+
+        /**
+         * Creates a chapter window from an EntityFacade with automatic type detection.
+         * <p>
+         * This method determines the appropriate window type based on the facade type
+         * and creates the corresponding specialized window.
+         *
+         * @param entityFacade   the entity facade to display
+         * @param journalTopic   the UUID of the owning journal topic
+         * @param viewProperties properties for querying and formatting view data
+         * @param preferences    preferences for persisting window settings
+         * @return a new {@link AbstractEntityChapterKlWindow} instance
+         */
+        public static AbstractEntityChapterKlWindow createFromEntity(EntityFacade entityFacade,
+                                                                     UUID journalTopic,
+                                                                     ViewProperties viewProperties,
+                                                                     KometPreferences preferences) {
+            Objects.requireNonNull(entityFacade, "entityFacade cannot be null");
+
+            try {
+                EntityKlWindowType windowType = getWindowTypeForFacade(entityFacade);
+                return createWindow(windowType, journalTopic, entityFacade, viewProperties, preferences);
+            } catch (Exception ex) {
+                LOG.error("Error creating window for entity {}: {}", entityFacade.nid(), ex.getMessage(), ex);
+                throw ex;
+            }
+        }
+
+        /**
+         * Determines the appropriate window type based on the EntityFacade type.
+         * <p>
+         * This method provides a centralized mapping from entity facade types to
+         * their corresponding window types.
+         *
+         * @param facade the entity facade to analyze
+         * @return the appropriate {@link EntityKlWindowType} for the facade
+         * @throws UnsupportedOperationException if the facade type is not supported
+         */
+        public static EntityKlWindowType getWindowTypeForFacade(EntityFacade facade) {
+            Objects.requireNonNull(facade, "facade cannot be null");
+
+            return switch (facade) {
+                case ConceptFacade _ -> CONCEPT;
+                case PatternFacade _ -> PATTERN;
+                case SemanticFacade _ -> GEN_EDITING;
+                default -> throw new UnsupportedOperationException(
+                        "Unsupported entity facade type: " + facade.getClass().getSimpleName());
+            };
+        }
+
+        /**
+         * Creates the appropriate EntityFacade for any Entity type.
+         * <p>
+         * This method handles all known entity types and creates the corresponding
+         * facade.
+         *
+         * @param entity the raw entity to create a facade for
+         * @return the appropriate {@link EntityFacade} for the entity
+         * @throws UnsupportedOperationException if the entity type is not supported
+         */
+        public static EntityFacade createFacadeForEntity(Entity<?> entity) {
+            Objects.requireNonNull(entity, "entity cannot be null");
+
+            return switch (entity) {
+                case ConceptEntity<?> ce -> ConceptFacade.make(ce.nid());
+                case PatternEntity<?> pe -> PatternFacade.make(pe.nid());
+                case SemanticEntity<?> se -> SemanticFacade.make(se.nid());
+                default -> throw new UnsupportedOperationException(
+                        "Unsupported entity type: " + entity.getClass().getSimpleName());
+            };
+        }
+
+        /**
+         * Extracts an EntityFacade from drag and drop information.
+         * <p>
+         * This method creates the appropriate facade based on the drag and drop
+         * type and entity identifier.
+         *
+         * @param dragInfo the drag and drop information
+         * @return the corresponding {@link EntityFacade}
+         * @throws IllegalArgumentException if dragInfo is null or contains invalid data
+         */
+        public static EntityFacade extractEntityFromDragInfo(DragAndDropInfo dragInfo) {
+            Objects.requireNonNull(dragInfo, "dragInfo cannot be null");
+            Objects.requireNonNull(dragInfo.publicId(), "dragInfo.publicId() cannot be null");
+
+            try {
+                int nid = PrimitiveData.nid(dragInfo.publicId());
+                return switch (dragInfo.type()) {
+                    case CONCEPT -> ConceptFacade.make(nid);
+                    case PATTERN -> PatternFacade.make(nid);
+                    case SEMANTIC -> SemanticFacade.make(nid);
+                    case STAMP -> throw new UnsupportedOperationException("No StampFacade available");
+                };
+            } catch (Exception e) {
+                LOG.error("Error extracting entity from drag info: {}", dragInfo, e);
+                throw new IllegalArgumentException("Failed to create facade from drag info", e);
+            }
+        }
+
+        /**
+         * Creates a chapter window for the specified window type using its registered factory.
          *
          * @param windowType     the type of window to create
          * @param journalTopic   the UUID of the owning journal topic
