@@ -44,6 +44,7 @@ import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
+import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
@@ -430,13 +431,15 @@ public class JournalController {
 
         TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView()),
                 (List<MenuItem> result) -> {
-                    windowCoordinates.getItems().addAll(result);
+                    FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
                 }));
 
         windowSettings.getView().addListener((observable, oldValue, newValue) -> {
             windowCoordinates.getItems().clear();
             TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView()),
-                    (List<MenuItem> result) -> windowCoordinates.getItems().addAll(result)));
+                    (List<MenuItem> result) ->
+                        FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result))
+            ));
         });
     }
 
