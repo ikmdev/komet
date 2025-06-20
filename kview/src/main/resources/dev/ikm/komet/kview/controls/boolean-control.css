@@ -16,11 +16,9 @@
 
 .boolean-control > .main-container > .combo-box-base {
     -fx-font-size: 1.166667em; /* 14 */
-
     -fx-background-color: #bdb2e6, white;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 4px, 4px;
-
     -fx-padding: 0.166667em 0 0.166667em 0; /* 2 0 2 0 */
 }
 

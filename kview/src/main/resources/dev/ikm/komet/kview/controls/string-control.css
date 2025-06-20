@@ -4,7 +4,7 @@
 }
 
 .string-control > .text-field {
-    -fx-background-color: white;
+    -fx-background-color: -Grey-5, white;
     -fx-background-radius: 4, 4;
     -fx-background-insets: 0, 1;
     -fx-pref-height: 32.0;
