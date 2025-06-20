@@ -35,17 +35,17 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
                 imageControl.setImage(newImageFromByteArray(newByteArray));
                 isUpdatingImageControl = false;
             });
-            imageControl.imageProperty().subscribe(newImage -> {
+            imageControl.imageProperty().subscribe(() -> {
                 if (isUpdatingImageControl) {
                     return;
                 }
 
                 isUpdatingObservableField = true;
-                if (newImage == null) {
+                if (imageControl.getImage() == null) {
                     //set the field value to empty byte array since we cannot save null value to database.
                     field().valueProperty().set(new ByteArrayOutputStream().toByteArray());
                 } else {
-                    byte[] newByteArray = newByteArrayFromImage(newImage);
+                    byte[] newByteArray = newByteArrayFromImage(imageControl.getImage());
                     field().valueProperty().set(newByteArray);
                 }
                 isUpdatingObservableField = false;
