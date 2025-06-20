@@ -54,6 +54,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
 import java.util.prefs.BackingStoreException;
 
 
@@ -228,7 +229,7 @@ public class KometStageController implements SaveState {
     }
 
     @Override
-    public void save() {
+    public CompletableFuture<Void> save() {
         try {
             this.windowSettings.dividerPositionsProperty().set(this.windowSplitPane.getDividerPositions());
             if (this.leftBorderPane.getCenter() != null && this.leftBorderPane.getCenter() instanceof WindowComponent windowComponent) {
@@ -255,6 +256,7 @@ public class KometStageController implements SaveState {
         } catch (BackingStoreException e) {
             AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
         }
+        return null;
     }
 
     private static void saveChildren(Parent parent) {
