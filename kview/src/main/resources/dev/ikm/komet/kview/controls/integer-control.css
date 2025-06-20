@@ -6,6 +6,7 @@
 .integer-control > .value-text-field {
     -fx-background-color: white;
     -fx-background-radius: 4;
+    -fx-background-insets: 0, 1;
     -fx-border-radius: 4;
     -fx-border-width: 1;
     -fx-border-color: -Grey-5;
@@ -20,7 +21,7 @@
 
 .integer-control > .value-text-field:focused {
     -fx-border-color: #8ab4f8;          /* Blue border */
-    -fx-border-width: 2;
+    -fx-background-insets: 0, 2;
 }
 
 .integer-control > .value-text-field:error {
