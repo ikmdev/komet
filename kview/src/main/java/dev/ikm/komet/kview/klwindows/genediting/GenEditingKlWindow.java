@@ -15,13 +15,6 @@
  */
 package dev.ikm.komet.kview.klwindows.genediting;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.FIELDS_COLLECTION;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
@@ -39,6 +32,10 @@ import org.carlfx.cognitive.loader.JFXNode;
 
 import java.util.ArrayList;
 import java.util.UUID;
+
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.*;
 
 /**
  * The General Editing Chapter window showing semantic details on the Journal Window's surface as a JavaFX Pane
@@ -92,11 +89,15 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
         // Getting the concept window pane
         this.paneWindow = jfxNode.node();
 
+        var controller = jfxNode.controller();
+
         // Calls the remove method to remove and concepts that were closed by the user.
-        jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
+        controller.setOnCloseConceptWindow(windowEvent -> {
             getOnClose().ifPresent(Runnable::run);
             // TODO more clean up such as view models and listeners just in case (memory).
         });
+
+        controller.setup(preferences);
     }
 
     @Override

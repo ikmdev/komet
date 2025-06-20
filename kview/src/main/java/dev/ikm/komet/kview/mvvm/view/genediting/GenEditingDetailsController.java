@@ -17,23 +17,32 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.*;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -44,10 +53,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -103,6 +109,11 @@ public class GenEditingDetailsController {
 
     @FXML
     private ToggleButton propertiesToggleButton;
+
+    @FXML
+    private MenuButton coordinatesMenuButton;
+    @FXML
+    private Menu windowCoordinates;
 
     /**
      * Used slide out the properties view
@@ -192,6 +203,9 @@ public class GenEditingDetailsController {
 
     ObservableSemanticSnapshot observableSemanticSnapshot;
 
+    private WindowSettings windowSettings;
+    private KometPreferences nodePreferences;
+
     public GenEditingDetailsController() {
     }
 
@@ -234,6 +248,28 @@ public class GenEditingDetailsController {
             Image identicon = Identicon.generateIdenticonImage(semantic.publicId());
             identiconImageView.setImage(identicon);
         }
+    }
+
+    public void setup(KometPreferences nodePreferences) {
+//        this.nodePreferences = nodePreferences;
+//        this.windowSettings = new WindowSettings(nodePreferences);
+
+        // TODO ObservableViewNoOverride is created for now because using the KometPreferences causes an
+        // exception in the code prior to reaching the call to this setup method
+        var view = new ObservableViewNoOverride(Coordinates.View.DefaultView());
+
+        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(view.toViewCoordinateRecord());
+
+        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
+                (List<MenuItem> result) -> {
+                    FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
+                }));
+
+        view.addListener((observable, oldValue, newValue) -> {
+            windowCoordinates.getItems().clear();
+            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
+                    (List<MenuItem> result) -> windowCoordinates.getItems().addAll(result)));
+        });
     }
 
     private void setupSemanticDetails() {
