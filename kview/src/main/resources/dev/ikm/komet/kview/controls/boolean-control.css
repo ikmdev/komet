@@ -31,7 +31,6 @@
 
 .boolean-control .combo-box:focused  {
     -fx-border-color: #8ab4f8;          /* Blue border */
-    -fx-border-width: 2;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 3, 2;        /* Match background radius */
     -fx-border-radius: 3, 2;            /* Rounded corners */
