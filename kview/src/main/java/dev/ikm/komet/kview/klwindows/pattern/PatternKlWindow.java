@@ -101,8 +101,6 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
             getOnClose().ifPresent(Runnable::run);
             // TODO more clean up such as view models and listeners just in case (memory).
         });
-
-        controller.setup(preferences);
     }
 
     /**

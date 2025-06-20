@@ -25,7 +25,6 @@ import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
@@ -36,7 +35,6 @@ import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
@@ -203,9 +201,6 @@ public class GenEditingDetailsController {
 
     ObservableSemanticSnapshot observableSemanticSnapshot;
 
-    private WindowSettings windowSettings;
-    private KometPreferences nodePreferences;
-
     public GenEditingDetailsController() {
     }
 
@@ -225,6 +220,7 @@ public class GenEditingDetailsController {
         //Populate the Title Pattern meaning purpose
         setupSemanticForPatternInfo();
         setupStampPopupOptions();
+        setupFilterCoordinatesMenu();
 
         //Populate readonly reference component.
         setupReferenceComponentUI();
@@ -250,12 +246,7 @@ public class GenEditingDetailsController {
         }
     }
 
-    public void setup(KometPreferences nodePreferences) {
-//        this.nodePreferences = nodePreferences;
-//        this.windowSettings = new WindowSettings(nodePreferences);
-
-        // TODO ObservableViewNoOverride is created for now because using the KometPreferences causes an
-        // exception in the code prior to reaching the call to this setup method
+    public void setupFilterCoordinatesMenu() {
         var view = new ObservableViewNoOverride(Coordinates.View.DefaultView());
 
         ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(view.toViewCoordinateRecord());

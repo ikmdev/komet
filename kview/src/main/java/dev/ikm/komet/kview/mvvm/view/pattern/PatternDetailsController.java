@@ -24,7 +24,6 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.*;
@@ -37,7 +36,6 @@ import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -241,9 +239,6 @@ public class PatternDetailsController {
     private Subscriber<PatternDescriptionEvent> patternDescriptionEventSubscriber;
 
     private Subscriber<PatternFieldsPanelEvent> patternFieldsPanelEventSubscriber;
-
-    private WindowSettings windowSettings;
-    private KometPreferences nodePreferences;
 
     public PatternDetailsController() {}
 
@@ -458,6 +453,7 @@ public class PatternDetailsController {
 
         // Setup Properties
         setupProperties();
+        setupFilterCoordinatesMenu();
 
         // Setup window support with explicit draggable nodes
         addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
@@ -468,10 +464,7 @@ public class PatternDetailsController {
         }
     }
 
-    public void setup(KometPreferences nodePreferences) {
-//        this.nodePreferences = nodePreferences;
-//        this.windowSettings = new WindowSettings(nodePreferences);
-
+    public void setupFilterCoordinatesMenu() {
         // TODO ObservableViewNoOverride is created for now because using the KometPreferences causes an
         // exception in the code prior to reaching the call to this setup method
         var view = new ObservableViewNoOverride(Coordinates.View.DefaultView());
