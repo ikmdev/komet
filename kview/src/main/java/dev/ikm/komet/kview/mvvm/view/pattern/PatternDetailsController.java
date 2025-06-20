@@ -464,9 +464,12 @@ public class PatternDetailsController {
         }
     }
 
+    /**
+     * Creates the filter coordinates menu using the view calculator.
+     * TODO Note that this is not a working menu, this is the first step to have propagating, inherited, filter coordinates
+     * in the window/node hierarchy.
+     */
     public void setupFilterCoordinatesMenu() {
-        // TODO ObservableViewNoOverride is created for now because using the KometPreferences causes an
-        // exception in the code prior to reaching the call to this setup method
         var view = new ObservableViewNoOverride(Coordinates.View.DefaultView());
 
         ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(view.toViewCoordinateRecord());
@@ -479,7 +482,9 @@ public class PatternDetailsController {
         view.addListener((observable, oldValue, newValue) -> {
             windowCoordinates.getItems().clear();
             TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
-                    (List<MenuItem> result) -> windowCoordinates.getItems().addAll(result)));
+                    (List<MenuItem> result) ->
+                            FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result))
+            ));
         });
 
     }
