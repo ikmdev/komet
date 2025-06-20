@@ -2,7 +2,9 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentControlSkin;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -111,10 +113,16 @@ public class KLComponentControl extends Control {
     private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity", null);
     public final ObjectProperty<EntityProxy> entityProperty() { return entityProperty; }
     public final EntityProxy getEntity() {
-        return entityProperty.get() == null ? null : EntityProxy.make(entityProperty.get().nid());
+        if (((Object)entityProperty.get()) instanceof EntityFacade entityFacade) {
+            entityProperty.set(entityFacade.toProxy());
+        }
+        return entityProperty.get();
     }
     public final void setEntity(EntityProxy value) {
-        entityProperty.set(value == null ? null : EntityProxy.make(value.nid()));
+        if (((Object)value) instanceof EntityFacade entityFacade) {
+            entityProperty.set(entityFacade.toProxy());
+        }
+        entityProperty.set(value);
     }
 
     // -- type ahead completer
