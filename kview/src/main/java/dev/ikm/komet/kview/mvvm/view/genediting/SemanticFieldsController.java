@@ -73,6 +73,15 @@ public class SemanticFieldsController {
 
     private static final Logger LOG = LoggerFactory.getLogger(SemanticFieldsController.class);
 
+    /**
+     * Provide the standard Confirm Clear dialog title for use in other classes
+     */
+    public static final String CONFIRM_CLEAR_TITLE = "Confirm Clear Form";
+    /**
+     * Provide the standard Confirm Clear dialog message for use in other classes
+     */
+    public static final String CONFIRM_CLEAR_MESSAGE =  "Are you sure you want to clear the form? All entered data will be lost.";
+
     @FXML
     private VBox editFieldsVBox;
     @FXML
@@ -285,14 +294,21 @@ public class SemanticFieldsController {
     private void clearOrResetForm(ActionEvent actionEvent) {
         // if create mode display the confirm clear dialog
         if (genEditingViewModel.getPropertyValue(MODE) == CREATE) {
-            ConfirmClearDialogController.showConfirmClearDialog(this.cancelButton)
+            ConfirmationDialogController.showConfirmationDialog(this.cancelButton, CONFIRM_CLEAR_TITLE, CONFIRM_CLEAR_MESSAGE)
                     .thenAccept(confirmed -> {
                         if (confirmed) {
                             doTheClearOrResetForm();
                         }
                     });
         } else {
-            doTheClearOrResetForm();
+            ConfirmationDialogController.showConfirmationDialog(this.cancelButton,
+                            "Confirm Reset Form",
+                            "Your changes will be lost if you reset the form. Are you sure you want to continue?")
+                    .thenAccept(confirmed -> {
+                        if (confirmed) {
+                            doTheClearOrResetForm();
+                        }
+                    });
         }
     }
 
