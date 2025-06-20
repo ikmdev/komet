@@ -17,13 +17,18 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.*;
+import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
@@ -32,7 +37,11 @@ import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -104,6 +113,11 @@ public class PatternDetailsController {
 
     @FXML
     private ToggleButton propertiesToggleButton;
+
+    @FXML
+    private MenuButton coordinatesMenuButton;
+    @FXML
+    private Menu windowCoordinates;
 
     /**
      * Used slide out the properties view
@@ -227,6 +241,9 @@ public class PatternDetailsController {
     private Subscriber<PatternDescriptionEvent> patternDescriptionEventSubscriber;
 
     private Subscriber<PatternFieldsPanelEvent> patternFieldsPanelEventSubscriber;
+
+    private WindowSettings windowSettings;
+    private KometPreferences nodePreferences;
 
     public PatternDetailsController() {}
 
@@ -449,6 +466,29 @@ public class PatternDetailsController {
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
         }
+    }
+
+    public void setup(KometPreferences nodePreferences) {
+//        this.nodePreferences = nodePreferences;
+//        this.windowSettings = new WindowSettings(nodePreferences);
+
+        // TODO ObservableViewNoOverride is created for now because using the KometPreferences causes an
+        // exception in the code prior to reaching the call to this setup method
+        var view = new ObservableViewNoOverride(Coordinates.View.DefaultView());
+
+        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(view.toViewCoordinateRecord());
+
+        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
+                (List<MenuItem> result) -> {
+                    FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
+                }));
+
+        view.addListener((observable, oldValue, newValue) -> {
+            windowCoordinates.getItems().clear();
+            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
+                    (List<MenuItem> result) -> windowCoordinates.getItems().addAll(result)));
+        });
+
     }
 
     private void setUpAddSemanticMenu() {

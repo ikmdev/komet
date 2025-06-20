@@ -94,11 +94,15 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
         // Getting the concept window pane
         paneWindow = jfxNode.node();
 
+        PatternDetailsController controller = jfxNode.controller();
+
         // Calls the remove method to remove and concepts that were closed by the user.
-        jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
+        controller.setOnCloseConceptWindow(windowEvent -> {
             getOnClose().ifPresent(Runnable::run);
             // TODO more clean up such as view models and listeners just in case (memory).
         });
+
+        controller.setup(preferences);
     }
 
     /**
