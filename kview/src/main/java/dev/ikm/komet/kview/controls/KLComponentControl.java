@@ -112,16 +112,25 @@ public class KLComponentControl extends Control {
      */
     private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity", null);
     public final ObjectProperty<EntityProxy> entityProperty() { return entityProperty; }
+
+    /**
+     * This method returns an EntityProxy object which extends EntityFacade.
+     * If the entityProperty.get() is a ConceptEntity or SemanticEntity or PatternEntity, they too extend from EntityFacade.
+     * However since both EntityProxy and Entity are separate classes we have to case it into EntityFacade to avoid CastException.
+     * @return entityProxy
+     */
     public final EntityProxy getEntity() {
-        if (((Object)entityProperty.get()) instanceof EntityFacade entityFacade) {
+        if (entityProperty.get() instanceof EntityFacade entityFacade) {
             entityProperty.set(entityFacade.toProxy());
         }
         return entityProperty.get();
     }
+
+    /**
+     *
+     * @param value
+     */
     public final void setEntity(EntityProxy value) {
-        if (((Object)value) instanceof EntityFacade entityFacade) {
-            entityProperty.set(entityFacade.toProxy());
-        }
         entityProperty.set(value);
     }
 
