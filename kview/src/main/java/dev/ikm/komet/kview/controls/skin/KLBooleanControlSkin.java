@@ -94,7 +94,8 @@ public class KLBooleanControlSkin extends SkinBase<KLBooleanControl> {
             checkMarkGraphic.getStyleClass().addAll("icon", "check-mark");
         }
 
-        @Override protected void updateItem(Boolean item, boolean empty) {
+        @Override
+        protected void updateItem(Boolean item, boolean empty) {
             super.updateItem(item, empty);
 
             if (item == null || empty) {
