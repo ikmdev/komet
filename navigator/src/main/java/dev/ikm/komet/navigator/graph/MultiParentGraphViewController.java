@@ -128,7 +128,7 @@ public class MultiParentGraphViewController implements RefreshListener {
     private static final String FALLBACK_LABEL_STYLE = "-fx-padding: 5px; -fx-background-color: white; -fx-border-color: gray;";
 
     /** Placeholder text displayed when a tree item contains a null or missing concept value. */
-    private static final String EMPTY_ITEM_TEXT = "<Empty>";
+    private static final String NO_CONCEPT_PLACEHOLDER = "No concept";
 
     @FXML
     Menu navigationCoordinateMenu;
@@ -437,7 +437,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         try {
             String text = Optional.ofNullable(item.getValue())
                     .map(Object::toString)
-                    .orElse(EMPTY_ITEM_TEXT);
+                    .orElse(NO_CONCEPT_PLACEHOLDER);
 
             Label label = new Label(text);
             label.setStyle(FALLBACK_LABEL_STYLE);
