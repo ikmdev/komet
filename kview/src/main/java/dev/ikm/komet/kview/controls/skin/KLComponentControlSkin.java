@@ -6,10 +6,9 @@ import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.ConceptTile;
 import dev.ikm.komet.kview.controls.KLComponentControl;
-import dev.ikm.komet.kview.controls.KLComponentListControl;
+import dev.ikm.komet.kview.controls.KLComponentCollectionControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
-import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -40,8 +39,12 @@ import javafx.scene.transform.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.UUID;
 import java.util.function.Function;
+
+import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 
 /**
  * Default skin implementation for the {@link KLComponentControl} control
@@ -164,6 +167,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 } else {
                     event.acceptTransferModes(TransferMode.NONE);
                 }
+            } else if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
+                event.acceptTransferModes(TransferMode.COPY);
             }
 
             event.consume();
@@ -181,6 +186,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 } else {
                     aboutToDropHBox.setVisible(true);
                 }
+            } else if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
+                aboutToDropHBox.setVisible(true);
             }
             event.consume();
         });
@@ -223,22 +230,28 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 }
             }
 
-            try {
-                int nid = extractNid(event);
-                LOG.info("publicId: {}", dragboard.getString());
-                if (nid != Integer.MIN_VALUE) {  //
-                    EntityProxy entity = Entity.getFast(nid).toProxy();
-
-                        control.setEntity(entity);
-                        addConceptNode(entity, control.getComponentNameRenderer());
-
+            if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT) ) {
+                List list = (List) event.getDragboard().getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+                if (!list.isEmpty() && list.get(0) instanceof List) {
+                    // Dropping multiple concepts
+                    if (getSkinnable().getOnDroppingMultipleConcepts() != null) {
+                        getSkinnable().getOnDroppingMultipleConcepts().accept(list);
                         event.setDropCompleted(true);
                         event.consume();
-
+                        return;
+                    }
                 }
+            }
 
-            } catch (Exception e) {
-                LOG.error("exception: ", e);
+            int nid = extractNid(event);
+            if (nid != Integer.MIN_VALUE) {  //
+                EntityProxy entity = Entity.getFast(nid).toProxy();
+
+                control.setEntity(entity);
+                addConceptNode(entity, control.getComponentNameRenderer());
+
+                event.setDropCompleted(true);
+                event.consume();
             }
         });
     }
@@ -353,15 +366,25 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
      * @return Returns true if user dragged a concept from the new concept navigator, otherwise false.
      */
     private boolean isFromNexGenConceptNav(DragEvent dragEvent) {
-        boolean isValidDnD = dragEvent.getGestureSource() instanceof ConceptTile source // and the gesture source is a ConceptTile
-                && source.getConcept().getValue() instanceof ConceptRecord conceptRecord // whose value is a concept record
-                && getSkinnable().getComponentAllowedFilter().test(conceptRecord.publicId());
-        return isValidDnD;
+        if (dragEvent.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
+            Object uuidsContent = dragEvent.getDragboard().getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
+            if (uuidsContent instanceof List list) {
+                if (!list.isEmpty() && list.get(0) instanceof UUID[]) {
+                    Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids((UUID[]) list.get(0)));
+                    return getSkinnable().getComponentAllowedFilter().test(entity.publicId());
+                } else if (uuidsContent instanceof List<?>) {
+                    // Drag & dropping multiple concepts
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private boolean hasAllowedDND(KLComponentControl control) {
         return control != null && control.getEntity() != null &&
-                (control.getParent() instanceof KLComponentListControl cl && cl.getValue().size() > 1);
+                (control.getParent() instanceof KLComponentCollectionControl cl && cl.getValue().size() > 1);
     }
 
     private boolean haveAllowedDND(KLComponentControl source, KLComponentControl target) {

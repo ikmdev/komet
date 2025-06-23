@@ -15,50 +15,12 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
-import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
-import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
-import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT;
-import static dev.ikm.komet.kview.events.MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT;
-import static dev.ikm.komet.kview.fxutils.FXUtils.FX_THREAD_EXECUTOR;
-import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
-import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
-import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
-import static dev.ikm.komet.preferences.NidTextEnum.SEMANTIC_ENTITY;
-import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -71,14 +33,10 @@ import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
-import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
-import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
-import dev.ikm.komet.kview.controls.KLSearchControl;
-import dev.ikm.komet.kview.controls.KLWorkspace;
-import dev.ikm.komet.kview.controls.NotificationPopup;
-import dev.ikm.komet.kview.controls.Toast;
+import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.*;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
@@ -86,6 +44,7 @@ import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
+import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
@@ -126,6 +85,7 @@ import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -146,23 +106,10 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.carlfx.cognitive.loader.Config;
@@ -176,12 +123,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
@@ -190,6 +132,30 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.prefs.BackingStoreException;
+
+import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
+import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
+import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 
 /**
  * This view is responsible for updating the kView journal window by loading a navigation panel
@@ -244,6 +210,11 @@ public class JournalController {
     private NotificationPopup progressNotificationPopup;
 
     @FXML
+    private MenuButton coordinatesMenuButton;
+    @FXML
+    private Menu windowCoordinates;
+
+    @FXML
     private ToggleButton reasonerToggleButton;
 
     @FXML
@@ -279,6 +250,10 @@ public class JournalController {
     /////////////////////////////////////////////////////////////////
     // Private Data
     /// //////////////////////////////////////////////////////////////
+
+    private WindowSettings windowSettings;
+    private KometPreferences nodePreferences;
+
     private final VBox progressPopupPane = new VBox();
     private Pane navigatorNodePanel;
     private Pane searchNodePanel;
@@ -441,6 +416,31 @@ public class JournalController {
         journalEventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
         toast = new Toast(workspace);
+    }
+
+    /**
+     * Setup the controller to have a filter coordinates menu.  KometPreferences is required to create the
+     * WindowSettings object, which is used to get access to the view that the filter coordinates are applied to.
+     * @param nodePreferences The preferences for the Journal window
+     */
+    public void setup(KometPreferences nodePreferences) {
+        this.nodePreferences = nodePreferences;
+        this.windowSettings = new WindowSettings(nodePreferences);
+
+        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(windowSettings.getView().toViewCoordinateRecord());
+
+        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView()),
+                (List<MenuItem> result) -> {
+                    FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
+                }));
+
+        windowSettings.getView().addListener((observable, oldValue, newValue) -> {
+            windowCoordinates.getItems().clear();
+            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView()),
+                    (List<MenuItem> result) ->
+                        FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result))
+            ));
+        });
     }
 
     private void onMouseClickedOnDesktopSurfacePane(MouseEvent mouseEvent) {

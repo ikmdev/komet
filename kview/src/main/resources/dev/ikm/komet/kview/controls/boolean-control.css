@@ -16,17 +16,20 @@
 
 .boolean-control > .main-container > .combo-box-base {
     -fx-font-size: 1.166667em; /* 14 */
-
-    -fx-background-color: #bdb2e6, white;
+    -fx-background-color: -Grey-5, white;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 4px, 4px;
-
     -fx-padding: 0.166667em 0 0.166667em 0; /* 2 0 2 0 */
 }
 
 .boolean-control .combo-box-base > .arrow-button > .arrow {
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
     -fx-background-color: #4277d8;
+}
+
+.boolean-control > .main-container > .combo-box-base:focused   {
+    -fx-background-color: #8ab4f8, white;
+    -fx-background-insets: 0, 2;
 }
 
 .boolean-control:disabled {

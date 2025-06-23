@@ -17,20 +17,26 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.*;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -44,10 +50,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -103,6 +106,11 @@ public class GenEditingDetailsController {
 
     @FXML
     private ToggleButton propertiesToggleButton;
+
+    @FXML
+    private MenuButton coordinatesMenuButton;
+    @FXML
+    private Menu windowCoordinates;
 
     /**
      * Used slide out the properties view
@@ -211,6 +219,7 @@ public class GenEditingDetailsController {
         //Populate the Title Pattern meaning purpose
         setupSemanticForPatternInfo();
         setupStampPopupOptions();
+        setupFilterCoordinatesMenu();
 
         //Populate readonly reference component.
         setupReferenceComponentUI();
@@ -234,6 +243,30 @@ public class GenEditingDetailsController {
             Image identicon = Identicon.generateIdenticonImage(semantic.publicId());
             identiconImageView.setImage(identicon);
         }
+    }
+
+    /**
+     * Creates the filter coordinates menu using the view calculator.
+     * TODO Note that this is not a working menu, this is the first step to have propagating, inherited, filter coordinates
+     * in the window/node hierarchy.
+     */
+    public void setupFilterCoordinatesMenu() {
+        var view = new ObservableViewNoOverride(Coordinates.View.DefaultView());
+
+        ViewCalculator viewCalculator = getViewProperties().calculator();
+
+        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
+                (List<MenuItem> result) -> {
+                    FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
+                }));
+
+        view.addListener((observable, oldValue, newValue) -> {
+            windowCoordinates.getItems().clear();
+            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
+                    (List<MenuItem> result) ->
+                            FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result))
+            ));
+        });
     }
 
     private void setupSemanticDetails() {

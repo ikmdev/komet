@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.kview.controls.skin.KLComponentControlSkin;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -23,6 +24,8 @@ import javafx.util.Callback;
 import javafx.util.StringConverter;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -45,7 +48,7 @@ import java.util.function.Predicate;
  * componentControl.entityProperty().subscribe(entity -> System.out.println("Entity = " + entity));
  * </code></pre>
  *
- * @see KLComponentListControl
+ * @see KLComponentCollectionControl
  */
 public class KLComponentControl extends Control {
 
@@ -110,11 +113,26 @@ public class KLComponentControl extends Control {
      */
     private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity", null);
     public final ObjectProperty<EntityProxy> entityProperty() { return entityProperty; }
+
+    /**
+     * This method returns an EntityProxy object which extends EntityFacade.
+     * If the entityProperty.get() is a ConceptEntity or SemanticEntity or PatternEntity, they too extend from EntityFacade.
+     * However since both EntityProxy and Entity are separate classes we have to case it into EntityFacade to avoid CastException.
+     * @return EntityProxy
+     */
     public final EntityProxy getEntity() {
-        return entityProperty.get() == null ? null : EntityProxy.make(entityProperty.get().nid());
+        if (entityProperty.get() instanceof EntityFacade entityFacade) {
+            entityProperty.set(entityFacade.toProxy());
+        }
+        return entityProperty.get();
     }
+
+    /**
+     *
+     * @param value
+     */
     public final void setEntity(EntityProxy value) {
-        entityProperty.set(value == null ? null : EntityProxy.make(value.nid()));
+        entityProperty.set(value);
     }
 
     // -- type ahead completer
@@ -225,6 +243,12 @@ public class KLComponentControl extends Control {
     public AutoCompleteTextField.HeaderPane getTypeAheadHeaderPane() { return typeAheadHeaderPane.get(); }
     public ObjectProperty<AutoCompleteTextField.HeaderPane> typeAheadHeaderPaneProperty() { return typeAheadHeaderPane; }
     public void setTypeAheadHeaderPane(AutoCompleteTextField.HeaderPane typeAheadHeaderPane) { this.typeAheadHeaderPane.set(typeAheadHeaderPane); }
+
+    // -- on dropping multiple concepts
+    private final ObjectProperty<Consumer<List<List<UUID[]>>>> onDroppingMultipleConcepts = new SimpleObjectProperty<>();
+    public final void setOnDroppingMultipleConcepts(Consumer<List<List<UUID[]>>> consumer) { this.onDroppingMultipleConcepts.set(consumer); }
+    public final Consumer<List<List<UUID[]>>> getOnDroppingMultipleConcepts() { return onDroppingMultipleConcepts.get(); }
+    public final ObjectProperty<Consumer<List<List<UUID[]>>>> onDroppingMultipleConceptsProperty() { return onDroppingMultipleConcepts; }
 
     /***************************************************************************
      *                                                                         *
