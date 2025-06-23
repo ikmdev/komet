@@ -19,6 +19,7 @@ public class KLBooleanControl extends Control {
 
     public KLBooleanControl() {
         getStyleClass().add("boolean-control");
+        getStylesheets().add(getUserAgentStylesheet());
     }
 
     // -- title
