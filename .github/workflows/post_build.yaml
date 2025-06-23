@@ -30,13 +30,13 @@ jobs:
           
       - name: IKMDEV Post Build Action
         id: ikmdev_post_build
-        uses: ikmdev/maven-post-build-action@v2
+        uses: ikmdev/maven-post-build-action@v3.1.0
         with:
             nexus_repo_password: ${{secrets.EC2_NEXUS_PASSWORD}}
             branch_name: ${{github.event.workflow_run.head_branch}}
             github_token: ${{secrets.GITHUB_TOKEN}}
-            ossrh_username: ${{secrets.OSSRH_TOKEN_USER}}
-            ossrh_token: ${{secrets.OSSRH_TOKEN_PASS}}
+            maven_central_username: ${{secrets.MC_SECRET_USERNAME}}
+            maven_central_password: ${{secrets.MC_SECRET_PASSWORD}}
             gpg_key: ${{secrets.GPG_KEY}}
             gpg_passphrase: ${{secrets.GPG_PASSPHRASE}}
             sonarcloud_token: ${{ secrets.SONAR_TOKEN }}
