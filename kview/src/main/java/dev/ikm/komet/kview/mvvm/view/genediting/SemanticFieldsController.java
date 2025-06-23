@@ -38,10 +38,10 @@ import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Separator;
+import javafx.scene.Parent;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -55,6 +55,7 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
@@ -243,7 +244,23 @@ public class SemanticFieldsController {
                     }
                 }
             }
+            // Collect all focusable nodes
+            List<javafx.scene.Node> focusableNodes = new ArrayList<>();
+            collectFocusableNodes(editFieldsVBox, focusableNodes);
         });
+    }
+
+    // Recursive method to collect focusable nodes
+    private void collectFocusableNodes(javafx.scene.Parent parent, List<javafx.scene.Node> focusableNodes) {
+        for (javafx.scene.Node node : parent.getChildrenUnmodifiable()) {
+            if (node.isFocusTraversable()) {
+                focusableNodes.add(node);
+                node.setFocusTraversable(false);
+            }
+            if (node instanceof javafx.scene.Parent) {
+                collectFocusableNodes((javafx.scene.Parent) node, focusableNodes);
+            }
+        }
     }
 
     private void loadUIData() {
@@ -274,6 +291,7 @@ public class SemanticFieldsController {
 
     private static Separator createSeparator() {
         Separator separator = new Separator();
+        separator.setFocusTraversable(false);
         separator.getStyleClass().add("field-separator");
         return separator;
     }
