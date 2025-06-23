@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.kview.controls.skin.KLComponentListControlSkin;
+import dev.ikm.komet.kview.controls.skin.KLComponentCollectionControlSkin;
 import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
@@ -15,6 +15,8 @@ import javafx.util.Callback;
 import javafx.util.StringConverter;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -36,13 +38,19 @@ import java.util.function.Function;
  *
  * @see KLComponentControl
  */
-public class KLComponentListControl<T extends IntIdCollection> extends Control {
+public class KLComponentCollectionControl<T extends IntIdCollection> extends Control {
 
     /**
      * Creates a KLComponentListControl
      */
-    public KLComponentListControl() {
+    public KLComponentCollectionControl() {
         getStyleClass().add("component-list-control");
+
+        sceneProperty().subscribe(newScene -> {
+            if (newScene != null) {
+                newScene.getStylesheets().add(getUserAgentStylesheet());
+            }
+        });
     }
 
     // -- title
@@ -111,15 +119,21 @@ public class KLComponentListControl<T extends IntIdCollection> extends Control {
     public ObjectProperty<AutoCompleteTextField.HeaderPane> typeAheadHeaderPaneProperty() { return typeAheadHeaderPane; }
     public void setTypeAheadHeaderPane(AutoCompleteTextField.HeaderPane typeAheadHeaderPane) { this.typeAheadHeaderPane.set(typeAheadHeaderPane); }
 
+    // -- on dropping multiple concepts
+    private final ObjectProperty<Consumer<List<List<UUID[]>>>> onDroppingMultipleConcepts = new SimpleObjectProperty<>();
+    public final void setOnDroppingMultipleConcepts(Consumer<List<List<UUID[]>>> consumer) { this.onDroppingMultipleConcepts.set(consumer); }
+    public final Consumer<List<List<UUID[]>>> getOnDroppingMultipleConcepts() { return onDroppingMultipleConcepts.get(); }
+    public final ObjectProperty<Consumer<List<List<UUID[]>>>> onDroppingMultipleConceptsProperty() { return onDroppingMultipleConcepts; }
+
     /** {@inheritDoc} */
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new KLComponentListControlSkin<>(this);
+        return new KLComponentCollectionControlSkin<>(this);
     }
 
     /** {@inheritDoc} */
     @Override
     public String getUserAgentStylesheet() {
-        return KLComponentListControl.class.getResource("component-list-control.css").toExternalForm();
+        return KLComponentCollectionControl.class.getResource("component-list-control.css").toExternalForm();
     }
 }

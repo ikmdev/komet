@@ -13,17 +13,16 @@
          <top>
             <HBox fx:id="projectBarHBox" prefHeight="100.0" prefWidth="200.0" styleClass="project-bar" BorderPane.alignment="CENTER">
                <children>
-                  <Button mnemonicParsing="false" text="Button">
-                     <graphic>
-                        <Region prefHeight="200.0" prefWidth="200.0">
-                           <styleClass>
-                              <String fx:value="icon" />
-                              <String fx:value="coordinate-project-bar" />
-                           </styleClass>
-                        </Region>
-                     </graphic>
+                  <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="coordinate-project-bar" />
+                     </styleClass>
+                     <items>
+                        <Menu fx:id="windowCoordinates" mnemonicParsing="false" text="Coordinates" />
+                     </items>
                      <tooltip><Tooltip text="Coordinates" /></tooltip>
-                  </Button>
+                  </MenuButton>
                   <Button fx:id="addButton" mnemonicParsing="false" onAction="#popupAddContextMenu" text="Button">
                      <graphic>
                         <Region focusTraversable="true">

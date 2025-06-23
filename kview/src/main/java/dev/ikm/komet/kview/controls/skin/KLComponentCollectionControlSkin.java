@@ -1,13 +1,14 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLComponentControl;
-import dev.ikm.komet.kview.controls.KLComponentListControl;
+import dev.ikm.komet.kview.controls.KLComponentCollectionControl;
 import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.css.PseudoClass;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -29,11 +30,13 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 /**
- * Default skin implementation for the {@link KLComponentListControl} control
+ * Default skin implementation for the {@link KLComponentCollectionControl} control
  */
-public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinBase<KLComponentListControl<T>> {
+public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends SkinBase<KLComponentCollectionControl<T>> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(KLComponentListControlSkin.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KLComponentCollectionControlSkin.class);
+
+    private static final PseudoClass DRAGGING_TO_SAME = PseudoClass.getPseudoClass("dragging-to-same");
 
     private final static double SPACE_BETWEEN_COMPONENTS = 10;
     private final static double SPACE_BETWEEN_NUMBER_AND_CONTROL = 5;
@@ -65,7 +68,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
      *
      * @param control The control that this skin should be installed onto.
      */
-    public KLComponentListControlSkin(KLComponentListControl<T> control) {
+    public KLComponentCollectionControlSkin(KLComponentCollectionControl<T> control) {
         super(control);
 
         // Title
@@ -127,6 +130,19 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         }
 
         updateDropTargetLocation(dragEvent);
+
+        // Check if dragging within CList/CSet and it's dragging back to the same position
+        if (dragEvent.getGestureSource() instanceof KLComponentControl componentControl) {
+            int indexOfSourceComponent = componentControls.indexOf(componentControl);
+
+            if (currentDropIndex == indexOfSourceComponent) {
+                componentControl.setVisible(true);
+                componentControl.pseudoClassStateChanged(DRAGGING_TO_SAME, true);
+            } else {
+                componentControl.setVisible(false);
+                componentControl.pseudoClassStateChanged(DRAGGING_TO_SAME, false);
+            }
+        }
     }
 
     private void updateDropTargetLocation(DragEvent dragEvent) {
@@ -140,8 +156,6 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
                 int componentIndex = componentControls.indexOf(componentControl);
 
                 currentDropIndex = componentIndex;
-
-                LOG.info("updateDropTargetLocation() currentDropIndex: {}", currentDropIndex);
 
                 if (componentIndex == 0) {
                     // show the top drop line
@@ -176,7 +190,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
         }
 
         KLComponentControl componentControl = (KLComponentControl) dragEvent.getGestureSource();
-        KLComponentListControl<T> control = getSkinnable();
+        KLComponentCollectionControl<T> control = getSkinnable();
         int componentNid = componentControl.getEntity().nid();
         int indexOfSourceComponent = componentControls.indexOf(componentControl);
 
@@ -198,12 +212,12 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
     }
 
     private void setValueFromIntList(MutableIntList mutableList) {
-        KLComponentListControl<T> control = getSkinnable();
+        KLComponentCollectionControl<T> control = getSkinnable();
 
         if (control.getValue() instanceof IntIdList) {
-            ((KLComponentListControl<IntIdList>)control).setValue(IntIds.list.of(mutableList.toArray()));
+            ((KLComponentCollectionControl<IntIdList>)control).setValue(IntIds.list.of(mutableList.toArray()));
         } else if(control.getValue() instanceof IntIdSet) {
-            ((KLComponentListControl<IntIdSet>)control).setValue(IntIds.set.of(mutableList.toArray()));
+            ((KLComponentCollectionControl<IntIdSet>)control).setValue(IntIds.set.of(mutableList.toArray()));
         }
     }
 
@@ -214,7 +228,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
      * @param nid the nid that is going to be associated with the component
      */
     private void createComponentUI(int nid) {
-        KLComponentListControl<T> control = getSkinnable();
+        KLComponentCollectionControl<T> control = getSkinnable();
 
         KLComponentControl componentControl = new KLComponentControl();
         if (nid != 0) {
@@ -230,6 +244,9 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
 
         // Setup name renderer
         componentControl.setComponentNameRenderer(control.getComponentNameRenderer());
+
+        // Setup dropping multiple concepts
+        componentControl.setOnDroppingMultipleConcepts(control.getOnDroppingMultipleConcepts());
 
         componentControls.add(componentControl);
 
@@ -302,7 +319,7 @@ public class KLComponentListControlSkin<T extends IntIdCollection> extends SkinB
     }
 
     private void removeNid(int nidToRemove) {
-        KLComponentListControl<T> control = getSkinnable();
+        KLComponentCollectionControl<T> control = getSkinnable();
 
         IntIdCollection intIdList = control.getValue();
         MutableIntList mutableList = createMutableIntListCopy(intIdList);

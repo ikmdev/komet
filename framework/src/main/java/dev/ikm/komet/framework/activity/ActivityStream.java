@@ -36,6 +36,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.BackingStoreException;
 
@@ -83,7 +84,7 @@ public class ActivityStream implements Broadcaster<ImmutableList<EntityFacade>>,
 
 
     @Override
-    public void save() {
+    public CompletableFuture<Void> save() {
         try {
             preferences.putComponentList(PreferenceKey.HISTORY, history);
             preferences.putComponentList(PreferenceKey.LAST_DISPATCH, lastDispatch.get().castToList());
@@ -91,6 +92,7 @@ public class ActivityStream implements Broadcaster<ImmutableList<EntityFacade>>,
         } catch (BackingStoreException e) {
             AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
         }
+        return null;
     }
 
     @Override

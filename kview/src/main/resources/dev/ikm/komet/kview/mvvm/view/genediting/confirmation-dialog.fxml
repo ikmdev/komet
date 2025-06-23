@@ -4,11 +4,10 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-
-<VBox fx:id="dialogPane" prefWidth="560.0" spacing="20.0" styleClass="dialog-pane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.ConfirmClearDialogController">
+<VBox fx:id="dialogPane" prefWidth="580.0" spacing="20.0" styleClass="dialog-pane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController">
     <VBox alignment="CENTER_LEFT" spacing="8.0">
-         <Label prefHeight="25.0" styleClass="title-label" text="Confirm Clear Form" />
-        <Label text="Are you sure you want to clear the form? All entered data will be lost." />
+         <Label fx:id="title" prefHeight="25.0" styleClass="title-label" text="Confirm Clear Form" />
+        <Label fx:id="message" text="Are you sure you want to clear the form? All entered data will be lost." />
     </VBox>
     <HBox alignment="BOTTOM_RIGHT" spacing="12.0">
       <Button fx:id="cancelButton" minHeight="32.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="88.0" styleClass="close-button" text="CANCEL" />
