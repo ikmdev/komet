@@ -39,7 +39,6 @@ import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -472,7 +471,7 @@ public class PatternDetailsController {
     public void setupFilterCoordinatesMenu() {
         var view = new ObservableViewNoOverride(Coordinates.View.DefaultView());
 
-        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(view.toViewCoordinateRecord());
+        ViewCalculator viewCalculator = getViewProperties().calculator();
 
         TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
                 (List<MenuItem> result) -> {
