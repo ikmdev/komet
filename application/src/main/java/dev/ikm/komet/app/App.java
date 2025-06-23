@@ -262,27 +262,9 @@ public class App extends Application {
         return Lists.immutable.of(newSearchTab, progressTab, completionTab);
     }
 
-    public void init() throws Exception {
-        /*
-"/" the local pathname separator
-"%t" the system temporary directory
-"%h" the value of the "user.home" system property
-"%g" the generation number to distinguish rotated logs
-"%u" a unique number to resolve conflicts
-"%%" translates to a single percent sign "%"
-         */
-//        String pattern = "%h/Solor/komet/logs/komet%g.log";
-//        int fileSizeLimit = 1024 * 1024; //the maximum number of bytes to write to any one file
-//        int fileCount = 10;
-//        boolean append = true;
-//
-//        FileHandler fileHandler = new FileHandler(pattern,
-//                fileSizeLimit,
-//                fileCount,
-//                append);
-
-//        File logDirectory = new File(System.getProperty("user.home"), "Solor/komet/logs");
-//        logDirectory.mkdirs();
+    public void init() {
+        File logDirectory = new File(System.getProperty("user.home"), "Solor/komet/logs");
+        logDirectory.mkdirs();
         LOG.info("Starting Komet");
         LoadFonts.load();
 
