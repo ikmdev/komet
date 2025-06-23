@@ -14,10 +14,11 @@
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-10;
+    -fx-border-width: 0;
 }
 
 .float-control > .text-field:focused {
-    -fx-border-color: #8ab4f8;          /* Blue border */
+    -fx-background-color: #8ab4f8, white;
     -fx-background-insets: 0, 2;
 }
 

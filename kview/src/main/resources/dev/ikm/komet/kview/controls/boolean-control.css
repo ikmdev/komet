@@ -27,11 +27,9 @@
     -fx-background-color: #4277d8;
 }
 
-.boolean-control .combo-box:focused  {
-    -fx-border-color: #8ab4f8;          /* Blue border */
+.boolean-control > .main-container > .combo-box-base:focused   {
+    -fx-background-color: #8ab4f8, white;
     -fx-background-insets: 0, 2;
-    -fx-background-radius: 4px, 4px;        /* Match background radius */
-    -fx-padding: 0.333333em 0.583em 0.333333em 0.417em;
 }
 
 .boolean-control:disabled {
