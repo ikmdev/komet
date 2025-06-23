@@ -89,10 +89,8 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
         // Getting the concept window pane
         this.paneWindow = jfxNode.node();
 
-        var controller = jfxNode.controller();
-
         // Calls the remove method to remove and concepts that were closed by the user.
-        controller.setOnCloseConceptWindow(windowEvent -> {
+        jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
             getOnClose().ifPresent(Runnable::run);
             // TODO more clean up such as view models and listeners just in case (memory).
         });
