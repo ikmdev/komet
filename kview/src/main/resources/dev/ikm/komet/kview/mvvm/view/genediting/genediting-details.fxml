@@ -36,17 +36,16 @@
                   </FlowPane>
                   <HBox fx:id="conceptHeaderControlToolBarHbox" prefHeight="100.0" prefWidth="762.0" style="-fx-background-color: -Natural-Grey-Main;">
                      <children>
-                        <Button mnemonicParsing="false" text="Button">
-                           <graphic>
-                              <Region prefHeight="200.0" prefWidth="200.0">
-                                 <styleClass>
-                                    <String fx:value="icon" />
-                                    <String fx:value="coordinate" />
-                                 </styleClass>
-                              </Region>
-                           </graphic>
+                        <MenuButton  fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="coordinate" />
+                           </styleClass>
+                           <items>
+                              <Menu fx:id="windowCoordinates" mnemonicParsing="false" text="Coordinates" />
+                           </items>
                            <tooltip><Tooltip text="Coordinates" /></tooltip>
-                        </Button>
+                        </MenuButton>
                         <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
                         <HBox fx:id="controlBoxHbox1" alignment="CENTER" spacing="15.0">
                            <children>
