@@ -1053,6 +1053,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             throws GitAPIException, IOException {
         try (Git git = Git.open(changeSetFolder.toFile())) {
             ImmutableList<String> filesToAdd = filesToAdd(changeSetFolder, "ike-cs.zip");
+            LOG.info("### FilesToAdd: {}", filesToAdd.makeString());
 
             if (filesToAdd.isEmpty()) {
                 LOG.info("No changeset files found to add");
