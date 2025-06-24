@@ -1115,7 +1115,7 @@ public class GitTask extends TrackingCallable<Boolean> {
                     .filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(pattern))
                     .filter(this::isValidChangeset)
-                    .map(path -> directory.relativize(path).toString())
+                    .map(path -> directory.relativize(path).toString().replace("\\", "/"))
                     .sorted() // Add natural sorting by file path
                     .toList());
         } catch (IOException e) {
