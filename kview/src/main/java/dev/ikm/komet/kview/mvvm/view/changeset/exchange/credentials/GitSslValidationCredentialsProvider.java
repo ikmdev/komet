@@ -90,12 +90,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
         /**
          * Trust the certificate for this specific repository.
          */
-        TRUST_FOR_REPO("Trust for Repository"),
-
-        /**
-         * Trust the certificate permanently for all future operations.
-         */
-        TRUST_ALWAYS("Trust Always"),
+        TRUST_FOR_REPO("Trust for Repo"),
 
         /**
          * Cancel the operation and do not trust the certificate.
@@ -305,7 +300,6 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
             case String p when p.equals(JGitText.get().sslTrustNow) -> decision == SslTrustDecision.TRUST_NOW;
             case String p when p.startsWith(stripFormattingPlaceholders(JGitText.get().sslTrustForRepo)) ->
                     decision == SslTrustDecision.TRUST_FOR_REPO;
-            case String p when p.equals(JGitText.get().sslTrustAlways) -> decision == SslTrustDecision.TRUST_ALWAYS;
             default -> false;
         };
 
@@ -423,7 +417,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
                 """
                         • Trust Now: Accept certificate for this session only
                         • Trust for Repo: Accept certificate for this repository
-                        • Trust Always: Accept certificate permanently""");
+                        • Cancel: Do not trust the certificate for this repository""");
         explanationLabel.setFont(Font.font("Noto Sans", FontWeight.NORMAL, 12));
         return explanationLabel;
     }
