@@ -245,15 +245,11 @@ public class GenEditingDetailsController {
             updateDraggableNodesForPropertiesPanel(true);
         }
 
-        // Identicon
-        if (refComponent.isNotNull().get()) {
-            EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+        setupIdenticon(refComponent);
+        setupDisplayUUID();
+    }
 
-            Image identicon = Identicon.generateIdenticonImage(semantic.publicId());
-            identiconImageView.setImage(identicon);
-        }
-
-        // UUID
+    private void setupDisplayUUID() {
         EntityFacade semanticComponent = genEditingViewModel.getPropertyValue(SEMANTIC);
 
         List<String> idList = semanticComponent.publicId().asUuidList().stream()
@@ -264,6 +260,15 @@ public class GenEditingDetailsController {
 
         uuidTextFieldLabel.setText(idString);
         identifierTooltip.setText(idString);
+    }
+
+    private void setupIdenticon(ObjectProperty<EntityFacade> refComponent) {
+        if (refComponent.isNotNull().get()) {
+            EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+
+            Image identicon = Identicon.generateIdenticonImage(semantic.publicId());
+            identiconImageView.setImage(identicon);
+        }
     }
 
     /**
