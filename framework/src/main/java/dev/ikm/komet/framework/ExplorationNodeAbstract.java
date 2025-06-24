@@ -32,17 +32,20 @@ import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorDelegate;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringPropertyBase;
+import javafx.collections.ListChangeListener;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.TreeItem;
 import javafx.scene.layout.HBox;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -185,7 +188,9 @@ public abstract class ExplorationNodeAbstract implements KometNode, Subscriber<I
     public abstract void handleActivity(ImmutableList<EntityFacade> entities);
 
     public void dispatchActivity(ImmutableList<EntityFacade> entities) {
-        getActivityStream().dispatch(entities);
+        if (getActivityStream() != null) {
+            getActivityStream().dispatch(entities);
+        }
     }
 
     protected final Runnable getNodeSelectionMethod() {
