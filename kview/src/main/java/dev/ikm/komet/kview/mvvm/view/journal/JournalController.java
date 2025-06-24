@@ -981,8 +981,7 @@ public class JournalController {
         });
 
         searchControl.setOnFilterAction(_ -> {
-            // DUMMY
-            searchControl.setFilterSet(!searchControl.isFilterSet());
+            // TODO
         });
 
         KLConceptNavigatorControl conceptNavigatorControl = new KLConceptNavigatorControl();

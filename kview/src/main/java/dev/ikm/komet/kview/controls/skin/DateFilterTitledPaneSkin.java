@@ -122,8 +122,13 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         subscription = selectedOption.boundsInParentProperty().subscribe(b ->
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
 
-        subscription = subscription.and(selectedOption.textProperty().subscribe(text ->
-                pseudoClassStateChanged(MODIFIED_TITLED_PANE, !currentOption.defaultOption().equals(text))));
+        subscription = subscription.and(selectedOption.textProperty().subscribe(text -> {
+            String defaultOption = currentOption.defaultOption();
+            if (defaultOption.isEmpty()) {
+                defaultOption = currentOption.availableOptions().getFirst();
+            }
+            pseudoClassStateChanged(MODIFIED_TITLED_PANE, !defaultOption.equals(text));
+        }));
 
         if (control.getParent() instanceof Accordion accordion) {
             subscription = subscription.and(accordion.expandedPaneProperty().subscribe(pane -> {

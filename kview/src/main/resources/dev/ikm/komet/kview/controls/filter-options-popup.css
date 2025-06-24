@@ -271,6 +271,10 @@
     -fx-pref-height: 64;
 }
 
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded:single-select > .title {
+    -fx-pref-height: 24;
+}
+
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box {
     -fx-alignment: top-left;
     -fx-spacing: 4;
@@ -281,6 +285,11 @@
 .filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box {
     -fx-spacing: 6;
     -fx-pref-height: 60;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded:single-select > .title > .title-box {
+    -fx-spacing: 6;
+    -fx-pref-height: 20;
 }
 
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .title-label {
@@ -333,6 +342,11 @@
 .filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .toggles-box {
     -fx-managed: true;
     visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded:single-select > .title > .title-box > .toggles-box {
+    -fx-managed: false;
+    visibility: hidden;
 }
 
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box > .toggle-button {
@@ -418,6 +432,13 @@
 
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .separator-region {
     -fx-pref-height: 1;
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:single-select > .content > .content-box > .separator-region {
+    -fx-managed: false;
+    visibility: hidden;
 }
 
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .separator-region > .line {

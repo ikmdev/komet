@@ -42,6 +42,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
     private static final String FILTER_OPTIONS_KEY = "filter-options";
     private static final String SAVED_FILTERS_KEY = "saved-filters";
+    private static final String DEFAULT_OPTIONS_KEY = "default-options";
 
     private final FilterOptionsPopup control;
     private final VBox root;
@@ -70,13 +71,15 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     public FilterOptionsPopupSkin(FilterOptionsPopup control) {
         this.control = control;
         savedFiltersPopup = new SavedFiltersPopup(this::applyFilter, this::removeFilter);
-        kometPreferences = Preferences.get().getConfigurationPreferences().node(FILTER_OPTIONS_KEY);
+        kometPreferences = Preferences.get().getConfigurationPreferences()
+                .node(FILTER_OPTIONS_KEY)
+                .node(control.getFilterType().name());
 
         StackPane closePane = new StackPane(new IconRegion("icon", "close"));
         closePane.getStyleClass().add("region");
         closePane.setOnMouseClicked(_ -> getSkinnable().hide());
 
-        Label title = new Label(resources.getString("header.title"));
+        Label title = new Label(resources.getString("control.title"));
         title.getStyleClass().add("title");
 
         ToggleButton filterPane = new ToggleButton(null, new IconRegion("icon", "filter"));
@@ -175,6 +178,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                     pane.setOption(optionForItem);
                 });
         updateCurrentFilterOptions();
+        control.getProperties().put(DEFAULT_OPTIONS_KEY, defaultFilterOptions.equals(control.getFilterOptions()));
     }
 
     @Override
@@ -223,14 +227,22 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         }
         int rootNid = navigator.getRootNids()[0];
 
-        // sort by:  All first children of root
-        List<String> sortByList = navigator.getChildEdges(rootNid).stream()
+        FilterOptions.Option option = filterOptions.getType();
+        FilterTitledPane typeFilterTitledPane = setupTitledPane(option);
+        if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.SEARCH) {
+            setDefaultOptions(option);
+        }
+
+        // header:  All first children of root
+        List<String> headerList = navigator.getChildEdges(rootNid).stream()
                 .map(edge -> Entity.getFast(edge.destinationNid()).description())
                 .toList();
-        FilterOptions.Option option = filterOptions.getSortBy();
-        setAvailableOptions(option, sortByList);
-        FilterTitledPane sortByFilterTitledPane = setupTitledPane(option);
-        setDefaultOptions(option);
+        option = filterOptions.getHeader();
+        setAvailableOptions(option, headerList);
+        FilterTitledPane headerFilterTitledPane = setupTitledPane(option);
+        if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.NAVIGATOR) {
+            setDefaultOptions(option);
+        }
 
         // status: all descendents of Status
         option = filterOptions.getStatus();
@@ -268,22 +280,42 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         FilterTitledPane membershipFilterTitledPane = setupTitledPane(option);
         setDefaultOptions(option);
 
+        option = filterOptions.getSortBy();
+        FilterTitledPane sortByFilterTitledPane = setupTitledPane(option);
+        if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.SEARCH) {
+            setDefaultOptions(option);
+        }
+
         option = filterOptions.getDate();
         FilterTitledPane dateFilterTitledPane = setupTitledPane(option);
         defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear(); // latest has no selected options
 
-        accordion.getPanes().setAll(
-                sortByFilterTitledPane,
-                statusFilterTitledPane,
-                moduleFilterTitledPane,
-                pathFilterTitledPane,
-                languageFilterTitledPane,
-                descriptionFilterTitledPane,
-                kindOfFilterTitledPane,
-                membershipFilterTitledPane,
-                dateFilterTitledPane);
+        if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.NAVIGATOR) {
+            accordion.getPanes().setAll(
+                    headerFilterTitledPane,
+                    statusFilterTitledPane,
+                    moduleFilterTitledPane,
+                    pathFilterTitledPane,
+                    languageFilterTitledPane,
+                    descriptionFilterTitledPane,
+                    kindOfFilterTitledPane,
+                    membershipFilterTitledPane,
+                    dateFilterTitledPane);
+        } else {
+            accordion.getPanes().setAll(
+                    typeFilterTitledPane,
+                    statusFilterTitledPane,
+                    moduleFilterTitledPane,
+                    pathFilterTitledPane,
+                    languageFilterTitledPane,
+                    descriptionFilterTitledPane,
+                    kindOfFilterTitledPane,
+                    membershipFilterTitledPane,
+                    sortByFilterTitledPane,
+                    dateFilterTitledPane);
+        }
 
-        // set default options
+        // initially, set default options
         control.setFilterOptions(defaultFilterOptions);
         updateCurrentFilterOptions();
     }
@@ -304,7 +336,11 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
     private void setDefaultOptions(FilterOptions.Option option) {
         defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
-        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.availableOptions());
+        if (option.isMultiSelectionAllowed()) {
+            defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.availableOptions());
+        } else {
+            defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
+        }
     }
 
     private void applyFilter(String i) {

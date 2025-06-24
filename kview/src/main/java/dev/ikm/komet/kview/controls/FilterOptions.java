@@ -17,7 +17,8 @@ public class FilterOptions implements Serializable {
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
 
     public enum OPTION_ITEM {
-        SORT_BY(""),
+        TYPE(""),
+        HEADER(""),
         STATUS("Status"),
         MODULE("Module"),
         PATH("Path"),
@@ -25,6 +26,7 @@ public class FilterOptions implements Serializable {
         DESCRIPTION_TYPE(""),
         KIND_OF(""),
         MEMBERSHIP(""),
+        SORT_BY(""),
         DATE("");
 
         private final String path;
@@ -39,7 +41,8 @@ public class FilterOptions implements Serializable {
     }
 
     public record Option(OPTION_ITEM item, String title, String defaultOption, List<String> availableOptions,
-                         List<String> selectedOptions, List<String> excludedOptions) implements Serializable {
+                         List<String> selectedOptions, List<String> excludedOptions, boolean multiSelect)
+            implements Serializable {
 
         @Override
         public String title() {
@@ -48,7 +51,7 @@ public class FilterOptions implements Serializable {
 
         @Override
         public String defaultOption() {
-            return resources.getString(defaultOption);
+            return !defaultOption.isEmpty() ? resources.getString(defaultOption) : "";
         }
 
         @Override
@@ -58,7 +61,7 @@ public class FilterOptions implements Serializable {
         }
 
         public boolean isMultiSelectionAllowed() {
-            return true;
+            return multiSelect;
         }
 
         public boolean isExcluding() {
@@ -97,24 +100,35 @@ public class FilterOptions implements Serializable {
             return new Option(item, title, defaultOption,
                     new ArrayList<>(availableOptions.stream().toList()),
                     new ArrayList<>(selectedOptions.stream().toList()),
-                    excludedOptions != null ? new ArrayList<>(excludedOptions.stream().toList()) : null);
+                    excludedOptions != null ? new ArrayList<>(excludedOptions.stream().toList()) : null,
+                    multiSelect);
         }
     }
 
-    private Option sortBy = new Option(OPTION_ITEM.SORT_BY, "sortby.title", "sortby.option.all",
-            new ArrayList<>(), new ArrayList<>(), null);
+    private Option type;
+    {
+        List<String> typeOptions = Stream.of(
+                "type.option.concepts", "type.option.semantics")
+                .map(resources::getString)
+                .toList();
+        type = new Option(OPTION_ITEM.TYPE, "type.title", "type.option.all",
+            typeOptions, new ArrayList<>(), null, true);
+    }
+
+    private Option header = new Option(OPTION_ITEM.HEADER, "header.title", "",
+            new ArrayList<>(), new ArrayList<>(), null, false);
 
     private Option status = new Option(OPTION_ITEM.STATUS, "status.title", "status.option.all",
-            new ArrayList<>(), new ArrayList<>(), null);
+            new ArrayList<>(), new ArrayList<>(), null, true);
 
     private Option module = new Option(OPTION_ITEM.MODULE, "module.title", "module.option.all",
-            new ArrayList<>(), new ArrayList<>(), null);
+            new ArrayList<>(), new ArrayList<>(), null, true);
 
     private Option path = new Option(OPTION_ITEM.PATH, "path.title", "path.option.all",
-            new ArrayList<>(), new ArrayList<>(), null);
+            new ArrayList<>(), new ArrayList<>(), null, true);
 
     private Option language = new Option(OPTION_ITEM.LANGUAGE, "language.title", "language.option.all",
-            new ArrayList<>(), new ArrayList<>(), null);
+            new ArrayList<>(), new ArrayList<>(), null, true);
 
     private Option descriptionType;
     {
@@ -124,7 +138,7 @@ public class FilterOptions implements Serializable {
                 .map(resources::getString)
                 .toList();
         descriptionType = new Option(OPTION_ITEM.DESCRIPTION_TYPE, "description.title", "description.option.all",
-                descriptionTypeOptions, new ArrayList<>(), null);
+                descriptionTypeOptions, new ArrayList<>(), null, true);
     }
 
     private Option kindOf;
@@ -136,7 +150,7 @@ public class FilterOptions implements Serializable {
                 .map(resources::getString)
                 .toList();
         kindOf = new Option(OPTION_ITEM.KIND_OF, "kindof.title", "kindof.option.all",
-                kindOfOptions, new ArrayList<>(), new ArrayList<>());
+                kindOfOptions, new ArrayList<>(), new ArrayList<>(), true);
     }
 
     private Option membership;
@@ -147,7 +161,17 @@ public class FilterOptions implements Serializable {
                 .map(resources::getString)
                 .toList();
         membership = new Option(OPTION_ITEM.MEMBERSHIP, "membership.title", "membership.option.all",
-                membershipOptions, new ArrayList<>(), null);
+                membershipOptions, new ArrayList<>(), null, true);
+    }
+
+    private Option sortBy;
+    {
+        List<String> typeOptions = Stream.of(
+                        "sortby.option.relevant", "sortby.option.alphabetical", "sortby.option.groupedby")
+                .map(resources::getString)
+                .toList();
+        sortBy = new Option(OPTION_ITEM.SORT_BY, "sortby.title", "",
+                typeOptions, new ArrayList<>(), null, false);
     }
 
     private Option date;
@@ -156,17 +180,23 @@ public class FilterOptions implements Serializable {
                 .map(resources::getString)
                 .toList();
         date = new Option(OPTION_ITEM.DATE, "date.title", "date.option.all",
-                dateOptions, new ArrayList<>(), new ArrayList<>());
+                dateOptions, new ArrayList<>(), new ArrayList<>(), true);
     }
 
     private final List<Option> options;
 
     public FilterOptions() {
-        options = new ArrayList<>(List.of(sortBy, status, module, path, language, descriptionType, kindOf, membership, date));
+        options = new ArrayList<>(List.of(
+                type, header, status, module, path, language,
+                descriptionType, kindOf, membership, sortBy, date));
     }
 
-    public Option getSortBy() {
-        return sortBy;
+    public Option getType() {
+        return type;
+    }
+
+    public Option getHeader() {
+        return header;
     }
 
     public Option getStatus() {
@@ -197,6 +227,10 @@ public class FilterOptions implements Serializable {
         return membership;
     }
 
+    public Option getSortBy() {
+        return sortBy;
+    }
+
     public Option getDate() {
         return date;
     }
@@ -214,7 +248,8 @@ public class FilterOptions implements Serializable {
 
     public void setOptionForItem(OPTION_ITEM item, Option option) {
         switch (item) {
-            case SORT_BY -> sortBy = option;
+            case TYPE -> type = option;
+            case HEADER -> header = option;
             case STATUS -> status = option;
             case MODULE -> module = option;
             case PATH -> path = option;
@@ -222,10 +257,13 @@ public class FilterOptions implements Serializable {
             case DESCRIPTION_TYPE -> descriptionType = option;
             case KIND_OF -> kindOf = option;
             case MEMBERSHIP -> membership = option;
+            case SORT_BY -> sortBy = option;
             case DATE -> date = option;
         }
         options.clear();
-        options.addAll(List.of(sortBy, status, module, path, language, descriptionType, kindOf, membership, date));
+        options.addAll(List.of(
+                type, header, status, module, path, language,
+                descriptionType, kindOf, membership, sortBy, date));
     }
 
     @Override
@@ -233,20 +271,26 @@ public class FilterOptions implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FilterOptions that = (FilterOptions) o;
-        return Objects.equals(sortBy, that.sortBy) &&
+        return Objects.equals(type, that.type) &&
+                Objects.equals(header, that.header) &&
                 Objects.equals(status, that.status) &&
+                Objects.equals(module, that.module) &&
                 Objects.equals(path, that.path) &&
                 Objects.equals(language, that.language) &&
                 Objects.equals(descriptionType, that.descriptionType) &&
                 Objects.equals(kindOf, that.kindOf) &&
                 Objects.equals(membership, that.membership) &&
+                Objects.equals(sortBy, that.sortBy) &&
                 Objects.equals(date, that.date) &&
                 Objects.equals(options, that.options);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sortBy, status, path, language, descriptionType, kindOf, membership, date, options);
+        return Objects.hash(
+                type, header, status, module, path, language,
+                descriptionType, kindOf, membership, sortBy, date,
+                options);
     }
 
     @Override
