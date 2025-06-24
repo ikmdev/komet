@@ -773,6 +773,10 @@ public class JournalController {
     public void shutdown() {
         // cleanup code here...
         LOG.info("Journal Window is shutting down...");
+
+        // remove the listener, the node and activity streams
+        navigatorNode.getController().getTreeView().getSelectionModel().getSelectedItems().removeListener(navigatorNode.getSelectionListener());
+        navigatorNode = null;
         activityStreams.forEach(ActivityStreams::delete);
 
         journalEventBus.unsubscribe(makeConceptWindowEventSubscriber,
