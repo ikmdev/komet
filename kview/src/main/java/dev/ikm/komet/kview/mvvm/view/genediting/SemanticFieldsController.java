@@ -244,23 +244,7 @@ public class SemanticFieldsController {
                     }
                 }
             }
-            // Collect all focusable nodes
-            List<javafx.scene.Node> focusableNodes = new ArrayList<>();
-            collectFocusableNodes(editFieldsVBox, focusableNodes);
         });
-    }
-
-    // Recursive method to collect focusable nodes
-    private void collectFocusableNodes(javafx.scene.Parent parent, List<javafx.scene.Node> focusableNodes) {
-        for (javafx.scene.Node node : parent.getChildrenUnmodifiable()) {
-            if (node.isFocusTraversable()) {
-                focusableNodes.add(node);
-                node.setFocusTraversable(false);
-            }
-            if (node instanceof javafx.scene.Parent) {
-                collectFocusableNodes((javafx.scene.Parent) node, focusableNodes);
-            }
-        }
     }
 
     private void loadUIData() {

@@ -20,7 +20,7 @@ public class KLStringControlSkin extends KLDebounceControlSkin<KLStringControl> 
      */
     public KLStringControlSkin(KLStringControl control) {
         super(control);
-
+        control.setFocusTraversable(false);
         titleLabel = new Label();
         titleLabel.textProperty().bind(control.titleProperty());
         titleLabel.getStyleClass().add("editable-title-label");
