@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.52.0-IIA-2305-activity-stream-npe-on-journal-close-then-git-sync-SNAPSHOT</version>
+        <version>1.52.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>sync</artifactId>
