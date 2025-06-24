@@ -1003,40 +1003,40 @@ public class App extends Application {
         } catch (BackingStoreException e) {
             LOG.error("Failed to delete GitHub preferences", e);
         }
-
-        // Delete the .git folder and README.md if they exist
-        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
-        if (optionalDataStoreRoot.isPresent()) {
-            final File changeSetFolder = new File(optionalDataStoreRoot.get(), CHANGESETS_DIR);
-
-            // Delete .git folder
-            final File gitDir = new File(changeSetFolder, ".git");
-            if (gitDir.exists() && gitDir.isDirectory()) {
-                try {
-                    FileUtils.delete(gitDir, FileUtils.RECURSIVE);
-                    LOG.info("Successfully deleted .git folder at: {}", gitDir.getAbsolutePath());
-                } catch (IOException e) {
-                    LOG.error("Failed to delete .git folder at: {}", gitDir.getAbsolutePath(), e);
-                }
-            }
-
-            // Delete README.md file
-            final File readmeFile = new File(changeSetFolder, README_FILENAME);
-            if (readmeFile.exists() && readmeFile.isFile()) {
-                try {
-                    if (readmeFile.delete()) {
-                        LOG.info("Successfully deleted {} file at: {}", README_FILENAME, readmeFile.getAbsolutePath());
-                    } else {
-                        LOG.error("Failed to delete {} file at: {}", README_FILENAME, readmeFile.getAbsolutePath());
-                    }
-                } catch (SecurityException e) {
-                    LOG.error("Security exception while deleting {} file at: {}", readmeFile.getAbsolutePath(), e);
-                }
-            }
-        } else {
-            LOG.warn("Could not access data store root to delete .git folder and README.md");
-        }
-
+        // TODO: Refactor GitHub disconnect and credentials management without deleting .git folder
+//        // Delete the .git folder and README.md if they exist
+//        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
+//        if (optionalDataStoreRoot.isPresent()) {
+//            final File changeSetFolder = new File(optionalDataStoreRoot.get(), CHANGESETS_DIR);
+//
+//            // Delete .git folder
+//            final File gitDir = new File(changeSetFolder, ".git");
+//            if (gitDir.exists() && gitDir.isDirectory()) {
+//                try {
+//                    FileUtils.delete(gitDir, FileUtils.RECURSIVE);
+//                    LOG.info("Successfully deleted .git folder at: {}", gitDir.getAbsolutePath());
+//                } catch (IOException e) {
+//                    LOG.error("Failed to delete .git folder at: {}", gitDir.getAbsolutePath(), e);
+//                }
+//            }
+//
+//            // Delete README.md file
+//            final File readmeFile = new File(changeSetFolder, README_FILENAME);
+//            if (readmeFile.exists() && readmeFile.isFile()) {
+//                try {
+//                    if (readmeFile.delete()) {
+//                        LOG.info("Successfully deleted {} file at: {}", README_FILENAME, readmeFile.getAbsolutePath());
+//                    } else {
+//                        LOG.error("Failed to delete {} file at: {}", README_FILENAME, readmeFile.getAbsolutePath());
+//                    }
+//                } catch (SecurityException e) {
+//                    LOG.error("Security exception while deleting {} file at: {}", readmeFile.getAbsolutePath(), e);
+//                }
+//            }
+//        } else {
+//            LOG.warn("Could not access data store root to delete .git folder and README.md");
+//        }
+//
         // Update the UI state
         gotoGitHubDisconnectedState();
     }
