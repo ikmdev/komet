@@ -55,7 +55,7 @@ public class GraphNavigatorNode extends ExplorationNodeAbstract {
             selectionChangeListener = (ListChangeListener.Change<? extends TreeItem<ConceptFacade>> c) -> {
                 MutableList<EntityFacade> selectedItemList = Lists.mutable.empty();
                 for (TreeItem<ConceptFacade> item : c.getList()) {
-                    if (item!=null && item.getValue()!=null) {
+                    if (item != null && item.getValue() != null) {
                         selectedItemList.add(item.getValue());
                     }
                 }
