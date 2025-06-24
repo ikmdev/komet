@@ -773,7 +773,11 @@ public class JournalController {
     public void shutdown() {
         // cleanup code here...
         LOG.info("Journal Window is shutting down...");
-        activityStreams.forEach(ActivityStreams::delete);
+
+        //FIXME we need a better solution to clean up the MultiParentGraphViewController
+        //in addition to the activity streams
+        //navigatorNode.getController().shutdownInstance();
+        //activityStreams.forEach(ActivityStreams::delete);
 
         journalEventBus.unsubscribe(makeConceptWindowEventSubscriber,
                 makePatternWindowEventSubscriber,
