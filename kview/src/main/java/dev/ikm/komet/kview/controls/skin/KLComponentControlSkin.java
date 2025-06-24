@@ -440,6 +440,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         HBox searchBox = new HBox(typeAheadSearchFieldContainer, filterButton);
         searchBox.getStyleClass().add("concept-search-box");
+        searchBox.setFocusTraversable(true);
 
         typeAheadSearchField.setSkin(new AutoCompleteTextFieldSkin<>(typeAheadSearchField) {
 
