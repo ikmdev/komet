@@ -72,6 +72,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 /**
@@ -1027,18 +1028,16 @@ public class GitTask extends TrackingCallable<Boolean> {
         }
 
         if (changeSetWriterService instanceof SaveState savableChangeSetWriterService) {
-            savableChangeSetWriterService.save();
+            // TODO: Refactor to return CompletableFuture<Boolean>
+            try {
+                savableChangeSetWriterService.save().get();
+            } catch (InterruptedException | ExecutionException e) {
+                updateMessage("Error while saving changes: " + e.getLocalizedMessage());
+                LOG.error("Error while saving changes", e);
+                return false;
+            }
         }
-
-        // TODO: Remove this after having some mechanism to wait for the save to complete
-        try {
-            Thread.sleep(10000); // Simulate some delay for saving
-        } catch (InterruptedException e) {
-            updateMessage("Error while saving changes: " + e.getLocalizedMessage());
-            LOG.error("Error while saving changes", e);
-            return false;
-        }
-
+        // TODO: Do we want to shutdown non-savable ChangeSetWriterServices?
         return true;
     }
 
