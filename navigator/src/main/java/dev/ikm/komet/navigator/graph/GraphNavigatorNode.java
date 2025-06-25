@@ -41,6 +41,8 @@ public class GraphNavigatorNode extends ExplorationNodeAbstract {
     final AnchorPane root;
     final MultiParentGraphViewController controller;
 
+    private ListChangeListener<TreeItem<ConceptFacade>> selectionChangeListener;
+
     public GraphNavigatorNode(ViewProperties viewProperties, KometPreferences nodePreferences) {
         super(viewProperties, nodePreferences);
         try {
@@ -50,7 +52,7 @@ public class GraphNavigatorNode extends ExplorationNodeAbstract {
             this.controller = loader.getController();
             this.controller.setProperties(this, viewProperties, nodePreferences);
             ObservableList<TreeItem<ConceptFacade>> selectedItems = this.controller.getTreeView().getSelectionModel().getSelectedItems();
-            selectedItems.addListener((ListChangeListener.Change<? extends TreeItem<ConceptFacade>> c) -> {
+            selectionChangeListener = (ListChangeListener.Change<? extends TreeItem<ConceptFacade>> c) -> {
                 MutableList<EntityFacade> selectedItemList = Lists.mutable.empty();
                 for (TreeItem<ConceptFacade> item : c.getList()) {
                     if (item != null && item.getValue() != null) {
@@ -58,11 +60,16 @@ public class GraphNavigatorNode extends ExplorationNodeAbstract {
                     }
                 }
                 dispatchActivity(selectedItemList.toImmutable());
-            });
+            };
+            selectedItems.addListener(selectionChangeListener);
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+    }
+
+    public ListChangeListener<TreeItem<ConceptFacade>> getSelectionListener() {
+        return selectionChangeListener;
     }
 
     @Override

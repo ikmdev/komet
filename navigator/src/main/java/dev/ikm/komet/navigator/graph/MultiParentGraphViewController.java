@@ -175,7 +175,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         }
     }
 
-    protected void shutdownInstance() {
+    public void shutdownInstance() {
         LOG.info("Shutdown graph view instance");
         this.getObservableView().removeListener(this.viewChangedListener);
         if (rootTreeItem != null) {
