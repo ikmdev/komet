@@ -39,7 +39,7 @@ public class KLIntegerControlSkin extends KLDebounceControlSkin<KLIntegerControl
      */
     public KLIntegerControlSkin(KLIntegerControl control) {
         super(control);
-        control.setFocusTraversable(false);
+
         titleLabel = new Label();
         titleLabel.textProperty().bind(control.titleProperty());
         titleLabel.getStyleClass().add("editable-title-label");

@@ -33,7 +33,7 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
      */
     public KLFloatControlSkin(KLFloatControl control) {
         super(control);
-        control.setFocusTraversable(false);
+
         titleLabel = new Label();
         titleLabel.textProperty().bind(control.titleProperty());
         titleLabel.getStyleClass().add("editable-title-label");
