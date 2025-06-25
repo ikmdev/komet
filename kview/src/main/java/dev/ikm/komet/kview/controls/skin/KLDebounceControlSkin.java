@@ -17,6 +17,8 @@ public abstract class KLDebounceControlSkin<C extends Control> extends SkinBase<
      */
     protected KLDebounceControlSkin(C control) {
         super(control);
+        control.setFocusTraversable(false);
+
         this.textField = new TextField();
         Timeline timeline = new Timeline();
         KeyFrame keyFrame1 = new KeyFrame(Duration.millis(3000), (evt) -> {});

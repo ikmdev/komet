@@ -24,7 +24,7 @@ public class KLBooleanControlSkin extends SkinBase<KLBooleanControl> {
      */
     public KLBooleanControlSkin(KLBooleanControl control) {
         super(control);
-
+        control.setFocusTraversable(false);
         mainContainer.getChildren().addAll(titleLabel, comboBox);
         getChildren().add(mainContainer);
 
