@@ -33,7 +33,6 @@ module dev.ikm.komet.kview {
 
     requires transitive dev.ikm.komet.layout;
     requires jdk.jfr;
-    requires org.apache.commons.logging;
     requires org.eclipse.jgit;
     requires dev.ikm.tinkar.reasoner.service;
 

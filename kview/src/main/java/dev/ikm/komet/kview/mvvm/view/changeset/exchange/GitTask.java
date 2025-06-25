@@ -71,6 +71,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 /**
@@ -1026,18 +1028,16 @@ public class GitTask extends TrackingCallable<Boolean> {
         }
 
         if (changeSetWriterService instanceof SaveState savableChangeSetWriterService) {
-            savableChangeSetWriterService.save();
+            // TODO: Refactor to return CompletableFuture<Boolean>
+            try {
+                savableChangeSetWriterService.save().get();
+            } catch (InterruptedException | ExecutionException e) {
+                updateMessage("Error while saving changes: " + e.getLocalizedMessage());
+                LOG.error("Error while saving changes", e);
+                return false;
+            }
         }
-
-        // TODO: Remove this after having some mechanism to wait for the save to complete
-        try {
-            Thread.sleep(10000); // Simulate some delay for saving
-        } catch (InterruptedException e) {
-            updateMessage("Error while saving changes: " + e.getLocalizedMessage());
-            LOG.error("Error while saving changes", e);
-            return false;
-        }
-
+        // TODO: Do we want to shutdown non-savable ChangeSetWriterServices?
         return true;
     }
 
@@ -1061,9 +1061,6 @@ public class GitTask extends TrackingCallable<Boolean> {
                 return;
             }
 
-            // Create a more descriptive commit message
-            String commitMessage = "Added " + filesToAdd.size() + " changesets on " + new Date();
-
             // Add files to staging
             updateMessage("Adding files to Git staging area...");
             AddCommand addCommand = git.add();
@@ -1071,6 +1068,11 @@ public class GitTask extends TrackingCallable<Boolean> {
             filesToAdd.forEach(addCommand::addFilepattern);
             addCommand.call();
             updatePhaseProgress(startPercentage, endPercentage, 0.6);
+
+            // Create a more descriptive commit message
+            Set<String> addedFiles = git.status().call().getAdded();
+            LOG.info("Commiting Files: {}", filesToAdd.makeString());
+            String commitMessage = "Added %s changesets on %s".formatted(addedFiles.size(), new Date());
 
             // Commit changes
             updateMessage("Committing changes...");
@@ -1109,12 +1111,13 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @return An immutable list of relative paths to valid changeset files
      */
     ImmutableList<String> filesToAdd(Path directory, String pattern) {
+        // TODO: Refactor to return List of Paths and force file separator in JGit commands
         try (Stream<Path> filesStream = Files.walk(directory)) {
             return Lists.immutable.ofAll(filesStream
                     .filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(pattern))
                     .filter(this::isValidChangeset)
-                    .map(path -> directory.relativize(path).toString())
+                    .map(path -> directory.relativize(path).toString().replace("\\", "/")) // Must enforce '/' file path separator for JGit Add Command
                     .sorted() // Add natural sorting by file path
                     .toList());
         } catch (IOException e) {

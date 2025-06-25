@@ -63,15 +63,10 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- Utilize for Binding Log4J to SLF4J -->
-        <log4j.version>3.0.0-alpha1</log4j.version>
-        <slf4j.version>2.0.17</slf4j.version>
-        <bind-to-slf4j.version>2.0.17</bind-to-slf4j.version>
-
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.6.0</tinkar-composer.version>
-        <tinkar-core.version>1.109.0</tinkar-core.version>
+        <tinkar-core.version>1.112.0</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -125,6 +120,10 @@
             --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
             --enable-preview
         </commonTestFXArgs>
+
+        <!-- Track log4j-slf4j2-impl dependency and log4j-bom for future version updates -->
+        <log4j-slf4j2-impl.version>3.0.0-beta2</log4j-slf4j2-impl.version>
+        <!-- log4j-slf4j2-impl 3.0.0-beta2 is the first jlink-compliant version, but does not work with log4j-core 3.0.0-beta2 -->
     </properties>
 
     <dependencyManagement>
@@ -531,24 +530,6 @@
                 <version>${ikonli.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>${bind-to-slf4j.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-slf4j2-impl</artifactId>
-                <version>${log4j.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
@@ -563,31 +544,17 @@
                 <artifactId>scenic-view</artifactId>
                 <version>${scenic-view.version}</version>
             </dependency>
-
-            <!--- Bind To SLF4J Dependencies (Start) -->
-            <!-- Binding log4j to slf4j -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>log4j-over-slf4j</artifactId>
-                <version>${bind-to-slf4j.version}</version>
-            </dependency>
-            <!-- Binding tools-logging to slf4j -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>jcl-over-slf4j</artifactId>
-                <version>${bind-to-slf4j.version}</version>
-            </dependency>
-            <!-- Binding tools-logging to slf4j -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-jdk14</artifactId>
-                <version>${bind-to-slf4j.version}</version>
-            </dependency>
-            <!-- Bind To SLF4J Dependencies (End) -->
             <dependency>
                 <groupId>dev.ikm.jpms</groupId>
                 <artifactId>jgit</artifactId>
                 <version>${jgit.version}</version>
+            </dependency>
+            <dependency>
+                <!-- Track log4j-slf4j2-impl dependency and log4j-bom for future version updates -->
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j2-impl</artifactId>
+                <version>${log4j-slf4j2-impl.version}</version>
+                <!-- log4j-slf4j2-impl 3.0.0-beta2 is the first jlink-compliant version, but does not work with log4j-core 3.0.0-beta2 -->
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -600,10 +567,6 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j2-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
         </dependency>
         <!--- Bind To SLF4J Dependencies (Start) -->
@@ -645,7 +608,6 @@
     <build>
         <pluginManagement>
             <plugins>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
@@ -668,8 +630,6 @@
                         </execution>
                     </executions>
                 </plugin>
-
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
