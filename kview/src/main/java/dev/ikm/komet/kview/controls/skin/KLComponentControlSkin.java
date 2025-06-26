@@ -402,6 +402,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         typeAheadSearchField.getStyleClass().add("concept-text-field");
         typeAheadSearchField.textProperty().subscribe(text -> getSkinnable().getProperties().put(SEARCH_TEXT_VALUE, text));
+        typeAheadSearchField.setFocusTraversable(true);
+        typeAheadSearchField.requestFocus();
 
         // Type ahead setup
         typeAheadSearchField.valueProperty().subscribe(() -> {
@@ -420,6 +422,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         // search prompt
         Label searchPrompt = new Label(getString("textfield.prompt.text"));
         searchPrompt.getStyleClass().add("search-prompt");
+        searchPrompt.setFocusTraversable(false);
 
         searchPrompt.visibleProperty().bind(
                 typeAheadSearchField.focusedProperty().not()
@@ -441,6 +444,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         HBox searchBox = new HBox(typeAheadSearchFieldContainer, filterButton);
         searchBox.getStyleClass().add("concept-search-box");
         searchBox.setFocusTraversable(true);
+        searchBox.requestFocus();
 
         typeAheadSearchField.setSkin(new AutoCompleteTextFieldSkin<>(typeAheadSearchField) {
 
@@ -500,6 +504,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         imageView.setFitWidth(16);
         imageView.setFitHeight(16);
         imageView.setImage(identicon);
+        imageView.setFocusTraversable(false);
         HBox imageViewWrapper = new HBox();
         imageViewWrapper.setAlignment(Pos.CENTER);
         imageViewWrapper.getChildren().add(imageView);
@@ -515,6 +520,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         StackPane dragHandleIcon = new StackPane();
         dragHandleIcon.getStyleClass().add("drag-handle-icon");
         dragHandleIconContainer.getChildren().add(dragHandleIcon);
+        dragHandleIcon.setFocusTraversable(false);
 
         Region buttonRegion = new Region();
         buttonRegion.getStyleClass().add("selected-concept-discard-region");
@@ -527,9 +533,17 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             typeAheadSearchField.requestFocus();
         });
         closeButton.setAlignment(Pos.CENTER_RIGHT);
+        closeButton.setFocusTraversable(false);
 
         HBox selectedConcept = new HBox(imageViewWrapper, componentNameLabel, spacer, dragHandleIconContainer, closeButton);
         selectedConcept.getStyleClass().add("concept-selected-entity-box");
+        selectedConcept.setFocusTraversable(true);
+        buttonRegion.setFocusTraversable(false);
+        imageViewWrapper.setFocusTraversable(false);
+        dragHandleIcon.setFocusTraversable(false);
+        componentNameLabel.setFocusTraversable(false);
+        closeButton.setFocusTraversable(false);
+
         selectedConcept.setAlignment(Pos.CENTER_LEFT);
         HBox.setMargin(selectedConceptContainer, new Insets(8));
 
