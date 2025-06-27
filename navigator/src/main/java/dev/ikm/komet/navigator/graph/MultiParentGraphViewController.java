@@ -63,14 +63,23 @@ import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.transform.Scale;
+import javafx.stage.Window;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
@@ -83,11 +92,13 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 import static dev.ikm.komet.framework.StyleClasses.MULTI_PARENT_TREE_NODE;
+import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
 
 public class MultiParentGraphViewController implements RefreshListener {
     private static final Logger LOG = LoggerFactory.getLogger(MultiParentGraphViewController.class);
     private static volatile boolean shutdownRequested = false;
     private final EntityChangeSubscriber ENTITY_CHANGE_SUBSCRIBER = new EntityChangeSubscriber();
+
     {
         Entity.provider().addSubscriberWithWeakReference(ENTITY_CHANGE_SUBSCRIBER);
     }
@@ -103,6 +114,22 @@ public class MultiParentGraphViewController implements RefreshListener {
     private final LayoutAnimator alertsAnimator = new LayoutAnimator();
     private final SimpleObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>();
     private final UUID uuid = UUID.randomUUID();
+
+    /** Maintains a mapping between tree items and their corresponding visual cell components. */
+    private final Map<TreeItem<ConceptFacade>, TreeCell<ConceptFacade>> cellMap = new WeakHashMap<>();
+
+    /** Default scaling factor applied to snapshots when the window's output scale cannot be determined. */
+    private static final double DEFAULT_SCALE_FACTOR = 1.0;
+
+    /** Vertical spacing in pixels between individual snapshot images in composite drag feedback. */
+    private static final int SNAPSHOT_CONTAINER_SPACING = 2;
+
+    /** CSS styling applied to fallback label components when actual cell snapshots cannot be created. */
+    private static final String FALLBACK_LABEL_STYLE = "-fx-padding: 5px; -fx-background-color: white; -fx-border-color: gray;";
+
+    /** Placeholder text displayed when a tree item contains a null or missing concept value. */
+    private static final String NO_CONCEPT_PLACEHOLDER = "No concept";
+
     @FXML
     Menu navigationCoordinateMenu;
     ViewMenuModel viewMenuModel;
@@ -183,11 +210,30 @@ public class MultiParentGraphViewController implements RefreshListener {
 
         this.treeView.getSelectionModel()
                 .setSelectionMode(SelectionMode.MULTIPLE);
-        this.treeView.setCellFactory((TreeView<ConceptFacade> p) -> new MultiParentGraphCell(treeView));
+
+        // Configures a custom cell factory for the tree view that creates MultiParentGraphCell instances
+        // and maintains a mapping between tree items and their visual cells.
+        this.treeView.setCellFactory(tv -> {
+            TreeCell<ConceptFacade> cell = new MultiParentGraphCell(tv);
+            cell.itemProperty().addListener((_, oldItem, newItem) -> {
+                TreeItem<ConceptFacade> treeItem = cell.getTreeItem();
+                if (oldItem != null && treeItem != null) {
+                    cellMap.remove(treeItem);
+                }
+                if (newItem != null && treeItem != null) {
+                    cellMap.put(treeItem, cell);
+                }
+            });
+
+            return cell;
+        });
+
         this.treeView.setShowRoot(false);
-        this.rootTreeItem = new MultiParentVertexImpl(
-                MultiParentGraphViewController.this);
+        this.rootTreeItem = new MultiParentVertexImpl(MultiParentGraphViewController.this);
         this.treeView.setRoot(rootTreeItem);
+
+        // Registers a drag detection event filter on the tree view to initiate drag-and-drop operations.
+        this.treeView.addEventFilter(MouseEvent.DRAG_DETECTED, this::handleDragDetected);
 
         // put this event handler on the root
         rootTreeItem.addEventHandler(
@@ -215,6 +261,217 @@ public class MultiParentGraphViewController implements RefreshListener {
 
         this.navigationMenuButton.setGraphic(Icon.VIEW.makeIcon());
 
+    }
+
+    /**
+     * Initiates drag operation when a user starts dragging selected tree items.
+     * Validates selected items, creates drag content, and attaches visual feedback.
+     *
+     * @param event the mouse event that triggered the drag detection
+     */
+    private void handleDragDetected(MouseEvent event) {
+        try {
+            ObservableList<TreeItem<ConceptFacade>> selectedItems = treeView.getSelectionModel().getSelectedItems();
+
+            if (selectedItems.isEmpty()) {
+                return;
+            }
+
+            // Extract valid items for dragging
+            List<UUID[]> draggedItemIds = selectedItems.stream()
+                    .filter(this::isValidForDrag)
+                    .map(this::extractUuidArray)
+                    .toList();
+
+            if (draggedItemIds.isEmpty()) {
+                LOG.debug("No valid items selected for drag operation");
+                return;
+            }
+
+            // Create and configure drag operation
+            Dragboard dragboard = initiateDragOperation(draggedItemIds);
+            if (dragboard != null) {
+                attachDragSnapshot(dragboard);
+            }
+
+            event.consume();
+        } catch (Exception e) {
+            LOG.warn("Failed to initiate drag operation", e);
+        }
+    }
+
+    /**
+     * Creates dragboard with multi-parent graph format containing UUID arrays of dragged items.
+     *
+     * @param draggedItemIds list of UUID arrays representing the items being dragged
+     * @return configured dragboard ready for drag operation, or null if creation fails
+     */
+    private Dragboard initiateDragOperation(List<UUID[]> draggedItemIds) {
+        Dragboard dragboard = treeView.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+        if (dragboard != null) {
+            ClipboardContent clipboardContent = new ClipboardContent();
+            clipboardContent.put(MULTI_PARENT_GRAPH_DRAG_FORMAT, draggedItemIds);
+            dragboard.setContent(clipboardContent);
+        }
+        return dragboard;
+    }
+
+    /**
+     * Attaches visual snapshot to dragboard for user feedback during drag operation.
+     * Gracefully handles snapshot creation failures without breaking the drag.
+     *
+     * @param dragboard the dragboard to attach visual feedback to
+     */
+    private void attachDragSnapshot(Dragboard dragboard) {
+        try {
+            WritableImage snapshot = createSnapshot();
+            if (snapshot != null) {
+                dragboard.setDragView(snapshot);
+            }
+        } catch (Exception e) {
+            LOG.debug("Failed to create drag snapshot, continuing without visual feedback", e);
+        }
+    }
+
+    /**
+     * Validates whether a tree item can be included in drag operations.
+     *
+     * @param item the tree item to validate
+     * @return true if item has valid ConceptFacade with public ID, false otherwise
+     */
+    private boolean isValidForDrag(TreeItem<ConceptFacade> item) {
+        return item != null &&
+                item.getValue() != null &&
+                item.getValue().publicId() != null;
+    }
+
+    /**
+     * Extracts UUID array from tree item's ConceptFacade for drag content.
+     *
+     * @param item tree item containing ConceptFacade
+     * @return UUID array representing the concept's public identifier
+     */
+    private UUID[] extractUuidArray(TreeItem<ConceptFacade> item) {
+        return item.getValue().publicId().asUuidArray();
+    }
+
+    /**
+     * Creates composite visual snapshot of selected items for drag feedback.
+     * Uses cell-first strategy with label fallback to ensure visual feedback.
+     */
+    private WritableImage createSnapshot() {
+        List<TreeItem<ConceptFacade>> selectedItems = treeView.getSelectionModel().getSelectedItems();
+        if (selectedItems.isEmpty()) return null;
+
+        try {
+            Map<TreeItem<ConceptFacade>, TreeCell<ConceptFacade>> cellMap = new HashMap<>(this.cellMap);
+            SnapshotParameters params = createSnapshotParams();
+
+            List<WritableImage> snapshots = selectedItems.stream()
+                    .map(item -> createItemSnapshot(item, cellMap))
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            return switch (snapshots.size()) {
+                case 0 -> null;
+                case 1 -> snapshots.getFirst();
+                default -> createCompositeSnapshot(snapshots, params);
+            };
+        } catch (OutOfMemoryError e) {
+            LOG.error("Out of memory creating snapshot for {} items", selectedItems.size(), e);
+            return null;
+        } catch (Exception e) {
+            LOG.warn("Unexpected error creating snapshot for {} items", selectedItems.size(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Creates snapshot parameters with proper display scaling.
+     */
+    private SnapshotParameters createSnapshotParams() {
+        SnapshotParameters params = new SnapshotParameters();
+        double scale = Optional.ofNullable(treeView.getScene())
+                .map(Scene::getWindow)
+                .map(Window::getOutputScaleY)
+                .orElse(DEFAULT_SCALE_FACTOR);
+        params.setTransform(new Scale(scale, scale));
+        return params;
+    }
+
+    /**
+     * Creates snapshot for individual item using cell-first, label-fallback strategy.
+     */
+    private WritableImage createItemSnapshot(TreeItem<ConceptFacade> item,
+                                             Map<TreeItem<ConceptFacade>, TreeCell<ConceptFacade>> cellMap) {
+        // Try cell snapshot first
+        WritableImage snapshot = attemptCellSnapshot(item, cellMap);
+
+        // Fallback to label snapshot if needed
+        return snapshot != null ? snapshot : createLabelSnapshot(item);
+    }
+
+    /**
+     * Attempts to create snapshot from actual tree cell.
+     */
+    private WritableImage attemptCellSnapshot(TreeItem<ConceptFacade> item,
+                                              Map<TreeItem<ConceptFacade>, TreeCell<ConceptFacade>> cellMap) {
+        TreeCell<ConceptFacade> cell = cellMap.get(item);
+        if (cell != null && cell.getGraphic() != null && treeView.getRow(item) >= 0) {
+            try {
+                // Create isolated parameters for cell snapshots
+                SnapshotParameters cellParams = createSnapshotParams();
+                cellParams.setFill(Color.TRANSPARENT);
+                return cell.snapshot(cellParams, null);
+            } catch (Exception _) {
+                LOG.debug("Failed to snapshot cell for item: {}", item.getValue());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Creates fallback label snapshot when cell snapshot isn't possible.
+     */
+    private WritableImage createLabelSnapshot(TreeItem<ConceptFacade> item) {
+        try {
+            String text = Optional.ofNullable(item.getValue())
+                    .map(Object::toString)
+                    .orElse(NO_CONCEPT_PLACEHOLDER);
+
+            Label label = new Label(text);
+            label.setStyle(FALLBACK_LABEL_STYLE);
+            label.autosize();
+
+            SnapshotParameters labelParams = createSnapshotParams();
+            labelParams.setFill(Color.WHITE);
+            return label.snapshot(labelParams, null);
+        } catch (Exception _) {
+            LOG.debug("Failed to create label snapshot for item: {}", item.getValue());
+            return null;
+        }
+    }
+
+    /**
+     * Creates vertical composition of multiple snapshots.
+     */
+    private WritableImage createCompositeSnapshot(List<WritableImage> snapshots, SnapshotParameters params) {
+        try {
+            VBox container = new VBox(SNAPSHOT_CONTAINER_SPACING);
+            snapshots.stream()
+                    .map(snapshot -> {
+                        ImageView imageView = new ImageView(snapshot);
+                        imageView.setPreserveRatio(true);
+                        return imageView;
+                    })
+                    .forEach(container.getChildren()::add);
+
+            params.setFill(Color.TRANSPARENT);
+            return container.snapshot(params, null);
+        } catch (Exception ignored) {
+            // Return first snapshot as emergency fallback
+            return snapshots.isEmpty() ? null : snapshots.getFirst();
+        }
     }
 
     private ChangeListener<Scene> sceneChangedListener = this::sceneChanged;
