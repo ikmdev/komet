@@ -73,7 +73,10 @@ public class SearchResultCell extends TreeCell<Object> {
             if (item instanceof LatestVersionSearchResult latestVersionSearchResult) {
                 TextFlow textFlow = newTextFlow();
 
-                String matchedText = latestVersionSearchResult.highlightedString();
+                String matchedText = "";
+                if (latestVersionSearchResult.highlightedString() != null) {
+                    matchedText = latestVersionSearchResult.highlightedString();
+                }
                 String startTokenToMatch = "<B>";
                 String endTokenToMatch = "</B>";
 
