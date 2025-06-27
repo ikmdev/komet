@@ -427,16 +427,18 @@ public class JournalController {
         this.nodePreferences = nodePreferences;
         this.windowSettings = new WindowSettings(nodePreferences);
 
-        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(windowSettings.getView().toViewCoordinateRecord());
+        windowView = windowSettings.getView();
 
-        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView()),
+        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
+
+        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowView),
                 (List<MenuItem> result) -> {
                     FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
                 }));
 
         windowSettings.getView().addListener((observable, oldValue, newValue) -> {
             windowCoordinates.getItems().clear();
-            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView()),
+            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowView),
                     (List<MenuItem> result) ->
                         FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result))
             ));

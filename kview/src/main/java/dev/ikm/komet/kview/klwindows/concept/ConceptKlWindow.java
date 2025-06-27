@@ -88,7 +88,6 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
             detailsNode.getDetailsViewController()
                     .getConceptViewModel()
                     .setPropertyValue(MODE, CREATE);
-            detailsNode.getDetailsViewController().updateModel(viewProperties);
             detailsNode.getDetailsViewController().updateView();
         }
 

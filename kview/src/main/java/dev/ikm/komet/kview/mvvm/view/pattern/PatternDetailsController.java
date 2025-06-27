@@ -17,17 +17,14 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
-import dev.ikm.komet.framework.view.ViewMenuTask;
+import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.*;
-import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
@@ -36,8 +33,6 @@ import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -115,6 +110,11 @@ public class PatternDetailsController {
     private MenuButton coordinatesMenuButton;
     @FXML
     private Menu windowCoordinates;
+
+    /**
+     * model required for the filter coordinates menu, used with coordinatesMenuButton and windowCoordinates
+     */
+    private ViewMenuModel viewMenuModel;
 
     /**
      * Used slide out the properties view
@@ -464,28 +464,10 @@ public class PatternDetailsController {
     }
 
     /**
-     * Creates the filter coordinates menu using the view calculator.
-     * TODO Note that this is not a working menu, this is the first step to have propagating, inherited, filter coordinates
-     * in the window/node hierarchy.
+     * Creates the filter coordinates menu using the ViewMenuModel.
      */
     public void setupFilterCoordinatesMenu() {
-        var view = new ObservableViewNoOverride(Coordinates.View.DefaultView());
-
-        ViewCalculator viewCalculator = getViewProperties().calculator();
-
-        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
-                (List<MenuItem> result) -> {
-                    FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
-                }));
-
-        view.addListener((observable, oldValue, newValue) -> {
-            windowCoordinates.getItems().clear();
-            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
-                    (List<MenuItem> result) ->
-                            FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result))
-            ));
-        });
-
+        this.viewMenuModel = new ViewMenuModel(patternViewModel.getViewProperties(), coordinatesMenuButton, windowCoordinates);
     }
 
     private void setUpAddSemanticMenu() {
