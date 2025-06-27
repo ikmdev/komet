@@ -29,6 +29,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
@@ -66,8 +67,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.*;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
@@ -176,6 +179,12 @@ public class GenEditingDetailsController {
     @FXML
     private ImageView identiconImageView;
 
+    @FXML
+    private TextField uuidTextFieldLabel;
+
+    @FXML
+    private Tooltip identifierTooltip;
+
     @InjectViewModel
     private StampViewModel stampViewModel;
 
@@ -236,7 +245,24 @@ public class GenEditingDetailsController {
             updateDraggableNodesForPropertiesPanel(true);
         }
 
-        // Identicon
+        setupIdenticon(refComponent);
+        setupDisplayUUID();
+    }
+
+    private void setupDisplayUUID() {
+        EntityFacade semanticComponent = genEditingViewModel.getPropertyValue(SEMANTIC);
+
+        List<String> idList = semanticComponent.publicId().asUuidList().stream()
+                .map(UUID::toString)
+                .collect(Collectors.toList());
+        idList.addAll(DataModelHelper.getIdsToAppend(genEditingViewModel.getViewProperties().calculator(), semanticComponent.toProxy()));
+        String idString = String.join(", ", idList);
+
+        uuidTextFieldLabel.setText(idString);
+        identifierTooltip.setText(idString);
+    }
+
+    private void setupIdenticon(ObjectProperty<EntityFacade> refComponent) {
         if (refComponent.isNotNull().get()) {
             EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
 
