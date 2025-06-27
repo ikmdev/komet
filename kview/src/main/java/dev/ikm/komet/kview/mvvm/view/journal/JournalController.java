@@ -1063,6 +1063,7 @@ public class JournalController {
         ViewProperties viewProperties = windowView.makeOverridableViewProperties();
         Navigator navigator = new ViewNavigator(viewProperties.nodeView());
         KLSearchControl searchControl = new KLSearchControl();
+        searchControl.setNavigator(navigator);
         searchControl.setOnAction(_ -> {
             ViewCalculator calculator = viewProperties.calculator();
             searchControl.setResultsPlaceholder("Searching..."); // DUMMY, resources?
@@ -1106,8 +1107,7 @@ public class JournalController {
         });
 
         searchControl.setOnFilterAction(_ -> {
-            // DUMMY
-            searchControl.setFilterSet(!searchControl.isFilterSet());
+            // TODO
         });
 
         KLConceptNavigatorControl conceptNavigatorControl = new KLConceptNavigatorControl();

@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.kview.controls.FilterOptions;
+import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLSearchControl;
@@ -27,6 +29,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Path;
 import javafx.scene.text.Text;
@@ -50,6 +53,8 @@ import java.util.ResourceBundle;
 public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
     private static final double SEARCH_RESULT_HEIGHT = 43; // 38 + 5
+    private static final PseudoClass FILTER_SET = PseudoClass.getPseudoClass("filter-set");
+    private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
 
     private final TextField textField;
     private final StackPane searchPane;
@@ -58,6 +63,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
     private Subscription subscription;
 
     private final ListView<KLSearchControl.SearchResult> resultsPane;
+    private final FilterOptionsPopup filterOptionsPopup;
 
     /**
      * <p>Creates a {@link KLSearchControlSkin} instance.
@@ -142,20 +148,39 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
             }
         });
 
-        filterPane = new StackPane(new IconRegion("icon", "filter"));
+        subscription = Subscription.EMPTY;
+
+        filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.NAVIGATOR);
+        filterOptionsPopup.navigatorProperty().bind(control.navigatorProperty());
+        getSkinnable().parentProperty().subscribe(parent -> {
+            if (parent instanceof Region region) {
+                subscription = subscription.and(
+                        region.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h)));
+            }
+        });
+        filterPane = new StackPane(new IconRegion("icon", "filter"), new IconRegion("icon", "filter-dot"), new IconRegion("icon", "dot"));
         filterPane.getStyleClass().add("filter-region");
-        filterPane.setOnMouseClicked(e -> {
-            if (e.getButton() == MouseButton.PRIMARY && control.getOnFilterAction() != null) {
+        filterPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (e.getButton() == MouseButton.PRIMARY) {
+                if (filterOptionsPopup.isShowing()) {
+                    e.consume();
+                    filterOptionsPopup.hide();
+                } else {
+                    Bounds bounds = control.localToScreen(control.getLayoutBounds());
+                    filterOptionsPopup.show(control.getScene().getWindow(), bounds.getMaxX(), bounds.getMinY());
+                }
+            }
+        });
+        subscription = subscription.and(filterOptionsPopup.showingProperty().subscribe(showing -> {
+            filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing);
+            if (!showing && control.getOnFilterAction() != null) {
                 control.getOnFilterAction().handle(new ActionEvent());
             }
-        });
-        subscription = control.filterSetProperty().subscribe(isSet -> {
-            if (isSet) {
-                filterPane.getChildren().setAll(new IconRegion("icon", "filter-dot"), new IconRegion("icon", "dot"));
-            } else {
-                filterPane.getChildren().setAll(new IconRegion("icon", "filter"));
-            }
-        });
+        }));
+        subscription = subscription.and(control.filterSetProperty().subscribe(isSet ->
+                filterPane.pseudoClassStateChanged(FILTER_SET, isSet)));
+        subscription = subscription.and(filterOptionsPopup.defaultOptionsSetProperty()
+                .subscribe(isDefault -> control.setFilterSet(!isDefault)));
 
         getChildren().addAll(textField, searchPane, closePane, filterPane, resultsPane);
 
@@ -187,7 +212,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
             }
         };
         // install/uninstall event filter to the scene that holds the control
-        subscription = resultsPane.visibleProperty().subscribe((_, b) -> {
+        subscription = subscription.and(resultsPane.visibleProperty().subscribe((_, b) -> {
             Scene scene = control.getScene();
             if (scene != null) {
                 if (b) {
@@ -196,7 +221,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
                     scene.removeEventFilter(MouseEvent.MOUSE_CLICKED, eventFilter);
                 }
             }
-        });
+        }));
         // when clicking inside the textField, show resultsPane
         textField.addEventHandler(MouseEvent.MOUSE_CLICKED, _ -> {
             if (!resultsPane.getItems().isEmpty() && !resultsPane.isVisible()) {
@@ -216,6 +241,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         textField.onActionProperty().unbind();
         closePane.visibleProperty().unbind();
         closePane.managedProperty().unbind();
+        filterOptionsPopup.navigatorProperty().unbind();
         super.dispose();
     }
 
