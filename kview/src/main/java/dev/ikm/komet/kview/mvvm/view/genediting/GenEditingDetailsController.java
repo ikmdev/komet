@@ -107,11 +107,9 @@ public class GenEditingDetailsController {
 
     @FXML
     private MenuButton coordinatesMenuButton;
-    @FXML
-    private Menu windowCoordinates;
 
     /**
-     * model required for the filter coordinates menu, used with coordinatesMenuButton and windowCoordinates
+     * model required for the filter coordinates menu, used with coordinatesMenuButton
      */
     private ViewMenuModel viewMenuModel;
 
@@ -275,7 +273,7 @@ public class GenEditingDetailsController {
      * Creates the filter coordinates menu using the ViewMenuModel.
      */
     public void setupFilterCoordinatesMenu() {
-        this.viewMenuModel = new ViewMenuModel(genEditingViewModel.getViewProperties(), coordinatesMenuButton, windowCoordinates);
+        this.viewMenuModel = new ViewMenuModel(genEditingViewModel.getViewProperties(), coordinatesMenuButton);
     }
 
     private void setupSemanticDetails() {

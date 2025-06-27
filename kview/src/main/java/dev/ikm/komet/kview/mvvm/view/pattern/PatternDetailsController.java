@@ -108,11 +108,9 @@ public class PatternDetailsController {
 
     @FXML
     private MenuButton coordinatesMenuButton;
-    @FXML
-    private Menu windowCoordinates;
 
     /**
-     * model required for the filter coordinates menu, used with coordinatesMenuButton and windowCoordinates
+     * model required for the filter coordinates menu, used with coordinatesMenuButton
      */
     private ViewMenuModel viewMenuModel;
 
@@ -467,7 +465,7 @@ public class PatternDetailsController {
      * Creates the filter coordinates menu using the ViewMenuModel.
      */
     public void setupFilterCoordinatesMenu() {
-        this.viewMenuModel = new ViewMenuModel(patternViewModel.getViewProperties(), coordinatesMenuButton, windowCoordinates);
+        this.viewMenuModel = new ViewMenuModel(patternViewModel.getViewProperties(), coordinatesMenuButton);
     }
 
     private void setUpAddSemanticMenu() {

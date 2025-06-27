@@ -110,11 +110,9 @@ public class DetailsController  {
 
     @FXML
     private MenuButton coordinatesMenuButton;
-    @FXML
-    private Menu windowCoordinates;
 
     /**
-     * model required for the filter coordinates menu, used with coordinatesMenuButton and windowCoordinates
+     * model required for the filter coordinates menu, used with coordinatesMenuButton
      */
     private ViewMenuModel viewMenuModel;
 
@@ -1513,7 +1511,7 @@ public class DetailsController  {
      * generate the classic Komet coordinate menu
      */
     public void setUpEditCoordinateMenu() {
-        this.viewMenuModel = new ViewMenuModel(conceptViewModel.getViewProperties(), coordinatesMenuButton, windowCoordinates);
+        this.viewMenuModel = new ViewMenuModel(conceptViewModel.getViewProperties(), coordinatesMenuButton);
     }
 
     private DateTimeFormatter dateFormatter(String formatString) {
