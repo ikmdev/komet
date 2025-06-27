@@ -31,8 +31,3 @@
 .component-set-control > .add-entry-button > .concept-search-button:disabled {
     -fx-background-color: -Grey-7;
 }
-
-.component-set-control > .component-control:focused   {
-    -fx-background-color: #8ab4f8, white;
-    -fx-background-insets: 0, 2;
-}
