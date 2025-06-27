@@ -154,6 +154,7 @@ public class SamplerConceptNavigatorController {
     public void initialize() {
         samplerDescription.setText("The Concept Navigator control is a tree view to display a hierarchy of concepts");
 
+        searchControl.navigatorProperty().bind(conceptNavigatorControl.navigatorProperty());
         searchControl.setOnAction(_ -> {
             Navigator navigator = conceptNavigatorControl.getNavigator();
             if (navigator == null) {
