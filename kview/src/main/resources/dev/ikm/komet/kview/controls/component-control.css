@@ -31,9 +31,8 @@
     -fx-cursor: text;
 }
 
-.component-control > .concept-container > .concept-search-box > .search-field-container > .concept-text-field:focused {
-    -fx-background-color: #8ab4f8, white;
-    -fx-background-insets: 0, 2;
+.component-control:focus-within > .concept-container > .concept-search-box {
+    -fx-border-color: #1035AC;
 }
 
 .component-control > .concept-container > .concept-search-box > .search-field-container > .search-prompt {

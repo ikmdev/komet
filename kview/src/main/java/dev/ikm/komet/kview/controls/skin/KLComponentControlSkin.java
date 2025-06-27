@@ -79,6 +79,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
      */
     public KLComponentControlSkin(KLComponentControl control) {
         super(control);
+        control.setFocusTraversable(false);
 
         titleLabel = new Label();
         titleLabel.getStyleClass().add("editable-title-label");
@@ -403,7 +404,6 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         typeAheadSearchField.getStyleClass().add("concept-text-field");
         typeAheadSearchField.textProperty().subscribe(text -> getSkinnable().getProperties().put(SEARCH_TEXT_VALUE, text));
         typeAheadSearchField.setFocusTraversable(true);
-        typeAheadSearchField.requestFocus();
 
         // Type ahead setup
         typeAheadSearchField.valueProperty().subscribe(() -> {
@@ -440,11 +440,10 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         searchRegion.getStyleClass().add("concept-filter-region");
         Button filterButton = new Button(null, searchRegion);
         filterButton.getStyleClass().add("concept-filter-button");
+        filterButton.setFocusTraversable(false);
 
         HBox searchBox = new HBox(typeAheadSearchFieldContainer, filterButton);
         searchBox.getStyleClass().add("concept-search-box");
-        searchBox.setFocusTraversable(true);
-        searchBox.requestFocus();
 
         typeAheadSearchField.setSkin(new AutoCompleteTextFieldSkin<>(typeAheadSearchField) {
 
@@ -537,12 +536,6 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         HBox selectedConcept = new HBox(imageViewWrapper, componentNameLabel, spacer, dragHandleIconContainer, closeButton);
         selectedConcept.getStyleClass().add("concept-selected-entity-box");
-        selectedConcept.setFocusTraversable(true);
-        buttonRegion.setFocusTraversable(false);
-        imageViewWrapper.setFocusTraversable(false);
-        dragHandleIcon.setFocusTraversable(false);
-        componentNameLabel.setFocusTraversable(false);
-        closeButton.setFocusTraversable(false);
 
         selectedConcept.setAlignment(Pos.CENTER_LEFT);
         HBox.setMargin(selectedConceptContainer, new Insets(8));
