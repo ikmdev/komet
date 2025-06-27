@@ -70,6 +70,7 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
      */
     public KLComponentCollectionControlSkin(KLComponentCollectionControl<T> control) {
         super(control);
+        control.setFocusTraversable(false);
 
         // Title
         titleLabel = new Label();

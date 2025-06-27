@@ -79,6 +79,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
      */
     public KLComponentControlSkin(KLComponentControl control) {
         super(control);
+        control.setFocusTraversable(false);
 
         titleLabel = new Label();
         titleLabel.getStyleClass().add("editable-title-label");
@@ -402,6 +403,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         typeAheadSearchField.getStyleClass().add("concept-text-field");
         typeAheadSearchField.textProperty().subscribe(text -> getSkinnable().getProperties().put(SEARCH_TEXT_VALUE, text));
+        typeAheadSearchField.setFocusTraversable(true);
 
         // Type ahead setup
         typeAheadSearchField.valueProperty().subscribe(() -> {
@@ -420,6 +422,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         // search prompt
         Label searchPrompt = new Label(getString("textfield.prompt.text"));
         searchPrompt.getStyleClass().add("search-prompt");
+        searchPrompt.setFocusTraversable(false);
 
         searchPrompt.visibleProperty().bind(
                 typeAheadSearchField.focusedProperty().not()
@@ -437,6 +440,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         searchRegion.getStyleClass().add("concept-filter-region");
         Button filterButton = new Button(null, searchRegion);
         filterButton.getStyleClass().add("concept-filter-button");
+        filterButton.setFocusTraversable(false);
 
         HBox searchBox = new HBox(typeAheadSearchFieldContainer, filterButton);
         searchBox.getStyleClass().add("concept-search-box");
@@ -499,6 +503,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         imageView.setFitWidth(16);
         imageView.setFitHeight(16);
         imageView.setImage(identicon);
+        imageView.setFocusTraversable(false);
         HBox imageViewWrapper = new HBox();
         imageViewWrapper.setAlignment(Pos.CENTER);
         imageViewWrapper.getChildren().add(imageView);
@@ -514,6 +519,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         StackPane dragHandleIcon = new StackPane();
         dragHandleIcon.getStyleClass().add("drag-handle-icon");
         dragHandleIconContainer.getChildren().add(dragHandleIcon);
+        dragHandleIcon.setFocusTraversable(false);
 
         Region buttonRegion = new Region();
         buttonRegion.getStyleClass().add("selected-concept-discard-region");
@@ -526,6 +532,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             typeAheadSearchField.requestFocus();
         });
         closeButton.setAlignment(Pos.CENTER_RIGHT);
+        closeButton.setFocusTraversable(false);
 
         HBox selectedConcept = new HBox(imageViewWrapper, componentNameLabel, spacer, dragHandleIconContainer, closeButton);
         selectedConcept.getStyleClass().add("concept-selected-entity-box");
