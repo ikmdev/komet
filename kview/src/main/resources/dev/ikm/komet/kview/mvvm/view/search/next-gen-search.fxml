@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import dev.ikm.komet.kview.controls.AutoCompleteTextField?>
-<StackPane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController">
+<StackPane fx:id="root" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController">
     <children>
         <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" minWidth="-Infinity" prefWidth="372.0">
             <content>
@@ -32,7 +32,7 @@
                                                       <Cursor fx:constant="TEXT" />
                                                    </cursor>
                                                 </AutoCompleteTextField>
-                                                <Button mnemonicParsing="false" styleClass="search-button">
+                                                <Button fx:id="filterPane" mnemonicParsing="false" styleClass="search-button, filter-button">
                                                     <graphic>
                                                         <Region focusTraversable="true">
                                                             <styleClass>

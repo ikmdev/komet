@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLSearchControlSkin;
+import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -228,6 +229,18 @@ public class KLSearchControl extends Control {
     }
     public final void setOnSearchResultClick(Consumer<InvertedTree.ConceptItem> value) {
         onSearchResultClickProperty.set(value);
+    }
+
+    // navigatorProperty
+    private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator");
+    public final ObjectProperty<Navigator> navigatorProperty() {
+       return navigatorProperty;
+    }
+    public final Navigator getNavigator() {
+       return navigatorProperty.get();
+    }
+    public final void setNavigator(Navigator value) {
+        navigatorProperty.set(value);
     }
 
     /**
