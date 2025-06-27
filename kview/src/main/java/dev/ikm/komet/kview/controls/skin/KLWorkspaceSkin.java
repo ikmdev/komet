@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Comparator;
 import java.util.Objects;
 
+import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLDropRegion.Type.BOX;
 import static dev.ikm.komet.kview.controls.KLDropRegion.Type.LINE;
@@ -133,6 +134,12 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Internal property key for storing the panning subscription in the window's properties map.
      */
     private static final String PANNING_SUBSCRIPTION_KEY = "panningSubscription";
+
+
+    /**
+     * Internal property key for storing the target position of a window during animation.
+     */
+    private static final String WINDOW_TARGET_POSITION_KEY = "windowTargetPosition";
 
     /**
      * The pane that holds all {@link ChapterKlWindow} nodes within the workspace.
@@ -397,7 +404,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     private void configureDragDropHandlers(KLWorkspace workspace) {
         // Show drop-region if a valid item is dragged over
         workspace.setOnDragOver(event -> {
-            if (event.getGestureSource() != null && (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT) || event.getDragboard().hasString())) {
+            if (event.getGestureSource() != null && (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)
+                    || event.getDragboard().hasContent(MULTI_PARENT_GRAPH_DRAG_FORMAT) || event.getDragboard().hasString())) {
                 // Convert screen coordinates to local coordinates of the desktop pane
                 final Point2D localCoords = desktopPane.screenToLocal(event.getScreenX(), event.getScreenY());
                 final double mouseX = localCoords.getX();
@@ -721,6 +729,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             final double dropW = dropRegion.getWidth();
             final double dropH = dropRegion.getHeight();
 
+            // Hide the drop region after placement
+            desktopPane.hideDropRegion();
+
             switch (regionType) {
                 case BOX -> {
                     // Use the drop region's bounding box directly
@@ -840,6 +851,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // Clean up WindowSupport and its subscriptions
         cleanupWindowSupport(windowPanel);
 
+        // Clear any target position tracking
+        clearWindowTargetPosition(windowPanel);
+
         // Clean up resources using a subscription
         if (windowPanel.getProperties().containsKey(WINDOW_SUBSCRIPTION_KEY)) {
             Subscription subscription = (Subscription) windowPanel.getProperties().get(WINDOW_SUBSCRIPTION_KEY);
@@ -847,6 +861,56 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             windowPanel.getProperties().remove(WINDOW_SUBSCRIPTION_KEY);
         }
     }
+
+    /**
+     * Sets the target position for a window during animation.
+     * This allows other operations to know where the window will end up.
+     *
+     * @param window the window node
+     * @param targetX the target X position
+     * @param targetY the target Y position
+     */
+    private void setWindowTargetPosition(Node window, double targetX, double targetY) {
+        window.getProperties().put(WINDOW_TARGET_POSITION_KEY, new Point2D(targetX, targetY));
+    }
+
+    /**
+     * Clears the target position tracking for a window.
+     *
+     * @param window the window node
+     */
+    private void clearWindowTargetPosition(Node window) {
+        window.getProperties().remove(WINDOW_TARGET_POSITION_KEY);
+    }
+
+    /**
+     * Retrieves the bounds of a given node, handling both Pane nodes (which have
+     * layout coordinates and actual dimensions) and other nodes (which use
+     * preferred dimensions).
+     * <p>
+     * This method also checks for target positions during animations and uses
+     * those instead of current positions when available.
+     *
+     * @param node The node to get bounds for
+     * @return A BoundingBox representing the node's position and dimensions
+     */
+    private Bounds getWindowBounds(Node node) {
+        // Check if there's a target position
+        if (node.getProperties().containsKey(WINDOW_TARGET_POSITION_KEY)) {
+            Point2D targetPos = (Point2D) node.getProperties().get(WINDOW_TARGET_POSITION_KEY);
+            if (node instanceof Pane pane) {
+                return new BoundingBox(targetPos.getX(), targetPos.getY(),
+                        pane.getWidth(), pane.getHeight());
+            }
+        }
+
+        // Otherwise use current position
+        if (node instanceof Pane pane) {
+            return new BoundingBox(pane.getLayoutX(), pane.getLayoutY(),
+                    pane.getWidth(), pane.getHeight());
+        } else return node.getLayoutBounds();
+    }
+
 
     /**
      * Finds the occupant on the left side of the specified drop line (i.e., the window
@@ -1044,14 +1108,22 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             return;
         }
 
-        // Stop any existing shift animation
-        if (shiftTimeline != null) {
+        // Stop any existing shift animation and jump to final positions
+        if (shiftTimeline != null && shiftTimeline.getStatus() == Timeline.Status.RUNNING) {
             shiftTimeline.stop();
-            shiftTimeline = null;
+            // Jump to end values to complete the previous animation instantly
+            shiftTimeline.jumpTo(shiftTimeline.getTotalDuration());
+            // Clear target positions from previous animation
+            desktopPane.getChildren().forEach(this::clearWindowTargetPosition);
         }
 
         // Create a single timeline for all window shifts
         shiftTimeline = new Timeline();
+
+        // Track target positions for all windows being shifted
+        for (WindowShiftInfo shiftInfo : windowsToShift) {
+            setWindowTargetPosition(shiftInfo.window(), shiftInfo.targetX(), shiftInfo.targetY());
+        }
 
         for (WindowShiftInfo shiftInfo : windowsToShift) {
             if (shiftInfo.targetX != shiftInfo.currentX || shiftInfo.targetY != shiftInfo.currentY) {
@@ -1067,6 +1139,10 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 shiftTimeline.getKeyFrames().addAll(startFrame, endFrame);
             }
         }
+
+        // Clear target positions when animation completes
+        shiftTimeline.setOnFinished(e ->
+                windowsToShift.forEach(info -> clearWindowTargetPosition(info.window())));
 
         shiftTimeline.play();
     }
@@ -1214,21 +1290,6 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         }
         // No valid placement found
         return null;
-    }
-
-    /**
-     * Retrieves the bounds of a given node, handling both Pane nodes (which have
-     * layout coordinates and actual dimensions) and other nodes (which use
-     * preferred dimensions).
-     *
-     * @param node The node to get bounds for
-     * @return A BoundingBox representing the node's position and dimensions
-     */
-    private Bounds getWindowBounds(Node node) {
-        if (node instanceof Pane pane) {
-            return new BoundingBox(pane.getLayoutX(), pane.getLayoutY(),
-                    pane.getWidth(), pane.getHeight());
-        } else return node.getLayoutBounds();
     }
 
     // =========================================================================
@@ -1416,7 +1477,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      */
     @Override
     public void dispose() {
-        // Stop any running animations
+        // Stop any running animations and clear target positions
         if (autoScrollTimeline != null) {
             autoScrollTimeline.stop();
             autoScrollTimeline = null;
@@ -1424,6 +1485,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
         if (shiftTimeline != null) {
             shiftTimeline.stop();
+            // Clear any target positions
+            desktopPane.getChildren().forEach(this::clearWindowTargetPosition);
             shiftTimeline = null;
         }
 

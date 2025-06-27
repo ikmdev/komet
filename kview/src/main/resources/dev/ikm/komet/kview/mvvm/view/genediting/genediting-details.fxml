@@ -238,7 +238,7 @@
                   </VBox>
                </center>
                <top>
-                  <BorderPane prefHeight="103.0" prefWidth="894.0" styleClass="concept-detail-banner-background" BorderPane.alignment="CENTER">
+                  <BorderPane prefHeight="180.0" prefWidth="894.0" styleClass="concept-detail-banner-background" BorderPane.alignment="CENTER">
                      <center>
                         <GridPane hgap="8.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="66.0" prefWidth="507.0" styleClass="concept-detail-banner-background">
                            <columnConstraints>
@@ -273,6 +273,21 @@
                                     <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />
                                  </children>
                               </TextFlow>
+                              <HBox alignment="CENTER_LEFT" prefWidth="300" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.rowSpan="1" >
+                                 <Label text="IDENTIFIER: ">
+                                    <font>
+                                       <Font name="Noto Sans Bold" size="10.0" />
+                                    </font>
+                                 </Label>
+                                 <TextField fx:id="uuidTextFieldLabel" editable="false" styleClass="copyable-label" HBox.hgrow="ALWAYS">
+                                    <font>
+                                       <Font name="Noto Sans" size="10.0" />
+                                    </font>
+                                    <tooltip>
+                                       <Tooltip fx:id="identifierTooltip" />
+                                    </tooltip>
+                                 </TextField>
+                              </HBox>
                            </children>
                            <padding>
                               <Insets bottom="8.0" left="12.0" right="8.0" top="8.0" />
