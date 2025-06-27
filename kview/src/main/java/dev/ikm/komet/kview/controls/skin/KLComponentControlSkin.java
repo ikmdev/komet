@@ -536,7 +536,6 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         HBox selectedConcept = new HBox(imageViewWrapper, componentNameLabel, spacer, dragHandleIconContainer, closeButton);
         selectedConcept.getStyleClass().add("concept-selected-entity-box");
-
         selectedConcept.setAlignment(Pos.CENTER_LEFT);
         HBox.setMargin(selectedConceptContainer, new Insets(8));
 
