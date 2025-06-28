@@ -24,10 +24,13 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
+import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
@@ -45,16 +48,21 @@ import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.Config;
@@ -116,11 +124,19 @@ public class NextGenSearchController extends AbstractBasicController {
 
     public static final int MAX_RESULT_SIZE = 1000;
 
+    private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
+
+    @FXML
+    private StackPane root;
+
     @FXML
     private VBox resultsVBox;
 
     @FXML
     private Button sortByButton;
+
+    @FXML
+    private Button filterPane;
 
     @FXML
     private AutoCompleteTextField<ConceptFacade> searchField;
@@ -134,6 +150,8 @@ public class NextGenSearchController extends AbstractBasicController {
     private EvtBus eventBus;
 
     private UUID journalTopic;
+
+    private FilterOptionsPopup filterOptionsPopup;
 
     @FXML
     public void initialize() {
@@ -156,6 +174,26 @@ public class NextGenSearchController extends AbstractBasicController {
             sortOptions.hide();
         });
         eventBus.subscribe(SEARCH_SORT_TOPIC, SearchSortOptionEvent.class, searchSortOptionListener);
+
+        filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
+        root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
+        filterPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (filterOptionsPopup.getNavigator() == null) {
+                Navigator navigator = new ViewNavigator(getViewProperties().nodeView());
+                filterOptionsPopup.setNavigator(navigator);
+            }
+            if (e.getButton() == MouseButton.PRIMARY) {
+                if (filterOptionsPopup.isShowing()) {
+                    e.consume();
+                    filterOptionsPopup.hide();
+                } else {
+                    Bounds bounds = root.localToScreen(root.getLayoutBounds());
+                    filterOptionsPopup.show(root.getScene().getWindow(), bounds.getMaxX(), bounds.getMinY());
+                }
+            }
+        });
+        filterOptionsPopup.showingProperty().subscribe(showing ->
+                filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
     }
 
     private void setUpTypeAhead() {

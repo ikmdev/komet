@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.framework.search;
 
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.entity.Entity;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.layout.HBox;
@@ -73,7 +75,19 @@ public class SearchResultCell extends TreeCell<Object> {
             if (item instanceof LatestVersionSearchResult latestVersionSearchResult) {
                 TextFlow textFlow = newTextFlow();
 
-                String matchedText = latestVersionSearchResult.highlightedString();
+                String matchedText = "";
+                if (latestVersionSearchResult.highlightedString() != null) {
+                    matchedText = latestVersionSearchResult.highlightedString();
+                } else if (latestVersionSearchResult.latestVersion().isPresent()) {
+                    // showing the public Id will give the user a way to view the semantic
+                    // when there is no highlighted string
+                    matchedText = latestVersionSearchResult.latestVersion().get()
+                            .entity().publicId().idString();
+                } else {
+                    // defensively adding this only if there is no latestVersion
+                    // however, we ideally shouldn't reach this code
+                    matchedText = latestVersionSearchResult.toString();
+                }
                 String startTokenToMatch = "<B>";
                 String endTokenToMatch = "</B>";
 
