@@ -105,4 +105,14 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
     public EntityKlWindowType getWindowType() {
         return EntityKlWindowTypes.GEN_EDITING;
     }
+
+    @Override
+    protected boolean isPropertyPanelOpen() {
+        return jfxNode.controller().isPropertiesPanelOpen();
+    }
+
+    @Override
+    protected void setPropertyPanelOpen(boolean isOpen) {
+        jfxNode.controller().setPropertiesPanelOpen(isOpen);
+    }
 }

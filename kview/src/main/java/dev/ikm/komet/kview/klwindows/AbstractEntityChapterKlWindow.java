@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.PROPERTY_PANEL_OPEN;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getWindowPreferences;
 
 /**
@@ -172,6 +173,9 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
         if (journalTopicString != null) {
             this.journalTopic = UUID.fromString(journalTopicString);
         }
+
+        // Restore properties panel state
+        setPropertyPanelOpen(state.getBooleanProperty(PROPERTY_PANEL_OPEN, false));
     }
 
     @Override

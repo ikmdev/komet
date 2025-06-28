@@ -47,6 +47,11 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 public class LidrKlWindow extends AbstractEntityChapterKlWindow {
 
     /**
+     * Root container for the FXML UI and its controller.
+     */
+    private final JFXNode<Pane, LidrDetailsController> jfxNode;
+
+    /**
      * Creates a new LIDR window.
      *
      * @param journalTopic   the UUID representing the journal topic the owning Journal Window uses to communicate events.
@@ -83,14 +88,14 @@ public class LidrKlWindow extends AbstractEntityChapterKlWindow {
         Config lidrConfig = new Config(LidrDetailsController.class.getResource("lidr-details.fxml"))
                 .addNamedViewModel(new NamedVm("lidrViewModel", lidrViewModel));
 
-        JFXNode<Pane, LidrDetailsController> lidrJFXNode = FXMLMvvmLoader.make(lidrConfig);
-        lidrJFXNode.controller().updateView();
+        jfxNode = FXMLMvvmLoader.make(lidrConfig);
+        jfxNode.controller().updateView();
 
         // Getting the concept window pane
-        this.paneWindow = lidrJFXNode.node();
+        this.paneWindow = jfxNode.node();
 
         // Calls the remove method to remove and concepts that were closed by the user.
-        lidrJFXNode.controller().setOnCloseConceptWindow(windowEvent -> {
+        jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
             getOnClose().ifPresent(Runnable::run);
             // TODO more clean up such as view models and listeners just in case (memory).
         });
@@ -99,5 +104,15 @@ public class LidrKlWindow extends AbstractEntityChapterKlWindow {
     @Override
     public EntityKlWindowType getWindowType() {
         return EntityKlWindowTypes.LIDR;
+    }
+
+    @Override
+    protected boolean isPropertyPanelOpen() {
+        return jfxNode.controller().isPropertiesPanelOpen();
+    }
+
+    @Override
+    protected void setPropertyPanelOpen(boolean isOpen) {
+        jfxNode.controller().setPropertiesPanelOpen(isOpen);
     }
 }

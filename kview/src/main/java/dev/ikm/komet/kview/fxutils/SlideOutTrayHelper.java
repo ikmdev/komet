@@ -15,36 +15,53 @@
  */
 package dev.ikm.komet.kview.fxutils;
 
-import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.beans.property.DoubleProperty;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
-import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static dev.ikm.komet.kview.fxutils.FXUtils.DEFAULT_ANIMATION_DURATION;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static javafx.animation.Interpolator.EASE_IN;
 
 /**
  * Slide out tray helper is a utility class to create JavaFX slide out tray capability.
- * e.g. Pressing the search button on a sidebar control will slide out a tray panel allowing the user to search.
+ * Pressing the search button on a sidebar control will slide out a tray panel allowing the user to search.
+ * <p>
+ * Example usage:
+ * <pre>{@code
+ * // Create tray and panel
+ * Pane trayPane = new Pane();
+ * Pane searchPanel = new SearchPanel();
+ *
+ * // Setup the tray
+ * SlideOutTrayHelper.setupSlideOutTrayPane(searchPanel, trayPane);
+ *
+ * // Show the tray
+ * SlideOutTrayHelper.slideOut(trayPane);
+ *
+ * // Hide the tray
+ * SlideOutTrayHelper.slideIn(trayPane);
+ * }</pre>
  */
-public class SlideOutTrayHelper {
-    private static final Logger LOG = LoggerFactory.getLogger(SlideOutTrayHelper.class);
-    private SlideOutTrayHelper() {}
+public interface SlideOutTrayHelper {
+
+    /**
+     * Logger instance for debugging slide animations and state changes.
+     */
+    Logger LOG = LoggerFactory.getLogger(SlideOutTrayHelper.class);
 
     /**
      * The ability to setup a slide out tray pane that will contain only one child node (nodePanel).
+     *
      * @param nodePanel The pane to be added to the slide out tray pane.
-     * @param trayPane The tray pane that will hold a single child node.
+     * @param trayPane  The tray pane that will hold a single child node.
      */
-    public static void setupSlideOutTrayPane(Pane nodePanel, Pane trayPane) {
-        double width = nodePanel.getWidth();
+    static void setupSlideOutTrayPane(Pane nodePanel, Pane trayPane) {
+        final double width = nodePanel.getWidth();
         trayPane.getChildren().add(nodePanel);
         clipChildren(trayPane, 0);
         nodePanel.setLayoutX(-width);
@@ -52,107 +69,246 @@ public class SlideOutTrayHelper {
     }
 
     /**
-     * Perform an animated slide out effect with the tray pane.
-     * @param trayPane A tray pane consisting of one child (the panel to display)
+     * Performs an animated slide out effect with the tray pane using default animation settings.
+     * <p>
+     * This is a convenience method that calls {@link #slideOut(Pane, boolean)} with
+     * animation enabled.
+     *
+     * @param trayPane A tray pane consisting of one child (the panel to display).
+     * @see #slideOut(Pane, boolean)
      */
-    public static void slideOut(Pane trayPane) {
-        Pane currentViewPane = (Pane) trayPane.getChildren().get(0);
-        double width = currentViewPane.getBoundsInLocal().getWidth();
-        currentViewPane.setLayoutX(width);
+    static void slideOut(Pane trayPane) {
+        slideOut(trayPane, true);
+    }
 
-        clipChildren(trayPane, 0);
-        currentViewPane.setLayoutX(-width);
-        trayPane.setMaxWidth(0);
+    /**
+     * Performs a slide out effect with the tray pane, optionally animated.
+     * <p>
+     * When sliding out:
+     * <ul>
+     *   <li>The panel moves from left (hidden) to its normal position</li>
+     *   <li>The tray pane expands from 0 width to the panel's width</li>
+     *   <li>Animation uses ease-in interpolation for smooth motion</li>
+     * </ul>
+     *
+     * @param trayPane A tray pane consisting of one child (the panel to display).
+     * @param animated If true, the slide out will be animated over {@link FXUtils#DEFAULT_ANIMATION_DURATION}.
+     *                 If false, the panel will appear immediately in its final position.
+     */
+    static void slideOut(Pane trayPane, boolean animated) {
+        final Node panel = trayPane.getChildren().getFirst();
+        final double width = panel.getBoundsInLocal().getWidth();
 
-        KeyValue xCoord = new KeyValue(currentViewPane.layoutXProperty(), 0, Interpolator.EASE_IN);
-        KeyValue slideOutWidth = new KeyValue(trayPane.maxWidthProperty(), width, Interpolator.EASE_IN);
-        EventHandler<ActionEvent> onFinish = actionEvent -> {
-            LOG.debug("slide out complete");
-            currentViewPane.layoutXProperty().set(0);
+        if (animated) {
+            // Start from hidden position
+            panel.setLayoutX(-width);
+            trayPane.setMaxWidth(0);
+
+            // Animate to visible position
+            Timeline timeline = new Timeline(new KeyFrame(DEFAULT_ANIMATION_DURATION,
+                    _ -> {
+                        LOG.info("slide out complete");
+                        panel.setLayoutX(0);
+                        trayPane.setMaxWidth(-1);
+                    },
+                    new KeyValue(panel.layoutXProperty(), 0, EASE_IN),
+                    new KeyValue(trayPane.maxWidthProperty(), width, EASE_IN)
+            )
+            );
+            timeline.play();
+        } else {
+            // Set final state immediately
+            panel.setLayoutX(0);
             trayPane.setMaxWidth(-1);
-        };
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(250), onFinish, slideOutWidth, xCoord);
-        Timeline timeline = new Timeline(keyFrame);
-        timeline.play();
+        }
     }
 
     /**
-     * Perform an animated slide in effect with the tray pane.
-     * @param trayPane A tray pane consisting of one child (the panel to display)
+     * Performs an animated slide in effect with the tray pane using default animation settings.
+     * <p>
+     * This is a convenience method that calls {@link #slideIn(Pane, boolean)} with
+     * animation enabled.
+     *
+     * @param trayPane A tray pane consisting of one child (the panel to hide).
+     * @see #slideIn(Pane, boolean)
      */
-    public static void slideIn(Pane trayPane) {
-        Node currentViewPane = trayPane.getChildren().get(0);
-        double width = currentViewPane.getBoundsInLocal().getWidth();
-        trayPane.maxWidthProperty().set(width);
-        currentViewPane.layoutXProperty().set(0);
-        KeyValue xCoord = new KeyValue(currentViewPane.layoutXProperty(), -width);
-        KeyValue slideOutWidth = new KeyValue(trayPane.maxWidthProperty(), 0);
-        EventHandler<ActionEvent> onFinish = actionEvent -> {
-            LOG.debug("slide in complete ");
-            currentViewPane.layoutXProperty().set(-width);
-            trayPane.maxWidthProperty().set(0);
-        };
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(250), onFinish, slideOutWidth, xCoord);
-        Timeline timeline = new Timeline(keyFrame);
-        timeline.play();
+    static void slideIn(Pane trayPane) {
+        slideIn(trayPane, true);
     }
 
     /**
-     * Perform an animated slide out effect with the tray pane beside (right side) the owning pane.
-     * @param trayPane A tray pane consisting of one child (the panel to display)
+     * Performs a slide in effect with the tray pane, optionally animated.
+     * <p>
+     * When sliding in:
+     * <ul>
+     *   <li>The panel moves from its normal position to the left (hidden)</li>
+     *   <li>The tray pane shrinks from the panel's width to 0</li>
+     *   <li>Animation uses default interpolation for smooth motion</li>
+     * </ul>
+     *
+     * @param trayPane A tray pane consisting of one child (the panel to hide).
+     * @param animated If true, the slide in will be animated over {@link FXUtils#DEFAULT_ANIMATION_DURATION}.
+     *                 If false, the panel will disappear immediately.
+     */
+    static void slideIn(Pane trayPane, boolean animated) {
+        final Node panel = trayPane.getChildren().getFirst();
+        final double width = panel.getBoundsInLocal().getWidth();
+
+        if (animated) {
+            // Start from visible position
+            trayPane.setMaxWidth(width);
+            panel.setLayoutX(0);
+
+            // Animate to hidden position
+            Timeline timeline = new Timeline(new KeyFrame(DEFAULT_ANIMATION_DURATION,
+                    _ -> {
+                        LOG.info("slide in complete");
+                        panel.setLayoutX(-width);
+                        trayPane.setMaxWidth(0);
+                    },
+                    new KeyValue(panel.layoutXProperty(), -width),
+                    new KeyValue(trayPane.maxWidthProperty(), 0)));
+            timeline.play();
+        } else {
+            // Set final state immediately
+            panel.setLayoutX(-width);
+            trayPane.setMaxWidth(0);
+        }
+    }
+
+    /**
+     * Performs an animated slide out effect with the tray pane beside the owning panel.
+     * <p>
+     * This is a convenience method that calls {@link #slideOut(Pane, Pane, boolean)} with
+     * animation enabled.
+     *
+     * @param trayPane    A tray pane consisting of one child (the panel to display).
+     * @param owningPanel The owning panel that will be resized to accommodate the tray pane.
+     * @see #slideOut(Pane, Pane, boolean)
+     */
+    static void slideOut(Pane trayPane, Pane owningPanel) {
+        slideOut(trayPane, owningPanel, true);
+    }
+
+    /**
+     * Performs a slide out effect with the tray pane beside (right side) the owning pane.
+     * <p>
+     * When sliding out:
+     * <ul>
+     *   <li>The tray panel slides from left (hidden) to its normal position</li>
+     *   <li>The owning panel's width increases by the tray panel's width</li>
+     *   <li>Both animations occur simultaneously for a coordinated effect</li>
+     * </ul>
+     *
+     * @param trayPane    A tray pane consisting of one child (the panel to display).
      * @param owningPanel The owning panel in display will have the tray pane attached to its right side.
+     * @param animated    If true, the slide out will be animated over {@link FXUtils#DEFAULT_ANIMATION_DURATION}.
+     *                    If false, both panels will adjust immediately.
      */
-    public static void slideOut(Pane trayPane, Pane owningPanel) {
-        Node propPane = trayPane.getChildren().get(0);
-        double width = propPane.getBoundsInLocal().getWidth();
+    static void slideOut(Pane trayPane, Pane owningPanel, boolean animated) {
+        final Node panel = trayPane.getChildren().getFirst();
+        final double width = panel.getBoundsInLocal().getWidth();
 
-        // in the negative position left of view port
-        propPane.layoutXProperty().set(-width);
-        trayPane.maxWidthProperty().set(0);
-        KeyValue xCoord = new KeyValue(propPane.layoutXProperty(), 0, Interpolator.EASE_IN);
-        DoubleProperty prefWidth = owningPanel.prefWidthProperty();
-        KeyValue detailsPaneWidth = new KeyValue(prefWidth, prefWidth.get() + width, Interpolator.EASE_IN);
-        KeyValue slideOutWidth = new KeyValue(trayPane.maxWidthProperty(), width, Interpolator.EASE_IN);
-        EventHandler<ActionEvent> onFinish = actionEvent -> {
-            propPane.layoutXProperty().set(0);
+        if (animated) {
+            // Start from hidden position
+            panel.setLayoutX(-width);
+            trayPane.setMaxWidth(0);
+
+            // Animate to visible position
+            Timeline timeline = new Timeline(new KeyFrame(DEFAULT_ANIMATION_DURATION,
+                    _ -> {
+                        LOG.info("slide out complete");
+                        panel.setLayoutX(0);
+                        trayPane.setMaxWidth(-1);
+                    },
+                    new KeyValue(panel.layoutXProperty(), 0, EASE_IN),
+                    new KeyValue(owningPanel.prefWidthProperty(), owningPanel.getPrefWidth() + width, EASE_IN),
+                    new KeyValue(trayPane.maxWidthProperty(), width, EASE_IN)));
+            timeline.play();
+        } else {
+            // Set final state immediately
+            panel.setLayoutX(0);
             trayPane.setMaxWidth(-1);
-        };
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(250), onFinish, detailsPaneWidth, slideOutWidth, xCoord);
-        Timeline timeline = new Timeline(keyFrame);
-        timeline.play();
+            owningPanel.setPrefWidth(owningPanel.getPrefWidth() + width);
+        }
     }
-    public static boolean isOpen(Pane trayPane) {
+
+    /**
+     * Performs an animated slide in effect with the tray pane beside the owning panel.
+     * <p>
+     * This is a convenience method that calls {@link #slideIn(Pane, Pane, boolean)} with
+     * animation enabled.
+     *
+     * @param trayPane    A tray pane consisting of one child (the panel to hide).
+     * @param owningPanel The owning panel that will be resized when the tray hides.
+     * @see #slideIn(Pane, Pane, boolean)
+     */
+    static void slideIn(Pane trayPane, Pane owningPanel) {
+        slideIn(trayPane, owningPanel, true);
+    }
+
+    /**
+     * Performs a slide in effect with the tray pane beside (right side) the owning pane.
+     * <p>
+     * When sliding in:
+     * <ul>
+     *   <li>The tray panel slides from its normal position to the left (hidden)</li>
+     *   <li>The owning panel's width decreases by the tray panel's width</li>
+     *   <li>Both animations occur simultaneously for a coordinated effect</li>
+     * </ul>
+     *
+     * @param trayPane    A tray pane consisting of one child (the panel to hide).
+     * @param owningPanel The owning panel in display will have the tray pane attached to its right side.
+     * @param animated    If true, the slide in will be animated over {@link FXUtils#DEFAULT_ANIMATION_DURATION}.
+     *                    If false, both panels will adjust immediately.
+     */
+    static void slideIn(Pane trayPane, Pane owningPanel, boolean animated) {
+        final Node panel = trayPane.getChildren().getFirst();
+        final double width = panel.getBoundsInLocal().getWidth();
+
+        if (animated) {
+            // Start from visible position
+            trayPane.setMaxWidth(width);
+            panel.setLayoutX(0);
+
+            // Animate to hidden position
+            Timeline timeline = new Timeline(new KeyFrame(DEFAULT_ANIMATION_DURATION,
+                    _ -> {
+                        LOG.info("slide in complete");
+                        panel.setLayoutX(-width);
+                        trayPane.setMaxWidth(0);
+                    },
+                    new KeyValue(panel.layoutXProperty(), -width),
+                    new KeyValue(owningPanel.prefWidthProperty(), owningPanel.getPrefWidth() - width, EASE_IN),
+                    new KeyValue(trayPane.maxWidthProperty(), 0)));
+            timeline.play();
+        } else {
+            // Set final state immediately
+            panel.setLayoutX(-width);
+            trayPane.setMaxWidth(0);
+            owningPanel.setPrefWidth(owningPanel.getPrefWidth() - width);
+        }
+    }
+
+    /**
+     * Checks if the tray pane is currently in the open (visible) state.
+     *
+     * @param trayPane The tray pane to check.
+     * @return true if the tray is open (visible), false if it is closed (hidden).
+     * @see #isClosed(Pane)
+     */
+    static boolean isOpen(Pane trayPane) {
         return !isClosed(trayPane);
     }
-    public static boolean isClosed(Pane trayPane) {
-        return trayPane.maxWidthProperty().get() == 0;
-    }
+
     /**
-     * Perform an animated slide in effect with the tray pane beside (right side) the owning pane.
-     * @param trayPane A tray pane consisting of one child (the panel to display)
-     * @param owningPanel The owning panel in display will have the tray pane attached to its right side.
+     * Checks if the tray pane is currently in the closed (hidden) state.
+     *
+     * @param trayPane The tray pane to check.
+     * @return true if the tray is closed (hidden), false if it is open (visible).
+     * @see #isOpen(Pane)
      */
-    public static void slideIn(Pane trayPane, Pane owningPanel) {
-
-        Node propPane = trayPane.getChildren().get(0);
-        double width = propPane.getBoundsInLocal().getWidth();
-
-        trayPane.maxWidthProperty().set(width);
-        propPane.layoutXProperty().set(0);
-        KeyValue xCoord = new KeyValue(propPane.layoutXProperty(), -width);
-
-        DoubleProperty prefWidth = owningPanel.prefWidthProperty();
-        KeyValue detailsPaneWidth = new KeyValue(prefWidth, prefWidth.get() - width, Interpolator.EASE_IN);
-
-        KeyValue slideOutWidth = new KeyValue(trayPane.maxWidthProperty(), 0);
-        EventHandler<ActionEvent> onFinish = actionEvent -> {
-            LOG.info("slide in complete ");
-            propPane.layoutXProperty().set(-width);
-            trayPane.maxWidthProperty().set(0);
-        };
-        KeyFrame keyFrame = new KeyFrame(Duration.millis(250), onFinish, detailsPaneWidth, slideOutWidth, xCoord);
-        Timeline timeline = new Timeline(keyFrame);
-        timeline.play();
-
+    static boolean isClosed(Pane trayPane) {
+        return trayPane.maxWidthProperty().get() == 0;
     }
 }
