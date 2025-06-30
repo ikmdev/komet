@@ -4,18 +4,15 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <?import dev.ikm.komet.kview.controls.AutoCompleteTextField?>
+<?import javafx.scene.control.ListView?>
 <StackPane fx:id="root" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController">
     <children>
-        <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" minWidth="-Infinity" prefWidth="372.0">
-            <content>
                 <VBox prefHeight="900.0" prefWidth="372.0" styleClass="search-vertical-scroll-area">
                     <children>
                         <HBox prefHeight="61.0" prefWidth="372.0" styleClass="search-hbox" VBox.vgrow="NEVER">
@@ -55,14 +52,13 @@
                                 <Insets bottom="12.0" left="12.0" right="8.0" top="12.0" />
                             </padding>
                         </HBox>
-                        <VBox fx:id="resultsVBox">
-                            <VBox.margin>
-                                <Insets bottom="4.0" left="12.0" right="12.0" />
-                            </VBox.margin>
-                        </VBox>
+<!--                        <VBox fx:id="resultsVBox">-->
+<!--                            <VBox.margin>-->
+<!--                                <Insets bottom="4.0" left="12.0" right="12.0" />-->
+<!--                            </VBox.margin>-->
+<!--                        </VBox>-->
+                        <ListView fx:id="searchResultsListView" VBox.vgrow="ALWAYS"/>
                     </children>
                 </VBox>
-            </content>
-        </ScrollPane>
     </children>
 </StackPane>

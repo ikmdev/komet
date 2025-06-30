@@ -23,21 +23,25 @@ import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
@@ -49,6 +53,10 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 
 public class SortResultConceptEntryController extends AbstractBasicController {
+
+
+    @FXML
+    private TitledPane descriptionsTitledPane;
 
     @FXML
     private HBox searchEntryHBox;
@@ -65,8 +73,11 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     @FXML
     private Label retiredLabel;
 
+//    @FXML
+//    private VBox descriptionsVBox;
+
     @FXML
-    private VBox descriptionsVBox;
+    private ListView<LatestVersionSearchResult> descriptionsListView;
 
     @FXML
     private Button showContextButton;
@@ -116,6 +127,26 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                 contextMenu.show(showContextButton, Side.BOTTOM, 0, 0);
             }
         });
+
+        descriptionsListView.setCellFactory(param -> new ListCell<>() {
+
+            @Override
+            protected void updateItem(LatestVersionSearchResult item, boolean empty) {
+                if (item == null || empty) {
+                    setText(null);
+                } else {
+                    setText(formatHighlightedString(item.highlightedString()));
+                }
+            }
+        });
+
+    }
+
+    private String formatHighlightedString(String highlightedString) {
+        String string = (highlightedString == null) ? "" : highlightedString;
+        return string.replaceAll("<B>", "")
+                .replaceAll("</B>", "")
+                .replaceAll("\\s+", " ");
     }
 
     @FXML
@@ -159,9 +190,11 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         this.componentText.setText(topText);
     }
 
-    public VBox getDescriptionsVBox() {
-        return this.descriptionsVBox;
-    }
+//    public VBox getDescriptionsVBox() {
+//        return this.descriptionsVBox;
+//    }
+
+    public ObservableList<LatestVersionSearchResult> getDescriptionListViewItems() { return descriptionsListView.getItems(); }
 
     @Override
     public void updateView() {
@@ -195,5 +228,4 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     public <T extends ViewModel> T getViewModel() {
         return null;
     }
-
 }

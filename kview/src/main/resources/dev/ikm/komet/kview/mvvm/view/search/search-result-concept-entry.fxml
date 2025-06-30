@@ -16,7 +16,8 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<HBox fx:id="searchEntryHBox" prefHeight="100.0" prefWidth="332.0" styleClass="search-entry-hbox" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.SortResultConceptEntryController">
+<?import javafx.scene.control.ListView?>
+<HBox fx:id="searchEntryHBox" prefWidth="332.0" styleClass="search-entry-hbox" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.SortResultConceptEntryController">
    <children>
       <VBox HBox.hgrow="ALWAYS">
          <children>
@@ -112,29 +113,30 @@
                   <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                </padding>
             </HBox>
-            <TitledPane animated="false" expanded="false" styleClass="search-entry-title-pane" text="DESCRIPTION SEMANTICS" VBox.vgrow="ALWAYS">
-               <content>
-                  <VBox fx:id="descriptionsVBox" prefWidth="100.0">
-                     <children>
-                        <Label prefHeight="30.0" prefWidth="302.0" styleClass="search-entry-description-label" text="Tetralogy of Fallot (disorder)">
-                           <VBox.margin>
-                              <Insets bottom="7.0" left="7.0" right="7.0" />
-                           </VBox.margin>
-                           <padding>
-                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                           </padding>
-                        </Label>
-                        <Label layoutX="28.0" layoutY="28.0" prefHeight="30.0" prefWidth="302.0" styleClass="search-entry-description-label" text="Tetralogy of Fallot (disorder)">
-                           <VBox.margin>
-                              <Insets bottom="7.0" left="7.0" right="7.0" />
-                           </VBox.margin>
-                           <padding>
-                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                           </padding>
-                        </Label>
-                     </children>
-                  </VBox>
-               </content>
+            <TitledPane fx:id="descriptionsTitledPane" animated="false" expanded="false" styleClass="search-entry-title-pane" text="DESCRIPTION SEMANTICS" VBox.vgrow="ALWAYS">
+<!--                  <VBox fx:id="descriptionsVBox" prefWidth="100.0">-->
+<!--                     <children>-->
+<!--                        <Label prefHeight="30.0" prefWidth="302.0" styleClass="search-entry-description-label" text="Tetralogy of Fallot (disorder)">-->
+<!--                           <VBox.margin>-->
+<!--                              <Insets bottom="7.0" left="7.0" right="7.0" />-->
+<!--                           </VBox.margin>-->
+<!--                           <padding>-->
+<!--                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />-->
+<!--                           </padding>-->
+<!--                        </Label>-->
+<!--                        <Label layoutX="28.0" layoutY="28.0" prefHeight="30.0" prefWidth="302.0" styleClass="search-entry-description-label" text="Tetralogy of Fallot (disorder)">-->
+<!--                           <VBox.margin>-->
+<!--                              <Insets bottom="7.0" left="7.0" right="7.0" />-->
+<!--                           </VBox.margin>-->
+<!--                           <padding>-->
+<!--                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />-->
+<!--                           </padding>-->
+<!--                        </Label>-->
+<!--                     </children>-->
+<!--                  </VBox>-->
+                <content>
+                    <ListView fx:id="descriptionsListView" />
+                </content>
                <VBox.margin>
                   <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                </VBox.margin>
