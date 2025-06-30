@@ -272,6 +272,7 @@ public class SemanticFieldsController {
     private static Separator createSeparator() {
         Separator separator = new Separator();
         separator.getStyleClass().add("field-separator");
+        separator.setFocusTraversable(false);
         return separator;
     }
 

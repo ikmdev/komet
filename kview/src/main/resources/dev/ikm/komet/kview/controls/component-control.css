@@ -31,6 +31,10 @@
     -fx-cursor: text;
 }
 
+.component-control:focus-within > .concept-container > .concept-search-box {
+    -fx-border-color: #1035AC;
+}
+
 .component-control > .concept-container > .concept-search-box > .search-field-container > .search-prompt {
     -fx-text-fill: #6e7989;
     -fx-font-size: 14px;

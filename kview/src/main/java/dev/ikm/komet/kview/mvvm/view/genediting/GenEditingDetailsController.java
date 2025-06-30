@@ -249,6 +249,9 @@ public class GenEditingDetailsController {
 
     private void setupDisplayUUID() {
         EntityFacade semanticComponent = genEditingViewModel.getPropertyValue(SEMANTIC);
+        if (semanticComponent == null) {
+            return;
+        }
 
         List<String> idList = semanticComponent.publicId().asUuidList().stream()
                 .map(UUID::toString)
