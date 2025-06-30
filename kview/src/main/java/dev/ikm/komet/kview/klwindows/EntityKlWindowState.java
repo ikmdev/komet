@@ -68,6 +68,7 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.DEFAULT_WINDOW_WIDTH;
  * @see EntityKlWindowType
  * @see KometPreferences
  */
+// TODO: REFACTOR - This class should be refactored to leverage the Knowledge Layout module's KlContext facility
 public class EntityKlWindowState {
 
     private static final Logger LOG = LoggerFactory.getLogger(EntityKlWindowState.class);
