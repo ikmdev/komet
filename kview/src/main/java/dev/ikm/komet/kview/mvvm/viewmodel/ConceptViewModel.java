@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.builder.ConceptEntityBuilder;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -366,4 +367,9 @@ public class ConceptViewModel extends FormViewModel {
 
         LOG.info("transaction complete");
     }
+
+    public ViewProperties getViewProperties() {
+        return getPropertyValue(VIEW_PROPERTIES);
+    }
+
 }

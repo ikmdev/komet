@@ -15,17 +15,6 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.MapChangeListener;
-import javafx.scene.Node;
-import javafx.scene.control.Control;
-import javafx.scene.control.Labeled;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.shape.Shape;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.temp.FxGet;
@@ -34,6 +23,14 @@ import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.MapChangeListener;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.shape.Shape;
 
 import java.util.List;
 
@@ -42,17 +39,21 @@ public class ViewMenuModel {
     private final Control baseControlToShowOverride;
     private final Shape baseControlGraphic;
     private final Menu coordinateMenu;
+    private final MenuButton coordinateMenuButton;
     private String oldFill = null;
     private final ChangeListener<ViewCoordinateRecord> viewChangedListener = this::viewCoordinateChanged;
+    // whichMenu added to help with debugging
+    private String whichMenu = "Unknown";
 
     public ViewMenuModel(ViewProperties viewProperties, Control baseControlToShowOverride) {
-        this(viewProperties, baseControlToShowOverride, new Menu("Coordinates", Icon.VIEW.makeIcon()));
+        this(viewProperties, baseControlToShowOverride, new Menu("Coordinates", Icon.VIEW.makeIcon()), null);
     }
 
 
-    public ViewMenuModel(ViewProperties viewProperties, Control baseControlToShowOverride, Menu coordinateMenu) {
+    public ViewMenuModel(ViewProperties viewProperties, Control baseControlToShowOverride, Menu coordinateMenu, String whichMenu) {
         this.viewProperties = viewProperties;
         this.coordinateMenu = coordinateMenu;
+        this.coordinateMenuButton = null;
         this.viewProperties.nodeView().addListener(this.viewChangedListener);
         ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
         FxGet.pathCoordinates(viewCalculator).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change -> updateCoordinateMenu());
@@ -69,6 +70,40 @@ public class ViewMenuModel {
         } else {
             this.baseControlGraphic = null;
         }
+
+        if (whichMenu != null) {
+            this.whichMenu = whichMenu;
+        }
+
+        updateCoordinateMenu();
+
+    }
+
+    public ViewMenuModel(ViewProperties viewProperties, MenuButton coordinateMenuButton, String whichMenu) {
+        this.viewProperties = viewProperties;
+        this.coordinateMenu = null;
+        this.coordinateMenuButton = coordinateMenuButton;
+        this.viewProperties.nodeView().addListener(this.viewChangedListener);
+        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
+        FxGet.pathCoordinates(viewCalculator).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change -> updateCoordinateMenu());
+
+        this.baseControlToShowOverride = coordinateMenuButton;
+        if (baseControlToShowOverride instanceof Labeled) {
+            Node graphic = ((Labeled) this.baseControlToShowOverride).getGraphic();
+            if (graphic instanceof AnchorPane) {
+                Node childZero = ((AnchorPane) graphic).getChildren().get(0);
+                this.baseControlGraphic = (Shape) childZero;
+            } else {
+                baseControlGraphic = null;
+            }
+        } else {
+            this.baseControlGraphic = null;
+        }
+
+        if (whichMenu != null) {
+            this.whichMenu = whichMenu;
+        }
+
         updateCoordinateMenu();
 
     }
@@ -96,11 +131,19 @@ public class ViewMenuModel {
 
         Platform.runLater(() -> {
             ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
-            this.coordinateMenu.getItems().clear();
-            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, this.viewProperties.nodeView()),
-                    (List<MenuItem> result) -> {
-                        this.coordinateMenu.getItems().setAll(result);
-                    }));
+            if (this.coordinateMenu != null) {
+                this.coordinateMenu.getItems().clear();
+                TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, this.viewProperties.nodeView(), whichMenu),
+                        (List<MenuItem> result) -> {
+                            this.coordinateMenu.getItems().setAll(result);
+                        }));
+            } else if (coordinateMenuButton != null) {
+                this.coordinateMenuButton.getItems().clear();
+                TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, this.viewProperties.nodeView(), whichMenu),
+                        (List<MenuItem> result) -> {
+                            this.coordinateMenuButton.getItems().setAll(result);
+                        }));
+            }
         });
     }
 

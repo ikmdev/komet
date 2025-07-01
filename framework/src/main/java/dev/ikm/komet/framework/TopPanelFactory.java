@@ -15,6 +15,18 @@
  */
 package dev.ikm.komet.framework;
 
+import dev.ikm.komet.framework.activity.ActivityStream;
+import dev.ikm.komet.framework.activity.ActivityStreamOption;
+import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.context.AddToContextMenu;
+import dev.ikm.komet.framework.context.AddToContextMenuSimple;
+import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
+import dev.ikm.komet.framework.graphics.Icon;
+import dev.ikm.komet.framework.view.ViewMenuModel;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -29,18 +41,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import org.eclipse.collections.api.list.ImmutableList;
-import dev.ikm.komet.framework.activity.ActivityStream;
-import dev.ikm.komet.framework.activity.ActivityStreamOption;
-import dev.ikm.komet.framework.activity.ActivityStreams;
-import dev.ikm.komet.framework.context.AddToContextMenu;
-import dev.ikm.komet.framework.context.AddToContextMenuSimple;
-import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
-import dev.ikm.komet.framework.graphics.Icon;
-import dev.ikm.komet.framework.view.ViewMenuModel;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.PublicIdStringKey;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
-import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +87,7 @@ public class TopPanelFactory {
         MenuButton viewPropertiesMenuButton = new MenuButton();
         Menu coordinatesMenu = new Menu("Coordinates", Icon.COORDINATES.makeIcon());
 
-        ViewMenuModel viewMenuModel = new ViewMenuModel(viewProperties, viewPropertiesMenuButton, coordinatesMenu);
+        ViewMenuModel viewMenuModel = new ViewMenuModel(viewProperties, viewPropertiesMenuButton, coordinatesMenu, "TopPanelFactory");
         viewPropertiesMenuButton.getProperties().put("viewMenuModel", viewMenuModel);
         viewPropertiesMenuButton.getItems().add(coordinatesMenu);
         viewPropertiesMenuButton.setGraphic(Icon.VIEW.makeIcon());

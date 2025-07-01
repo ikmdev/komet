@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.framework.view;
 
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.tinkar.common.id.IntIdSet;
@@ -59,17 +58,25 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.LongConsumer;
 
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+
 public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
     private static final Logger LOG = LoggerFactory.getLogger(ViewMenuTask.class);
     ViewCalculator viewCalculator;
     ObservableCoordinate observableCoordinate;
+    private String whichMenu = "Unknown";
 
-    public ViewMenuTask(ViewCalculator viewCalculator, ObservableCoordinate observableCoordinate) {
+    public ViewMenuTask(ViewCalculator viewCalculator, ObservableCoordinate observableCoordinate, String whichMenu) {
         super(false, true);
         this.viewCalculator = viewCalculator;
         this.observableCoordinate = observableCoordinate;
         updateTitle("Updating View Menu");
         updateProgress(-1, -1);
+
+        if (whichMenu != null) {
+            this.whichMenu = whichMenu;
+        }
+
         LOG.info("New ViewMenuTask");
     }
 
@@ -444,11 +451,11 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
     }
 
     private static void addChangeItemsForLanguage(ViewCalculator viewCalculator, List<MenuItem> menuItems,
-                                                  ObservableLanguageCoordinate observableCoordinate) {
+                                                  ObservableLanguageCoordinate observableCoordinate, String whichMenu) {
 
         // Change description preference menu is also being set in the menu in addChangeItemsForView()
         // use common method to create the menu items
-        createChangeDescriptionPreferenceMenuItems(viewCalculator, menuItems, observableCoordinate);
+        createChangeDescriptionPreferenceMenuItems(viewCalculator, menuItems, observableCoordinate, whichMenu);
 
         Menu changeLanguageMenu = new Menu("Change language");
         menuItems.add(changeLanguageMenu);
@@ -480,7 +487,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
     }
 
     private static void addChangeItemsForView(ViewCalculator viewCalculator, List<MenuItem> menuItems,
-                                              ObservableView observableView) {
+                                              ObservableView observableView, String whichMenu) {
 
 //        Menu changeActivityMenu = new Menu("Change activity");
 //        menuItems.add(changeActivityMenu);
@@ -514,7 +521,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
 
             // Change description preference menu is also being set in the menu in addChangeItemsForLanguage()
             // use common method to create the menu items
-            createChangeDescriptionPreferenceMenuItems(viewCalculator, languageCoordinateMenu.getItems(), languageCoordinate);
+            createChangeDescriptionPreferenceMenuItems(viewCalculator, languageCoordinateMenu.getItems(), languageCoordinate, whichMenu);
         }
 
         addChangeItemsForNavigation(viewCalculator,
@@ -562,7 +569,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
                 Menu parentMenu = sourceMenu.getParentMenu();
                 if (parentMenu != null) {
                     parentMenu.getItems().clear();
-                    TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, observableView),
+                    TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, observableView, whichMenu),
                             (List<MenuItem> result) -> parentMenu.getItems().addAll(result)));
                 }
             });
@@ -574,7 +581,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
      * Creates the menu items for the Change description preferenence language selections, which includes the
      * Fully Qualified Name and Regular Name
      */
-    private static void createChangeDescriptionPreferenceMenuItems(ViewCalculator viewCalculator, List<MenuItem> menuItems, ObservableLanguageCoordinate languageCoordinate) {
+    private static void createChangeDescriptionPreferenceMenuItems(ViewCalculator viewCalculator, List<MenuItem> menuItems, ObservableLanguageCoordinate languageCoordinate, String whichMenu) {
         Menu changeDescriptionPreferenceMenu = new Menu("Change description preference");
         menuItems.add(changeDescriptionPreferenceMenu);
 
@@ -584,6 +591,11 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             typeOrderItem.setSelected(languageCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList.castToList()));
             typeOrderItem.setDisable(typeOrderItem.isSelected());
             typeOrderItem.setOnAction(event -> {
+
+                if (whichMenu.equals("JournalController")) {
+                    LOG.debug("JournalController menu");
+                }
+
                 ObservableList<ConceptFacade> prefList = FXCollections.observableArrayList(typePreferenceList.toArray(new ConceptFacade[0]));
                 Platform.runLater(() ->
                         languageCoordinate.descriptionTypePreferenceListProperty().setValue(prefList)
@@ -711,11 +723,11 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         if (observableCoordinate instanceof ObservableView observableView) {
             addSeparator(menuItems);
             //addRemoveOverrides(menuItems, observableCoordinate);
-            addChangeItemsForView(viewCalculator, menuItems, observableView);
+            addChangeItemsForView(viewCalculator, menuItems, observableView, whichMenu);
         } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
             addSeparator(menuItems);
             updateMessage("Making change language menu");
-            addChangeItemsForLanguage(viewCalculator, menuItems, observableLanguageCoordinate);
+            addChangeItemsForLanguage(viewCalculator, menuItems, observableLanguageCoordinate, whichMenu);
         } else if (observableCoordinate instanceof ObservableLogicCoordinate observableLogicCoordinate) {
             //menuItems.add(new SeparatorMenuItem());
             updateMessage("Making change logic menu");

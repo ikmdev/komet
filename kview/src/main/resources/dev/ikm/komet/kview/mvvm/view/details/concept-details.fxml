@@ -20,24 +20,13 @@
          <top>
             <HBox fx:id="conceptHeaderControlToolBarHbox" BorderPane.alignment="CENTER">
                <children>
-                  <Button fx:id="editCoordinateButton" mnemonicParsing="false" onAction="#showChangeViewCoordinateMenu" text="Button">
-                     <graphic>
-                        <Region prefHeight="200.0" prefWidth="200.0">
-                           <styleClass>
-                              <String fx:value="icon" />
-                              <String fx:value="coordinate" />
-                           </styleClass>
-                        </Region>
-                     </graphic>
+                  <MenuButton  fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="coordinate" />
+                     </styleClass>
                      <tooltip><Tooltip text="Coordinates" /></tooltip>
-                     <contextMenu>
-                        <ContextMenu fx:id="changeViewCoordinateMenu">
-                          <items>
-                            <MenuItem mnemonicParsing="false" text="Unspecified Action" />
-                          </items>
-                        </ContextMenu>
-                     </contextMenu>
-                  </Button>
+                  </MenuButton>
                   <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
                   <HBox fx:id="controlBoxHbox1" alignment="CENTER" spacing="15.0">
                      <children>
