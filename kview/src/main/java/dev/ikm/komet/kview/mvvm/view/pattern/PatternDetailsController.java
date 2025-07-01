@@ -26,6 +26,7 @@ import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.*;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
@@ -928,5 +929,39 @@ public class PatternDetailsController {
                 LOG.debug("Removed properties nodes from draggable");
             }
         }
+    }
+
+    /**
+     * Checks whether the properties panel is currently open.
+     * <p>
+     * This method determines the open state by checking if the properties
+     * slideout tray pane is visible and expanded.
+     *
+     * @return {@code true} if the properties panel is open and visible,
+     *         {@code false} if it is closed or hidden
+     */
+    public boolean isPropertiesPanelOpen() {
+        return SlideOutTrayHelper.isOpen(propertiesSlideoutTrayPane);
+    }
+
+    /**
+     * Sets the open/closed state of the properties panel programmatically.
+     * <p>
+     * The animation is performed without transitions when called programmatically
+     * to ensure immediate state changes.
+     *
+     * @param isOpen {@code true} to open (slide out) the properties panel,
+     *               {@code false} to close (slide in) the panel
+     */
+    public void setPropertiesPanelOpen(boolean isOpen) {
+        propertiesToggleButton.setSelected(isOpen);
+
+        if (isOpen) {
+            SlideOutTrayHelper.slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        } else {
+            SlideOutTrayHelper.slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        }
+
+        updateDraggableNodesForPropertiesPanel(isOpen);
     }
 }

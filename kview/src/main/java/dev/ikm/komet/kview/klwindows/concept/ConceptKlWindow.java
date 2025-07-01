@@ -72,7 +72,7 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
 
         // Create a unique key for the details activity stream.
         this.detailsActivityStreamKey = new PublicIdStringKey<>(PublicIds.of(uuid.toString()), uniqueDetailsTopic);
-        ActivityStream detailActivityStream = ActivityStreams.create(detailsActivityStreamKey);
+        ActivityStreams.create(detailsActivityStreamKey);
 
         // Initialize the DetailsNode with a factory.
         KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
@@ -99,6 +99,7 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
 
         // Set the onClose callback for the details window.
         detailsNode.getDetailsViewController().setOnCloseConceptWindow(detailsController -> {
+            ActivityStreams.delete(detailsActivityStreamKey);
             getOnClose().ifPresent(Runnable::run);
             // TODO more clean up such as view models and listeners just in case (memory).
         });
@@ -125,5 +126,15 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
     @Override
     public EntityKlWindowType getWindowType() {
         return EntityKlWindowTypes.CONCEPT;
+    }
+
+    @Override
+    protected boolean isPropertyPanelOpen() {
+        return detailsNode.getDetailsViewController().isPropertiesPanelOpen();
+    }
+
+    @Override
+    protected void setPropertyPanelOpen(boolean isOpen) {
+        detailsNode.getDetailsViewController().setPropertiesPanelOpen(isOpen);
     }
 }
