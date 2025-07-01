@@ -465,7 +465,7 @@ public class PatternDetailsController {
      * Creates the filter coordinates menu using the ViewMenuModel.
      */
     public void setupFilterCoordinatesMenu() {
-        this.viewMenuModel = new ViewMenuModel(patternViewModel.getViewProperties(), coordinatesMenuButton);
+        this.viewMenuModel = new ViewMenuModel(patternViewModel.getViewProperties(), coordinatesMenuButton, "PatternDetailsController");
     }
 
     private void setUpAddSemanticMenu() {

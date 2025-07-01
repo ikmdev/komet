@@ -1511,7 +1511,7 @@ public class DetailsController  {
      * generate the classic Komet coordinate menu
      */
     public void setUpEditCoordinateMenu() {
-        this.viewMenuModel = new ViewMenuModel(conceptViewModel.getViewProperties(), coordinatesMenuButton);
+        this.viewMenuModel = new ViewMenuModel(conceptViewModel.getViewProperties(), coordinatesMenuButton, "DetailsController");
     }
 
     private DateTimeFormatter dateFormatter(String formatString) {

@@ -276,7 +276,7 @@ public class GenEditingDetailsController {
      * Creates the filter coordinates menu using the ViewMenuModel.
      */
     public void setupFilterCoordinatesMenu() {
-        this.viewMenuModel = new ViewMenuModel(genEditingViewModel.getViewProperties(), coordinatesMenuButton);
+        this.viewMenuModel = new ViewMenuModel(genEditingViewModel.getViewProperties(), coordinatesMenuButton, "GenEditingDetailsController");
     }
 
     private void setupSemanticDetails() {
