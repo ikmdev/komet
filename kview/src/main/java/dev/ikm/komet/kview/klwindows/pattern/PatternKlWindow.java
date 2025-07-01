@@ -113,4 +113,14 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
     public EntityKlWindowType getWindowType() {
         return EntityKlWindowTypes.PATTERN;
     }
+
+    @Override
+    protected boolean isPropertyPanelOpen() {
+        return jfxNode.controller().isPropertiesPanelOpen();
+    }
+
+    @Override
+    protected void setPropertyPanelOpen(boolean isOpen) {
+        jfxNode.controller().setPropertiesPanelOpen(isOpen);
+    }
 }

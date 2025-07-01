@@ -470,10 +470,7 @@ public interface KometPreferences {
      */
     default OptionalInt getInt(String key) {
         Optional<String> optionalValue = get(key);
-        if (optionalValue.isPresent()) {
-            return OptionalInt.of(Integer.parseInt(optionalValue.get()));
-        }
-        return OptionalInt.empty();
+        return optionalValue.map(s -> OptionalInt.of(Integer.parseInt(s))).orElseGet(OptionalInt::empty);
     }
 
     /**
@@ -822,10 +819,7 @@ public interface KometPreferences {
 
     default OptionalDouble getDouble(String key) {
         Optional<String> optionalValue = get(key);
-        if (optionalValue.isPresent()) {
-            return OptionalDouble.of(Double.parseDouble(optionalValue.get()));
-        }
-        return OptionalDouble.empty();
+        return optionalValue.map(s -> OptionalDouble.of(Double.parseDouble(s))).orElseGet(OptionalDouble::empty);
     }
 
     /**

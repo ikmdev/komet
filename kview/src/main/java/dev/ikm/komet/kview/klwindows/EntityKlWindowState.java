@@ -16,13 +16,16 @@
 package dev.ikm.komet.kview.klwindows;
 
 import dev.ikm.komet.preferences.KometPreferences;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.factory.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.prefs.BackingStoreException;
+import java.util.stream.Stream;
 
 import static dev.ikm.komet.kview.controls.KLWorkspace.DEFAULT_WINDOW_WIDTH;
 
@@ -65,6 +68,7 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.DEFAULT_WINDOW_WIDTH;
  * @see EntityKlWindowType
  * @see KometPreferences
  */
+// TODO: REFACTOR - This class should be refactored to leverage the Knowledge Layout module's KlContext facility
 public class EntityKlWindowState {
 
     private static final Logger LOG = LoggerFactory.getLogger(EntityKlWindowState.class);
@@ -114,6 +118,11 @@ public class EntityKlWindowState {
      */
     public static final String ENTITY_NID_TYPE = "ENTITY_NID_TYPE";
 
+    /**
+     * Preference key for storing the properties panel open/closed state.
+     */
+    public static final String PROPERTY_PANEL_OPEN = "PROPERTY_PANEL_OPEN";
+
     // Core window properties
     private UUID windowId;
     private EntityKlWindowType windowType;
@@ -128,7 +137,7 @@ public class EntityKlWindowState {
     private String entityNidType;
 
     // Additional custom properties
-    private final Map<String, Object> additionalProperties = new HashMap<>();
+    private final MutableMap<String, Object> additionalProperties = Maps.mutable.empty();
 
     /**
      * Returns the unique identifier for this window.
@@ -347,7 +356,7 @@ public class EntityKlWindowState {
      * <p>
      * This is a convenience method for setting the window size.
      *
-     * @param width the window width
+     * @param width  the window width
      * @param height the window height
      */
     public void setSize(double width, double height) {
@@ -365,7 +374,7 @@ public class EntityKlWindowState {
      * Supported property value types include String, Integer, Double, Boolean,
      * and UUID. Other types will be stored using their string representation.
      *
-     * @param key the property key (cannot be null or empty)
+     * @param key   the property key (cannot be null or empty)
      * @param value the property value to store
      * @throws IllegalArgumentException if the key is null or empty (logged as warning)
      */
@@ -412,7 +421,7 @@ public class EntityKlWindowState {
      * This method attempts to retrieve a property value as a String.
      * If the key doesn't exist or the value is not a String, the default value is returned.
      *
-     * @param key the property key to look up
+     * @param key          the property key to look up
      * @param defaultValue the default value to return if the property is missing or not a string
      * @return the property value as a String, or the default value
      */
@@ -427,7 +436,7 @@ public class EntityKlWindowState {
      * This method attempts to retrieve a property value as an Integer.
      * If the key doesn't exist or the value is not an Integer, the default value is returned.
      *
-     * @param key the property key to look up
+     * @param key          the property key to look up
      * @param defaultValue the default value to return if the property is missing or not an integer
      * @return the property value as an integer, or the default value
      */
@@ -442,7 +451,7 @@ public class EntityKlWindowState {
      * This method attempts to retrieve a property value as a Double.
      * If the key doesn't exist or the value is not a Double, the default value is returned.
      *
-     * @param key the property key to look up
+     * @param key          the property key to look up
      * @param defaultValue the default value to return if the property is missing or not a double
      * @return the property value as a double, or the default value
      */
@@ -457,7 +466,7 @@ public class EntityKlWindowState {
      * This method attempts to retrieve a property value as a Boolean.
      * If the key doesn't exist or the value is not a Boolean, the default value is returned.
      *
-     * @param key the property key to look up
+     * @param key          the property key to look up
      * @param defaultValue the default value to return if the property is missing or not a boolean
      * @return the property value as a boolean, or the default value
      */
@@ -535,7 +544,7 @@ public class EntityKlWindowState {
         /**
          * Sets the window size.
          *
-         * @param width the window width
+         * @param width  the window width
          * @param height the window height
          * @return this builder instance for method chaining
          */
@@ -580,7 +589,7 @@ public class EntityKlWindowState {
         /**
          * Adds a custom property to the window state.
          *
-         * @param key the property key
+         * @param key   the property key
          * @param value the property value
          * @return this builder instance for method chaining
          */
@@ -662,29 +671,20 @@ public class EntityKlWindowState {
      * @param preferences the preferences node to save to
      */
     private void saveAdditionalProperties(KometPreferences preferences) {
-        for (Map.Entry<String, Object> entry : additionalProperties.entrySet()) {
-            try {
-                String key = "PROP_" + entry.getKey();
-                Object value = entry.getValue();
+        additionalProperties.forEach((key, value) -> {
+            final String propKey = "PROP_" + key;
 
-                if (value instanceof String) {
-                    preferences.put(key, (String) value);
-                } else if (value instanceof Integer) {
-                    preferences.putInt(key, (Integer) value);
-                } else if (value instanceof Double) {
-                    preferences.putDouble(key, (Double) value);
-                } else if (value instanceof Boolean) {
-                    preferences.putBoolean(key, (Boolean) value);
-                } else if (value instanceof UUID) {
-                    preferences.put(key, value.toString());
-                } else if (value != null) {
-                    // Try to store as string if we can't store directly
-                    preferences.put(key, value.toString());
-                }
-            } catch (Exception e) {
-                LOG.error("Error saving property {}", entry.getKey(), e);
+            switch (value) {
+                case Integer intValue -> preferences.putInt(propKey, intValue);
+                case Long longValue -> preferences.putLong(propKey, longValue);
+                case Double doubleValue -> preferences.putDouble(propKey, doubleValue);
+                case Boolean booleanValue -> preferences.putBoolean(propKey, booleanValue);
+                case UUID uuidValue -> preferences.put(propKey, uuidValue.toString());
+                case String strValue -> preferences.put(propKey, strValue);
+                case null -> { /* Skip null values */ }
+                default -> preferences.put(propKey, value.toString());
             }
-        }
+        });
     }
 
     /**
@@ -739,7 +739,7 @@ public class EntityKlWindowState {
      * from the given preferences node and populates the window state object.
      *
      * @param preferences the preferences node to load from
-     * @param state the window state instance to populate
+     * @param state       the window state instance to populate
      */
     private static void loadEntityProperties(KometPreferences preferences, EntityKlWindowState state) {
         preferences.get(ENTITY_UUID).ifPresent(uuid -> {
@@ -762,28 +762,123 @@ public class EntityKlWindowState {
      * It attempts to load each property with its appropriate type.
      *
      * @param preferences the preferences node to load from
-     * @param state the window state instance to populate
+     * @param state       the window state instance to populate
      */
-    private static void loadAdditionalProperties(KometPreferences preferences, EntityKlWindowState state) {
-        try {
-            for (String key : preferences.keys()) {
-                if (key.startsWith("PROP_")) {
-                    String propName = key.substring(5); // Remove PROP_ prefix
+    private static void loadAdditionalProperties(KometPreferences preferences, EntityKlWindowState state)
+            throws BackingStoreException {
+        Arrays.stream(preferences.keys())
+                .filter(key -> key.startsWith("PROP_"))
+                .forEach(key -> {
+                    final String propertyName = key.substring(5);
 
-                    // Try different property types
-                    if (preferences.get(key).isPresent()) {
-                        state.additionalProperties.put(propName, preferences.get(key).get());
-                    } else if (preferences.getInt(key).isPresent()) {
-                        state.additionalProperties.put(propName, preferences.getInt(key));
-                    } else if (preferences.getDouble(key).isPresent()) {
-                        state.additionalProperties.put(propName, preferences.getDouble(key));
-                    } else if (preferences.getBoolean(key).isPresent()) {
-                        state.additionalProperties.put(propName, preferences.getBoolean(key).get());
-                    }
-                }
-            }
+                    Stream.<Optional<?>>of(tryLoadBoolean(preferences, key),
+                                    tryLoadInteger(preferences, key),
+                                    tryLoadLong(preferences, key),
+                                    tryLoadDouble(preferences, key),
+                                    tryLoadString(preferences, key))
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .findFirst()
+                            .ifPresent(value -> state.additionalProperties.put(propertyName, value));
+                });
+    }
+
+    /**
+     * Attempts to load a boolean value from preferences for the given key.
+     * <p>
+     * This method tries to retrieve a boolean value from the preferences node.
+     * If the retrieval fails (e.g., the value is not a boolean), an empty Optional is returned.
+     *
+     * @param preferences the preferences node to load from
+     * @param key         the preference key to retrieve
+     * @return an Optional containing the boolean value if successful, empty otherwise
+     */
+    private static Optional<Boolean> tryLoadBoolean(KometPreferences preferences, String key) {
+        try {
+            return preferences.getBoolean(key);
         } catch (Exception e) {
-            LOG.error("Error loading additional properties", e);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Attempts to load an integer value from preferences for the given key.
+     * <p>
+     * This method tries to retrieve an integer value from the preferences node.
+     * If the retrieval fails (e.g., the value is not an integer), an empty Optional is returned.
+     *
+     * @param preferences the preferences node to load from
+     * @param key         the preference key to retrieve
+     * @return an Optional containing the integer value if successful, empty otherwise
+     */
+    private static Optional<Integer> tryLoadInteger(KometPreferences preferences, String key) {
+        try {
+            return preferences.getInt(key).stream().boxed().findFirst();
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Attempts to load a long value from preferences for the given key.
+     * <p>
+     * This method tries to retrieve a long value from the preferences node.
+     * If the retrieval fails (e.g., the value is not a long), an empty Optional is returned.
+     *
+     * @param preferences the preferences node to load from
+     * @param key         the preference key to retrieve
+     * @return an Optional containing the long value if successful, empty otherwise
+     */
+    private static Optional<Long> tryLoadLong(KometPreferences preferences, String key) {
+        try {
+            return preferences.getLong(key).stream().boxed().findFirst();
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Attempts to load a double value from preferences for the given key.
+     * <p>
+     * This method tries to retrieve a double value from the preferences node.
+     * If the retrieval fails (e.g., the value is not a double), an empty Optional is returned.
+     *
+     * @param preferences the preferences node to load from
+     * @param key         the preference key to retrieve
+     * @return an Optional containing the double value if successful, empty otherwise
+     */
+    private static Optional<Double> tryLoadDouble(KometPreferences preferences, String key) {
+        try {
+            return preferences.getDouble(key).stream().boxed().findFirst();
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Attempts to load a string value from preferences for the given key.
+     * <p>
+     * This method tries to retrieve a string value from the preferences node.
+     * It also checks if the string represents a UUID and validates it.
+     * If the retrieval fails, an empty Optional is returned.
+     *
+     * @param preferences the preferences node to load from
+     * @param key         the preference key to retrieve
+     * @return an Optional containing the string value if successful, empty otherwise
+     */
+    private static Optional<String> tryLoadString(KometPreferences preferences, String key) {
+        Optional<String> stringValue = preferences.get(key);
+        if (stringValue.isPresent()) {
+            // Check if it's a UUID string
+            String value = stringValue.get();
+            try {
+                final UUID uuid = UUID.fromString(value);
+                return Optional.of(uuid.toString());
+            } catch (IllegalArgumentException ex) {
+                return Optional.of(value);
+            }
+        } else {
+            return Optional.empty();
         }
     }
 
@@ -798,7 +893,7 @@ public class EntityKlWindowState {
      */
     @Override
     public String toString() {
-        return  "{" +
+        return "{" +
                 "windowType='" + windowType + '\'' +
                 ", windowId='" + windowId + '\'' +
                 ", position=(" + xPos + "," + yPos + ")" +
@@ -807,8 +902,8 @@ public class EntityKlWindowState {
                 ", entityNid=" + entityNid +
                 ", entityNidType=" + entityNidType +
                 ", additionalProperties={" + additionalProperties.entrySet().stream().map(
-                        entry -> entry.getKey() + "=" + entry.getValue()
-                ).reduce((a, b) -> a + ", " + b).orElse("") + "}" +
+                entry -> entry.getKey() + "=" + entry.getValue()
+        ).reduce((a, b) -> a + ", " + b).orElse("") + "}" +
                 '}';
     }
 }
