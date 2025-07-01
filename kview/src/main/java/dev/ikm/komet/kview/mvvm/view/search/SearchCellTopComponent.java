@@ -55,7 +55,6 @@ public class SearchCellTopComponent extends ListCell<Map.Entry<SearchPanelContro
         VBox.setMargin(parentPane, new Insets(8, 0, 8, 0));
 
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-        setText(null);
     }
 
     @Override
@@ -77,23 +76,13 @@ public class SearchCellTopComponent extends ListCell<Map.Entry<SearchPanelContro
                 controller.setData(entity);
                 controller.setComponentText(topText);
 
-//                                controller.getDescriptionsVBox().getChildren().clear();
-//                                latestVersionSearchResults.forEach(latestVersionSearchResult -> {
-//                                    Label descrLabel = new Label(formatHighlightedString(latestVersionSearchResult.highlightedString()));
-//                                    descrLabel.getStyleClass().add("search-entry-description-label");
-//                                    controller.getDescriptionsVBox().getChildren().add(descrLabel);
-//                                    controller.getDescriptionsVBox().getStyleClass().add("search-entry-descr-container");
-//                                    VBox.setMargin(descrLabel, new Insets(0, 7, 7, 7));
-//                                    descrLabel.setPadding(new Insets(8));
-//                                });
                 controller.getDescriptionListViewItems().setAll(item.getValue());
-
 
                 if (entityVersion.active()) {
                     controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
                 }
                 controller.setRetired(!entityVersion.active());
-//                VBox.setMargin(parentPane, new Insets(8, 0, 8, 0));
+
                 setUpDraggable(parentPane, entity, CONCEPT);
 
                 setGraphic(parentPane);

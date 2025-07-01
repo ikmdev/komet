@@ -113,27 +113,7 @@
                   <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                </padding>
             </HBox>
-            <TitledPane fx:id="descriptionsTitledPane" animated="false" expanded="false" styleClass="search-entry-title-pane" text="DESCRIPTION SEMANTICS" VBox.vgrow="ALWAYS">
-<!--                  <VBox fx:id="descriptionsVBox" prefWidth="100.0">-->
-<!--                     <children>-->
-<!--                        <Label prefHeight="30.0" prefWidth="302.0" styleClass="search-entry-description-label" text="Tetralogy of Fallot (disorder)">-->
-<!--                           <VBox.margin>-->
-<!--                              <Insets bottom="7.0" left="7.0" right="7.0" />-->
-<!--                           </VBox.margin>-->
-<!--                           <padding>-->
-<!--                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />-->
-<!--                           </padding>-->
-<!--                        </Label>-->
-<!--                        <Label layoutX="28.0" layoutY="28.0" prefHeight="30.0" prefWidth="302.0" styleClass="search-entry-description-label" text="Tetralogy of Fallot (disorder)">-->
-<!--                           <VBox.margin>-->
-<!--                              <Insets bottom="7.0" left="7.0" right="7.0" />-->
-<!--                           </VBox.margin>-->
-<!--                           <padding>-->
-<!--                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />-->
-<!--                           </padding>-->
-<!--                        </Label>-->
-<!--                     </children>-->
-<!--                  </VBox>-->
+            <TitledPane animated="false" expanded="false" styleClass="search-entry-title-pane" text="DESCRIPTION SEMANTICS" VBox.vgrow="ALWAYS">
                 <content>
                     <ListView fx:id="descriptionsListView" />
                 </content>

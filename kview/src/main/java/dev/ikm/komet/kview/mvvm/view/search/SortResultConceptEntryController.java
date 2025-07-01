@@ -37,7 +37,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -54,10 +53,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class SortResultConceptEntryController extends AbstractBasicController {
 
-
-    @FXML
-    private TitledPane descriptionsTitledPane;
-
     @FXML
     private HBox searchEntryHBox;
 
@@ -72,9 +67,6 @@ public class SortResultConceptEntryController extends AbstractBasicController {
 
     @FXML
     private Label retiredLabel;
-
-//    @FXML
-//    private VBox descriptionsVBox;
 
     @FXML
     private ListView<LatestVersionSearchResult> descriptionsListView;
@@ -190,25 +182,18 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         this.componentText.setText(topText);
     }
 
-//    public VBox getDescriptionsVBox() {
-//        return this.descriptionsVBox;
-//    }
-
     public ObservableList<LatestVersionSearchResult> getDescriptionListViewItems() { return descriptionsListView.getItems(); }
 
     @Override
     public void updateView() {
-
     }
 
     @Override
     public void clearView() {
-
     }
 
     @Override
     public void cleanup() {
-
     }
 
     public void setData(Entity<EntityVersion> entity) {

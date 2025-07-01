@@ -13,52 +13,47 @@
 <?import javafx.scene.control.ListView?>
 <StackPane fx:id="root" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController">
     <children>
-                <VBox prefHeight="900.0" prefWidth="372.0" styleClass="search-vertical-scroll-area">
-                    <children>
-                        <HBox prefHeight="61.0" prefWidth="372.0" styleClass="search-hbox" VBox.vgrow="NEVER">
-                            <VBox.margin>
-                                <Insets />
-                            </VBox.margin>
-                            <children>
-                                <VBox prefHeight="61.0" prefWidth="350.0">
-                                    <children>
-                                        <HBox prefHeight="100.0" prefWidth="200.0">
-                                            <children>
-                                                <AutoCompleteTextField fx:id="searchField" onAction="#doSearch" prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
-                                                   <cursor>
-                                                      <Cursor fx:constant="TEXT" />
-                                                   </cursor>
-                                                </AutoCompleteTextField>
-                                                <Button fx:id="filterPane" mnemonicParsing="false" styleClass="search-button, filter-button">
-                                                    <graphic>
-                                                        <Region focusTraversable="true">
-                                                            <styleClass>
-                                                                <String fx:value="icon" />
-                                                                <String fx:value="search-button-region" />
-                                                            </styleClass>
-                                                        </Region>
-                                                    </graphic>
-                                                </Button>
-                                            </children>
-                                            <padding>
-                                                <Insets bottom="12.0" />
-                                            </padding>
-                                        </HBox>
-                                        <Button fx:id="sortByButton" mnemonicParsing="false" onAction="#showSearchOptions" prefHeight="25.0" prefWidth="345.0" styleClass="search-sort-button" text="SORT BY: TOP COMPONENT" />
-                                    </children>
-                                </VBox>
-                            </children>
-                            <padding>
-                                <Insets bottom="12.0" left="12.0" right="8.0" top="12.0" />
-                            </padding>
-                        </HBox>
-<!--                        <VBox fx:id="resultsVBox">-->
-<!--                            <VBox.margin>-->
-<!--                                <Insets bottom="4.0" left="12.0" right="12.0" />-->
-<!--                            </VBox.margin>-->
-<!--                        </VBox>-->
-                        <ListView fx:id="searchResultsListView" VBox.vgrow="ALWAYS"/>
-                    </children>
-                </VBox>
+            <VBox prefHeight="900.0" prefWidth="372.0" styleClass="search-vertical-scroll-area">
+                <children>
+                    <HBox prefHeight="61.0" prefWidth="372.0" styleClass="search-hbox" VBox.vgrow="NEVER">
+                        <VBox.margin>
+                            <Insets />
+                        </VBox.margin>
+                        <children>
+                            <VBox prefHeight="61.0" prefWidth="350.0">
+                                <children>
+                                    <HBox prefHeight="100.0" prefWidth="200.0">
+                                        <children>
+                                            <AutoCompleteTextField fx:id="searchField" onAction="#doSearch" prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
+                                               <cursor>
+                                                  <Cursor fx:constant="TEXT" />
+                                               </cursor>
+                                            </AutoCompleteTextField>
+                                            <Button fx:id="filterPane" mnemonicParsing="false" styleClass="search-button, filter-button">
+                                                <graphic>
+                                                    <Region focusTraversable="true">
+                                                        <styleClass>
+                                                            <String fx:value="icon" />
+                                                            <String fx:value="search-button-region" />
+                                                        </styleClass>
+                                                    </Region>
+                                                </graphic>
+                                            </Button>
+                                        </children>
+                                        <padding>
+                                            <Insets bottom="12.0" />
+                                        </padding>
+                                    </HBox>
+                                    <Button fx:id="sortByButton" mnemonicParsing="false" onAction="#showSearchOptions" prefHeight="25.0" prefWidth="345.0" styleClass="search-sort-button" text="SORT BY: TOP COMPONENT" />
+                                </children>
+                            </VBox>
+                        </children>
+                        <padding>
+                            <Insets bottom="12.0" left="12.0" right="8.0" top="12.0" />
+                        </padding>
+                    </HBox>
+                    <ListView fx:id="searchResultsListView" VBox.vgrow="ALWAYS"/>
+                </children>
+            </VBox>
     </children>
 </StackPane>
