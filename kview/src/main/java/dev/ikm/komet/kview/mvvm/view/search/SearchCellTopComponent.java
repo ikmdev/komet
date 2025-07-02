@@ -26,7 +26,12 @@ import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.setUp
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
-public class SearchCellTopComponent extends ListCell<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>> {
+// Unfortunately we cannot have the generic type defined in the ListCell (the item needs to be of type Object).
+// There seems to be a bug in JavaFX where after you change the Cell Factory, the now defunct Cells still hang
+// on and listen for changes in the ListView items. So we always need to check the type of the item passed in
+// to updateItem. We need to check its type to make sure the current ListView item being passed in still applies
+// to the cell
+public class SearchCellTopComponent extends ListCell {
 
     public static final String SORT_CONCEPT_RESULT_CONCEPT_FXML = "search-result-concept-entry.fxml";
 
@@ -58,37 +63,40 @@ public class SearchCellTopComponent extends ListCell<Map.Entry<SearchPanelContro
     }
 
     @Override
-    protected void updateItem(Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> item, boolean empty) {
+    protected void updateItem(Object item, boolean empty) {
         super.updateItem(item, empty);
 
         if (item == null || empty) {
             setGraphic(null);
         } else {
-            int topNid = item.getKey().nid();
-            String topText = viewProperties.nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(topNid); // top text I assume is the title text
-            Latest<EntityVersion> latestTopVersion = viewProperties.nodeView().calculator().latest(topNid);
-            if (latestTopVersion.isPresent()) {
-                EntityVersion entityVersion = latestTopVersion.get();
+            if (item instanceof Map.Entry) {
+                Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> mapEntry = (Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>) item;
 
-                controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
-                controller.setWindowView(observableViewNoOverride);
-                Entity entity = Entity.get(entityVersion.nid()).get();
-                controller.setData(entity);
-                controller.setComponentText(topText);
+                int topNid = mapEntry.getKey().nid();
+                String topText = viewProperties.nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(topNid); // top text I assume is the title text
+                Latest<EntityVersion> latestTopVersion = viewProperties.nodeView().calculator().latest(topNid);
+                if (latestTopVersion.isPresent()) {
+                    EntityVersion entityVersion = latestTopVersion.get();
 
-                controller.getDescriptionListViewItems().setAll(item.getValue());
+                    controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
+                    controller.setWindowView(observableViewNoOverride);
+                    Entity entity = Entity.get(entityVersion.nid()).get();
+                    controller.setData(entity);
+                    controller.setComponentText(topText);
 
-                if (entityVersion.active()) {
-                    controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
+                    controller.getDescriptionListViewItems().setAll(mapEntry.getValue());
+
+                    if (entityVersion.active()) {
+                        controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
+                    }
+                    controller.setRetired(!entityVersion.active());
+
+                    setUpDraggable(parentPane, entity, CONCEPT);
+
+                    setGraphic(parentPane);
+                } else {
+                    setGraphic(null);
                 }
-                controller.setRetired(!entityVersion.active());
-
-                setUpDraggable(parentPane, entity, CONCEPT);
-
-                setGraphic(parentPane);
-            }
-            else {
-                setGraphic(null);
             }
         }
     }

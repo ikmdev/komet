@@ -138,7 +138,7 @@ public class NextGenSearchController extends AbstractBasicController {
 
     private FilterOptionsPopup filterOptionsPopup;
 
-    private String currentSelectedButton;
+    private SearchResultType currentSearchResultType;
 
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
@@ -158,12 +158,17 @@ public class NextGenSearchController extends AbstractBasicController {
                 sortByButton.setText(BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA);
             }
 
-            updateSearchResultsListViewCellFactory();
+            if (evt.getEventType() == SORT_BY_COMPONENT || evt.getEventType() == SORT_BY_COMPONENT_ALPHA) {
+                setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
+            } else if (evt.getEventType() == SORT_BY_SEMANTIC || evt.getEventType() == SORT_BY_SEMANTIC_ALPHA) {
+                setCurrentSearchResultType(SearchResultType.DESCRIPTION_SEMANTICS);
+            }
+
             sortOptions.hide();
         });
         eventBus.subscribe(SEARCH_SORT_TOPIC, SearchSortOptionEvent.class, searchSortOptionListener);
 
-        updateSearchResultsListViewCellFactory();
+        initSearchResultType();
 
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
         root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
@@ -186,25 +191,32 @@ public class NextGenSearchController extends AbstractBasicController {
                 filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
     }
 
-    private void updateSearchResultsListViewCellFactory() {
-        if (currentSelectedButton != null && currentSelectedButton.equals(sortByButton.getText())) {
+    private void initSearchResultType() {
+        sortByButton.setText(BUTTON_TEXT_TOP_COMPONENT);
+        setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
+    }
+
+    private void setCurrentSearchResultType(SearchResultType newSearchResultType) {
+        if (newSearchResultType == currentSearchResultType) {
             return;
         }
 
         searchResultsListView.getItems().clear();
 
-        switch (sortByButton.getText()) {
-            case BUTTON_TEXT_TOP_COMPONENT, BUTTON_TEXT_TOP_COMPONENT_ALPHA ->
-                searchResultsListView.setCellFactory((
-                        Callback<ListView<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>, ListCell<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>>) param ->
-                            new SearchCellTopComponent(getViewProperties(), getJournalTopic(), windowView)
+        switch (newSearchResultType) {
+            case TOP_COMPONENT ->
+                searchResultsListView.setCellFactory((Callback<ListView<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>, ListCell<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>>) param ->
+                        new SearchCellTopComponent(getViewProperties(), getJournalTopic(), windowView)
                 );
-            case BUTTON_TEXT_DESCRIPTION_SEMANTIC, BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA ->
+            case DESCRIPTION_SEMANTICS ->
                 searchResultsListView.setCellFactory((Callback<ListView<LatestVersionSearchResult>, ListCell<LatestVersionSearchResult>>) param ->
                         new SearchCellDescriptionSemantic(windowView));
+            case NID ->
+                searchResultsListView.setCellFactory((Callback<ListView<Integer>, ListCell<Integer>>) param ->
+                        new SearchCellNid(getViewProperties(), windowView));
         }
 
-        currentSelectedButton = sortByButton.getText();
+        currentSearchResultType = newSearchResultType;
     }
 
     private void setUpTypeAhead() {
@@ -257,7 +269,6 @@ public class NextGenSearchController extends AbstractBasicController {
 
     @FXML
     private void doSearch(ActionEvent actionEvent) {
-        actionEvent.consume();
         clearView();
         String queryText = searchField.getText().strip();
         try {
@@ -280,6 +291,8 @@ public class NextGenSearchController extends AbstractBasicController {
                 List processedResults;
                 switch (sortByButton.getText()) {
                     case BUTTON_TEXT_TOP_COMPONENT -> {
+                        setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
+
                         // used linked hash map to maintain insertion order
                         LinkedHashMap<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems = new LinkedHashMap<>();
 
@@ -300,6 +313,8 @@ public class NextGenSearchController extends AbstractBasicController {
                         processedResults = myList;
                     }
                     case BUTTON_TEXT_TOP_COMPONENT_ALPHA -> {
+                        setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
+
                         // sort by natural order
                         results.sort((o1, o2) -> NaturalOrder.compareStrings(o1.latestVersion().get().fieldValues().get(o1.fieldIndex()).toString(),
                                 o2.latestVersion().get().fieldValues().get(o2.fieldIndex()).toString()));
@@ -320,11 +335,15 @@ public class NextGenSearchController extends AbstractBasicController {
                         processedResults = myList;
                     }
                     case BUTTON_TEXT_DESCRIPTION_SEMANTIC -> {
+                        setCurrentSearchResultType(SearchResultType.DESCRIPTION_SEMANTICS);
+
                         results.sort((o1, o2) -> Float.compare(o2.score(), o1.score()));
 
                         processedResults = results;
                     }
                     case BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA -> {
+                        setCurrentSearchResultType(SearchResultType.DESCRIPTION_SEMANTICS);
+
                         results.sort((o1, o2) -> NaturalOrder.compareStrings(formatHighlightedString(o1.highlightedString()),
                                 formatHighlightedString(o2.highlightedString())));
 
@@ -347,30 +366,9 @@ public class NextGenSearchController extends AbstractBasicController {
     }
 
     private void addComponentFromNid(int nid) {
-//        String topText = getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(nid);
-//        Latest<EntityVersion> latestTopVersion = getViewProperties().nodeView().calculator().latest(nid);
-//
-//        latestTopVersion.ifPresent(entityVersion -> {
-//
-//            JFXNode<Pane, SortResultSemanticEntryController> searchSemanticEntryJFXNode = FXMLMvvmLoader
-//                    .make(SortResultSemanticEntryController.class.getResource(SORT_SEMANTIC_RESULT_CONCEPT_FXML));
-//            Node node = searchSemanticEntryJFXNode.node();
-//            SortResultSemanticEntryController controller = searchSemanticEntryJFXNode.controller();
+        setCurrentSearchResultType(SearchResultType.NID);
 
-//            controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
-//            controller.setSemanticText(topText);
-//            controller.setWindowView(windowView);
-//            Entity entity = Entity.get(entityVersion.nid()).get();
-//            controller.setData(entity);
-//            if (entityVersion.active()) {
-//                controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
-//            }
-//            VBox.setMargin(node, new Insets(2, 0, 2, 0));
-//
-//            setUpDraggable(node, entity, getDragAndDropType(entity));
-//
-//            resultsVBox.getChildren().add(node);
-//        });
+        searchResultsListView.getItems().add(nid);
     }
 
     static DragAndDropType getDragAndDropType(Entity entity) {
@@ -492,6 +490,18 @@ public class NextGenSearchController extends AbstractBasicController {
 
     public void setJournalTopic(UUID journalTopic) {
         this.journalTopic = journalTopic;
+    }
+
+    /***************************************************************************
+     *                                                                         *
+     * Support Classes                                                         *
+     *                                                                         *
+     **************************************************************************/
+
+    private enum SearchResultType {
+        TOP_COMPONENT,
+        DESCRIPTION_SEMANTICS,
+        NID
     }
 }
 
