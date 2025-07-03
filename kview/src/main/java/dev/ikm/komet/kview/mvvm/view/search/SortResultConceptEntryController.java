@@ -28,11 +28,13 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -41,6 +43,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
@@ -53,8 +57,10 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class SortResultConceptEntryController extends AbstractBasicController {
 
+    private static final int LIST_VIEW_CELL_SIZE = 40;
+
     @FXML
-    private HBox searchEntryHBox;
+    private Pane searchEntryContainer;
 
     @FXML
     private ImageView identicon;
@@ -94,15 +100,15 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         eventBus = EvtBusFactory.getDefaultEvtBus();
         showContextButton.setVisible(false);
         contextMenu.setHideOnEscape(true);
-        searchEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(entity instanceof ConceptEntity));
-        searchEntryHBox.setOnMouseExited(mouseEvent -> {
+        searchEntryContainer.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(entity instanceof ConceptEntity));
+        searchEntryContainer.setOnMouseExited(mouseEvent -> {
             if (!contextMenu.isShowing()) {
                 showContextButton.setVisible(false);
             }
         });
         showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
 
-        searchEntryHBox.setOnMouseClicked(mouseEvent -> {
+        searchEntryContainer.setOnMouseClicked(mouseEvent -> {
             // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
@@ -120,18 +126,31 @@ public class SortResultConceptEntryController extends AbstractBasicController {
             }
         });
 
+        descriptionsListView.setFixedCellSize(LIST_VIEW_CELL_SIZE);
+        descriptionsListView.getItems().addListener((ListChangeListener<? super LatestVersionSearchResult>) change -> updateListViewPrefHeight());
+        updateListViewPrefHeight();
+
         descriptionsListView.setCellFactory(param -> new ListCell<>() {
+            StackPane cellContainer = new StackPane();
+            Label label = new Label();
+
+            {
+                cellContainer.getChildren().add(label);
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+
+                cellContainer.getStyleClass().add("cell-container");
+            }
 
             @Override
             protected void updateItem(LatestVersionSearchResult item, boolean empty) {
                 if (item == null || empty) {
-                    setText(null);
+                    setGraphic(null);
                 } else {
-                    setText(formatHighlightedString(item.highlightedString()));
+                    label.setText(formatHighlightedString(item.highlightedString()));
+                    setGraphic(cellContainer);
                 }
             }
         });
-
     }
 
     private String formatHighlightedString(String highlightedString) {
@@ -143,7 +162,6 @@ public class SortResultConceptEntryController extends AbstractBasicController {
 
     @FXML
     private void populateConcept(ActionEvent actionEvent) {
-        actionEvent.consume();
         if (entity instanceof ConceptEntity conceptEntity) {
             eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
                     MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
@@ -152,7 +170,6 @@ public class SortResultConceptEntryController extends AbstractBasicController {
 
     @FXML
     private void openInConceptNavigator(ActionEvent actionEvent) {
-        actionEvent.consume();
         if (entity instanceof ConceptEntity conceptEntity) {
             eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT, conceptEntity));
         }
@@ -212,5 +229,14 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     @Override
     public <T extends ViewModel> T getViewModel() {
         return null;
+    }
+
+    private void updateListViewPrefHeight() {
+        int itemsNumber = descriptionsListView.getItems().size();
+        /* adding a number to LIST_VIEW_CELL_SIZE to account for padding, etc */
+        double newPrefHeight = itemsNumber * (LIST_VIEW_CELL_SIZE + 3);
+        double maxHeight = descriptionsListView.getMaxHeight();
+
+        descriptionsListView.setPrefHeight(Math.min(newPrefHeight, maxHeight));
     }
 }

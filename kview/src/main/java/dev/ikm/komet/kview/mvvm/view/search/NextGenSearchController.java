@@ -114,7 +114,7 @@ public class NextGenSearchController extends AbstractBasicController {
     private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
 
     @FXML
-    private StackPane root;
+    private Pane root;
 
     @FXML
     private ListView searchResultsListView;
