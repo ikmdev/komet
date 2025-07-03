@@ -196,12 +196,11 @@
 
 /* focus purely on the arrow */
 .titled-pane:focused > .title > .arrow-button > .arrow {
-    -fx-background-color: -Secondary-05;
-    -fx-shape: "M7.91 8.29508L6.5 9.70508L12.5 15.7051L18.5 9.70508L17.09 8.29508L12.5 12.8751L7.91 8.29508Z";
-    -fx-background-insets: -1, 0;
+    -fx-effect: null;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
 .titled-pane > .title > .arrow-button {
-    -fx-background-color: null;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
     -fx-padding: 0.0em 0.583em 0.0em 0.0em; /* 0 7 0 0 */
@@ -2859,16 +2858,92 @@ Timeline Year line segment (will overlay change circles)
 }
 
 /*********************************************************************************
- * End of Pattern UI elements                                                    *
+ * Next Gen Search                                                               *
  *********************************************************************************/
 
+.next-gen-search-main-container .outer-list-view {
+    -fx-background-color: -Grey-9;
+    -fx-padding: 10px 0 10px 0;
+}
 
-/********************************************************************************
- * Start of Journal > Search Concept UI elements                                *
- ********************************************************************************/
+.next-gen-search-main-container .outer-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 3px 6px 3px 12px;
+}
+
+.next-gen-search-main-container .outer-list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 0 0 0;
+}
+
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .increment-button,
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .decrement-button,
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .increment-arrow,
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .decrement-arrow {
+     -fx-background-color:transparent;
+     -fx-background-radius: 0em;
+     -fx-padding: 0 2 0 2;
+}
+
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #a9aeb8;
+    -fx-background-insets: 3px 5px 3px 1px;
+    -fx-background-radius: 16px;
+}
 
 .search-vertical-scroll-area {
     -fx-background-color: -Grey-9;
+}
+
+.next-gen-search-main-container .descriptions-list-view {
+    -fx-background-color: #f1f3f8;
+    -fx-padding: 3px 0 0 0;
+}
+
+.next-gen-search-main-container .descriptions-list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 0 0 0;
+}
+
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .increment-button,
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .decrement-button,
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .increment-arrow,
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 2 0 2;
+}
+
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #777;
+    -fx-background-insets: 3 5 3 0;
+    -fx-background-radius: 16px;
+}
+
+/* Cells and Cells content */
+.next-gen-search-main-container .descriptions-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+
+    -fx-padding: 0 6px 5 6px;
+}
+
+.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+
+    -fx-background-color: white;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+
+    -fx-effect: dropshadow(gaussian , rgba(0,0,0,0.2) , 4, 0.0 , 0 , 2 );
+
+    height: 75;
+    -fx-pref-height: height;
+    -fx-max-height: height;
+
+    -fx-padding: 5 6 5 10;
+    -fx-alignment: center_left;
 }
 
 .search-button,
@@ -2882,6 +2957,8 @@ Timeline Year line segment (will overlay change circles)
 
 .search-hbox {
     -fx-background-color: -Grey-9;
+    -fx-border-color: #444;
+    -fx-border-width: 0 0 1px 0;
 }
 
 .search-text-field {
@@ -2923,21 +3000,49 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: white;
 }
 
+.search-entry-container {
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-background-color: white;
+
+    -fx-padding: 4px 5px 7px 5px;
+
+    -fx-spacing: 3px;
+}
+
+.next-gen-search-main-container .search-entry-container .identicon-container {
+    -fx-padding: 0 0 0 4px;
+}
+
 .search-entry-hbox {
     -fx-border-radius: 2px;
     -fx-background-radius: 2px;
     -fx-background-color: white;
 }
 
+.search-entry-hbox .search-entry-left-pane {
+    -fx-spacing: 4px;
+}
+
+.search-entry-hbox .search-entry-left-pane .semantic-text-container {
+    -fx-padding: -1 0 0 3;
+}
+
+.next-gen-search-main-container .search-entry-header {
+    -fx-alignment: center_left;
+}
+
+.search-entry-text-container {
+    -fx-padding: 6px 0 5px 0;
+}
+
 .search-entry-text {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
-    -fx-font-style: normal;
-    -fx-font-weight: bold;
+
     -fx-line-height: 16px;
     -fx-letter-spacing: 0.2px;
     -fx-fill: -Natural-Grey-Dark;
-
 }
 
 .search-entry-expanded {
@@ -3180,8 +3285,6 @@ Timeline Year line segment (will overlay change circles)
 .pattern-instance-hbox {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
-    -fx-font-style: normal;
-    -fx-font-weight: 400;
 
     -fx-background-color: white;
     -fx-background-radius: 3px;

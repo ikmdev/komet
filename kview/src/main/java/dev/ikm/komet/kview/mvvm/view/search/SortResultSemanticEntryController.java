@@ -20,13 +20,10 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
-import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
@@ -37,6 +34,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
@@ -45,7 +43,7 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 public class SortResultSemanticEntryController  {
 
     @FXML
-    private HBox searchEntryHBox;
+    private Pane searchEntryContainer;
 
     @FXML
     private ImageView identicon;
@@ -84,15 +82,15 @@ public class SortResultSemanticEntryController  {
         eventBus = EvtBusFactory.getDefaultEvtBus();
         showContextButton.setVisible(false);
         contextMenu.setHideOnEscape(true);
-        searchEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
-        searchEntryHBox.setOnMouseExited(mouseEvent -> {
+        searchEntryContainer.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
+        searchEntryContainer.setOnMouseExited(mouseEvent -> {
             if (!contextMenu.isShowing()) {
                 showContextButton.setVisible(false);
             }
         });
         showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
 
-        searchEntryHBox.setOnMouseClicked(mouseEvent -> {
+        searchEntryContainer.setOnMouseClicked(mouseEvent -> {
             // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if (mouseEvent.getClickCount() == 2) {
