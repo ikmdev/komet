@@ -70,6 +70,7 @@ import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
 import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
@@ -93,7 +94,6 @@ import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
@@ -1632,5 +1632,39 @@ public class DetailsController  {
             return null;
         }
         return (T) entityVersion.fieldValues().get(index);
+    }
+
+    /**
+     * Checks whether the properties panel is currently open (slid out).
+     * <p>
+     * This method determines the open state by checking if the properties
+     * slideout tray pane is visible and expanded.
+     *
+     * @return {@code true} if the properties panel is open and visible,
+     *         {@code false} if it is closed or hidden
+     */
+    public boolean isPropertiesPanelOpen() {
+        return SlideOutTrayHelper.isOpen(propertiesSlideoutTrayPane);
+    }
+
+    /**
+     * Sets the open/closed state of the properties panel programmatically.
+     * <p>
+     * The animation is performed without transitions when called programmatically
+     * to ensure immediate state changes.
+     *
+     * @param isOpen {@code true} to open (slide out) the properties panel,
+     *               {@code false} to close (slide in) the panel
+     */
+    public void setPropertiesPanelOpen(boolean isOpen) {
+        propertiesToggleButton.setSelected(isOpen);
+
+        if (isOpen) {
+            SlideOutTrayHelper.slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        } else {
+            SlideOutTrayHelper.slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        }
+
+        updateDraggableNodesForPropertiesPanel(isOpen);
     }
 }
