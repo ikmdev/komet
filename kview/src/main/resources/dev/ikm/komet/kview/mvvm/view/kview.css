@@ -2863,6 +2863,7 @@ Timeline Year line segment (will overlay change circles)
 
 .next-gen-search-main-container .outer-list-view {
     -fx-background-color: -Grey-9;
+    -fx-padding: 10px 0 10px 0;
 }
 
 .next-gen-search-main-container .outer-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
@@ -2956,6 +2957,8 @@ Timeline Year line segment (will overlay change circles)
 
 .search-hbox {
     -fx-background-color: -Grey-9;
+    -fx-border-color: #444;
+    -fx-border-width: 0 0 1px 0;
 }
 
 .search-text-field {
@@ -3015,6 +3018,14 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 2px;
     -fx-background-radius: 2px;
     -fx-background-color: white;
+}
+
+.search-entry-hbox .search-entry-left-pane {
+    -fx-spacing: 4px;
+}
+
+.search-entry-hbox .search-entry-left-pane .semantic-text-container {
+    -fx-padding: -1 0 0 3;
 }
 
 .next-gen-search-main-container .search-entry-header {
