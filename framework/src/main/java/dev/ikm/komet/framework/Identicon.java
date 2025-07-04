@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.framework;
 
+import com.sparrowwallet.toucan.LifeHash;
+import com.sparrowwallet.toucan.LifeHashVersion;
 import dev.ikm.tinkar.common.id.PublicId;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
@@ -69,6 +71,10 @@ public class Identicon {
     }
 
     public static Image generateIdenticonImage(PublicId publicId) {
+        return generateIdenticonImageLifeHash(publicId, LifeHashVersion.DETAILED);
+    }
+
+    public static Image generateIdenticonImageOldVersion(PublicId publicId) {
         int width = 5;
         int height = 5;
 
@@ -103,6 +109,33 @@ public class Identicon {
             }
         }
         return identicon;
+    }
+
+    public static Image generateIdenticonImageLifeHash(PublicId publicId, LifeHashVersion lifeHashVersion) {
+        LifeHash.Image lifeHashImage = LifeHash.makeFromUTF8(publicId.idString(), lifeHashVersion, 1, false);
+
+        // This code creates an additional BufferedImage so the code below should be better in terms of performance
+        // although more complex
+//        BufferedImage awtImage = LifeHash.getBufferedImage(lifeHashImage);
+//        return SwingFXUtils.toFXImage(awtImage, null);
+
+        WritableImage writableImage = new WritableImage(lifeHashImage.width(), lifeHashImage.height());
+        PixelWriter pixelWriter = writableImage.getPixelWriter();
+        for (int y = 0; y < lifeHashImage.height(); y++) {
+            for (int x = 0; x < lifeHashImage.width(); x++) {
+                int offset = (y * lifeHashImage.width() + x) * (lifeHashImage.hasAlpha() ? 4 : 3);
+                int r = lifeHashImage.colors().get(offset) & 0xFF;
+                int g = lifeHashImage.colors().get(offset + 1) & 0xFF;
+                int b = lifeHashImage.colors().get(offset + 2) & 0xFF;
+                if(lifeHashImage.hasAlpha()) {
+                    double a = (lifeHashImage.colors().get(offset + 3) & 0xFF) / 255.0;
+                    pixelWriter.setColor(x, y, Color.rgb(r, g, b, a));
+                } else {
+                    pixelWriter.setColor(x, y, Color.rgb(r, g, b));
+                }
+            }
+        }
+        return writableImage;
     }
 
     // use 10 x 10 squares...
