@@ -71,7 +71,7 @@ public class Identicon {
     }
 
     public static Image generateIdenticonImage(PublicId publicId) {
-        return generateIdenticonImageLifeHash(publicId, LifeHashVersion.DETAILED);
+        return generateIdenticonImageLifeHash(publicId, LifeHashVersion.VERSION2);
     }
 
     public static Image generateIdenticonImageOldVersion(PublicId publicId) {
