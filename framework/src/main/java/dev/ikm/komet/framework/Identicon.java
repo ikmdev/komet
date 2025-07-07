@@ -70,11 +70,17 @@ public class Identicon {
         return finalImageView;
     }
 
+    /**
+     * Generates an identicon based on a publicID using the Lifehash algorithm.
+     *
+     * @param publicId the public id which would be the basis for generating the identicon. Different public ids will generate different identicons.
+     * @return the generated Identicon image.
+     */
     public static Image generateIdenticonImage(PublicId publicId) {
         return generateIdenticonImageLifeHash(publicId, LifeHashVersion.VERSION2);
     }
 
-    public static Image generateIdenticonImageOldVersion(PublicId publicId) {
+    private static Image generateIdenticonImageOldVersion(PublicId publicId) {
         int width = 5;
         int height = 5;
 
@@ -111,13 +117,16 @@ public class Identicon {
         return identicon;
     }
 
-    public static Image generateIdenticonImageLifeHash(PublicId publicId, LifeHashVersion lifeHashVersion) {
+    /**
+     * Generates an identicon based on a publicID using the Lifehash algorithm.
+     * The Lifehash algorithm has different modes of operation which you can choose from by passing a different LifeHashVersion instanece.
+     *
+     * @param publicId the public id which would be the basis for generating the identicon. Different publicids will generate different identicons.
+     * @param lifeHashVersion the LifehashVersion to use. Different versions will produce different images.
+     * @return the generated Identicon image.
+     */
+    private static Image generateIdenticonImageLifeHash(PublicId publicId, LifeHashVersion lifeHashVersion) {
         LifeHash.Image lifeHashImage = LifeHash.makeFromUTF8(publicId.idString(), lifeHashVersion, 1, false);
-
-        // This code creates an additional BufferedImage so the code below should be better in terms of performance
-        // although more complex
-//        BufferedImage awtImage = LifeHash.getBufferedImage(lifeHashImage);
-//        return SwingFXUtils.toFXImage(awtImage, null);
 
         WritableImage writableImage = new WritableImage(lifeHashImage.width(), lifeHashImage.height());
         PixelWriter pixelWriter = writableImage.getPixelWriter();
