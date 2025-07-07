@@ -168,11 +168,13 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 	}
 
 	private void runReasoner() {
-		if (reasonerService.isIncrementalReady()) {
-			runIncrementalReasoner();
-		} else {
+		//TODO the incremental reasoner is turned off currently, in the future we may re-enable it
+		// but for now it is not available.
+		//if (reasonerService.isIncrementalReady()) {
+		//	runIncrementalReasoner();
+		//} else {
 			runFullReasoner();
-		}
+		//}
 	}
 
 	private void runFullReasoner() {
