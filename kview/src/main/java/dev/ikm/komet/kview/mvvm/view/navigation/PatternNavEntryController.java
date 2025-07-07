@@ -1,5 +1,11 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.TRASH;
+import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.INSTANCES;
+import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.PATTERN_FACADE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -8,12 +14,18 @@ import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -26,13 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.function.Function;
-
-import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
-import static dev.ikm.komet.kview.controls.KometIcon.IconValue.TRASH;
-import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.INSTANCES;
-import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.PATTERN_FACADE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class PatternNavEntryController {
     private static final Logger LOG = LoggerFactory.getLogger(PatternNavEntryController.class);
@@ -164,7 +169,17 @@ public class PatternNavEntryController {
         });
 
         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
-        Function<Integer, String> fetchDescriptionByNid = (nid -> viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid));
+        Function<Integer, String> fetchDescriptionByNid = (nid -> {
+            // "[Reference Component] in [Pattern]"
+            String descr = "";
+            if (EntityService.get().getEntity(nid).get() instanceof SemanticEntity semanticEntity) {
+                EntityFacade refComponent = EntityService.get().getEntity(semanticEntity.referencedComponentNid()).get();
+                PatternFacade patternFacade = semanticEntity.pattern().toProxy();
+                descr = "[" + viewProperties.calculator().languageCalculator().getDescriptionText(refComponent.nid()).get() + "] in [";
+                descr += viewProperties.calculator().languageCalculator().getDescriptionTextOrNid(patternFacade.nid()) + "]";
+            }
+            return descr;
+        });
         Function<EntityFacade, String> fetchDescriptionByFacade = (facade -> viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(facade));
         // set the cell factory for each pattern's instances list
         patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescriptionByNid, fetchDescriptionByFacade, viewProperties));
