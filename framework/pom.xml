@@ -130,6 +130,10 @@
             <artifactId>ikonli-unicons-pack</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.sparrowwallet</groupId>
+            <artifactId>toucan</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
         </dependency>
