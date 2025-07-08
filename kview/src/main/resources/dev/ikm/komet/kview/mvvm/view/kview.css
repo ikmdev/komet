@@ -2946,6 +2946,10 @@ Timeline Year line segment (will overlay change circles)
     -fx-alignment: center_left;
 }
 
+.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container:hover {
+    -fx-background-color: #f6f6f6;
+}
+
 .search-button,
 .search-button.filter-button {
     -fx-background-color: -Grey-9;
@@ -5414,6 +5418,55 @@ Styling a context menu for kview ui/ux controls
 
 .properties-tab-container-content .controls-container {
     -fx-padding: 0 12px 0 0;
+}
+
+/******************* Tooltip for Semantic in Pattern Browser ******************/
+
+.semantic-tooltip {
+    -fx-padding: 15 0 10 0;
+}
+
+.semantic-tooltip .main-container {
+    -fx-max-width: 400px;
+    -fx-padding: 0;
+}
+
+.semantic-tooltip .title {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 16px;
+
+    -fx-max-height: 300px;
+    -fx-padding: 15 15 10 15;
+}
+
+.semantic-tooltip .values-container .grid {
+    -fx-padding: 5 15 20 15;
+    -fx-max-width: 450px;
+}
+
+.semantic-tooltip .values-container > .separator .line {
+    -fx-border-color: #111 transparent transparent transparent,
+                      transparent;
+}
+
+.semantic-tooltip .values-container .grid .label {
+
+    -fx-font-size: 12px;
+    -fx-padding: 10px 0 13px 0;
+}
+
+.semantic-tooltip .values-container .grid .field-title.label {
+    -fx-font-family: "Noto Sans Semibold";
+    -fx-text-fill: #999;
+}
+
+.semantic-tooltip .values-container .grid .field-value.label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #f0f0f0;
+}
+
+.semantic-tooltip .values-container .grid > .separator .line {
+    -fx-border-color: #494949 transparent transparent transparent, transparent;
 }
 
 /*******************************************************************************
