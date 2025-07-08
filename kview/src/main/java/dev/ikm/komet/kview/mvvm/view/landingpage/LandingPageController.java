@@ -15,12 +15,36 @@
  */
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
+import static dev.ikm.komet.framework.controls.TimeAgoCalculatorUtil.calculateTimeAgoWithPeriodAndDuration;
+import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
+import static dev.ikm.komet.framework.events.FrameworkTopics.LANDING_PAGE_TOPIC;
+import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.CREATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalDirName;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
+import static dev.ikm.komet.kview.mvvm.model.Constants.JOURNAL_NAME_PREFIX;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
+import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.kview.mvvm.view.BasicController;
-import dev.ikm.komet.kview.mvvm.model.JournalCounter;
-import dev.ikm.komet.kview.events.CreateJournalEvent;
-import dev.ikm.komet.kview.events.DeleteJournalEvent;
-import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -28,6 +52,11 @@ import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.kview.controls.NotificationPopup;
+import dev.ikm.komet.kview.events.CreateJournalEvent;
+import dev.ikm.komet.kview.events.DeleteJournalEvent;
+import dev.ikm.komet.kview.events.JournalTileEvent;
+import dev.ikm.komet.kview.mvvm.model.JournalCounter;
+import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -71,36 +100,6 @@ import java.util.function.Supplier;
 import java.util.prefs.BackingStoreException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static dev.ikm.komet.framework.controls.TimeAgoCalculatorUtil.calculateTimeAgoWithPeriodAndDuration;
-import static dev.ikm.komet.framework.events.FrameworkTopics.*;
-import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.CREATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalDirName;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
-import static dev.ikm.komet.kview.mvvm.model.Constants.JOURNAL_NAME_PREFIX;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_XPOS;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_YPOS;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
-import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 
 /**
  * Controller for the application's landing page that manages journal cards and their interactions.
@@ -399,7 +398,6 @@ public class LandingPageController implements BasicController {
         landingPageEventBus.subscribe(LANDING_PAGE_TOPIC, ProgressEvent.class, progressPopupSubscriber);
     }
 
-    @SuppressWarnings("unchecked")
     private JFXNode<Pane, ProgressController> createProgressBox(Task<Void> task, String cancelButtonText) {
         Config config = new Config(ProgressController.class.getResource("progress.fxml"))
                 .updateViewModel("progressViewModel", (viewModel -> viewModel
@@ -407,7 +405,7 @@ public class LandingPageController implements BasicController {
                         .setPropertyValue(CANCEL_BUTTON_TEXT_PROP, cancelButtonText))
                 );
 
-        return (JFXNode<Pane, ProgressController>) FXMLMvvmLoader.make(config);
+        return FXMLMvvmLoader.make(config);
     }
 
     /**
