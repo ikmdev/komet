@@ -3103,6 +3103,7 @@ Timeline Year line segment (will overlay change circles)
 .search-option-container {
     -fx-border-radius: 4px;
     -fx-background-color: -Grey-11;
+    -fx-padding: 2px;
 }
 
 .search-option-label {
@@ -3110,19 +3111,40 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-11;
 }
 
-.search-option-container .radio-button .radio {
-    -fx-background-color: white;
-    -fx-shape: "M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z";
+.search-option-container .radio-button > .radio,
+.search-option-container .radio-button:focused > .radio {
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+
+    -fx-border-style: solid;
+    -fx-border-radius: 1.0em;
+    -fx-border-color: #ccc;
+    -fx-border-insets: 0px;
+    -fx-border-width: 2px;
+
+    -fx-padding: 3px;
 }
 
-.search-option-container .radio-button:selected .radio {
-    -fx-background-color: -Primary-04;
-    -fx-shape: "M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z";
+.search-option-container .radio-button:hover > .radio,
+.search-option-container .radio-button:focused:hover > .radio {
+    -fx-border-color: -Grey-White;
 }
 
-.search-option-container .radio-button:selected .radio .dot {
+.search-option-container .radio-button:selected > .radio,
+.search-option-container .radio-button:selected:focused > .radio {
+    -fx-border-color: -Primary-04;
+}
+
+.search-option-container .radio-button > .radio > .dot {
+    -fx-background-color: transparent;
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-padding: 0.333333em; /* 4 -- radius of the inner black dot when selected */
+}
+
+.search-option-container .radio-button:selected > .radio > .dot {
+    -fx-background-insets: 0;
     -fx-background-color: -Primary-04;
-    -fx-shape: "M12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17Z";
 }
 
 .search-retired-label {
@@ -4522,12 +4544,18 @@ Styling a context menu for kview ui/ux controls
 
     -fx-border-style: solid;
     -fx-border-radius: 1.0em;
-    -fx-border-color: -Grey-White;
+    -fx-border-color: #ccc;
     -fx-border-insets: 0px;
     -fx-border-width: 2px;
 
     -fx-padding: 3px;
 }
+
+.popup-container .titled-pane > *.content .option-container .radio-button:hover > .radio,
+.popup-container .titled-pane > *.content .option-container .radio-button:focused:hover > .radio {
+    -fx-border-color: -Grey-White;
+}
+
 .popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio,
 .popup-container .titled-pane > *.content .option-container .radio-button:selected:focused > .radio {
     -fx-border-color: -Primary-04;
