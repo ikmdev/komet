@@ -15,6 +15,46 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
+import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
+import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
+import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
+import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromEntity;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromUuids;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.extractEntityFromDragInfo;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.GEN_EDITING;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.PATTERN;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
+import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -799,7 +839,6 @@ public class JournalController {
         return new Point2D(popupAnchorX, popupAnchorY);
     }
 
-    @SuppressWarnings("unchecked")
     private JFXNode<Pane, ProgressController> createProgressBox(Task<Void> task, String cancelButtonText) {
         // Create one inside the list for bump out
         // Inject Stamp view model into form.
@@ -809,7 +848,7 @@ public class JournalController {
                         .setPropertyValue(CANCEL_BUTTON_TEXT_PROP, cancelButtonText))
                 );
 
-        return (JFXNode<Pane, ProgressController>) FXMLMvvmLoader.make(config);
+        return FXMLMvvmLoader.make(config);
     }
 
     public ToggleButton getSettingsToggleButton() {
