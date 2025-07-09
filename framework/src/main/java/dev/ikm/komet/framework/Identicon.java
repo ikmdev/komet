@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.framework;
 
+import com.sparrowwallet.toucan.LifeHash;
+import com.sparrowwallet.toucan.LifeHashVersion;
 import dev.ikm.tinkar.common.id.PublicId;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
@@ -68,7 +70,17 @@ public class Identicon {
         return finalImageView;
     }
 
+    /**
+     * Generates an identicon based on a publicID using the Lifehash algorithm.
+     *
+     * @param publicId the public id which would be the basis for generating the identicon. Different public ids will generate different identicons.
+     * @return the generated Identicon image.
+     */
     public static Image generateIdenticonImage(PublicId publicId) {
+        return generateIdenticonImageLifeHash(publicId, LifeHashVersion.VERSION2);
+    }
+
+    private static Image generateIdenticonImageOldVersion(PublicId publicId) {
         int width = 5;
         int height = 5;
 
@@ -103,6 +115,36 @@ public class Identicon {
             }
         }
         return identicon;
+    }
+
+    /**
+     * Generates an identicon based on a publicID using the Lifehash algorithm.
+     * The Lifehash algorithm has different modes of operation which you can choose from by passing a different LifeHashVersion instanece.
+     *
+     * @param publicId the public id which would be the basis for generating the identicon. Different publicids will generate different identicons.
+     * @param lifeHashVersion the LifehashVersion to use. Different versions will produce different images.
+     * @return the generated Identicon image.
+     */
+    private static Image generateIdenticonImageLifeHash(PublicId publicId, LifeHashVersion lifeHashVersion) {
+        LifeHash.Image lifeHashImage = LifeHash.makeFromUTF8(publicId.idString(), lifeHashVersion, 1, false);
+
+        WritableImage writableImage = new WritableImage(lifeHashImage.width(), lifeHashImage.height());
+        PixelWriter pixelWriter = writableImage.getPixelWriter();
+        for (int y = 0; y < lifeHashImage.height(); y++) {
+            for (int x = 0; x < lifeHashImage.width(); x++) {
+                int offset = (y * lifeHashImage.width() + x) * (lifeHashImage.hasAlpha() ? 4 : 3);
+                int r = lifeHashImage.colors().get(offset) & 0xFF;
+                int g = lifeHashImage.colors().get(offset + 1) & 0xFF;
+                int b = lifeHashImage.colors().get(offset + 2) & 0xFF;
+                if(lifeHashImage.hasAlpha()) {
+                    double a = (lifeHashImage.colors().get(offset + 3) & 0xFF) / 255.0;
+                    pixelWriter.setColor(x, y, Color.rgb(r, g, b, a));
+                } else {
+                    pixelWriter.setColor(x, y, Color.rgb(r, g, b));
+                }
+            }
+        }
+        return writableImage;
     }
 
     // use 10 x 10 squares...

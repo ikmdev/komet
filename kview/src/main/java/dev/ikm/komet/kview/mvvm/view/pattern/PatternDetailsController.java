@@ -17,6 +17,8 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
@@ -27,17 +29,14 @@ import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.*;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
-import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
-import dev.ikm.komet.kview.mvvm.model.PatternField;
+import dev.ikm.komet.kview.mvvm.model.*;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -51,6 +50,8 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
@@ -68,6 +69,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
@@ -83,6 +85,8 @@ import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.view.common.SVGConstants.DUPLICATE_SVG_PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
@@ -248,6 +252,10 @@ public class PatternDetailsController {
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
+
+        //DragNDrop feature for Semantic Purpose and Semantic Meaning
+        setUpDraggable(purposeText, patternViewModel.getProperty(PURPOSE_ENTITY));
+        setUpDraggable(meaningText, patternViewModel.getProperty(MEANING_ENTITY));
 
         setUpAddSemanticMenu();
 
@@ -462,8 +470,70 @@ public class PatternDetailsController {
         }
     }
 
+    private DragAndDropType getDragAndDropType(EntityFacade entityFacade) {
+        return switch (entityFacade){
+            case ConceptFacade conceptFacade -> CONCEPT;
+            case SemanticFacade semanticFacade -> SEMANTIC;
+            case PatternFacade patternFacade -> DragAndDropType.PATTERN;
+            default -> throw new IllegalStateException("Unexpected value: " + entityFacade);
+        };
+    }
+
     /**
-     * Creates the filter coordinates menu using the ViewMenuModel.
+     * Configures the specified {@link Node} to support drag-and-drop operations associated with the given {@link EntityFacade}.
+     * <p>
+     * When a drag is detected on the node, this method initializes a dragboard with the entity's identifier and
+     * sets a custom drag image for visual feedback.
+     * </p>
+     *
+     * @param node   the JavaFX {@link Node} to be made draggable
+     * @param entityProperty the {@link EntityFacade} associated with the node, providing data for the drag operation
+     * @throws NullPointerException if either {@code node} or {@code entity} is {@code null}
+     */
+    private void setUpDraggable(Node node, ObjectProperty<EntityFacade> entityProperty) {
+        Objects.requireNonNull(node, "The node must not be null.");
+
+        // Set up the drag detection event handler
+        node.setOnDragDetected(mouseEvent -> {
+            if (entityProperty.isNull().get()) {
+                mouseEvent.consume();
+                return;
+            }
+            EntityFacade entityFacade = entityProperty.get();
+
+            // Initiate a drag-and-drop gesture with copy or move transfer mode
+            Dragboard dragboard = node.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+
+            // Create the content to be placed on the dragboard
+            // Here, KometClipboard is used to encapsulate the entity's unique identifier (nid)
+            KometClipboard content = new KometClipboard(EntityFacade.make(entityFacade.nid()));
+
+            DragAndDropType dropType = getDragAndDropType(entityFacade);
+            node.setUserData(new DragAndDropInfo(dropType, entityFacade.publicId()));
+
+            // Generate the drag image using DragImageMaker
+            DragImageMaker dragImageMaker = new DragImageMaker(node);
+            Image dragImage = dragImageMaker.getDragImage();
+            // Set the drag image on the dragboard
+            if (dragImage != null) {
+                dragboard.setDragView(dragImage);
+            }
+
+            // Place the content on the dragboard
+            dragboard.setContent(content);
+
+            // Log the drag event details for debugging or auditing
+            LOG.info("Drag detected on node: " + mouseEvent.toString());
+
+            // Consume the mouse event to prevent further processing
+            mouseEvent.consume();
+        });
+    }
+
+    /**
+     * Creates the filter coordinates menu using the view calculator.
+     * TODO Note that this is not a working menu, this is the first step to have propagating, inherited, filter coordinates
+     * in the window/node hierarchy.
      */
     public void setupFilterCoordinatesMenu() {
         this.viewMenuModel = new ViewMenuModel(patternViewModel.getViewProperties(), coordinatesMenuButton, "PatternDetailsController");
