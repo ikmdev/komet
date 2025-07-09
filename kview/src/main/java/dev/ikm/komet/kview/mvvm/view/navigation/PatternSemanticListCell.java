@@ -16,7 +16,6 @@ import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
@@ -47,11 +46,10 @@ public class PatternSemanticListCell extends ListCell<Object> {
 
     private HBox hbox;
     private Label label;
-    private Tooltip tooltip;
+    private SemanticTooltip tooltip;
 
-    private PatternSemanticListCell() {
-        // hide default
-    }
+    private SemanticEntity<?> currentSemanticEntity;
+    private String currentSemanticTitle;
 
     public PatternSemanticListCell(Function<Integer, String> fetchDescriptionByNid,
                                    Function<EntityFacade, String> fetchDescriptionByFacade,
@@ -67,8 +65,12 @@ public class PatternSemanticListCell extends ListCell<Object> {
         label.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(label, Priority.ALWAYS);
 
-        tooltip = new Tooltip();
-        Tooltip.install(label, tooltip);
+        tooltip = new SemanticTooltip(viewProperties);
+        tooltip.setOnShowing(windowEvent -> {
+            tooltip.update(currentSemanticEntity, currentSemanticTitle);
+        });
+
+        label.setTooltip(tooltip);
 
         hbox = new HBox();
         hbox.getStyleClass().add("pattern-instance-hbox");
@@ -92,8 +94,9 @@ public class PatternSemanticListCell extends ListCell<Object> {
                 EntityFacade entity = Entity.getFast(nid);
 
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-                label.setText(entityDescriptionText);
-                tooltip.setText(entityDescriptionText);
+
+                currentSemanticTitle = entityDescriptionText;
+                label.setText(currentSemanticTitle);
 
                 if (!entityDescriptionText.isEmpty()) {
                     Image identicon = Identicon.generateIdenticonImage(entity.publicId());
