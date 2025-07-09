@@ -30,6 +30,7 @@ import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.*;
 import dev.ikm.komet.kview.fxutils.FXUtils;
+import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.mvvm.model.*;
@@ -84,6 +85,8 @@ import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FI
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
@@ -137,7 +140,7 @@ public class PatternDetailsController {
     private Label patternTitleText;
 
     @FXML
-    private TextField identifierText;
+    private Text identifierText;
 
     @FXML
     private Text lastUpdatedText;
@@ -413,6 +416,7 @@ public class PatternDetailsController {
                 .then(LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")))
                 .otherwise("");
         fqnAddDateLabel.textProperty().bind(dateStrProp);
+        fqnAddDateLabel.getStyleClass().add("grey8-12pt");
 
         //Listen to the changes in the fieldsTilePane and update the field numbers.
         ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
@@ -673,20 +677,34 @@ public class PatternDetailsController {
 
         TextFlow row3 = new TextFlow();
         Text dateAddedLabel = new Text("Date Added: ");
-        dateAddedLabel.getStyleClass().add("text-noto-sans-normal-grey-eight");
+        dateAddedLabel.getStyleClass().add("grey8-12pt");
         Text dateLabel = new Text(dateAddedStr);
-        dateLabel.getStyleClass().add("text-noto-sans-normal-grey-eight");
+        dateLabel.getStyleClass().add("grey8-12pt");
 
-        Hyperlink attachmentHyperlink = new Hyperlink("Attachment");
-        Hyperlink commentHyperlink = new Hyperlink("Comment");
+        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
+        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
 
         // Add the date info and additional hyperlinks
-        row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentHyperlink);
+        row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentsHyperlink);
 
         textFlows.add(row1);
         textFlows.add(row2);
         textFlows.add(row3);
         return textFlows;
+    }
+
+    /**
+     * Creates a hyperlink with the provided SVG icon.
+     * Applies consistent styling to the icon for use in action links.
+     *
+     * @param icon The SVG icon to use in the hyperlink
+     * @return A configured Hyperlink with the icon as its graphic
+     */
+    private Hyperlink createActionLink(SVGPath icon) {
+        Hyperlink hyperlink = new Hyperlink();
+        icon.getStyleClass().add("descr-concept-icon");
+        hyperlink.setGraphic(icon);
+        return hyperlink;
     }
 
     /**
@@ -698,7 +716,8 @@ public class PatternDetailsController {
             Node node = fieldVBoxes.get(i);
             Node labelNode = node.lookup(".pattern-field");
             if (labelNode instanceof Label label) {
-                label.setText("FIELD " + (i+1));
+                label.setText("FIELD " + (i+1) +":");
+                label.getStyleClass().add("grey8-12pt");
             }
         }
     }
@@ -706,10 +725,9 @@ public class PatternDetailsController {
     private Node createFieldEntry(PatternField patternField, int fieldNum) {
         VBox fieldVBoxContainer = new VBox();
         fieldVBoxContainer.prefWidth(330);
-        Label fieldLabel = new Label("FIELD " + fieldNum);
+        Label fieldLabel = new Label("FIELD " + fieldNum +":");
         fieldLabel.getStyleClass().add("pattern-field");
         Text fieldText = new Text(patternField.displayName());
-        fieldText.getStyleClass().add("grey12-12pt-bold");
         HBox outerHBox = new HBox();
         outerHBox.setSpacing(8);
         HBox innerHBox = new HBox();
@@ -730,6 +748,8 @@ public class PatternDetailsController {
         double dateWidth = 90;
         dateLabel.prefWidth(dateWidth);
         dateLabel.maxWidth(dateWidth);
+        dateAddedLabel.getStyleClass().add("grey8-12pt");
+        dateLabel.getStyleClass().add("grey8-12pt");
         innerHBox.getChildren().addAll(dateAddedLabel, dateLabel);
         Region commentIconRegion = new Region();
         commentIconRegion.getStyleClass().add("grey-comment-icon");

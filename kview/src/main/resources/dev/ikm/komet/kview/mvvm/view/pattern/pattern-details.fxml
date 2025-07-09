@@ -25,7 +25,7 @@
                               <String fx:value="lidr-rounded-tab" />
                            </styleClass>
                            <children>
-                              <Region prefHeight="12.0" prefWidth="8.4" styleClass="lidr-tab-icon" />
+                              <Region prefHeight="12.0" prefWidth="8.4" styleClass="nine-dots-icon" />
                               <Text fx:id="patternText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="lidr-tab-text" text="Pattern" />
                            </children>
                            <cursor>
@@ -90,13 +90,7 @@
                               </ToggleButton>
                            </children>
                         </HBox>
-                        <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
-                        <Button mnemonicParsing="false" text="Button">
-                           <graphic>
-                              <Region prefHeight="200.0" prefWidth="200.0" styleClass="kview-listview" />
-                           </graphic>
-                           <tooltip><Tooltip text="List View" /></tooltip>
-                        </Button>
+                        <Separator orientation="VERTICAL" prefHeight="10.0" styleClass="thin-vertical-separator"/>
                         <ToggleButton fx:id="timelineToggleButton" mnemonicParsing="false" onAction="#openTimelinePanel" styleClass="timeline" text="ToggleButton">
                            <graphic>
                               <Region prefHeight="200.0" prefWidth="200.0">
@@ -109,7 +103,7 @@
                            <tooltip><Tooltip text="Time Travel" /></tooltip>
                         </ToggleButton>
                         <Region fx:id="controlBoxRegion2" minWidth="10.0" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-                        <Text fill="#FFFFFF" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="properties-toggle" text="PROPERTIES">
+                        <Text fill="#FFFFFF" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="properties-toggle" text="PROPERTY">
                            <font>
                               <Font name="Open Sans SemiBold" size="13.0" />
                            </font>
@@ -124,7 +118,7 @@
                               </Group>
                            </graphic>
                         </ToggleButton>
-                        <Rectangle fx:id="controlBoxRectangle1" fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
+                        <Separator orientation="VERTICAL" prefHeight="10.0" styleClass="thin-vertical-separator"/>
                         <Button fx:id="closeConceptButton" mnemonicParsing="false" onAction="#closeConceptWindow" text="Button">
                            <graphic>
                               <Region prefHeight="200.0" prefWidth="200.0" styleClass="close-window" />
@@ -170,32 +164,32 @@
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                        </rowConstraints>
                                        <children>
-                                          <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="SEMANTIC PURPOSE" wrappingWidth="117.490234375" GridPane.columnIndex="0">
+                                          <Text  strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12px; -fx-font-weight: bold; -fx-fill: -Grey-8;" text="SEMANTIC MEANING:"  GridPane.columnIndex="0">
                                              <font>
                                                 <Font name="Open Sans Bold" size="14.0" />
                                              </font>
                                           </Text>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 600; -fx-fill: -Grey-12;" text="SEMANTIC MEANING:" wrappingWidth="121.474609375" GridPane.columnIndex="1">
+                                          <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12px; -fx-font-weight: bold; -fx-fill: -Grey-8;" text="SEMANTIC PURPOSE:" wrappingWidth="121.474609375" GridPane.columnIndex="1">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="12.0" />
                                              </font>
                                           </Text>
                                           <TextFlow GridPane.rowIndex="1">
                                              <children>
-                                                <Text fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
+                                                <Text fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
                                              </children>
                                           </TextFlow>
-                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" text="Date Added: Feb 02" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Date Added: Feb 02" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="13.0" />
                                              </font>
                                           </Text>
                                           <TextFlow GridPane.columnIndex="1" GridPane.rowIndex="1">
                                              <children>
-                                                <Text fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
+                                                <Text fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
                                              </children>
                                           </TextFlow>
-                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-normal-grey-eight" text="Date Added: Feb 02" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Date Added: Feb 02" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                                        </children>
                                     </GridPane>
                                  </content>
@@ -207,7 +201,7 @@
                                  <children>
                                     <HBox layoutX="-32.0">
                                        <children>
-                                          <Separator maxWidth="-Infinity" orientation="VERTICAL" prefHeight="20.0" styleClass="pattern-vertical-separator">
+                                          <Separator maxWidth="-Infinity" orientation="VERTICAL" prefHeight="10.0" styleClass="pattern-vertical-separator">
                                              <HBox.margin>
                                                 <Insets top="4.0" />
                                              </HBox.margin>
@@ -254,10 +248,14 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label minWidth="-Infinity" prefHeight="17.0" prefWidth="81.0" styleClass="descr-semantic" text="Date Added:" />
-                                                            <Label fx:id="fqnAddDateLabel" prefHeight="17.0" prefWidth="96.0" styleClass="descr-semantic" />
-                                                            <Hyperlink styleClass="descr-semantic" text="Attachment" />
-                                                            <Hyperlink styleClass="descr-semantic" text="Comment" />
+                                                            <Label styleClass="grey8-12pt" text="Date Added:" />
+                                                            <Label fx:id="fqnAddDateLabel" styleClass="descr-semantic" text="May 10, 2023" />
+                                                            <Hyperlink text="Attachment" />
+                                                            <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                               <opaqueInsets>
+                                                                  <Insets />
+                                                               </opaqueInsets>
+                                                            </Region>
                                                          </children>
                                                       </TextFlow>
                                                    </children>
@@ -266,7 +264,7 @@
                                           </VBox>
                                           <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="357.0" HBox.hgrow="SOMETIMES">
                                              <children>
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="pattern-title" text="OTHER NAMES:">
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="pattern-title" text="OTHER NAME:">
                                                 </Text>
                                                 <VBox fx:id="otherNamesVBox">
                                                    <children>
@@ -279,10 +277,14 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label text="Date Added:" />
-                                                            <Label text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt" text="Date Added:" />
+                                                            <Label styleClass="grey8-12pt" text="May 10, 2023" />
                                                             <Hyperlink text="Attachment" />
-                                                            <Hyperlink text="Comment" />
+                                                            <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                               <opaqueInsets>
+                                                                  <Insets />
+                                                               </opaqueInsets>
+                                                            </Region>
                                                          </children>
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
@@ -293,10 +295,14 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label text="Date Added:" />
-                                                            <Label text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt" text="Date Added:" />
+                                                            <Label styleClass="descr-semantic" text="May 10, 2023" />
                                                             <Hyperlink text="Attachment" />
-                                                            <Hyperlink text="Comment" />
+                                                            <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                               <opaqueInsets>
+                                                                  <Insets />
+                                                               </opaqueInsets>
+                                                            </Region>
                                                          </children>
                                                       </TextFlow>
                                                    </children>
@@ -314,7 +320,7 @@
                                  <children>
                                     <HBox layoutX="-32.0">
                                        <children>
-                                          <Separator orientation="VERTICAL" prefHeight="20.0" styleClass="pattern-vertical-separator">
+                                          <Separator orientation="VERTICAL" prefHeight="10.0" styleClass="pattern-vertical-separator">
                                              <HBox.margin>
                                                 <Insets top="4.0" />
                                              </HBox.margin>
@@ -364,14 +370,14 @@
                                        <children>
                                           <VBox prefWidth="330.0">
                                              <children>
-                                                <Label text="Field 1" />
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey12-12pt-bold" text="Data Mapping" />
+                                                <Label styleClass="grey8-12pt" text="Field 1:"/>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data Mapping" />
                                                 <HBox spacing="8.0">
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label text="Date Added: " />
-                                                            <Label maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt" text="Date Added: " />
+                                                            <Label styleClass="grey8-12pt" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
                                                       <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
@@ -385,14 +391,14 @@
                                           </VBox>
                                           <VBox>
                                              <children>
-                                                <Label text="Field 2" />
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey12-12pt-bold" text="Data Mapping" />
+                                                <Label styleClass="grey8-12pt" text="Field 2:"/>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Data Mapping" />
                                                 <HBox spacing="8.0">
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label text="Date Added: " />
-                                                            <Label maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt" text="Date Added: " />
+                                                            <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
                                                       <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
@@ -406,14 +412,14 @@
                                           </VBox>
                                           <VBox>
                                              <children>
-                                                <Label text="Field 3" />
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey12-12pt-bold" text="Data Mapping" />
+                                                <Label styleClass="grey8-12pt" text="Field 3:"/>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Data Mapping" />
                                                 <HBox spacing="8.0">
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label text="Date Added: " />
-                                                            <Label maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt" text="Date Added: " />
+                                                            <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
                                                       <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
@@ -427,14 +433,14 @@
                                           </VBox>
                                           <VBox>
                                              <children>
-                                                <Label text="Field 4" />
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey12-12pt-bold" text="Data Mapping" />
+                                                <Label styleClass="grey8-12pt" text="Field 4:"/>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Data Mapping" />
                                                 <HBox spacing="8.0">
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label text="Date Added: " />
-                                                            <Label maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt" text="Date Added: " />
+                                                            <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
                                                       <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
@@ -448,14 +454,14 @@
                                           </VBox>
                                           <VBox>
                                              <children>
-                                                <Label text="Field 5" />
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey12-12pt-bold" text="Data Mapping" />
+                                                <Label styleClass="grey8-12pt" text="Field 5:"/>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Data Mapping" />
                                                 <HBox spacing="8.0">
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label text="Date Added: " />
-                                                            <Label maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt" text="Date Added: " />
+                                                            <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
                                                       <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
@@ -475,7 +481,7 @@
                                  <children>
                                     <HBox layoutX="-32.0">
                                        <children>
-                                          <Separator orientation="VERTICAL" prefHeight="20.0" styleClass="pattern-vertical-separator">
+                                          <Separator orientation="VERTICAL" prefHeight="10.0" styleClass="pattern-vertical-separator">
                                              <HBox.margin>
                                                 <Insets top="4.0" />
                                              </HBox.margin>
@@ -515,9 +521,9 @@
                            <children>
                               <HBox GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
                                  <children>
-                                    <Label minWidth="50.0" prefHeight="25.0" prefWidth="50.0" text="Pattern">
+                                    <Label minWidth="61.0" prefHeight="25.0" prefWidth="50.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="Pattern">
                                        <font>
-                                          <Font name="Open Sans Bold" size="10.0" />
+                                          <Font name="Open Sans" size="10.0" />
                                        </font>
                                     </Label>
                                     <TextField fx:id="snomedIdentifierText" alignment="TOP_LEFT" editable="false" maxWidth="1.7976931348623157E308" prefWidth="251.0" styleClass="copyable-label">
@@ -535,25 +541,19 @@
                               </HBox>
                               <HBox GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
                                  <children>
-                                    <Label minWidth="61.0" prefHeight="25.0" prefWidth="61.0" text="IDENTIFIER:">
+                                    <Label minWidth="61.0" prefHeight="25.0" prefWidth="61.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="IDENTIFIER:">
                                        <font>
-                                          <Font name="Open Sans Bold" size="10.0" />
+                                          <Font name="Open Sans" size="10.0" />
                                        </font>
                                     </Label>
-                                    <TextField fx:id="identifierText" alignment="TOP_LEFT" editable="false" maxWidth="1.7976931348623157E308" prefHeight="27.0" prefWidth="254.0" styleClass="copyable-label" text="203488222456">
+                                    <Text fx:id="identifierText" styleClass="text-noto-sans-twelve" text="203488222456">
                                        <font>
                                           <Font name="Open Sans Regular" size="10.0" />
                                        </font>
-                                       <opaqueInsets>
-                                          <Insets />
-                                       </opaqueInsets>
-                                       <tooltip>
-                                          <Tooltip fx:id="identifierTooltip" />
-                                       </tooltip>
-                                    </TextField>
+                                    </Text>
                                  </children>
                               </HBox>
-                              <Label fx:id="patternTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0" text="New Pattern" textFill="#212430" wrapText="true" GridPane.columnIndex="1">
+                              <Label fx:id="patternTitleText" styleClass="pattern-title" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0" text="New Pattern" textFill="#212430" wrapText="true" GridPane.columnIndex="1">
                                  <font>
                                     <Font name="Open Sans Regular" size="17.0" />
                                  </font>
@@ -586,7 +586,7 @@
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
                                           </Label>
-                                          <Text fx:id="statusText" strokeType="OUTSIDE" strokeWidth="0.0">
+                                          <Text fx:id="statusText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
@@ -600,7 +600,7 @@
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
                                           </Label>
-                                          <Text fx:id="lastUpdatedText" strokeType="OUTSIDE" strokeWidth="0.0">
+                                          <Text fx:id="lastUpdatedText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
@@ -614,7 +614,7 @@
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
                                           </Label>
-                                          <Text fx:id="moduleText" strokeType="OUTSIDE" strokeWidth="0.0">
+                                          <Text fx:id="moduleText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
@@ -628,7 +628,7 @@
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
                                           </Label>
-                                          <Text fx:id="pathText" strokeType="OUTSIDE" strokeWidth="0.0" />
+                                          <Text fx:id="pathText" strokeType="OUTSIDE" strokeWidth="0.0"  styleClass="text-noto-sans-bold-grey-twelve"/>
                                        </children>
                                     </FlowPane>
                                     <FlowPane prefHeight="43.0" prefWidth="202.0">
@@ -638,7 +638,7 @@
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
                                           </Label>
-                                          <Text fx:id="originationText" strokeType="OUTSIDE" strokeWidth="0.0" />
+                                          <Text fx:id="originationText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve"/>
                                        </children>
                                     </FlowPane>
                                  </children>
