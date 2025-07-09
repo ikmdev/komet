@@ -196,12 +196,11 @@
 
 /* focus purely on the arrow */
 .titled-pane:focused > .title > .arrow-button > .arrow {
-    -fx-background-color: -Secondary-05;
-    -fx-shape: "M7.91 8.29508L6.5 9.70508L12.5 15.7051L18.5 9.70508L17.09 8.29508L12.5 12.8751L7.91 8.29508Z";
-    -fx-background-insets: -1, 0;
+    -fx-effect: null;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
 .titled-pane > .title > .arrow-button {
-    -fx-background-color: null;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
     -fx-padding: 0.0em 0.583em 0.0em 0.0em; /* 0 7 0 0 */
@@ -2859,16 +2858,96 @@ Timeline Year line segment (will overlay change circles)
 }
 
 /*********************************************************************************
- * End of Pattern UI elements                                                    *
+ * Next Gen Search                                                               *
  *********************************************************************************/
 
+.next-gen-search-main-container .outer-list-view {
+    -fx-background-color: -Grey-9;
+    -fx-padding: 10px 0 10px 0;
+}
 
-/********************************************************************************
- * Start of Journal > Search Concept UI elements                                *
- ********************************************************************************/
+.next-gen-search-main-container .outer-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 3px 6px 3px 12px;
+}
+
+.next-gen-search-main-container .outer-list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 0 0 0;
+}
+
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .increment-button,
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .decrement-button,
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .increment-arrow,
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .decrement-arrow {
+     -fx-background-color:transparent;
+     -fx-background-radius: 0em;
+     -fx-padding: 0 2 0 2;
+}
+
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #a9aeb8;
+    -fx-background-insets: 3px 5px 3px 1px;
+    -fx-background-radius: 16px;
+}
 
 .search-vertical-scroll-area {
     -fx-background-color: -Grey-9;
+}
+
+.next-gen-search-main-container .descriptions-list-view {
+    -fx-background-color: #f1f3f8;
+    -fx-padding: 3px 0 0 0;
+}
+
+.next-gen-search-main-container .descriptions-list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 0 0 0;
+}
+
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .increment-button,
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .decrement-button,
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .increment-arrow,
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 2 0 2;
+}
+
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #777;
+    -fx-background-insets: 3 5 3 0;
+    -fx-background-radius: 16px;
+}
+
+/* Cells and Cells content */
+.next-gen-search-main-container .descriptions-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+
+    -fx-padding: 0 6px 5 6px;
+}
+
+.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+
+    -fx-background-color: white;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+
+    -fx-effect: dropshadow(gaussian , rgba(0,0,0,0.2) , 4, 0.0 , 0 , 2 );
+
+    height: 75;
+    -fx-pref-height: height;
+    -fx-max-height: height;
+
+    -fx-padding: 5 6 5 10;
+    -fx-alignment: center_left;
+}
+
+.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container:hover {
+    -fx-background-color: #f6f6f6;
 }
 
 .search-button,
@@ -2882,6 +2961,8 @@ Timeline Year line segment (will overlay change circles)
 
 .search-hbox {
     -fx-background-color: -Grey-9;
+    -fx-border-color: #444;
+    -fx-border-width: 0 0 1px 0;
 }
 
 .search-text-field {
@@ -2923,21 +3004,49 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: white;
 }
 
+.search-entry-container {
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-background-color: white;
+
+    -fx-padding: 4px 5px 7px 5px;
+
+    -fx-spacing: 3px;
+}
+
+.next-gen-search-main-container .search-entry-container .identicon-container {
+    -fx-padding: 0 0 0 4px;
+}
+
 .search-entry-hbox {
     -fx-border-radius: 2px;
     -fx-background-radius: 2px;
     -fx-background-color: white;
 }
 
+.search-entry-hbox .search-entry-left-pane {
+    -fx-spacing: 4px;
+}
+
+.search-entry-hbox .search-entry-left-pane .semantic-text-container {
+    -fx-padding: -1 0 0 3;
+}
+
+.next-gen-search-main-container .search-entry-header {
+    -fx-alignment: center_left;
+}
+
+.search-entry-text-container {
+    -fx-padding: 6px 0 5px 0;
+}
+
 .search-entry-text {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
-    -fx-font-style: normal;
-    -fx-font-weight: bold;
+
     -fx-line-height: 16px;
     -fx-letter-spacing: 0.2px;
     -fx-fill: -Natural-Grey-Dark;
-
 }
 
 .search-entry-expanded {
@@ -2994,6 +3103,7 @@ Timeline Year line segment (will overlay change circles)
 .search-option-container {
     -fx-border-radius: 4px;
     -fx-background-color: -Grey-11;
+    -fx-padding: 2px;
 }
 
 .search-option-label {
@@ -3001,19 +3111,40 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-11;
 }
 
-.search-option-container .radio-button .radio {
-    -fx-background-color: white;
-    -fx-shape: "M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z";
+.search-option-container .radio-button > .radio,
+.search-option-container .radio-button:focused > .radio {
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+
+    -fx-border-style: solid;
+    -fx-border-radius: 1.0em;
+    -fx-border-color: #ccc;
+    -fx-border-insets: 0px;
+    -fx-border-width: 2px;
+
+    -fx-padding: 3px;
 }
 
-.search-option-container .radio-button:selected .radio {
-    -fx-background-color: -Primary-04;
-    -fx-shape: "M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z";
+.search-option-container .radio-button:hover > .radio,
+.search-option-container .radio-button:focused:hover > .radio {
+    -fx-border-color: -Grey-White;
 }
 
-.search-option-container .radio-button:selected .radio .dot {
+.search-option-container .radio-button:selected > .radio,
+.search-option-container .radio-button:selected:focused > .radio {
+    -fx-border-color: -Primary-04;
+}
+
+.search-option-container .radio-button > .radio > .dot {
+    -fx-background-color: transparent;
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-padding: 0.333333em; /* 4 -- radius of the inner black dot when selected */
+}
+
+.search-option-container .radio-button:selected > .radio > .dot {
+    -fx-background-insets: 0;
     -fx-background-color: -Primary-04;
-    -fx-shape: "M12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17Z";
 }
 
 .search-retired-label {
@@ -3180,8 +3311,6 @@ Timeline Year line segment (will overlay change circles)
 .pattern-instance-hbox {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
-    -fx-font-style: normal;
-    -fx-font-weight: 400;
 
     -fx-background-color: white;
     -fx-background-radius: 3px;
@@ -4415,12 +4544,18 @@ Styling a context menu for kview ui/ux controls
 
     -fx-border-style: solid;
     -fx-border-radius: 1.0em;
-    -fx-border-color: -Grey-White;
+    -fx-border-color: #ccc;
     -fx-border-insets: 0px;
     -fx-border-width: 2px;
 
     -fx-padding: 3px;
 }
+
+.popup-container .titled-pane > *.content .option-container .radio-button:hover > .radio,
+.popup-container .titled-pane > *.content .option-container .radio-button:focused:hover > .radio {
+    -fx-border-color: -Grey-White;
+}
+
 .popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio,
 .popup-container .titled-pane > *.content .option-container .radio-button:selected:focused > .radio {
     -fx-border-color: -Primary-04;
@@ -5311,6 +5446,55 @@ Styling a context menu for kview ui/ux controls
 
 .properties-tab-container-content .controls-container {
     -fx-padding: 0 12px 0 0;
+}
+
+/******************* Tooltip for Semantic in Pattern Browser ******************/
+
+.semantic-tooltip {
+    -fx-padding: 15 0 10 0;
+}
+
+.semantic-tooltip .main-container {
+    -fx-max-width: 400px;
+    -fx-padding: 0;
+}
+
+.semantic-tooltip .title {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 16px;
+
+    -fx-max-height: 300px;
+    -fx-padding: 15 15 10 15;
+}
+
+.semantic-tooltip .values-container .grid {
+    -fx-padding: 5 15 20 15;
+    -fx-max-width: 450px;
+}
+
+.semantic-tooltip .values-container > .separator .line {
+    -fx-border-color: #111 transparent transparent transparent,
+                      transparent;
+}
+
+.semantic-tooltip .values-container .grid .label {
+
+    -fx-font-size: 12px;
+    -fx-padding: 10px 0 13px 0;
+}
+
+.semantic-tooltip .values-container .grid .field-title.label {
+    -fx-font-family: "Noto Sans Semibold";
+    -fx-text-fill: #999;
+}
+
+.semantic-tooltip .values-container .grid .field-value.label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #f0f0f0;
+}
+
+.semantic-tooltip .values-container .grid > .separator .line {
+    -fx-border-color: #494949 transparent transparent transparent, transparent;
 }
 
 /*******************************************************************************
