@@ -92,7 +92,7 @@ public class PatternSemanticListCell extends ListCell<Object> {
             } else if (item instanceof Integer nid) {
                 String entityDescriptionText = fetchDescriptionByNid.apply(nid);
                 EntityFacade entity = Entity.getFast(nid);
-
+                currentSemanticEntity = (SemanticEntity<?>) entity;
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
                 currentSemanticTitle = entityDescriptionText;
