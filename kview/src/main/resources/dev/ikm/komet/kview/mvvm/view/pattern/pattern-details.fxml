@@ -41,9 +41,6 @@
                               <String fx:value="icon" />
                               <String fx:value="coordinate" />
                            </styleClass>
-                           <items>
-                              <Menu fx:id="windowCoordinates" mnemonicParsing="false" text="Coordinates" />
-                           </items>
                            <tooltip><Tooltip text="Coordinates" /></tooltip>
                         </MenuButton>
                         <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />

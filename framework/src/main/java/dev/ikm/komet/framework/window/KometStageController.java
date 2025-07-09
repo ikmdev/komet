@@ -15,6 +15,18 @@
  */
 package dev.ikm.komet.framework.window;
 
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
+import dev.ikm.komet.framework.tabs.DetachableTab;
+import dev.ikm.komet.framework.tabs.TabGroup;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewMenuTask;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.alert.AlertObject;
+import dev.ikm.tinkar.common.alert.AlertStreams;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.SaveState;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -32,18 +44,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.eclipse.collections.api.list.ImmutableList;
-import dev.ikm.komet.framework.concurrent.TaskWrapper;
-import dev.ikm.komet.framework.tabs.DetachableTab;
-import dev.ikm.komet.framework.tabs.TabGroup;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
-import dev.ikm.komet.framework.view.ViewMenuTask;
-import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.common.alert.AlertObject;
-import dev.ikm.tinkar.common.alert.AlertStreams;
-import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.service.SaveState;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -312,14 +312,14 @@ public class KometStageController implements SaveState {
 
         this.windowSplitPane.setDividerPositions(this.windowSettings.dividerPositionsProperty().getValue());
 
-        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView()),
+        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView(), "KometStageController"),
                 (List<MenuItem> result) -> {
                     windowCoordinates.getItems().addAll(result);
                 }));
 
         windowSettings.getView().addListener((observable, oldValue, newValue) -> {
             windowCoordinates.getItems().clear();
-            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView()),
+            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView(), "KometStageController"),
                     (List<MenuItem> result) -> windowCoordinates.getItems().addAll(result)));
         });
 
