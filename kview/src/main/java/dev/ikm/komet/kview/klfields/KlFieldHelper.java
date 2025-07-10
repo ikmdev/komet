@@ -44,6 +44,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class KlFieldHelper {
@@ -55,7 +56,7 @@ public class KlFieldHelper {
      * @param viewProperties
      * @return
      */
-    public static Node generateNode(FieldRecord fieldRecord, ObservableField observableField, ViewProperties viewProperties, boolean editable) {
+    public static Node generateNode(FieldRecord fieldRecord, ObservableField observableField, ViewProperties viewProperties, boolean editable, UUID journalTopic) {
 
         Node node = null;
         ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
@@ -72,10 +73,10 @@ public class KlFieldHelper {
             node = stringFieldTextFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
             KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
-            node = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+            node = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), editable, journalTopic).klWidget();
         } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
             KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
-            node = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+            node = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), editable, journalTopic).klWidget();
         } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
             node = rowf.createReadOnlyDiTree(viewProperties, fieldRecord);
         } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.FLOAT.nid()) {
