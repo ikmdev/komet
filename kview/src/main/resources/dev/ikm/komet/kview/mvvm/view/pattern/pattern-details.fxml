@@ -161,12 +161,12 @@
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                        </rowConstraints>
                                        <children>
-                                          <Text  strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12px; -fx-font-weight: bold; -fx-fill: -Grey-8;" text="SEMANTIC MEANING:"  GridPane.columnIndex="0">
+                                          <Text  strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-field" text="SEMANTIC MEANING:"  GridPane.columnIndex="0">
                                              <font>
                                                 <Font name="Open Sans Bold" size="14.0" />
                                              </font>
                                           </Text>
-                                          <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12px; -fx-font-weight: bold; -fx-fill: -Grey-8;" text="SEMANTIC PURPOSE:" wrappingWidth="121.474609375" GridPane.columnIndex="1">
+                                          <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-field" text="SEMANTIC PURPOSE:" wrappingWidth="121.474609375" GridPane.columnIndex="1">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="12.0" />
                                              </font>
@@ -518,7 +518,7 @@
                            <children>
                               <HBox GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
                                  <children>
-                                    <Label minWidth="61.0" prefHeight="25.0" prefWidth="50.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="Pattern">
+                                    <Label minWidth="61.0" prefHeight="25.0" prefWidth="50.0" styleClass="pattern-field" text="Pattern">
                                        <font>
                                           <Font name="Open Sans" size="10.0" />
                                        </font>
@@ -538,7 +538,7 @@
                               </HBox>
                               <HBox GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
                                  <children>
-                                    <Label minWidth="61.0" prefHeight="25.0" prefWidth="61.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="IDENTIFIER:">
+                                    <Label minWidth="61.0" prefHeight="25.0" prefWidth="61.0" styleClass="pattern-field" text="IDENTIFIER:">
                                        <font>
                                           <Font name="Open Sans" size="10.0" />
                                        </font>
