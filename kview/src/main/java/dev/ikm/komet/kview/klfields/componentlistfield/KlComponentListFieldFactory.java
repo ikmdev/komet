@@ -8,7 +8,7 @@ import dev.ikm.tinkar.common.id.IntIdList;
 
 import java.util.UUID;
 
-public class KlComponentListFieldFactory{
+public class KlComponentListFieldFactory {
 
     public KlField<IntIdList> create(ObservableField<IntIdList> observableField, ObservableView observableView, boolean editable, UUID journalTopic) {
         return new DefaultKlComponentListField(observableField, observableView, editable, journalTopic);

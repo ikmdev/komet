@@ -171,7 +171,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     @FXML
     private void openInConceptNavigator(ActionEvent actionEvent) {
         if (entity instanceof ConceptEntity conceptEntity) {
-            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT, conceptEntity));
+            eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT, conceptEntity));
         }
     }
 
