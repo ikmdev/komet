@@ -249,8 +249,8 @@
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
                                                             <Label styleClass="grey8-12pt" text="Date Added:" />
-                                                            <Label fx:id="fqnAddDateLabel" styleClass="descr-semantic" text="May 10, 2023" />
-                                                            <Hyperlink text="Attachment" />
+                                                            <Label fx:id="fqnAddDateLabel" styleClass="descr-semantic" text="May 10, 2023"/>
+                                                            <Hyperlink styleClass="attachment-icon"/>
                                                             <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
                                                                <opaqueInsets>
                                                                   <Insets />
