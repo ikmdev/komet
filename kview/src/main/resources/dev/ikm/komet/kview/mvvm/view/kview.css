@@ -2842,7 +2842,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: 500;
 }
 
-.grey-comment-icon {
+.comment-icon {
     -fx-pref-height: 14;
     -fx-pref-width: 15;
     -fx-background-color: -Grey-8;

@@ -248,7 +248,7 @@
                                                             <Label styleClass="grey8-12pt" text="Date Added:" />
                                                             <Label fx:id="fqnAddDateLabel" styleClass="descr-semantic" text="May 10, 2023"/>
                                                             <Hyperlink styleClass="attachment-icon"/>
-                                                            <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                            <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
                                                                <opaqueInsets>
                                                                   <Insets />
                                                                </opaqueInsets>
@@ -277,7 +277,7 @@
                                                             <Label styleClass="grey8-12pt" text="Date Added:" />
                                                             <Label styleClass="grey8-12pt" text="May 10, 2023" />
                                                             <Hyperlink text="Attachment" />
-                                                            <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                            <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
                                                                <opaqueInsets>
                                                                   <Insets />
                                                                </opaqueInsets>
@@ -295,7 +295,7 @@
                                                             <Label styleClass="grey8-12pt" text="Date Added:" />
                                                             <Label styleClass="descr-semantic" text="May 10, 2023" />
                                                             <Hyperlink text="Attachment" />
-                                                            <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                            <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
                                                                <opaqueInsets>
                                                                   <Insets />
                                                                </opaqueInsets>
@@ -377,7 +377,7 @@
                                                             <Label styleClass="grey8-12pt" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
-                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
                                                          <opaqueInsets>
                                                             <Insets />
                                                          </opaqueInsets>
@@ -398,7 +398,7 @@
                                                             <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
-                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
                                                          <opaqueInsets>
                                                             <Insets />
                                                          </opaqueInsets>
@@ -419,7 +419,7 @@
                                                             <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
-                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
                                                          <opaqueInsets>
                                                             <Insets />
                                                          </opaqueInsets>
@@ -440,7 +440,7 @@
                                                             <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
-                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
                                                          <opaqueInsets>
                                                             <Insets />
                                                          </opaqueInsets>
@@ -461,7 +461,7 @@
                                                             <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
-                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="grey-comment-icon">
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
                                                          <opaqueInsets>
                                                             <Insets />
                                                          </opaqueInsets>
