@@ -5451,7 +5451,7 @@ Styling a context menu for kview ui/ux controls
 /******************* Tooltip for Semantic in Pattern Browser ******************/
 
 .semantic-tooltip {
-    -fx-padding: 15 0 10 0;
+    -fx-padding: 15 0 15 0;
 }
 
 .semantic-tooltip .main-container {
@@ -5459,8 +5459,9 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0;
 }
 
-.semantic-tooltip .title {
+.semantic-tooltip .main-container > .title {
     -fx-font-family: "Noto Sans";
+    -fx-text-fill: white;
     -fx-font-size: 16px;
 
     -fx-max-height: 300px;
@@ -5491,6 +5492,10 @@ Styling a context menu for kview ui/ux controls
 .semantic-tooltip .values-container .grid .field-value.label {
     -fx-font-family: "Noto Sans";
     -fx-text-fill: #f0f0f0;
+}
+
+.semantic-tooltip .values-container .grid .image-container {
+    -fx-padding: 10 0 0 0;
 }
 
 .semantic-tooltip .values-container .grid > .separator .line {

@@ -2,9 +2,9 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyMultiComponentControl;
-import javafx.css.PseudoClass;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.HBox;
@@ -14,12 +14,16 @@ import javafx.scene.layout.Region;
 /**
  * A Node used to render a Component (icon + text)
  */
-class ComponentItemNode extends Region {
+public class ComponentItemNode extends Region {
     private final HBox container = new HBox();
     private final ImageView iconImageView = new ImageView();
     private final Label textLabel = new Label();
 
     private ContextMenu contextMenu;
+
+    public ComponentItemNode(String text, Image icon) {
+        this(new ComponentItem(text, icon));
+    }
 
     public ComponentItemNode(ComponentItem componentItem) {
         // Image View
