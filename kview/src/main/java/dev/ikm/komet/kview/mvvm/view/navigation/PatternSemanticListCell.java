@@ -92,52 +92,7 @@ public class PatternSemanticListCell extends ListCell<Object> {
             } else if (item instanceof Integer nid) {
                 String entityDescriptionText = fetchDescriptionByNid.apply(nid);
                 EntityFacade entity = Entity.getFast(nid);
-                if (entity instanceof SemanticEntity<?> semanticEntity) {
-                    currentSemanticEntity = semanticEntity;
-
-                    if (semanticEntity.patternNid() == IDENTIFIER_PATTERN_PROXY.nid()) {
-                        //TODO Move better string descriptions to language calculator
-                        Latest<? extends SemanticEntityVersion> latestId = viewProperties.calculator().latest(semanticEntity);
-                        ImmutableList fields = latestId.get().fieldValues();
-                        entityDescriptionText = fetchDescriptionByFacade.apply((EntityFacade) fields.get(0)) +
-                                ": " + fields.get(1);
-                    } else if (semanticEntity.patternNid() == INFERRED_DEFINITION_PATTERN_PROXY.nid()) {
-                        entityDescriptionText =
-                                "Inferred definition for: " + fetchDescriptionByNid.apply(semanticEntity.referencedComponentNid());
-                    } else if (semanticEntity.patternNid() == INFERRED_NAVIGATION_PATTERN_PROXY.nid()) {
-                        entityDescriptionText =
-                                "Inferred is-a relationships for: " + fetchDescriptionByNid.apply(semanticEntity.referencedComponentNid());
-                    } else if (semanticEntity.patternNid() == PATH_MEMBERSHIP_PROXY.nid()) {
-                        entityDescriptionText =
-                                fetchDescriptionByNid.apply(semanticEntity.referencedComponentNid());
-                    } else if (semanticEntity.patternNid() == STATED_DEFINITION_PATTERN_PROXY.nid()) {
-                        entityDescriptionText =
-                                "Stated definition for: " + fetchDescriptionByNid.apply(semanticEntity.referencedComponentNid());
-                    } else if (semanticEntity.patternNid() == STATED_NAVIGATION_PATTERN_PROXY.nid()) {
-                        entityDescriptionText =
-                                "Stated is-a relationships for: " + fetchDescriptionByNid.apply(semanticEntity.referencedComponentNid());
-                    } else if (semanticEntity.patternNid() == UK_DIALECT_PATTERN_PROXY.nid()) {
-                        Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
-                        ImmutableList fields = latestAcceptability.get().fieldValues();
-                        entityDescriptionText =
-                                "UK dialect " + fetchDescriptionByFacade.apply((EntityFacade) fields.get(0)) +
-                                        ": " + fetchDescriptionByNid.apply(semanticEntity.referencedComponentNid());
-                    } else if (semanticEntity.patternNid() == US_DIALECT_PATTERN_PROXY.nid()) {
-                        Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
-                        ImmutableList fields = latestAcceptability.get().fieldValues();
-                        entityDescriptionText =
-                                "US dialect " + fetchDescriptionByFacade.apply((EntityFacade) fields.get(0)) +
-                                        ": " + fetchDescriptionByNid.apply(semanticEntity.referencedComponentNid());
-                    } else if (semanticEntity.patternNid() == VERSION_CONTROL_PATH_ORIGIN_PATTERN_PROXY.nid()) {
-                        Latest<? extends SemanticEntityVersion> latestPathOrigins = viewProperties.calculator().latest(semanticEntity);
-                        ImmutableList fields = latestPathOrigins.get().fieldValues();
-                        entityDescriptionText =
-                                fetchDescriptionByNid.apply(semanticEntity.referencedComponentNid()) +
-                                        " origin: " + DateTimeUtil.format((Instant) fields.get(1)) +
-                                        " on " + fetchDescriptionByFacade.apply((EntityFacade) fields.get(0));
-                    }
-                }
-
+                currentSemanticEntity = (SemanticEntity<?>) entity;
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
                 currentSemanticTitle = entityDescriptionText;
