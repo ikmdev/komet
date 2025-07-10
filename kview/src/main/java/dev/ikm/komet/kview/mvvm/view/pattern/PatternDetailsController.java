@@ -135,7 +135,7 @@ public class PatternDetailsController {
     private Label patternTitleText;
 
     @FXML
-    private TextField identifierText;
+    private Text identifierText;
 
     @FXML
     private Text lastUpdatedText;
