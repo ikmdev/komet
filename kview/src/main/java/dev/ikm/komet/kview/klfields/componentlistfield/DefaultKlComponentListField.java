@@ -26,6 +26,13 @@ import java.util.function.Consumer;
 
 public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> implements KlComponentListField {
 
+    /**
+     *
+     * @param observableComponentListField list of the intIdList
+     * @param observableView
+     * @param isEditable
+     * @param journalTopic This is used for the option to summon the concept window in the specific work space.
+     */
     public DefaultKlComponentListField(ObservableField<IntIdList> observableComponentListField, ObservableView observableView, boolean isEditable, UUID journalTopic) {
         super(observableComponentListField, observableView, isEditable);
         Parent node;
