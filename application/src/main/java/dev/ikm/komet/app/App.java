@@ -97,7 +97,6 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.jgit.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,7 +123,6 @@ import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.*;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.README_FILENAME;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_SOURCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
@@ -533,7 +531,6 @@ public class App extends Application {
             // load additional panels
             journalController.loadNextGenReasonerPanel();
             journalController.loadNextGenSearchPanel();
-            journalController.loadConceptNavigatorPanel();
         });
         // disable the delete menu option for a Journal Card.
         journalWindowSettings.setValue(CAN_DELETE, false);

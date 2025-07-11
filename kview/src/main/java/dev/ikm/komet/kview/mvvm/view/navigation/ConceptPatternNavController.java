@@ -1,23 +1,30 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
 
-import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
-import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.INSTANCES;
-import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.PATTERN_FACADE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
+import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
+import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
+import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
+import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel;
+import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
@@ -28,13 +35,11 @@ import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -43,8 +48,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
+import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.INSTANCES;
+import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.PATTERN_FACADE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class ConceptPatternNavController {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptPatternNavController.class);
@@ -70,7 +85,7 @@ public class ConceptPatternNavController {
     private VBox patternsVBox;
 
 
-    private Pane classicConceptNavigator;
+    private Pane conceptNavigator;
 
     @FXML
     private ScrollPane scrollPane;
@@ -81,11 +96,13 @@ public class ConceptPatternNavController {
     @InjectViewModel
     private PatternNavViewModel patternNavViewModel;
 
+    private JournalController journalController;
+
     private Subscriber<PatternSavedEvent> patternCreationEventSubscriber;
     private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
 
-    public ConceptPatternNavController(Pane navigatorNodePanel) {
-        classicConceptNavigator = navigatorNodePanel;
+    public ConceptPatternNavController(JournalController journalController) {
+        this.journalController = journalController;
     }
 
     @FXML
@@ -98,11 +115,23 @@ public class ConceptPatternNavController {
         patternsVBox.getStyleClass().add("pattern-navigation-container");
 
         patternNavigationPane.setContent(patternsVBox);
+
         patternsVBox.getChildren().clear();
 
         // default to classic concept navigation
         conceptsToggleButton.setSelected(true);
-        navContentPane.setCenter(classicConceptNavigator);
+
+        conceptNavigator = loadConceptNavigatorPanel();
+
+        // set the Pattern ScrollPane preferred width so the toggle button's
+        // panel won't change widths when button selected
+
+        Platform.runLater(() -> {
+            patternNavigationPane.setPrefWidth(conceptNavigator.getPrefWidth());
+            patternNavigationPane.setMinWidth(conceptNavigator.getWidth());
+        });
+
+        navContentPane.setCenter(conceptNavigator);
 
         // set up listeners when the toggle button changes
         conPatToggleGroup.selectedToggleProperty().subscribe((oldVal, newVal) -> {
@@ -179,9 +208,96 @@ public class ConceptPatternNavController {
         patternNavViewModel.reload();
     }
 
+    /**
+     * Creates the Nextgen ConceptNavigator tree view
+     */
+    private Pane loadConceptNavigatorPanel() {
+        ViewProperties viewProperties = patternNavViewModel.getPropertyValue(VIEW_PROPERTIES);
+        Navigator navigator = new ViewNavigator(viewProperties.nodeView());
+        KLSearchControl searchControl = new KLSearchControl();
+        searchControl.setNavigator(navigator);
+        searchControl.setOnAction(_ -> {
+            ViewCalculator calculator = viewProperties.calculator();
+            searchControl.setResultsPlaceholder("Searching..."); // DUMMY, resources?
+            TinkExecutor.threadPool().execute(() -> {
+                try {
+                    List<LatestVersionSearchResult> results = calculator.search(searchControl.getText(), 1000).toList();
+                    List<KLSearchControl.SearchResult> searchResults = new ArrayList<>();
+                    results.stream()
+                            .filter(result -> result.latestVersion().isPresent())
+                            .forEach(result -> {
+                                SemanticEntityVersion semantic = result.latestVersion().get();
+                                searchResults.addAll(
+                                        Entity.getConceptForSemantic(semantic.nid()).map(entity -> {
+                                                    int[] parentNids = navigator.getParentNids(entity.nid());
+                                                    List<KLSearchControl.SearchResult> list = new ArrayList<>();
+                                                    if (parentNids != null) {
+                                                        // Add one search result per parent
+                                                        for (int parentNid : parentNids) {
+                                                            ConceptFacade parent = Entity.getFast(parentNid);
+                                                            list.add(new KLSearchControl.SearchResult(parent, entity, searchControl.getText()));
+                                                        }
+                                                    } else {
+                                                        list.add(new KLSearchControl.SearchResult(null, entity, searchControl.getText()));
+                                                    }
+                                                    return list;
+                                                })
+                                                .orElse(List.of()));
+                            });
+
+                    // NOTE: different semanticIds can give the same entity, remove duplicates
+                    List<KLSearchControl.SearchResult> distinctResults = searchResults.stream().distinct().toList();
+                    Platform.runLater(() -> {
+                        searchControl.setResultsPlaceholder(null);
+                        searchControl.resultsProperty().addAll(distinctResults);
+                    });
+
+                } catch (Exception e) {
+                    LOG.error(e.getMessage(), e);
+                }
+            });
+        });
+
+        searchControl.setOnFilterAction(_ -> {
+            // TODO
+        });
+
+        KLConceptNavigatorControl conceptNavigatorControl = new KLConceptNavigatorControl();
+        conceptNavigatorControl.setNavigator(navigator);
+        conceptNavigatorControl.setHeader("Concept Header");
+        conceptNavigatorControl.setShowTags(false);
+        conceptNavigatorControl.setOnAction(action -> switch (action) {
+            // single selection
+            case OPEN_IN_WORKSPACE -> journalController::createConceptWindow;
+            case SHOW_RELATED_CONCEPTS -> {
+                // Dummy, for now just add the parents of the selected item as related content:
+                TreeItem<ConceptFacade> selectedItem = conceptNavigatorControl.getSelectionModel().getSelectedItem();
+                if (selectedItem != null) {
+                    conceptNavigatorControl.getNavigator().getParentNids(selectedItem.getValue().nid());
+                    List<ConceptFacade> list = Arrays.stream(conceptNavigatorControl.getNavigator().getParentNids(selectedItem.getValue().nid())).boxed()
+                            .map(nid -> (ConceptFacade) Entity.getFast(nid)).toList();
+                    ((ConceptNavigatorTreeItem) selectedItem).setRelatedConcepts(list);
+                }
+                yield i -> LOG.info("Click on {}", i.description());
+            }
+            // multiple selection
+            case POPULATE_SELECTION -> journalController::createConceptWindow;
+            case SEND_TO_JOURNAL, SEND_TO_CHAPTER, COPY, SAVE_TO_FAVORITES -> _ -> {}; // TODO: Add implementation
+        });
+        searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
+        searchControl.setOnSearchResultClick(_ -> conceptNavigatorControl.unhighlightConceptsWithDelay());
+        searchControl.setOnClearSearch(_ -> ConceptNavigatorUtils.resetConceptNavigator(conceptNavigatorControl));
+
+        VBox nodePanel = new VBox(searchControl, conceptNavigatorControl);
+        nodePanel.getStyleClass().add("concept-navigator-container");
+        VBox.setVgrow(conceptNavigatorControl, Priority.ALWAYS);
+
+        return nodePanel;
+    }
+
     @FXML
     private void showConcepts() {
-        navContentPane.setCenter(classicConceptNavigator);
+        navContentPane.setCenter(conceptNavigator);
         conceptsToggleButton.setSelected(true);
     }
 
