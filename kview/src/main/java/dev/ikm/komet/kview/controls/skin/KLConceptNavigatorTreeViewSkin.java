@@ -241,7 +241,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             if (dragboard.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
                 ConceptFacade conceptFacade = ProxyFactory.fromXmlFragment((String) dragboard.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
                 InvertedTree.ConceptItem parentConceptItem = new InvertedTree.ConceptItem(-1, conceptFacade.nid(), "");
-                expandAndHighlightConcept(parentConceptItem);
+                expandAndSelectConcept(parentConceptItem);
                 event.setDropCompleted(true);
                 treeView.unhighlightConceptsWithDelay();
                 highlighted.set(false);
@@ -698,6 +698,19 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      * @param conceptItem a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
      */
     public void expandAndHighlightConcept(InvertedTree.ConceptItem conceptItem) {
+        expandConcept(conceptItem, true);
+    }
+
+    /**
+     * <p>Expands and selects the concept in the treeView, matching both its nid and parent nid.
+     * </p>
+     * @param conceptItem a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
+     */
+    public void expandAndSelectConcept(InvertedTree.ConceptItem conceptItem) {
+        expandConcept(conceptItem, false);
+    }
+
+    private void expandConcept(InvertedTree.ConceptItem conceptItem, boolean highlight) {
         ConceptNavigatorUtils.resetConceptNavigator(treeView);
 
         List<InvertedTree.ConceptItem> lineage = ConceptNavigatorUtils.findShorterLineage(conceptItem, treeView.getNavigator());
@@ -725,27 +738,29 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                         treeView.scrollTo(index);
                     }
                 });
-                treeView.getSelectionModel().clearSelection();
-
-                // Clicking anywhere, unhighlights the item
-                EventHandler<MouseEvent> eventFilter = _ -> {
-                    treeView.unhighlightConceptsWithDelay();
-                    highlighted.set(false);
-                };
-                // install/uninstall event filter to the scene that holds the control
-                highlighted.subscribe((_, v) -> {
-                    Scene scene = treeView.getScene();
-                    if (scene != null) {
-                        if (v) {
-                            scene.addEventFilter(MouseEvent.MOUSE_PRESSED, eventFilter);
-                        } else {
-                            scene.removeEventFilter(MouseEvent.MOUSE_PRESSED, eventFilter);
-                        }
-                    }
-                });
                 item.setViewLineage(false);
-                item.setHighlighted(true);
-                highlighted.set(true);
+                if (highlight) {
+                    treeView.getSelectionModel().clearSelection();
+
+                    // Clicking anywhere, unhighlights the item
+                    EventHandler<MouseEvent> eventFilter = _ -> {
+                        treeView.unhighlightConceptsWithDelay();
+                        highlighted.set(false);
+                    };
+                    // install/uninstall event filter to the scene that holds the control
+                    highlighted.subscribe((_, v) -> {
+                        Scene scene = treeView.getScene();
+                        if (scene != null) {
+                            if (v) {
+                                scene.addEventFilter(MouseEvent.MOUSE_PRESSED, eventFilter);
+                            } else {
+                                scene.removeEventFilter(MouseEvent.MOUSE_PRESSED, eventFilter);
+                            }
+                        }
+                    });
+                    item.setHighlighted(true);
+                    highlighted.set(true);
+                }
             }
         }
     }
