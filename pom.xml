@@ -92,7 +92,7 @@
         <roaringbitmap.version>1.4.0</roaringbitmap.version>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
         <classgraph.version>4.8.179</classgraph.version>
-        <cognitive.version>1.5.1</cognitive.version>
+        <cognitive.version>1.6.0</cognitive.version>
         <fxcomponents.version>1.6.2</fxcomponents.version>
         <axonic.version>1.1.5</axonic.version>
         <common-java5.version>3.5.2</common-java5.version>
@@ -106,6 +106,7 @@
         <openjfx.version>23.0.1</openjfx.version>
         <scenic-view.version>11.0.2</scenic-view.version>
         <jgit.version>6.10.0.202406032230-r-r5</jgit.version>
+        <toucan.version>0.9.0</toucan.version>
 
         <!-- TestFX / Monocle -->
         <commonTestFXArgs>
@@ -390,6 +391,11 @@
                 <groupId>org.carlfx</groupId>
                 <artifactId>axonic</artifactId>
                 <version>${axonic.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sparrowwallet</groupId>
+                <artifactId>toucan</artifactId>
+                <version>${toucan.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.openjfx</groupId>

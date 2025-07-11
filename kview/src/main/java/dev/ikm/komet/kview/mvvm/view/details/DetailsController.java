@@ -15,40 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.details;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
-import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
-import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
-import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
-import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.AXIOM;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CONCEPT_STAMP_VIEW_MODEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
-import static dev.ikm.tinkar.terms.TinkarTerm.*;
-
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.AxiomChangeEvent;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -57,19 +24,13 @@ import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
-import dev.ikm.komet.framework.view.ViewMenuTask;
+import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
-import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
-import dev.ikm.komet.kview.events.AddOtherNameToConceptEvent;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.events.CreateConceptEvent;
-import dev.ikm.komet.kview.events.EditConceptEvent;
-import dev.ikm.komet.kview.events.EditConceptFullyQualifiedNameEvent;
-import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
-import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
+import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
@@ -79,21 +40,10 @@ import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
-import dev.ikm.tinkar.entity.FieldDefinitionRecord;
-import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
@@ -108,33 +58,15 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.loader.NamedVm;
+import org.carlfx.cognitive.loader.*;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
@@ -148,15 +80,28 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.komet.framework.events.FrameworkTopics.RULES_TOPIC;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
+import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class DetailsController  {
 
@@ -165,10 +110,12 @@ public class DetailsController  {
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
 
     @FXML
-    private Button editCoordinateButton;
+    private MenuButton coordinatesMenuButton;
 
-    @FXML
-    private ContextMenu changeViewCoordinateMenu;
+    /**
+     * model required for the filter coordinates menu, used with coordinatesMenuButton
+     */
+    private ViewMenuModel viewMenuModel;
 
     @FXML
     private Button closeConceptButton;
@@ -319,8 +266,6 @@ public class DetailsController  {
      */
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
 
-    private ViewProperties viewProperties;
-
     private PropertiesController propertiesController;
 
     @InjectViewModel
@@ -367,9 +312,8 @@ public class DetailsController  {
     public DetailsController() {
     }
 
-    public DetailsController(UUID conceptTopic, ViewProperties viewProperties) {
+    public DetailsController(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
-        this.viewProperties = viewProperties;
     }
 
     @FXML
@@ -379,7 +323,7 @@ public class DetailsController  {
             // query current concept's membership semantic records.
             // build menuItems according to 'add' or 'remove' , style to look like figma designs style classes.
             // show offset to the right of the identicon
-            ViewCalculator viewCalculator = getViewProperties().calculator();
+            ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
             EntityFacade currentConceptFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
             List<PatternEntityVersion> patterns = getMembershipPatterns();
             ContextMenu membershipContextMenu = new ContextMenu();
@@ -490,18 +434,17 @@ public class DetailsController  {
                     updateOtherNamesDescription(otherNames);
                 }
                 // Attempts to write data
-                boolean isWritten = conceptViewModel.createConcept(viewProperties.calculator().viewCoordinateRecord().editCoordinate());
+                boolean isWritten = conceptViewModel.createConcept(conceptViewModel.getViewProperties().calculator().viewCoordinateRecord().editCoordinate());
                 // when written the mode changes to EDIT.
                 LOG.info("Is " + conceptViewModel + " created? " + isWritten);
                 if (isWritten) {
-                    updateModel(getViewProperties());
                     updateView();
                 }
                 // remove 'Add Fully Qualified Name' from the menu
                 setUpDescriptionContextMenu(addDescriptionButton);
                 //TODO revisit: why should the mode ever be edit inside a create event?
             } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
-                    conceptViewModel.addOtherName(viewProperties.calculator().viewCoordinateRecord().editCoordinate(), descrName);
+                    conceptViewModel.addOtherName(conceptViewModel.getViewProperties().calculator().viewCoordinateRecord().editCoordinate(), descrName);
                     otherNames.add(descrName);
             }
 
@@ -631,10 +574,6 @@ public class DetailsController  {
         return (atTop && deltaY > 0) || (atBottom && deltaY < 0);
     }
 
-    public ViewProperties getViewProperties() {
-        return viewProperties;
-    }
-
     public ValidationViewModel getConceptViewModel() {
         return conceptViewModel;
     }
@@ -706,7 +645,7 @@ public class DetailsController  {
                     {MenuHelper.SEPARATOR},
                     {"Add Fully Qualified Name", true, null, (EventHandler<ActionEvent>) actionEvent ->
                             eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(contextMenu,
-                                    AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties())),
+                                    AddFullyQualifiedNameEvent.ADD_FQN, conceptViewModel.getViewProperties())),
                             createConceptEditDescrIcon()},
                     {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
                         eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
@@ -764,10 +703,9 @@ public class DetailsController  {
 
         // Attempts to write data
         if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
-            boolean isWritten = conceptViewModel.createConcept(viewProperties.calculator().viewCoordinateRecord().editCoordinate());
+            boolean isWritten = conceptViewModel.createConcept(conceptViewModel.getViewProperties().calculator().viewCoordinateRecord().editCoordinate());
             LOG.info("Is " + conceptViewModel + " created? " + isWritten);
             if (isWritten) {
-                updateModel(getViewProperties());
                 updateView();
             }
         }
@@ -779,10 +717,9 @@ public class DetailsController  {
 
         // Attempts to write data
         if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
-            boolean isWritten = conceptViewModel.createConcept(viewProperties.calculator().viewCoordinateRecord().editCoordinate());
+            boolean isWritten = conceptViewModel.createConcept(conceptViewModel.getViewProperties().calculator().viewCoordinateRecord().editCoordinate());
             LOG.info("Is " + conceptViewModel + " created? " + isWritten);
             if (isWritten) {
-                updateModel(getViewProperties());
                 updateView();
             }
         }
@@ -842,10 +779,6 @@ public class DetailsController  {
         return propertiesSlideoutTrayPane;
     }
 
-    public void updateModel(final ViewProperties viewProperties) {
-        this.viewProperties = viewProperties;
-    }
-
     public void updateView() {
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
         StampViewModel stampViewModel = new StampViewModel();
@@ -856,14 +789,14 @@ public class DetailsController  {
                 // add a new stamp view model to the concept view model
                 //Populate from database
                 stampViewModel.setPropertyValue(MODE, EDIT)
-                        .setPropertyValues(MODULES_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()))
-                        .setPropertyValues(PATHS_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()));
+                        .setPropertyValues(MODULES_PROPERTY, fetchDescendentsOfConcept(conceptViewModel.getViewProperties(), TinkarTerm.MODULE.publicId()))
+                        .setPropertyValues(PATHS_PROPERTY, fetchDescendentsOfConcept(conceptViewModel.getViewProperties(), TinkarTerm.PATH.publicId()));
 
                 conceptViewModel.setPropertyValue(CONCEPT_STAMP_VIEW_MODEL,stampViewModel);
             }
 
             // TODO: Ability to change Concept record. but for now user can edit stamp but not affect Concept version.
-            EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
+            EntityVersion latestVersion = conceptViewModel.getViewProperties().calculator().latest(entityFacade).get();
             StampEntity stamp = latestVersion.stamp();
             updateStampViewModel(EDIT, stamp);
         } else { // create concept
@@ -903,7 +836,7 @@ public class DetailsController  {
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
         // TODO do a null check on the entityFacade
         // Title (FQN of concept)
-        final ViewCalculator viewCalculator = viewProperties.calculator();
+        final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         String conceptNameStr = viewCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
         fqnTitleText.setText(conceptNameStr);
         conceptNameTooltip.setText(conceptNameStr);
@@ -1007,7 +940,7 @@ public class DetailsController  {
             return;
         }
 
-        final ViewCalculator viewCalculator = getViewProperties().calculator();
+        final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
 
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
@@ -1106,7 +1039,7 @@ public class DetailsController  {
     private VBox generateOtherNameRow(DescrName otherName) {
         VBox textFlowsBox = new VBox();
         DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
-        ViewCalculator viewCalculator = getViewProperties().calculator();
+        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         ConceptEntity caseSigConcept = otherName.getCaseSignificance();
         String casSigText = viewCalculator.getRegularDescriptionText(caseSigConcept.nid())
                 .orElse(caseSigConcept.nid()+"");
@@ -1245,7 +1178,7 @@ public class DetailsController  {
         // TODO: This should rely on the view calculator from the parent view properties. Below will always get the actual latest semantic version
         //        ViewCalculator viewCalculator = getViewProperties().calculator(); /* after import this is not getting latest */
 
-        ViewCalculator viewCalculator = getViewProperties().calculator(); /* returns committed latest from db */
+        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator(); /* returns committed latest from db */
         viewCalculator.getDescriptionsForComponent(conceptFacade).stream()
                 .filter(semanticEntity -> {
                     // TODO FIXME - the latest() methods should be relative to the
@@ -1327,7 +1260,7 @@ public class DetailsController  {
         }
 
         // clear Axioms areas
-        ViewCalculator viewCalculator = getViewProperties().calculator();
+        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
 
         // add axiom pencil
@@ -1335,16 +1268,16 @@ public class DetailsController  {
 
         // Create a SheetItem (AXIOM inferred semantic version)
         // TODO Should this be reused instead of instanciating a new one everytime?
-        KometPropertySheet inferredPropertySheet = new KometPropertySheet(getViewProperties(), true);
+        KometPropertySheet inferredPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
         Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
-        makeSheetItem(getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
+        makeSheetItem(conceptViewModel.getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
         inferredAxiomPane.setCenter(inferredPropertySheet);
 
 
         // Create a SheetItem (AXIOM stated semantic version)
-        KometPropertySheet statedPropertySheet = new KometPropertySheet(getViewProperties(), true);
+        KometPropertySheet statedPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
         Latest<SemanticEntityVersion> statedSemanticVersion    = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
-        makeSheetItem(getViewProperties(), statedPropertySheet, statedSemanticVersion);
+        makeSheetItem(conceptViewModel.getViewProperties(), statedPropertySheet, statedSemanticVersion);
         statedAxiomPane.setCenter(statedPropertySheet);
 
         //TODO discuss the blue theme color related to AXIOMs
@@ -1355,11 +1288,11 @@ public class DetailsController  {
                                KometPropertySheet propertySheet,
                                Latest<SemanticEntityVersion> semanticVersion) {
         semanticVersion.ifPresent(semanticEntityVersion -> {
-            Latest<PatternEntityVersion> statedPatternVersion = getViewProperties().calculator().latestPatternEntityVersion(semanticEntityVersion.pattern());
+            Latest<PatternEntityVersion> statedPatternVersion = conceptViewModel.getViewProperties().calculator().latestPatternEntityVersion(semanticEntityVersion.pattern());
             ImmutableList<ObservableField> fields = fields(semanticEntityVersion, statedPatternVersion.get());
             fields.forEach(field ->
                     // create a row as a label: editor. For Axioms we hide the left labels.
-                    propertySheet.getItems().add(SheetItem.make(field, semanticEntityVersion, getViewProperties())));
+                    propertySheet.getItems().add(SheetItem.make(field, semanticEntityVersion, conceptViewModel.getViewProperties())));
         });
 
     }
@@ -1405,7 +1338,7 @@ public class DetailsController  {
             if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
                 // show the Add FQN
                 eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(propertyToggle,
-                        AddFullyQualifiedNameEvent.ADD_FQN, getViewProperties()));
+                        AddFullyQualifiedNameEvent.ADD_FQN, conceptViewModel.getViewProperties()));
             } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
                 // show the button form
                 eventBus.publish(conceptTopic, new OpenPropertiesPanelEvent(propertyToggle,
@@ -1478,11 +1411,11 @@ public class DetailsController  {
 
             // refresh modules
             stampViewModel.getObservableList(MODULES_PROPERTY).clear();
-            stampViewModel.getObservableList(MODULES_PROPERTY).addAll(DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()));
+            stampViewModel.getObservableList(MODULES_PROPERTY).addAll(DataModelHelper.fetchDescendentsOfConcept(conceptViewModel.getViewProperties(), TinkarTerm.MODULE.publicId()));
 
             // refresh path
             stampViewModel.getObservableList(PATHS_PROPERTY).clear();
-            stampViewModel.getObservableList(PATHS_PROPERTY).addAll(DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()));
+            stampViewModel.getObservableList(PATHS_PROPERTY).addAll(DataModelHelper.fetchDescendentsOfConcept(conceptViewModel.getViewProperties(), TinkarTerm.PATH.publicId()));
 
             stampEdit.show((Node) event.getSource());
             stampEditController.selectActiveStatusToggle();
@@ -1492,8 +1425,8 @@ public class DetailsController  {
         StampViewModel stampViewModel = new StampViewModel();
 
         // Populate from database
-        stampViewModel.setPropertyValue(PATHS_PROPERTY, DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()))
-                .setPropertyValue(MODULES_PROPERTY, DataModelHelper.fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()));
+        stampViewModel.setPropertyValue(PATHS_PROPERTY, DataModelHelper.fetchDescendentsOfConcept(conceptViewModel.getViewProperties(), TinkarTerm.PATH.publicId()))
+                .setPropertyValue(MODULES_PROPERTY, DataModelHelper.fetchDescendentsOfConcept(conceptViewModel.getViewProperties(), TinkarTerm.MODULE.publicId()));
 
         // setup mode
         if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) != null) {
@@ -1515,7 +1448,7 @@ public class DetailsController  {
         popOver.getStyleClass().add("filter-menu-popup");
         StampEditController stampEditController = stampJFXNode.controller();
 
-        stampEditController.updateModel(getViewProperties());
+        stampEditController.updateModel(conceptViewModel.getViewProperties());
 
         // default the status=Active, disable inactive
         stampEditController.selectActiveStatusToggle();
@@ -1550,13 +1483,13 @@ public class DetailsController  {
             LOG.warn("Must select a valid module for Stamp.");
             return;
         }
-        String moduleDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
+        String moduleDescr = conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
         moduleLabel.setText(moduleDescr);
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
-        String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
+        String pathDescr = conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
         pathLabel.setText(pathDescr);
         State status = stampViewModel.getValue(STATUS);
-        String statusMsg = status == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
+        String statusMsg = status == null ? "Active" : conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
         statusLabel.setText(statusMsg);
     }
 
@@ -1579,12 +1512,9 @@ public class DetailsController  {
      * generate the classic Komet coordinate menu
      */
     public void setUpEditCoordinateMenu() {
-        changeViewCoordinateMenu.getItems().clear();
-        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(getViewProperties().calculator(), this.viewProperties.nodeView()),
-                (List<MenuItem> result) -> {
-                    this.changeViewCoordinateMenu.getItems().addAll(result);
-                }));
+        this.viewMenuModel = new ViewMenuModel(conceptViewModel.getViewProperties(), coordinatesMenuButton, "DetailsController");
     }
+
     private DateTimeFormatter dateFormatter(String formatString) {
         return DateTimeFormatter
                 .ofPattern(formatString)
@@ -1594,7 +1524,7 @@ public class DetailsController  {
 
     private int getFieldIndexByMeaning(SemanticEntityVersion entityVersion, EntityFacade ...meaning) {
         PatternEntity<PatternEntityVersion> patternEntity = entityVersion.entity().pattern();
-        PatternEntityVersion patternEntityVersion = getViewProperties().calculator().latest(patternEntity).get();
+        PatternEntityVersion patternEntityVersion = conceptViewModel.getViewProperties().calculator().latest(patternEntity).get();
         int index = -1;
         if (meaning != null && meaning.length > 0){
             for (int i=0; i < meaning.length; i++){
@@ -1617,7 +1547,7 @@ public class DetailsController  {
 
     private <T> T getFieldValueByPurpose(SemanticEntityVersion entityVersion, EntityFacade ...purpose) {
         PatternEntity<PatternEntityVersion> patternEntity = entityVersion.entity().pattern();
-        PatternEntityVersion patternEntityVersion = getViewProperties().calculator().latest(patternEntity).get();
+        PatternEntityVersion patternEntityVersion = conceptViewModel.getViewProperties().calculator().latest(patternEntity).get();
         int index = -1;
         if (purpose != null && purpose.length > 0){
             for (int i=0; i < purpose.length; i++){
@@ -1632,5 +1562,39 @@ public class DetailsController  {
             return null;
         }
         return (T) entityVersion.fieldValues().get(index);
+    }
+
+    /**
+     * Checks whether the properties panel is currently open (slid out).
+     * <p>
+     * This method determines the open state by checking if the properties
+     * slideout tray pane is visible and expanded.
+     *
+     * @return {@code true} if the properties panel is open and visible,
+     *         {@code false} if it is closed or hidden
+     */
+    public boolean isPropertiesPanelOpen() {
+        return SlideOutTrayHelper.isOpen(propertiesSlideoutTrayPane);
+    }
+
+    /**
+     * Sets the open/closed state of the properties panel programmatically.
+     * <p>
+     * The animation is performed without transitions when called programmatically
+     * to ensure immediate state changes.
+     *
+     * @param isOpen {@code true} to open (slide out) the properties panel,
+     *               {@code false} to close (slide in) the panel
+     */
+    public void setPropertiesPanelOpen(boolean isOpen) {
+        propertiesToggleButton.setSelected(isOpen);
+
+        if (isOpen) {
+            SlideOutTrayHelper.slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        } else {
+            SlideOutTrayHelper.slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        }
+
+        updateDraggableNodesForPropertiesPanel(isOpen);
     }
 }

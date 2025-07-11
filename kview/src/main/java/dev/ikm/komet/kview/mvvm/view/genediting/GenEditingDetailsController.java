@@ -15,29 +15,24 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
-
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.observable.*;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
-import dev.ikm.komet.framework.view.ViewMenuTask;
+import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
-import dev.ikm.komet.kview.fxutils.FXUtils;
+import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -112,8 +107,11 @@ public class GenEditingDetailsController {
 
     @FXML
     private MenuButton coordinatesMenuButton;
-    @FXML
-    private Menu windowCoordinates;
+
+    /**
+     * model required for the filter coordinates menu, used with coordinatesMenuButton
+     */
+    private ViewMenuModel viewMenuModel;
 
     /**
      * Used slide out the properties view
@@ -193,7 +191,7 @@ public class GenEditingDetailsController {
 
     private List<ObservableField<?>> observableFields = new ArrayList<>();
 
-    private List<Node> nodes = new ArrayList<>();
+    private final List<Node> nodes = new ArrayList<>();
 
     /**
      * Stamp Edit
@@ -251,6 +249,9 @@ public class GenEditingDetailsController {
 
     private void setupDisplayUUID() {
         EntityFacade semanticComponent = genEditingViewModel.getPropertyValue(SEMANTIC);
+        if (semanticComponent == null) {
+            return;
+        }
 
         List<String> idList = semanticComponent.publicId().asUuidList().stream()
                 .map(UUID::toString)
@@ -272,27 +273,10 @@ public class GenEditingDetailsController {
     }
 
     /**
-     * Creates the filter coordinates menu using the view calculator.
-     * TODO Note that this is not a working menu, this is the first step to have propagating, inherited, filter coordinates
-     * in the window/node hierarchy.
+     * Creates the filter coordinates menu using the ViewMenuModel.
      */
     public void setupFilterCoordinatesMenu() {
-        var view = new ObservableViewNoOverride(Coordinates.View.DefaultView());
-
-        ViewCalculator viewCalculator = getViewProperties().calculator();
-
-        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
-                (List<MenuItem> result) -> {
-                    FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
-                }));
-
-        view.addListener((observable, oldValue, newValue) -> {
-            windowCoordinates.getItems().clear();
-            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
-                    (List<MenuItem> result) ->
-                            FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result))
-            ));
-        });
+        this.viewMenuModel = new ViewMenuModel(genEditingViewModel.getViewProperties(), coordinatesMenuButton, "GenEditingDetailsController");
     }
 
     private void setupSemanticDetails() {
@@ -454,14 +438,13 @@ public class GenEditingDetailsController {
             int index = 0;
             for(ObservableField<?> observableField : observableFields){
                 FieldRecord<?> fieldRecord = observableField.field();
-                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), false);
+                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), false, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
                 nodes.add(klReadOnlyBaseControl);
                 klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
                 semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
             }
         }
     }
-
 
     /**
      * Upper right button that allows user to edit stamp popup
@@ -786,7 +769,6 @@ public class GenEditingDetailsController {
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
-
     /**
      * Updates draggable behavior for the properties panel based on its open/closed state.
      * <p>
@@ -812,4 +794,40 @@ public class GenEditingDetailsController {
         // TODO create a commit transaction of current Semantic (Add or edit will add a new Semantic Version)
     }
 
+    /**
+     * Checks whether the properties panel is currently open.
+     * <p>
+     * This method determines the open state by checking if the properties
+     * slideout tray pane is visible and expanded.
+     *
+     * @return {@code true} if the properties panel is open and visible,
+     *         {@code false} if it is closed or hidden
+     */
+    public boolean isPropertiesPanelOpen() {
+        return SlideOutTrayHelper.isOpen(propertiesSlideoutTrayPane);
+    }
+
+    /**
+     * Sets the open/closed state of the properties panel programmatically.
+     * <p>
+     * The animation is performed without transitions when called programmatically
+     * to ensure immediate state changes.
+     *
+     * @param isOpen {@code true} to open (slide out) the properties panel,
+     *               {@code false} to close (slide in) the panel
+     */
+    public void setPropertiesPanelOpen(boolean isOpen) {
+        propertiesToggleButton.setSelected(isOpen);
+
+        if (isOpen) {
+            SlideOutTrayHelper.slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        } else {
+            SlideOutTrayHelper.slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+            nodes.stream().filter(node -> node instanceof KLReadOnlyBaseControl)
+                    .map(node -> (KLReadOnlyBaseControl) node)
+                    .forEach(readOnlyControl -> readOnlyControl.setEditMode(false));
+        }
+
+        updateDraggableNodesForPropertiesPanel(isOpen);
+    }
 }

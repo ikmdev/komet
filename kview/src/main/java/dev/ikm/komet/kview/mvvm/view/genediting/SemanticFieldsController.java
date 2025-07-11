@@ -259,7 +259,7 @@ public class SemanticFieldsController {
             }
             // disable calling writeToData method of observable field by setting refresh flag to true.
             FieldRecord<?> fieldRecord = observableField.field();
-            nodes.add(generateNode(fieldRecord, observableField, getViewProperties(), true));
+            nodes.add(generateNode(fieldRecord, observableField, getViewProperties(), true, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC)));
             // Any changes top any observable field should re-enable the clear or reset button
             observableField.autoSaveOn();
           });
@@ -272,6 +272,7 @@ public class SemanticFieldsController {
     private static Separator createSeparator() {
         Separator separator = new Separator();
         separator.getStyleClass().add("field-separator");
+        separator.setFocusTraversable(false);
         return separator;
     }
 

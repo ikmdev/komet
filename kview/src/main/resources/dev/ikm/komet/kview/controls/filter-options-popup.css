@@ -1,0 +1,803 @@
+/*
+ Filter Options Popup
+*/
+
+.filter-options-popup {
+    -fx-background-color: #2E3240;
+    -fx-min-width: 280;
+    -fx-pref-width: 280;
+    -fx-pref-height: -popup-pref-height;
+    -fx-padding: 12 8 12 8;
+    -fx-spacing: 8;
+}
+
+/*
+ Filter Options Popup - Header
+*/
+
+.filter-options-popup > .header-box {
+    -fx-alignment: center;
+    -fx-spacing: 8;
+    -fx-padding: 0 10 0 0;
+}
+
+.filter-options-popup > .header-box > .label.title {
+    -fx-text-fill: #E1E8F1;
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 500;
+    -fx-font-size: 13;
+    -fx-alignment: center;
+    -fx-pref-width: 198;
+}
+
+.filter-options-popup > .header-box > .region,
+.filter-options-popup > .header-box > .filter-button {
+    -fx-min-width: 28;
+    -fx-pref-width: 28;
+    -fx-max-width: 28;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+    -fx-max-height: 28;
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+
+.filter-options-popup > .header-box > .filter-button:selected {
+    -fx-background-color: #5DCF16;
+}
+
+.filter-options-popup > .header-box > .region > .icon,
+.filter-options-popup > .header-box > .filter-button > .icon {
+    -fx-scale-shape: false;
+}
+
+.filter-options-popup > .header-box > .region > .icon.close {
+    -fx-background-color: white;
+    /* 0.167, 0.167 11.667x11.667 */
+    -fx-shape: "M11.8333 1.34175L10.6583 0.166748L5.99999 4.82508L1.34166 0.166748L0.166656 1.34175L4.82499 6.00008L0.166656 10.6584L1.34166 11.8334L5.99999 7.17508L10.6583 11.8334L11.8333 10.6584L7.17499 6.00008L11.8333 1.34175Z";
+}
+
+.filter-options-popup > .header-box > .filter-button > .icon.filter {
+    -fx-background-color: #5896F6;
+    /* 0.77, 0.63 17.70x17.07 */
+    -fx-shape: "M13.8184 17.7021H0.770508V15.6523H13.8184V17.7021ZM13.8184 13.6016H0.770508V11.5508H13.8184V13.6016ZM8.89551 9.50098H0.770508V7.4502H8.89551V9.50098ZM15.7998 0.629883C17.2969 0.630014 18.4795 1.80737 18.4795 3.30957C18.4794 4.22249 18.064 5.02366 17.4121 5.82129C16.7658 6.61205 15.8484 7.44458 14.7793 8.41406L14.7715 8.4209L13.9121 9.20312L13.0537 8.4209L13.0459 8.41406C11.9767 7.44453 11.0585 6.61208 10.4121 5.82129C9.76026 5.02371 9.3458 4.22244 9.3457 3.30957C9.3457 1.80729 10.5282 0.629883 12.0254 0.629883C12.728 0.629994 13.4028 0.901379 13.9121 1.34668C14.4216 0.901202 15.097 0.629883 15.7998 0.629883ZM15.7998 2.21387C15.2989 2.21387 14.8128 2.54753 14.6494 2.9668L14.5566 3.2041H13.2676L13.1748 2.9668C13.0115 2.54765 12.5262 2.21406 12.0254 2.21387C11.3925 2.21387 10.9297 2.67666 10.9297 3.30957C10.9298 3.77796 11.1851 4.29284 11.748 4.95117C12.2685 5.55985 13.003 6.2366 13.9102 7.06055C14.8193 6.23647 15.5552 5.55989 16.0762 4.95117C16.6395 4.2929 16.8944 3.77791 16.8945 3.30957C16.8945 2.67675 16.4326 2.21399 15.7998 2.21387Z";
+}
+
+.filter-options-popup > .header-box > .filter-button:selected > .icon.filter {
+    -fx-background-color: black;
+}
+
+/*
+ Filter Options Popup - Bottom
+*/
+
+.filter-options-popup > .bottom-box {
+    -fx-alignment: center;
+    -fx-spacing: 8;
+}
+
+.filter-options-popup > .bottom-box > .button {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 12;
+    -fx-alignment: center;
+    -fx-text-fill: #5896F6;
+    -fx-background-color: #4A7AD2, #2E3240;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4, 4;
+    -fx-pref-height: 24;
+    -fx-min-width: 256;
+}
+
+.filter-options-popup > .bottom-box > .button.apply {
+    -fx-text-fill: white;
+    -fx-background-color: #4A7AD2, #4A7AD2;
+}
+
+.filter-options-popup > .bottom-box > .button:hover {
+    -fx-text-fill: #9DC4FF;
+    -fx-background-color: #4A7AD2, #44495E;
+}
+
+.filter-options-popup > .bottom-box > .button.apply:hover {
+    -fx-text-fill: white;
+    -fx-background-color: #5896F6, #5896F6;
+}
+
+.filter-options-popup > .bottom-box > .button:disabled {
+    -fx-text-fill: #6E7989;
+    -fx-background-color: #6E7989, #2E3240;
+}
+
+.filter-options-popup > .bottom-box > .button.apply:disabled {
+    -fx-text-fill: #CFD8E4;
+    -fx-background-color: #6E7989, #6E7989;
+}
+
+.filter-options-popup > .bottom-box > .button > .region {
+    -fx-min-width: 16;
+    -fx-pref-width: 16;
+    -fx-max-width: 16;
+    -fx-min-height: 16;
+    -fx-pref-height: 16;
+    -fx-max-height: 16;
+    -fx-background-color: transparent;
+}
+
+.filter-options-popup > .bottom-box > .button > .region > .icon.filter {
+    -fx-scale-shape: false;
+    -fx-background-color: #5896F6;
+    /* 0.42, 0.49 14.17x15.19 */
+    -fx-shape: "M10.8555 15.6768H0.416992V14.0371H10.8555V15.6768ZM10.8555 12.3965H0.416992V10.7559H10.8555V12.3965ZM6.91699 9.11621H0.416992V7.47559H6.91699V9.11621ZM12.4395 0.487305C13.6372 0.487305 14.583 1.42904 14.583 2.63086C14.5829 3.36127 14.2511 4.00246 13.7295 4.64062C13.2124 5.27317 12.4782 5.93838 11.623 6.71387L11.6172 6.71973L10.9297 7.3457L10.2432 6.71973L10.2363 6.71387C9.38113 5.93838 8.64691 5.27317 8.12988 4.64062C7.60826 4.00246 7.27643 3.36127 7.27637 2.63086C7.27637 1.42905 8.22218 0.487328 9.41992 0.487305C9.98214 0.487305 10.5221 0.704244 10.9297 1.06055C11.3372 0.704215 11.8772 0.487354 12.4395 0.487305ZM12.4395 1.75488C12.0388 1.75497 11.6502 2.02109 11.5195 2.35645L11.4453 2.54688H10.4141L10.3398 2.35645C10.2091 2.02104 9.82067 1.75488 9.41992 1.75488C8.91362 1.7549 8.54395 2.12455 8.54395 2.63086C8.54402 3.00558 8.7479 3.41765 9.19824 3.94434C9.61465 4.43133 10.2028 4.97258 10.9287 5.63184C11.6559 4.97267 12.2444 4.43126 12.6611 3.94434C13.1118 3.4177 13.3154 3.00554 13.3154 2.63086C13.3154 2.12453 12.9458 1.75488 12.4395 1.75488Z";
+}
+
+.filter-options-popup > .bottom-box > .button:hover > .region > .icon.filter {
+    -fx-background-color: #9DC4FF;
+}
+
+.filter-options-popup > .bottom-box > .button:disabled > .region > .icon.filter {
+    -fx-background-color: #6E7989;
+}
+
+/*
+ Filter Options Popup - Center
+ ScrollPane
+*/
+
+.filter-options-popup > .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical,
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal {
+    -fx-padding: 2;
+}
+
+.filter-options-popup > .scroll-pane > .viewport,
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal,
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal:focused,
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical,
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical:focused {
+    -fx-background-color: transparent;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical > .track,
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal > .track {
+    fx-background-insets: 0;
+}
+
+.filter-options-popup > .scroll-pane > .corner {
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal .track,
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 0em;
+    -fx-border-radius: 0;
+    -fx-background-insets: 0;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal .increment-button,
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical .increment-button,
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 4 0 0;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar .increment-arrow,
+.filter-options-popup > .scroll-pane > .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.filter-options-popup > .scroll-pane > .scroll-bar:horizontal .thumb,
+.filter-options-popup > .scroll-pane > .scroll-bar:vertical .thumb {
+    -fx-background-color: transparent, #545D72;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 2, 2;
+}
+
+/*
+ Filter Options Popup - Center
+ ScrollPane > Accordion
+*/
+
+.filter-options-popup > .scroll-pane .accordion {
+    -fx-padding: 0 0 10 0;
+}
+
+/*
+ Filter Options Popup - Center
+ ScrollPane > Accordion > TitledPane
+*/
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane {
+    -fx-content-display: graphic-only;
+    -fx-background-color: #2E3240, #545D72, #2E3240;
+    -fx-background-insets: 0, 0 0 6 0, 1 1 7 1;
+    -fx-background-radius: 0, 4, 4;
+    -fx-min-width: 256;
+    -fx-pref-width: 256;
+    -fx-padding: 4;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:hover {
+    -fx-background-color: #2E3240, #4A7AD2, #44495E;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded {
+    -fx-padding: 4 4 6 4;
+    -fx-background-color: #2E3240, #545D72, #44495E;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:focused {
+    -fx-color: transparent;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 4 -16 0 8;
+    -fx-spacing: 2;
+    -fx-pref-height: 56;
+}
+
+/*
+ Filter Options Popup - Center
+ ScrollPane > Accordion > TitledPane > TitleBox
+*/
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:taller > .title {
+    -fx-padding: 4 -16 11 8;
+    -fx-pref-height: 72;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:taller:expanded > .title,
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title {
+    -fx-padding: 4 -16 0 8;
+    -fx-pref-height: 64;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded:single-select > .title {
+    -fx-pref-height: 24;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box {
+    -fx-alignment: top-left;
+    -fx-spacing: 4;
+    -fx-padding: 0;
+    -fx-pref-height: 52;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box {
+    -fx-spacing: 6;
+    -fx-pref-height: 60;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded:single-select > .title > .title-box {
+    -fx-spacing: 6;
+    -fx-pref-height: 20;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .title-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-text-fill: #5896F6;
+    -fx-pref-width: 220;
+    -fx-pref-height: 20;
+    -fx-content-display: right;
+    -fx-alignment: center-left;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .title-label {
+    -fx-text-fill: #E1E8F1;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .title-label > .circle {
+    -fx-pref-width: 4;
+    -fx-pref-height: 4;
+    -fx-background-radius: 4;
+    -fx-background-color: transparent;
+    -fx-translate-y: -6;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:modified > .title > .title-box > .title-label > .circle {
+    -fx-background-color: #F3BE00;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .option.truncated-text-flow {
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .option.truncated-text-flow {
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .option.truncated-text-flow > .text {
+    -fx-fill: white;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box {
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .toggles-box {
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded:single-select > .title > .title-box > .toggles-box {
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box > .toggle-button {
+    -fx-background-color: #4A7AD2, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 12, 12;
+    -fx-pref-height: 26;
+    -fx-min-width: 40;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-fill: #4A7AD2;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box > .toggle-button:disabled {
+    -fx-background-color: #9CAABF, #9CAABF;
+    -fx-text-fill: black;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box > .exclude-toggle.toggle-button {
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box:excluding > .exclude-toggle.toggle-button {
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .toggles-box > .toggle-button:selected {
+    -fx-background-color: #5DCF16, #5DCF16;
+    -fx-text-fill: black;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .toggles-box > .toggle-button > .check {
+    /* 0, 0.08 10x7.83 */
+    -fx-pref-width: 10;
+    -fx-pref-height: 7.83;
+    -fx-shape: "M3.33333 7.91683L0 4.5835L1.16667 3.41683L3.33333 5.5835L8.83333 0.0834961L10 1.25016L3.33333 7.91683Z";
+    -fx-background-color: black;
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > > .toggles-box > .toggle-button:selected > .check {
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .arrow-button {
+    -fx-padding: 0;
+    -fx-rotate: 90;
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .arrow-button > .arrow {
+    -fx-background-color: #5896F6;
+    -fx-background-insets: 0;
+    -fx-shape: "M8.0876 5L6.9126 6.175L10.7293 10L6.9126 13.825L8.0876 15L13.0876 10L8.0876 5Z";
+    -fx-scale-shape: false;
+    -fx-effect: null;
+}
+
+/*
+ Filter Options Popup - Center
+ ScrollPane > Accordion > Content
+*/
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content {
+    -fx-background-color: #44495E;
+    -fx-padding: 2;
+    -fx-border-color: transparent transparent #545D72 transparent;
+    -fx-border-insets: 0;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box {
+    -fx-spacing: 6;
+    -fx-alignment: center-left;
+    -fx-padding: 0 6 1 6;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .separator-region {
+    -fx-pref-height: 1;
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:single-select > .content > .content-box > .separator-region {
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .separator-region > .line {
+    -fx-background-color: #545D72;
+}
+
+/*
+ Filter Options Popup - Center
+ ScrollPane > Accordion > TitledPane > Content > OptionToggle
+*/
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box {
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-toggle {
+    -fx-background-color: #4A7AD2, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 12, 12;
+    -fx-pref-height: 18;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-fill: #4A7AD2;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-toggle:selected {
+    -fx-background-color: #5DCF16, #5DCF16;
+    -fx-text-fill: black;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-toggle:disabled {
+    -fx-background-color: #9CAABF, #9CAABF;
+    -fx-text-fill: black;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-toggle > .check {
+    /* 0, 0.08 10x7.83 */
+    -fx-pref-width: 10;
+    -fx-pref-height: 7.83;
+    -fx-shape: "M3.33333 7.91683L0 4.5835L1.16667 3.41683L3.33333 5.5835L8.83333 0.0834961L10 1.25016L3.33333 7.91683Z";
+    -fx-background-color: black;
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-toggle:selected > .check {
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-check {
+    -fx-background-color: #F1F3F8, #44495E;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 2, 0;
+    -fx-min-width: 18;
+    -fx-pref-width: 18;
+    -fx-max-width: 18;
+    -fx-min-height: 18;
+    -fx-pref-height: 18;
+    -fx-max-height: 18;
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box:excluded > .option-check {
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .content-box > .option-toggle-box > .option-check > .cross {
+    -fx-background-color: #5DCF16;
+    -fx-scale-shape: false;
+    -fx-shape: "M10.361 9 14.354 12.993 12.993 14.354 9 10.361 5.007 14.354 3.646 12.993 7.639 9 3.646 5.007 5.007 3.646 9 7.639 12.993 3.646 14.354 5.007 10.361 9Z";
+}
+
+/*
+ Filter Options Popup - Center
+ ScrollPane > Accordion > DateFilterTitledPane
+*/
+
+.filter-options-popup > .scroll-pane .accordion > .titled-pane:selected > .title {
+    -fx-padding: 4 -16 8 8;
+    -fx-pref-height: 68;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .title > .title-box > .option.truncated-text-flow {
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane:selected > .title > .title-box > .option.truncated-text-flow {
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .title > .title-box > .date-combo-box {
+    -fx-font-size: 14;
+    -fx-text-base-color: #2E3240;
+    -fx-text-fill: #2E3240;
+    -fx-pref-width: 233;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+    -fx-font-family: "Noto Sans";
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-background-color: #C3CDDC, #FBFBFC;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4px, 4px;
+    -fx-padding: 0;
+    -fx-managed: false;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane:selected > .title > .title-box > .date-combo-box {
+    -fx-managed: true;
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .title > .title-box > .date-combo-box > .arrow-button {
+    -fx-rotate: -90;
+    transition-property: -fx-rotate;
+    transition-duration: 0.5s;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .title > .title-box > .date-combo-box:showing > .arrow-button {
+    -fx-rotate: 0;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .title > .title-box > .date-combo-box > .arrow-button > .arrow {
+    -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+    -fx-background-color: #4277D8;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .content {
+    -fx-padding: -6 2 2 2;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .content > .content-box {
+    -fx-spacing: 8;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .content > .content-box > .bottom-box {
+    -fx-alignment: center;
+    -fx-spacing: 4;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .content > .content-box > .bottom-box > .button {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 600;
+    -fx-font-size: 12;
+    -fx-alignment: center;
+    -fx-text-fill: #5896F6;
+    -fx-background-color: #4A7AD2, #2E3240;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4, 4;
+    -fx-pref-height: 24;
+    -fx-min-width: 233;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .content > .content-box > .bottom-box > .button.additional {
+    -fx-text-fill: white;
+    -fx-background-color: #4A7AD2, #4A7AD2;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .content > .content-box > .bottom-box > .button:hover {
+    -fx-text-fill: #9DC4FF;
+    -fx-background-color: #4A7AD2, #44495E;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .content > .content-box > .bottom-box > .button.additional:hover {
+    -fx-text-fill: white;
+    -fx-background-color: #5896F6, #5896F6;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .content > .content-box > .bottom-box > .button:disabled {
+    -fx-text-fill: #6E7989;
+    -fx-background-color: #6E7989, #2E3240;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .content > .content-box > .bottom-box > .button.additional:disabled {
+    -fx-text-fill: #CFD8E4;
+    -fx-background-color: #6E7989, #6E7989;
+}
+
+.filter-options-popup .date-combo-box .combo-box-popup > .list-view {
+    -fx-background: #2E3240;
+    -fx-background-color: #2E3240;
+    -fx-background-insets: 0;
+    -fx-background-radius: 8;
+    -fx-border-color: null;
+    -fx-border-width: 0;
+    -fx-translate-y: 5;
+    -fx-padding: 8 0 8 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.0, 0, 4);
+}
+
+.filter-options-popup .date-combo-box .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-padding: 4 8 4 8;
+    -fx-background: #2E3240;
+    -fx-background-color: #2E3240;
+    -fx-background-insets: 0;
+    -fx-pref-height: 28;
+    -fx-font-size: 13;
+    -fx-text-fill: white;
+    -fx-font-family: "Noto Sans";
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+.filter-options-popup .date-combo-box .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
+    -fx-background: #545D72;
+    -fx-background-color: #545D72;
+}
+
+.filter-options-popup .date-combo-box .combo-box-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.filter-options-popup .date-combo-box .combo-box-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
+    -fx-text-fill: #9DC4FF;
+    -fx-background: #44495E;
+    -fx-background-color: #44495E;
+}
+
+/*
+ Saved Filters Popup
+*/
+
+.saved-filters-popup {
+    -fx-background-color: #2E3240;
+    -fx-background-radius: 8;
+    -fx-min-width: 180;
+    -fx-pref-width: 180;
+    -fx-pref-height: 253;
+    -fx-padding: 12 8 12 8;
+    -fx-spacing: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.0, 0, 2);
+}
+
+.saved-filters-popup > .filter-title {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-text-fill: #B3BDCD;
+}
+
+.saved-filters-popup > .separator-region {
+    -fx-pref-height: 1;
+}
+
+.saved-filters-popup > .separator-region > .line {
+    -fx-background-color: #545D72;
+}
+
+.saved-filters-popup > .saved-filters-list-view {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-effect: null;
+    -fx-pref-height: 168;
+}
+
+.saved-filters-popup > .saved-filters-list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:vertical .increment-button,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:vertical .decrement-button,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:vertical .increment-arrow,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0;
+    -fx-padding: 0 2 0 0;
+}
+
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: transparent, #545D72;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 2, 2;
+}
+
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:horizontal .increment-arrow,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:horizontal .decrement-arrow,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:horizontal .increment-button,
+.saved-filters-popup > .saved-filters-list-view .scroll-bar:horizontal .decrement-button {
+    -fx-padding:0;
+}
+
+.saved-filters-popup > .saved-filters-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-padding: 4;
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-pref-height: 28;
+    -fx-font-size: 13;
+    -fx-text-fill: white;
+    -fx-font-family: "Noto Sans";
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+.saved-filters-popup > .saved-filters-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
+    -fx-background: #545D72;
+    -fx-background-color: #545D72;
+}
+
+.saved-filters-popup  > .saved-filters-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.saved-filters-popup  > .saved-filters-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
+    -fx-background: #545D72;
+    -fx-background-color: #545D72;
+    -fx-background-insets: 0;
+}
+
+.saved-filters-popup > .saved-filters-list-view:focused > .virtual-flow > .clipped-container > .sheet > .list-cell:filled,
+.saved-filters-popup > .saved-filters-list-view:focused > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected {
+    -fx-background: #545D72;
+}
+
+.saved-filters-popup > .saved-filters-list-view > .placeholder > .label {
+    -fx-font-size: 13;
+    -fx-text-fill: white;
+    -fx-font-family: "Noto Sans";
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+.context-menu {
+    -fx-background-color: #2E3240;
+    -fx-background-radius: 4;
+    -fx-min-width: 197; /* don't set pref-width, so ContextMenuContent::computeVisualMetrics gets called */
+    -fx-max-width: 197;
+}
+
+.context-menu .menu-item {
+    -fx-padding: 2 4 2 8;
+    -fx-pref-height: 32;
+    -fx-text-fill: white;
+}
+
+.context-menu .menu-item:focused {
+    -fx-background-color: #545D72;
+    -fx-text-fill: white;
+}
+
+.context-menu .menu-item:focused > .label,
+.context-menu .menu-item > .label {
+    -fx-text-fill: white;
+    -fx-font-size: 13;
+    -fx-font-weight: 400;
+    -fx-font-family: "Noto Sans";
+}
+
+.context-menu .menu-item > .graphic-container > .icon.delete {
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    -fx-padding: 0;
+    -fx-scale-shape: false;
+    -fx-background-color: white;
+    /* 13.33x15 */
+    -fx-shape: "M12.5002 2.5V3.33333H16.6668V5H15.8335V15.8333C15.8335 16.75 15.0835 17.5 14.1668 17.5H5.8335C4.91683 17.5 4.16683 16.75 4.16683 15.8333V5H3.3335V3.33333H7.50016V2.5H12.5002ZM5.8335 15.8333H14.1668V5H5.8335V15.8333ZM7.50016 6.66667H9.16683V14.1667H7.50016V6.66667ZM12.5002 6.66667H10.8335V14.1667H12.5002V6.66667Z";
+}

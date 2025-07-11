@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.PROPERTY_PANEL_OPEN;
+
 /**
  * Abstract base implementation of the {@link ChapterKlWindow} interface for Komet applications.
  * This class provides core functionality for windows that display content within the Journal
@@ -199,7 +201,8 @@ public abstract class AbstractChapterKlWindow<T extends Node> implements Chapter
     public EntityKlWindowState captureWindowState() {
         final EntityKlWindowState.Builder builder = EntityKlWindowState.builder()
                 .windowId(getWindowTopic())
-                .windowType(getWindowType());
+                .windowType(getWindowType())
+                .property(PROPERTY_PANEL_OPEN, isPropertyPanelOpen());
 
         final T gadget = fxGadget();
         if (gadget != null) {
@@ -259,6 +262,24 @@ public abstract class AbstractChapterKlWindow<T extends Node> implements Chapter
             return false;
         }
     }
+
+    /**
+     * Returns whether the property panel is currently open.
+     * Subclasses should override this method to implement window-specific
+     * property panel state retrieval.
+     *
+     * @return true if the property panel is open, false otherwise
+     */
+    protected abstract boolean isPropertyPanelOpen();
+
+    /**
+     * Sets whether the property panel should be open.
+     * Subclasses should override this method to implement window-specific
+     * property panel state setting.
+     *
+     * @param isOpen true to open the property panel, false to close it
+     */
+    protected abstract void setPropertyPanelOpen(boolean isOpen);
 
     /**
      * Extension point for subclasses to capture additional window state beyond the

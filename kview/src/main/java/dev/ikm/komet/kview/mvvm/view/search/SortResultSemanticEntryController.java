@@ -20,13 +20,10 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
-import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
@@ -37,15 +34,19 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 
 public class SortResultSemanticEntryController  {
 
     @FXML
-    private HBox searchEntryHBox;
+    private Pane searchEntryContainer;
 
     @FXML
     private ImageView identicon;
@@ -68,6 +69,9 @@ public class SortResultSemanticEntryController  {
     @FXML
     private ContextMenu contextMenu;
 
+    @InjectViewModel
+    private SimpleViewModel searchEntryViewModel;
+
     // data fields to populate the concept details window
 
     private Entity<? extends EntityVersion> entity;
@@ -84,15 +88,15 @@ public class SortResultSemanticEntryController  {
         eventBus = EvtBusFactory.getDefaultEvtBus();
         showContextButton.setVisible(false);
         contextMenu.setHideOnEscape(true);
-        searchEntryHBox.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
-        searchEntryHBox.setOnMouseExited(mouseEvent -> {
+        searchEntryContainer.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
+        searchEntryContainer.setOnMouseExited(mouseEvent -> {
             if (!contextMenu.isShowing()) {
                 showContextButton.setVisible(false);
             }
         });
         showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
 
-        searchEntryHBox.setOnMouseClicked(mouseEvent -> {
+        searchEntryContainer.setOnMouseClicked(mouseEvent -> {
             // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if (mouseEvent.getClickCount() == 2) {
@@ -124,10 +128,10 @@ public class SortResultSemanticEntryController  {
     private  void openInConceptNavigator(ActionEvent actionEvent) {
         actionEvent.consume();
         if(entity instanceof ConceptEntity conceptEntity) {
-            eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
+            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
         } else if (entity instanceof SemanticEntity semanticEntity) {
             ConceptEntity conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
-            eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
+            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
         }
     }
 

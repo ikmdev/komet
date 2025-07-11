@@ -21,11 +21,19 @@ import javafx.beans.property.ObjectProperty;
 import javafx.scene.Parent;
 import javafx.scene.image.Image;
 
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> implements KlComponentListField {
 
-    public DefaultKlComponentListField(ObservableField<IntIdList> observableComponentListField, ObservableView observableView, boolean isEditable) {
+    /**
+     *
+     * @param observableComponentListField list of the intIdList
+     * @param observableView
+     * @param isEditable
+     * @param journalTopic This is used for the option to summon the concept window in the specific work space.
+     */
+    public DefaultKlComponentListField(ObservableField<IntIdList> observableComponentListField, ObservableView observableView, boolean isEditable, UUID journalTopic) {
         super(observableComponentListField, observableView, isEditable);
         Parent node;
         ObjectProperty<IntIdList> observableProperty = observableComponentListField.valueProperty();
@@ -59,7 +67,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
             Consumer<Integer> itemConsumer= (nid) -> {
                 EntityFacade entityFacade = EntityService.get().getEntityFast(nid);
                 if (entityFacade instanceof ConceptEntity conceptEntity) {
-                    EvtBusFactory.getDefaultEvtBus().publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+                    EvtBusFactory.getDefaultEvtBus().publish(journalTopic, new MakeConceptWindowEvent(this,
                             MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
                 }
             };

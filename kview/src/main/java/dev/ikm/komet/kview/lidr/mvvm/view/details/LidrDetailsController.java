@@ -47,6 +47,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
+
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
@@ -55,6 +56,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.data.schema.STAMPDetail;
 import dev.ikm.komet.kview.events.StampModifiedEvent;
+import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.lidr.events.AddDeviceEvent;
 import dev.ikm.komet.kview.lidr.events.AddResultInterpretationEvent;
 import dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent;
@@ -821,5 +823,39 @@ public class LidrDetailsController {
 
     public void setConceptTopic(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
+    }
+
+    /**
+     * Checks whether the properties panel is currently open.
+     * <p>
+     * This method determines the open state by checking if the properties
+     * slideout tray pane is visible and expanded.
+     *
+     * @return {@code true} if the properties panel is open and visible,
+     *         {@code false} if it is closed or hidden
+     */
+    public boolean isPropertiesPanelOpen() {
+        return SlideOutTrayHelper.isOpen(propertiesSlideoutTrayPane);
+    }
+
+    /**
+     * Sets the open/closed state of the properties panel programmatically.
+     * <p>
+     * The animation is performed without transitions when called programmatically
+     * to ensure immediate state changes.
+     *
+     * @param isOpen {@code true} to open (slide out) the properties panel,
+     *               {@code false} to close (slide in) the panel
+     */
+    public void setPropertiesPanelOpen(boolean isOpen) {
+        propertiesToggleButton.setSelected(isOpen);
+
+        if (isOpen) {
+            SlideOutTrayHelper.slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        } else {
+            SlideOutTrayHelper.slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        }
+
+        updateDraggableNodesForPropertiesPanel(isOpen);
     }
 }

@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
-import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBus;
@@ -24,10 +23,13 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
+import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
@@ -39,29 +41,29 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import javafx.application.Platform;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
+import javafx.util.Callback;
 import javafx.util.StringConverter;
-import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
 import org.eclipse.collections.api.factory.Lists;
@@ -81,7 +83,6 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT;
@@ -92,19 +93,13 @@ import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 
 public class NextGenSearchController extends AbstractBasicController {
 
     private static final Logger LOG = LoggerFactory.getLogger(NextGenSearchController.class);
 
-    public static final String SORT_OPTIONS_FXML = "sort-options.fxml";
-
-    public static final String SORT_CONCEPT_RESULT_CONCEPT_FXML = "search-result-concept-entry.fxml";
-
-    public static final String SORT_SEMANTIC_RESULT_CONCEPT_FXML = "search-result-semantic-entry.fxml";
+    public static final String SORT_OPTIONS_POPUP_FXML = "sort-options.fxml";
 
     public static final String BUTTON_TEXT_TOP_COMPONENT = "SORT BY: TOP COMPONENT";
 
@@ -116,18 +111,24 @@ public class NextGenSearchController extends AbstractBasicController {
 
     public static final int MAX_RESULT_SIZE = 1000;
 
+    private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
+
     @FXML
-    private VBox resultsVBox;
+    private Pane root;
+
+    @FXML
+    private ListView searchResultsListView;
 
     @FXML
     private Button sortByButton;
 
     @FXML
+    private Button filterPane;
+
+    @FXML
     private AutoCompleteTextField<ConceptFacade> searchField;
 
     private PopOver sortOptions;
-
-    private SortOptionsController sortOptionsController;
 
     private ObservableViewNoOverride windowView;
 
@@ -135,7 +136,10 @@ public class NextGenSearchController extends AbstractBasicController {
 
     private UUID journalTopic;
 
-    @FXML
+    private FilterOptionsPopup filterOptionsPopup;
+
+    private SearchResultType currentSearchResultType;
+
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
@@ -153,38 +157,72 @@ public class NextGenSearchController extends AbstractBasicController {
             } else if (evt.getEventType() == SORT_BY_SEMANTIC_ALPHA) {
                 sortByButton.setText(BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA);
             }
+
+            if (evt.getEventType() == SORT_BY_COMPONENT || evt.getEventType() == SORT_BY_COMPONENT_ALPHA) {
+                setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
+            } else if (evt.getEventType() == SORT_BY_SEMANTIC || evt.getEventType() == SORT_BY_SEMANTIC_ALPHA) {
+                setCurrentSearchResultType(SearchResultType.DESCRIPTION_SEMANTICS);
+            }
+
             sortOptions.hide();
         });
         eventBus.subscribe(SEARCH_SORT_TOPIC, SearchSortOptionEvent.class, searchSortOptionListener);
+
+        initSearchResultType();
+
+        filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
+        root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
+        filterPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (filterOptionsPopup.getNavigator() == null) {
+                Navigator navigator = new ViewNavigator(getViewProperties().nodeView());
+                filterOptionsPopup.setNavigator(navigator);
+            }
+            if (e.getButton() == MouseButton.PRIMARY) {
+                if (filterOptionsPopup.isShowing()) {
+                    e.consume();
+                    filterOptionsPopup.hide();
+                } else {
+                    Bounds bounds = root.localToScreen(root.getLayoutBounds());
+                    filterOptionsPopup.show(root.getScene().getWindow(), bounds.getMaxX(), bounds.getMinY());
+                }
+            }
+        });
+        filterOptionsPopup.showingProperty().subscribe(showing ->
+                filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
+    }
+
+    private void initSearchResultType() {
+        sortByButton.setText(BUTTON_TEXT_TOP_COMPONENT);
+        setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
+    }
+
+    private void setCurrentSearchResultType(SearchResultType newSearchResultType) {
+        if (newSearchResultType == currentSearchResultType) {
+            return;
+        }
+
+        searchResultsListView.getItems().clear();
+
+        switch (newSearchResultType) {
+            case TOP_COMPONENT ->
+                searchResultsListView.setCellFactory((Callback<ListView<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>, ListCell<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>>) param ->
+                        new SearchCellTopComponent(getViewProperties(), getJournalTopic(), windowView)
+                );
+            case DESCRIPTION_SEMANTICS ->
+                searchResultsListView.setCellFactory((Callback<ListView<LatestVersionSearchResult>, ListCell<LatestVersionSearchResult>>) param ->
+                        new SearchCellDescriptionSemantic(getViewProperties(), getJournalTopic(), windowView));
+            case NID ->
+                searchResultsListView.setCellFactory((Callback<ListView<Integer>, ListCell<Integer>>) param ->
+                        new SearchCellNid(getViewProperties(), windowView));
+        }
+
+        currentSearchResultType = newSearchResultType;
     }
 
     private void setUpTypeAhead() {
         searchField.setCompleter(newSearchText -> {
             TypeAheadSearch typeAheadSearch = TypeAheadSearch.get();
-            List<ConceptFacade> conceptFacades = null;
-
-//            try {
-//                conceptFacades = typeAheadSearch.typeAheadSuggestions(
-//                        getViewProperties().nodeView().calculator().navigationCalculator(), /* nav calculator */
-//                        searchField.getText(), /* text */
-//                        10); /* max results returned */
-//                System.out.println("Number of suggested concepts: " + conceptFacades.size());
-//            } catch (Throwable e) {
-//                System.out.println("throwable appeared here: " + e);
-//                try {
-//                    typeAheadSearch.buildSuggester();
-//                    conceptFacades = typeAheadSearch
-//                            .typeAheadSuggestions(
-//                                    getViewProperties().nodeView().calculator().navigationCalculator(), /* nav calculator */
-//                                    searchField.getText(), /* text */
-//                                    10); /* max results returned */
-//                    System.out.println("Number of suggested concepts: " + conceptFacades.size());
-//                } catch (IOException ioException) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-
-            conceptFacades = typeAheadSearch.typeAheadSuggestions(
+            List<ConceptFacade> conceptFacades = typeAheadSearch.typeAheadSuggestions(
                 getViewProperties().nodeView().calculator().navigationCalculator(), /* nav calculator */
                 searchField.getText(), /* text */
                 10  /* max results returned */
@@ -205,10 +243,9 @@ public class NextGenSearchController extends AbstractBasicController {
         });
     }
 
-
     private void setUpSearchOptionsPopOver() {
         JFXNode<Pane, SortOptionsController> sortJFXNode = FXMLMvvmLoader
-                .make(SortOptionsController.class.getResource(SORT_OPTIONS_FXML));
+                .make(SortOptionsController.class.getResource(SORT_OPTIONS_POPUP_FXML));
 
         Pane sortOptionsPane = sortJFXNode.node();
         PopOver popOver = new PopOver(sortOptionsPane);
@@ -221,7 +258,6 @@ public class NextGenSearchController extends AbstractBasicController {
         });
 
         sortOptions = popOver;
-        this.sortOptionsController = sortOptionsController;
     }
 
 
@@ -233,7 +269,6 @@ public class NextGenSearchController extends AbstractBasicController {
 
     @FXML
     private void doSearch(ActionEvent actionEvent) {
-        actionEvent.consume();
         clearView();
         String queryText = searchField.getText().strip();
         try {
@@ -252,8 +287,12 @@ public class NextGenSearchController extends AbstractBasicController {
             } else {
                 List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
                 LOG.info(String.valueOf(results.size()));
+
+                List processedResults;
                 switch (sortByButton.getText()) {
                     case BUTTON_TEXT_TOP_COMPONENT -> {
+                        setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
+
                         // used linked hash map to maintain insertion order
                         LinkedHashMap<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems = new LinkedHashMap<>();
 
@@ -271,9 +310,11 @@ public class NextGenSearchController extends AbstractBasicController {
                         Collections.sort(myList, (m1, m2) ->
                                 Float.compare(m2.getValue().get(0).score(), m1.getValue().get(0).score()));
 
-                        renderResultsFromMap(myList);
+                        processedResults = myList;
                     }
                     case BUTTON_TEXT_TOP_COMPONENT_ALPHA -> {
+                        setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
+
                         // sort by natural order
                         results.sort((o1, o2) -> NaturalOrder.compareStrings(o1.latestVersion().get().fieldValues().get(o1.fieldIndex()).toString(),
                                 o2.latestVersion().get().fieldValues().get(o2.fieldIndex()).toString()));
@@ -291,20 +332,28 @@ public class NextGenSearchController extends AbstractBasicController {
                                 NaturalOrder.compareStrings(formatHighlightedString(e1.highlightedString()), formatHighlightedString(e2.highlightedString()))
                         ));
 
-                        renderResultsFromMap(myList);
+                        processedResults = myList;
                     }
                     case BUTTON_TEXT_DESCRIPTION_SEMANTIC -> {
+                        setCurrentSearchResultType(SearchResultType.DESCRIPTION_SEMANTICS);
+
                         results.sort((o1, o2) -> Float.compare(o2.score(), o1.score()));
 
-                        renderResultsFromList(results);
+                        processedResults = results;
                     }
                     case BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA -> {
+                        setCurrentSearchResultType(SearchResultType.DESCRIPTION_SEMANTICS);
+
                         results.sort((o1, o2) -> NaturalOrder.compareStrings(formatHighlightedString(o1.highlightedString()),
                                 formatHighlightedString(o2.highlightedString())));
 
-                        renderResultsFromList(results);
+                        processedResults = results;
                     }
+                    default -> throw new RuntimeException("Sort by button text is Invalid and doesn't correspond to any supported search type");
+
                 }
+
+                searchResultsListView.getItems().setAll(processedResults);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -317,32 +366,12 @@ public class NextGenSearchController extends AbstractBasicController {
     }
 
     private void addComponentFromNid(int nid) {
-        String topText = getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(nid);
-        Latest<EntityVersion> latestTopVersion = getViewProperties().nodeView().calculator().latest(nid);
+        setCurrentSearchResultType(SearchResultType.NID);
 
-        latestTopVersion.ifPresent(entityVersion -> {
-
-            JFXNode<Pane, SortResultSemanticEntryController> searchSemanticEntryJFXNode = FXMLMvvmLoader
-                    .make(SortResultSemanticEntryController.class.getResource(SORT_SEMANTIC_RESULT_CONCEPT_FXML));
-            Node node = searchSemanticEntryJFXNode.node();
-            SortResultSemanticEntryController controller = searchSemanticEntryJFXNode.controller();
-            controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
-            controller.setSemanticText(topText);
-            controller.setWindowView(windowView);
-            Entity entity = Entity.get(entityVersion.nid()).get();
-            controller.setData(entity);
-            if (entityVersion.active()) {
-                controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
-            }
-            VBox.setMargin(node, new Insets(2, 0, 2, 0));
-
-            setUpDraggable(node, entity, getDragAndDropType(entity));
-
-            resultsVBox.getChildren().add(node);
-        });
+        searchResultsListView.getItems().add(nid);
     }
 
-    private DragAndDropType getDragAndDropType(Entity entity) {
+    static DragAndDropType getDragAndDropType(Entity entity) {
         return switch (entity){
             case ConceptEntity conceptEntity -> CONCEPT;
             case SemanticEntity semanticEntity -> SEMANTIC;
@@ -363,7 +392,7 @@ public class NextGenSearchController extends AbstractBasicController {
      * @param entity the {@link Entity} associated with the node, providing data for the drag operation
      * @throws NullPointerException if either {@code node} or {@code entity} is {@code null}
      */
-    private void setUpDraggable(Node node, Entity<?> entity, DragAndDropType dropType) {
+    static void setUpDraggable(Node node, Entity<?> entity, DragAndDropType dropType) {
         Objects.requireNonNull(node, "The node must not be null.");
         Objects.requireNonNull(entity, "The entity must not be null.");
 
@@ -406,18 +435,6 @@ public class NextGenSearchController extends AbstractBasicController {
         }
     }
 
-    private void renderResultsFromList(List<LatestVersionSearchResult> results) {
-        Platform.runLater(() -> results.forEach(e -> resultsVBox.getChildren().addAll(buildResultEntryFromList(e))));
-    }
-
-    private void renderResultsFromMap(List<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>> myList) {
-        Platform.runLater(() -> {
-            for (Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> entry : myList) {
-                resultsVBox.getChildren().addAll(buildResultEntryFromMap(entry.getKey(), entry.getValue()));
-            }
-        });
-    }
-
     private void createMapOfEntries(Map<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems,
                                     List<LatestVersionSearchResult> results) {
         MutableIntObjectMap<MutableList<LatestVersionSearchResult>> topNidMatchMap = IntObjectMaps.mutable.empty();
@@ -436,72 +453,6 @@ public class NextGenSearchController extends AbstractBasicController {
         }
     }
 
-    private Node buildResultEntryFromList(LatestVersionSearchResult latestVersionSearchResult) {
-        JFXNode<Pane, SortResultSemanticEntryController> searchSemanticEntryJFXNode = FXMLMvvmLoader
-                .make(SortResultSemanticEntryController.class.getResource(SORT_SEMANTIC_RESULT_CONCEPT_FXML));
-        Node node = searchSemanticEntryJFXNode.node();
-        SortResultSemanticEntryController controller = searchSemanticEntryJFXNode.controller();
-        SemanticEntityVersion semantic = latestVersionSearchResult.latestVersion().get();
-        controller.setIdenticon(Identicon.generateIdenticonImage(semantic.publicId()));
-        controller.setSemanticText(formatHighlightedString(latestVersionSearchResult.highlightedString()));
-        Entity entity = Entity.getConceptForSemantic(semantic.nid()).get();
-        controller.setData((ConceptEntity) entity);
-        if (semantic.active()) {
-            controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
-            controller.increaseTextFlowWidth();
-        }
-        controller.setWindowView(windowView);
-        VBox.setMargin(node, new Insets(2, 0, 2, 0));
-        setUpDraggable(node, entity, getDragAndDropType(entity));
-        return node;
-    }
-
-    private Node buildResultEntryFromMap(SearchPanelController.NidTextRecord nidTextRecord, List<LatestVersionSearchResult> latestVersionSearchResults) {
-        int topNid = nidTextRecord.nid();
-        String topText = getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(topNid); // top text I assume is the title text
-        Latest<EntityVersion> latestTopVersion = getViewProperties().nodeView().calculator().latest(topNid);
-
-        AtomicReference<Node> entry = new AtomicReference<>();
-        latestTopVersion.ifPresent(entityVersion -> {
-
-            Config config = new Config(SortResultConceptEntryController.class.getResource(SORT_CONCEPT_RESULT_CONCEPT_FXML));
-            config.updateViewModel("searchEntryViewModel", (searchEntryViewModel) ->
-                    searchEntryViewModel
-                            .addProperty(VIEW_PROPERTIES, getViewProperties())
-                            .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, getJournalTopic())
-            );
-            JFXNode<Pane, SortResultConceptEntryController> searchConceptEntryJFXNode = FXMLMvvmLoader.make(config);
-            entry.set(searchConceptEntryJFXNode.node());
-            SortResultConceptEntryController controller = searchConceptEntryJFXNode.controller();
-
-            controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
-            controller.setWindowView(windowView);
-            Entity entity = Entity.get(entityVersion.nid()).get();
-            controller.setData(entity);
-            controller.setComponentText(topText);
-
-            // add the custom descriptions
-            controller.getDescriptionsVBox().getChildren().clear();
-            latestVersionSearchResults.forEach(latestVersionSearchResult -> {
-                Label descrLabel = new Label(formatHighlightedString(latestVersionSearchResult.highlightedString()));
-                descrLabel.getStyleClass().add("search-entry-description-label");
-                controller.getDescriptionsVBox().getChildren().add(descrLabel);
-                controller.getDescriptionsVBox().getStyleClass().add("search-entry-descr-container");
-                VBox.setMargin(descrLabel, new Insets(0, 7, 7, 7));
-                descrLabel.setPadding(new Insets(8));
-            });
-
-            if (entityVersion.active()) {
-                controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
-            }
-            controller.setRetired(!entityVersion.active());
-            VBox.setMargin(entry.get(), new Insets(8, 0, 8, 0));
-            setUpDraggable(entry.get(), entity, getDragAndDropType(entity));
-        });
-
-        return entry.get();
-    }
-
     private UUID getJournalTopic() {
         return journalTopic;
     }
@@ -513,7 +464,6 @@ public class NextGenSearchController extends AbstractBasicController {
                 .replaceAll("\\s+", " ");
     }
 
-
     @Override
     public void updateView() {
 
@@ -521,7 +471,7 @@ public class NextGenSearchController extends AbstractBasicController {
 
     @Override
     public void clearView() {
-        resultsVBox.getChildren().clear();
+        searchResultsListView.getItems().clear();
     }
 
     @Override
@@ -540,6 +490,18 @@ public class NextGenSearchController extends AbstractBasicController {
 
     public void setJournalTopic(UUID journalTopic) {
         this.journalTopic = journalTopic;
+    }
+
+    /***************************************************************************
+     *                                                                         *
+     * Support Classes                                                         *
+     *                                                                         *
+     **************************************************************************/
+
+    private enum SearchResultType {
+        TOP_COMPONENT,
+        DESCRIPTION_SEMANTICS,
+        NID
     }
 }
 

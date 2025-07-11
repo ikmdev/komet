@@ -17,31 +17,27 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.concurrent.TaskWrapper;
+import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.EvtType;
 import dev.ikm.komet.framework.events.Subscriber;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
-import dev.ikm.komet.framework.view.ViewMenuTask;
+import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.*;
-import dev.ikm.komet.kview.fxutils.FXUtils;
+import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
-import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
-import dev.ikm.komet.kview.mvvm.model.PatternField;
+import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
+import dev.ikm.komet.kview.mvvm.model.*;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -55,6 +51,8 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
@@ -72,6 +70,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
@@ -81,12 +80,16 @@ import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FI
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.view.common.SVGConstants.DUPLICATE_SVG_PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
@@ -113,8 +116,11 @@ public class PatternDetailsController {
 
     @FXML
     private MenuButton coordinatesMenuButton;
-    @FXML
-    private Menu windowCoordinates;
+
+    /**
+     * model required for the filter coordinates menu, used with coordinatesMenuButton
+     */
+    private ViewMenuModel viewMenuModel;
 
     /**
      * Used slide out the properties view
@@ -132,7 +138,7 @@ public class PatternDetailsController {
     private Label patternTitleText;
 
     @FXML
-    private TextField identifierText;
+    private Text identifierText;
 
     @FXML
     private Text lastUpdatedText;
@@ -249,6 +255,10 @@ public class PatternDetailsController {
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
+
+        //DragNDrop feature for Semantic Purpose and Semantic Meaning
+        setUpDraggable(purposeText, patternViewModel.getProperty(PURPOSE_ENTITY));
+        setUpDraggable(meaningText, patternViewModel.getProperty(MEANING_ENTITY));
 
         setUpAddSemanticMenu();
 
@@ -389,6 +399,7 @@ public class PatternDetailsController {
         } else {
             fqnAddDateLabel.textProperty().bind(patternViewModel.getProperty(FQN_DATE_ADDED_STR));
         }
+
         // hide menu item if FQN is added.
         addFqnMenuItem.visibleProperty().bind(fqnNameProp.isNull());
         //
@@ -404,6 +415,7 @@ public class PatternDetailsController {
                 .then(LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")))
                 .otherwise("");
         fqnAddDateLabel.textProperty().bind(dateStrProp);
+        fqnAddDateLabel.getStyleClass().add("grey8-12pt");
 
         //Listen to the changes in the fieldsTilePane and update the field numbers.
         ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
@@ -463,29 +475,73 @@ public class PatternDetailsController {
         }
     }
 
+    private DragAndDropType getDragAndDropType(EntityFacade entityFacade) {
+        return switch (entityFacade){
+            case ConceptFacade conceptFacade -> CONCEPT;
+            case SemanticFacade semanticFacade -> SEMANTIC;
+            case PatternFacade patternFacade -> DragAndDropType.PATTERN;
+            default -> throw new IllegalStateException("Unexpected value: " + entityFacade);
+        };
+    }
+
+    /**
+     * Configures the specified {@link Node} to support drag-and-drop operations associated with the given {@link EntityFacade}.
+     * <p>
+     * When a drag is detected on the node, this method initializes a dragboard with the entity's identifier and
+     * sets a custom drag image for visual feedback.
+     * </p>
+     *
+     * @param node   the JavaFX {@link Node} to be made draggable
+     * @param entityProperty the {@link EntityFacade} associated with the node, providing data for the drag operation
+     * @throws NullPointerException if either {@code node} or {@code entity} is {@code null}
+     */
+    private void setUpDraggable(Node node, ObjectProperty<EntityFacade> entityProperty) {
+        Objects.requireNonNull(node, "The node must not be null.");
+
+        // Set up the drag detection event handler
+        node.setOnDragDetected(mouseEvent -> {
+            if (entityProperty.isNull().get()) {
+                mouseEvent.consume();
+                return;
+            }
+            EntityFacade entityFacade = entityProperty.get();
+
+            // Initiate a drag-and-drop gesture with copy or move transfer mode
+            Dragboard dragboard = node.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+
+            // Create the content to be placed on the dragboard
+            // Here, KometClipboard is used to encapsulate the entity's unique identifier (nid)
+            KometClipboard content = new KometClipboard(EntityFacade.make(entityFacade.nid()));
+
+            DragAndDropType dropType = getDragAndDropType(entityFacade);
+            node.setUserData(new DragAndDropInfo(dropType, entityFacade.publicId()));
+
+            // Generate the drag image using DragImageMaker
+            DragImageMaker dragImageMaker = new DragImageMaker(node);
+            Image dragImage = dragImageMaker.getDragImage();
+            // Set the drag image on the dragboard
+            if (dragImage != null) {
+                dragboard.setDragView(dragImage);
+            }
+
+            // Place the content on the dragboard
+            dragboard.setContent(content);
+
+            // Log the drag event details for debugging or auditing
+            LOG.info("Drag detected on node: " + mouseEvent.toString());
+
+            // Consume the mouse event to prevent further processing
+            mouseEvent.consume();
+        });
+    }
+
     /**
      * Creates the filter coordinates menu using the view calculator.
      * TODO Note that this is not a working menu, this is the first step to have propagating, inherited, filter coordinates
      * in the window/node hierarchy.
      */
     public void setupFilterCoordinatesMenu() {
-        var view = new ObservableViewNoOverride(Coordinates.View.DefaultView());
-
-        ViewCalculator viewCalculator = getViewProperties().calculator();
-
-        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
-                (List<MenuItem> result) -> {
-                    FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
-                }));
-
-        view.addListener((observable, oldValue, newValue) -> {
-            windowCoordinates.getItems().clear();
-            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, view),
-                    (List<MenuItem> result) ->
-                            FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result))
-            ));
-        });
-
+        this.viewMenuModel = new ViewMenuModel(patternViewModel.getViewProperties(), coordinatesMenuButton, "PatternDetailsController");
     }
 
     private void setUpAddSemanticMenu() {
@@ -604,20 +660,34 @@ public class PatternDetailsController {
 
         TextFlow row3 = new TextFlow();
         Text dateAddedLabel = new Text("Date Added: ");
-        dateAddedLabel.getStyleClass().add("text-noto-sans-normal-grey-eight");
+        dateAddedLabel.getStyleClass().add("grey8-12pt");
         Text dateLabel = new Text(dateAddedStr);
-        dateLabel.getStyleClass().add("text-noto-sans-normal-grey-eight");
+        dateLabel.getStyleClass().add("grey8-12pt");
 
-        Hyperlink attachmentHyperlink = new Hyperlink("Attachment");
-        Hyperlink commentHyperlink = new Hyperlink("Comment");
+        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
+        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
 
         // Add the date info and additional hyperlinks
-        row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentHyperlink);
+        row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentsHyperlink);
 
         textFlows.add(row1);
         textFlows.add(row2);
         textFlows.add(row3);
         return textFlows;
+    }
+
+    /**
+     * Creates a hyperlink with the provided SVG icon.
+     * Applies consistent styling to the icon for use in action links.
+     *
+     * @param icon The SVG icon to use in the hyperlink
+     * @return A configured Hyperlink with the icon as its graphic
+     */
+    private Hyperlink createActionLink(SVGPath icon) {
+        Hyperlink hyperlink = new Hyperlink();
+        icon.getStyleClass().add("descr-concept-icon");
+        hyperlink.setGraphic(icon);
+        return hyperlink;
     }
 
     /**
@@ -629,7 +699,8 @@ public class PatternDetailsController {
             Node node = fieldVBoxes.get(i);
             Node labelNode = node.lookup(".pattern-field");
             if (labelNode instanceof Label label) {
-                label.setText("FIELD " + (i+1));
+                label.setText("FIELD " + (i+1) + ":");
+                label.getStyleClass().add("grey8-12pt");
             }
         }
     }
@@ -637,7 +708,7 @@ public class PatternDetailsController {
     private Node createFieldEntry(PatternField patternField, int fieldNum) {
         VBox fieldVBoxContainer = new VBox();
         fieldVBoxContainer.prefWidth(330);
-        Label fieldLabel = new Label("FIELD " + fieldNum);
+        Label fieldLabel = new Label("FIELD " + fieldNum + ":");
         fieldLabel.getStyleClass().add("pattern-field");
         Text fieldText = new Text(patternField.displayName());
         fieldText.getStyleClass().add("grey12-12pt-bold");
@@ -658,12 +729,15 @@ public class PatternDetailsController {
             }
         }
         Label dateLabel = new Label(dateAddedStr);
+        dateLabel.getStyleClass().add("pattern-title");
         double dateWidth = 90;
         dateLabel.prefWidth(dateWidth);
         dateLabel.maxWidth(dateWidth);
+        dateAddedLabel.getStyleClass().add("grey8-12pt");
+        dateLabel.getStyleClass().add("grey8-12pt");
         innerHBox.getChildren().addAll(dateAddedLabel, dateLabel);
         Region commentIconRegion = new Region();
-        commentIconRegion.getStyleClass().add("grey-comment-icon");
+        commentIconRegion.getStyleClass().add("comment-icon");
         outerHBox.getChildren().addAll(innerHBox, commentIconRegion);
         fieldVBoxContainer.getChildren().addAll(fieldLabel, fieldText, outerHBox);
 
@@ -948,5 +1022,39 @@ public class PatternDetailsController {
                 LOG.debug("Removed properties nodes from draggable");
             }
         }
+    }
+
+    /**
+     * Checks whether the properties panel is currently open.
+     * <p>
+     * This method determines the open state by checking if the properties
+     * slideout tray pane is visible and expanded.
+     *
+     * @return {@code true} if the properties panel is open and visible,
+     *         {@code false} if it is closed or hidden
+     */
+    public boolean isPropertiesPanelOpen() {
+        return SlideOutTrayHelper.isOpen(propertiesSlideoutTrayPane);
+    }
+
+    /**
+     * Sets the open/closed state of the properties panel programmatically.
+     * <p>
+     * The animation is performed without transitions when called programmatically
+     * to ensure immediate state changes.
+     *
+     * @param isOpen {@code true} to open (slide out) the properties panel,
+     *               {@code false} to close (slide in) the panel
+     */
+    public void setPropertiesPanelOpen(boolean isOpen) {
+        propertiesToggleButton.setSelected(isOpen);
+
+        if (isOpen) {
+            SlideOutTrayHelper.slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        } else {
+            SlideOutTrayHelper.slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        }
+
+        updateDraggableNodesForPropertiesPanel(isOpen);
     }
 }

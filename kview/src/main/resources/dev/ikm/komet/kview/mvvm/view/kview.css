@@ -196,12 +196,11 @@
 
 /* focus purely on the arrow */
 .titled-pane:focused > .title > .arrow-button > .arrow {
-    -fx-background-color: -Secondary-05;
-    -fx-shape: "M7.91 8.29508L6.5 9.70508L12.5 15.7051L18.5 9.70508L17.09 8.29508L12.5 12.8751L7.91 8.29508Z";
-    -fx-background-insets: -1, 0;
+    -fx-effect: null;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
 .titled-pane > .title > .arrow-button {
-    -fx-background-color: null;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
     -fx-padding: 0.0em 0.583em 0.0em 0.0em; /* 0 7 0 0 */
@@ -1044,6 +1043,7 @@ selected(active) - dark black
 .vertical-divider {
     -fx-fill: -Grey-9;
     -fx-stroke-width: 0;
+    -fx-padding: 2px,0px,0px,2px
 }
 
 /* Editable Combo box Journal #1  */
@@ -2420,6 +2420,22 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M7.50004 4.16871C7.27903 4.16871 7.06707 4.25651 6.91079 4.41279C6.7545 4.56907 6.66671 4.78103 6.66671 5.00204C6.66671 5.22306 6.7545 5.43502 6.91079 5.5913C7.06707 5.74758 7.27903 5.83538 7.50004 5.83538C7.72105 5.83538 7.93302 5.74758 8.0893 5.5913C8.24558 5.43502 8.33337 5.22306 8.33337 5.00204C8.33337 4.78103 8.24558 4.56907 8.0893 4.41279C7.93302 4.25651 7.72105 4.16871 7.50004 4.16871ZM5.14171 4.16871C5.31388 3.68076 5.63316 3.25824 6.05554 2.95937C6.47792 2.6605 6.98261 2.5 7.50004 2.5C8.01747 2.5 8.52216 2.6605 8.94454 2.95937C9.36692 3.25824 9.68621 3.68076 9.85837 4.16871H15.8334C16.0544 4.16871 16.2663 4.25651 16.4226 4.41279C16.5789 4.56907 16.6667 4.78103 16.6667 5.00204C16.6667 5.22306 16.5789 5.43502 16.4226 5.5913C16.2663 5.74758 16.0544 5.83538 15.8334 5.83538H9.85837C9.68621 6.32332 9.36692 6.74585 8.94454 7.04472C8.52216 7.34359 8.01747 7.50408 7.50004 7.50408C6.98261 7.50408 6.47792 7.34359 6.05554 7.04472C5.63316 6.74585 5.31388 6.32332 5.14171 5.83538H4.16671C3.94569 5.83538 3.73373 5.74758 3.57745 5.5913C3.42117 5.43502 3.33337 5.22306 3.33337 5.00204C3.33337 4.78103 3.42117 4.56907 3.57745 4.41279C3.73373 4.25651 3.94569 4.16871 4.16671 4.16871H5.14171ZM12.5 9.16871C12.279 9.16871 12.0671 9.25651 11.9108 9.41279C11.7545 9.56907 11.6667 9.78103 11.6667 10.002C11.6667 10.2231 11.7545 10.435 11.9108 10.5913C12.0671 10.7476 12.279 10.8354 12.5 10.8354C12.7211 10.8354 12.933 10.7476 13.0893 10.5913C13.2456 10.435 13.3334 10.2231 13.3334 10.002C13.3334 9.78103 13.2456 9.56907 13.0893 9.41279C12.933 9.25651 12.7211 9.16871 12.5 9.16871ZM10.1417 9.16871C10.3139 8.68077 10.6332 8.25824 11.0555 7.95937C11.4779 7.6605 11.9826 7.5 12.5 7.5C13.0175 7.5 13.5222 7.6605 13.9445 7.95937C14.3669 8.25824 14.6862 8.68077 14.8584 9.16871H15.8334C16.0544 9.16871 16.2663 9.25651 16.4226 9.41279C16.5789 9.56907 16.6667 9.78103 16.6667 10.002C16.6667 10.2231 16.5789 10.435 16.4226 10.5913C16.2663 10.7476 16.0544 10.8354 15.8334 10.8354H14.8584C14.6862 11.3233 14.3669 11.7458 13.9445 12.0447C13.5222 12.3436 13.0175 12.5041 12.5 12.5041C11.9826 12.5041 11.4779 12.3436 11.0555 12.0447C10.6332 11.7458 10.3139 11.3233 10.1417 10.8354H4.16671C3.94569 10.8354 3.73373 10.7476 3.57745 10.5913C3.42117 10.435 3.33337 10.2231 3.33337 10.002C3.33337 9.78103 3.42117 9.56907 3.57745 9.41279C3.73373 9.25651 3.94569 9.16871 4.16671 9.16871H10.1417ZM7.50004 14.1687C7.27903 14.1687 7.06707 14.2565 6.91079 14.4128C6.7545 14.5691 6.66671 14.781 6.66671 15.002C6.66671 15.2231 6.7545 15.435 6.91079 15.5913C7.06707 15.7476 7.27903 15.8354 7.50004 15.8354C7.72105 15.8354 7.93302 15.7476 8.0893 15.5913C8.24558 15.435 8.33337 15.2231 8.33337 15.002C8.33337 14.781 8.24558 14.5691 8.0893 14.4128C7.93302 14.2565 7.72105 14.1687 7.50004 14.1687ZM5.14171 14.1687C5.31388 13.6808 5.63316 13.2582 6.05554 12.9594C6.47792 12.6605 6.98261 12.5 7.50004 12.5C8.01747 12.5 8.52216 12.6605 8.94454 12.9594C9.36692 13.2582 9.68621 13.6808 9.85837 14.1687H15.8334C16.0544 14.1687 16.2663 14.2565 16.4226 14.4128C16.5789 14.5691 16.6667 14.781 16.6667 15.002C16.6667 15.2231 16.5789 15.435 16.4226 15.5913C16.2663 15.7476 16.0544 15.8354 15.8334 15.8354H9.85837C9.68621 16.3233 9.36692 16.7458 8.94454 17.0447C8.52216 17.3436 8.01747 17.5041 7.50004 17.5041C6.98261 17.5041 6.47792 17.3436 6.05554 17.0447C5.63316 16.7458 5.31388 16.3233 5.14171 15.8354H4.16671C3.94569 15.8354 3.73373 15.7476 3.57745 15.5913C3.42117 15.435 3.33337 15.2231 3.33337 15.002C3.33337 14.781 3.42117 14.5691 3.57745 14.4128C3.73373 14.2565 3.94569 14.1687 4.16671 14.1687H5.14171Z";
 }
 
+.filter-button:filter-showing > .search-button-region {
+    -fx-background-color: black;
+}
+.attachment-icon {
+    -fx-background-color: -Grey-8;
+    -fx-shape: "M2.32011 11.5752C0.906855 10.162 0.906855 7.87464 2.32011 6.46139L7.55018 1.23131C8.58738 0.194111 10.2676 0.194111 11.3048 1.23131C12.342 2.26851 12.342 3.94873 11.3048 4.98593L6.98088 9.30986C6.31974 9.971 5.24664 9.971 4.58549 9.30986C3.92434 8.64871 3.92434 7.57561 4.58549 6.91446L8.52134 2.97861L9.33097 3.78824L5.39512 7.72409C5.18183 7.93738 5.18183 8.28694 5.39512 8.50023C5.60841 8.71352 5.95797 8.71352 6.17126 8.50023L10.4952 4.17631C11.0845 3.58696 11.0845 2.63028 10.4952 2.04094C9.90583 1.4516 8.94915 1.4516 8.35981 2.04094L3.12974 7.27101C2.16434 8.23641 2.16434 9.80021 3.12974 10.7656C4.09513 11.731 5.65894 11.731 6.62433 10.7656L11.4663 5.92361L12.276 6.73323L7.43396 11.5752C6.02071 12.9885 3.73336 12.9885 2.32011 11.5752Z";
+    -fx-icon-size: 14;
+    -fx-min-width: -fx-icon-size;
+    -fx-min-height: -fx-icon-size;
+    -fx-pref-width: -fx-icon-size;
+    -fx-pref-height: -fx-icon-size;
+    -fx-max-width: -fx-icon-size;
+    -fx-max-height: -fx-icon-size;
+    -fx-fill: -Grey-8;
+}
+
 .drop-area {
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Grey-8;
@@ -2446,6 +2462,13 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-style: normal;
     -fx-font-weight: bold;
     -fx-text-fill: -Grey-12;
+    -fx-text-alignment: bottom;
+}
+
+.text-noto-sans-twelve {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
 }
 
 .text-noto-sans-normal-grey-eight {
@@ -2564,6 +2587,14 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-size: 12px;
     -fx-font-style: normal;
     -fx-font-weight: bold;
+}
+
+.grey8-12pt {
+    -fx-fill: -Grey-8;
+    -fx-text-fill: -Grey-8;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
 }
 
 .grey12-18pt-normal {
@@ -2795,11 +2826,6 @@ Timeline Year line segment (will overlay change circles)
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
 }
 
-.comment-icon {
-    -fx-background-color: black;
-    -fx-shape: "M7.50002 18.3337C7.27901 18.3337 7.06705 18.2459 6.91077 18.0896C6.75448 17.9333 6.66669 17.7213 6.66669 17.5003V15.0003H3.33335C2.89133 15.0003 2.4674 14.8247 2.15484 14.5122C1.84228 14.1996 1.66669 13.7757 1.66669 13.3337V3.33366C1.66669 2.40866 2.41669 1.66699 3.33335 1.66699H16.6667C17.1087 1.66699 17.5326 1.84259 17.8452 2.15515C18.1578 2.46771 18.3334 2.89163 18.3334 3.33366V13.3337C18.3334 13.7757 18.1578 14.1996 17.8452 14.5122C17.5326 14.8247 17.1087 15.0003 16.6667 15.0003H11.5834L8.50002 18.092C8.33335 18.2503 8.12502 18.3337 7.91669 18.3337H7.50002ZM8.33335 13.3337V15.9003L10.9 13.3337H16.6667V3.33366H3.33335V13.3337H8.33335Z";
-}
-
 .comments-textflow {
     -fx-border-radius: 4;
     -fx-min-height: 118;
@@ -2816,7 +2842,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: 500;
 }
 
-.grey-comment-icon {
+.comment-icon {
     -fx-pref-height: 14;
     -fx-pref-width: 15;
     -fx-background-color: -Grey-8;
@@ -2855,24 +2881,111 @@ Timeline Year line segment (will overlay change circles)
 }
 
 /*********************************************************************************
- * End of Pattern UI elements                                                    *
+ * Next Gen Search                                                               *
  *********************************************************************************/
 
+.next-gen-search-main-container .outer-list-view {
+    -fx-background-color: -Grey-9;
+    -fx-padding: 10px 0 10px 0;
+}
 
-/********************************************************************************
- * Start of Journal > Search Concept UI elements                                *
- ********************************************************************************/
+.next-gen-search-main-container .outer-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 3px 6px 3px 12px;
+}
+
+.next-gen-search-main-container .outer-list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 0 0 0;
+}
+
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .increment-button,
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .decrement-button,
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .increment-arrow,
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .decrement-arrow {
+     -fx-background-color:transparent;
+     -fx-background-radius: 0em;
+     -fx-padding: 0 2 0 2;
+}
+
+.next-gen-search-main-container .outer-list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #a9aeb8;
+    -fx-background-insets: 3px 5px 3px 1px;
+    -fx-background-radius: 16px;
+}
 
 .search-vertical-scroll-area {
     -fx-background-color: -Grey-9;
 }
 
-.search-button {
+.next-gen-search-main-container .descriptions-list-view {
+    -fx-background-color: #f1f3f8;
+    -fx-padding: 3px 0 0 0;
+}
+
+.next-gen-search-main-container .descriptions-list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 0 0 0;
+}
+
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .increment-button,
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .decrement-button,
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .increment-arrow,
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 2 0 2;
+}
+
+.next-gen-search-main-container .descriptions-list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #777;
+    -fx-background-insets: 3 5 3 0;
+    -fx-background-radius: 16px;
+}
+
+/* Cells and Cells content */
+.next-gen-search-main-container .descriptions-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+
+    -fx-padding: 0 6px 5 6px;
+}
+
+.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+
+    -fx-background-color: white;
+    -fx-background-radius: 3px;
+    -fx-border-radius: 3px;
+
+    -fx-effect: dropshadow(gaussian , rgba(0,0,0,0.2) , 4, 0.0 , 0 , 2 );
+
+    height: 75;
+    -fx-pref-height: height;
+    -fx-max-height: height;
+
+    -fx-padding: 5 6 5 10;
+    -fx-alignment: center_left;
+}
+
+.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container:hover {
+    -fx-background-color: #f6f6f6;
+}
+
+.search-button,
+.search-button.filter-button {
     -fx-background-color: -Grey-9;
+}
+
+.search-button.filter-button:filter-showing {
+    -fx-background-color: -Primary-04;
 }
 
 .search-hbox {
     -fx-background-color: -Grey-9;
+    -fx-border-color: #444;
+    -fx-border-width: 0 0 1px 0;
 }
 
 .search-text-field {
@@ -2914,21 +3027,49 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: white;
 }
 
+.search-entry-container {
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-background-color: white;
+
+    -fx-padding: 4px 5px 7px 5px;
+
+    -fx-spacing: 3px;
+}
+
+.next-gen-search-main-container .search-entry-container .identicon-container {
+    -fx-padding: 0 0 0 4px;
+}
+
 .search-entry-hbox {
     -fx-border-radius: 2px;
     -fx-background-radius: 2px;
     -fx-background-color: white;
 }
 
+.search-entry-hbox .search-entry-left-pane {
+    -fx-spacing: 4px;
+}
+
+.search-entry-hbox .search-entry-left-pane .semantic-text-container {
+    -fx-padding: -1 0 0 3;
+}
+
+.next-gen-search-main-container .search-entry-header {
+    -fx-alignment: center_left;
+}
+
+.search-entry-text-container {
+    -fx-padding: 6px 0 5px 0;
+}
+
 .search-entry-text {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
-    -fx-font-style: normal;
-    -fx-font-weight: bold;
+
     -fx-line-height: 16px;
     -fx-letter-spacing: 0.2px;
     -fx-fill: -Natural-Grey-Dark;
-
 }
 
 .search-entry-expanded {
@@ -2985,6 +3126,7 @@ Timeline Year line segment (will overlay change circles)
 .search-option-container {
     -fx-border-radius: 4px;
     -fx-background-color: -Grey-11;
+    -fx-padding: 2px;
 }
 
 .search-option-label {
@@ -2992,19 +3134,40 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-11;
 }
 
-.search-option-container .radio-button .radio {
-    -fx-background-color: white;
-    -fx-shape: "M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z";
+.search-option-container .radio-button > .radio,
+.search-option-container .radio-button:focused > .radio {
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+
+    -fx-border-style: solid;
+    -fx-border-radius: 1.0em;
+    -fx-border-color: #ccc;
+    -fx-border-insets: 0px;
+    -fx-border-width: 2px;
+
+    -fx-padding: 3px;
 }
 
-.search-option-container .radio-button:selected .radio {
-    -fx-background-color: -Primary-04;
-    -fx-shape: "M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z";
+.search-option-container .radio-button:hover > .radio,
+.search-option-container .radio-button:focused:hover > .radio {
+    -fx-border-color: -Grey-White;
 }
 
-.search-option-container .radio-button:selected .radio .dot {
+.search-option-container .radio-button:selected > .radio,
+.search-option-container .radio-button:selected:focused > .radio {
+    -fx-border-color: -Primary-04;
+}
+
+.search-option-container .radio-button > .radio > .dot {
+    -fx-background-color: transparent;
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-padding: 0.333333em; /* 4 -- radius of the inner black dot when selected */
+}
+
+.search-option-container .radio-button:selected > .radio > .dot {
+    -fx-background-insets: 0;
     -fx-background-color: -Primary-04;
-    -fx-shape: "M12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17Z";
 }
 
 .search-retired-label {
@@ -3124,12 +3287,13 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-size: 12px;
     -fx-font-style: normal;
     -fx-fill: -Grey-8;
-    -fx-font-weight: 600;
+    -fx-font-weight: bold;
 }
 
 .pattern-titled-pane {
     -fx-border-width: 1 0 0 0;
     -fx-border-color: -Grey-10;
+    -fx-font-weight: bold;
 }
 
 .pattern-titled-pane > .content {
@@ -3138,6 +3302,21 @@ Timeline Year line segment (will overlay change circles)
 
 .pattern-vertical-separator {
     -fx-color-fill: -Grey-5;
+}
+
+.thin-vertical-separator {
+    -fx-background-color: transparent; /* Ensures no background */
+    -fx-padding: 8 8 8 8;
+}
+
+.thin-vertical-separator .line {
+    -fx-border-width: 0 0 0 1; /* 1px left border */
+    -fx-border-color: #888888;
+    -fx-padding: 4 4 4 4;
+    -fx-min-width: 1px;
+    -fx-max-width: 1px;
+    -fx-pref-width: 1px;
+    -fx-background-color: #888888;
 }
 
 .pattern-titled-pane > .title {
@@ -3164,6 +3343,14 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-10;
 }
 
+.fields-title {
+    -fx-text-alignment: center;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-fill: -Grey-8;
+    -fx-font-weight: bold;
+}
 /********************************************************************************
  * Pattern Browser                                                              *
  ********************************************************************************/
@@ -3171,8 +3358,6 @@ Timeline Year line segment (will overlay change circles)
 .pattern-instance-hbox {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
-    -fx-font-style: normal;
-    -fx-font-weight: 400;
 
     -fx-background-color: white;
     -fx-background-radius: 3px;
@@ -4406,12 +4591,18 @@ Styling a context menu for kview ui/ux controls
 
     -fx-border-style: solid;
     -fx-border-radius: 1.0em;
-    -fx-border-color: -Grey-White;
+    -fx-border-color: #ccc;
     -fx-border-insets: 0px;
     -fx-border-width: 2px;
 
     -fx-padding: 3px;
 }
+
+.popup-container .titled-pane > *.content .option-container .radio-button:hover > .radio,
+.popup-container .titled-pane > *.content .option-container .radio-button:focused:hover > .radio {
+    -fx-border-color: -Grey-White;
+}
+
 .popup-container .titled-pane > *.content .option-container .radio-button:selected > .radio,
 .popup-container .titled-pane > *.content .option-container .radio-button:selected:focused > .radio {
     -fx-border-color: -Primary-04;
@@ -4894,6 +5085,13 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 4px 0 0 0;
 }
 
+.pattern-field {
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 12;
+    -fx-font-weight: 500;
+    -fx-fill: -Grey-12;
+}
+
 /*******************************************************************************
  *                                                                             *
  * Pattern Window & Lidr Window                                                *
@@ -5196,6 +5394,14 @@ Styling a context menu for kview ui/ux controls
 }
 
 /* Semantic Details section - VBox */
+
+.semantic-field {
+    -fx-font-family: Noto Sans;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-fill: -Grey-8;
+}
+
 .semantic-field-container {
 
     -fx-spacing: 12px;
@@ -5302,6 +5508,55 @@ Styling a context menu for kview ui/ux controls
 
 .properties-tab-container-content .controls-container {
     -fx-padding: 0 12px 0 0;
+}
+
+/******************* Tooltip for Semantic in Pattern Browser ******************/
+
+.semantic-tooltip {
+    -fx-padding: 15 0 10 0;
+}
+
+.semantic-tooltip .main-container {
+    -fx-max-width: 400px;
+    -fx-padding: 0;
+}
+
+.semantic-tooltip .title {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 16px;
+
+    -fx-max-height: 300px;
+    -fx-padding: 15 15 10 15;
+}
+
+.semantic-tooltip .values-container .grid {
+    -fx-padding: 5 15 20 15;
+    -fx-max-width: 450px;
+}
+
+.semantic-tooltip .values-container > .separator .line {
+    -fx-border-color: #111 transparent transparent transparent,
+                      transparent;
+}
+
+.semantic-tooltip .values-container .grid .label {
+
+    -fx-font-size: 12px;
+    -fx-padding: 10px 0 13px 0;
+}
+
+.semantic-tooltip .values-container .grid .field-title.label {
+    -fx-font-family: "Noto Sans Semibold";
+    -fx-text-fill: #999;
+}
+
+.semantic-tooltip .values-container .grid .field-value.label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #f0f0f0;
+}
+
+.semantic-tooltip .values-container .grid > .separator .line {
+    -fx-border-color: #494949 transparent transparent transparent, transparent;
 }
 
 /*******************************************************************************
@@ -5458,6 +5713,23 @@ Styling a context menu for kview ui/ux controls
 
 .icon.populate {
     -fx-shape: "M4.12492 15.8333H15.7916V11.6667H17.4583V15.8333C17.4583 16.2754 17.2827 16.6993 16.9701 17.0118C16.6575 17.3244 16.2336 17.5 15.7916 17.5H4.12492C3.68289 17.5 3.25897 17.3244 2.94641 17.0118C2.63385 16.6993 2.45825 16.2754 2.45825 15.8333V4.16667C2.45825 3.72464 2.63385 3.30072 2.94641 2.98816C3.25897 2.67559 3.68289 2.5 4.12492 2.5H8.29158V4.16667H4.12492V15.8333ZM13.5416 5.25L10.7916 2.5H17.4583V9.16667L14.7083 6.41667L9.95829 11.1667L8.79162 10L13.5416 5.25Z";
+}
+
+.nine-dots-icon {
+    -fx-background-color: -Grey-White;
+   -fx-shape: "M0 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0
+                   M7 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0
+                   M14 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0
+                   M0 7a2 2 0 1 0 4 0a2 2 0 1 0 -4 0
+                   M7 7a2 2 0 1 0 4 0a2 2 0 1 0 -4 0
+                   M14 7a2 2 0 1 0 4 0a2 2 0 1 0 -4 0
+                   M0 14a2 2 0 1 0 4 0a2 2 0 1 0 -4 0
+                   M7 14a2 2 0 1 0 4 0a2 2 0 1 0 -4 0
+                   M14 14a2 2 0 1 0 4 0a2 2 0 1 0 -4 0";
+    -fx-min-width: 18px;
+    -fx-min-height: 18px;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
 }
 
 .editable-title-label {
