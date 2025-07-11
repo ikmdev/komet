@@ -438,7 +438,7 @@ public class GenEditingDetailsController {
             int index = 0;
             for(ObservableField<?> observableField : observableFields){
                 FieldRecord<?> fieldRecord = observableField.field();
-                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), false);
+                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), false, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
                 nodes.add(klReadOnlyBaseControl);
                 klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
                 semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);

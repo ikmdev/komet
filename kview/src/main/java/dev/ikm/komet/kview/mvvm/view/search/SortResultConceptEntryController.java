@@ -163,7 +163,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     @FXML
     private void populateConcept(ActionEvent actionEvent) {
         if (entity instanceof ConceptEntity conceptEntity) {
-            eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeConceptWindowEvent(this,
                     MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
         }
     }
