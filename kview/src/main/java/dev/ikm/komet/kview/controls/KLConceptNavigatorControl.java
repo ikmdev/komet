@@ -467,4 +467,19 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         pause.setOnFinished(_ -> ConceptNavigatorUtils.iterateTree((ConceptNavigatorTreeItem) getRoot(), item -> item.setHighlighted(false)));
         pause.play();
     }
+
+    /**
+     * <p>Expands the treeView starting from its root node, so this concept gets visible, and
+     * then selects it.
+     * </p>
+     * <p>From all the possible concept's lineages, the one that gets expanded is the shorter one
+     * that matches both its nid and parent nid.
+     * </p>
+     * @param conceptItem a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
+     * @see ConceptNavigatorUtils#findShorterLineage(InvertedTree.ConceptItem, Navigator)
+     */
+    public void expandAndSelectConcept(InvertedTree.ConceptItem conceptItem) {
+        conceptNavigatorTreeViewSkin.expandAndSelectConcept(conceptItem);
+    }
+
 }

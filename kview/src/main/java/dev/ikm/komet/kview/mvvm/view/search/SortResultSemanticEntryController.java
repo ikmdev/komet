@@ -37,8 +37,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 
 public class SortResultSemanticEntryController  {
 
@@ -65,6 +68,9 @@ public class SortResultSemanticEntryController  {
 
     @FXML
     private ContextMenu contextMenu;
+
+    @InjectViewModel
+    private SimpleViewModel searchEntryViewModel;
 
     // data fields to populate the concept details window
 
@@ -122,10 +128,10 @@ public class SortResultSemanticEntryController  {
     private  void openInConceptNavigator(ActionEvent actionEvent) {
         actionEvent.consume();
         if(entity instanceof ConceptEntity conceptEntity) {
-            eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
+            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
         } else if (entity instanceof SemanticEntity semanticEntity) {
             ConceptEntity conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
-            eventBus.publish(JOURNAL_TOPIC, new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
+            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
         }
     }
 
