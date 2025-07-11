@@ -184,7 +184,7 @@
                      </styleClass>
                   </Region>
                </graphic>
-               <tooltip><Tooltip text="Navigator" /></tooltip>
+               <tooltip><Tooltip text="Nextgen Navigator" /></tooltip>
             </ToggleButton>
             <ToggleButton fx:id="reasonerToggleButton" mnemonicParsing="false" styleClass="reasoner" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
@@ -219,7 +219,7 @@
                      </styleClass>
                   </Region>
                </graphic>
-               <tooltip><Tooltip text="Nextgen Navigator" /></tooltip>
+               <tooltip><Tooltip text="Navigator" /></tooltip>
             </ToggleButton>
             <ToggleButton fx:id="nextGenReasonerToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
