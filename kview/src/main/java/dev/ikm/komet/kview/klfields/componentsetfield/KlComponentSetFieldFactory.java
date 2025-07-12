@@ -6,7 +6,9 @@ import dev.ikm.komet.layout.component.version.field.KlField;
 import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
 import dev.ikm.tinkar.common.id.IntIdSet;
 
-public class KlComponentSetFieldFactory implements KlFieldFactory<IntIdSet> {
+import java.util.UUID;
+
+public class KlComponentSetFieldFactory{
 
     /**
      * Creates a new instance of {@link KlField} associated with the provided observable data
@@ -19,9 +21,8 @@ public class KlComponentSetFieldFactory implements KlFieldFactory<IntIdSet> {
      * @param editable        flag to determine if the UI control is editable
      * @return a new {@link KlField} instance parameterized with the same type as the provided {@link ObservableField}.
      */
-    @Override
-    public KlField<IntIdSet> create(ObservableField<IntIdSet> observableField, ObservableView observableView, boolean editable) {
-        return new DefaultKlComponentSetField(observableField, observableView, editable);
+    public KlField<IntIdSet> create(ObservableField<IntIdSet> observableField, ObservableView observableView, boolean editable, UUID journalTopic) {
+        return new DefaultKlComponentSetField(observableField, observableView, editable, journalTopic);
     }
 
     /**
@@ -32,7 +33,6 @@ public class KlComponentSetFieldFactory implements KlFieldFactory<IntIdSet> {
      * @return A {@link Class} object representing the class type of the field
      * interface extending {@link KlField}.
      */
-    @Override
     public Class<? extends KlField<IntIdSet>> getFieldInterface() {
         return null;
     }
@@ -44,7 +44,6 @@ public class KlComponentSetFieldFactory implements KlFieldFactory<IntIdSet> {
      * @return A {@link Class} object representing the class type of the implementation
      * of {@link KlField} associated with this factory.
      */
-    @Override
     public Class<? extends KlField<IntIdSet>> getFieldImplementation() {
         return DefaultKlComponentSetField.class;
     }
@@ -54,7 +53,6 @@ public class KlComponentSetFieldFactory implements KlFieldFactory<IntIdSet> {
      *
      * @return A string representing the name of the field widget.
      */
-    @Override
     public String getName() {
         return "Component set field factory";
     }
@@ -64,7 +62,6 @@ public class KlComponentSetFieldFactory implements KlFieldFactory<IntIdSet> {
      *
      * @return A string representing the description of the field or factory.
      */
-    @Override
     public String getDescription() {
         return "A Component set field";
     }

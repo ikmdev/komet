@@ -433,7 +433,7 @@ public class JournalController {
             // toggle CONCEPTS inside conceptPatternNavController
             conceptPatternNavController.toggleConcepts();
         };
-        journalEventBus.subscribe(JOURNAL_TOPIC, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
+        journalEventBus.subscribe(journalTopic, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
 
         // listening to the event fired when the user clicks the 'X' on the reasoner slide out
         // and wire into the toggle group because we already have a listener on this property
