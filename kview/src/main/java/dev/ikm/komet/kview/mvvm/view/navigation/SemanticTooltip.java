@@ -1,8 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.klfields.KlFieldType;
-import dev.ikm.komet.kview.klfields.KlFieldUtils;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -124,7 +124,7 @@ public class SemanticTooltip extends Tooltip {
                 }
                 case IMAGE -> {
 
-                    Image image = KlFieldUtils.newImageFromByteArray((byte[])field);
+                    Image image = KlFieldHelper.newImageFromByteArray((byte[])field);
 
                     ImageView imagePreview = new ImageView(image);
                     imagePreview.setPreserveRatio(true);

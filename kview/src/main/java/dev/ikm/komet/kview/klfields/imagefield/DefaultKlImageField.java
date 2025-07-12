@@ -5,7 +5,7 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.KLImageControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyImageControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
-import dev.ikm.komet.kview.klfields.KlFieldUtils;
+import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import javafx.scene.Parent;
 
 import java.io.ByteArrayOutputStream;
@@ -28,7 +28,7 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
                 }
 
                 isUpdatingImageControl = true;
-                imageControl.setImage(KlFieldUtils.newImageFromByteArray(newByteArray));
+                imageControl.setImage(KlFieldHelper.newImageFromByteArray(newByteArray));
                 isUpdatingImageControl = false;
             });
             imageControl.imageProperty().subscribe(() -> {
@@ -41,7 +41,7 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
                     //set the field value to empty byte array since we cannot save null value to database.
                     field().valueProperty().set(new ByteArrayOutputStream().toByteArray());
                 } else {
-                    byte[] newByteArray = KlFieldUtils.newByteArrayFromImage(imageControl.getImage());
+                    byte[] newByteArray = KlFieldHelper.newByteArrayFromImage(imageControl.getImage());
                     field().valueProperty().set(newByteArray);
                 }
                 isUpdatingObservableField = false;
@@ -54,9 +54,9 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
             readOnlyImageControl.setTitle(getTitle());
             // Sync ObservableField and ReadOnlyImageControl
             byte[] imageBytes = observableImageField.value();
-            readOnlyImageControl.setValue(KlFieldUtils.newImageFromByteArray(imageBytes));
+            readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(imageBytes));
             observableImageField.valueProperty().subscribe(newByteArray -> {
-                readOnlyImageControl.setValue(KlFieldUtils.newImageFromByteArray(newByteArray));
+                readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(newByteArray));
             });
             // Title
             readOnlyImageControl.setTitle(getTitle());
