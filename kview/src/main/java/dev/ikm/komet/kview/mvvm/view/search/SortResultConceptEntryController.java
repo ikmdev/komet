@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
+import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
@@ -130,27 +131,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         descriptionsListView.getItems().addListener((ListChangeListener<? super LatestVersionSearchResult>) change -> updateListViewPrefHeight());
         updateListViewPrefHeight();
 
-        descriptionsListView.setCellFactory(param -> new ListCell<>() {
-            StackPane cellContainer = new StackPane();
-            Label label = new Label();
-
-            {
-                cellContainer.getChildren().add(label);
-                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-
-                cellContainer.getStyleClass().add("cell-container");
-            }
-
-            @Override
-            protected void updateItem(LatestVersionSearchResult item, boolean empty) {
-                if (item == null || empty) {
-                    setGraphic(null);
-                } else {
-                    label.setText(formatHighlightedString(item.highlightedString()));
-                    setGraphic(cellContainer);
-                }
-            }
-        });
+        descriptionsListView.setCellFactory(param -> new DescriptionSemanticListCell());
     }
 
     private String formatHighlightedString(String highlightedString) {
@@ -238,5 +219,42 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         double maxHeight = descriptionsListView.getMaxHeight();
 
         descriptionsListView.setPrefHeight(Math.min(newPrefHeight, maxHeight));
+    }
+
+    /***************************************************************************
+     *                                                                         *
+     * Support Classes                                                         *
+     *                                                                         *
+     **************************************************************************/
+
+    class DescriptionSemanticListCell extends ListCell<LatestVersionSearchResult> {
+        private StackPane cellContainer = new StackPane();
+        private Label label = new Label();
+        private ImageView identicon = new ImageView();
+
+        public DescriptionSemanticListCell() {
+            cellContainer.getChildren().add(label);
+            setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+
+            identicon.setFitHeight(16);
+            identicon.setFitWidth(16);
+
+            cellContainer.getStyleClass().add("cell-container");
+        }
+
+        @Override
+        protected void updateItem(LatestVersionSearchResult item, boolean empty) {
+            if (item == null || empty) {
+                setGraphic(null);
+            } else {
+                item.latestVersion().ifPresent(semanticEntityVersion -> {
+                    identicon.setImage(Identicon.generateIdenticonImage(semanticEntityVersion.publicId()));
+                    label.setGraphic(identicon);
+                });
+                label.setText(formatHighlightedString(item.highlightedString()));
+
+                setGraphic(cellContainer);
+            }
+        }
     }
 }

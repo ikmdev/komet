@@ -2950,6 +2950,10 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: #f6f6f6;
 }
 
+.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container .label {
+    -fx-graphic-text-gap: 8px;
+}
+
 .search-button,
 .search-button.filter-button {
     -fx-background-color: -Grey-9;
