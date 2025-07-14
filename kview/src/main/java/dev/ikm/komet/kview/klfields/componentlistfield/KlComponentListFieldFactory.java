@@ -6,29 +6,26 @@ import dev.ikm.komet.layout.component.version.field.KlField;
 import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
 import dev.ikm.tinkar.common.id.IntIdList;
 
-public class KlComponentListFieldFactory implements KlFieldFactory<IntIdList> {
+import java.util.UUID;
 
-    @Override
-    public KlField<IntIdList> create(ObservableField<IntIdList> observableField, ObservableView observableView, boolean editable) {
-        return new DefaultKlComponentListField(observableField, observableView, editable);
+public class KlComponentListFieldFactory {
+
+    public KlField<IntIdList> create(ObservableField<IntIdList> observableField, ObservableView observableView, boolean editable, UUID journalTopic) {
+        return new DefaultKlComponentListField(observableField, observableView, editable, journalTopic);
     }
 
-    @Override
     public Class<? extends KlField<IntIdList>> getFieldInterface() {
         return null;
     }
 
-    @Override
     public Class<? extends KlField<IntIdList>> getFieldImplementation() {
         return DefaultKlComponentListField.class;
     }
 
-    @Override
     public String getName() {
         return "Component list field factory";
     }
 
-    @Override
     public String getDescription() {
         return "A Component list field";
     }

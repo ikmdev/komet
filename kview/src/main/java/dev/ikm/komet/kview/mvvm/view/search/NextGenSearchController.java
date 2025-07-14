@@ -210,7 +210,7 @@ public class NextGenSearchController extends AbstractBasicController {
                 );
             case DESCRIPTION_SEMANTICS ->
                 searchResultsListView.setCellFactory((Callback<ListView<LatestVersionSearchResult>, ListCell<LatestVersionSearchResult>>) param ->
-                        new SearchCellDescriptionSemantic(windowView));
+                        new SearchCellDescriptionSemantic(getViewProperties(), getJournalTopic(), windowView));
             case NID ->
                 searchResultsListView.setCellFactory((Callback<ListView<Integer>, ListCell<Integer>>) param ->
                         new SearchCellNid(getViewProperties(), windowView));
