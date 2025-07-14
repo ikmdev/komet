@@ -161,7 +161,7 @@
                <tooltip><Tooltip text="Home" /></tooltip>
             </Button>
             <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
-            <ToggleButton fx:id="searchToggleButton" mnemonicParsing="false" text="ToggleButton">
+            <ToggleButton fx:id="nextGenSearchToggleButton" mnemonicParsing="false" text="ToggleButton">
                <graphic>
                   <Region prefHeight="200.0" prefWidth="200.0">
                      <styleClass>
@@ -173,7 +173,7 @@
                <toggleGroup>
                   <ToggleGroup fx:id="sidebarToggleGroup" />
                </toggleGroup>
-               <tooltip><Tooltip text="Search" /></tooltip>
+               <tooltip><Tooltip text="Nextgen Search" /></tooltip>
             </ToggleButton>
             <ToggleButton fx:id="navigatorToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
@@ -184,7 +184,7 @@
                      </styleClass>
                   </Region>
                </graphic>
-               <tooltip><Tooltip text="Navigator" /></tooltip>
+               <tooltip><Tooltip text="Nextgen Navigator" /></tooltip>
             </ToggleButton>
             <ToggleButton fx:id="reasonerToggleButton" mnemonicParsing="false" styleClass="reasoner" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
@@ -198,7 +198,7 @@
                <tooltip><Tooltip text="Reasoner" /></tooltip>
             </ToggleButton>
             <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
-            <ToggleButton fx:id="conceptNavigatorToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton fx:id="searchToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
                   <Region prefHeight="200.0" prefWidth="200.0">
                      <styleClass>
@@ -207,10 +207,10 @@
                      </styleClass>
                   </Region>
                </graphic>
-               <tooltip><Tooltip text="NextGen Navigator" /></tooltip>
+               <tooltip><Tooltip text="Search" /></tooltip>
             </ToggleButton>
             <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
-            <ToggleButton fx:id="nextGenSearchToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton fx:id="conceptNavigatorToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
                   <Region prefHeight="200.0" prefWidth="200.0">
                      <styleClass>
@@ -219,7 +219,7 @@
                      </styleClass>
                   </Region>
                </graphic>
-               <tooltip><Tooltip text="NextGen Search" /></tooltip>
+               <tooltip><Tooltip text="Navigator" /></tooltip>
             </ToggleButton>
             <ToggleButton fx:id="nextGenReasonerToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
