@@ -40,6 +40,8 @@ import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 
+import java.util.UUID;
+
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 
@@ -80,6 +82,7 @@ public class SortResultSemanticEntryController  {
 
     private boolean retired;
 
+    private UUID journalTopic;
 
     private ObservableViewNoOverride windowView;
 
@@ -100,7 +103,7 @@ public class SortResultSemanticEntryController  {
             // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if (mouseEvent.getClickCount() == 2) {
-                    eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+                    eventBus.publish(journalTopic, new MakeConceptWindowEvent(this,
                             MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT, entity));
                 }
             }
@@ -172,4 +175,9 @@ public class SortResultSemanticEntryController  {
     public void setWindowView(ObservableViewNoOverride windowView) {
         this.windowView = windowView;
     }
+
+    public void setJournalTopic(UUID journalTopic) {
+        this.journalTopic = journalTopic;
+    }
+
 }

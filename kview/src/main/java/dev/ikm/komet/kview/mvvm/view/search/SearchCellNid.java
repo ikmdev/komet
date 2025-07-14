@@ -14,6 +14,8 @@ import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 
+import java.util.UUID;
+
 import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.getDragAndDropType;
 import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.setUpDraggable;
 
@@ -31,7 +33,7 @@ public class SearchCellNid extends ListCell {
     private ObservableViewNoOverride observableViewNoOverride;
     private ViewProperties viewProperties;
 
-    public SearchCellNid(ViewProperties viewProperties, ObservableViewNoOverride observableViewNoOverride) {
+    public SearchCellNid(ViewProperties viewProperties, ObservableViewNoOverride observableViewNoOverride, UUID journalTopic) {
         JFXNode<Pane, SortResultSemanticEntryController> searchSemanticEntryJFXNode = FXMLMvvmLoader
                 .make(SortResultSemanticEntryController.class.getResource(SORT_SEMANTIC_RESULT_CONCEPT_FXML));
 
@@ -40,6 +42,8 @@ public class SearchCellNid extends ListCell {
 
         content = searchSemanticEntryJFXNode.node();
         controller = searchSemanticEntryJFXNode.controller();
+
+        controller.setJournalTopic(journalTopic);
     }
 
     @Override
