@@ -34,13 +34,19 @@ import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -251,5 +257,38 @@ public class KlFieldHelper {
             defaultNodes.add(control);
         });
         return defaultNodes;
+    }
+
+    /**
+     * Creates and returns a new JavaFX Image from a byte[]
+     *
+     * @param imageByteArray the byte[] containing the Image.
+     * @returna new JavaFX Image.
+     */
+    public static Image newImageFromByteArray(byte[] imageByteArray) {
+        // If the image is blank or empty then return null
+        if(imageByteArray.length == 0){
+            return null;
+        }
+        ByteArrayInputStream bis = new ByteArrayInputStream(imageByteArray);
+        Image image = new Image(bis);
+        return image;
+    }
+
+    /**
+     * Creates and returns a new byte[] from a JavaFX Image
+     *
+     * @param image the JavaFX Image.
+     * @return new byte[].
+     */
+    public static byte[] newByteArrayFromImage(Image image) {
+        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(bufferedImage, "png", bos);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return bos.toByteArray();
     }
 }
