@@ -11,6 +11,7 @@ import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.getDragAndDropType;
 import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.setUpDraggable;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 
 // Unfortunately we cannot have the generic type defined in the ListCell (the item needs to be of type Object).
 // There seems to be a bug in JavaFX where after you change the Cell Factory, the now defunct Cells still hang
@@ -34,16 +36,18 @@ public class SearchCellNid extends ListCell {
     private ViewProperties viewProperties;
 
     public SearchCellNid(ViewProperties viewProperties, ObservableViewNoOverride observableViewNoOverride, UUID journalTopic) {
-        JFXNode<Pane, SortResultSemanticEntryController> searchSemanticEntryJFXNode = FXMLMvvmLoader
-                .make(SortResultSemanticEntryController.class.getResource(SORT_SEMANTIC_RESULT_CONCEPT_FXML));
+        Config config = new Config(SortResultSemanticEntryController.class.getResource(SORT_SEMANTIC_RESULT_CONCEPT_FXML))
+                .updateViewModel("searchEntryViewModel", (viewModel -> viewModel
+                        .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
+                ));
+
+        JFXNode<Pane, SortResultSemanticEntryController> searchSemanticEntryJFXNode = FXMLMvvmLoader.make(config);
 
         this.viewProperties = viewProperties;
         this.observableViewNoOverride = observableViewNoOverride;
 
         content = searchSemanticEntryJFXNode.node();
         controller = searchSemanticEntryJFXNode.controller();
-
-        controller.setJournalTopic(journalTopic);
     }
 
     @Override

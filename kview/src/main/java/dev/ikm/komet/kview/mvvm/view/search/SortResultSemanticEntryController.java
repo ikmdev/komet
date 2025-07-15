@@ -82,8 +82,6 @@ public class SortResultSemanticEntryController  {
 
     private boolean retired;
 
-    private UUID journalTopic;
-
     private ObservableViewNoOverride windowView;
 
     @FXML
@@ -103,6 +101,8 @@ public class SortResultSemanticEntryController  {
             // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if (mouseEvent.getClickCount() == 2) {
+                    UUID journalTopic = searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
+
                     eventBus.publish(journalTopic, new MakeConceptWindowEvent(this,
                             MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT, entity));
                 }
@@ -174,10 +174,6 @@ public class SortResultSemanticEntryController  {
 
     public void setWindowView(ObservableViewNoOverride windowView) {
         this.windowView = windowView;
-    }
-
-    public void setJournalTopic(UUID journalTopic) {
-        this.journalTopic = journalTopic;
     }
 
 }
