@@ -411,7 +411,6 @@ public class PatternDetailsController {
                 patternProperty
         );
         patternViewModel.getStringProperty(FQN_DATE_ADDED_STR).bind(dateStrProp);
-        fqnAddDateLabel.getStyleClass().add("grey8-12pt-bold");
 
         if (patternViewModel.getPropertyValue(MODE).equals(CREATE)) {
             //FIXME this code was designed for edit... if it is an existing pattern it was overwriting the date added with the current date;
