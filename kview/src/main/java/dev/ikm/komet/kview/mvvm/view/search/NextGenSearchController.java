@@ -126,7 +126,7 @@ public class NextGenSearchController extends AbstractBasicController {
     private Button filterPane;
 
     @FXML
-    private AutoCompleteTextField<ConceptFacade> searchField;
+    private AutoCompleteTextField<EntityFacade> searchField;
 
     private PopOver sortOptions;
 
@@ -222,22 +222,22 @@ public class NextGenSearchController extends AbstractBasicController {
     private void setUpTypeAhead() {
         searchField.setCompleter(newSearchText -> {
             TypeAheadSearch typeAheadSearch = TypeAheadSearch.get();
-            List<ConceptFacade> conceptFacades = typeAheadSearch.typeAheadSuggestions(
+            List<EntityFacade> entityFacadeResults = typeAheadSearch.typeAheadSuggestions(
                 getViewProperties().nodeView().calculator().navigationCalculator(), /* nav calculator */
                 searchField.getText(), /* text */
                 10  /* max results returned */
             );
-            return conceptFacades;
+            return entityFacadeResults;
         });
 
         searchField.setConverter(new StringConverter<>() {
             @Override
-            public String toString(ConceptFacade conceptFacade) {
-                return getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(conceptFacade.nid());
+            public String toString(EntityFacade entityFacade) {
+                return getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
             }
 
             @Override
-            public ConceptFacade fromString(String string) {
+            public EntityFacade fromString(String string) {
                 return null;
             }
         });
