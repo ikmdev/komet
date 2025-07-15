@@ -908,8 +908,7 @@ public class JournalController {
     public void loadNextGenSearchPanel() {
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
-                        nextGenSearchViewModel
-                                .setPropertyValue(MODE, CREATE)
+                            nextGenSearchViewModel.setPropertyValue(MODE, CREATE)
                 );
 
         JFXNode<Pane, NextGenSearchController> nextGenSearchJFXNode = FXMLMvvmLoader.make(nextGenSearchConfig);
