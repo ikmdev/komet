@@ -3387,12 +3387,6 @@ Timeline Year line segment (will overlay change circles)
     -fx-graphic-text-gap: 9px;
 }
 
-.list-cell:selected .pattern-instance-hbox .label {
-    -fx-text-fill: blue;
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;
-}
-
 .pattern-instance-hbox .pattern-instance {
     -fx-min-width: 270px;
     -fx-pref-width: 270px;
@@ -3400,7 +3394,9 @@ Timeline Year line segment (will overlay change circles)
 
     -fx-padding: 0 10 0 0;
 
+    -fx-text-fill: #111;
 }
+
 .pattern-instance-hbox .pattern-instance-hover-icon {
      visibility: hidden;
 }
@@ -5517,16 +5513,19 @@ Styling a context menu for kview ui/ux controls
 /******************* Tooltip for Semantic in Pattern Browser ******************/
 
 .semantic-tooltip {
-    -fx-padding: 15 0 10 0;
+    -fx-padding: 10 0 0 0;
+
+    -fx-background-color: rgba(30,30,30,0.9);
 }
 
 .semantic-tooltip .main-container {
-    -fx-max-width: 400px;
+    -fx-max-width: 500px;
     -fx-padding: 0;
 }
 
-.semantic-tooltip .title {
+.semantic-tooltip .main-container > .title {
     -fx-font-family: "Noto Sans";
+    -fx-text-fill: white;
     -fx-font-size: 16px;
 
     -fx-max-height: 300px;
@@ -5535,32 +5534,75 @@ Styling a context menu for kview ui/ux controls
 
 .semantic-tooltip .values-container .grid {
     -fx-padding: 5 15 20 15;
-    -fx-max-width: 450px;
+    -fx-max-width: 550px;
 }
 
 .semantic-tooltip .values-container > .separator .line {
     -fx-border-color: #111 transparent transparent transparent,
-                      transparent;
-}
-
-.semantic-tooltip .values-container .grid .label {
-
-    -fx-font-size: 12px;
-    -fx-padding: 10px 0 13px 0;
+                      rgba(255,255,255,0.04) transparent transparent transparent;
 }
 
 .semantic-tooltip .values-container .grid .field-title.label {
-    -fx-font-family: "Noto Sans Semibold";
-    -fx-text-fill: #999;
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #bbb;
+
+    -fx-font-size: 12px;
+
+    -fx-padding: 10px 0 13px 0;
 }
 
+/* Simple fields (String, Integer, Float, Boolean) */
 .semantic-tooltip .values-container .grid .field-value.label {
     -fx-font-family: "Noto Sans";
     -fx-text-fill: #f0f0f0;
+
+    -fx-font-size: 12px;
+
+    -fx-padding: 10 0 25 0;
 }
 
+/* Image fields */
+.semantic-tooltip .values-container .grid .image-container {
+    -fx-padding: 10 5 15 0;
+}
+
+/* Component fields (Component, CList, CSet) */
+.semantic-tooltip .values-container .grid .component-item > .container {
+    -fx-spacing: 4px;
+    -fx-alignment: center-left;
+}
+
+.semantic-tooltip .values-container .grid .component-item > .container > .label {
+    -fx-font-family: "Noto Sans";
+
+    -fx-font-size: 13px;
+
+    -fx-border-width: 1px;
+    -fx-border-color: transparent;
+
+    -fx-padding: 0 0 0 1px;
+}
+
+/* Component field */
+
+.semantic-tooltip .values-container .grid .component-item.single-component {
+    -fx-padding: 8 0 25px 0;
+}
+
+/* CListC, CSet fields */
+
+.semantic-tooltip .values-container .grid .components-container {
+    -fx-alignment: top-right;
+    -fx-hgap: 5px;
+    -fx-vgap: 5px;
+
+    -fx-padding: 10 0 25 0;
+}
+
+/* Separator */
 .semantic-tooltip .values-container .grid > .separator .line {
-    -fx-border-color: #494949 transparent transparent transparent, transparent;
+    -fx-border-color: rgba(230,230,230, 0.1) transparent transparent transparent,
+                      transparent transparent transparent transparent;
 }
 
 /*******************************************************************************
