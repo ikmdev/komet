@@ -178,11 +178,11 @@ public class SemanticTooltip extends Tooltip {
         imagePreview.setPreserveRatio(true);
         imagePreview.getStyleClass().add("field-value");
 
-        if (image.getWidth() > 200) {
-            imagePreview.setFitWidth(200);
+        if (image.getWidth() > 100) {
+            imagePreview.setFitWidth(100);
         }
-        if (image.getHeight() > 200) {
-            imagePreview.setFitHeight(200);
+        if (image.getHeight() > 100) {
+            imagePreview.setFitHeight(100);
         }
 
         Rectangle rectangle = new Rectangle(imagePreview.getBoundsInLocal().getWidth(), imagePreview.getBoundsInLocal().getHeight());
