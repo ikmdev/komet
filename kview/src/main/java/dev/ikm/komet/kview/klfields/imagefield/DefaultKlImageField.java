@@ -5,14 +5,10 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.KLImageControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyImageControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
-import javafx.embed.swing.SwingFXUtils;
+import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import javafx.scene.Parent;
-import javafx.scene.image.Image;
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
+
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
 
@@ -32,7 +28,7 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
                 }
 
                 isUpdatingImageControl = true;
-                imageControl.setImage(newImageFromByteArray(newByteArray));
+                imageControl.setImage(KlFieldHelper.newImageFromByteArray(newByteArray));
                 isUpdatingImageControl = false;
             });
             imageControl.imageProperty().subscribe(() -> {
@@ -45,7 +41,7 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
                     //set the field value to empty byte array since we cannot save null value to database.
                     field().valueProperty().set(new ByteArrayOutputStream().toByteArray());
                 } else {
-                    byte[] newByteArray = newByteArrayFromImage(imageControl.getImage());
+                    byte[] newByteArray = KlFieldHelper.newByteArrayFromImage(imageControl.getImage());
                     field().valueProperty().set(newByteArray);
                 }
                 isUpdatingObservableField = false;
@@ -58,9 +54,9 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
             readOnlyImageControl.setTitle(getTitle());
             // Sync ObservableField and ReadOnlyImageControl
             byte[] imageBytes = observableImageField.value();
-            readOnlyImageControl.setValue(newImageFromByteArray(imageBytes));
+            readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(imageBytes));
             observableImageField.valueProperty().subscribe(newByteArray -> {
-                readOnlyImageControl.setValue(newImageFromByteArray(newByteArray));
+                readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(newByteArray));
             });
             // Title
             readOnlyImageControl.setTitle(getTitle());
@@ -69,24 +65,4 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
         setKlWidget(node);
     }
 
-    private Image newImageFromByteArray(byte[] imageByteArray) {
-        //if the image is blank or empty i.e then return null image. This will show prompt image.
-        if(imageByteArray.length == 0){
-            return null;
-        }
-        ByteArrayInputStream bis = new ByteArrayInputStream(imageByteArray);
-        Image image = new Image(bis);
-        return image;
-    }
-
-    private byte[] newByteArrayFromImage(Image image) {
-        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try {
-            ImageIO.write(bufferedImage, "png", bos);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return bos.toByteArray();
-    }
 }

@@ -32,7 +32,7 @@ public class ObservableNavigationCoordinateNoOverride extends ObservableNavigati
     }
 
     public ObservableNavigationCoordinateNoOverride(NavigationCoordinate navigationCoordinate) {
-        super(navigationCoordinate, "Navigation coordinate (fix)");
+        super(navigationCoordinate, "Navigation coordinate");
     }
 
     @Override

@@ -8,7 +8,9 @@ import javafx.scene.image.Image;
 
 public class ComponentItem {
 
-    public ComponentItem() { }
+    public ComponentItem(String text, Image icon) {
+        this(text, icon, null);
+    }
 
     public ComponentItem(String text, Image icon, Integer nid) {
         this.text.set(text);
