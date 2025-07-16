@@ -312,7 +312,7 @@ public class PatternDetailsController {
             }
         });
 
-        // This will listen to the pattern descriptions event. Adding an FQN, Adding other name.
+        // This will listen to the pattern descriptions event. Adding a FQN version, Adding other name.
         patternDescriptionEventSubscriber = evt -> {
             DescrName descrName = evt.getDescrName();
             StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);

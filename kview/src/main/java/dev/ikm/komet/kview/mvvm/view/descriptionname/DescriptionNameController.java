@@ -285,10 +285,10 @@ public class DescriptionNameController {
         } else if (PublicId.equals(((Concept) descrNameViewModel.getPropertyValue(NAME_TYPE)).publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
             DescrName descrName = descrNameViewModel.getPropertyValue(PREVIOUS_DESCRIPTION_DATA);
             EvtType eventType = PATTERN_EDIT_OTHER_NAME;
-            if(descrName == null){// In Edit Other name mode the PREVIOUS_DESCRIPTION_DATA value is null, hence we create the new instance
+            if (descrName == null) {// In Edit Other name mode the PREVIOUS_DESCRIPTION_DATA value is null, hence we create the new instance
                 descrName = descrNameViewModel.create();
                 eventType = PATTERN_ADD_OTHER_NAME;
-            }else { //Else we update the previous instance with the new entered values.
+            } else { //Else we update the previous instance with the new entered values.
                 descrNameViewModel.updateData(descrName);
             }
             EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
