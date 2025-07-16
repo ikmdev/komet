@@ -27,6 +27,7 @@ import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
+import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
@@ -61,8 +62,6 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.SVGPath;
@@ -151,16 +150,7 @@ public class DetailsController  {
     private TextField definitionTextField;
 
     @FXML
-    private Label identifierLabel;
-
-    @FXML
-    private HBox identifierHBox;
-
-    @FXML
-    private Button copyToClipboardButton;
-
-    @FXML
-    private Tooltip identifierTooltip;
+    private PublicIDControl identifierControl;
 
     @FXML
     private Label lastUpdatedLabel;
@@ -369,7 +359,6 @@ public class DetailsController  {
                     contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
         });
 
-        Tooltip.install(identifierLabel, identifierTooltip);
         Tooltip.install(lastUpdatedLabel, authorTooltip);
         Tooltip.install(fqnTitleText, conceptNameTooltip);
 
@@ -770,7 +759,7 @@ public class DetailsController  {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
-        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierLabel.getText(), fqnTitleText.getText()));
+        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierControl.publicIdProperty().get(), fqnTitleText.getText()));
         // unsubscribe listeners
         eventBus.unsubscribe(editConceptFullyQualifiedNameEventSubscriber,
                 addFullyQualifiedNameEventSubscriber,
@@ -885,17 +874,6 @@ public class DetailsController  {
 
     }
 
-    /// Copy the Public Identifier string value to the System Clipboard
-    @FXML
-    public void copyToClipboardAction() {
-        var identifier = identifierLabel.textProperty().getValue();
-
-        Clipboard clipboard = Clipboard.getSystemClipboard();
-        ClipboardContent content = new ClipboardContent();
-        content.putString(identifier);
-        clipboard.setContent(content);
-    }
-
     /// Show the public ID
     private void setupDisplayUUID(EntityFacade entityFacade, ViewCalculator viewCalculator) {
         List<String> idList = entityFacade.publicId().asUuidList().stream()
@@ -903,17 +881,8 @@ public class DetailsController  {
                 .collect(Collectors.toList());
         idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
         String idStr = String.join(", ", idList);
-        identifierLabel.setText(idStr);
-        identifierTooltip.setText(idStr);
 
-        copyToClipboardButton.setVisible(false);
-
-        identifierHBox.setOnMouseEntered(_ -> {
-            copyToClipboardButton.setVisible(true);
-        });
-        identifierHBox.setOnMouseExited(_ -> {
-            copyToClipboardButton.setVisible(false);
-        });
+        identifierControl.publicIdProperty().setValue(idStr);
     }
 
     private void updateStampViewModel(String mode, StampEntity stamp) {
@@ -1331,7 +1300,7 @@ public class DetailsController  {
 
     public void clearView() {
         definitionTextField.clear();
-        identifierLabel.setText("");
+        identifierControl.publicIdProperty().set("");
         lastUpdatedLabel.setText("");
         moduleLabel.setText("");
         pathLabel.setText("");

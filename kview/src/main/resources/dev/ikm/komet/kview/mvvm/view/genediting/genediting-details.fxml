@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl?>
+<?import dev.ikm.komet.kview.controls.PublicIDControl?>
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -271,6 +272,8 @@
                                     <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />
                                  </children>
                               </TextFlow>
+                              <PublicIDControl fx:id="identifierControl" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.rowSpan="1"/>
+<!--
                               <HBox fx:id="identifierHBox" alignment="CENTER_LEFT" spacing="4.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.rowSpan="1">
                                  <Label text="IDENTIFIER: ">
                                     <font>
@@ -291,6 +294,7 @@
                                     <tooltip><Tooltip text="Copy to clipboard" /></tooltip>
                                  </Button>
                               </HBox>
+-->
                            </children>
                            <padding>
                               <Insets bottom="8.0" left="12.0" right="8.0" top="8.0" />

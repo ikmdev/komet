@@ -25,6 +25,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
+import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
@@ -49,8 +50,6 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.*;
@@ -180,13 +179,7 @@ public class GenEditingDetailsController {
     private ImageView identiconImageView;
 
     @FXML
-    private Label uuidLabel;
-
-    @FXML
-    private HBox identifierHBox;
-
-    @FXML
-    private Button copyToClipboardButton;
+    private PublicIDControl identifierControl;
 
     @InjectViewModel
     private StampViewModel stampViewModel;
@@ -252,17 +245,6 @@ public class GenEditingDetailsController {
         setupDisplayUUID();
     }
 
-    /// Copy the Public Identifier string value to the System Clipboard
-    @FXML
-    public void copyToClipboardAction() {
-        var identifier = uuidLabel.getText();
-
-        Clipboard clipboard = Clipboard.getSystemClipboard();
-        ClipboardContent content = new ClipboardContent();
-        content.putString(identifier);
-        clipboard.setContent(content);
-    }
-
     private void setupDisplayUUID() {
         EntityFacade semanticComponent = genEditingViewModel.getPropertyValue(SEMANTIC);
         if (semanticComponent == null) {
@@ -275,16 +257,7 @@ public class GenEditingDetailsController {
         idList.addAll(DataModelHelper.getIdsToAppend(genEditingViewModel.getViewProperties().calculator(), semanticComponent.toProxy()));
         String idString = String.join(", ", idList);
 
-        uuidLabel.setText(idString);
-
-        copyToClipboardButton.setVisible(false);
-
-        identifierHBox.setOnMouseEntered(_ -> {
-            copyToClipboardButton.setVisible(true);
-        });
-        identifierHBox.setOnMouseExited(_ -> {
-            copyToClipboardButton.setVisible(false);
-        });
+        identifierControl.publicIdProperty().setValue(idString);
     }
 
     private void setupIdenticon(ObjectProperty<EntityFacade> refComponent) {

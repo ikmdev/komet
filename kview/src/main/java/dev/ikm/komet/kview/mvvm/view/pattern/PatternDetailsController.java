@@ -25,6 +25,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KometIcon;
+import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.*;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
@@ -51,8 +52,6 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
@@ -140,13 +139,7 @@ public class PatternDetailsController {
     private Label patternTitleText;
 
     @FXML
-    private Label identifierLabel;
-
-    @FXML
-    private HBox identifierHBox;
-
-    @FXML
-    private Button copyToClipboardButton;
+    private PublicIDControl identifierControl;
 
     @FXML
     private Text lastUpdatedText;
@@ -259,7 +252,6 @@ public class PatternDetailsController {
     private void initialize() {
         purposeText.setText("");
         meaningText.setText("");
-        identifierLabel.setText("");
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
@@ -487,30 +479,10 @@ public class PatternDetailsController {
         }
     }
 
-    /// Copy the Public Identifier string value to the System Clipboard
-    @FXML
-    public void copyToClipboardAction() {
-        var identifier = identifierLabel.textProperty().getValue();
-
-        Clipboard clipboard = Clipboard.getSystemClipboard();
-        ClipboardContent content = new ClipboardContent();
-        content.putString(identifier);
-        clipboard.setContent(content);
-    }
-
     /// Show the public ID
     private void setupDisplayUUID() {
-        identifierLabel.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
+        identifierControl.publicIdProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
                 String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
-
-        copyToClipboardButton.setVisible(false);
-
-        identifierHBox.setOnMouseEntered(_ -> {
-            copyToClipboardButton.setVisible(true);
-        });
-        identifierHBox.setOnMouseExited(_ -> {
-            copyToClipboardButton.setVisible(false);
-        });
     }
 
     private DragAndDropType getDragAndDropType(EntityFacade entityFacade) {
