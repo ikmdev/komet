@@ -36,7 +36,7 @@
                   </FlowPane>
                   <HBox fx:id="conceptHeaderControlToolBarHbox" prefHeight="100.0" prefWidth="762.0" style="-fx-background-color: -Natural-Grey-Main;">
                      <children>
-                        <MenuButton  fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
+                        <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
                            <styleClass>
                               <String fx:value="icon" />
                               <String fx:value="coordinate" />
@@ -64,13 +64,13 @@
                               </Button>
                               <Button mnemonicParsing="false" styleClass="share-concept" text="Button">
                                  <graphic>
-                                    <Region styleClass="share-icon"/>
+                                    <Region styleClass="share-icon" />
                                  </graphic>
                                  <tooltip><Tooltip text="Share Semantic" /></tooltip>
                               </Button>
                               <Button mnemonicParsing="false" styleClass="favorite-concept" text="Button">
                                  <graphic>
-                                    <Region styleClass="favorite-icon"/>
+                                    <Region styleClass="favorite-icon" />
                                  </graphic>
                                  <tooltip><Tooltip text="Favorite Semantic" /></tooltip>
                               </Button>
@@ -241,6 +241,7 @@
                            <columnConstraints>
                               <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="-Infinity" prefWidth="42.0" />
                               <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="234.0" prefWidth="416.0" />
+                              <ColumnConstraints />
                            </columnConstraints>
                            <rowConstraints>
                               <RowConstraints minHeight="48.0" prefHeight="56.0" />
@@ -260,8 +261,8 @@
                                     <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip" />
                                  </tooltip>
                               </Label>
-                              <Label fx:id="semanticDescriptionLabel" text="Semantic for Test Performed Pattern" GridPane.columnSpan="2" GridPane.rowIndex="1" GridPane.columnIndex="1" />
-                              <TextFlow GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.rowSpan="1">
+                              <Label fx:id="semanticDescriptionLabel" text="Semantic for Test Performed Pattern" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+                              <TextFlow GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.rowSpan="1">
                                  <children>
                                     <Text fx:id="semanticMeaningLabelText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-label" text="Meaning:  " />
                                     <Text fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />
@@ -270,20 +271,25 @@
                                     <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />
                                  </children>
                               </TextFlow>
-                              <HBox alignment="CENTER_LEFT" prefWidth="300" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.rowSpan="1" >
+                              <HBox fx:id="identifierHBox" alignment="CENTER_LEFT" prefWidth="300" spacing="4.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.rowSpan="1">
                                  <Label text="IDENTIFIER: ">
                                     <font>
                                        <Font name="Noto Sans Bold" size="10.0" />
                                     </font>
                                  </Label>
-                                 <TextField fx:id="uuidTextFieldLabel" editable="false" styleClass="copyable-label" HBox.hgrow="ALWAYS">
+                                 <Label fx:id="uuidLabel" styleClass="copyable-label">
                                     <font>
                                        <Font name="Noto Sans" size="10.0" />
                                     </font>
-                                    <tooltip>
-                                       <Tooltip fx:id="identifierTooltip" />
-                                    </tooltip>
-                                 </TextField>
+                                 </Label>
+                                 <Button fx:id="copyToClipboardButton" mnemonicParsing="false" onAction="#copyToClipboardAction"  styleClass="add-pencil-button" prefHeight="20.0" prefWidth="20.0">
+                                    <graphic>
+                                       <SVGPath fillRule="EVEN_ODD" styleClass="copy-to-clipboard">
+                                          <content><SVGConstants fx:constant="DUPLICATE_SVG_PATH" /></content>
+                                       </SVGPath>
+                                    </graphic>
+                                    <tooltip><Tooltip text="Copy to clipboard" /></tooltip>
+                                 </Button>
                               </HBox>
                            </children>
                            <padding>

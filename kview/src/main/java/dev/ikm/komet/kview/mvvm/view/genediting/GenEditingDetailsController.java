@@ -49,6 +49,8 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.*;
@@ -178,10 +180,13 @@ public class GenEditingDetailsController {
     private ImageView identiconImageView;
 
     @FXML
-    private TextField uuidTextFieldLabel;
+    private Label uuidLabel;
 
     @FXML
-    private Tooltip identifierTooltip;
+    private HBox identifierHBox;
+
+    @FXML
+    private Button copyToClipboardButton;
 
     @InjectViewModel
     private StampViewModel stampViewModel;
@@ -247,6 +252,17 @@ public class GenEditingDetailsController {
         setupDisplayUUID();
     }
 
+    /// Copy the Public Identifier string value to the System Clipboard
+    @FXML
+    public void copyToClipboardAction() {
+        var identifier = uuidLabel.getText();
+
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent content = new ClipboardContent();
+        content.putString(identifier);
+        clipboard.setContent(content);
+    }
+
     private void setupDisplayUUID() {
         EntityFacade semanticComponent = genEditingViewModel.getPropertyValue(SEMANTIC);
         if (semanticComponent == null) {
@@ -259,8 +275,16 @@ public class GenEditingDetailsController {
         idList.addAll(DataModelHelper.getIdsToAppend(genEditingViewModel.getViewProperties().calculator(), semanticComponent.toProxy()));
         String idString = String.join(", ", idList);
 
-        uuidTextFieldLabel.setText(idString);
-        identifierTooltip.setText(idString);
+        uuidLabel.setText(idString);
+
+        identifierHBox.getChildren().remove(copyToClipboardButton);
+
+        identifierHBox.setOnMouseEntered(_ -> {
+            identifierHBox.getChildren().add(copyToClipboardButton);
+        });
+        identifierHBox.setOnMouseExited(_ -> {
+            identifierHBox.getChildren().remove(copyToClipboardButton);
+        });
     }
 
     private void setupIdenticon(ObjectProperty<EntityFacade> refComponent) {
