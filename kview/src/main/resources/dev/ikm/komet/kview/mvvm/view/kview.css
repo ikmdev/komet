@@ -2469,6 +2469,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
     -fx-font-style: normal;
+    -fx-text-alignment: bottom;
 }
 
 .text-noto-sans-normal-grey-eight {
@@ -2589,12 +2590,13 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-weight: bold;
 }
 
-.grey8-12pt {
+.grey8-12pt-bold {
     -fx-fill: -Grey-8;
     -fx-text-fill: -Grey-8;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
     -fx-font-style: normal;
+    -fx-font-weight: bold;
 }
 
 .grey12-18pt-normal {
@@ -3356,15 +3358,6 @@ Timeline Year line segment (will overlay change circles)
 
 .add-scrollbar-patterns{
     -fx-background-color: -Grey-10;
-}
-
-.fields-title {
-    -fx-text-alignment: center;
-    -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
-    -fx-font-style: normal;
-    -fx-fill: -Grey-8;
-    -fx-font-weight: bold;
 }
 /********************************************************************************
  * Pattern Browser                                                              *
