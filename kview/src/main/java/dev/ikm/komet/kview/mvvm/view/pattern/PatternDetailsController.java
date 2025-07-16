@@ -35,10 +35,8 @@ import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
@@ -53,6 +51,8 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
@@ -71,7 +71,6 @@ import java.net.URL;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -141,7 +140,13 @@ public class PatternDetailsController {
     private Label patternTitleText;
 
     @FXML
-    private Text identifierText;
+    private Label identifierLabel;
+
+    @FXML
+    private HBox identifierHBox;
+
+    @FXML
+    private Button copyToClipboardButton;
 
     @FXML
     private Text lastUpdatedText;
@@ -254,7 +259,7 @@ public class PatternDetailsController {
     private void initialize() {
         purposeText.setText("");
         meaningText.setText("");
-        identifierText.setText("");
+        identifierLabel.setText("");
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
@@ -369,12 +374,7 @@ public class PatternDetailsController {
             identiconImageView.setImage(identicon);
         }
 
-        // show the public id
-        //identifierText.setText(patternViewModel.getPatternIdentifierText());
-        identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
-                String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
-        identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
-                String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
+        setupDisplayUUID();
 
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
@@ -485,6 +485,32 @@ public class PatternDetailsController {
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
         }
+    }
+
+    /// Copy the Public Identifier string value to the System Clipboard
+    @FXML
+    public void copyToClipboardAction() {
+        var identifier = identifierLabel.textProperty().getValue();
+
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent content = new ClipboardContent();
+        content.putString(identifier);
+        clipboard.setContent(content);
+    }
+
+    /// Show the public ID
+    private void setupDisplayUUID() {
+        identifierLabel.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
+                String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
+
+        copyToClipboardButton.setVisible(false);
+
+        identifierHBox.setOnMouseEntered(_ -> {
+            copyToClipboardButton.setVisible(true);
+        });
+        identifierHBox.setOnMouseExited(_ -> {
+            copyToClipboardButton.setVisible(false);
+        });
     }
 
     private DragAndDropType getDragAndDropType(EntityFacade entityFacade) {

@@ -61,6 +61,8 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.SVGPath;
@@ -149,7 +151,13 @@ public class DetailsController  {
     private TextField definitionTextField;
 
     @FXML
-    private TextField identifierText;
+    private Label identifierLabel;
+
+    @FXML
+    private HBox identifierHBox;
+
+    @FXML
+    private Button copyToClipboardButton;
 
     @FXML
     private Tooltip identifierTooltip;
@@ -361,7 +369,7 @@ public class DetailsController  {
                     contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
         });
 
-        Tooltip.install(identifierText, identifierTooltip);
+        Tooltip.install(identifierLabel, identifierTooltip);
         Tooltip.install(lastUpdatedLabel, authorTooltip);
         Tooltip.install(fqnTitleText, conceptNameTooltip);
 
@@ -762,7 +770,7 @@ public class DetailsController  {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
-        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierText.getText(), fqnTitleText.getText()));
+        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierLabel.getText(), fqnTitleText.getText()));
         // unsubscribe listeners
         eventBus.unsubscribe(editConceptFullyQualifiedNameEventSubscriber,
                 addFullyQualifiedNameEventSubscriber,
@@ -844,14 +852,7 @@ public class DetailsController  {
         // Definition description text
         definitionTextField.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
 
-        // Public ID (UUID)
-        List<String> idList = entityFacade.publicId().asUuidList().stream()
-                .map(UUID::toString)
-                .collect(Collectors.toList());
-        idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
-        String idStr = String.join(", ", idList);
-        identifierText.setText(idStr);
-        identifierTooltip.setText(idStr);
+        setupDisplayUUID(entityFacade, viewCalculator);
 
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
@@ -882,6 +883,37 @@ public class DetailsController  {
         // Author tooltip
         authorTooltip.setText(stamp.author().description());
 
+    }
+
+    /// Copy the Public Identifier string value to the System Clipboard
+    @FXML
+    public void copyToClipboardAction() {
+        var identifier = identifierLabel.textProperty().getValue();
+
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent content = new ClipboardContent();
+        content.putString(identifier);
+        clipboard.setContent(content);
+    }
+
+    /// Show the public ID
+    private void setupDisplayUUID(EntityFacade entityFacade, ViewCalculator viewCalculator) {
+        List<String> idList = entityFacade.publicId().asUuidList().stream()
+                .map(UUID::toString)
+                .collect(Collectors.toList());
+        idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
+        String idStr = String.join(", ", idList);
+        identifierLabel.setText(idStr);
+        identifierTooltip.setText(idStr);
+
+        copyToClipboardButton.setVisible(false);
+
+        identifierHBox.setOnMouseEntered(_ -> {
+            copyToClipboardButton.setVisible(true);
+        });
+        identifierHBox.setOnMouseExited(_ -> {
+            copyToClipboardButton.setVisible(false);
+        });
     }
 
     private void updateStampViewModel(String mode, StampEntity stamp) {
@@ -1299,7 +1331,7 @@ public class DetailsController  {
 
     public void clearView() {
         definitionTextField.clear();
-        identifierText.clear();
+        identifierLabel.setText("");
         lastUpdatedLabel.setText("");
         moduleLabel.setText("");
         pathLabel.setText("");

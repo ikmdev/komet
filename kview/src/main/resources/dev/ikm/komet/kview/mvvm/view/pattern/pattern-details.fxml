@@ -542,19 +542,26 @@
                                     </TextField>
                                  </children>
                               </HBox>
-                              <HBox GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
+                              <HBox fx:id="identifierHBox" alignment="CENTER_LEFT" spacing="4.0" GridPane.columnSpan="2" GridPane.rowIndex="3">
                                  <children>
-                                    <Label alignment="BOTTOM_CENTER" minWidth="61.0" prefHeight="25.0" prefWidth="61.0" styleClass="pattern-field" text="IDENTIFIER:">
+                                    <Label styleClass="pattern-field" text="IDENTIFIER:">
                                        <font>
                                           <Font name="Open Sans" size="10.0" />
                                        </font>
                                     </Label>
-                                    <Text fx:id="identifierText" styleClass="text-noto-sans-twelve" text="203488222456" textAlignment="RIGHT">
+                                    <Label fx:id="identifierLabel" styleClass="text-noto-sans-twelve" text="203488222456">
                                        <font>
                                           <Font name="Open Sans Regular" size="10.0" />
                                        </font>
-                                    </Text>
-                                    <Label text="C" />
+                                    </Label>
+                                    <Button fx:id="copyToClipboardButton" mnemonicParsing="false" onAction="#copyToClipboardAction" prefHeight="20.0" prefWidth="20.0" styleClass="add-pencil-button">
+                                       <graphic>
+                                          <SVGPath fillRule="EVEN_ODD" styleClass="copy-to-clipboard">
+                                             <content><SVGConstants fx:constant="COPY_TO_CLIPBOARD_SVG_PATH" /></content>
+                                          </SVGPath>
+                                       </graphic>
+                                       <tooltip><Tooltip text="Copy to clipboard" /></tooltip>
+                                    </Button>
                                  </children>
                               </HBox>
                               <Label fx:id="patternTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0" styleClass="pattern-title" text="New Pattern" textFill="#212430" wrapText="true" GridPane.columnIndex="1">

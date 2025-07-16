@@ -271,7 +271,7 @@
                                     <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />
                                  </children>
                               </TextFlow>
-                              <HBox fx:id="identifierHBox" alignment="CENTER_LEFT" prefWidth="300" spacing="4.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.rowSpan="1">
+                              <HBox fx:id="identifierHBox" alignment="CENTER_LEFT" spacing="4.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.rowSpan="1">
                                  <Label text="IDENTIFIER: ">
                                     <font>
                                        <Font name="Noto Sans Bold" size="10.0" />
@@ -282,10 +282,10 @@
                                        <Font name="Noto Sans" size="10.0" />
                                     </font>
                                  </Label>
-                                 <Button fx:id="copyToClipboardButton" mnemonicParsing="false" onAction="#copyToClipboardAction"  styleClass="add-pencil-button" prefHeight="20.0" prefWidth="20.0">
+                                 <Button fx:id="copyToClipboardButton" mnemonicParsing="false" onAction="#copyToClipboardAction" prefHeight="20.0" prefWidth="20.0" styleClass="add-pencil-button">
                                     <graphic>
                                        <SVGPath fillRule="EVEN_ODD" styleClass="copy-to-clipboard">
-                                          <content><SVGConstants fx:constant="DUPLICATE_SVG_PATH" /></content>
+                                          <content><SVGConstants fx:constant="COPY_TO_CLIPBOARD_SVG_PATH" /></content>
                                        </SVGPath>
                                     </graphic>
                                     <tooltip><Tooltip text="Copy to clipboard" /></tooltip>

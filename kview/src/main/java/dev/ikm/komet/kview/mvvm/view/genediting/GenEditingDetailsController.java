@@ -277,13 +277,13 @@ public class GenEditingDetailsController {
 
         uuidLabel.setText(idString);
 
-        identifierHBox.getChildren().remove(copyToClipboardButton);
+        copyToClipboardButton.setVisible(false);
 
         identifierHBox.setOnMouseEntered(_ -> {
-            identifierHBox.getChildren().add(copyToClipboardButton);
+            copyToClipboardButton.setVisible(true);
         });
         identifierHBox.setOnMouseExited(_ -> {
-            identifierHBox.getChildren().remove(copyToClipboardButton);
+            copyToClipboardButton.setVisible(false);
         });
     }
 
