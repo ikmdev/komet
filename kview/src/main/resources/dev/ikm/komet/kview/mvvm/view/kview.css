@@ -1273,6 +1273,8 @@ selected(active) - dark black
 }
 .copy-to-clipboard {
     -fx-fill: -Secondary-05;
+    -fx-scale-x: 0.7;
+    -fx-scale-y: 0.7;
 }
 .share-concept {
     -fx-fill: -Grey-2;

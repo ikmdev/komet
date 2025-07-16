@@ -5,21 +5,21 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
-public class PublicIDControl  extends Control {
+/// Control for the Public ID UUID.
+/// This control only has a single property, which is rendered in the default skin PublicIDSkin.
+public class PublicIDControl extends Control {
 
+    /// The public ID (UUID)
     private SimpleStringProperty publicId = new SimpleStringProperty(this, "publicId");
 
     public SimpleStringProperty publicIdProperty() {
         return publicId;
     }
 
-    private PublicIDSkin publicIdSkin;
-
     /** {@inheritDoc} */
     @Override
     protected Skin<?> createDefaultSkin() {
-        publicIdSkin = new PublicIDSkin(this);
-        return publicIdSkin;
+        return new PublicIDSkin(this);
     }
 
 }
