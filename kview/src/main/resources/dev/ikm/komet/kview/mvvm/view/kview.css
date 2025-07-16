@@ -2952,9 +2952,6 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .next-gen-search-main-container .descriptions-list-view .list-cell .cell-container {
-    -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
-
     -fx-background-color: white;
     -fx-background-radius: 3px;
     -fx-border-radius: 3px;
@@ -2973,8 +2970,22 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: #f6f6f6;
 }
 
-.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container .label {
-    -fx-graphic-text-gap: 8px;
+.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container .text-container {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13px;
+
+    -fx-padding: 1 0 0 6px;
+}
+
+.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container .text-container .word-container {
+    -fx-padding: 2px;
+}
+
+.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container .text-container .word-container.highlight {
+    -fx-background-color: rgba(205, 205, 205, 0.4);
+
+    -fx-background-insets: 0 1 0 1;
+    -fx-background-radius: 4;
 }
 
 .search-button,
