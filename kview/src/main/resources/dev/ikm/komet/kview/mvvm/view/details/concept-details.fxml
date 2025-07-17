@@ -162,31 +162,6 @@
                            </TextField>
                         </HBox>
                         <PublicIDControl fx:id="identifierControl" GridPane.columnSpan="2" GridPane.rowIndex="2"/>
-<!--
-                        <HBox fx:id="identifierHBox" alignment="CENTER_LEFT" prefHeight="20.0" GridPane.columnSpan="2" GridPane.rowIndex="2">
-                           <Text style="-fx-text-fill: -Grey-10;" text="IDENTIFIER: ">
-                              <font>
-                                 <Font name="Noto Sans" size="10.0" />
-                              </font>
-                           </Text>
-                           <Label fx:id="identifierLabel" minHeight="16.0" prefHeight="16.0" style="-fx-text-fill: -Grey-10;" styleClass="copyable-label" HBox.hgrow="ALWAYS">
-                              <font>
-                                 <Font name="Noto Sans" size="10.0" />
-                              </font>
-                              <tooltip>
-                                 <Tooltip fx:id="identifierTooltip" />
-                              </tooltip>
-                           </Label>
-                           <Button fx:id="copyToClipboardButton" mnemonicParsing="false" onAction="#copyToClipboardAction" prefHeight="20.0" prefWidth="20.0" styleClass="add-pencil-button">
-                              <graphic>
-                                 <SVGPath fillRule="EVEN_ODD" styleClass="copy-to-clipboard">
-                                    <content><SVGConstants fx:constant="COPY_TO_CLIPBOARD_SVG_PATH" /></content>
-                                 </SVGPath>
-                              </graphic>
-                              <tooltip><Tooltip text="Copy to clipboard" /></tooltip>
-                           </Button>
-                        </HBox>
--->
                         <AnchorPane prefWidth="208.0" GridPane.columnIndex="2" GridPane.rowSpan="3">
                            <VBox prefWidth="208.0" spacing="2.0">
                               <HBox>

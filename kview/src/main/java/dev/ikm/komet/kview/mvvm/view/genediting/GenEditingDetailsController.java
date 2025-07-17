@@ -257,7 +257,7 @@ public class GenEditingDetailsController {
         idList.addAll(DataModelHelper.getIdsToAppend(genEditingViewModel.getViewProperties().calculator(), semanticComponent.toProxy()));
         String idString = String.join(", ", idList);
 
-        identifierControl.publicIdProperty().setValue(idString);
+        identifierControl.setPublicId(idString);
     }
 
     private void setupIdenticon(ObjectProperty<EntityFacade> refComponent) {

@@ -16,6 +16,14 @@ public class PublicIDControl extends Control {
         return publicId;
     }
 
+    public String getPublicId() {
+        return publicIdProperty().get();
+    }
+
+    public void setPublicId(String publicId) {
+        publicIdProperty().set(publicId);
+    }
+
     /** {@inheritDoc} */
     @Override
     protected Skin<?> createDefaultSkin() {

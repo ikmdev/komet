@@ -273,28 +273,6 @@
                                  </children>
                               </TextFlow>
                               <PublicIDControl fx:id="identifierControl" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.rowSpan="1"/>
-<!--
-                              <HBox fx:id="identifierHBox" alignment="CENTER_LEFT" spacing="4.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.rowSpan="1">
-                                 <Label text="IDENTIFIER: ">
-                                    <font>
-                                       <Font name="Noto Sans Bold" size="10.0" />
-                                    </font>
-                                 </Label>
-                                 <Label fx:id="uuidLabel" styleClass="copyable-label">
-                                    <font>
-                                       <Font name="Noto Sans" size="10.0" />
-                                    </font>
-                                 </Label>
-                                 <Button fx:id="copyToClipboardButton" mnemonicParsing="false" onAction="#copyToClipboardAction" prefHeight="20.0" prefWidth="20.0" styleClass="add-pencil-button">
-                                    <graphic>
-                                       <SVGPath fillRule="EVEN_ODD" styleClass="copy-to-clipboard">
-                                          <content><SVGConstants fx:constant="COPY_TO_CLIPBOARD_SVG_PATH" /></content>
-                                       </SVGPath>
-                                    </graphic>
-                                    <tooltip><Tooltip text="Copy to clipboard" /></tooltip>
-                                 </Button>
-                              </HBox>
--->
                            </children>
                            <padding>
                               <Insets bottom="8.0" left="12.0" right="8.0" top="8.0" />

@@ -759,7 +759,7 @@ public class DetailsController  {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
-        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierControl.publicIdProperty().get(), fqnTitleText.getText()));
+        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierControl.getPublicId(), fqnTitleText.getText()));
         // unsubscribe listeners
         eventBus.unsubscribe(editConceptFullyQualifiedNameEventSubscriber,
                 addFullyQualifiedNameEventSubscriber,
@@ -882,7 +882,7 @@ public class DetailsController  {
         idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
         String idStr = String.join(", ", idList);
 
-        identifierControl.publicIdProperty().setValue(idStr);
+        identifierControl.setPublicId(idStr);
     }
 
     private void updateStampViewModel(String mode, StampEntity stamp) {
@@ -1300,7 +1300,7 @@ public class DetailsController  {
 
     public void clearView() {
         definitionTextField.clear();
-        identifierControl.publicIdProperty().set("");
+        identifierControl.setPublicId("");
         lastUpdatedLabel.setText("");
         moduleLabel.setText("");
         pathLabel.setText("");

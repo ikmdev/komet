@@ -26,30 +26,30 @@ import javafx.util.Subscription;
 ///
 /// The publicIdLable and copyToClipboardButton are contained within an HBox, where the HBox is configured
 /// to handle mouse enter and exit events which is used to show and hide the copyToClipboardButton.
-public class PublicIDSkin implements Skin<PublicIDControl>  {
+public class PublicIDSkin implements Skin<PublicIDControl> {
 
     /// The spacing between children in the HBoxes used in this Skin
     private static final double HBOX_SPACING = 4.0;
 
     /// The root Node for the Skin
-    private HBox rootHBox = new HBox();
+    private final HBox rootHBox = new HBox();
 
     /// The title label that precedes the public ID UUID label
-    private Label titleLabel = new Label("IDENTIFIER:");
+    private final Label titleLabel = new Label("IDENTIFIER:");
 
     /// The HBox that contians the public ID label and copy to clipboard button
-    private HBox publicIdHBox = new HBox();
+    private final HBox publicIdHBox = new HBox();
 
     /// The Label that displays the public ID UUID value
-    private Label publicIdLabel = new Label("");
+    private final Label publicIdLabel = new Label("");
 
     /// The tooltip for the publicIdLabel, which is needed because the text in the label
     /// could exceed the Label width
-    private Tooltip publicIdTooltip = new Tooltip();
+    private final Tooltip publicIdTooltip = new Tooltip();
 
     /// The copy to clipboard button, which is shown and hidden based on the mouse entering
     /// and exiting the publicIdHBox
-    private Button copyToClipboardButton = new Button();
+    private final Button copyToClipboardButton = new Button();
 
     /// The control that this Skin renders
     private PublicIDControl control;
