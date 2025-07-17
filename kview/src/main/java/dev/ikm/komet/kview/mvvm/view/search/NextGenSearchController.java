@@ -28,6 +28,7 @@ import dev.ikm.komet.kview.events.SearchSortOptionEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -36,12 +37,7 @@ import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -59,10 +55,10 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
@@ -73,26 +69,11 @@ import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.OptionalInt;
-import java.util.TreeMap;
-import java.util.UUID;
+import java.util.*;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
-import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT;
-import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT_ALPHA;
-import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC;
-import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC_ALPHA;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.*;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.*;
 
 
 public class NextGenSearchController extends AbstractBasicController {
@@ -126,7 +107,7 @@ public class NextGenSearchController extends AbstractBasicController {
     private Button filterPane;
 
     @FXML
-    private AutoCompleteTextField<ConceptFacade> searchField;
+    private AutoCompleteTextField<EntityFacade> searchField;
 
     private PopOver sortOptions;
 
@@ -139,6 +120,9 @@ public class NextGenSearchController extends AbstractBasicController {
     private FilterOptionsPopup filterOptionsPopup;
 
     private SearchResultType currentSearchResultType;
+
+    @InjectViewModel
+    private NextGenSearchViewModel nextGenSearchViewModel;
 
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
@@ -213,7 +197,7 @@ public class NextGenSearchController extends AbstractBasicController {
                         new SearchCellDescriptionSemantic(getViewProperties(), getJournalTopic(), windowView));
             case NID ->
                 searchResultsListView.setCellFactory((Callback<ListView<Integer>, ListCell<Integer>>) param ->
-                        new SearchCellNid(getViewProperties(), windowView));
+                        new SearchCellNid(getViewProperties(), windowView, journalTopic));
         }
 
         currentSearchResultType = newSearchResultType;
@@ -222,22 +206,22 @@ public class NextGenSearchController extends AbstractBasicController {
     private void setUpTypeAhead() {
         searchField.setCompleter(newSearchText -> {
             TypeAheadSearch typeAheadSearch = TypeAheadSearch.get();
-            List<ConceptFacade> conceptFacades = typeAheadSearch.typeAheadSuggestions(
+            List<EntityFacade> entityFacadeResults = typeAheadSearch.typeAheadSuggestions(
                 getViewProperties().nodeView().calculator().navigationCalculator(), /* nav calculator */
                 searchField.getText(), /* text */
                 10  /* max results returned */
             );
-            return conceptFacades;
+            return entityFacadeResults;
         });
 
         searchField.setConverter(new StringConverter<>() {
             @Override
-            public String toString(ConceptFacade conceptFacade) {
-                return getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(conceptFacade.nid());
+            public String toString(EntityFacade entityFacade) {
+                return getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
             }
 
             @Override
-            public ConceptFacade fromString(String string) {
+            public EntityFacade fromString(String string) {
                 return null;
             }
         });

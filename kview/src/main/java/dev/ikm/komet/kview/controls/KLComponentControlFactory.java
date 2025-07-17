@@ -7,7 +7,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
-import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -100,15 +100,15 @@ public class KLComponentControlFactory {
     private static Function<String, List<EntityProxy>> createGenericTypeAheadFunction(NavigationCalculator navigationCalculator) {
         return newSearchText -> {
             TypeAheadSearch typeAheadSearch = TypeAheadSearch.get();
-            List<EntityProxy> conceptFacadeToEntityProxys = new ArrayList<>();
+            List<EntityProxy> entityProxyResults = new ArrayList<>();
 
-            List<ConceptFacade> typeaheadItems = typeAheadSearch.typeAheadSuggestions(
+            List<EntityFacade> typeAheadResults = typeAheadSearch.typeAheadSuggestions(
                     navigationCalculator, /* nav calculator */
                     newSearchText, /* text */
                     10  /* max results returned */
             );
-            typeaheadItems.forEach(conceptFacade -> conceptFacadeToEntityProxys.add(conceptFacade.toProxy()));
-            return conceptFacadeToEntityProxys;
+            typeAheadResults.forEach(entity -> entityProxyResults.add(entity.toProxy()));
+            return entityProxyResults;
         };
     }
 

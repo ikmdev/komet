@@ -129,6 +129,7 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
@@ -208,7 +209,10 @@ public class PatternDetailsController {
     private Label patternTitleText;
 
     @FXML
-    private Text identifierText;
+    private TextField identifierText;
+
+    @FXML
+    private TextFlow latestFqnTextFlow;
 
     @FXML
     private Text lastUpdatedText;
@@ -430,16 +434,17 @@ public class PatternDetailsController {
         statusText.textProperty().bind(getStampViewModel().getProperty(STATUS).map(s -> s.toString()));
 
         // set the identicon
-        EntityFacade patternFacade = patternViewModel.getPropertyValue(PATTERN);
-        if (patternFacade != null) {
-            Image identicon = Identicon.generateIdenticonImage(patternFacade.publicId());
-            identiconImageView.setImage(identicon);
-        }
+        ObjectProperty<EntityFacade> patternProperty = patternViewModel.getProperty(PATTERN);
+
+        // dynamically update the identicon image.
+        patternProperty.subscribe(entityFacade -> {
+            if (entityFacade != null) {
+                Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
+                identiconImageView.setImage(identicon);
+            }
+        });
 
         // show the public id
-        //identifierText.setText(patternViewModel.getPatternIdentifierText());
-        identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
-                String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
         identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
                 String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
 
@@ -460,6 +465,24 @@ public class PatternDetailsController {
         // Generate description semantic and show
         fqnDescriptionSemanticText.textProperty().bind(fqnNameProp.map(descrName -> " (%s)".formatted(generateDescriptionSemantics(descrName))).orElse(""));
 
+        //Fetch the FQN_DATE_ADDED_STR from the PATTERN Entity
+        StringBinding dateStrProp = Bindings.createStringBinding(
+                () -> {
+                    if (patternProperty.get() != null) {
+                        return LocalDate.ofInstant(
+                                getViewProperties().calculator()
+                                        .getFullyQualifiedDescription(patternProperty.get().nid())
+                                        .get().instant(),
+                                ZoneId.systemDefault()
+                        ).format(DateTimeFormatter.ofPattern("MMM dd, yyyy"));
+                    } else {
+                        return "";
+                    }
+                },
+                patternProperty
+        );
+        patternViewModel.getStringProperty(FQN_DATE_ADDED_STR).bind(dateStrProp);
+
         if (patternViewModel.getPropertyValue(MODE).equals(CREATE)) {
             //FIXME this code was designed for edit... if it is an existing pattern it was overwriting the date added with the current date;
             // we might need to change it to a change listener...
@@ -467,25 +490,15 @@ public class PatternDetailsController {
             // display current date else blank.
             fqnAddDateLabel.textProperty().bind(fqnNameProp.map((fqnName) -> LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"))).orElse(""));
         } else {
-            fqnAddDateLabel.textProperty().bind(patternViewModel.getProperty(FQN_DATE_ADDED_STR));
+            fqnAddDateLabel.textProperty().bind(patternViewModel.getStringProperty(FQN_DATE_ADDED_STR));
         }
 
         // hide menu item if FQN is added.
         addFqnMenuItem.visibleProperty().bind(fqnNameProp.isNull());
-        //
-        latestFqnText.setOnMouseClicked(mouseEvent -> {
+        latestFqnTextFlow.setOnMouseClicked(mouseEvent -> {
             EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(mouseEvent.getSource(), SHOW_EDIT_FQN, fqnNameProp.getValue()));
             EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(mouseEvent.getSource(), OPEN_PANEL));
         });
-
-        Label fqnAddDateLabel = new Label();
-        ObjectProperty<DescrName> objectProperty = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
-        StringBinding dateStrProp = Bindings
-                .when(objectProperty.isNotNull())
-                .then(LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")))
-                .otherwise("");
-        fqnAddDateLabel.textProperty().bind(dateStrProp);
-        fqnAddDateLabel.getStyleClass().add("grey8-12pt");
 
         //Listen to the changes in the fieldsTilePane and update the field numbers.
         ObservableList<Node> fieldsTilePaneList = fieldsTilePane.getChildren();
@@ -697,7 +710,7 @@ public class PatternDetailsController {
         String nameLabel = String.valueOf(obj);
         Text otherNameLabel = new Text(nameLabel);
         otherNameLabel.getStyleClass().add("text-noto-sans-bold-grey-twelve");
-        otherNameLabel.setOnMouseClicked(mouseEvent -> {
+        row1.setOnMouseClicked(mouseEvent -> {
             EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(mouseEvent.getSource(), SHOW_EDIT_OTHER_NAME, otherName));
             EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(mouseEvent.getSource(), OPEN_PANEL));
         });
@@ -730,9 +743,9 @@ public class PatternDetailsController {
 
         TextFlow row3 = new TextFlow();
         Text dateAddedLabel = new Text("Date Added: ");
-        dateAddedLabel.getStyleClass().add("grey8-12pt");
+        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
         Text dateLabel = new Text(dateAddedStr);
-        dateLabel.getStyleClass().add("grey8-12pt");
+        dateLabel.getStyleClass().add("grey8-12pt-bold");
 
         Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
         Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
@@ -770,7 +783,7 @@ public class PatternDetailsController {
             Node labelNode = node.lookup(".pattern-field");
             if (labelNode instanceof Label label) {
                 label.setText("FIELD " + (i+1) + ":");
-                label.getStyleClass().add("grey8-12pt");
+                label.getStyleClass().add("grey8-12pt-bold");
             }
         }
     }
@@ -779,13 +792,13 @@ public class PatternDetailsController {
         VBox fieldVBoxContainer = new VBox();
         fieldVBoxContainer.prefWidth(330);
         Label fieldLabel = new Label("FIELD " + fieldNum + ":");
-        fieldLabel.getStyleClass().add("pattern-field");
+        fieldLabel.getStyleClass().add("grey8-12pt-bold");
         Text fieldText = new Text(patternField.displayName());
-        fieldText.getStyleClass().add("grey12-12pt-bold");
         HBox outerHBox = new HBox();
         outerHBox.setSpacing(8);
         HBox innerHBox = new HBox();
         Label dateAddedLabel = new Label("Date Added: ");
+        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
         String dateAddedStr = "";
         if (patternField.stamp() == null) {
             dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
@@ -799,12 +812,11 @@ public class PatternDetailsController {
             }
         }
         Label dateLabel = new Label(dateAddedStr);
-        dateLabel.getStyleClass().add("pattern-title");
         double dateWidth = 90;
         dateLabel.prefWidth(dateWidth);
         dateLabel.maxWidth(dateWidth);
-        dateAddedLabel.getStyleClass().add("grey8-12pt");
-        dateLabel.getStyleClass().add("grey8-12pt");
+        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
+        dateLabel.getStyleClass().add("grey8-12pt-bold");
         innerHBox.getChildren().addAll(dateAddedLabel, dateLabel);
         Region commentIconRegion = new Region();
         commentIconRegion.getStyleClass().add("comment-icon");
@@ -1125,5 +1137,12 @@ public class PatternDetailsController {
         }
 
         updateDraggableNodesForPropertiesPanel(isOpen);
+    }
+
+    @FXML
+    private void invokeFQNEditor(ActionEvent actionEvent) {
+        ObjectProperty<DescrName> fqnNameProp = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FQN, fqnNameProp.getValue()));
+        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
     }
 }

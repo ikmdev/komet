@@ -2,17 +2,44 @@
 
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
-<?import javafx.scene.text.*?>
-<?import java.lang.*?>
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="Infinity" maxWidth="Infinity" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Ellipse?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="Infinity" maxWidth="Infinity" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
          <top>
@@ -36,7 +63,7 @@
                   </FlowPane>
                   <HBox fx:id="conceptHeaderControlToolBarHbox" prefHeight="100.0" prefWidth="762.0" style="-fx-background-color: -Natural-Grey-Main;">
                      <children>
-                        <MenuButton  fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
+                        <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
                            <styleClass>
                               <String fx:value="icon" />
                               <String fx:value="coordinate" />
@@ -64,13 +91,13 @@
                               </Button>
                               <Button mnemonicParsing="false" styleClass="share-concept" text="Button">
                                  <graphic>
-                                    <Region styleClass="share-icon"/>
+                                    <Region styleClass="share-icon" />
                                  </graphic>
                                  <tooltip><Tooltip text="Share Pattern" /></tooltip>
                               </Button>
                               <Button mnemonicParsing="false" styleClass="favorite-concept" text="Button">
                                  <graphic>
-                                    <Region styleClass="favorite-icon"/>
+                                    <Region styleClass="favorite-icon" />
                                  </graphic>
                                  <tooltip><Tooltip text="Favorite Pattern" /></tooltip>
                               </Button>
@@ -87,7 +114,7 @@
                               </ToggleButton>
                            </children>
                         </HBox>
-                        <Separator orientation="VERTICAL" prefHeight="10.0" styleClass="thin-vertical-separator"/>
+                        <Separator orientation="VERTICAL" prefHeight="10.0" styleClass="thin-vertical-separator" />
                         <ToggleButton fx:id="timelineToggleButton" mnemonicParsing="false" onAction="#openTimelinePanel" styleClass="timeline" text="ToggleButton">
                            <graphic>
                               <Region prefHeight="200.0" prefWidth="200.0">
@@ -115,7 +142,7 @@
                               </Group>
                            </graphic>
                         </ToggleButton>
-                        <Separator orientation="VERTICAL" prefHeight="10.0" styleClass="thin-vertical-separator"/>
+                        <Separator orientation="VERTICAL" prefHeight="10.0" styleClass="thin-vertical-separator" />
                         <Button fx:id="closeConceptButton" mnemonicParsing="false" onAction="#closeConceptWindow" text="Button">
                            <graphic>
                               <Region prefHeight="200.0" prefWidth="200.0" styleClass="close-window" />
@@ -161,7 +188,7 @@
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                        </rowConstraints>
                                        <children>
-                                          <Text  strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-field" text="SEMANTIC MEANING:"  GridPane.columnIndex="0">
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-field" text="SEMANTIC MEANING:" GridPane.columnIndex="0">
                                              <font>
                                                 <Font name="Open Sans Bold" size="14.0" />
                                              </font>
@@ -176,7 +203,7 @@
                                                 <Text fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
                                              </children>
                                           </TextFlow>
-                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Date Added: Feb 02" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Date Added: Feb 02" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="13.0" />
                                              </font>
@@ -186,7 +213,7 @@
                                                 <Text fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
                                              </children>
                                           </TextFlow>
-                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Date Added: Feb 02" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Date Added: Feb 02" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                                        </children>
                                     </GridPane>
                                  </content>
@@ -230,7 +257,7 @@
                                                 </Text>
                                                 <VBox>
                                                    <children>
-                                                      <TextFlow styleClass="fqn-container" VBox.vgrow="SOMETIMES">
+                                                      <TextFlow fx:id="latestFqnTextFlow" styleClass="fqn-container" VBox.vgrow="SOMETIMES">
                                                          <children>
                                                             <Text fx:id="latestFqnText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" />
                                                          </children>
@@ -245,14 +272,20 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label styleClass="grey8-12pt" text="Date Added:" />
-                                                            <Label fx:id="fqnAddDateLabel" styleClass="descr-semantic" text="May 10, 2023"/>
-                                                            <Hyperlink styleClass="attachment-icon"/>
-                                                            <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added:" />
+                                                            <Label fx:id="fqnAddDateLabel" styleClass="descr-semantic" text="May 10, 2023" />
+                                                            <Hyperlink textFill="#1c1d1d80">
+                                                               <graphic>
+                                                                  <SVGPath content="M2.32011 11.5752C0.906855 10.162 0.906855 7.87464 2.32011 6.46139L7.55018 1.23131C8.58738 0.194111 10.2676 0.194111 11.3048 1.23131C12.342 2.26851 12.342 3.94873 11.3048 4.98593L6.98088 9.30986C6.31974 9.971 5.24664 9.971 4.58549 9.30986C3.92434 8.64871 3.92434 7.57561 4.58549 6.91446L8.52134 2.97861L9.33097 3.78824L5.39512 7.72409C5.18183 7.93738 5.18183 8.28694 5.39512 8.50023C5.60841 8.71352 5.95797 8.71352 6.17126 8.50023L10.4952 4.17631C11.0845 3.58696 11.0845 2.63028 10.4952 2.04094C9.90583 1.4516 8.94915 1.4516 8.35981 2.04094L3.12974 7.27101C2.16434 8.23641 2.16434 9.80021 3.12974 10.7656C4.09513 11.731 5.65894 11.731 6.62433 10.7656L11.4663 5.92361L12.276 6.73323L7.43396 11.5752C6.02071 12.9885 3.73336 12.9885 2.32011 11.5752Z" styleClass="descr-concept-icon" />
+                                                               </graphic>
                                                                <opaqueInsets>
                                                                   <Insets />
-                                                               </opaqueInsets>
-                                                            </Region>
+                                                               </opaqueInsets></Hyperlink>
+                                                            <Hyperlink styleClass="desc-concept-icon">
+                                                               <graphic>
+                                                                  <SVGPath content="M5.59212 12.8334C5.43741 12.8334 5.28904 12.772 5.17964 12.6626C5.07025 12.5532 5.00879 12.4048 5.00879 12.2501V10.5001H2.67546C2.36604 10.5001 2.06929 10.3772 1.8505 10.1584C1.63171 9.93958 1.50879 9.64283 1.50879 9.33341V2.33341C1.50879 1.68591 2.03379 1.16675 2.67546 1.16675H12.0088C12.3182 1.16675 12.615 1.28966 12.8337 1.50846C13.0525 1.72725 13.1755 2.024 13.1755 2.33341V9.33341C13.1755 9.64283 13.0525 9.93958 12.8337 10.1584C12.615 10.3772 12.3182 10.5001 12.0088 10.5001H8.45046L6.29212 12.6642C6.17546 12.7751 6.02962 12.8334 5.88379 12.8334H5.59212ZM6.17546 9.33341V11.1301L7.97212 9.33341H12.0088V2.33341H2.67546V9.33341H6.17546Z" fill="#00000086" styleClass="comment-icon" />
+                                                               </graphic>
+                                                            </Hyperlink>
                                                          </children>
                                                       </TextFlow>
                                                    </children>
@@ -274,8 +307,8 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label styleClass="grey8-12pt" text="Date Added:" />
-                                                            <Label styleClass="grey8-12pt" text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added:" />
+                                                            <Label styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                                             <Hyperlink text="Attachment" />
                                                             <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
                                                                <opaqueInsets>
@@ -292,7 +325,7 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label styleClass="grey8-12pt" text="Date Added:" />
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added:" />
                                                             <Label styleClass="descr-semantic" text="May 10, 2023" />
                                                             <Hyperlink text="Attachment" />
                                                             <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
@@ -367,14 +400,14 @@
                                        <children>
                                           <VBox prefWidth="330.0">
                                              <children>
-                                                <Label styleClass="grey8-12pt" text="Field 1:"/>
+                                                <Label styleClass="grey8-12pt-bold" text="Field 1:" />
                                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data Mapping" />
                                                 <HBox spacing="8.0">
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt" text="Date Added: " />
-                                                            <Label styleClass="grey8-12pt" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
                                                       <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
@@ -388,14 +421,14 @@
                                           </VBox>
                                           <VBox>
                                              <children>
-                                                <Label styleClass="grey8-12pt" text="Field 2:"/>
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Data Mapping" />
+                                                <Label styleClass="grey8-12pt-bold" text="Field 2:" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Data Mapping" />
                                                 <HBox spacing="8.0">
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt" text="Date Added: " />
-                                                            <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
                                                       <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
@@ -409,14 +442,14 @@
                                           </VBox>
                                           <VBox>
                                              <children>
-                                                <Label styleClass="grey8-12pt" text="Field 3:"/>
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Data Mapping" />
+                                                <Label styleClass="grey8-12pt-bold" text="Field 3:" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Data Mapping" />
                                                 <HBox spacing="8.0">
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt" text="Date Added: " />
-                                                            <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
                                                       <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
@@ -430,14 +463,14 @@
                                           </VBox>
                                           <VBox>
                                              <children>
-                                                <Label styleClass="grey8-12pt" text="Field 4:"/>
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Data Mapping" />
+                                                <Label styleClass="grey8-12pt-bold" text="Field 4:" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Data Mapping" />
                                                 <HBox spacing="8.0">
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt" text="Date Added: " />
-                                                            <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
                                                       <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
@@ -451,14 +484,14 @@
                                           </VBox>
                                           <VBox>
                                              <children>
-                                                <Label styleClass="grey8-12pt" text="Field 5:"/>
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt" text="Data Mapping" />
+                                                <Label styleClass="grey8-12pt-bold" text="Field 5:" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Data Mapping" />
                                                 <HBox spacing="8.0">
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt" text="Date Added: " />
-                                                            <Label styleClass="descr-semantic" maxWidth="90.0" prefWidth="90.0" text="May 10, 2023" />
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
                                                       <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
@@ -523,7 +556,7 @@
                                           <Font name="Open Sans" size="10.0" />
                                        </font>
                                     </Label>
-                                    <TextField fx:id="snomedIdentifierText" alignment="TOP_LEFT" editable="false" maxWidth="1.7976931348623157E308" prefWidth="251.0" styleClass="copyable-label">
+                                    <TextField fx:id="snomedIdentifierText" editable="false" maxWidth="1.7976931348623157E308" prefWidth="251.0" styleClass="copyable-label">
                                        <font>
                                           <Font name="Open Sans Regular" size="10.0" />
                                        </font>
@@ -536,21 +569,24 @@
                                     </TextField>
                                  </children>
                               </HBox>
-                              <HBox GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
+                              <HBox alignment="CENTER_LEFT" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
                                  <children>
-                                    <Label minWidth="61.0" prefHeight="25.0" prefWidth="61.0" styleClass="pattern-field" text="IDENTIFIER:">
+                                    <Text style="-fx-text-fill: -Grey-10;" text="IDENTIFIER: ">
                                        <font>
-                                          <Font name="Open Sans" size="10.0" />
-                                       </font>
-                                    </Label>
-                                    <Text fx:id="identifierText" styleClass="text-noto-sans-twelve" text="203488222456">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="10.0" />
+                                          <Font name="Noto Sans" size="10.0" />
                                        </font>
                                     </Text>
+                                    <TextField fx:id="identifierText" editable="false" minHeight="16.0" prefHeight="22.0" prefWidth="136.0" style="-fx-text-fill: -Grey-10;" styleClass="copyable-label" HBox.hgrow="ALWAYS">
+                                       <font>
+                                          <Font name="Noto Sans" size="10.0" />
+                                       </font>
+                                       <tooltip>
+                                          <Tooltip fx:id="identifierTooltip" />
+                                       </tooltip>
+                                    </TextField>
                                  </children>
                               </HBox>
-                              <Label fx:id="patternTitleText" styleClass="pattern-title" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0" text="New Pattern" textFill="#212430" wrapText="true" GridPane.columnIndex="1">
+                              <Label fx:id="patternTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0" styleClass="pattern-title" text="New Pattern" textFill="#212430" wrapText="true" GridPane.columnIndex="1">
                                  <font>
                                     <Font name="Open Sans Regular" size="17.0" />
                                  </font>
@@ -625,7 +661,7 @@
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
                                           </Label>
-                                          <Text fx:id="pathText" strokeType="OUTSIDE" strokeWidth="0.0"  styleClass="text-noto-sans-bold-grey-twelve"/>
+                                          <Text fx:id="pathText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" />
                                        </children>
                                     </FlowPane>
                                     <FlowPane prefHeight="43.0" prefWidth="202.0">
@@ -635,7 +671,7 @@
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
                                           </Label>
-                                          <Text fx:id="originationText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve"/>
+                                          <Text fx:id="originationText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" />
                                        </children>
                                     </FlowPane>
                                  </children>
