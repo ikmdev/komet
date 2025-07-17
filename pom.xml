@@ -110,6 +110,7 @@
         <toucan.version>0.9.0</toucan.version>
         <!-- Maven Dependency Analyzer Version -->
         <maven-dependency-analyzer.version>1.16.0</maven-dependency-analyzer.version>
+        <maven-pmd-plugin.version>3.27.0</maven-pmd-plugin.version>
 
         <!-- TestFX / Monocle -->
         <commonTestFXArgs>
@@ -658,43 +659,51 @@
                     <artifactId>jpro-maven-plugin</artifactId>
                     <version>${jpro.version}</version>
                 </plugin>
+                <!-- Maven PMD Plugin For Java 24 (Start) -->
+<!--                <plugin>-->
+<!--                    <groupId>org.apache.maven.plugins</groupId>-->
+<!--                    <artifactId>maven-pmd-plugin</artifactId>-->
+<!--                    <version>${maven-pmd-plugin.version}</version>-->
+<!--                </plugin>-->
+                <!-- Maven PMD Plugin For Java 24 (End) -->
+
+                <!-- Maven Dependency Plugin Fix (Start) -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>analyze</id>
+                            <goals>
+                                <goal>analyze-only</goal>
+                            </goals>
+                            <configuration>
+                                <ignoredNonTestScopedDependencies>
+                                    <ignoredNonTestScopedDependency>org.slf4j:*</ignoredNonTestScopedDependency>
+                                </ignoredNonTestScopedDependencies>
+                                <ignoredUnusedDeclaredDependencies>
+                                    <ignoredUnusedDeclaredDependency>org.slf4j:*</ignoredUnusedDeclaredDependency>
+                                </ignoredUnusedDeclaredDependencies>
+                                <ignoreUnusedRuntime>true</ignoreUnusedRuntime>
+                                <ignoredUsedUndeclaredDependencies>
+                                    <ignoredUsedUndeclaredDependency>dev.ikm.jpms:eclipse-collections-api</ignoredUsedUndeclaredDependency>
+                                </ignoredUsedUndeclaredDependencies>
+                            </configuration>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <!-- Necessary for JDK 24. Should be removed for updates of dependency plugin -->
+                        <dependency>
+                            <groupId>org.apache.maven.shared</groupId>
+                            <artifactId>maven-dependency-analyzer</artifactId>
+                            <version>${maven-dependency-analyzer.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <!-- Maven Dependency Plugin Fix (End) -->
             </plugins>
         </pluginManagement>
         <plugins>
-            <!-- Maven Dependency Plugin Fix (Start) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>analyze</id>
-                        <goals>
-                            <goal>analyze-only</goal>
-                        </goals>
-                        <configuration>
-                            <ignoredNonTestScopedDependencies>
-                                <ignoredNonTestScopedDependency>org.slf4j:*</ignoredNonTestScopedDependency>
-                            </ignoredNonTestScopedDependencies>
-                            <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>org.slf4j:*</ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
-                            <ignoreUnusedRuntime>true</ignoreUnusedRuntime>
-                            <ignoredUsedUndeclaredDependencies>
-                                <ignoredUsedUndeclaredDependency>dev.ikm.jpms:eclipse-collections-api</ignoredUsedUndeclaredDependency>
-                            </ignoredUsedUndeclaredDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <!-- Necessary for JDK 24. Should be removed for updates of dependency plugin -->
-                    <dependency>
-                        <groupId>org.apache.maven.shared</groupId>
-                        <artifactId>maven-dependency-analyzer</artifactId>
-                        <version>${maven-dependency-analyzer.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <!-- Maven Dependency Plugin Fix (End) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
