@@ -2462,14 +2462,13 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-style: normal;
     -fx-font-weight: bold;
     -fx-text-fill: -Grey-12;
-    -fx-text-alignment: bottom;
+    /*-fx-text-alignment: bottom;*/
 }
 
 .text-noto-sans-twelve {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
     -fx-font-style: normal;
-    -fx-text-alignment: bottom;
 }
 
 .text-noto-sans-normal-grey-eight {
