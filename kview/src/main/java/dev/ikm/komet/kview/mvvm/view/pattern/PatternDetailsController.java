@@ -1138,11 +1138,4 @@ public class PatternDetailsController {
 
         updateDraggableNodesForPropertiesPanel(isOpen);
     }
-
-    @FXML
-    private void invokeFQNEditor(ActionEvent actionEvent) {
-        ObjectProperty<DescrName> fqnNameProp = patternViewModel.getProperty(FQN_DESCRIPTION_NAME);
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ShowPatternFormInBumpOutEvent(actionEvent.getSource(), SHOW_EDIT_FQN, fqnNameProp.getValue()));
-        EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
-    }
 }
