@@ -120,7 +120,6 @@
             --add-exports=javafx.base/com.sun.javafx.logging=org.testfx.monocle
             --add-opens=javafx.graphics/javafx.scene=org.controlsfx.controls
             --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
-            --enable-preview
         </commonTestFXArgs>
 
         <!-- Track log4j-slf4j2-impl dependency and log4j-bom for future version updates -->
@@ -670,7 +669,6 @@
                     <release>${java.version}</release>
                     <compilerArgs>
                         <arg>-parameters</arg>
-                        <arg>--enable-preview</arg>
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <annotationProcessorPath>
