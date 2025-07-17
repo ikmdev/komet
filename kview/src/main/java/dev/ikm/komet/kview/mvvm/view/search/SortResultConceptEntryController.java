@@ -47,11 +47,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
@@ -132,13 +132,6 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         updateListViewPrefHeight();
 
         descriptionsListView.setCellFactory(param -> new DescriptionSemanticListCell());
-    }
-
-    private String formatHighlightedString(String highlightedString) {
-        String string = (highlightedString == null) ? "" : highlightedString;
-        return string.replaceAll("<B>", "")
-                .replaceAll("</B>", "")
-                .replaceAll("\\s+", " ");
     }
 
     @FXML
@@ -228,18 +221,23 @@ public class SortResultConceptEntryController extends AbstractBasicController {
      **************************************************************************/
 
     class DescriptionSemanticListCell extends ListCell<LatestVersionSearchResult> {
-        private StackPane cellContainer = new StackPane();
-        private Label label = new Label();
+        private HBox cellContainer = new HBox();
+        private TextFlow textFlow = new TextFlow();
         private ImageView identicon = new ImageView();
 
         public DescriptionSemanticListCell() {
-            cellContainer.getChildren().add(label);
+            cellContainer.getChildren().addAll(
+                    identicon,
+                    textFlow
+            );
+
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
             identicon.setFitHeight(16);
             identicon.setFitWidth(16);
 
             cellContainer.getStyleClass().add("cell-container");
+            textFlow.getStyleClass().add("text-container");
         }
 
         @Override
@@ -249,11 +247,35 @@ public class SortResultConceptEntryController extends AbstractBasicController {
             } else {
                 item.latestVersion().ifPresent(semanticEntityVersion -> {
                     identicon.setImage(Identicon.generateIdenticonImage(semanticEntityVersion.publicId()));
-                    label.setGraphic(identicon);
                 });
-                label.setText(formatHighlightedString(item.highlightedString()));
+                updateTextFlow(textFlow, item.highlightedString());
 
                 setGraphic(cellContainer);
+            }
+        }
+
+        private void updateTextFlow(TextFlow textFlow, String highlightedString) {
+            textFlow.getChildren().clear();
+            String[] words = highlightedString.split(" ");
+            for (int i = 0; i < words.length; ++i) {
+                String word = words[i];
+
+                Text text = new Text();
+                StackPane textContainer = new StackPane(text);
+
+                if (word.contains("<B>")) {
+                    text.setText(word.replaceAll("<B>", "")
+                            .replaceAll("</B>", "")
+                            .replaceAll("\\s+", " "));
+
+                    textContainer.getStyleClass().add("highlight");
+                } else {
+                    text.setText(word);
+                }
+                
+                textContainer.getStyleClass().add("word-container");
+
+                textFlow.getChildren().add(textContainer);
             }
         }
     }

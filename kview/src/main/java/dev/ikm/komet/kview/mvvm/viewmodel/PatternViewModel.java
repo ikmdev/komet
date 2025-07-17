@@ -72,6 +72,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -84,8 +85,6 @@ public class PatternViewModel extends FormViewModel {
     // Known properties
     // --------------------------------------------
     public static String STAMP_VIEW_MODEL = "stampViewModel";
-
-    public static String DEFINITION_VIEW_MODEL = "definitionViewModel";
 
     public static String STATE_MACHINE = "stateMachine";
 
@@ -123,12 +122,21 @@ public class PatternViewModel extends FormViewModel {
 
     public static String PATTERN = "pattern";
 
+    public static String FQN_PROXY = "fqnProxy";
+
+    public static String HAS_CHANGED = "hasChanged";
+
     public static String IS_INVALID = "IS_INVALID";
 
     public static String PATTERN_TITLE_TEXT = "patternTitleText";
 
     // Used to load the values in the PatternField controller from PatternDetailsController.
     public static String SELECTED_PATTERN_FIELD = "selectedPatternField";
+
+    private int changeHash;
+
+    // key is the string of the publicId of the semantic, and value is the hashCode of the other name
+    private Map<String, Integer> baselineOtherNameHashMap = new HashMap<>();
 
     public PatternViewModel() {
         super();
@@ -137,7 +145,6 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(PATTERN_TOPIC, (UUID) null)
                     .addProperty(STATE_MACHINE, (StateMachine) null)
                     .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
-                    .addProperty(DEFINITION_VIEW_MODEL, (ViewModel) null)
                     .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
                     .addProperty(FQN_DATE_ADDED_STR, "")
                     .addProperty(OTHER_NAMES, new ArrayList<DescrName>())
@@ -156,6 +163,8 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(SELECTED_PATTERN_FIELD, (PatternField) null)
                     .addProperty(IS_INVALID, true)
                     .addProperty(PATTERN, (EntityFacade) null) // once saved, this is the pattern facade
+                    .addProperty(FQN_PROXY, (EntityProxy.Semantic) null)
+                    .addProperty(HAS_CHANGED, false)
                     .addValidator(IS_INVALID, "Is Invalid", (ValidationResult vr, ViewModel viewModel) -> {
                         ObjectProperty<EntityFacade> purposeEntity = viewModel.getProperty(PURPOSE_ENTITY);
                         ObjectProperty<EntityFacade> meaningEntity = viewModel.getProperty(MEANING_ENTITY);
@@ -211,8 +220,8 @@ public class PatternViewModel extends FormViewModel {
         ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
         otherNamesList.clear();
         loadPatternValues();
-
     }
+
     public void loadPatternValues(){
         ObjectProperty<EntityFacade> patternProperty = getProperty(PATTERN);
         EntityFacade patternFacade = patternProperty.getValue();
@@ -272,22 +281,24 @@ public class PatternViewModel extends FormViewModel {
             viewCalculator.forEachSemanticVersionForComponentOfPattern(entity.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(),
                 (semanticEntityVersion,  entityVersion1, patternEntityVersion) -> {
                     ConceptFacade language = (ConceptFacade) semanticEntityVersion.fieldValues().get(0);
-                    String string = (String) semanticEntityVersion.fieldValues().get(1);
+                    String nameText = (String) semanticEntityVersion.fieldValues().get(1);
                     ConceptFacade caseSignificance = (ConceptFacade) semanticEntityVersion.fieldValues().get(2);
                     ConceptFacade descriptionType = (ConceptFacade) semanticEntityVersion.fieldValues().get(3);
-                    DescrName descrName = new DescrName(null, string, descriptionType,
+                    DescrName descrName = new DescrName(null, nameText, descriptionType,
                         Entity.getFast(caseSignificance.nid()), Entity.getFast(semanticEntityVersion.state().nid()),
                             Entity.getFast(semanticEntityVersion.module().nid()),Entity.getFast(language.nid()), semanticEntityVersion.publicId());
-                if(PublicId.equals(descriptionType.publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
-                        ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
-                        HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
-                        // add to list.
-                        otherNamesList.add(descrName);
-                        regularNamesMap.put(descrName, semanticEntityVersion);
-                    } else if (PublicId.equals(descriptionType.publicId(), DEFINITION_DESCRIPTION_TYPE.publicId())) {
-                        LOG.info(" Add to Definition Name : " + descrName.getNameText());
-                    }
+                if (PublicId.equals(descriptionType.publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
+                    ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
+                    HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
+                    // add to list.
+                    otherNamesList.add(descrName);
+                    regularNamesMap.put(descrName, semanticEntityVersion);
+                } else if (PublicId.equals(descriptionType.publicId(), DEFINITION_DESCRIPTION_TYPE.publicId())) {
+                    LOG.info(" Add to Definition Name : " + descrName.getNameText());
+                }
             });
+            // regenerate with updated
+            baselineOtherNameHashMap = generateOtherNameHash();
         }
     }
 
@@ -299,7 +310,9 @@ public class PatternViewModel extends FormViewModel {
          * A contradiction implies a discrepancy. IN other parts of the code where we needed to sort thing based on time,
          * there are position records that can be sorted via a HashTree Collection object.
          * */
-        SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().languageCalculator().getFullyQualifiedDescription(patternFacade).getWithContradictions().getFirstOptional().get();
+        SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().languageCalculator()
+                .getFullyQualifiedDescription(patternFacade).getWithContradictions().getFirstOptional().get();
+
         ConceptFacade fqnLanguage = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(0);
         String fqnString = (String) fqnSemanticEntityVersion.fieldValues().get(1);
         ConceptFacade fqnCaseSignificance = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(2);
@@ -311,6 +324,8 @@ public class PatternViewModel extends FormViewModel {
         setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, fqnString);
         setPropertyValue(FQN_CASE_SIGNIFICANCE, fqnCaseSignificance);
         setPropertyValue(FQN_LANGUAGE, fqnLanguage);
+        setPropertyValue(FQN_PROXY, fqnSemanticEntityVersion.entity().toProxy());
+        changeHash = generateFqnHash();
     }
 
     private String retrieveDisplayName(PatternFacade patternFacade) {
@@ -351,50 +366,136 @@ public class PatternViewModel extends FormViewModel {
         Session session = composer.open(state, authorConcept, module.toProxy(), path.toProxy());
         EntityProxy.Concept conceptEntityMeaning = EntityProxy.Concept.make(((EntityFacade)getPropertyValue(MEANING_ENTITY)).nid());
         EntityProxy.Concept conceptEntityPurpose = EntityProxy.Concept.make(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).nid());
+
         // set up pattern with the fully qualified name
         ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
-        session.compose((PatternAssembler patternAssembler) -> {
-            patternAssembler
+
+        // get the fqn semantic version
+        ObjectProperty<EntityProxy.Semantic> fqnProp = getObjectProperty(FQN_PROXY);
+        if (fqnProp.isNull().get()) {
+            // if the FQN is empty, create a new one
+            EntityProxy.Semantic fqnProxy = EntityProxy.Semantic.make(null, PublicIds.newRandom());
+            fqnProp.set(fqnProxy);
+        }
+
+        if (getPropertyValue(PATTERN) == null) {
+            // create pattern compose statement
+            session.compose((PatternAssembler patternAssembler) -> {
+                patternAssembler
                         .pattern(pattern)
                         .meaning(conceptEntityMeaning)
-                        .purpose(conceptEntityPurpose);
-            patternAssembler.attach((FullyQualifiedName fqn) -> fqn
-                                    .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
-                                    .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
-                                    .caseSignificance(((EntityFacade)getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy()));
-            // add the field definitions
-            for (int i = 0; i< fieldsProperty.size(); i++) {
-                PatternField patternField = fieldsProperty.get(i);
-                EntityProxy.Concept conceptEntityFieldMeaning = EntityProxy.Concept.make(patternField.meaning().nid());
-                EntityProxy.Concept conceptEntityFieldPurpose = EntityProxy.Concept.make(patternField.purpose().nid());
-                EntityProxy.Concept conceptEntityFieldDatatype = EntityProxy.Concept.make(patternField.dataType().nid());
-                patternAssembler.fieldDefinition(conceptEntityFieldMeaning, conceptEntityFieldPurpose, conceptEntityFieldDatatype, i);
+                        .purpose(conceptEntityPurpose)
+                        .attach((FullyQualifiedName fqn) -> fqn
+                            .semantic(fqnProp.get())
+                            .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
+                            .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
+                            .caseSignificance(((EntityFacade)getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy())
+                            .attach(new USDialect().acceptability(ACCEPTABLE))
+                );
+
+                // add the field definitions
+                for (int i = 0; i < fieldsProperty.size(); i++) {
+                    PatternField patternField = fieldsProperty.get(i);
+                    EntityProxy.Concept conceptEntityFieldMeaning = EntityProxy.Concept.make(patternField.meaning().nid());
+                    EntityProxy.Concept conceptEntityFieldPurpose = EntityProxy.Concept.make(patternField.purpose().nid());
+                    EntityProxy.Concept conceptEntityFieldDatatype = EntityProxy.Concept.make(patternField.dataType().nid());
+                    patternAssembler.fieldDefinition(conceptEntityFieldMeaning, conceptEntityFieldPurpose, conceptEntityFieldDatatype, i);
+                }
+            });
+        } else {
+            /*
+            only write a fqn version IF there is a change to
+                - FQN language,
+                - FQN case significance,
+                - FQN text (description),
+                - FQN status
+                - path
+                - module
+             */
+            if (generateFqnHash() != changeHash) {
+
+                session.compose(new FullyQualifiedName()
+                                .semantic(fqnProp.get())
+                                .language(((EntityFacade) getPropertyValue(FQN_LANGUAGE)).toProxy())
+                                .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
+                                .caseSignificance(((EntityFacade) getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy()),
+                        pattern
+                );
             }
-        });
+        }
+
 
         // add the other name description semantics if they exist
         ObservableList<DescrName> otherNamesProperty = getObservableList(OTHER_NAMES);
         boolean isEdit = getPropertyValue(MODE).equals("EDIT");
-
+        Map<String, Integer> currentOtherNameMap = Map.of();
+        if (isEdit) {
+            currentOtherNameMap = generateOtherNameHash();
+        }
+        final Map<String, Integer> finalCurrentOtherNameMap = currentOtherNameMap;
         otherNamesProperty.forEach(otherName -> {
             Synonym synonym = new Synonym()
                     .language(otherName.getLanguage().toProxy())
                     .text(otherName.getNameText())
                     .caseSignificance(otherName.getCaseSignificance().toProxy());
             if (isEdit) {
-                HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
-                if(regularNamesMap != null && regularNamesMap.get(otherName) !=null) {
-                    SemanticEntityVersion semanticEntityVersion = regularNamesMap.get(otherName);
-                    SemanticEntity<SemanticEntityVersion> semanticEntity = semanticEntityVersion.chronology();
-                    synonym.semantic(semanticEntity.toProxy());
+                String otKey = otherName.getSemanticPublicId() != null ? otherName.getSemanticPublicId().idString() : "-not-found-";
+                // if there is a CHANGE to the other name, then we allow the update
+                if (!baselineOtherNameHashMap.containsKey(otKey) || !baselineOtherNameHashMap.get(otKey).equals(finalCurrentOtherNameMap.get(otKey))) {
+                    HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
+                    if (regularNamesMap != null && regularNamesMap.get(otherName) != null) {
+                        SemanticEntityVersion semanticEntityVersion = regularNamesMap.get(otherName); // get the right other name to edit
+                        SemanticEntity<SemanticEntityVersion> semanticEntity = semanticEntityVersion.chronology();
+                        synonym.semantic(semanticEntity.toProxy());
+                        session.compose(synonym, pattern);
+                    } else {
+                        session.compose(synonym, pattern)
+                                .attach(new USDialect().acceptability(ACCEPTABLE));
+                    }
                 }
+            } else {
+                session.compose(synonym, pattern)
+                        .attach(new USDialect().acceptability(ACCEPTABLE));
             }
-            session.compose(synonym, pattern)
-                    .attach(new USDialect().acceptability(ACCEPTABLE));
+
         });
         boolean isSuccess = composer.commitSession(session);
+
+        // change hash code
+        //TODO create the hash of the pattern and its values
+        //changeHash = generateFqnHash();
+
+
         setPropertyValue(PATTERN, pattern);
         return isSuccess;
+    }
+
+
+    private int generateFqnHash() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).nid())
+                .append("|")
+                .append(((EntityFacade)getPropertyValue(FQN_CASE_SIGNIFICANCE)).nid())
+                .append("|")
+                .append(getStringProperty(FQN_DESCRIPTION_NAME_TEXT).get());
+        return stringBuilder.toString().hashCode();
+    }
+
+    private Map<String, Integer> generateOtherNameHash() {
+        ObservableList<DescrName> otherNamesProperty = getObservableList(OTHER_NAMES);
+        Map<String, Integer> map = new HashMap<>();
+        otherNamesProperty.forEach(otherName -> {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(otherName.getLanguage().nid())
+                    .append("|")
+                    .append(otherName.getCaseSignificance().nid())
+                    .append("|")
+                    .append(otherName.getNameText());
+            if (otherName.getSemanticPublicId() != null) {
+                map.put(otherName.getSemanticPublicId().idString(), stringBuilder.toString().hashCode());
+            }
+        });
+        return map;
     }
 
     public ViewProperties getViewProperties() {
