@@ -62,6 +62,7 @@
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>24</java.version> <!-- Property for Java Version -->
 
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
@@ -664,9 +665,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <fork>true</fork>
-                    <source>23</source>
-                    <target>23</target>
-                    <release>23</release>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <release>${java.version}</release>
                     <compilerArgs>
                         <arg>-parameters</arg>
                         <arg>--enable-preview</arg>

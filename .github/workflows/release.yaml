@@ -48,3 +48,4 @@ jobs:
           version_type: ${{ github.event.inputs.version_type }}
           github_token: ${{secrets.GITHUB_TOKEN}}
           release_version: ${{ github.event.inputs.release_version }}
+          java_version: '24'
