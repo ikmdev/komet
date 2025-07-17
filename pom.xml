@@ -659,14 +659,6 @@
                     <artifactId>jpro-maven-plugin</artifactId>
                     <version>${jpro.version}</version>
                 </plugin>
-                <!-- Maven PMD Plugin For Java 24 (Start) -->
-<!--                <plugin>-->
-<!--                    <groupId>org.apache.maven.plugins</groupId>-->
-<!--                    <artifactId>maven-pmd-plugin</artifactId>-->
-<!--                    <version>${maven-pmd-plugin.version}</version>-->
-<!--                </plugin>-->
-                <!-- Maven PMD Plugin For Java 24 (End) -->
-
                 <!-- Maven Dependency Plugin Fix (Start) -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
