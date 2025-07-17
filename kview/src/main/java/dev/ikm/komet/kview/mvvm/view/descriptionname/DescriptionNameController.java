@@ -29,6 +29,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PREVIOUS_DESCRIPTION_DATA;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.SEMANTIC_PUBLIC_ID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
@@ -208,6 +209,9 @@ public class DescriptionNameController {
         descrNameViewModel.setPropertyValue(MODULE, null);
         descrNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, null);
         descrNameViewModel.setPropertyValue(LANGUAGE, null);
+        descrNameViewModel.setPropertyValue(SEMANTIC_PUBLIC_ID, null);
+        descrNameViewModel.setPropertyValue(TITLE_TEXT, "");
+        descrNameViewModel.setPropertyValue(NAME_TEXT, "");
     }
 
     public void cleanup() {

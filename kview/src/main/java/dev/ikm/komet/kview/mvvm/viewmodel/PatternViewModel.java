@@ -86,8 +86,6 @@ public class PatternViewModel extends FormViewModel {
     // --------------------------------------------
     public static String STAMP_VIEW_MODEL = "stampViewModel";
 
-    public static String DEFINITION_VIEW_MODEL = "definitionViewModel";
-
     public static String STATE_MACHINE = "stateMachine";
 
     public static String FQN_DESCRIPTION_NAME = "fqnDescriptionName";
@@ -147,7 +145,6 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(PATTERN_TOPIC, (UUID) null)
                     .addProperty(STATE_MACHINE, (StateMachine) null)
                     .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
-                    .addProperty(DEFINITION_VIEW_MODEL, (ViewModel) null)
                     .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
                     .addProperty(FQN_DATE_ADDED_STR, "")
                     .addProperty(OTHER_NAMES, new ArrayList<DescrName>())
@@ -442,7 +439,7 @@ public class PatternViewModel extends FormViewModel {
                     .text(otherName.getNameText())
                     .caseSignificance(otherName.getCaseSignificance().toProxy());
             if (isEdit) {
-                String otKey = otherName.getSemanticPublicId().idString();
+                String otKey = otherName.getSemanticPublicId() != null ? otherName.getSemanticPublicId().idString() : "-not-found-";
                 // if there is a CHANGE to the other name, then we allow the update
                 if (!baselineOtherNameHashMap.containsKey(otKey) || !baselineOtherNameHashMap.get(otKey).equals(finalCurrentOtherNameMap.get(otKey))) {
                     HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
@@ -500,14 +497,6 @@ public class PatternViewModel extends FormViewModel {
         });
         return map;
     }
-
-
-//    private boolean hasChanged() {
-//        // has the pattern changed since its first save?
-////        EntityFacade pattern = getPropertyValue(PATTERN);
-////        DescrName fqnDescr = getPropertyValue(FQN_DESCRIPTION_NAME);
-//
-//    }
 
     public ViewProperties getViewProperties() {
         return getPropertyValue(VIEW_PROPERTIES);
