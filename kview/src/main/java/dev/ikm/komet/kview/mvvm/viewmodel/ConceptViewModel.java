@@ -23,12 +23,24 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.ConceptRecord;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.RecordListBuilder;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.SemanticRecordBuilder;
+import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import org.carlfx.cognitive.validator.MessageType;
@@ -44,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
@@ -180,7 +193,7 @@ public class ConceptViewModel extends FormViewModel {
         }
 
         // add the axiom
-        buildAxiom(ab, conceptRecord, stampEntity);
+        buildAxiom(ab, conceptRecord, stampEntity, transaction);
 
         List<DescrName> otherNames = (List<DescrName>) getValueMap().get(OTHER_NAMES);
         if (otherNames.size() > 0) {
@@ -188,10 +201,16 @@ public class ConceptViewModel extends FormViewModel {
             saveOtherNameWithinCreateConcept(transaction, stampEntity, otherNames, conceptFacade);
         }
 
+        transaction.addComponent(conceptRecord);
         Entity.provider().putEntity(conceptRecord);
 
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        TinkExecutor.threadPool().submit(commitTransactionTask);
+        try {
+            TinkExecutor.threadPool().submit(commitTransactionTask).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+
         // place inside as current Concept
         setValue(CURRENT_ENTITY, conceptFacade);
         setPropertyValue(CURRENT_ENTITY, conceptFacade);
@@ -200,7 +219,7 @@ public class ConceptViewModel extends FormViewModel {
         return true;
     }
 
-    private void buildAxiom(AxiomBuilderRecord axiomBuilder, ConceptRecord conceptRecord,  StampEntity stampEntity) {
+    private void buildAxiom(AxiomBuilderRecord axiomBuilder, ConceptRecord conceptRecord, StampEntity stampEntity, Transaction transaction) {
         DiTreeEntity.Builder axiomTreeEntityBuilder = DiTreeEntity.builder();
         EntityVertex rootVertex = EntityVertex.make(axiomBuilder);
         axiomTreeEntityBuilder.setRoot(rootVertex);
@@ -212,6 +231,7 @@ public class ConceptViewModel extends FormViewModel {
                 conceptRecord.nid(),
                 stampEntity.lastVersion(),
                 axiomField);
+        transaction.addComponent(statedAxioms);
         Entity.provider().putEntity(statedAxioms);
     }
 
