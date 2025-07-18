@@ -106,7 +106,20 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     private MultipleSelectionContextMenu multipleSelectionContextMenu;
     private SingleSelectionContextMenu singleSelectionContextMenu;
     private boolean isScrollBarDragging;
-    private final BooleanProperty highlighted = new SimpleBooleanProperty();
+    private final BooleanProperty highlighted = new SimpleBooleanProperty() {
+        @Override
+        protected void invalidated() {
+            // install/uninstall event filter to the scene that holds the control
+            Scene scene = treeView.getScene();
+            if (scene != null) {
+                scene.removeEventFilter(MouseEvent.MOUSE_PRESSED, eventFilter);
+                if (get()) {
+                    scene.addEventFilter(MouseEvent.MOUSE_PRESSED, eventFilter);
+                }
+            }
+        }
+    };
+    private final EventHandler<MouseEvent> eventFilter;
 
     /**
      * <p>Creates a {@link KLConceptNavigatorTreeViewSkin} instance.
@@ -276,6 +289,12 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             }
             e.consume();
         });
+
+        // Clicking anywhere, unhighlights any item from the treeView
+        eventFilter = _ -> {
+            treeView.unhighlightConceptsWithDelay();
+            highlighted.set(false);
+        };
     }
 
     /**
@@ -741,23 +760,6 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                 item.setViewLineage(false);
                 if (highlight) {
                     treeView.getSelectionModel().clearSelection();
-
-                    // Clicking anywhere, unhighlights the item
-                    EventHandler<MouseEvent> eventFilter = _ -> {
-                        treeView.unhighlightConceptsWithDelay();
-                        highlighted.set(false);
-                    };
-                    // install/uninstall event filter to the scene that holds the control
-                    highlighted.subscribe((_, v) -> {
-                        Scene scene = treeView.getScene();
-                        if (scene != null) {
-                            if (v) {
-                                scene.addEventFilter(MouseEvent.MOUSE_PRESSED, eventFilter);
-                            } else {
-                                scene.removeEventFilter(MouseEvent.MOUSE_PRESSED, eventFilter);
-                            }
-                        }
-                    });
                     item.setHighlighted(true);
                     highlighted.set(true);
                 }
