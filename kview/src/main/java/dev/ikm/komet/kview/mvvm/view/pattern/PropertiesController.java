@@ -403,6 +403,7 @@ public class PropertiesController {
                 .setPropertyValue(STATUS, descrName.getStatus())
                 .setPropertyValue(MODULE, descrName.getModule())
                 .setPropertyValue(LANGUAGE, descrName.getLanguage())
+                .setPropertyValue(SEMANTIC_PUBLIC_ID, event.getDescrName().getSemanticPublicId())
             ;
         }
     }

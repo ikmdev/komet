@@ -29,6 +29,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PREVIOUS_DESCRIPTION_DATA;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.SEMANTIC_PUBLIC_ID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
@@ -208,6 +209,9 @@ public class DescriptionNameController {
         descrNameViewModel.setPropertyValue(MODULE, null);
         descrNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, null);
         descrNameViewModel.setPropertyValue(LANGUAGE, null);
+        descrNameViewModel.setPropertyValue(SEMANTIC_PUBLIC_ID, null);
+        descrNameViewModel.setPropertyValue(TITLE_TEXT, "");
+        descrNameViewModel.setPropertyValue(NAME_TEXT, "");
     }
 
     public void cleanup() {
@@ -285,10 +289,10 @@ public class DescriptionNameController {
         } else if (PublicId.equals(((Concept) descrNameViewModel.getPropertyValue(NAME_TYPE)).publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
             DescrName descrName = descrNameViewModel.getPropertyValue(PREVIOUS_DESCRIPTION_DATA);
             EvtType eventType = PATTERN_EDIT_OTHER_NAME;
-            if(descrName == null){// In Edit Other name mode the PREVIOUS_DESCRIPTION_DATA value is null, hence we create the new instance
+            if (descrName == null) {// In Edit Other name mode the PREVIOUS_DESCRIPTION_DATA value is null, hence we create the new instance
                 descrName = descrNameViewModel.create();
                 eventType = PATTERN_ADD_OTHER_NAME;
-            }else { //Else we update the previous instance with the new entered values.
+            } else { //Else we update the previous instance with the new entered values.
                 descrNameViewModel.updateData(descrName);
             }
             EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
