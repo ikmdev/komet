@@ -14,42 +14,62 @@ import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
 import javafx.util.Subscription;
 
-/// Provides the Skin for the PublicIDControl.
-/// The publicIdProperty string value from the PublicIDControl is rendered by this Skin.
-///
-/// This Skin provides the following in an HBox layout:
-/// - Title label
-/// - Public ID label
-/// - Copy to Clipboard button - when pressed, copies the Public ID text to the System clipboard
-///
-/// The publicIdLable and copyToClipboardButton are contained within an HBox, where the HBox is configured
-/// to handle mouse enter and exit events which is used to show and hide the copyToClipboardButton.
+/**
+ * Provides the Skin for the PublicIDControl.
+ * The publicIdProperty string value from the PublicIDControl is rendered by this Skin.
+ * <p>
+ * <ul>
+ *    <li>Title label
+ *    <li>Public ID label
+ *    <li>Copy to Clipboard button - when pressed, copies the Public ID text to the System clipboard
+ * </ul>
+ * The publicIdLable and copyToClipboardButton are contained within an HBox, where the HBox is configured
+ * to handle mouse enter and exit events which is used to show and hide the copyToClipboardButton.
+ */
 public class PublicIDSkin extends SkinBase<PublicIDControl> {
 
-    /// The root Node for the Skin
+    /**
+     * The root Node for the Skin
+     */
     private final HBox rootHBox = new HBox();
 
-    /// The title label that precedes the public ID UUID label
+    /**
+     * The title label that precedes the public ID UUID label
+     */
     private final Label titleLabel = new Label("IDENTIFIER:");
 
-    /// The HBox that contians the public ID label and copy to clipboard button
+    /**
+     * The HBox that contians the public ID label and copy to clipboard button
+     */
     private final HBox publicIdHBox = new HBox();
 
-    /// The Label that displays the public ID UUID value
+    /**
+     * The Label that displays the public ID UUID value
+     */
+
     private final Label publicIdLabel = new Label("");
 
-    /// The tooltip for the publicIdLabel, which is needed because the text in the label
-    /// could exceed the Label width
+    /**
+     * The tooltip for the publicIdLabel, which is needed because the text in the label
+     * could exceed the Label width
+     */
     private final Tooltip publicIdTooltip = new Tooltip();
 
-    /// The copy to clipboard button, which is shown and hidden based on the mouse entering
-    /// and exiting the publicIdHBox
+    /**
+     * The copy to clipboard button, which is shown and hidden based on the mouse entering
+     * and exiting the publicIdHBox
+     */
     private final Button copyToClipboardButton = new Button();
 
-    /// The subscription to the PublicIDControl publicIdProperty, which receives property change events
+    /**
+     * The subscription to the PublicIDControl publicIdProperty, which receives property change events
+     */
+
     private Subscription subscription;
 
-    /// The current public id property value, as received in the subscription listener
+    /**
+     * The current public id property value, as received in the subscription listener
+     */
     private String identifier;
 
     public PublicIDSkin(PublicIDControl control) {
@@ -116,7 +136,9 @@ public class PublicIDSkin extends SkinBase<PublicIDControl> {
         });
     }
 
-    /// Copy the Public Identifier UUID String value to the System Clipboard
+    /**
+     * Copy the Public Identifier UUID String value to the System Clipboard
+     */
     private void copyToClipboard() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
@@ -129,7 +151,9 @@ public class PublicIDSkin extends SkinBase<PublicIDControl> {
         rootHBox.resizeRelocate(x, y, w, h);
     }
 
-    /// Unsubscribes from the subscription to stop receiving the publicIdProperty change events
+    /**
+     * Unsubscribes from the subscription to stop receiving the publicIdProperty change events
+     */
     @Override
     public void dispose() {
         if (subscription != null) {
