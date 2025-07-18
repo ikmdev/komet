@@ -3,10 +3,9 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Skin;
+import javafx.scene.control.SkinBase;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -25,7 +24,7 @@ import javafx.util.Subscription;
 ///
 /// The publicIdLable and copyToClipboardButton are contained within an HBox, where the HBox is configured
 /// to handle mouse enter and exit events which is used to show and hide the copyToClipboardButton.
-public class PublicIDSkin implements Skin<PublicIDControl> {
+public class PublicIDSkin extends SkinBase<PublicIDControl> {
 
     /// The root Node for the Skin
     private final HBox rootHBox = new HBox();
@@ -47,9 +46,6 @@ public class PublicIDSkin implements Skin<PublicIDControl> {
     /// and exiting the publicIdHBox
     private final Button copyToClipboardButton = new Button();
 
-    /// The control that this Skin renders
-    private PublicIDControl control;
-
     /// The subscription to the PublicIDControl publicIdProperty, which receives property change events
     private Subscription subscription;
 
@@ -57,7 +53,7 @@ public class PublicIDSkin implements Skin<PublicIDControl> {
     private String identifier;
 
     public PublicIDSkin(PublicIDControl control) {
-        this.control = control;
+        super(control);
 
         Tooltip.install(publicIdLabel, publicIdTooltip);
 
@@ -68,9 +64,6 @@ public class PublicIDSkin implements Skin<PublicIDControl> {
 
         titleLabel.getStyleClass().add("title-label");
         publicIdLabel.getStyleClass().add("public-id-label");
-
-//        titleLabel.setFont(new Font("Noto Sans Bold", 10.0));
-//        publicIdLabel.setFont(new Font("Noto Sans", 10.0));
 
         // the SVG graphic for the copy to clipboard icon
         var svgPath = new SVGPath();
@@ -100,15 +93,20 @@ public class PublicIDSkin implements Skin<PublicIDControl> {
 
         // initially hide the button
         copyToClipboardButton.setVisible(false);
+        copyToClipboardButton.setManaged(false);
 
         // when the mouse enters, show the button
         publicIdHBox.setOnMouseEntered(event -> {
             copyToClipboardButton.setVisible(true);
+            copyToClipboardButton.setManaged(true);
         });
         // when the mouse exits, hide the button
         publicIdHBox.setOnMouseExited(event -> {
             copyToClipboardButton.setVisible(false);
+            copyToClipboardButton.setManaged(false);
         });
+
+        getChildren().add(rootHBox);
 
         // subscribe to changes to the publicIdProperty in the PublicIDControl
         subscription = control.publicIdProperty().subscribe(publicId -> {
@@ -127,13 +125,8 @@ public class PublicIDSkin implements Skin<PublicIDControl> {
     }
 
     @Override
-    public PublicIDControl getSkinnable() {
-        return control;
-    }
-
-    @Override
-    public Node getNode() {
-        return rootHBox;
+    protected void layoutChildren(double x, double y, double w, double h) {
+        rootHBox.resizeRelocate(x, y, w, h);
     }
 
     /// Unsubscribes from the subscription to stop receiving the publicIdProperty change events

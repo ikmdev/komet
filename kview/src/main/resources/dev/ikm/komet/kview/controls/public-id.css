@@ -1,4 +1,14 @@
 .public-id {
+    /* The pref and min height must be set to a minimum value where the
+       where the height is not changed as the mouse cursor enters and exits
+       the control.  30px seems to work well for the current settings for
+       fontSize and the icon scale. */
+    -public-id-height: 30px;
+
+    -fx-pref-height: -public-id-height;
+    -fx-min-height: -public-id-height;
+
+    /* the spacing for the HBoxes in the control, is inherited in child nodes */
     -fx-spacing: 4;
 
     /* setting font size here, to be inherited in child nodes */
@@ -17,4 +27,12 @@
 .public-id > .public-id-box > .public-id-label {
     -fx-font-family: "Noto Sans";
     -fx-font-size: inherit;
+}
+
+.public-id > .public-id-box > .add-pencil-button > .copy-to-clipboard {
+    -icon-scale: 0.7;
+
+    -fx-fill: -Secondary-05;
+    -fx-scale-x: -icon-scale;
+    -fx-scale-y: -icon-scale;
 }
