@@ -154,11 +154,7 @@ public class PatternNavEntryController {
             // double click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
-                    System.out.println(" selected row class = " + patternInstancesListView.getSelectionModel().getSelectedItem().getClass());
-                    System.out.println(" selected row value = " + patternInstancesListView.getSelectionModel().getSelectedItem());
-                    System.out.println("    pick item = " + mouseEvent.getPickResult().getIntersectedNode());
                     if (patternInstancesListView.getSelectionModel().getSelectedItem() instanceof Integer nid) {
-
                         EntityFacade semanticChronology = EntityService.get().getEntity(nid).get();
                         EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                                 new MakeGenEditingWindowEvent(this,
