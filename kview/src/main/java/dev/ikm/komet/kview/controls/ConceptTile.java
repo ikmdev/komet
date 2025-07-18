@@ -210,7 +210,7 @@ public class ConceptTile extends HBox {
                     }
                 }));
 
-                String description = treeItem.getValue() != null ? treeItem.getValue().description() : "";
+                String description = treeItem.getValue() != null ? getDescription(treeItem.getValue().nid()) : "";
                 conceptLabel.setText(description);
                 pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, treeItem.isDefined());
                 cell.viewLineageProperty().bind(treeItem.viewLineageProperty());
@@ -237,7 +237,7 @@ public class ConceptTile extends HBox {
     void updateTooltip() {
         conceptNavigatorTooltip.updateTooltip(
                 conceptLabel.lookup(".text") instanceof Text labelledText ? labelledText.getText() : null,
-                getConcept().getValue() != null ? getConcept().getValue().description() : "",
+                getConcept().getValue() != null ? getDescription(getConcept().getValue().nid()) : "",
                 getConcept().isDefined());
     }
 
@@ -252,4 +252,12 @@ public class ConceptTile extends HBox {
         setConcept(null);
     }
 
+    /**
+     * return the description of a nid
+     * @param nid the nid of the concept
+     * @return a string
+     */
+    private String getDescription(int nid) {
+        return treeView.getNavigator().getViewCalculator().getDescriptionTextOrNid(nid);
+    }
 }

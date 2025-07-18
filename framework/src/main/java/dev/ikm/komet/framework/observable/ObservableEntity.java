@@ -224,7 +224,11 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
         public void onNext(Integer nid) {
             // Do nothing with item, but request another...
             if (SINGLETONS.containsKey(nid)) {
-                get(nid);
+                if (Platform.isFxApplicationThread()) {
+                    get(nid);
+                } else {
+                    Platform.runLater(() -> get(nid));
+                }
             }
         }
     }
