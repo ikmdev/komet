@@ -1,0 +1,20 @@
+.public-id {
+    -fx-spacing: 4;
+
+    /* setting font size here, to be inherited in child nodes */
+    -fx-font-size: 10;
+}
+
+.public-id > .public-id-box {
+    -fx-spacing: inherit;
+}
+
+.public-id > .title-label {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: inherit;
+}
+
+.public-id > .public-id-box > .public-id-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: inherit;
+}

@@ -13,7 +13,6 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
-import javafx.scene.text.Font;
 import javafx.util.Subscription;
 
 /// Provides the Skin for the PublicIDControl.
@@ -27,9 +26,6 @@ import javafx.util.Subscription;
 /// The publicIdLable and copyToClipboardButton are contained within an HBox, where the HBox is configured
 /// to handle mouse enter and exit events which is used to show and hide the copyToClipboardButton.
 public class PublicIDSkin implements Skin<PublicIDControl> {
-
-    /// The spacing between children in the HBoxes used in this Skin
-    private static final double HBOX_SPACING = 4.0;
 
     /// The root Node for the Skin
     private final HBox rootHBox = new HBox();
@@ -65,11 +61,16 @@ public class PublicIDSkin implements Skin<PublicIDControl> {
 
         Tooltip.install(publicIdLabel, publicIdTooltip);
 
-        rootHBox.setAlignment(Pos.CENTER_LEFT);
-        rootHBox.setSpacing(HBOX_SPACING);
+        rootHBox.getStyleClass().add("public-id");
+        rootHBox.getStylesheets().add(PublicIDControl.class.getResource("public-id.css").toExternalForm());
 
-        titleLabel.setFont(new Font("Noto Sans Bold", 10.0));
-        publicIdLabel.setFont(new Font("Noto Sans", 10.0));
+        rootHBox.setAlignment(Pos.CENTER_LEFT);
+
+        titleLabel.getStyleClass().add("title-label");
+        publicIdLabel.getStyleClass().add("public-id-label");
+
+//        titleLabel.setFont(new Font("Noto Sans Bold", 10.0));
+//        publicIdLabel.setFont(new Font("Noto Sans", 10.0));
 
         // the SVG graphic for the copy to clipboard icon
         var svgPath = new SVGPath();
@@ -81,11 +82,12 @@ public class PublicIDSkin implements Skin<PublicIDControl> {
         copyToClipboardButton.getStyleClass().add("add-pencil-button");
         Tooltip.install(copyToClipboardButton, new Tooltip("Copy to Clipboard"));
 
+        publicIdHBox.getStyleClass().add("public-id-box");
+
         // the publicIdHBox contains the publicIdLabel and the copyToClipboardButton.
         // Both controls need to be in a single HBox to be able to show and hide the
         // Button when the mouse enters and exits the HBox.
         publicIdHBox.setAlignment(Pos.CENTER_LEFT);
-        publicIdHBox.setSpacing(HBOX_SPACING);
         publicIdHBox.getChildren().addAll(publicIdLabel, copyToClipboardButton);
 
         rootHBox.getChildren().addAll(titleLabel, publicIdHBox);
