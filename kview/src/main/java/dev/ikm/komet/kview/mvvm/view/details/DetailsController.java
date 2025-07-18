@@ -27,6 +27,7 @@ import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
+import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
@@ -149,10 +150,7 @@ public class DetailsController  {
     private TextField definitionTextField;
 
     @FXML
-    private TextField identifierText;
-
-    @FXML
-    private Tooltip identifierTooltip;
+    private PublicIDControl identifierControl;
 
     @FXML
     private Label lastUpdatedLabel;
@@ -361,7 +359,6 @@ public class DetailsController  {
                     contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
         });
 
-        Tooltip.install(identifierText, identifierTooltip);
         Tooltip.install(lastUpdatedLabel, authorTooltip);
         Tooltip.install(fqnTitleText, conceptNameTooltip);
 
@@ -762,7 +759,7 @@ public class DetailsController  {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
-        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierText.getText(), fqnTitleText.getText()));
+        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierControl.getPublicId(), fqnTitleText.getText()));
         // unsubscribe listeners
         eventBus.unsubscribe(editConceptFullyQualifiedNameEventSubscriber,
                 addFullyQualifiedNameEventSubscriber,
@@ -844,14 +841,7 @@ public class DetailsController  {
         // Definition description text
         definitionTextField.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
 
-        // Public ID (UUID)
-        List<String> idList = entityFacade.publicId().asUuidList().stream()
-                .map(UUID::toString)
-                .collect(Collectors.toList());
-        idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
-        String idStr = String.join(", ", idList);
-        identifierText.setText(idStr);
-        identifierTooltip.setText(idStr);
+        setupDisplayUUID(entityFacade, viewCalculator);
 
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
@@ -882,6 +872,17 @@ public class DetailsController  {
         // Author tooltip
         authorTooltip.setText(stamp.author().description());
 
+    }
+
+    /// Show the public ID
+    private void setupDisplayUUID(EntityFacade entityFacade, ViewCalculator viewCalculator) {
+        List<String> idList = entityFacade.publicId().asUuidList().stream()
+                .map(UUID::toString)
+                .collect(Collectors.toList());
+        idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
+        String idStr = String.join(", ", idList);
+
+        identifierControl.setPublicId(idStr);
     }
 
     private void updateStampViewModel(String mode, StampEntity stamp) {
@@ -1299,7 +1300,7 @@ public class DetailsController  {
 
     public void clearView() {
         definitionTextField.clear();
-        identifierText.clear();
+        identifierControl.setPublicId("");
         lastUpdatedLabel.setText("");
         moduleLabel.setText("");
         pathLabel.setText("");
