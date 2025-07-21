@@ -30,4 +30,10 @@ public class PublicIDControl extends Control {
         return new PublicIDControlSkin(this);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getUserAgentStylesheet() {
+        return PublicIDControl.class.getResource("public-id-control.css").toExternalForm();
+    }
+
 }

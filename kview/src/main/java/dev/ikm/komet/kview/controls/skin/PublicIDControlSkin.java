@@ -54,7 +54,6 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         Tooltip.install(publicIdTextField, publicIdTooltip);
 
         rootHBox.getStyleClass().add("public-id");
-        rootHBox.getStylesheets().add(PublicIDControl.class.getResource("public-id.css").toExternalForm());
 
         rootHBox.setAlignment(Pos.CENTER_LEFT);
 
