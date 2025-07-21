@@ -469,12 +469,19 @@ public class PatternDetailsController {
         StringBinding dateStrProp = Bindings.createStringBinding(
                 () -> {
                     if (patternProperty.get() != null) {
-                        return LocalDate.ofInstant(
-                                getViewProperties().calculator()
-                                        .getFullyQualifiedDescription(patternProperty.get().nid())
-                                        .get().instant(),
-                                ZoneId.systemDefault()
-                        ).format(DateTimeFormatter.ofPattern("MMM dd, yyyy"));
+                        long rawTime = getViewProperties().calculator()
+                                .getFullyQualifiedDescription(patternProperty.get().nid())
+                                .get().stamp().time();
+
+                        //Check if the timestamp is valid. If it matches Long.MIN_VALUE + 1
+                        if (rawTime == Long.MIN_VALUE + 1) {
+                            return "Premundane";
+                        }
+
+                        Instant stampInstance = Instant.ofEpochSecond(rawTime);
+                        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
+                        String fqnDateAddedStr = DateTimeFormatter.ofPattern("MMM dd, yyyy").format(stampTime);
+                        return fqnDateAddedStr;
                     } else {
                         return "";
                     }
