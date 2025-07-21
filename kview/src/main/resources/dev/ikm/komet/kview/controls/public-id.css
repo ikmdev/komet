@@ -24,9 +24,11 @@
     -fx-font-size: inherit;
 }
 
-.public-id > .public-id-box > .public-id-label {
+.public-id > .public-id-box > .public-id-textfield {
+    -fx-pref-width: 136;
     -fx-font-family: "Noto Sans";
     -fx-font-size: inherit;
+    -fx-text-fill: -Grey-10;
 }
 
 .public-id > .public-id-box > .add-pencil-button > .copy-to-clipboard {

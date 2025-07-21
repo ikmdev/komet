@@ -3,10 +3,7 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.SkinBase;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
@@ -34,8 +31,8 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     /// The HBox that contians the public ID label and copy to clipboard button
     private final HBox publicIdHBox = new HBox();
 
-    /// The Label that displays the public ID UUID value
-    private final Label publicIdLabel = new Label("");
+    /// The TextField that displays the public ID UUID value
+    private final TextField publicIdTextField = new TextField("");
 
     /// The tooltip for the publicIdLabel, which is needed because the text in the label
     /// could exceed the Label width
@@ -54,7 +51,7 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     public PublicIDControlSkin(PublicIDControl control) {
         super(control);
 
-        Tooltip.install(publicIdLabel, publicIdTooltip);
+        Tooltip.install(publicIdTextField, publicIdTooltip);
 
         rootHBox.getStyleClass().add("public-id");
         rootHBox.getStylesheets().add(PublicIDControl.class.getResource("public-id.css").toExternalForm());
@@ -62,7 +59,8 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         rootHBox.setAlignment(Pos.CENTER_LEFT);
 
         titleLabel.getStyleClass().add("title-label");
-        publicIdLabel.getStyleClass().add("public-id-label");
+        publicIdTextField.setEditable(false);
+        publicIdTextField.getStyleClass().addAll("public-id-textfield", "copyable-label");
 
         // the SVG graphic for the copy to clipboard icon
         var svgPath = new SVGPath();
@@ -80,7 +78,7 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         // Both controls need to be in a single HBox to be able to show and hide the
         // Button when the mouse enters and exits the HBox.
         publicIdHBox.setAlignment(Pos.CENTER_LEFT);
-        publicIdHBox.getChildren().addAll(publicIdLabel, copyToClipboardButton);
+        publicIdHBox.getChildren().addAll(publicIdTextField, copyToClipboardButton);
 
         rootHBox.getChildren().addAll(titleLabel, publicIdHBox);
 
@@ -110,7 +108,7 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         // subscribe to changes to the publicIdProperty in the PublicIDControl
         subscription = control.publicIdProperty().subscribe(publicId -> {
             identifier = publicId;
-            publicIdLabel.setText(publicId);
+            publicIdTextField.setText(publicId);
             publicIdTooltip.setText(publicId);
         });
     }
