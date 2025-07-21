@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.kview.controls.skin.PublicIDSkin;
+import dev.ikm.komet.kview.controls.skin.PublicIDControlSkin;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
@@ -27,7 +27,7 @@ public class PublicIDControl extends Control {
     /** {@inheritDoc} */
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new PublicIDSkin(this);
+        return new PublicIDControlSkin(this);
     }
 
 }

@@ -23,7 +23,7 @@ import javafx.util.Subscription;
 ///
 /// The publicIdLable and copyToClipboardButton are contained within an HBox, where the HBox is configured
 /// to handle mouse enter and exit events which is used to show and hide the copyToClipboardButton.
-public class PublicIDSkin extends SkinBase<PublicIDControl> {
+public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
 
     /// The root Node for the Skin
     private final HBox rootHBox = new HBox();
@@ -51,7 +51,7 @@ public class PublicIDSkin extends SkinBase<PublicIDControl> {
     /// The current public id property value, as received in the subscription listener
     private String identifier;
 
-    public PublicIDSkin(PublicIDControl control) {
+    public PublicIDControlSkin(PublicIDControl control) {
         super(control);
 
         Tooltip.install(publicIdLabel, publicIdTooltip);
