@@ -9,6 +9,7 @@ import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
+import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
@@ -100,6 +101,8 @@ public class ConceptPatternNavController {
 
     private Subscriber<PatternSavedEvent> patternCreationEventSubscriber;
     private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
+
+    private KLConceptNavigatorControl conceptNavigatorControl;
 
     public ConceptPatternNavController(JournalController journalController) {
         this.journalController = journalController;
@@ -262,7 +265,7 @@ public class ConceptPatternNavController {
             // TODO
         });
 
-        KLConceptNavigatorControl conceptNavigatorControl = new KLConceptNavigatorControl();
+        conceptNavigatorControl = new KLConceptNavigatorControl();
         conceptNavigatorControl.setNavigator(navigator);
         conceptNavigatorControl.setHeader("Concept Header");
         conceptNavigatorControl.setShowTags(false);
@@ -344,5 +347,13 @@ public class ConceptPatternNavController {
 
     public void toggleConcepts() {
         conceptsToggleButton.setSelected(true);
+    }
+
+    public void showConcept(final int conceptNid) {
+        if (conceptNavigatorControl == null) {
+            LOG.error("Concept navigator control is null");
+            return;
+        }
+        conceptNavigatorControl.expandAndSelectConcept(new InvertedTree.ConceptItem(-1, conceptNid, ""));
     }
 }
