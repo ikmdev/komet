@@ -49,11 +49,11 @@
 }
 
 .public-id > .public-id-box > .copy-to-clipboard-button:hover {
-    -fx-background-color: -Grey-5;
+    -fx-background-color: -Grey-3;
 }
 
 .public-id > .public-id-box > .copy-to-clipboard-button:pressed {
-    -fx-background-color: -Grey-8;
+    -fx-background-color: -Grey-5;
 }
 
 .public-id > .public-id-box > .copy-to-clipboard-button:disabled {
