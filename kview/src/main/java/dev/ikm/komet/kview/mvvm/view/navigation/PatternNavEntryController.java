@@ -170,7 +170,7 @@ public class PatternNavEntryController {
 
         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
         Function<Integer, String> fetchDescriptionByNid = (nid -> {
-            // "[Reference Component] in [Pattern]"
+            // Reference Component in Pattern
             String descr = "";
             if (EntityService.get().getEntity(nid).get() instanceof SemanticEntity semanticEntity) {
                 EntityFacade refComponent = EntityService.get().getEntity(semanticEntity.referencedComponentNid()).get();
