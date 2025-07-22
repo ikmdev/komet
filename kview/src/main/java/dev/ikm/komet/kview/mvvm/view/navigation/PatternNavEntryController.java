@@ -175,8 +175,8 @@ public class PatternNavEntryController {
             if (EntityService.get().getEntity(nid).get() instanceof SemanticEntity semanticEntity) {
                 EntityFacade refComponent = EntityService.get().getEntity(semanticEntity.referencedComponentNid()).get();
                 PatternFacade patternFacade = semanticEntity.pattern().toProxy();
-                descr = "[" + viewProperties.calculator().languageCalculator().getDescriptionText(refComponent.nid()).get() + "] in [";
-                descr += viewProperties.calculator().languageCalculator().getDescriptionTextOrNid(patternFacade.nid()) + "]";
+                descr = viewProperties.calculator().languageCalculator().getDescriptionText(refComponent.nid()).get()+" ";
+                descr += viewProperties.calculator().languageCalculator().getDescriptionTextOrNid(patternFacade.nid());
             }
             return descr;
         });
