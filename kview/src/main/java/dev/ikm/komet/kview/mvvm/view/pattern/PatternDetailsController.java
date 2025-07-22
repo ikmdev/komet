@@ -478,16 +478,16 @@ public class PatternDetailsController {
                             return "Premundane";
                         }
 
-                        Instant stampInstance = Instant.ofEpochSecond(rawTime);
-                        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-                        String fqnDateAddedStr = DateTimeFormatter.ofPattern("MMM dd, yyyy").format(stampTime);
+                        LocalDate localDate = Instant.ofEpochSecond(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
+                        String fqnDateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
                         return fqnDateAddedStr;
+
+
                     } else {
                         return "";
                     }
                 },
-                patternProperty
-        );
+                new javafx.beans.Observable[]{patternProperty});
         patternViewModel.getStringProperty(FQN_DATE_ADDED_STR).bind(dateStrProp);
 
         if (patternViewModel.getPropertyValue(MODE).equals(CREATE)) {
