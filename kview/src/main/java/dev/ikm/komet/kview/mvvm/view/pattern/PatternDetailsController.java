@@ -482,7 +482,6 @@ public class PatternDetailsController {
                         String fqnDateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
                         return fqnDateAddedStr;
 
-
                     } else {
                         return "";
                     }
