@@ -487,7 +487,8 @@ public class PatternDetailsController {
                         return "";
                     }
                 },
-                new javafx.beans.Observable[]{patternProperty});
+                patternProperty
+        );
         patternViewModel.getStringProperty(FQN_DATE_ADDED_STR).bind(dateStrProp);
 
         if (patternViewModel.getPropertyValue(MODE).equals(CREATE)) {
