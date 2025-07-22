@@ -65,10 +65,10 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         var svgPath = new SVGPath();
         svgPath.setContent(SVGConstants.COPY_TO_CLIPBOARD_SVG_PATH);
         svgPath.setFillRule(FillRule.EVEN_ODD);
-        svgPath.getStyleClass().add("copy-to-clipboard");
+        svgPath.getStyleClass().add("copy-to-clipboard-svg");
 
         copyToClipboardButton.setGraphic(svgPath);
-        copyToClipboardButton.getStyleClass().add("add-pencil-button");
+        copyToClipboardButton.getStyleClass().add("copy-to-clipboard-button");
         Tooltip.install(copyToClipboardButton, new Tooltip("Copy to Clipboard"));
 
         publicIdHBox.getStyleClass().add("public-id-box");

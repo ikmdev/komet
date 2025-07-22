@@ -31,10 +31,39 @@
     -fx-text-fill: -Grey-10;
 }
 
-.public-id > .public-id-box > .add-pencil-button > .copy-to-clipboard {
+.public-id > .public-id-box > .copy-to-clipboard-button {
+    -fx-padding: 2;
+    -fx-border-insets: 0;
+    -fx-border-radius: 4;
+
+    -width-size: 20px;
+    -height-size: 20px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-background-color: transparent;
+}
+
+.public-id > .public-id-box > .copy-to-clipboard-button:hover {
+    -fx-background-color: -Grey-5;
+}
+
+.public-id > .public-id-box > .copy-to-clipboard-button:pressed {
+    -fx-background-color: -Grey-8;
+}
+
+.public-id > .public-id-box > .copy-to-clipboard-button:disabled {
+    -fx-fill: -Grey-3;
+}
+
+.public-id > .public-id-box > .copy-to-clipboard-button > .copy-to-clipboard-svg {
     -icon-scale: 0.7;
 
-    -fx-fill: -Secondary-05;
+    -fx-fill: -Grey-10;
     -fx-scale-x: -icon-scale;
     -fx-scale-y: -icon-scale;
 }
