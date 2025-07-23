@@ -164,8 +164,10 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -478,8 +480,10 @@ public class PatternDetailsController {
                             return "Premundane";
                         }
 
+                        Locale userLocale = Locale.getDefault();
                         LocalDate localDate = Instant.ofEpochSecond(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
-                        String fqnDateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
+                        DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
+                        String fqnDateAddedStr = formatter.format(localDate);
                         return fqnDateAddedStr;
 
                     } else {
