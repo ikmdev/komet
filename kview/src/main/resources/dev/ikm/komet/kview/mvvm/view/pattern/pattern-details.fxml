@@ -79,7 +79,9 @@
                                        <content><SVGConstants fx:constant="SAVE_SVG_PATH" /></content>
                                     </SVGPath>
                                  </graphic>
-                                 <tooltip><Tooltip text="Submit" /></tooltip>
+                                 <tooltip>
+                                    <Tooltip fx:id="savePatternTooltip" text="Submit" />
+                                 </tooltip>
                               </Button>
                               <Button mnemonicParsing="false" text="Button">
                                  <graphic>

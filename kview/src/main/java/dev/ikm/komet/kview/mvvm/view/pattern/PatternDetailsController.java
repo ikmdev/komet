@@ -121,20 +121,14 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -248,6 +242,12 @@ public class PatternDetailsController {
     @FXML
     private Button savePatternButton;
 
+    @FXML
+    private Tooltip savePatternTooltip;
+
+    @FXML
+    private HBox controlBoxHbox1;
+
     // pattern definition fields
     @FXML
     private Text meaningText;
@@ -335,6 +335,9 @@ public class PatternDetailsController {
         setUpDraggable(meaningText, patternViewModel.getProperty(MEANING_ENTITY));
 
         setUpAddSemanticMenu();
+
+        //Listen for changes to the publish button's disabled property
+        setupTooltipForDisabledButton(savePatternButton, savePatternTooltip, controlBoxHbox1, "Publish: Disabled", "Submit");
 
         // listen for open and close events
         patternPropertiesEventSubscriber = (evt) -> {
@@ -556,6 +559,60 @@ public class PatternDetailsController {
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
         }
+    }
+
+    private void setupTooltipForDisabledButton(Button button, Tooltip tooltip, HBox parentBox, String disabledText, String enabledText) {
+
+        button.disabledProperty().addListener((obs, wasDisabled, isNowDisabled) -> {
+            if (isNowDisabled) {
+                tooltip.setText(disabledText);
+                Tooltip.uninstall(button, tooltip);
+
+                // Create unique handlers for each button-tooltip pair
+                EventHandler<MouseEvent> showHandler = showTooltipOnDisabledButton(button, tooltip);
+                EventHandler<MouseEvent> hideHandler = hideTooltipHandler(tooltip);
+
+                // Store handlers on the button's properties for later removal
+                button.getProperties().put("showHandler", showHandler);
+                button.getProperties().put("hideHandler", hideHandler);
+
+                parentBox.addEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
+                parentBox.addEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
+            } else {
+                tooltip.setText(enabledText);
+                Tooltip.install(button, tooltip);
+                tooltip.hide();
+
+                // Remove handlers if present
+                EventHandler<MouseEvent> showHandler = (EventHandler<MouseEvent>) button.getProperties().get("showHandler");
+                EventHandler<MouseEvent> hideHandler = (EventHandler<MouseEvent>) button.getProperties().get("hideHandler");
+                if (showHandler != null) parentBox.removeEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
+                if (hideHandler != null) parentBox.removeEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
+            }
+        });
+    }
+
+    private EventHandler<MouseEvent> showTooltipOnDisabledButton(Button button, Tooltip tooltip) {
+        return event -> {
+            if (button.isDisabled()) {
+                Bounds bounds = button.localToScreen(button.getBoundsInLocal());
+                double mouseX = event.getScreenX();
+                double mouseY = event.getScreenY();
+                if (bounds.contains(mouseX, mouseY)) {
+                    if (!tooltip.isShowing()) {
+                        tooltip.show(button, mouseX, mouseY + 10);
+                    }
+                } else {
+                    tooltip.hide();
+                }
+            } else {
+                tooltip.hide();
+            }
+        };
+    }
+
+    private EventHandler<MouseEvent> hideTooltipHandler(Tooltip tooltip) {
+        return event -> tooltip.hide();
     }
 
     private DragAndDropType getDragAndDropType(EntityFacade entityFacade) {
