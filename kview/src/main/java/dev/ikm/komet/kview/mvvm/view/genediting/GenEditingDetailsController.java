@@ -323,7 +323,13 @@ public class GenEditingDetailsController {
 
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
             //Set up the Listener to refresh the details area (After user hits submit button on the right side)
-            EntityFacade finalSemantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+            ObjectProperty<EntityFacade> optionalSemantic = genEditingViewModel.getProperty(SEMANTIC);
+            if (optionalSemantic.isNull().get()) {
+                // If the window is in creation mode ignore the refresh event
+                return;
+            }
+
+            EntityFacade finalSemantic = optionalSemantic.get();
             if (evt.getEventType() == GenEditingEvent.PUBLISH
                     && evt.getNid() == finalSemantic.nid()) {
                 if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
