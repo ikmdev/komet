@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.kview.mvvm.view.changeset.exchange;
 
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferences;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials.GitHubCredentialsProvider;
@@ -74,6 +76,9 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
+
+import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
 
 /**
  * A unified task for Git operations involving medical terminology data.
@@ -652,6 +657,8 @@ public class GitTask extends TrackingCallable<Boolean> {
 
         // Load changesets phase - pass the list of added files
         loadChangesets(pullPhase.getEnd(), loadPhase.getEnd(), addedFiles);
+        //Refresh UI after changesets are loaded
+        EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(this, GLOBAL_REFRESH));
 
         // Run reasoner phase
         runReasoner(loadPhase.getEnd(), reasonerPhase.getEnd());
