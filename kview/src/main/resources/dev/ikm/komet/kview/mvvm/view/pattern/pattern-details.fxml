@@ -39,7 +39,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="Infinity" maxWidth="Infinity" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="Infinity" maxWidth="Infinity" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
          <top>
@@ -257,7 +257,7 @@
                                                 </Text>
                                                 <VBox>
                                                    <children>
-                                                      <TextFlow styleClass="fqn-container" VBox.vgrow="SOMETIMES">
+                                                      <TextFlow fx:id="latestFqnTextFlow" styleClass="fqn-container" VBox.vgrow="SOMETIMES">
                                                          <children>
                                                             <Text fx:id="latestFqnText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" />
                                                          </children>
@@ -569,18 +569,21 @@
                                     </TextField>
                                  </children>
                               </HBox>
-                              <HBox GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
+                              <HBox alignment="CENTER_LEFT" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
                                  <children>
-                                    <Label alignment="BOTTOM_CENTER" minWidth="61.0" prefHeight="25.0" prefWidth="61.0" styleClass="pattern-field" text="IDENTIFIER:">
+                                    <Text style="-fx-text-fill: -Grey-10;" text="IDENTIFIER: ">
                                        <font>
-                                          <Font name="Open Sans" size="10.0" />
-                                       </font>
-                                    </Label>
-                                    <Text fx:id="identifierText" styleClass="text-noto-sans-twelve" text="203488222456" textAlignment="RIGHT">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="10.0" />
+                                          <Font name="Noto Sans" size="10.0" />
                                        </font>
                                     </Text>
+                                    <TextField fx:id="identifierText" editable="false" minHeight="16.0" prefHeight="22.0" prefWidth="136.0" style="-fx-text-fill: -Grey-10;" styleClass="copyable-label" HBox.hgrow="ALWAYS">
+                                       <font>
+                                          <Font name="Noto Sans" size="10.0" />
+                                       </font>
+                                       <tooltip>
+                                          <Tooltip fx:id="identifierTooltip" />
+                                       </tooltip>
+                                    </TextField>
                                  </children>
                               </HBox>
                               <Label fx:id="patternTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0" styleClass="pattern-title" text="New Pattern" textFill="#212430" wrapText="true" GridPane.columnIndex="1">
