@@ -283,15 +283,19 @@ public class ConceptNavigatorUtils {
     }
 
     /**
-     * <p>Resets selection, highlighted and expanded states of every concept TreeItem of the TreeView
+     * <p>Resets selection, highlighted and expanded states of every concept TreeItem of the TreeView,
+     * removing also all items, starting from the second generation
      * </p>
      * @param treeView the {@link KLConceptNavigatorControl}
      */
     public static void resetConceptNavigator(KLConceptNavigatorControl treeView) {
         treeView.getSelectionModel().clearSelection();
-        iterateTree((ConceptNavigatorTreeItem) treeView.getRoot(), item -> {
-            item.setHighlighted(false);
-            item.setExpanded(false);
+        treeView.getRoot().getChildren().forEach(item -> {
+            ((ConceptNavigatorTreeItem) item).setHighlighted(false);
+            if (!item.isLeaf()) {
+                item.setExpanded(false);
+                item.getChildren().clear();
+            }
         });
     }
 
