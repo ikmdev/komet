@@ -86,6 +86,7 @@ import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KometIcon;
+import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
@@ -209,7 +210,7 @@ public class PatternDetailsController {
     private Label patternTitleText;
 
     @FXML
-    private TextField identifierText;
+    private PublicIDControl identifierControl;
 
     @FXML
     private TextFlow latestFqnTextFlow;
@@ -325,7 +326,6 @@ public class PatternDetailsController {
     private void initialize() {
         purposeText.setText("");
         meaningText.setText("");
-        identifierText.setText("");
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
@@ -444,9 +444,7 @@ public class PatternDetailsController {
             }
         });
 
-        // show the public id
-        identifierText.textProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
-                String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
+        setupDisplayUUID();
 
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
@@ -556,6 +554,12 @@ public class PatternDetailsController {
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
         }
+    }
+
+    /// Show the public ID
+    private void setupDisplayUUID() {
+        identifierControl.publicIdProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
+                String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
     }
 
     private DragAndDropType getDragAndDropType(EntityFacade entityFacade) {
