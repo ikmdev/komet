@@ -166,13 +166,13 @@ public class PatternNavEntryController {
 
         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
         Function<Integer, String> fetchDescriptionByNid = (nid -> {
-            // "[Reference Component] in [Pattern]"
+            // Reference Component in Pattern
             String descr = "";
             if (EntityService.get().getEntity(nid).get() instanceof SemanticEntity semanticEntity) {
                 EntityFacade refComponent = EntityService.get().getEntity(semanticEntity.referencedComponentNid()).get();
                 PatternFacade patternFacade = semanticEntity.pattern().toProxy();
-                descr = "[" + viewProperties.calculator().languageCalculator().getDescriptionText(refComponent.nid()).get() + "] in [";
-                descr += viewProperties.calculator().languageCalculator().getDescriptionTextOrNid(patternFacade.nid()) + "]";
+                descr = viewProperties.calculator().languageCalculator().getDescriptionText(refComponent.nid()).get()+" ";
+                descr += viewProperties.calculator().languageCalculator().getDescriptionTextOrNid(patternFacade.nid());
             }
             return descr;
         });
