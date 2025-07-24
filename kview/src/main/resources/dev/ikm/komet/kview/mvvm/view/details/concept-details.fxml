@@ -1,46 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import dev.ikm.komet.kview.controls.KLExpandableNodeListControl?>
+<?import dev.ikm.komet.kview.controls.PublicIDControl?>
 <?import dev.ikm.komet.kview.controls.ResponsiveTextFlow?>
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
-<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ContextMenu?>
-<?import javafx.scene.control.Hyperlink?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.MenuButton?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.TitledPane?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Ellipse?>
-<?import javafx.scene.shape.Rectangle?>
-<?import javafx.scene.shape.SVGPath?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextFlow?>
-
-<BorderPane fx:id="detailsOuterBorderPane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<BorderPane fx:id="detailsOuterBorderPane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane">
          <top>
@@ -152,7 +126,7 @@
             </HBox>
          </right>
          <center>
-            <BorderPane minWidth="460.0" styleClass="main-center-container" BorderPane.alignment="CENTER">
+            <BorderPane styleClass="main-center-container" BorderPane.alignment="CENTER" minWidth="460.0">
                <top>
                   <AnchorPane styleClass="concept-details-definitions">
                      <GridPane hgap="8.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="4.0">
@@ -186,21 +160,7 @@
                               </font>
                            </TextField>
                         </HBox>
-                        <HBox alignment="CENTER_LEFT" GridPane.columnSpan="2" GridPane.rowIndex="2">
-                           <Text style="-fx-text-fill: -Grey-10;" text="IDENTIFIER: ">
-                              <font>
-                                 <Font name="Noto Sans" size="10.0" />
-                              </font>
-                           </Text>
-                           <TextField fx:id="identifierText" editable="false" minHeight="16.0" prefHeight="16.0" style="-fx-text-fill: -Grey-10;" styleClass="copyable-label" HBox.hgrow="ALWAYS">
-                              <font>
-                                 <Font name="Noto Sans" size="10.0" />
-                              </font>
-                              <tooltip>
-                                 <Tooltip fx:id="identifierTooltip" />
-                              </tooltip>
-                           </TextField>
-                        </HBox>
+                        <PublicIDControl fx:id="identifierControl" GridPane.columnSpan="2" GridPane.rowIndex="2"/>
                         <StackPane fx:id="stampContainer" onMousePressed="#onMousePressedOnStamp" prefWidth="208.0" styleClass="stamp-container" GridPane.columnIndex="2" GridPane.rowSpan="3">
                            <VBox prefWidth="208.0" spacing="2.0">
                               <HBox>

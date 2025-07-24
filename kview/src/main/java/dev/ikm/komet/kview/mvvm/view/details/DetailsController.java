@@ -21,13 +21,18 @@ import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
+import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
+import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.events.*;
+import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
@@ -50,14 +55,12 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -96,6 +99,7 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
@@ -157,10 +161,7 @@ public class DetailsController  {
     private TextField definitionTextField;
 
     @FXML
-    private TextField identifierText;
-
-    @FXML
-    private Tooltip identifierTooltip;
+    private PublicIDControl identifierControl;
 
     @FXML
     private Label lastUpdatedLabel;
@@ -375,7 +376,6 @@ public class DetailsController  {
                     contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
         });
 
-        Tooltip.install(identifierText, identifierTooltip);
         Tooltip.install(lastUpdatedLabel, authorTooltip);
         Tooltip.install(fqnTitleText, conceptNameTooltip);
 
@@ -526,6 +526,14 @@ public class DetailsController  {
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
         }
+
+        Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
+            if (evt.getEventType() == GenEditingEvent.PUBLISH){
+                updateView();
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(conceptViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                GenEditingEvent.class, refreshSubscriber);
 
         stampContainer.sceneProperty().addListener(new InvalidationListener() {
             @Override
@@ -793,7 +801,7 @@ public class DetailsController  {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
-        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierText.getText(), fqnTitleText.getText()));
+        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierControl.getPublicId(), fqnTitleText.getText()));
         // unsubscribe listeners
         eventBus.unsubscribe(editConceptFullyQualifiedNameEventSubscriber,
                 addFullyQualifiedNameEventSubscriber,
@@ -875,14 +883,7 @@ public class DetailsController  {
         // Definition description text
         definitionTextField.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
 
-        // Public ID (UUID)
-        List<String> idList = entityFacade.publicId().asUuidList().stream()
-                .map(UUID::toString)
-                .collect(Collectors.toList());
-        idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
-        String idStr = String.join(", ", idList);
-        identifierText.setText(idStr);
-        identifierTooltip.setText(idStr);
+        setupDisplayUUID(entityFacade, viewCalculator);
 
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
@@ -913,6 +914,17 @@ public class DetailsController  {
         // Author tooltip
         authorTooltip.setText(stamp.author().description());
 
+    }
+
+    /// Show the public ID
+    private void setupDisplayUUID(EntityFacade entityFacade, ViewCalculator viewCalculator) {
+        List<String> idList = entityFacade.publicId().asUuidList().stream()
+                .map(UUID::toString)
+                .collect(Collectors.toList());
+        idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
+        String idStr = String.join(", ", idList);
+
+        identifierControl.setPublicId(idStr);
     }
 
     private void updateStampViewModel(String mode, StampEntity stamp) {
@@ -1216,7 +1228,9 @@ public class DetailsController  {
                     //              concept navigator's view coordinates based on stamp (date time).
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
-                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity.nid());
+                    ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntity.nid());
+                    ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
+                    Latest<SemanticEntityVersion>  semanticVersion =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
 
                     // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
                     EntityFacade descriptionTypeConceptValue = getFieldValueByMeaning(semanticVersion.get(), TinkarTerm.DESCRIPTION_TYPE);
@@ -1235,7 +1249,10 @@ public class DetailsController  {
                     //              concept navigator's view coordinates based on stamp (date time).
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
-                    Latest<SemanticEntityVersion> semanticVersion = viewCalculator.latest(semanticEntity.nid());
+
+                    ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntity.nid());
+                    ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
+                    Latest<SemanticEntityVersion>  semanticVersion =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
 
                     PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
                     PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
@@ -1330,7 +1347,7 @@ public class DetailsController  {
 
     public void clearView() {
         definitionTextField.clear();
-        identifierText.clear();
+        identifierControl.setPublicId("");
         lastUpdatedLabel.setText("");
         moduleLabel.setText("");
         pathLabel.setText("");
