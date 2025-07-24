@@ -283,7 +283,8 @@ public class ConceptNavigatorUtils {
     }
 
     /**
-     * <p>Resets selection, highlighted and expanded states of every concept TreeItem of the TreeView
+     * <p>Resets selection, highlighted and expanded states of every concept TreeItem of the TreeView,
+     * removing also all items, starting from the second generation
      * </p>
      * @param treeView the {@link KLConceptNavigatorControl}
      */
