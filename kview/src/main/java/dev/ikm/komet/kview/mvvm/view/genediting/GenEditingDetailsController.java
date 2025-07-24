@@ -117,6 +117,7 @@ import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -443,7 +444,6 @@ public class GenEditingDetailsController {
         ObservablePatternSnapshot observablePatternSnapshot = observablePattern.getSnapshot(getViewProperties().calculator());
         ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
         PatternEntityVersion patternEntityVersion = observablePatternVersion.getVersionRecord();
-        //            patternEntityVersionLatest.ifPresent(patternEntityVersion -> {
         String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
         String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
         semanticMeaningText.setText(meaning);
@@ -451,7 +451,15 @@ public class GenEditingDetailsController {
         String patternFQN = getViewProperties().calculator().languageCalculator()
                 .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
         semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
-        semanticTitleText.setText("%s of component for %s in %s".formatted(meaning, purpose, patternFQN));
+
+        ObjectProperty<EntityFacade> refComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
+        if(refComponentProp != null){
+            EntityFacade refComponent = refComponentProp.get();
+            if(refComponent != null) {
+                String refComponentTitle = getViewProperties().calculator().languageCalculator().getDescriptionText(refComponent.nid()).get();
+                semanticTitleText.setText(refComponentTitle + " " + patternFQN);
+            }
+        }
     }
 
     //TODO revisit and optimize this method.
