@@ -50,17 +50,20 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.shape.SVGPath;
@@ -105,9 +108,14 @@ import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class DetailsController  {
 
+    private static final PseudoClass STAMP_SELECTED = PseudoClass.getPseudoClass("selected");
+
     private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
 
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
+
+    @FXML
+    private Pane stampContainer;
 
     @FXML
     private MenuButton coordinatesMenuButton;
@@ -309,6 +317,10 @@ public class DetailsController  {
      */
     private ViewCalculatorWithCache viewCalculatorWithCache;
 
+    private final EventHandler<MouseEvent> mouseFilterPressedOnScene = this::onMouseFilterPressedOnScene;
+
+    private boolean isStampSelected;
+
     public DetailsController() {
     }
 
@@ -318,6 +330,8 @@ public class DetailsController  {
 
     @FXML
     public void initialize() {
+        isStampSelected = false;
+
         identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
             // query all available memberships (semantics having the purpose as 'membership', and no fields)
             // query current concept's membership semantic records.
@@ -511,6 +525,23 @@ public class DetailsController  {
         // Check if the properties panel is initially open and add draggable nodes if needed
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
+        }
+
+        stampContainer.sceneProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                if (stampContainer.getScene() != null) {
+                    stampContainer.getScene().addEventFilter(MouseEvent.MOUSE_PRESSED, mouseFilterPressedOnScene);
+                    stampContainer.sceneProperty().removeListener(this);
+                }
+            }
+        });
+    }
+
+    private void onMouseFilterPressedOnScene(MouseEvent mouseEvent) {
+        Point2D localMousePos = stampContainer.sceneToLocal(mouseEvent.getSceneX(), mouseEvent.getSceneY());
+        if (!stampContainer.contains(localMousePos)) {
+            updateStampSelection(false);
         }
     }
 
@@ -1323,6 +1354,16 @@ public class DetailsController  {
 
     public HBox getConceptHeaderControlToolBarHbox() {
         return conceptHeaderControlToolBarHbox;
+    }
+
+    @FXML
+    private void onMousePressedOnStamp(MouseEvent mouseEvent) {
+        updateStampSelection(!isStampSelected);
+    }
+
+    private void updateStampSelection(boolean isSelected) {
+        isStampSelected = isSelected;
+        stampContainer.pseudoClassStateChanged(STAMP_SELECTED, isStampSelected);
     }
 
     @FXML
