@@ -24,7 +24,6 @@ import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
@@ -51,7 +50,9 @@ import org.slf4j.LoggerFactory;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -225,34 +226,30 @@ public class ConceptPatternNavController {
             TinkExecutor.threadPool().execute(() -> {
                 try {
                     List<LatestVersionSearchResult> results = calculator.search(searchControl.getText(), 1000).toList();
-                    List<KLSearchControl.SearchResult> searchResults = new ArrayList<>();
-                    results.stream()
-                            .filter(result -> result.latestVersion().isPresent())
-                            .forEach(result -> {
-                                SemanticEntityVersion semantic = result.latestVersion().get();
-                                searchResults.addAll(
-                                        Entity.getConceptForSemantic(semantic.nid()).map(entity -> {
-                                                    int[] parentNids = navigator.getParentNids(entity.nid());
-                                                    List<KLSearchControl.SearchResult> list = new ArrayList<>();
-                                                    if (parentNids != null) {
-                                                        // Add one search result per parent
-                                                        for (int parentNid : parentNids) {
-                                                            ConceptFacade parent = Entity.getFast(parentNid);
-                                                            list.add(new KLSearchControl.SearchResult(parent, entity, searchControl.getText()));
-                                                        }
-                                                    } else {
-                                                        list.add(new KLSearchControl.SearchResult(null, entity, searchControl.getText()));
-                                                    }
-                                                    return list;
-                                                })
-                                                .orElse(List.of()));
-                            });
+                    results.sort((o1, o2) -> Float.compare(o2.score(), o1.score()));
+                    Map<Integer, List<LatestVersionSearchResult>> topNidMatchMap = new LinkedHashMap<>();
+                    results.forEach(result -> topNidMatchMap.computeIfAbsent(result.latestVersion().get()
+                            .chronology().topEnclosingComponentNid(), _ -> new ArrayList<>()).add(result));
+                    Map<KLSearchControl.SearchResult, List<LatestVersionSearchResult>> searchResultsMap = new LinkedHashMap<>();
+                    topNidMatchMap.keySet().forEach(key ->
+                            navigator.getViewCalculator().latest(key).ifPresent(_ -> {
+                                // Add one search result per parent, ignoring concepts or patterns that don't have a parent
+                                for (int parentNid : navigator.getParentNids(key)) {
+                                    searchResultsMap.put(new KLSearchControl.SearchResult(ConceptFacade.make(parentNid),
+                                            ConceptFacade.make(key), searchControl.getText()), topNidMatchMap.get(key));
+                                }
+                            }));
+                    searchResultsMap.forEach((_, v) -> v.sort((o1, o2) -> Float.compare(o1.score(), o2.score())));
 
-                    // NOTE: different semanticIds can give the same entity, remove duplicates
-                    List<KLSearchControl.SearchResult> distinctResults = searchResults.stream().distinct().toList();
+                    List<Map.Entry<KLSearchControl.SearchResult, List<LatestVersionSearchResult>>> entries =
+                            new ArrayList<>(searchResultsMap.entrySet());
+                    entries.sort((m1, m2) -> Float.compare(m2.getValue().getFirst().score(), m1.getValue().getFirst().score()));
+                    // ignore map.Entry::values for now (a list of description semantics)
+                    List<KLSearchControl.SearchResult> searchResults = entries.stream().map(Map.Entry::getKey).toList();
+
                     Platform.runLater(() -> {
                         searchControl.setResultsPlaceholder(null);
-                        searchControl.resultsProperty().addAll(distinctResults);
+                        searchControl.resultsProperty().addAll(searchResults);
                     });
 
                 } catch (Exception e) {
