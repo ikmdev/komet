@@ -32,6 +32,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
+import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
@@ -229,10 +230,7 @@ public class GenEditingDetailsController {
     private ImageView identiconImageView;
 
     @FXML
-    private TextField uuidTextFieldLabel;
-
-    @FXML
-    private Tooltip identifierTooltip;
+    private PublicIDControl identifierControl;
 
     @InjectViewModel
     private StampViewModel stampViewModel;
@@ -310,8 +308,7 @@ public class GenEditingDetailsController {
         idList.addAll(DataModelHelper.getIdsToAppend(genEditingViewModel.getViewProperties().calculator(), semanticComponent.toProxy()));
         String idString = String.join(", ", idList);
 
-        uuidTextFieldLabel.setText(idString);
-        identifierTooltip.setText(idString);
+        identifierControl.setPublicId(idString);
     }
 
     private void setupIdenticon(ObjectProperty<EntityFacade> refComponent) {
