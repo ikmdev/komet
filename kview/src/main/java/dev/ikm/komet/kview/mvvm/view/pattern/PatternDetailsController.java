@@ -107,7 +107,6 @@ import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
-import dev.ikm.tinkar.component.SemanticVersion;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -472,7 +471,6 @@ public class PatternDetailsController {
 
         fqnNameProp.subscribe(descrName -> {
             if (descrName != null && descrName.getSemanticPublicId() != null) {
-                //Check if the timestamp is valid. If it matches Long.MIN_VALUE + 1
                 Latest<EntityVersion> semanticVersionLatest = getViewProperties().calculator().latest(Entity.nid(descrName.getSemanticPublicId()));
                 semanticVersionLatest.ifPresent(entityVersion -> {
                     long rawTime = entityVersion.time();
