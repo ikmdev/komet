@@ -77,6 +77,7 @@ public class LineageBox extends ScrollPane {
     private int invertedTreeMaxDepth;
 
     private final VBox root;
+    private Navigator navigator;
 
     /**
      * <p>Creates a {@link LineageBox} instance, which initially is just an
@@ -146,7 +147,7 @@ public class LineageBox extends ScrollPane {
         ConceptNavigatorTreeItem childItem = getConcept();
         invertedTreeMaxDepth = -1;
         if (childItem != null && childItem.getValue() != null) {
-            Navigator navigator = getNavigator();
+            navigator = getNavigator();
             invertedTreeMaxDepth = getFartherLevel(childItem.getValue().nid(), navigator);
             // primary parent under current tree lineage
             ConceptNavigatorTreeItem primaryParentItem = (ConceptNavigatorTreeItem) childItem.getParent();
@@ -287,7 +288,7 @@ public class LineageBox extends ScrollPane {
          * @return a {@link Label}
          */
         private Label getConceptLabel(InvertedTree.ConceptItem treeItem) {
-            Label label = new Label(treeItem.description()) {
+            Label label = new Label(getDescription(treeItem)) {
                 {
                     localToSceneTransformProperty().subscribe(l -> {
                         Bounds boxBounds = LineageBox.this.localToScene(LineageBox.this.getLayoutBounds());
@@ -327,5 +328,16 @@ public class LineageBox extends ScrollPane {
             label.getStyleClass().add("lineage-label");
             return label;
         }
+    }
+
+    /**
+     * return the description of a nid
+     * @param treeItem concept item
+     * @return a string
+     */
+    private String getDescription(InvertedTree.ConceptItem treeItem) {
+        return navigator != null ?
+                navigator.getViewCalculator().getDescriptionTextOrNid(treeItem.nid()) :
+                treeItem.description();
     }
 }
