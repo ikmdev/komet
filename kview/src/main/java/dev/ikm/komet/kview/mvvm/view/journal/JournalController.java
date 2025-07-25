@@ -939,13 +939,13 @@ public class JournalController {
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
                             nextGenSearchViewModel.setPropertyValue(MODE, CREATE)
+                                .setPropertyValue(VIEW_PROPERTIES, this.windowView.makeOverridableViewProperties())
+                                .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
+                                //.setPropertyValue(WINDOW_VIEW, this.windowView)
                 );
 
         JFXNode<Pane, NextGenSearchController> nextGenSearchJFXNode = FXMLMvvmLoader.make(nextGenSearchConfig);
         nextGenSearchController = nextGenSearchJFXNode.controller();
-        nextGenSearchController.updateModel(this.windowView.makeOverridableViewProperties());
-        nextGenSearchController.setWindowView(this.windowView);
-        nextGenSearchController.setJournalTopic(journalTopic);
         nextGenSearchPanel = nextGenSearchJFXNode.node();
 
         setupSlideOutTrayPane(nextGenSearchPanel, nexGenSearchSlideoutTrayPane);
