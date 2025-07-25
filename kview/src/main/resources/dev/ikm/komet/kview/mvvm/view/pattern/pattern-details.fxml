@@ -544,7 +544,7 @@
                                  </children>
                               </HBox>
                               <PublicIDControl fx:id="identifierControl" GridPane.columnSpan="2" GridPane.rowIndex="3"/>
-                              <Label fx:id="patternTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0" styleClass="pattern-title" text="New Pattern" textFill="#212430" wrapText="true" GridPane.columnIndex="1">
+                              <Label fx:id="patternTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0" styleClass="pattern-main-title" text="New Pattern" textFill="#212430" wrapText="true" GridPane.columnIndex="1">
                                  <font>
                                     <Font name="Open Sans Regular" size="17.0" />
                                  </font>
