@@ -728,31 +728,33 @@ public class PatternDetailsController {
         TextFlow row2 = new TextFlow();
         row2.getChildren().addAll(semanticDescrText);
 
-        // update date
-        String dateAddedStr = "";
-        if (otherName.getStamp() == null) {
-            dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-        } else {
-            Long otherNameMilis = otherName.getStamp().time();
-            if (otherNameMilis.equals(PREMUNDANE_TIME)) {
-                dateAddedStr = "Premundane";
-            } else {
-                LocalDate localDate = Instant.ofEpochMilli(otherNameMilis).atZone(ZoneId.systemDefault()).toLocalDate();
-                dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-            }
-        }
-
         TextFlow row3 = new TextFlow();
         Text dateAddedLabel = new Text("Date Added: ");
         dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
-        Text dateLabel = new Text(dateAddedStr);
-        dateLabel.getStyleClass().add("grey8-12pt-bold");
 
-        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
-        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+        if (otherName.getSemanticPublicId() != null) {
+            Latest<EntityVersion> semanticVersionLatest = getViewProperties().calculator().latest(Entity.nid(otherName.getSemanticPublicId()));
+            semanticVersionLatest.ifPresent(entityVersion -> {
+                long rawTime = entityVersion.time();
+                String dateText = null;
+                if (rawTime == PREMUNDANE_TIME) {
+                    dateText = "Premundane";
+                } else {
+                    Locale userLocale = Locale.getDefault();
+                    LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
+                    dateText = formatter.format(localDate);
+                }
 
-        // Add the date info and additional hyperlinks
-        row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentsHyperlink);
+                Text dateLabel = new Text(dateText);
+                dateLabel.getStyleClass().add("grey8-12pt-bold");
+                Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
+                Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+
+                // Add the date info and additional hyperlinks
+                row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentsHyperlink);
+            });
+        }
 
         textFlows.add(row1);
         textFlows.add(row2);
