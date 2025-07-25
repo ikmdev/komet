@@ -22,6 +22,7 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
@@ -35,12 +36,16 @@ import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
+import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
+import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -70,6 +75,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.*;
@@ -173,6 +179,37 @@ public class NextGenSearchController extends AbstractBasicController {
         });
         filterOptionsPopup.showingProperty().subscribe(showing ->
                 filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
+
+        // first attempt at switching the status
+        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, newFilterOptions) -> {
+            if (newFilterOptions != null && !newFilterOptions.getStatus().selectedOptions().isEmpty()) {
+                StateSet stateSet = StateSet.make(
+                        newFilterOptions.getStatus().selectedOptions().stream().map(s -> {
+                            switch (s.toUpperCase()) {
+                                case "INACTIVE":
+                                    return State.INACTIVE;
+                                case "WITHDRAWN_STATE":
+                                    return State.WITHDRAWN;
+                                case "CANCELED":
+                                    return State.CANCELED;
+                                case "PRIMORDIAL":
+                                    return State.PRIMORDIAL;
+                                default:
+                                    return State.ACTIVE;
+                            }
+                        }).collect(Collectors.toList()));
+                ViewProperties viewProperties = getViewProperties();
+
+                ViewCoordinate viewCoordinate = windowView.getViewCoordinate();
+
+                StampCoordinateRecord stampCoordinateRecord = viewCoordinate.stampCoordinate().withAllowedStates(stateSet).toStampCoordinateRecord();
+
+                ViewProperties viewPropertiesOverride = viewProperties.parentView().makeOverridableViewProperties();
+                viewPropertiesOverride.nodeView().stampCoordinate().setValue(stampCoordinateRecord);
+                updateModel(viewPropertiesOverride);
+                doSearch(new ActionEvent(stateSet, searchResultsListView));
+            }
+        });
     }
 
     private void initSearchResultType() {
