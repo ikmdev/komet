@@ -1,0 +1,69 @@
+.public-id {
+    /* The pref and min height must be set to a minimum value where the
+       where the height is not changed as the mouse cursor enters and exits
+       the control.  30px seems to work well for the current settings for
+       fontSize and the icon scale. */
+    -public-id-height: 30px;
+
+    -fx-pref-height: -public-id-height;
+    -fx-min-height: -public-id-height;
+
+    /* the spacing for the HBoxes in the control, is inherited in child nodes */
+    -fx-spacing: 4;
+
+    /* setting font size here, to be inherited in child nodes */
+    -fx-font-size: 10;
+}
+
+.public-id > .public-id-box {
+    -fx-spacing: inherit;
+}
+
+.public-id > .title-label {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: inherit;
+}
+
+.public-id > .public-id-box > .public-id-textfield {
+    -fx-pref-width: 136;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: inherit;
+    -fx-text-fill: -Grey-10;
+}
+
+.public-id > .public-id-box > .copy-to-clipboard-button {
+    -fx-padding: 2;
+    -fx-border-insets: 0;
+    -fx-border-radius: 4;
+
+    -width-size: 20px;
+    -height-size: 20px;
+    -fx-min-width: -width-size;
+    -fx-pref-width: -width-size;
+    -fx-max-width: -width-size;
+
+    -fx-min-height: -height-size;
+    -fx-pref-height: -height-size;
+    -fx-max-height: -height-size;
+    -fx-background-color: transparent;
+}
+
+.public-id > .public-id-box > .copy-to-clipboard-button:hover {
+    -fx-background-color: -Grey-3;
+}
+
+.public-id > .public-id-box > .copy-to-clipboard-button:pressed {
+    -fx-background-color: -Grey-5;
+}
+
+.public-id > .public-id-box > .copy-to-clipboard-button:disabled {
+    -fx-fill: -Grey-3;
+}
+
+.public-id > .public-id-box > .copy-to-clipboard-button > .copy-to-clipboard-svg {
+    -icon-scale: 0.7;
+
+    -fx-fill: -Grey-10;
+    -fx-scale-x: -icon-scale;
+    -fx-scale-y: -icon-scale;
+}
