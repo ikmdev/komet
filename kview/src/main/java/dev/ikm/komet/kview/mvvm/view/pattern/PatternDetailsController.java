@@ -611,6 +611,7 @@ public class PatternDetailsController {
 
     private EventHandler<MouseEvent> hideTooltipHandler(Tooltip tooltip) {
         return event -> tooltip.hide();
+    }
 
     /// Show the public ID
     private void setupDisplayUUID() {
