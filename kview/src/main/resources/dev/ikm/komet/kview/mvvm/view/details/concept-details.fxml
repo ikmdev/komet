@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import dev.ikm.komet.kview.controls.KLExpandableNodeListControl?>
+<?import dev.ikm.komet.kview.controls.PublicIDControl?>
 <?import dev.ikm.komet.kview.controls.ResponsiveTextFlow?>
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
@@ -160,21 +161,7 @@
                               </font>
                            </TextField>
                         </HBox>
-                        <HBox alignment="CENTER_LEFT" GridPane.columnSpan="2" GridPane.rowIndex="2">
-                           <Text style="-fx-text-fill: -Grey-10;" text="IDENTIFIER: ">
-                              <font>
-                                 <Font name="Noto Sans" size="10.0" />
-                              </font>
-                           </Text>
-                           <TextField fx:id="identifierText" editable="false" minHeight="16.0" prefHeight="16.0" style="-fx-text-fill: -Grey-10;" styleClass="copyable-label" HBox.hgrow="ALWAYS">
-                              <font>
-                                 <Font name="Noto Sans" size="10.0" />
-                              </font>
-                              <tooltip>
-                                 <Tooltip fx:id="identifierTooltip" />
-                              </tooltip>
-                           </TextField>
-                        </HBox>
+                        <PublicIDControl fx:id="identifierControl" GridPane.columnSpan="2" GridPane.rowIndex="2"/>
                         <AnchorPane prefWidth="208.0" GridPane.columnIndex="2" GridPane.rowSpan="3">
                            <VBox prefWidth="208.0" spacing="2.0">
                               <HBox>
