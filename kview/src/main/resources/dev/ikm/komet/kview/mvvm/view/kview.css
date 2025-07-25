@@ -2469,6 +2469,14 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
     -fx-font-style: normal;
+    -fx-text-fill: -Grey-12;
+}
+
+.text-noto-sans-twelve {
+    -fx-font-family: "Noto Sans Semibold";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-fill: -Grey-10;
 }
 
 .text-noto-sans-normal-grey-eight {
@@ -3297,6 +3305,18 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-width: 4;
 }
 
+/* The main title of the Pattern that shows in the top of the window */
+.pattern-main-title {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 18px;
+
+    -fx-padding: -1px 0 0 1px;
+}
+
+.pattern-definition-container {
+    -fx-padding: 0 0 13px 10;
+}
+
 /* Styles title text inside the content of TitlePane. eg: DESCRIPTION , Fully Qualified Name.*/
 .pattern-title {
     -fx-text-alignment: center;
@@ -3304,7 +3324,6 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-size: 12px;
     -fx-font-style: normal;
     -fx-fill: -Grey-8;
-    -fx-font-weight: bold;
 }
 
 .pattern-titled-pane {
@@ -5092,10 +5111,11 @@ Styling a context menu for kview ui/ux controls
 }
 
 .pattern-field {
-    -fx-font-family: Noto Sans;
-    -fx-font-size: 12;
-    -fx-font-weight: 500;
-    -fx-fill: -Grey-12;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13;
+    -fx-text-fill: -Grey-10;
+
+    -fx-padding: 0 0 3px -1px;
 }
 
 /*******************************************************************************
