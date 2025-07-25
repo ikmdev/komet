@@ -1,10 +1,10 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLSearchControl;
+import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -311,6 +311,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         private final Label parentDescriptionLabel;
         private final Label descriptionLabel;
         private final KLSearchControl searchControl;
+        private final Navigator navigator;
         private Text actualDescriptionText;
         private String highlight;
         private PauseTransition hoverTransition;
@@ -331,6 +332,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
          */
         public SearchResultBox(KLSearchControl searchControl) {
             this.searchControl = searchControl;
+            this.navigator = searchControl.getNavigator();
             subscription = Subscription.EMPTY;
 
             parentDescriptionLabel = new Label();
@@ -373,8 +375,9 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
             cleanup();
             this.searchResult = result;
             highlight = result.highlight().toLowerCase(Locale.ROOT);
-            parentDescriptionLabel.setText(result.parentConcept() != null ? result.parentConcept().description() : null);
-            descriptionLabel.setText(result.concept().description());
+            parentDescriptionLabel.setText(result.parentConcept() != null ?
+                    getDescription(result.parentConcept().nid()) : null);
+            descriptionLabel.setText(getDescription(result.concept().nid()));
             subscription = subscription.and(actualTextProperty.subscribe(text -> {
                 Platform.runLater(this::addHighlightPaths);
                 if (text != null && !text.isEmpty() && descriptionLabel.getText() != null && !text.equals(descriptionLabel.getText())) {
@@ -481,6 +484,15 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
             path.setLayoutY(descriptionLabel.getLayoutY() - bounds.getMinY());
             path.toBack();
             getChildren().addFirst(path);
+        }
+
+        /**
+         * return the fully qualified description of a nid
+         * @param nid the nid of the concept
+         * @return a string
+         */
+        private String getDescription(int nid) {
+            return navigator.getViewCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(nid);
         }
     }
 }
