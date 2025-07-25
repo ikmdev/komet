@@ -107,8 +107,12 @@ import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.tinkar.component.SemanticVersion;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -328,6 +332,7 @@ public class PatternDetailsController {
     private void initialize() {
         purposeText.setText("");
         meaningText.setText("");
+        fqnAddDateLabel.setText("");
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
@@ -465,42 +470,25 @@ public class PatternDetailsController {
         // Generate description semantic and show
         fqnDescriptionSemanticText.textProperty().bind(fqnNameProp.map(descrName -> " (%s)".formatted(generateDescriptionSemantics(descrName))).orElse(""));
 
-        //Fetch the FQN_DATE_ADDED_STR from the PATTERN Entity
-        StringBinding dateStrProp = Bindings.createStringBinding(
-                () -> {
-                    if (patternProperty.get() != null) {
-                        long rawTime = getViewProperties().calculator()
-                                .getFullyQualifiedDescription(patternProperty.get().nid())
-                                .get().stamp().time();
-
-                        //Check if the timestamp is valid. If it matches Long.MIN_VALUE + 1
-                        if (rawTime == Long.MIN_VALUE + 1) {
-                            return "Premundane";
-                        }
-
-                        Locale userLocale = Locale.getDefault();
-                        LocalDate localDate = Instant.ofEpochSecond(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
-                        DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
-                        String fqnDateAddedStr = formatter.format(localDate);
-                        return fqnDateAddedStr;
-
+        fqnNameProp.subscribe(descrName -> {
+            if (descrName != null && descrName.getSemanticPublicId() != null) {
+                //Check if the timestamp is valid. If it matches Long.MIN_VALUE + 1
+                Latest<EntityVersion> semanticVersionLatest = getViewProperties().calculator().latest(Entity.nid(descrName.getSemanticPublicId()));
+                semanticVersionLatest.ifPresent(entityVersion -> {
+                    long rawTime = entityVersion.time();
+                    String dateText = null;
+                    if (rawTime == PREMUNDANE_TIME) {
+                        dateText = "Premundane";
                     } else {
-                        return "";
+                        Locale userLocale = Locale.getDefault();
+                        LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
+                        DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
+                        dateText = formatter.format(localDate);
                     }
-                },
-                patternProperty
-        );
-        patternViewModel.getStringProperty(FQN_DATE_ADDED_STR).bind(dateStrProp);
-
-        if (patternViewModel.getPropertyValue(MODE).equals(CREATE)) {
-            //FIXME this code was designed for edit... if it is an existing pattern it was overwriting the date added with the current date;
-            // we might need to change it to a change listener...
-
-            // display current date else blank.
-            fqnAddDateLabel.textProperty().bind(fqnNameProp.map((fqnName) -> LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"))).orElse(""));
-        } else {
-            fqnAddDateLabel.textProperty().bind(patternViewModel.getStringProperty(FQN_DATE_ADDED_STR));
-        }
+                    fqnAddDateLabel.setText(dateText);
+                });
+            }
+        });
 
         // hide menu item if FQN is added.
         addFqnMenuItem.visibleProperty().bind(fqnNameProp.isNull());
