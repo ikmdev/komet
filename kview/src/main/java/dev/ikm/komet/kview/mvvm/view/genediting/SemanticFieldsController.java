@@ -371,6 +371,7 @@ public class SemanticFieldsController {
                        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
 //                       EntityService.get().beginLoadPhase();
+
                        String submitMessage = "Semantic Details %s Successfully!".formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Editing" : "Added");
                        toast()
                                .withUndoAction(undoActionEvent ->
