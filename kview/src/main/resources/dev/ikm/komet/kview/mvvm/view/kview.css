@@ -2469,6 +2469,14 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
     -fx-font-style: normal;
+    -fx-text-fill: -Grey-12;
+}
+
+.text-noto-sans-twelve {
+    -fx-font-family: "Noto Sans Semibold";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-fill: -Grey-10;
 }
 
 .text-noto-sans-normal-grey-eight {
@@ -2888,6 +2896,9 @@ Timeline Year line segment (will overlay change circles)
 .next-gen-search-main-container .outer-list-view {
     -fx-background-color: -Grey-9;
     -fx-padding: 10px 0 10px 0;
+
+    -fx-border-color: #444;
+    -fx-border-width: 1 0 0 0;
 }
 
 .next-gen-search-main-container .outer-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
@@ -2983,7 +2994,7 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .next-gen-search-main-container .descriptions-list-view .list-cell .cell-container .text-container .word-container.highlight {
-    -fx-background-color: rgba(205, 205, 205, 0.4);
+    -fx-background-color: rgba(192, 245, 160, 0.6);
 
     -fx-background-insets: 0 1 0 1;
     -fx-background-radius: 4;
@@ -3000,8 +3011,6 @@ Timeline Year line segment (will overlay change circles)
 
 .search-hbox {
     -fx-background-color: -Grey-9;
-    -fx-border-color: #444;
-    -fx-border-width: 0 0 1px 0;
 }
 
 .search-text-field {
@@ -3296,6 +3305,18 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-width: 4;
 }
 
+/* The main title of the Pattern that shows in the top of the window */
+.pattern-main-title {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 18px;
+
+    -fx-padding: -1px 0 0 1px;
+}
+
+.pattern-definition-container {
+    -fx-padding: 0 0 13px 10;
+}
+
 /* Styles title text inside the content of TitlePane. eg: DESCRIPTION , Fully Qualified Name.*/
 .pattern-title {
     -fx-text-alignment: center;
@@ -3303,7 +3324,6 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-size: 12px;
     -fx-font-style: normal;
     -fx-fill: -Grey-8;
-    -fx-font-weight: bold;
 }
 
 .pattern-titled-pane {
@@ -3391,9 +3411,11 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .pattern-instance-hbox .pattern-instance {
-    -fx-min-width: 270px;
-    -fx-pref-width: 270px;
-    -fx-max-width: 270px;
+    width: 354px;
+
+    -fx-min-width: width;
+    -fx-pref-width: width;
+    -fx-max-width: width;
 
     -fx-padding: 0 10 0 0;
 
@@ -5041,7 +5063,7 @@ Styling a context menu for kview ui/ux controls
 
 .pattern-instances-list-view.list-view .scroll-bar:vertical .thumb {
     -fx-background-color: #777;
-    -fx-background-insets: 3 5 3 0;
+    -fx-background-insets: 3 4 3 3;
     -fx-background-radius: 16px;
 }
 
@@ -5089,10 +5111,11 @@ Styling a context menu for kview ui/ux controls
 }
 
 .pattern-field {
-    -fx-font-family: Noto Sans;
-    -fx-font-size: 12;
-    -fx-font-weight: 500;
-    -fx-fill: -Grey-12;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13;
+    -fx-text-fill: -Grey-10;
+
+    -fx-padding: 0 0 3px -1px;
 }
 
 /*******************************************************************************
