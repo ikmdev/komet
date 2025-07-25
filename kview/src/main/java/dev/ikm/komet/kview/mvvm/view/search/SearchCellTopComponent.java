@@ -88,6 +88,10 @@ public class SearchCellTopComponent extends ListCell {
 
                     if (entityVersion.active()) {
                         controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
+                    } else if (!controller.getRetiredHBox().getChildren().contains(controller.getRetiredLabel())) {
+                        // if the top component is inactive and the retired label is missing (because the cell factory is reused),
+                        // then put the retired label back in place
+                        controller.getRetiredHBox().getChildren().add(1, controller.getRetiredLabel());
                     }
                     controller.setRetired(!entityVersion.active());
 

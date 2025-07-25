@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -30,7 +31,7 @@ public class InvertedTree {
     /**
      * <p>Record that is the base model for the InvertedTree. For a given {@link dev.ikm.tinkar.terms.ConceptFacade},
      * it is defined by its nid and description, and by the nid of a given parent of this ConceptFacade
-     * (which is a child in the InvertedTree version.
+     * (which is a child in the InvertedTree version).
      * </p>
      * @param nid The nid of a given {@link dev.ikm.tinkar.terms.ConceptFacade}
      * @param childNid The nid of a parent of a given {@link dev.ikm.tinkar.terms.ConceptFacade}
@@ -168,7 +169,7 @@ public class InvertedTree {
      * </p>
      */
     public void printTree() {
-        System.out.println("-".repeat(getLevel()) + " " + item.description() + "(" + getLevel() + ")");
+        System.out.println("-".repeat(getLevel()) + " " + item.description() + ", " + item.nid() + " (" + getLevel() + ")");
         children.forEach(InvertedTree::printTree);
     }
 
@@ -250,6 +251,51 @@ public class InvertedTree {
                 .collect(LinkedHashMap::new,
                         (m, e) -> m.put(e.getKey(), e.getValue().reversed()),
                         LinkedHashMap::putAll);
+    }
+
+    /**
+     * <p>Compares this inverted tree with another one, that might be equal or have
+     * a single change applied (a lineage added or removed, a lineage changed), and
+     * returns the last {@link ConceptItem} of the lineage that changed, if any.
+     * </p>
+     * @param other a slightly changed {@link InvertedTree}
+     * @return an optional with a {@link ConceptItem} of the lineage that changed, or
+     * empty
+     */
+    public Optional<ConceptItem> compareTo(InvertedTree other) {
+        if (other == null) {
+            return Optional.empty();
+        }
+        Map<Integer, List<ConceptItem>> thisMap = getLineageMap();
+        Map<Integer, List<ConceptItem>> otherMap = other.getLineageMap();
+        boolean equals = thisMap.equals(otherMap);
+        if (!equals) {
+            if (thisMap.keySet().size() != otherMap.keySet().size()) { // lineages added or removed
+                if (thisMap.keySet().size() > otherMap.keySet().size()) {
+                    for (Integer k : thisMap.keySet()) {
+                        List<ConceptItem> conceptItems = thisMap.get(k);
+                        if (!otherMap.containsValue(conceptItems)) {
+                            // lineage was added, return its last concept
+                            return Optional.of(conceptItems.getLast());
+                        }
+                    }
+                    return Optional.of(new ConceptItem(-1, item.nid, item.description)); // shouldn't happen
+                } else {
+                    // lineage was removed, just get the last concept of the first lineage (the shorter path)
+                    return Optional.of(thisMap.get(0).getLast());
+                }
+            }
+            // same number of lineages
+            for (Integer k : thisMap.keySet()) {
+                List<ConceptItem> conceptItems = thisMap.get(k);
+                if (!otherMap.containsValue(conceptItems)) {
+                    // this lineage changed, return its last concept
+                    return Optional.of(conceptItems.getLast());
+                }
+            }
+            return Optional.of(new ConceptItem(-1, item.nid, item.description)); // shouldn't happen
+        }
+        return Optional.empty();
     }
 
     /**
