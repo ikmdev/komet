@@ -414,12 +414,9 @@ public class JournalController {
         journalEventBus.subscribe(journalTopic, MakeGenEditingWindowEvent.class, makeGenEditWindowEventSubscriber);
 
         showNavigationalPanelEventSubscriber = evt -> {
-            try {
-                getNavigatorNode().getController().showConcept(evt.getConceptFacade().nid());
-            } catch (Exception e) {
-                LOG.error("Unable to process event: ", e);
-            }
             navigatorToggleButton.setSelected(true);
+            // expand and select concept in conceptNavigator
+            conceptPatternNavController.showConcept(evt.getConceptFacade().nid());
 
             // toggle CONCEPTS inside conceptPatternNavController
             conceptPatternNavController.toggleConcepts();
