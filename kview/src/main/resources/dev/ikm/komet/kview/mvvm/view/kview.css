@@ -128,10 +128,25 @@
 .concept-details-definitions {
     -fx-background-color: transparent;
     -fx-background-radius: 8 8 0 0;
-    -fx-height: 104;
+    -fx-height: 120;
     -fx-min-height: -fx-height;
     -fx-pref-height: -fx-height;
     -fx-max-height: -fx-height;
+}
+
+.stamp-container {
+    -fx-border-width: 2px;
+    -fx-border-color: transparent;
+    -fx-border-radius: 3px;
+
+    -fx-padding: 4px;
+}
+
+.stamp-container:selected {
+    -fx-background-color: #f2faee;
+    -fx-background-radius: 3px;
+
+    -fx-border-color: #9ae281;
 }
 
 .stamp-text {
@@ -2896,6 +2911,9 @@ Timeline Year line segment (will overlay change circles)
 .next-gen-search-main-container .outer-list-view {
     -fx-background-color: -Grey-9;
     -fx-padding: 10px 0 10px 0;
+
+    -fx-border-color: #444;
+    -fx-border-width: 1 0 0 0;
 }
 
 .next-gen-search-main-container .outer-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
@@ -3008,8 +3026,6 @@ Timeline Year line segment (will overlay change circles)
 
 .search-hbox {
     -fx-background-color: -Grey-9;
-    -fx-border-color: #444;
-    -fx-border-width: 0 0 1px 0;
 }
 
 .search-text-field {
@@ -3410,9 +3426,11 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .pattern-instance-hbox .pattern-instance {
-    -fx-min-width: 270px;
-    -fx-pref-width: 270px;
-    -fx-max-width: 270px;
+    width: 354px;
+
+    -fx-min-width: width;
+    -fx-pref-width: width;
+    -fx-max-width: width;
 
     -fx-padding: 0 10 0 0;
 
@@ -5060,7 +5078,7 @@ Styling a context menu for kview ui/ux controls
 
 .pattern-instances-list-view.list-view .scroll-bar:vertical .thumb {
     -fx-background-color: #777;
-    -fx-background-insets: 3 5 3 0;
+    -fx-background-insets: 3 4 3 3;
     -fx-background-radius: 16px;
 }
 
