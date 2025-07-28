@@ -561,7 +561,7 @@ public class PatternDetailsController {
 
     private void setupTooltipForDisabledButton(Button button, Tooltip tooltip, HBox parentBox, String disabledText, String enabledText) {
 
-        button.disabledProperty().addListener((obs, wasDisabled, isNowDisabled) -> {
+        button.disabledProperty().subscribe(isNowDisabled -> {
             if (isNowDisabled) {
                 tooltip.setText(disabledText);
                 Tooltip.uninstall(button, tooltip);
