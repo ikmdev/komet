@@ -107,8 +107,11 @@ import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -165,8 +168,10 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -326,6 +331,7 @@ public class PatternDetailsController {
     private void initialize() {
         purposeText.setText("");
         meaningText.setText("");
+        fqnAddDateLabel.setText("");
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
@@ -463,33 +469,24 @@ public class PatternDetailsController {
         // Generate description semantic and show
         fqnDescriptionSemanticText.textProperty().bind(fqnNameProp.map(descrName -> " (%s)".formatted(generateDescriptionSemantics(descrName))).orElse(""));
 
-        //Fetch the FQN_DATE_ADDED_STR from the PATTERN Entity
-        StringBinding dateStrProp = Bindings.createStringBinding(
-                () -> {
-                    if (patternProperty.get() != null) {
-                        return LocalDate.ofInstant(
-                                getViewProperties().calculator()
-                                        .getFullyQualifiedDescription(patternProperty.get().nid())
-                                        .get().instant(),
-                                ZoneId.systemDefault()
-                        ).format(DateTimeFormatter.ofPattern("MMM dd, yyyy"));
+        fqnNameProp.subscribe(descrName -> {
+            if (descrName != null && descrName.getSemanticPublicId() != null) {
+                Latest<EntityVersion> semanticVersionLatest = getViewProperties().calculator().latest(Entity.nid(descrName.getSemanticPublicId()));
+                semanticVersionLatest.ifPresent(entityVersion -> {
+                    long rawTime = entityVersion.time();
+                    String dateText = null;
+                    if (rawTime == PREMUNDANE_TIME) {
+                        dateText = "Premundane";
                     } else {
-                        return "";
+                        Locale userLocale = Locale.getDefault();
+                        LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
+                        DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
+                        dateText = formatter.format(localDate);
                     }
-                },
-                patternProperty
-        );
-        patternViewModel.getStringProperty(FQN_DATE_ADDED_STR).bind(dateStrProp);
-
-        if (patternViewModel.getPropertyValue(MODE).equals(CREATE)) {
-            //FIXME this code was designed for edit... if it is an existing pattern it was overwriting the date added with the current date;
-            // we might need to change it to a change listener...
-
-            // display current date else blank.
-            fqnAddDateLabel.textProperty().bind(fqnNameProp.map((fqnName) -> LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy"))).orElse(""));
-        } else {
-            fqnAddDateLabel.textProperty().bind(patternViewModel.getStringProperty(FQN_DATE_ADDED_STR));
-        }
+                    fqnAddDateLabel.setText(dateText);
+                });
+            }
+        });
 
         // hide menu item if FQN is added.
         addFqnMenuItem.visibleProperty().bind(fqnNameProp.isNull());
@@ -731,31 +728,33 @@ public class PatternDetailsController {
         TextFlow row2 = new TextFlow();
         row2.getChildren().addAll(semanticDescrText);
 
-        // update date
-        String dateAddedStr = "";
-        if (otherName.getStamp() == null) {
-            dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-        } else {
-            Long otherNameMilis = otherName.getStamp().time();
-            if (otherNameMilis.equals(PREMUNDANE_TIME)) {
-                dateAddedStr = "Premundane";
-            } else {
-                LocalDate localDate = Instant.ofEpochMilli(otherNameMilis).atZone(ZoneId.systemDefault()).toLocalDate();
-                dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-            }
-        }
-
         TextFlow row3 = new TextFlow();
         Text dateAddedLabel = new Text("Date Added: ");
         dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
-        Text dateLabel = new Text(dateAddedStr);
-        dateLabel.getStyleClass().add("grey8-12pt-bold");
 
-        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
-        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+        if (otherName.getSemanticPublicId() != null) {
+            Latest<EntityVersion> semanticVersionLatest = getViewProperties().calculator().latest(Entity.nid(otherName.getSemanticPublicId()));
+            semanticVersionLatest.ifPresent(entityVersion -> {
+                long rawTime = entityVersion.time();
+                String dateText = null;
+                if (rawTime == PREMUNDANE_TIME) {
+                    dateText = "Premundane";
+                } else {
+                    Locale userLocale = Locale.getDefault();
+                    LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
+                    dateText = formatter.format(localDate);
+                }
 
-        // Add the date info and additional hyperlinks
-        row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentsHyperlink);
+                Text dateLabel = new Text(dateText);
+                dateLabel.getStyleClass().add("grey8-12pt-bold");
+                Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
+                Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+
+                // Add the date info and additional hyperlinks
+                row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentsHyperlink);
+            });
+        }
 
         textFlows.add(row1);
         textFlows.add(row2);

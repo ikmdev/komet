@@ -32,6 +32,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
@@ -54,6 +55,7 @@ import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
@@ -63,7 +65,9 @@ import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.TextField;
@@ -103,6 +107,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.NO_SELECTION_MADE_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
@@ -118,6 +123,7 @@ import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
@@ -599,14 +605,59 @@ public class GenEditingDetailsController {
             if (evt.getEventType() == GenEditingEvent.CONFIRM_REFERENCE_COMPONENT) {
                 ObjectProperty<EntityFacade> newRefComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
                 updateRefComponentInfo.accept(newRefComponentProp.get());
-                //Enable disable pencil icons
-                editFieldsButton.setDisable(newRefComponentProp.isNull().get());
-                addReferenceButton.setDisable(newRefComponentProp.isNotNull().get());
+
+                // If the Pattern has no field definitions, then commit the Semantic automatically
+                if (genEditingViewModel.getObjectProperty(PATTERN).isNotNull().get()) {
+                    Entity<EntityVersion> patternEntity = Entity.getFast(genEditingViewModel.getPropertyValue(PATTERN));
+                    PatternEntityVersion latestPatternVersion = (PatternEntityVersion) genEditingViewModel.getViewProperties().calculator()
+                            .latest(patternEntity)
+                            .orElse(patternEntity.versions().getAny());
+                    if (latestPatternVersion.fieldDefinitions().isEmpty()) {
+                        submitSemanticWithEmptyFields();
+                        editFieldsButton.setDisable(true);
+                    } else {
+                        editFieldsButton.setDisable(newRefComponentProp.isNull().get());
+                    }
+                    addReferenceButton.setDisable(newRefComponentProp.isNotNull().get());
+                }
             }
         };
         subscriberList.add(refComponentSubscriber);
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
                 GenEditingEvent.class, refComponentSubscriber);
+    }
+
+    private void submitSemanticWithEmptyFields() {
+        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+
+        Latest<SemanticEntityVersion> semanticEntityVersionLatest = getViewProperties().calculator().stampCalculator().latest(semantic.nid());
+        semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
+            Transaction.forVersion(semanticEntityVersion).ifPresentOrElse(transaction -> {
+                transaction.commit();
+                // EventBus implementation changes to refresh the details area if commit successful
+                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                        new GenEditingEvent(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), PUBLISH, semanticEntityVersion.fieldValues().toList(), semantic.nid()));
+                String submitMessage = "Semantic Details %s Successfully!".formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Editing" : "Added");
+                Platform.runLater(() -> {
+                    observableSemantic = ObservableEntity.get(semantic.nid());
+                    observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+                    toast()
+                            .withUndoAction(undoActionEvent ->
+                                    LOG.info("undo called")
+                            )
+                            .show(
+                                    Toast.Status.SUCCESS,
+                                    submitMessage
+                            );
+                });
+            }, () -> {
+                //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
+                LOG.error("Unable to commit: Transaction for the given version does not exist.");
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Transaction for current changes does not exist.", ButtonType.OK);
+                alert.setHeaderText("Unable to Commit transaction.");
+                alert.showAndWait();
+            });
+        });
     }
 
     /**
