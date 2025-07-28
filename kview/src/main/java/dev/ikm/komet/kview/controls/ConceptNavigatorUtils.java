@@ -157,7 +157,7 @@ public class ConceptNavigatorUtils {
      * @param navigator the {@link Navigator} that holds the dataset
      * @return an {@link InvertedTree}
      */
-    static InvertedTree buildInvertedTree(int nid, Navigator navigator) {
+    public static InvertedTree buildInvertedTree(int nid, Navigator navigator) {
         ConceptFacade facade = Entity.getFast(nid);
         InvertedTree.ConceptItem item = new InvertedTree.ConceptItem(facade.nid(), facade.nid(), facade.description());
         InvertedTree tree = new InvertedTree(item);
