@@ -128,10 +128,25 @@
 .concept-details-definitions {
     -fx-background-color: transparent;
     -fx-background-radius: 8 8 0 0;
-    -fx-height: 104;
+    -fx-height: 120;
     -fx-min-height: -fx-height;
     -fx-pref-height: -fx-height;
     -fx-max-height: -fx-height;
+}
+
+.stamp-container {
+    -fx-border-width: 2px;
+    -fx-border-color: transparent;
+    -fx-border-radius: 3px;
+
+    -fx-padding: 4px;
+}
+
+.stamp-container:selected {
+    -fx-background-color: #f2faee;
+    -fx-background-radius: 3px;
+
+    -fx-border-color: #9ae281;
 }
 
 .stamp-text {
