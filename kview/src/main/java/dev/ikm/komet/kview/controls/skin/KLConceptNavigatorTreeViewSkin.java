@@ -1,6 +1,10 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.ConceptTile;
@@ -9,7 +13,10 @@ import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell;
 import dev.ikm.komet.kview.controls.MultipleSelectionContextMenu;
 import dev.ikm.komet.kview.controls.SingleSelectionContextMenu;
+import dev.ikm.tinkar.common.flow.FlowSubscriber;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.ProxyFactory;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
@@ -19,6 +26,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
@@ -64,6 +72,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static dev.ikm.komet.framework.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.STATE;
 import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.PS_STATE;
 
@@ -119,6 +128,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             }
         }
     };
+    private final ModifiedEntitySubscriber modifiedEntitySubscriber;
     private final EventHandler<MouseEvent> eventFilter;
 
     /**
@@ -289,6 +299,9 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             }
             e.consume();
         });
+
+        modifiedEntitySubscriber = new ModifiedEntitySubscriber();
+        Entity.provider().addSubscriberWithWeakReference(modifiedEntitySubscriber.getFlowSubscriber());
 
         // Clicking anywhere, unhighlights any item from the treeView
         eventFilter = _ -> {
@@ -741,6 +754,9 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                     .filter(c -> c.getValue().nid() == nid)
                     .findFirst()
                     .orElse(ConceptNavigatorHelper.getConceptNavigatorTreeItem(treeView, nid, parentNid));
+            if (item == null) {
+                return;
+            }
             item.setExpanded(true);
             parent = item;
             if (i == lineage.size() - 2) { // select and scroll to parent, so it stays visible on top of the treeView
@@ -764,6 +780,73 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                     highlighted.set(true);
                 }
             }
+        }
+    }
+
+    /**
+     * <p>In combination with {@link FlowSubscriber}, tracks the changes of an entity.
+     * Whenever a concept changes, takes its {@link InvertedTree}
+     * before and after the Reasoner applies the changes, and looks for changes in the lineages of the concept.
+     * </p>
+     * <p>If any change is found, it takes the {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
+     * that changed and expands the {@link KLConceptNavigatorControl} and selects the related concept.
+     * </p>
+     */
+    private class ModifiedEntitySubscriber {
+
+        private final FlowSubscriber<Integer> flowSubscriber;
+        private final EvtBus eventBus = EvtBusFactory.getDefaultEvtBus();
+        private final Subscriber<RefreshCalculatorCacheEvent> refreshEventSubscriber;
+
+        private final SimpleObjectProperty<EntityFacade> modifiedEntityProperty = new SimpleObjectProperty<>() {
+
+            InvertedTree oldInvertedTree;
+
+            @Override
+            protected void invalidated() {
+                EntityFacade entityFacade = get();
+                if (entityFacade != null) {
+                    InvertedTree newInvertedTree = ConceptNavigatorUtils.buildInvertedTree(entityFacade.nid(), treeView.getNavigator());
+                    newInvertedTree.compareTo(oldInvertedTree).ifPresent(item -> {
+                        expandConcept(item, false);
+                        setValue(null);
+                    });
+                    oldInvertedTree = newInvertedTree;
+                } else {
+                    oldInvertedTree = null;
+                }
+            }
+        };
+
+        ModifiedEntitySubscriber() {
+            // refresh Concept Navigator after change in entity ancestors, keeping selection in the concept that changed,
+            // if possible
+            flowSubscriber = new FlowSubscriber<>(nid -> {
+                if (modifiedEntityProperty.get() == null && Entity.provider().getEntityFast(nid) instanceof ConceptFacade cf) {
+                    modifiedEntityProperty.set(cf);
+                }
+                if (modifiedEntityProperty.get() != null && modifiedEntityProperty.get().nid() == nid) {
+                    Platform.runLater(() -> modifiedEntityProperty.set(Entity.provider().getEntityFast(nid)));
+                }
+            });
+
+            // Refresh Concept Navigator after import operation, keeping current selection if possible
+            refreshEventSubscriber = _ -> {
+                ConceptNavigatorTreeItem selectedItem = (ConceptNavigatorTreeItem) treeView.getSelectionModel().getSelectedItem();
+                if (selectedItem != null) {
+                    Platform.runLater(() ->
+                            expandConcept(new InvertedTree.ConceptItem(-1,
+                                    selectedItem.getValue().nid(), selectedItem.getValue().description()), false));
+                } else {
+                    ConceptNavigatorUtils.resetConceptNavigator(treeView);
+                }
+            };
+
+            eventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshEventSubscriber);
+        }
+
+        FlowSubscriber<Integer> getFlowSubscriber() {
+            return flowSubscriber;
         }
     }
 }
