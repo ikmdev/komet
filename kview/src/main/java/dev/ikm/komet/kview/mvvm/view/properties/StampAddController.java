@@ -26,7 +26,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
 
 
-public class StampAddController extends AbstractBasicController {
+public class StampAddController {
 
     @FXML
     private ComboBox<String> statusComboBox;
@@ -41,7 +41,6 @@ public class StampAddController extends AbstractBasicController {
     private StampViewModel2 stampViewModel;
 
     @FXML
-    @Override
     public void initialize() {
         initModuleComboBox();
         initPathComboBox();
@@ -107,25 +106,6 @@ public class StampAddController extends AbstractBasicController {
     private String toFirstLetterCapitalized(State status) {
         String statusString = status.toString();
         return statusString.substring(0, 1).toUpperCase() + statusString.substring(1).toLowerCase();
-    }
-
-    @Override
-    public StampViewModel2 getViewModel() {
-        return stampViewModel;
-    }
-
-    @Override
-    public void updateView() {
-
-    }
-
-    @Override
-    public void clearView() {
-
-    }
-
-    @Override
-    public void cleanup() {
     }
 
     public void cancel(ActionEvent actionEvent) {
