@@ -3082,12 +3082,9 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-entry-hbox {
-   -fx-background-radius: 4px;
-   -fx-background-color: -Grey-2;
-   -fx-fill: -Secondary-05;
-   -fx-border-color: -Secondary-05;
-   -fx-border-radius: 4px;
-   -fx-border-width: 0;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-background-color: white;
 }
 
 .search-entry-hbox .search-entry-left-pane {
