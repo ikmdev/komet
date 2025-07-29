@@ -1388,7 +1388,7 @@ public class DetailsController  {
             }
 
             eventBus.publish(conceptTopic, new AddStampEvent(stampContainer,
-                    AddStampEvent.ADD_STAMP));
+                    AddStampEvent.ANY));
         }
     }
 
