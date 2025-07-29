@@ -141,6 +141,7 @@ public class StampEditController extends AbstractBasicController {
             rb.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
             rb.setUserData(module);
             rb.setToggleGroup(moduleToggleGroup);
+
             ObjectProperty<ConceptEntity> moduleProperty = getStampViewModel().getProperty(MODULE);
             if (moduleProperty.isNotNull().get() && moduleProperty.get().nid() == module.nid()) {
                 rb.setSelected(true);
