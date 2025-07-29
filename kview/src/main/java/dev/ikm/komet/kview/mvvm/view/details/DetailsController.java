@@ -55,7 +55,9 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -173,9 +175,6 @@ public class DetailsController  {
 
     @FXML
     private Label pathLabel;
-
-    @FXML
-    private Label originationLabel;
 
     @FXML
     private Label statusLabel;
@@ -322,7 +321,7 @@ public class DetailsController  {
 
     private final EventHandler<MouseEvent> mouseFilterPressedOnScene = this::onMouseFilterPressedOnScene;
 
-    private boolean isStampSelected;
+    private BooleanProperty stampSelected;
 
     public DetailsController() {
     }
@@ -333,7 +332,8 @@ public class DetailsController  {
 
     @FXML
     public void initialize() {
-        isStampSelected = false;
+        stampSelected = new SimpleBooleanProperty(false);
+        stampSelected.subscribe(this::onStampSelectionChanged);
 
         identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
             // query all available memberships (semantics having the purpose as 'membership', and no fields)
@@ -551,7 +551,7 @@ public class DetailsController  {
     private void onMouseFilterPressedOnScene(MouseEvent mouseEvent) {
         Point2D localMousePos = stampContainer.sceneToLocal(mouseEvent.getSceneX(), mouseEvent.getSceneY());
         if (!stampContainer.contains(localMousePos)) {
-            updateStampSelection(false);
+            stampSelected.set(false);
         }
     }
 
@@ -844,7 +844,7 @@ public class DetailsController  {
             getConceptViewModel().setPropertyValue(MODE, CREATE);
             stampViewModel.setPropertyValue(MODE, CREATE);
         }
-        conceptViewModel.setPropertyValue(CONCEPT_STAMP_VIEW_MODEL,stampViewModel);
+        conceptViewModel.setPropertyValue(CONCEPT_STAMP_VIEW_MODEL, stampViewModel);
 
 
         // Display info for top banner area
@@ -1353,7 +1353,6 @@ public class DetailsController  {
         lastUpdatedLabel.setText("");
         moduleLabel.setText("");
         pathLabel.setText("");
-        originationLabel.setText("");
         statusLabel.setText("");
         authorTooltip.setText("");
         notAvailInferredAxiomLabel.setVisible(true);
@@ -1377,12 +1376,20 @@ public class DetailsController  {
 
     @FXML
     private void onMousePressedOnStamp(MouseEvent mouseEvent) {
-        updateStampSelection(!isStampSelected);
+        stampSelected.setValue(!stampSelected.get());
     }
 
-    private void updateStampSelection(boolean isSelected) {
-        isStampSelected = isSelected;
-        stampContainer.pseudoClassStateChanged(STAMP_SELECTED, isStampSelected);
+    private void onStampSelectionChanged(boolean isSelected) {
+        stampContainer.pseudoClassStateChanged(STAMP_SELECTED, isSelected);
+
+        if (isSelected) {
+            if (!propertiesToggleButton.isSelected()) {
+                propertiesToggleButton.fire();
+            }
+
+            eventBus.publish(conceptTopic, new AddStampConceptEvent(stampContainer,
+                    AddStampConceptEvent.ADD_STAMP));
+        }
     }
 
     @FXML
