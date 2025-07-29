@@ -27,12 +27,14 @@ import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
+import static dev.ikm.tinkar.terms.TinkarTerm.DEVELOPMENT_PATH;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -44,11 +46,13 @@ import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
+import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
+import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
@@ -60,8 +64,10 @@ import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
+import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -97,6 +103,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalInt;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -198,14 +205,40 @@ public class NextGenSearchController {
 
         // first attempt at switching the status
         filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, newFilterOptions) -> {
-            if (newFilterOptions != null && !newFilterOptions.getStatus().selectedOptions().isEmpty()) {
-                StateSet stateSet = StateSet.make(
-                        newFilterOptions.getStatus().selectedOptions().stream().map(
-                                s -> State.valueOf(s.toUpperCase())).toList());
+            if (newFilterOptions != null) {
+                // state
+                if (!newFilterOptions.getStatus().selectedOptions().isEmpty()) {
+                    StateSet stateSet = StateSet.make(
+                            newFilterOptions.getStatus().selectedOptions().stream().map(
+                                    s -> State.valueOf(s.toUpperCase())).toList());
+                    getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
+                }
+                // path
 
-                getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
-                doSearch(new ActionEvent(stateSet, searchResultsListView));
+                if (!newFilterOptions.getPath().selectedOptions().isEmpty()) {
+                    List<String> selectedPaths = newFilterOptions.getPath().selectedOptions();
+
+                    Map<PublicIdStringKey, StampPathImmutable> pathImmutableMap = FxGet.pathCoordinates(getViewProperties().calculator());
+
+                    // iterate through available paths
+                    pathImmutableMap.keySet().stream().forEach(publicIdStringKey -> {
+                        // is this one that the user selected?
+                        if (selectedPaths.contains(publicIdStringKey.toString())) {
+                            // then look it up
+                            StampPathImmutable pathCoordinate = FxGet.pathCoordinates(getViewProperties().calculator()).get(publicIdStringKey);
+                            // this won't work because it is setting only one path
+                            getViewProperties().nodeView().setViewPath(pathCoordinate.pathConceptNid());
+                        }
+                    });
+
+                }
             }
+        });
+
+        getViewProperties().nodeView().addListener((observableValue, oldViewRecord, newViewRecord) -> {
+            LOG.info("Old VRec " + oldViewRecord);
+            LOG.info("New VRec " + newViewRecord);
+            doSearch(new ActionEvent(null, null));
         });
     }
 
