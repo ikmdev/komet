@@ -158,7 +158,7 @@ public class PropertiesController implements Serializable {
 
     private Subscriber<ShowEditDescriptionPanelEvent> editDescriptionPaneSubscriber;
 
-    private Subscriber<AddStampConceptEvent> addStampSubscriber;
+    private Subscriber<AddStampEvent> addStampSubscriber;
 
     private Subscriber<OpenPropertiesPanelEvent> propsPanelOpen;
 
@@ -381,7 +381,7 @@ public class PropertiesController implements Serializable {
             });
         };
 
-        eventBus.subscribe(conceptTopic, AddStampConceptEvent.class, addStampSubscriber);
+        eventBus.subscribe(conceptTopic, AddStampEvent.class, addStampSubscriber);
 
     }
 

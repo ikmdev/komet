@@ -1387,8 +1387,8 @@ public class DetailsController  {
                 propertiesToggleButton.fire();
             }
 
-            eventBus.publish(conceptTopic, new AddStampConceptEvent(stampContainer,
-                    AddStampConceptEvent.ADD_STAMP));
+            eventBus.publish(conceptTopic, new AddStampEvent(stampContainer,
+                    AddStampEvent.ADD_STAMP));
         }
     }
 
