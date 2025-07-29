@@ -484,6 +484,7 @@ public class PatternDetailsController {
                         dateText = formatter.format(localDate);
                     }
                     fqnAddDateLabel.setText(dateText);
+                    fqnAddDateLabel.getStyleClass().add("grey8-12pt-bold");
                 });
             }
         });
