@@ -51,7 +51,11 @@ public class SimpleEqualityBasedListProperty<T> extends SimpleListProperty<T> {
         if (this.getValue() == null) {
             super.set(newValue);
         } else if (this.getValue().equals(newValue) == false) {
-            super.set(newValue);
+            try {
+                super.set(newValue);
+            } catch (NullPointerException e) {
+                throw e;
+            }
         }
     }
 
