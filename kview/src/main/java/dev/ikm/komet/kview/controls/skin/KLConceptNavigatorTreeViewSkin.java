@@ -761,7 +761,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             parent = item;
             if (i == lineage.size() - 2) { // select and scroll to parent, so it stays visible on top of the treeView
                 treeView.getSelectionModel().select(item);
-                treeView.scrollTo(treeView.getSelectionModel().getSelectedIndex());
+                Platform.runLater(() -> treeView.scrollTo(treeView.getSelectionModel().getSelectedIndex()));
                 treeView.getSelectionModel().clearSelection();
             } else if (i == lineage.size() - 1) { // then, select, and highlight item
                 treeView.getSelectionModel().select(item);

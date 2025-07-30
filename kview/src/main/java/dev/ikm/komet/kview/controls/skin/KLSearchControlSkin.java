@@ -487,12 +487,12 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         }
 
         /**
-         * return the fully qualified description of a nid
+         * return the description of a nid
          * @param nid the nid of the concept
          * @return a string
          */
         private String getDescription(int nid) {
-            return navigator.getViewCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(nid);
+            return navigator.getViewCalculator().getDescriptionTextOrNid(nid);
         }
     }
 }
