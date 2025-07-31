@@ -1,10 +1,10 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.kview.controls.FilterOptions;
-import dev.ikm.komet.kview.controls.RangeCalendarControl;
 import dev.ikm.komet.kview.controls.DateFilterTitledPane;
 import dev.ikm.komet.kview.controls.DateRange;
+import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.IconRegion;
+import dev.ikm.komet.kview.controls.RangeCalendarControl;
 import dev.ikm.komet.kview.controls.TruncatedTextFlow;
 import javafx.collections.FXCollections;
 import javafx.css.PseudoClass;
@@ -194,7 +194,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                             .filter(DateRange::exclude)
                             .forEach(dr -> currentOption.excludedOptions().add(dr.toString()));
                 }
-                control.setOption(currentOption);
+                control.setOption(currentOption.copy());
             }
         }));
 

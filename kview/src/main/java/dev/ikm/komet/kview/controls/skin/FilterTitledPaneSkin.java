@@ -241,7 +241,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         subscription = subscription.and(control.optionProperty().subscribe((_, _) -> setupTitledPane()));
         subscription = subscription.and(control.expandedProperty().subscribe((_, expanded) -> {
             if (!expanded) {
-                control.setOption(currentOption);
+                control.setOption(currentOption.copy());
                 selectedOption.setText(getOptionText(currentOption));
             }
         }));
