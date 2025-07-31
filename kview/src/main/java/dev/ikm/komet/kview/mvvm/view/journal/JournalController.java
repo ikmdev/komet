@@ -941,7 +941,6 @@ public class JournalController {
                             nextGenSearchViewModel.setPropertyValue(MODE, CREATE)
                                 .setPropertyValue(VIEW_PROPERTIES, this.windowView.makeOverridableViewProperties())
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
-                                //.setPropertyValue(WINDOW_VIEW, this.windowView)
                 );
 
         JFXNode<Pane, NextGenSearchController> nextGenSearchJFXNode = FXMLMvvmLoader.make(nextGenSearchConfig);

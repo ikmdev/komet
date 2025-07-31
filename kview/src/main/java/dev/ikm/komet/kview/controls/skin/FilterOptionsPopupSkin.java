@@ -247,25 +247,27 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             setDefaultOptions(option);
         }
 
-        // status: all descendents of Status
+        // status: all descendants of Status
         option = filterOptions.getStatus();
         setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.STATUS.getPath()));
         FilterTitledPane statusFilterTitledPane = setupTitledPane(option);
-        setDefaultOptions(option);
+        //
+        setInitialOptionsForStatus(control.getInitialFilterOptions().getStatus());
+        //setDefaultOptions(control.getInitialFilterOptions().getStatus());
 
-        // module: all descendents of Module
+        // module: all descendants of Module
         option = filterOptions.getModule();
         setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.MODULE.getPath()));
         FilterTitledPane moduleFilterTitledPane = setupTitledPane(option);
         setDefaultOptions(option);
 
-        // path: all descendents of Path
+        // path: all descendants of Path
         option = filterOptions.getPath();
         setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath()));
         FilterTitledPane pathFilterTitledPane = setupTitledPane(option);
         setDefaultOptions(option);
 
-        // language: all descendents of Model concept->Tinkar Model concept->Language
+        // language: all descendants of Model concept->Tinkar Model concept->Language
         option = filterOptions.getLanguage();
         setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.LANGUAGE.getPath()));
         FilterTitledPane languageFilterTitledPane = setupTitledPane(option);
@@ -337,6 +339,15 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         option.availableOptions().addAll(options);
     }
 
+    private void setInitialOptionsForStatus(FilterOptions.Option option) {
+        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
+        if (option.isMultiSelectionAllowed()) {
+            defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.selectedOptions());
+        } else {
+            defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
+        }
+    }
+
     private void setDefaultOptions(FilterOptions.Option option) {
         defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
         if (option.isMultiSelectionAllowed()) {
@@ -344,6 +355,9 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         } else {
             defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
         }
+    }
+
+    private void setDefaultOptionsForStatus(FilterOptions.Option option) {
     }
 
     private void applyFilter(String i) {
