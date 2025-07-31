@@ -50,26 +50,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_W
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_CASE_SIGNIFICANCE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DATE_ADDED_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_LANGUAGE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TITLE_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.SELECTED_PATTERN_FIELD;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
@@ -118,7 +99,7 @@ import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.StringBinding;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -134,12 +115,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.TilePane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
@@ -249,10 +225,7 @@ public class PatternDetailsController {
     private Button savePatternButton;
 
     @FXML
-    private Tooltip savePatternTooltip;
-
-    @FXML
-    private HBox controlBoxHbox1;
+    private StackPane publishStackPane;
 
     // pattern definition fields
     @FXML
@@ -317,6 +290,8 @@ public class PatternDetailsController {
     @InjectViewModel
     private PatternViewModel patternViewModel;
 
+    private final Tooltip publishTooltip = new Tooltip();
+
     private Subscriber<PropertyPanelEvent> patternPropertiesEventSubscriber;
 
     private Subscriber<PatternDefinitionEvent> patternDefinitionEventSubscriber;
@@ -342,8 +317,17 @@ public class PatternDetailsController {
 
         setUpAddSemanticMenu();
 
-        //Listen for changes to the publish button's disabled property
-        setupTooltipForDisabledButton(savePatternButton, savePatternTooltip, controlBoxHbox1, "Publish: Disabled", "Submit");
+        // Bind the Publish button's disable property to the ViewModel
+        BooleanProperty newChangeProp = patternViewModel.getProperty(PUBLISH_PENDING);
+        publishTooltip.textProperty().bind(Bindings.when(savePatternButton.disableProperty())
+                .then("Publish: Disabled")
+                .otherwise("Submit"));
+
+        // Assign the tooltip to the StackPane (container of Publish button)
+        setupTooltipForDisabledButton(savePatternButton);
+
+        // Disable button when not valid or newChangeProp is false.
+        savePatternButton.disableProperty().bind(patternViewModel.getBooleanProperty(IS_INVALID).or(newChangeProp.not()));
 
         // listen for open and close events
         patternPropertiesEventSubscriber = (evt) -> {
@@ -366,9 +350,6 @@ public class PatternDetailsController {
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PropertyPanelEvent.class, patternPropertiesEventSubscriber);
-
-        savePatternButton.disableProperty().bind(patternViewModel.getProperty(IS_INVALID));
-
 
         patternDefinitionEventSubscriber = evt -> patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
 
@@ -418,6 +399,7 @@ public class PatternDetailsController {
                 descrNameObservableList.add(evt.getDescrName());
                 patternSM.t("otherNameDone");
             }
+            patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
@@ -520,6 +502,7 @@ public class PatternDetailsController {
             patternFieldList.add(fieldPosition, patternField);
             // save and therefore validate
             patternViewModel.save();
+            patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
@@ -554,60 +537,6 @@ public class PatternDetailsController {
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
         }
-    }
-
-    private void setupTooltipForDisabledButton(Button button, Tooltip tooltip, HBox parentBox, String disabledText, String enabledText) {
-
-        button.disabledProperty().subscribe(isNowDisabled -> {
-            if (isNowDisabled) {
-                tooltip.setText(disabledText);
-                Tooltip.uninstall(button, tooltip);
-
-                // Create unique handlers for each button-tooltip pair
-                EventHandler<MouseEvent> showHandler = showTooltipOnDisabledButton(button, tooltip);
-                EventHandler<MouseEvent> hideHandler = hideTooltipHandler(tooltip);
-
-                // Store handlers on the button's properties for later removal
-                button.getProperties().put("showHandler", showHandler);
-                button.getProperties().put("hideHandler", hideHandler);
-
-                parentBox.addEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
-                parentBox.addEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
-            } else {
-                tooltip.setText(enabledText);
-                Tooltip.install(button, tooltip);
-                tooltip.hide();
-
-                // Remove handlers if present
-                EventHandler<MouseEvent> showHandler = (EventHandler<MouseEvent>) button.getProperties().get("showHandler");
-                EventHandler<MouseEvent> hideHandler = (EventHandler<MouseEvent>) button.getProperties().get("hideHandler");
-                if (showHandler != null) parentBox.removeEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
-                if (hideHandler != null) parentBox.removeEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
-            }
-        });
-    }
-
-    private EventHandler<MouseEvent> showTooltipOnDisabledButton(Button button, Tooltip tooltip) {
-        return event -> {
-            if (button.isDisabled()) {
-                Bounds bounds = button.localToScreen(button.getBoundsInLocal());
-                double mouseX = event.getScreenX();
-                double mouseY = event.getScreenY();
-                if (bounds.contains(mouseX, mouseY)) {
-                    if (!tooltip.isShowing()) {
-                        tooltip.show(button, mouseX, mouseY + 10);
-                    }
-                } else {
-                    tooltip.hide();
-                }
-            } else {
-                tooltip.hide();
-            }
-        };
-    }
-
-    private EventHandler<MouseEvent> hideTooltipHandler(Tooltip tooltip) {
-        return event -> tooltip.hide();
     }
 
     /// Show the public ID
@@ -1141,7 +1070,7 @@ public class PatternDetailsController {
             EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
                     new MakePatternWindowEvent(actionEvent.getSource(), OPEN_PATTERN, patternViewModel.getPropertyValue(PATTERN), patternViewModel.getViewProperties()));
 
-            patternViewModel.setPropertyValue(IS_INVALID, true);
+            patternViewModel.setPropertyValue(PUBLISH_PENDING, false);
             patternViewModel.reLoadPatternValues();
         }
     }
@@ -1198,5 +1127,57 @@ public class PatternDetailsController {
         }
 
         updateDraggableNodesForPropertiesPanel(isOpen);
+    }
+
+    private void setupTooltipForDisabledButton(Button button) {
+
+        button.disabledProperty().subscribe(isNowDisabled -> {
+            if (isNowDisabled) {
+                Tooltip.uninstall(button, publishTooltip);
+
+                // Create unique handlers for each button-tooltip pair
+                EventHandler<MouseEvent> showHandler = showTooltipOnDisabledButton(button, publishTooltip);
+                EventHandler<MouseEvent> hideHandler = hideTooltipHandler(publishTooltip);
+
+                // Store handlers on the button's properties for later removal
+                button.getProperties().put("showHandler", showHandler);
+                button.getProperties().put("hideHandler", hideHandler);
+
+                publishStackPane.addEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
+                publishStackPane.addEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
+            } else {
+                Tooltip.install(button, publishTooltip);
+                publishTooltip.hide();
+
+                // Remove handlers if present
+                EventHandler<MouseEvent> showHandler = (EventHandler<MouseEvent>) button.getProperties().get("showHandler");
+                EventHandler<MouseEvent> hideHandler = (EventHandler<MouseEvent>) button.getProperties().get("hideHandler");
+                if (showHandler != null) publishStackPane.removeEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
+                if (hideHandler != null) publishStackPane.removeEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
+            }
+        });
+    }
+
+    private EventHandler<MouseEvent> showTooltipOnDisabledButton(Button button, Tooltip tooltip) {
+        return event -> {
+            if (button.isDisabled()) {
+                Bounds bounds = button.localToScreen(button.getBoundsInLocal());
+                double mouseX = event.getScreenX();
+                double mouseY = event.getScreenY();
+                if (bounds.contains(mouseX, mouseY)) {
+                    if (!tooltip.isShowing()) {
+                        tooltip.show(button, mouseX, mouseY + 10);
+                    }
+                } else {
+                    tooltip.hide();
+                }
+            } else {
+                tooltip.hide();
+            }
+        };
+    }
+
+    private EventHandler<MouseEvent> hideTooltipHandler(Tooltip tooltip) {
+        return event -> tooltip.hide();
     }
 }

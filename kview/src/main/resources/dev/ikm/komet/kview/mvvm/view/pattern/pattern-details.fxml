@@ -45,18 +45,19 @@
                            <tooltip><Tooltip text="Coordinates" /></tooltip>
                         </MenuButton>
                         <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
-                        <HBox fx:id="controlBoxHbox1" alignment="CENTER" spacing="15.0">
+                        <HBox fx:id="buttonContainer" alignment="CENTER" spacing="15.0">
                            <children>
-                              <Button fx:id="savePatternButton" mnemonicParsing="false" onAction="#savePattern" text="Button">
-                                 <graphic>
-                                    <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
-                                       <content><SVGConstants fx:constant="SAVE_SVG_PATH" /></content>
-                                    </SVGPath>
-                                 </graphic>
-                                 <tooltip>
-                                    <Tooltip fx:id="savePatternTooltip" text="Submit" />
-                                 </tooltip>
-                              </Button>
+                              <StackPane fx:id="publishStackPane">
+                                 <children>
+                                    <Button fx:id="savePatternButton" mnemonicParsing="false" onAction="#savePattern" text="Publish">
+                                       <graphic>
+                                          <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
+                                             <content><SVGConstants fx:constant="SAVE_SVG_PATH" /></content>
+                                          </SVGPath>
+                                       </graphic>
+                                    </Button>
+                                 </children>
+                              </StackPane>
                               <Button mnemonicParsing="false" text="Button">
                                  <graphic>
                                     <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
