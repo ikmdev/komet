@@ -10,6 +10,7 @@ import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
+import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.entity.Entity;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -55,6 +56,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
     private Subscription subscription;
     private Subscription filterSubscription;
+
+    private static final List<String> ALL_STATES = StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN.toEnumSet().stream().map(s -> s.name()).toList();
 
     private final FilterOptions defaultFilterOptions = new FilterOptions();
     private final ObjectProperty<FilterOptions> currentFilterOptionsProperty = new SimpleObjectProperty<>() {
@@ -249,7 +252,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
         // status: all descendants of Status
         option = filterOptions.getStatus();
-        setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.STATUS.getPath()));
+        setAvailableOptions(option, ALL_STATES); //ACTIVE, INACTIVE, WITHDRAWN
         FilterTitledPane statusFilterTitledPane = setupTitledPane(option);
         //
         setInitialOptionsForStatus(control.getInitialFilterOptions().getStatus());
@@ -355,9 +358,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         } else {
             defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
         }
-    }
-
-    private void setDefaultOptionsForStatus(FilterOptions.Option option) {
     }
 
     private void applyFilter(String i) {
