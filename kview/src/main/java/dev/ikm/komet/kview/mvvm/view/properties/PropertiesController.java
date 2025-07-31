@@ -20,12 +20,8 @@ import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.*;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -46,18 +42,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.List;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATHS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PREV_STAMP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
 
 /**
  * The properties window providing tabs of Edit, Hierarchy, History, and Comments.
@@ -361,28 +349,16 @@ public class PropertiesController implements Serializable {
             contentBorderPane.setCenter(stampAddPane);
             editButton.setSelected(true);
 
-            stampJFXNode.updateViewModel("stampViewModel", stampViewModel -> {
-                EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
-                StampEntity stampEntity = latestVersion.stamp();
-
-                stampViewModel.setPropertyValue(ENTITY, entityFacade)
-                              .setPropertyValue(PREV_STAMP, stampEntity)
-                              .setPropertyValue(StampViewModel2.StampProperties.STATUS, stampEntity.state())
-                              .setPropertyValue(StampViewModel2.StampProperties.MODULE, stampEntity.module())
-                              .setPropertyValue(PATH, stampEntity.path());
-
-                stampViewModel.setPropertyValues(MODULES, fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()))
-                              .setPropertyValues(PATHS, fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()))
-                              .setPropertyValues(STATUSES, List.of(State.values()));
-                                // TODO:
-                                //        LAST_MOD_DATE,        // The previous stamp date time (read-only?) we could use PREV_STAMP's time
-                                //        SAME_AS_PREVIOUS,     // Custom validator
-                                //         SUBMITTED,             // Flag when user pressed submit.
-            });
+//            stampJFXNode.updateViewModel("stampViewModel", stampViewModel -> {
+//                ((StampViewModel2)stampViewModel).init(entityFacade, conceptTopic, viewProperties);
+//                                // TODO:
+//                                //        LAST_MOD_DATE,        // The previous stamp date time (read-only?) we could use PREV_STAMP's time
+//                                //        SAME_AS_PREVIOUS,     // Custom validator
+//                                //         SUBMITTED,             // Flag when user pressed submit.
+//            });
         };
 
         eventBus.subscribe(conceptTopic, AddStampEvent.class, addStampSubscriber);
-
     }
 
     public ViewProperties getViewProperties() {
@@ -423,6 +399,8 @@ public class PropertiesController implements Serializable {
 
         // Create a new DescrNameViewModel for the addfqncontroller.
         this.addFullyQualifiedNameController.updateModel(viewProperties);
+
+        this.stampAddController.updateModel(viewProperties, entityFacade, conceptTopic);
     }
 
     public void updateView() {
