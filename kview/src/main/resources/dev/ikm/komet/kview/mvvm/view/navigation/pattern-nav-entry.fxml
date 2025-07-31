@@ -12,7 +12,7 @@
 
 <HBox fx:id="patternEntryHBox" prefWidth="332.0" styleClass="search-entry-hbox" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController">
    <children>
-      <VBox HBox.hgrow="ALWAYS">
+      <VBox fx:id="mainVBox" focusTraversable="true" prefWidth="334.0" HBox.hgrow="ALWAYS">
          <children>
             <HBox fx:id="semanticElementHBox" styleClass="pattern-title-container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="24.0" prefHeight="40.0" prefWidth="332.0" spacing="11.0" VBox.vgrow="NEVER">
                <children>
