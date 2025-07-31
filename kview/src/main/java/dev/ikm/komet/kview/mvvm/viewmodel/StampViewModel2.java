@@ -4,6 +4,7 @@ import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
 import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -28,6 +29,15 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
 
 public class StampViewModel2 extends FormViewModel {
+
+    /**
+     * Provide the standard Confirm Clear dialog title for use in other classes
+     */
+    public static final String CONFIRM_CLEAR_TITLE = "Confirm Clear Form";
+    /**
+     * Provide the standard Confirm Clear dialog message for use in other classes
+     */
+    public static final String CONFIRM_CLEAR_MESSAGE =  "Are you sure you want to clear the form? All entered data will be lost.";
 
     private EvtBus eventBus;
     private EntityFacade entityFacade;
@@ -90,6 +100,15 @@ public class StampViewModel2 extends FormViewModel {
         loadStampValuesFromDB();
         eventBus.publish(topic, new ClosePropertiesPanelEvent(eventSource,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
+    }
+
+    public void reset(Node eventSource) {
+        ConfirmationDialogController.showConfirmationDialog(eventSource, CONFIRM_CLEAR_TITLE, CONFIRM_CLEAR_MESSAGE)
+            .thenAccept(confirmed -> {
+                if (confirmed) {
+                    loadStampValuesFromDB();
+                }
+            });
     }
 
     @Override

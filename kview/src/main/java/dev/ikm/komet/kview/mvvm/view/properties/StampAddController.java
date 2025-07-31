@@ -27,6 +27,9 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties
 public class StampAddController {
 
     @FXML
+    private Button resetButton;
+
+    @FXML
     private Button cancelButton;
 
     @FXML
@@ -113,14 +116,14 @@ public class StampAddController {
         };
     }
 
-    public void cancel(ActionEvent actionEvent) {
+    public StampViewModel2 getStampViewModel() { return stampViewModel; }
+
+    public void cancelForm(ActionEvent actionEvent) {
         stampViewModel.cancel(cancelButton);
     }
 
-    public StampViewModel2 getStampViewModel() { return stampViewModel; }
-
-    public void clearForm(ActionEvent actionEvent) {
-
+    public void resetForm(ActionEvent actionEvent) {
+        stampViewModel.reset(resetButton);
     }
 
     public void confirm(ActionEvent actionEvent) {
