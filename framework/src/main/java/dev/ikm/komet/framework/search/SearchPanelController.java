@@ -228,7 +228,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
     }
 
     private void addComponentFromNid(int nid) {
-        String topText = viewProperties.nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(nid);
+        String topText = viewProperties.nodeView().calculator().getDescriptionTextOrNid(nid);
         Latest<EntityVersion> latestTopVersion = viewProperties.nodeView().calculator().latest(nid);
         TreeItem<Object> topItem = new TreeItem<>();
         latestTopVersion.ifPresentOrElse(entityVersion ->
@@ -245,7 +245,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
                     () -> Lists.mutable.empty()).add(result);
         }
         for (int topNid : topNidMatchMap.keySet().toArray()) {
-            String topText = viewProperties.nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(topNid);
+            String topText = viewProperties.nodeView().calculator().getDescriptionTextOrNid(topNid);
             Latest<EntityVersion> latestTopVersion = viewProperties.nodeView().calculator().latest(topNid);
             latestTopVersion.ifPresent(entityVersion -> {
                 TreeItem<Object> topItem = new TreeItem<>();
