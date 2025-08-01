@@ -23,7 +23,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;

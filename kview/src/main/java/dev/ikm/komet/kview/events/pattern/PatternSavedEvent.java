@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.events.pattern;
 
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtType;
 
 public class PatternSavedEvent extends Evt {
 

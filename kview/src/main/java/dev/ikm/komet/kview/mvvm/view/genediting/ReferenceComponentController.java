@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;

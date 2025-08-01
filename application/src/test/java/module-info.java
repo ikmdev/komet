@@ -16,7 +16,7 @@
 
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.concurrent.TaskListsService;
-import dev.ikm.komet.framework.events.DefaultEvtBus;
+import dev.ikm.tinkar.events.DefaultEvtBus;
 import dev.ikm.tinkar.common.service.DataServiceController;
 import dev.ikm.tinkar.common.service.DefaultDescriptionForNidService;
 import dev.ikm.tinkar.common.service.PublicIdService;
@@ -85,7 +85,7 @@ module dev.ikm.komet.application.test {
     uses dev.ikm.tinkar.common.service.PublicIdService;
     uses dev.ikm.tinkar.entity.StampService;
     uses dev.ikm.komet.framework.concurrent.TaskListsService;
-    uses dev.ikm.komet.framework.events.DefaultEvtBus;
+    uses dev.ikm.tinkar.events.DefaultEvtBus;
 
     // For ScenicView...
     //requires org.scenicview.scenicview;

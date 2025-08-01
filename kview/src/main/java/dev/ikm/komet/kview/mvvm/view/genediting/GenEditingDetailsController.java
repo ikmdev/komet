@@ -16,9 +16,9 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.EvtType;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtType;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservablePattern;

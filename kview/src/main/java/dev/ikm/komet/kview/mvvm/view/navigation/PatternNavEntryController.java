@@ -7,7 +7,7 @@ import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;

@@ -22,7 +22,7 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
 
 import java.io.File;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.*;
 
 /**

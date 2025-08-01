@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.kview.mvvm.login;
 
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.kview.mvvm.model.BasicUserManager;
 import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
 import javafx.scene.Scene;

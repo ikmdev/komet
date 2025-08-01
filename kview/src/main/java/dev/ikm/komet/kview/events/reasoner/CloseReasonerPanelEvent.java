@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.kview.events.reasoner;
 
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtType;
 
 public class CloseReasonerPanelEvent extends Evt {
 

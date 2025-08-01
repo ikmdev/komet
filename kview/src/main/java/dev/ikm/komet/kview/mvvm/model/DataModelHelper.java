@@ -28,7 +28,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.tinkar.common.id.IntIdList;

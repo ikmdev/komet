@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.view.details;
 
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.lidr.mvvm.model.*;
 import dev.ikm.komet.kview.lidr.mvvm.viewmodel.AnalyteGroupViewModel;

@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;

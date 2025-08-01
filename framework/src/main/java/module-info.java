@@ -17,7 +17,7 @@
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.concurrent.TaskListsService;
 import dev.ikm.komet.framework.dnd.DragRegistry;
-import dev.ikm.komet.framework.events.DefaultEvtBus;
+import dev.ikm.tinkar.events.DefaultEvtBus;
 import dev.ikm.komet.framework.rulebase.RuleService;
 import dev.ikm.komet.preferences.PreferencesService;
 import dev.ikm.tinkar.common.service.CachingService;
@@ -50,7 +50,6 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.window;
     exports dev.ikm.komet.framework.tabs;
     exports dev.ikm.komet.framework.panel.axiom;
-    exports dev.ikm.komet.framework.events;
     exports dev.ikm.komet.framework.events.appevents;
 
     provides CachingService with dev.ikm.komet.framework.dnd.DragRegistry.CacheProvider;
@@ -83,6 +82,7 @@ open module dev.ikm.komet.framework {
     requires transitive dev.ikm.tinkar.coordinate;
     requires transitive dev.ikm.tinkar.entity;
     requires transitive dev.ikm.tinkar.terms;
+    requires transitive dev.ikm.tinkar.events;
     requires transitive dev.ikm.jpms.eclipse.collections;
     requires transitive dev.ikm.jpms.eclipse.collections.api;
     requires transitive org.kordamp.ikonli.javafx;
@@ -95,10 +95,5 @@ open module dev.ikm.komet.framework {
     uses dev.ikm.komet.framework.KometNodeFactory;
     uses dev.ikm.tinkar.common.alert.AlertReportingService;
     uses dev.ikm.komet.framework.rulebase.RuleService;
-
-
-    provides dev.ikm.komet.framework.events.EvtBus
-            with dev.ikm.komet.framework.events.DefaultEvtBus;
-
-    uses dev.ikm.komet.framework.events.EvtBus;
+    uses dev.ikm.tinkar.events.EvtBus;
 }

@@ -16,9 +16,9 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
-import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.tinkar.events.EntityVersionChangeEvent;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.Toast;
@@ -53,7 +53,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;

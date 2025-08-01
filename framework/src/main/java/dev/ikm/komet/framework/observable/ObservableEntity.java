@@ -15,10 +15,10 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import static dev.ikm.komet.framework.events.EntityVersionChangeEvent.VERSION_UPDATED;
-import static dev.ikm.komet.framework.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
-import dev.ikm.komet.framework.events.EntityVersionChangeEvent;
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import static dev.ikm.tinkar.events.EntityVersionChangeEvent.VERSION_UPDATED;
+import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
+import dev.ikm.tinkar.events.EntityVersionChangeEvent;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.collection.ConcurrentReferenceHashMap;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import dev.ikm.tinkar.component.FieldDataType;

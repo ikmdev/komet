@@ -15,14 +15,14 @@
  */
 package dev.ikm.komet.framework.events.appevents;
 
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtType;
 import javafx.concurrent.Task;
 
 /**
  * For event publishers and subscribers to summon progress popup panel, add and remove a panel from a list of running progress panels.
  */
-public class ProgressEvent extends Evt  {
+public class ProgressEvent extends Evt {
 
     public static final EvtType<ProgressEvent> SUMMON = new EvtType<>(Evt.ANY, "SUMMON");
     public static final EvtType<ProgressEvent> CANCEL = new EvtType<>(Evt.ANY, "CANCEL");

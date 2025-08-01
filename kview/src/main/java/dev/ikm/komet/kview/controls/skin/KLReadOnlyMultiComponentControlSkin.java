@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyMultiComponentControl;
 import dev.ikm.komet.kview.controls.KometIcon;

@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.framework.events.appevents;
 
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtType;
 
 /**
  * Event representing refreshing view calculator cache.
