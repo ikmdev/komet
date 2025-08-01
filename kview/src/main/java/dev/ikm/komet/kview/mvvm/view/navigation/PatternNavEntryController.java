@@ -94,11 +94,11 @@ public class PatternNavEntryController {
 
         instancesTitledPane.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
             if (isNowExpanded) {
-                if (!mainVBox.getStyleClass().contains("search-entry-title-pane")) {
-                    mainVBox.getStyleClass().add("search-entry-title-pane");
+                if (!mainVBox.getStyleClass().contains("search-entry-title-pane-mainVBox")) {
+                    mainVBox.getStyleClass().add("search-entry-title-pane-mainVBox");
                 }
             } else {
-                mainVBox.getStyleClass().remove("search-entry-title-pane");
+                mainVBox.getStyleClass().remove("search-entry-title-pane-mainVBox");
             }
         });
 

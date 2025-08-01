@@ -3154,6 +3154,14 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-color: -Secondary-05;
 }
 
+.search-entry-title-pane-mainVBox {
+    -fx-border-color: -Secondary-05;
+    -fx-border-width: 3px;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+    -fx-background-color: -Grey-2;
+}
+
 .search-entry-title-pane > .content {
     -fx-border-width: 0;
 }
