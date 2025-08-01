@@ -5,6 +5,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
+import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -16,6 +17,7 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 
 import java.util.UUID;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATH;
@@ -25,6 +27,9 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties
 
 
 public class StampAddController {
+
+    @FXML
+    private Button submitButton;
 
     @FXML
     private Button resetButton;
@@ -49,6 +54,10 @@ public class StampAddController {
         initModuleComboBox();
         initPathComboBox();
         initStatusComboBox();
+
+        BooleanProperty isStampValuesTheSame = stampViewModel.getProperty(IS_STAMP_VALUES_THE_SAME);
+        submitButton.disableProperty().bind(isStampValuesTheSame);
+        resetButton.disableProperty().bind(isStampValuesTheSame);
     }
 
     public void updateModel(ViewProperties viewProperties, EntityFacade entity, UUID topic) {

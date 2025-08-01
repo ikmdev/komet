@@ -20,9 +20,10 @@ import java.util.UUID;
 import javafx.scene.Node;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PREV_STAMP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.CURRENT_STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATHS;
@@ -45,14 +46,15 @@ public class StampViewModel2 extends FormViewModel {
     private UUID topic;
 
     public enum StampProperties {
-        ENTITY,               // The component (Concept, Pattern, Semantic) EntityFacade
-        PREV_STAMP,           // The previous stamp. Stamp
-        STATUS,               // User selected Status
-//        LAST_MOD_DATE,        // The previous stamp date time (read-only?) we could use PREV_STAMP's time
-        MODULE,               // User selected Module (EntityFacade)
-        PATH,                 // User selected Path (EntityFacade)
-        SAME_AS_PREVIOUS,     // Custom validator
-        SUBMITTED,             // Flag when user pressed submit.
+        CURRENT_STAMP,                  // The current stamp
+
+        STATUS,                         // User selected Status
+//        LAST_MOD_DATE,                // The previous stamp date time (read-only?) we could use PREV_STAMP's time
+        MODULE,                         // User selected Module
+        PATH,                           // User selected Path
+
+        IS_STAMP_VALUES_THE_SAME,       // Are the Stamp values in the properties the same as of the current Stamp
+//        SUBMITTED,             // Flag when user pressed submit.
 
         STATUSES,
         MODULES,
@@ -61,10 +63,11 @@ public class StampViewModel2 extends FormViewModel {
 
     public StampViewModel2() {
         super();
-        addProperty(PREV_STAMP, (Stamp) null);
+        addProperty(CURRENT_STAMP, (Stamp) null);
         addProperty(STATUS, State.ACTIVE);
         addProperty(MODULE, (ConceptEntity) null);
         addProperty(PATH, (ConceptEntity) null);
+        addProperty(IS_STAMP_VALUES_THE_SAME, true);
 
         // TODO:
 //        addValidator(SAME_AS_PREVIOUS, )
@@ -72,28 +75,50 @@ public class StampViewModel2 extends FormViewModel {
         addProperty(MODULES, Collections.emptyList(), true);
         addProperty(PATHS, Collections.emptyList(), true);
         addProperty(STATUSES, Collections.emptyList(), true);
+
+        this.eventBus = EvtBusFactory.getDefaultEvtBus();
     }
 
     public void init(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
         this.entityFacade = entity;
         this.viewProperties = viewProperties;
         this.topic = topic;
-        this.eventBus = EvtBusFactory.getDefaultEvtBus();
 
+        // initialize observable lists
         setPropertyValues(MODULES, fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()));
         setPropertyValues(PATHS, fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()));
         setPropertyValues(STATUSES, List.of(State.values()));
 
+        loadStamp();
         loadStampValuesFromDB();
+
+        getProperty(StampViewModel2.StampProperties.STATUS).subscribe(this::updateIsStampValuesChanged);
+        getProperty(StampViewModel2.StampProperties.MODULE).subscribe(this::updateIsStampValuesChanged);
+        getProperty(StampViewModel2.StampProperties.PATH).subscribe(this::updateIsStampValuesChanged);
+    }
+
+    private void loadStamp() {
+        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
+        StampEntity stampEntity = latestVersion.stamp();
+
+        setPropertyValue(StampProperties.CURRENT_STAMP, stampEntity);
     }
 
     private void loadStampValuesFromDB() {
-        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
-        StampEntity stampEntity = latestVersion.stamp();
+        StampEntity stampEntity = getPropertyValue(StampProperties.CURRENT_STAMP);
 
         setPropertyValue(StampViewModel2.StampProperties.STATUS, stampEntity.state());
         setPropertyValue(StampViewModel2.StampProperties.MODULE, stampEntity.module());
         setPropertyValue(PATH, stampEntity.path());
+    }
+
+    private void updateIsStampValuesChanged() {
+        StampEntity stampEntity = getPropertyValue(StampProperties.CURRENT_STAMP);
+
+        setPropertyValue(IS_STAMP_VALUES_THE_SAME, stampEntity.state() == getPropertyValue(StampViewModel2.StampProperties.STATUS)
+                                                        && stampEntity.path() == getPropertyValue(PATH)
+                                                        && stampEntity.module() == getPropertyValue(MODULE));
+
     }
 
     public void cancel(Node eventSource) {
