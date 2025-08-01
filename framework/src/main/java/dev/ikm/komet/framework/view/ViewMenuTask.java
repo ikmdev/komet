@@ -585,6 +585,10 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         Menu changeDescriptionPreferenceMenu = new Menu("Change description preference");
         menuItems.add(changeDescriptionPreferenceMenu);
 
+        if (whichMenu.equals("JournalController")) {
+            LOG.debug("JournalController menu");
+        }
+
         for (ImmutableList<? extends ConceptFacade> typePreferenceList : FxGet.allowedDescriptionTypeOrder()) {
             CheckMenuItem typeOrderItem = new CheckMenuItem(viewCalculator.toEntityString(typePreferenceList.castToList(), viewCalculator::toEntityStringOrPublicIdAndNid));
             changeDescriptionPreferenceMenu.getItems().add(typeOrderItem);

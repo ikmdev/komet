@@ -126,7 +126,7 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.Operation
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_SOURCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
@@ -470,7 +470,7 @@ public class App extends Application {
         Config journalConfig = new Config(JournalController.class.getResource("journal.fxml"))
                 .updateViewModel("journalViewModel", journalViewModel -> {
                     journalViewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
-                    journalViewModel.setPropertyValue(WINDOW_VIEW, windowSettings.getView());
+                    journalViewModel.setPropertyValue(WINDOW_SETTINGS, windowSettings);
                 });
         JFXNode<BorderPane, JournalController> journalJFXNode = FXMLMvvmLoader.make(journalConfig);
         BorderPane journalBorderPane = journalJFXNode.node();
