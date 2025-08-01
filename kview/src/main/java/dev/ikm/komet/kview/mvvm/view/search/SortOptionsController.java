@@ -16,13 +16,13 @@
 package dev.ikm.komet.kview.mvvm.view.search;
 
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT_ALPHA;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC_ALPHA;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import javafx.application.Platform;

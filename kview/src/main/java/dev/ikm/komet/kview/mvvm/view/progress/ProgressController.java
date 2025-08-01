@@ -16,8 +16,8 @@
 
 package dev.ikm.komet.kview.mvvm.view.progress;
 
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel;
@@ -30,7 +30,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.InjectViewModel;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.PROGRESS_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.CANCEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.IS_CANCELLED_PROP;
