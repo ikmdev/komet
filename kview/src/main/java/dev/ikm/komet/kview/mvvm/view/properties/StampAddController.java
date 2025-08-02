@@ -1,23 +1,23 @@
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
-import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import javafx.beans.property.ObjectProperty;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
+import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.util.Callback;
 import org.carlfx.cognitive.loader.InjectViewModel;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATH;
@@ -29,91 +29,113 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties
 public class StampAddController {
 
     @FXML
-    private ComboBox<String> statusComboBox;
+    private Button submitButton;
 
     @FXML
-    private ComboBox<String> moduleComboBox;
+    private Button resetButton;
 
     @FXML
-    private ComboBox<String> pathComboBox;
+    private Button cancelButton;
+
+    @FXML
+    private ComboBox<State> statusComboBox;
+
+    @FXML
+    private ComboBox<ConceptEntity> moduleComboBox;
+
+    @FXML
+    private ComboBox<ConceptEntity> pathComboBox;
 
     @InjectViewModel
     private StampViewModel2 stampViewModel;
+
+    private ViewProperties viewProperties;
 
     @FXML
     public void initialize() {
         initModuleComboBox();
         initPathComboBox();
         initStatusComboBox();
+
+        BooleanProperty isStampValuesTheSame = stampViewModel.getProperty(IS_STAMP_VALUES_THE_SAME);
+        submitButton.disableProperty().bind(isStampValuesTheSame);
+        resetButton.disableProperty().bind(isStampValuesTheSame);
+    }
+
+    public void updateModel(ViewProperties viewProperties, EntityFacade entity, UUID topic) {
+        this.viewProperties = viewProperties;
+
+        if (entity != null) {
+            stampViewModel.init(entity, topic, viewProperties);
+        }
     }
 
     private void initStatusComboBox() {
-        ObservableList<State> statuses = stampViewModel.getObservableList(STATUSES);
-        statuses.addListener((ListChangeListener<State>) c -> {
-            List<String> statusesStrings = statuses.stream()
-                                                   .map(this::toFirstLetterCapitalized)
-                                                   .collect(Collectors.toList());
-            Collections.sort(statusesStrings, NaturalOrder.getObjectComparator());
-            statusComboBox.getItems().setAll(statusesStrings);
-        });
+        statusComboBox.setItems(stampViewModel.getObservableList(STATUSES));
 
-        ObjectProperty<State> statusProperty = stampViewModel.getProperty(STATUS);
-        statusProperty.subscribe(state -> {
-            if (state != null) {
-                statusComboBox.setValue(toFirstLetterCapitalized(state));
-            }
-        });
+        statusComboBox.setCellFactory(stateListView -> createStateListCell());
+        statusComboBox.setButtonCell(createStateListCell());
+
+        statusComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(STATUS));
     }
 
     private void initPathComboBox() {
-        ObservableList<ConceptEntity> paths = stampViewModel.getObservableList(PATHS);
-        paths.addListener((ListChangeListener<ConceptEntity>) c -> {
-            List<String> pathStrings = paths.stream()
-                    .map(EntityFacade::description)
-                    .collect(Collectors.toList());
-            Collections.sort(pathStrings, NaturalOrder.getObjectComparator());
-            pathComboBox.getItems().setAll(pathStrings);
-        });
+        pathComboBox.setItems(stampViewModel.getObservableList(PATHS));
 
-        ObjectProperty<ConceptEntity> pathProperty = stampViewModel.getProperty(PATH);
-        pathProperty.subscribe(conceptEntity -> {
-            if (conceptEntity != null) {
-                pathComboBox.setValue(conceptEntity.description());
-            }
-        });
+        pathComboBox.setCellFactory(_ -> createConceptListCell());
+        pathComboBox.setButtonCell(createConceptListCell());
+
+        pathComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(PATH));
     }
 
     private void initModuleComboBox() {
         // populate modules
-        ObservableList<ConceptEntity> modules = stampViewModel.getObservableList(MODULES);
+        moduleComboBox.setItems(stampViewModel.getObservableList(MODULES));
 
-        modules.addListener((ListChangeListener<ConceptEntity>) c -> {
-            List<String> moduleStrings = modules.stream()
-                    .map(EntityFacade::description)
-                    .collect(Collectors.toList());
-            Collections.sort(moduleStrings, NaturalOrder.getObjectComparator());
-            moduleComboBox.getItems().setAll(moduleStrings);
-        });
+        moduleComboBox.setCellFactory(_ -> createConceptListCell());
+        moduleComboBox.setButtonCell(createConceptListCell());
 
-        ObjectProperty<ConceptEntity> moduleProperty = stampViewModel.getProperty(MODULE);
-        moduleProperty.subscribe(conceptEntity -> {
-            if (conceptEntity != null) {
-                moduleComboBox.setValue(conceptEntity.description());
+        moduleComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(MODULE));
+    }
+
+    private ListCell<ConceptEntity> createConceptListCell() {
+        return new ListCell<>(){
+            @Override
+            protected void updateItem(ConceptEntity item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (item == null || empty) {
+                    setText(null);
+                } else {
+                    setText(item.description());
+                }
             }
-        });
+        };
     }
 
-    private String toFirstLetterCapitalized(State status) {
-        String statusString = status.toString();
-        return statusString.substring(0, 1).toUpperCase() + statusString.substring(1).toLowerCase();
+    private ListCell<State> createStateListCell() {
+        return new ListCell<>() {
+            @Override
+            protected void updateItem(State state, boolean empty) {
+                super.updateItem(state, empty);
+
+                if (state == null || empty) {
+                    setText(null);
+                } else {
+                    setText(viewProperties.calculator().getDescriptionTextOrNid(state.nid()));
+                }
+            }
+        };
     }
 
-    public void cancel(ActionEvent actionEvent) {
+    public StampViewModel2 getStampViewModel() { return stampViewModel; }
 
+    public void cancelForm(ActionEvent actionEvent) {
+        stampViewModel.cancel(cancelButton);
     }
 
-    public void clearForm(ActionEvent actionEvent) {
-
+    public void resetForm(ActionEvent actionEvent) {
+        stampViewModel.reset(resetButton);
     }
 
     public void confirm(ActionEvent actionEvent) {
