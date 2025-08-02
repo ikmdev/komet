@@ -51,12 +51,10 @@ public class StampViewModel2 extends FormViewModel {
         CURRENT_STAMP,                  // The current stamp
 
         STATUS,                         // User selected Status
-//        LAST_MOD_DATE,                // The previous stamp date time (read-only?) we could use PREV_STAMP's time
         MODULE,                         // User selected Module
         PATH,                           // User selected Path
 
         IS_STAMP_VALUES_THE_SAME,       // Are the Stamp values in the properties the same as of the current Stamp
-//        SUBMITTED,             // Flag when user pressed submit.
 
         STATUSES,
         MODULES,
@@ -148,5 +146,4 @@ public class StampViewModel2 extends FormViewModel {
     public StampViewModel2 save(boolean force) {
         return (StampViewModel2) super.save(force);
     }
-
 }

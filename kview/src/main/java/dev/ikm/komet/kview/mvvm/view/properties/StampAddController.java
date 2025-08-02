@@ -49,6 +49,8 @@ public class StampAddController {
     @InjectViewModel
     private StampViewModel2 stampViewModel;
 
+    private ViewProperties viewProperties;
+
     @FXML
     public void initialize() {
         initModuleComboBox();
@@ -61,6 +63,8 @@ public class StampAddController {
     }
 
     public void updateModel(ViewProperties viewProperties, EntityFacade entity, UUID topic) {
+        this.viewProperties = viewProperties;
+
         if (entity != null) {
             stampViewModel.init(entity, topic, viewProperties);
         }
@@ -69,24 +73,8 @@ public class StampAddController {
     private void initStatusComboBox() {
         statusComboBox.setItems(stampViewModel.getObservableList(STATUSES));
 
-        statusComboBox.setCellFactory(new Callback<>() {
-            @Override
-            public ListCell<State> call(ListView<State> stateListView) {
-                return new ListCell<>() {
-
-                    @Override
-                    protected void updateItem(State state, boolean empty) {
-                        super.updateItem(state, empty);
-
-                        if (state == null || empty) {
-                            setText(null);
-                        } else {
-                            setText(state.name());
-                        }
-                    }
-                };
-            }
-        });
+        statusComboBox.setCellFactory(stateListView -> createStateListCell());
+        statusComboBox.setButtonCell(createStateListCell());
 
         statusComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(STATUS));
     }
@@ -120,6 +108,21 @@ public class StampAddController {
                     setText(null);
                 } else {
                     setText(item.description());
+                }
+            }
+        };
+    }
+
+    private ListCell<State> createStateListCell() {
+        return new ListCell<>() {
+            @Override
+            protected void updateItem(State state, boolean empty) {
+                super.updateItem(state, empty);
+
+                if (state == null || empty) {
+                    setText(null);
+                } else {
+                    setText(viewProperties.calculator().getDescriptionTextOrNid(state.nid()));
                 }
             }
         };
