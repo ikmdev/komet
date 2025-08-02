@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.UUID;
 
 import javafx.scene.Node;
+import org.carlfx.cognitive.validator.ValidationResult;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
@@ -67,10 +69,15 @@ public class StampViewModel2 extends FormViewModel {
         addProperty(STATUS, State.ACTIVE);
         addProperty(MODULE, (ConceptEntity) null);
         addProperty(PATH, (ConceptEntity) null);
-        addProperty(IS_STAMP_VALUES_THE_SAME, true);
 
-        // TODO:
-//        addValidator(SAME_AS_PREVIOUS, )
+        addProperty(IS_STAMP_VALUES_THE_SAME, true);
+        addValidator(IS_STAMP_VALUES_THE_SAME, "Validator Property", (ValidationResult vr, ViewModel vm) -> {
+            boolean same = updateIsStampValuesChanged();
+            if (same) {
+                // if UI’s stamp is the same as the previous stamp than it is invalid.
+                vr.error("Cannot submit stamp because the data is the same.");
+            }
+        });
 
         addProperty(MODULES, Collections.emptyList(), true);
         addProperty(PATHS, Collections.emptyList(), true);
@@ -92,9 +99,7 @@ public class StampViewModel2 extends FormViewModel {
         loadStamp();
         loadStampValuesFromDB();
 
-        getProperty(StampViewModel2.StampProperties.STATUS).subscribe(this::updateIsStampValuesChanged);
-        getProperty(StampViewModel2.StampProperties.MODULE).subscribe(this::updateIsStampValuesChanged);
-        getProperty(StampViewModel2.StampProperties.PATH).subscribe(this::updateIsStampValuesChanged);
+        doOnChange(this::validate, STATUS, MODULE, PATH);
     }
 
     private void loadStamp() {
@@ -112,13 +117,16 @@ public class StampViewModel2 extends FormViewModel {
         setPropertyValue(PATH, stampEntity.path());
     }
 
-    private void updateIsStampValuesChanged() {
+    private boolean updateIsStampValuesChanged() {
         StampEntity stampEntity = getPropertyValue(StampProperties.CURRENT_STAMP);
 
-        setPropertyValue(IS_STAMP_VALUES_THE_SAME, stampEntity.state() == getPropertyValue(StampViewModel2.StampProperties.STATUS)
-                                                        && stampEntity.path() == getPropertyValue(PATH)
-                                                        && stampEntity.module() == getPropertyValue(MODULE));
+        boolean same = stampEntity.state() == getPropertyValue(StampViewModel2.StampProperties.STATUS)
+                && stampEntity.path() == getPropertyValue(PATH)
+                && stampEntity.module() == getPropertyValue(MODULE);
 
+        setPropertyValue(IS_STAMP_VALUES_THE_SAME, same);
+
+        return same;
     }
 
     public void cancel(Node eventSource) {
@@ -137,8 +145,8 @@ public class StampViewModel2 extends FormViewModel {
     }
 
     @Override
-    public StampViewModel save(boolean force) {
-        return (StampViewModel) super.save(force);
+    public StampViewModel2 save(boolean force) {
+        return (StampViewModel2) super.save(force);
     }
 
 }
