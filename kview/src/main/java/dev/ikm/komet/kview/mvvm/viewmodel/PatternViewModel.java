@@ -56,6 +56,7 @@ import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
 import org.carlfx.axonic.StateMachine;
@@ -130,6 +131,8 @@ public class PatternViewModel extends FormViewModel {
 
     public static String PATTERN_TITLE_TEXT = "patternTitleText";
 
+    public static String PUBLISH_PENDING = "publishPending";
+
     // Used to load the values in the PatternField controller from PatternDetailsController.
     public static String SELECTED_PATTERN_FIELD = "selectedPatternField";
 
@@ -155,6 +158,7 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(MEANING_TEXT, "")
                     .addProperty(PURPOSE_DATE_STR, "")
                     .addProperty(MEANING_DATE_STR, "")
+                    .addProperty(PUBLISH_PENDING,false)
                     // PATTERN>DESCRIPTION FQN and Other Name
                     .addProperty(FQN_DESCRIPTION_NAME_TEXT, "")
                     // Ordered collection of Fields
@@ -211,6 +215,7 @@ public class PatternViewModel extends FormViewModel {
         if (meaningFacade != null) {
             setPropertyValue(MEANING_TEXT, meaningFacade.description());
         }
+        setPropertyValue(PUBLISH_PENDING, true);
     }
 
     public void reLoadPatternValues(){

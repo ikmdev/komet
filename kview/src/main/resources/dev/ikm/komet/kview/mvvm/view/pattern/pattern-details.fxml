@@ -45,16 +45,19 @@
                            <tooltip><Tooltip text="Coordinates" /></tooltip>
                         </MenuButton>
                         <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
-                        <HBox fx:id="controlBoxHbox1" alignment="CENTER" spacing="15.0">
+                        <HBox fx:id="buttonContainer" alignment="CENTER" spacing="15.0">
                            <children>
-                              <Button fx:id="savePatternButton" mnemonicParsing="false" onAction="#savePattern" text="Button">
-                                 <graphic>
-                                    <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
-                                       <content><SVGConstants fx:constant="SAVE_SVG_PATH" /></content>
-                                    </SVGPath>
-                                 </graphic>
-                                 <tooltip><Tooltip text="Submit" /></tooltip>
-                              </Button>
+                              <StackPane fx:id="publishStackPane">
+                                 <children>
+                                    <Button fx:id="savePatternButton" mnemonicParsing="false" onAction="#savePattern" text="Publish">
+                                       <graphic>
+                                          <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
+                                             <content><SVGConstants fx:constant="SAVE_SVG_PATH" /></content>
+                                          </SVGPath>
+                                       </graphic>
+                                    </Button>
+                                 </children>
+                              </StackPane>
                               <Button mnemonicParsing="false" text="Button">
                                  <graphic>
                                     <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
@@ -247,7 +250,7 @@
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
                                                             <Label styleClass="grey8-12pt-bold" text="Date Added:" />
-                                                            <Label fx:id="fqnAddDateLabel" styleClass="descr-semantic" text="May 10, 2023" />
+                                                            <Label fx:id="fqnAddDateLabel" styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                                             <Hyperlink textFill="#1c1d1d80">
                                                                <graphic>
                                                                   <SVGPath content="M2.32011 11.5752C0.906855 10.162 0.906855 7.87464 2.32011 6.46139L7.55018 1.23131C8.58738 0.194111 10.2676 0.194111 11.3048 1.23131C12.342 2.26851 12.342 3.94873 11.3048 4.98593L6.98088 9.30986C6.31974 9.971 5.24664 9.971 4.58549 9.30986C3.92434 8.64871 3.92434 7.57561 4.58549 6.91446L8.52134 2.97861L9.33097 3.78824L5.39512 7.72409C5.18183 7.93738 5.18183 8.28694 5.39512 8.50023C5.60841 8.71352 5.95797 8.71352 6.17126 8.50023L10.4952 4.17631C11.0845 3.58696 11.0845 2.63028 10.4952 2.04094C9.90583 1.4516 8.94915 1.4516 8.35981 2.04094L3.12974 7.27101C2.16434 8.23641 2.16434 9.80021 3.12974 10.7656C4.09513 11.731 5.65894 11.731 6.62433 10.7656L11.4663 5.92361L12.276 6.73323L7.43396 11.5752C6.02071 12.9885 3.73336 12.9885 2.32011 11.5752Z" styleClass="descr-concept-icon" />
