@@ -116,11 +116,11 @@ public class FilterOptions implements Serializable {
             typeOptions, new ArrayList<>(), null, true);
     }
 
-    private Option header = new Option(OPTION_ITEM.HEADER, "header.title", new ArrayList<>(Arrays.asList("")),
+    private Option header = new Option(OPTION_ITEM.HEADER, "header.title", new ArrayList<>(),
             new ArrayList<>(), new ArrayList<>(), null, false);
 
     // can we pass a lambda to default options here?
-    private Option status = new Option(OPTION_ITEM.STATUS, "status.title", new ArrayList<>(new ArrayList<>()),
+    private Option status = new Option(OPTION_ITEM.STATUS, "status.title", new ArrayList<>(),
             new ArrayList<>(), new ArrayList<>(), null, true);
 
     private Option module = new Option(OPTION_ITEM.MODULE, "module.title", new ArrayList<>(Arrays.asList("All")),
@@ -172,7 +172,7 @@ public class FilterOptions implements Serializable {
                         "sortby.option.relevant", "sortby.option.alphabetical", "sortby.option.groupedby")
                 .map(resources::getString)
                 .toList();
-        sortBy = new Option(OPTION_ITEM.SORT_BY, "sortby.title", new ArrayList<>(Arrays.asList("")),
+        sortBy = new Option(OPTION_ITEM.SORT_BY, "sortby.title", new ArrayList<>(),
                 typeOptions, new ArrayList<>(), null, false);
     }
 
