@@ -49,7 +49,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
     private final Accordion accordion;
     private final Button revertButton;
-    private final Button applyButton;
     private final SavedFiltersPopup savedFiltersPopup;
     private final KometPreferences kometPreferences;
 
@@ -62,7 +61,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         protected void invalidated() {
             FilterOptions filterOptions = get();
             if (filterOptions != null) {
-                applyButton.setDisable(control.getFilterOptions().equals(filterOptions));
                 revertButton.setDisable(defaultFilterOptions.equals(filterOptions));
             }
         }
@@ -94,13 +92,10 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        applyButton = new Button(resources.getString("button.apply"));
-        applyButton.getStyleClass().add("apply");
-        applyButton.setOnAction(_ -> {
-            accordion.setExpandedPane(null);
-            // copy options from titledPanes into control
-            control.setFilterOptions(currentFilterOptionsProperty.get());
-        });
+        //TODO: We need to find a way to set the FilterOption into control
+        // copy options from titledPanes into control
+        // control.setFilterOptions(currentFilterOptionsProperty.get());
+
         StackPane region = new StackPane(new IconRegion("icon", "filter"));
         region.getStyleClass().add("region");
 
@@ -123,7 +118,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         revertButton = new Button(resources.getString("button.revert"));
         revertButton.setOnAction(_ -> revertFilterOptions());
 
-        VBox bottomBox = new VBox(applyButton, saveButton, revertButton);
+        VBox bottomBox = new VBox(saveButton, revertButton);
         bottomBox.getStyleClass().add("bottom-box");
 
         root = new VBox(headerBox, scrollPane, spacer, bottomBox);
