@@ -14,6 +14,7 @@ import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -181,16 +182,23 @@ public class PatternNavEntryController {
 
         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
         Function<Integer, String> fetchDescriptionByNid = nid -> {
-            // Reference Component in Pattern
-            String descr = "";
-            if (EntityService.get().getEntity(nid).get() instanceof SemanticEntity semanticEntity) {
-                EntityFacade refComponent = EntityService.get().getEntity(semanticEntity.referencedComponentNid()).get();
-                PatternFacade patternFacade = semanticEntity.pattern().toProxy();
-                LanguageCalculator languageCalculator = viewProperties.calculator().languageCalculator();
-                descr = languageCalculator.getPreferredDescriptionTextWithFallbackOrNid(refComponent.nid())+" ";
-                descr += languageCalculator.getPreferredDescriptionTextWithFallbackOrNid(patternFacade.nid());
+
+            StringBuilder description = new StringBuilder();
+            LanguageCalculator languageCalculator = viewProperties.calculator().languageCalculator();
+
+            // check if the entity is present
+            if (viewProperties.calculator().latest(nid).isPresent()) {
+                Entity entity = viewProperties.calculator().latest(nid).get().entity();
+                if (entity instanceof SemanticEntity semanticEntity) {
+                    // Reference Component in Pattern
+                    int refCompNid = semanticEntity.referencedComponentNid();
+                    PatternFacade patternFacade = semanticEntity.pattern().toProxy();
+                    description.append(languageCalculator.getPreferredDescriptionTextWithFallbackOrNid(refCompNid));
+                    description.append(" ");
+                    description.append(languageCalculator.getPreferredDescriptionTextWithFallbackOrNid(patternFacade.nid()));
+                }
             }
-            return descr;
+            return description.toString();
         };
         Function<EntityFacade, String> fetchDescriptionByFacade = (facade -> viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(facade));
         // set the cell factory for each pattern's instances list
