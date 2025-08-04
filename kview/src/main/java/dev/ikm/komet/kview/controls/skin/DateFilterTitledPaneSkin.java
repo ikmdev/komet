@@ -124,10 +124,8 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         subscription = subscription.and(selectedOption.textProperty().subscribe(text -> {
             List<String> defaultOptions = currentOption.defaultOptions();
             if (defaultOptions.isEmpty()) {
-                // do we want this?
                 defaultOptions.add(currentOption.availableOptions().getFirst());
             }
-
             pseudoClassStateChanged(MODIFIED_TITLED_PANE, !text.isEmpty() && !text.equals(String.join(", ", defaultOptions)));
         }));
 

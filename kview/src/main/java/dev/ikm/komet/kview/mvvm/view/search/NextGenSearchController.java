@@ -178,8 +178,6 @@ public class NextGenSearchController {
 
         initSearchResultType();
 
-
-
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
 
         TinkExecutor.threadPool().execute(TaskWrapper.make(new FilterMenuTask(getViewProperties()),

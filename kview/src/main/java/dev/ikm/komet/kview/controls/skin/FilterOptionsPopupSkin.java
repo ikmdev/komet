@@ -321,8 +321,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         }
 
         // initially, set default options
-
-
         control.setFilterOptions(defaultFilterOptions);
         updateCurrentFilterOptions();
     }
