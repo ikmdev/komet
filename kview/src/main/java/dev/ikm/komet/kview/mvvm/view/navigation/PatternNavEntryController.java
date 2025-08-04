@@ -201,7 +201,7 @@ public class PatternNavEntryController {
             return description.toString();
         };
         Function<EntityFacade, String> fetchDescriptionByFacade = (facade -> viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(facade));
-        // set the cell factory for each pattern's instances list
+        // set the cell factory for each pattern's instance list
         patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescriptionByNid, fetchDescriptionByFacade, viewProperties));
 
         // display each row (ListCell) of this ListView
