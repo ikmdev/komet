@@ -213,20 +213,9 @@ public class NextGenSearchController {
         filterOptionsPopup.showingProperty().subscribe(showing ->
                 filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
 
-        // first attempt at switching the status
+        // listen for changes to the filter options
         filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, newFilterOptions) -> {
             if (newFilterOptions != null) {
-
-//                if (isFirstRun) {
-//                    // populate
-//                }
-//                isFirstRun = false;
-
-                //filterOptionsPopup.getFilterOptions().getStatus().selectedOptions().clear();
-                //FIXME
-//                filterOptionsPopup.getFilterOptions().getStatus().selectedOptions().addAll(newFilterOptions.getStatus().selectedOptions());
-//                filterOptionsPopup.getFilterOptions().getStatus().availableOptions().addAll(newFilterOptions.getStatus().availableOptions());
-
                 // state
                 if (!newFilterOptions.getStatus().selectedOptions().isEmpty()) {
                     StateSet stateSet = StateSet.make(
@@ -235,15 +224,11 @@ public class NextGenSearchController {
                     // update the STATUS
                     getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
                 }
+                //TODO Type, Module, Path, Language, Description Type, Kind of, Membership, Sort By, Date
             }
         });
 
-
-
-
         getViewProperties().nodeView().addListener((observableValue, oldViewRecord, newViewRecord) -> {
-            LOG.info("Old VRec " + oldViewRecord);
-            LOG.info("New VRec " + newViewRecord);
             doSearch(new ActionEvent(null, null));
         });
     }

@@ -365,6 +365,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
         if (defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().containsAll(
                 defaultFilterOptions.getOptionForItem(option.item()).availableOptions())) {
+            //FIXME this is a temporary work around, the custom control should be refactored to not use a text property
+            // for the default options but to instead inherit from the parent coordinate menu
             defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(List.of("All"));
         } else {
             defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());

@@ -115,7 +115,7 @@ public class FilterOptions implements Serializable {
                 "type.option.concepts", "type.option.semantics")
                 .map(resources::getString)
                 .toList();
-        type = new Option(OPTION_ITEM.TYPE, "type.title", new ArrayList<>(Arrays.asList("type.option.all")),
+        type = new Option(OPTION_ITEM.TYPE, "type.title", new ArrayList<>(Arrays.asList("All")),
             typeOptions, new ArrayList<>(), null, true);
     }
 
@@ -126,13 +126,13 @@ public class FilterOptions implements Serializable {
     private Option status = new Option(OPTION_ITEM.STATUS, "status.title", new ArrayList<>(new ArrayList<>()),
             new ArrayList<>(), new ArrayList<>(), null, true);
 
-    private Option module = new Option(OPTION_ITEM.MODULE, "module.title", new ArrayList<>(Arrays.asList("module.option.all")),
+    private Option module = new Option(OPTION_ITEM.MODULE, "module.title", new ArrayList<>(Arrays.asList("All")),
             new ArrayList<>(), new ArrayList<>(), null, true);
 
-    private Option path = new Option(OPTION_ITEM.PATH, "path.title", new ArrayList<>(Arrays.asList("path.option.all")),
+    private Option path = new Option(OPTION_ITEM.PATH, "path.title", new ArrayList<>(Arrays.asList("All")),
             new ArrayList<>(), new ArrayList<>(), null, true);
 
-    private Option language = new Option(OPTION_ITEM.LANGUAGE, "language.title", new ArrayList<>(Arrays.asList("language.option.all")),
+    private Option language = new Option(OPTION_ITEM.LANGUAGE, "language.title", new ArrayList<>(Arrays.asList("All")),
             new ArrayList<>(), new ArrayList<>(), null, true);
 
     private Option descriptionType;
@@ -142,7 +142,7 @@ public class FilterOptions implements Serializable {
                 "description.option.preferredfqn", "description.option.regularfqn")
                 .map(resources::getString)
                 .toList();
-        descriptionType = new Option(OPTION_ITEM.DESCRIPTION_TYPE, "description.title", new ArrayList<>(Arrays.asList("description.option.all")),
+        descriptionType = new Option(OPTION_ITEM.DESCRIPTION_TYPE, "description.title", new ArrayList<>(Arrays.asList("All")),
                 descriptionTypeOptions, new ArrayList<>(), null, true);
     }
 
@@ -154,7 +154,7 @@ public class FilterOptions implements Serializable {
                         "kindof.option.item9", "kindof.option.item10", "kindof.option.item11")
                 .map(resources::getString)
                 .toList();
-        kindOf = new Option(OPTION_ITEM.KIND_OF, "kindof.title", new ArrayList<>(Arrays.asList("kindof.option.all")),
+        kindOf = new Option(OPTION_ITEM.KIND_OF, "kindof.title", new ArrayList<>(Arrays.asList("All")),
                 kindOfOptions, new ArrayList<>(), new ArrayList<>(), true);
     }
 
@@ -165,7 +165,7 @@ public class FilterOptions implements Serializable {
                         "membership.option.member4", "membership.option.member5")
                 .map(resources::getString)
                 .toList();
-        membership = new Option(OPTION_ITEM.MEMBERSHIP, "membership.title", new ArrayList<>(Arrays.asList("membership.option.all")),
+        membership = new Option(OPTION_ITEM.MEMBERSHIP, "membership.title", new ArrayList<>(Arrays.asList("All")),
                 membershipOptions, new ArrayList<>(), null, true);
     }
 
@@ -184,7 +184,7 @@ public class FilterOptions implements Serializable {
         List<String> dateOptions = Stream.of("date.item1", "date.item2", "date.item3")
                 .map(resources::getString)
                 .toList();
-        date = new Option(OPTION_ITEM.DATE, "date.title", new ArrayList<>(Arrays.asList("date.option.all")),
+        date = new Option(OPTION_ITEM.DATE, "date.title", new ArrayList<>(Arrays.asList("Latest")),
                 dateOptions, new ArrayList<>(), new ArrayList<>(), true);
     }
 
