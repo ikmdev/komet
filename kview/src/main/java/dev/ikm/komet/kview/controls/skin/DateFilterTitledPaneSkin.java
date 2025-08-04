@@ -193,7 +193,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                             .filter(DateRange::exclude)
                             .forEach(dr -> currentOption.excludedOptions().add(dr.toString()));
                 }
-                control.setOption(currentOption);
+                control.setOption(currentOption.copy());
             }
         }));
 

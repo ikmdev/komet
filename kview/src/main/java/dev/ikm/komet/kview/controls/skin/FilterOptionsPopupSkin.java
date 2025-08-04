@@ -57,6 +57,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
     private Subscription subscription;
     private Subscription filterSubscription;
+    private boolean updating;
 
     private static final List<String> ALL_STATES = StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN.toEnumSet().stream().map(s -> s.name()).toList();
 
@@ -66,7 +67,11 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         protected void invalidated() {
             FilterOptions filterOptions = get();
             if (filterOptions != null) {
-                applyButton.setDisable(control.getFilterOptions().equals(filterOptions));
+                if (!updating) {
+                    control.setFilterOptions(filterOptions);
+                }
+                // Keep button always enabled, though it won't do anything, since filterOptions are already passed to the control
+//                applyButton.setDisable(control.getFilterOptions().equals(filterOptions));
                 revertButton.setDisable(defaultFilterOptions.equals(filterOptions));
             }
         }
@@ -161,6 +166,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             return;
         }
         // changes from titledPane control:
+        updating = true;
         filterSubscription = Subscription.EMPTY;
         accordion.getPanes().stream()
                 .filter(FilterTitledPane.class::isInstance)
@@ -183,6 +189,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 });
         updateCurrentFilterOptions();
         control.getProperties().put(DEFAULT_OPTIONS_KEY, defaultFilterOptions.equals(control.getFilterOptions()));
+        updating = false;
     }
 
     @Override
@@ -207,8 +214,11 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
     private void revertFilterOptions() {
         accordion.setExpandedPane(null);
-        control.setFilterOptions(null);
+        updating = true;
+        currentFilterOptionsProperty.set(null);
+        setupFilter(null);
         setOptionsFromNavigator(control.getNavigator());
+        updating = false;
         updateCurrentFilterOptions();
     }
 
@@ -321,7 +331,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         }
 
         // initially, set default options
-        control.setFilterOptions(defaultFilterOptions);
+        currentFilterOptionsProperty.set(defaultFilterOptions);
+        setupFilter(defaultFilterOptions);
         updateCurrentFilterOptions();
     }
 
