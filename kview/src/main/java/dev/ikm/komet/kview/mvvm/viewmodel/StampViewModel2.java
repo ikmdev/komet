@@ -103,6 +103,7 @@ public class StampViewModel2 extends FormViewModel {
 
         loadStamp();
         loadStampValuesFromDB();
+        save(true);
 
         doOnChange(this::validate, STATUS, MODULE, PATH);
     }
@@ -121,15 +122,15 @@ public class StampViewModel2 extends FormViewModel {
     private void loadStampValuesFromDB() {
         StampEntity stampEntity = getPropertyValue(StampProperties.CURRENT_STAMP);
 
-        setPropertyValue(StampViewModel2.StampProperties.STATUS, stampEntity.state());
-        setPropertyValue(StampViewModel2.StampProperties.MODULE, stampEntity.module());
+        setPropertyValue(STATUS, stampEntity.state());
+        setPropertyValue(MODULE, stampEntity.module());
         setPropertyValue(PATH, stampEntity.path());
     }
 
     private boolean updateIsStampValuesChanged() {
         StampEntity stampEntity = getPropertyValue(StampProperties.CURRENT_STAMP);
 
-        boolean same = stampEntity.state() == getPropertyValue(StampViewModel2.StampProperties.STATUS)
+        boolean same = stampEntity.state() == getPropertyValue(STATUS)
                 && stampEntity.path() == getPropertyValue(PATH)
                 && stampEntity.module() == getPropertyValue(MODULE);
 
