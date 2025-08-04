@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import static dev.ikm.komet.kview.controls.FilterOptions.OPTION_ITEM.MODULE;
 import dev.ikm.komet.kview.controls.DateFilterTitledPane;
 import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
@@ -239,7 +240,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             setDefaultOptions(option);
         }
 
-        // header:  All first children of root
+        // header: All first children of root
         List<String> headerList = navigator.getChildEdges(rootNid).stream()
                 .map(edge -> Entity.getFast(edge.destinationNid()).description())
                 .toList();
@@ -251,16 +252,15 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         }
 
         // status: all descendants of Status
-        option = filterOptions.getStatus();
+        option = control.getInitialFilterOptions().getStatus();
         setAvailableOptions(option, ALL_STATES); //ACTIVE, INACTIVE, WITHDRAWN
         FilterTitledPane statusFilterTitledPane = setupTitledPane(option);
         //
         setInitialOptionsForStatus(control.getInitialFilterOptions().getStatus());
-        //setDefaultOptions(control.getInitialFilterOptions().getStatus());
 
         // module: all descendants of Module
         option = filterOptions.getModule();
-        setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.MODULE.getPath()));
+        setAvailableOptions(option, getDescendentsList(navigator, rootNid, MODULE.getPath()));
         FilterTitledPane moduleFilterTitledPane = setupTitledPane(option);
         setDefaultOptions(option);
 
@@ -324,6 +324,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         }
 
         // initially, set default options
+
+
         control.setFilterOptions(defaultFilterOptions);
         updateCurrentFilterOptions();
     }
@@ -344,11 +346,13 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
     private void setInitialOptionsForStatus(FilterOptions.Option option) {
         defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
+        defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
         if (option.isMultiSelectionAllowed()) {
             defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.selectedOptions());
         } else {
             defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
         }
+        defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
     }
 
     private void setDefaultOptions(FilterOptions.Option option) {
@@ -357,6 +361,13 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.availableOptions());
         } else {
             defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
+        }
+        defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
+        if (defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().containsAll(
+                defaultFilterOptions.getOptionForItem(option.item()).availableOptions())) {
+            defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(List.of("All"));
+        } else {
+            defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
         }
     }
 

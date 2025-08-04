@@ -123,11 +123,14 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
 
         subscription = subscription.and(selectedOption.textProperty().subscribe(text -> {
-            String defaultOption = currentOption.defaultOption();
-            if (defaultOption.isEmpty()) {
-                defaultOption = currentOption.availableOptions().getFirst();
+//            String defaultOption = currentOption.defaultOption();
+            List<String> defaultOptions = currentOption.defaultOptions();
+            if (defaultOptions.isEmpty()) {
+                // do we want this?
+                defaultOptions.add(currentOption.availableOptions().getFirst());
             }
-            pseudoClassStateChanged(MODIFIED_TITLED_PANE, !defaultOption.equals(text));
+
+            pseudoClassStateChanged(MODIFIED_TITLED_PANE, !text.isEmpty() && !text.equals(String.join(", ", defaultOptions)));
         }));
 
         if (control.getParent() instanceof Accordion accordion) {
@@ -306,7 +309,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 return MessageFormat.format(resources.getString("date.option.range.excluding"), including, excluding);
             }
         } else {
-            return option.defaultOption();
+            return String.join(", ", option.defaultOptions());
         }
     }
 

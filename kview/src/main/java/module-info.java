@@ -35,6 +35,7 @@ module dev.ikm.komet.kview {
     requires jdk.jfr;
     requires org.eclipse.jgit;
     requires dev.ikm.tinkar.reasoner.service;
+    requires java.sql;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
