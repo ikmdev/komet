@@ -12,6 +12,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
+import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -31,6 +32,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.slf4j.Logger;
@@ -52,6 +54,9 @@ public class PatternNavEntryController {
 
     @FXML
     private HBox semanticElementHBox;
+
+    @FXML
+    private VBox mainVBox;
 
     @FXML
     private ImageView identicon;
@@ -85,6 +90,16 @@ public class PatternNavEntryController {
         patternEntryHBox.setOnMouseExited(mouseEvent -> {
             if (!contextMenu.isShowing()) {
                 dragHandleAffordance.setVisible(false);
+            }
+        });
+
+        instancesTitledPane.expandedProperty().addListener((obs, wasExpanded, isNowExpanded) -> {
+            if (isNowExpanded) {
+                if (!mainVBox.getStyleClass().contains("search-entry-title-pane-pattern")) {
+                    mainVBox.getStyleClass().add("search-entry-title-pane-pattern");
+                }
+            } else {
+                mainVBox.getStyleClass().remove("search-entry-title-pane-pattern");
             }
         });
 
@@ -165,17 +180,18 @@ public class PatternNavEntryController {
         });
 
         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
-        Function<Integer, String> fetchDescriptionByNid = (nid -> {
+        Function<Integer, String> fetchDescriptionByNid = nid -> {
             // Reference Component in Pattern
             String descr = "";
             if (EntityService.get().getEntity(nid).get() instanceof SemanticEntity semanticEntity) {
                 EntityFacade refComponent = EntityService.get().getEntity(semanticEntity.referencedComponentNid()).get();
                 PatternFacade patternFacade = semanticEntity.pattern().toProxy();
-                descr = viewProperties.calculator().languageCalculator().getDescriptionText(refComponent.nid()).get()+" ";
-                descr += viewProperties.calculator().languageCalculator().getDescriptionTextOrNid(patternFacade.nid());
+                LanguageCalculator languageCalculator = viewProperties.calculator().languageCalculator();
+                descr = languageCalculator.getPreferredDescriptionTextWithFallbackOrNid(refComponent.nid())+" ";
+                descr += languageCalculator.getPreferredDescriptionTextWithFallbackOrNid(patternFacade.nid());
             }
             return descr;
-        });
+        };
         Function<EntityFacade, String> fetchDescriptionByFacade = (facade -> viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(facade));
         // set the cell factory for each pattern's instances list
         patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescriptionByNid, fetchDescriptionByFacade, viewProperties));
