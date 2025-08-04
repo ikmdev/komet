@@ -1,10 +1,12 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.kview.controls.FilterOptions;
-import dev.ikm.komet.kview.controls.RangeCalendarControl;
+import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
+import static dev.ikm.komet.kview.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
 import dev.ikm.komet.kview.controls.DateFilterTitledPane;
 import dev.ikm.komet.kview.controls.DateRange;
+import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.IconRegion;
+import dev.ikm.komet.kview.controls.RangeCalendarControl;
 import dev.ikm.komet.kview.controls.TruncatedTextFlow;
 import javafx.collections.FXCollections;
 import javafx.css.PseudoClass;
@@ -31,9 +33,6 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
 
 public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
@@ -123,7 +122,6 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
 
         subscription = subscription.and(selectedOption.textProperty().subscribe(text -> {
-//            String defaultOption = currentOption.defaultOption();
             List<String> defaultOptions = currentOption.defaultOptions();
             if (defaultOptions.isEmpty()) {
                 // do we want this?

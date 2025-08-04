@@ -180,9 +180,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                         optionForItem.availableOptions().addAll(pane.getOption().availableOptions());
                     }
                     pane.setOption(optionForItem);
-                    pane.optionProperty().subscribe(option -> {
-                        System.out.println(option.selectedOptions());
-                    });
                 });
         updateCurrentFilterOptions();
         control.getProperties().put(DEFAULT_OPTIONS_KEY, defaultFilterOptions.equals(control.getFilterOptions()));

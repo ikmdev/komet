@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,7 +16,6 @@ public class FilterOptions implements Serializable {
     private final static long serialVersionUID = 1L;
 
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
-    private Function initialStatusFunction;
 
     public enum OPTION_ITEM {
         TYPE(""),
@@ -55,7 +53,6 @@ public class FilterOptions implements Serializable {
         @Override
         public List<String> defaultOptions() {
             return defaultOptions;
-            //return !defaultOptions.isEmpty() ? resources.getString(defaultOptions) : "";
         }
 
         @Override

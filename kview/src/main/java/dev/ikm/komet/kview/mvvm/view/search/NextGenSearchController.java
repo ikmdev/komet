@@ -184,14 +184,8 @@ public class NextGenSearchController {
 
         TinkExecutor.threadPool().execute(TaskWrapper.make(new FilterMenuTask(getViewProperties()),
                 (FilterOptions filterOptions) ->
-                        FXUtils.runOnFxThread(() -> {
-                            //doesn't work
-                            filterOptionsPopup.initialFilterOptionsProperty().setValue(filterOptions);
-
-                            //NPE on filterOptionsPopup.getFilterOptions() :(
-                            //filterOptionsPopup.getFilterOptions().getStatus().selectedOptions().clear();
-                            //filterOptionsPopup.getFilterOptions().getStatus().selectedOptions().addAll(filterOptions.getStatus().selectedOptions());
-                        })
+                        FXUtils.runOnFxThread(() ->
+                            filterOptionsPopup.initialFilterOptionsProperty().setValue(filterOptions))
         ));
 
         root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
@@ -248,16 +242,13 @@ public class NextGenSearchController {
         switch (newSearchResultType) {
             case TOP_COMPONENT ->
                 searchResultsListView.setCellFactory((Callback<ListView<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>, ListCell<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>>) param ->
-                        //FIXME should we be passing the parentVIew at all?  we only want the overrideable view in each child node...
                         new SearchCellTopComponent(getViewProperties(), getJournalTopic(), getViewProperties().parentView())
                 );
             case DESCRIPTION_SEMANTICS ->
                 searchResultsListView.setCellFactory((Callback<ListView<LatestVersionSearchResult>, ListCell<LatestVersionSearchResult>>) param ->
-                        //FIXME should we be passing the parentVIew at all?  we only want the overrideable view in each child node...
                         new SearchCellDescriptionSemantic(getViewProperties(), getJournalTopic(), getViewProperties().parentView()));
             case NID ->
                 searchResultsListView.setCellFactory((Callback<ListView<Integer>, ListCell<Integer>>) param ->
-                        //FIXME should we be passing the parentVIew at all?  we only want the overrideable view in each child node...
                         new SearchCellNid(getViewProperties(), getViewProperties().parentView(), getJournalTopic()));
         }
 
