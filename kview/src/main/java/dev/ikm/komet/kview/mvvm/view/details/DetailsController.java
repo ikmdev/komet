@@ -549,8 +549,8 @@ public class DetailsController  {
     }
 
     private void onMouseFilterPressedOnScene(MouseEvent mouseEvent) {
-        Point2D localMousePos = stampContainer.sceneToLocal(mouseEvent.getSceneX(), mouseEvent.getSceneY());
-        if (!stampContainer.contains(localMousePos)) {
+        Point2D localMousePos = detailsOuterBorderPane.sceneToLocal(mouseEvent.getSceneX(), mouseEvent.getSceneY());
+        if (!detailsOuterBorderPane.contains(localMousePos)) {
             stampSelected.set(false);
         }
     }
@@ -1379,7 +1379,9 @@ public class DetailsController  {
         stampSelected.setValue(!stampSelected.get());
     }
 
-    private void onStampSelectionChanged(boolean isSelected) {
+    private void onStampSelectionChanged() {
+        boolean isSelected = stampSelected.get();
+
         stampContainer.pseudoClassStateChanged(STAMP_SELECTED, isSelected);
 
         if (isSelected) {
@@ -1389,6 +1391,8 @@ public class DetailsController  {
 
             eventBus.publish(conceptTopic, new AddStampEvent(stampContainer,
                     AddStampEvent.ANY));
+        } else {
+            eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(stampContainer, ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
         }
     }
 

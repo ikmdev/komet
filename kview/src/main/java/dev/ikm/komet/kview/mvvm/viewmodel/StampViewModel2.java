@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
@@ -47,6 +48,8 @@ public class StampViewModel2 extends FormViewModel {
     private ViewProperties viewProperties;
     private UUID topic;
 
+    private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
+
     public enum StampProperties {
         CURRENT_STAMP,                  // The current stamp
 
@@ -89,6 +92,10 @@ public class StampViewModel2 extends FormViewModel {
         this.viewProperties = viewProperties;
         this.topic = topic;
 
+        // listen to events that the properties panel is going to be closed
+        closePropertiesPanelEventSubscriber = evt -> onPropertiesPanelClose();
+        eventBus.subscribe(topic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+
         // initialize observable lists
         setPropertyValues(MODULES, fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()));
         setPropertyValues(PATHS, fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()));
@@ -98,6 +105,10 @@ public class StampViewModel2 extends FormViewModel {
         loadStampValuesFromDB();
 
         doOnChange(this::validate, STATUS, MODULE, PATH);
+    }
+
+    private void onPropertiesPanelClose() {
+        loadStampValuesFromDB(); // every time the properties panel closes we reset the form
     }
 
     private void loadStamp() {
@@ -128,7 +139,6 @@ public class StampViewModel2 extends FormViewModel {
     }
 
     public void cancel(Node eventSource) {
-        loadStampValuesFromDB();
         eventBus.publish(topic, new ClosePropertiesPanelEvent(eventSource,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
