@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
+import static dev.ikm.komet.kview.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
 import dev.ikm.komet.kview.controls.DateFilterTitledPane;
 import dev.ikm.komet.kview.controls.DateRange;
 import dev.ikm.komet.kview.controls.FilterOptions;
@@ -31,9 +33,6 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
 
 public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
@@ -123,11 +122,11 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
 
         subscription = subscription.and(selectedOption.textProperty().subscribe(text -> {
-            String defaultOption = currentOption.defaultOption();
-            if (defaultOption.isEmpty()) {
-                defaultOption = currentOption.availableOptions().getFirst();
+            List<String> defaultOptions = currentOption.defaultOptions();
+            if (defaultOptions.isEmpty()) {
+                defaultOptions.add(currentOption.availableOptions().getFirst());
             }
-            pseudoClassStateChanged(MODIFIED_TITLED_PANE, !defaultOption.equals(text));
+            pseudoClassStateChanged(MODIFIED_TITLED_PANE, !text.isEmpty() && !text.equals(String.join(", ", defaultOptions)));
         }));
 
         if (control.getParent() instanceof Accordion accordion) {
@@ -306,7 +305,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 return MessageFormat.format(resources.getString("date.option.range.excluding"), including, excluding);
             }
         } else {
-            return option.defaultOption();
+            return String.join(", ", option.defaultOptions());
         }
     }
 

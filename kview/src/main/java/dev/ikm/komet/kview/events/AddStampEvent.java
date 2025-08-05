@@ -1,9 +1,7 @@
 package dev.ikm.komet.kview.events;
 
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtType;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtType;
 
 public class AddStampEvent extends Evt {
     public AddStampEvent(Object source, EvtType eventType) {
