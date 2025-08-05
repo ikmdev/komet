@@ -29,9 +29,9 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -102,6 +102,11 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.UUID;
+
+import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.*;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.*;
+
 
 
 public class NextGenSearchController {
