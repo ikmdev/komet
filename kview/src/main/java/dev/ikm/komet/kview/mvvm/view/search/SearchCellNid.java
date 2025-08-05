@@ -21,7 +21,7 @@ import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.getDr
 import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.setUpDraggable;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 
-// Unfortunately we cannot have the generic type defined in the ListCell (the item needs to be of type Object).
+// Unfortunately, we cannot have the generic type defined in the ListCell (the item needs to be of type Object).
 // There seems to be a bug in JavaFX where after you change the Cell Factory, the now defunct Cells still hang
 // on and listen for changes in the ListView items. So we always need to check the type of the item passed in
 // to updateItem. We need to check its type to make sure the current ListView item being passed in still applies

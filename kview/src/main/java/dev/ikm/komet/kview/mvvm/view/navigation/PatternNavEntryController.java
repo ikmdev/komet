@@ -7,13 +7,14 @@ import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -180,21 +181,11 @@ public class PatternNavEntryController {
         });
 
         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
-        Function<Integer, String> fetchDescriptionByNid = nid -> {
-            // Reference Component in Pattern
-            String descr = "";
-            if (EntityService.get().getEntity(nid).get() instanceof SemanticEntity semanticEntity) {
-                EntityFacade refComponent = EntityService.get().getEntity(semanticEntity.referencedComponentNid()).get();
-                PatternFacade patternFacade = semanticEntity.pattern().toProxy();
-                LanguageCalculator languageCalculator = viewProperties.calculator().languageCalculator();
-                descr = languageCalculator.getPreferredDescriptionTextWithFallbackOrNid(refComponent.nid())+" ";
-                descr += languageCalculator.getPreferredDescriptionTextWithFallbackOrNid(patternFacade.nid());
-            }
-            return descr;
-        };
-        Function<EntityFacade, String> fetchDescriptionByFacade = (facade -> viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(facade));
-        // set the cell factory for each pattern's instances list
-        patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescriptionByNid, fetchDescriptionByFacade, viewProperties));
+
+        Function<Integer, String> fetchDescription = (nid -> viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid));
+
+        // set the cell factory for each pattern's instance list
+        patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescription, viewProperties));
 
         // display each row (ListCell) of this ListView
         Platform.runLater(() ->{
