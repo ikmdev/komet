@@ -122,7 +122,7 @@ public class StampAddController {
                 if (state == null || empty) {
                     setText(null);
                 } else {
-                    setText(viewProperties.calculator().getDescriptionTextOrNid(state.nid()));
+                    setText(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(state.nid()));
                 }
             }
         };
