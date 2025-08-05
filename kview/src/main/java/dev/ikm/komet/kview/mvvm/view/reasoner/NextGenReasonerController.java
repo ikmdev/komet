@@ -17,7 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.reasoner;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent.CLOSE;
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

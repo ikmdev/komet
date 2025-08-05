@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import static dev.ikm.komet.kview.controls.FilterOptions.OPTION_ITEM.MODULE;
 import dev.ikm.komet.kview.controls.DateFilterTitledPane;
 import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
@@ -10,6 +11,7 @@ import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
+import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.entity.Entity;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -56,6 +58,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     private Subscription subscription;
     private Subscription filterSubscription;
     private boolean updating;
+
+    private static final List<String> ALL_STATES = StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN.toEnumSet().stream().map(s -> s.name()).toList();
 
     private final FilterOptions defaultFilterOptions = new FilterOptions();
     private final ObjectProperty<FilterOptions> currentFilterOptionsProperty = new SimpleObjectProperty<>() {
@@ -244,7 +248,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             setDefaultOptions(option);
         }
 
-        // header:  All first children of root
+        // header: All first children of root
         List<String> headerList = navigator.getChildEdges(rootNid).stream()
                 .map(edge -> Entity.getFast(edge.destinationNid()).description())
                 .toList();
@@ -255,25 +259,26 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             setDefaultOptions(option);
         }
 
-        // status: all descendents of Status
-        option = filterOptions.getStatus();
-        setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.STATUS.getPath()));
+        // status: all descendants of Status
+        option = control.getInitialFilterOptions().getStatus();
+        setAvailableOptions(option, ALL_STATES); //ACTIVE, INACTIVE, WITHDRAWN
         FilterTitledPane statusFilterTitledPane = setupTitledPane(option);
-        setDefaultOptions(option);
+        //
+        setInitialOptionsForStatus(control.getInitialFilterOptions().getStatus());
 
-        // module: all descendents of Module
+        // module: all descendants of Module
         option = filterOptions.getModule();
-        setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.MODULE.getPath()));
+        setAvailableOptions(option, getDescendentsList(navigator, rootNid, MODULE.getPath()));
         FilterTitledPane moduleFilterTitledPane = setupTitledPane(option);
         setDefaultOptions(option);
 
-        // path: all descendents of Path
+        // path: all descendants of Path
         option = filterOptions.getPath();
         setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath()));
         FilterTitledPane pathFilterTitledPane = setupTitledPane(option);
         setDefaultOptions(option);
 
-        // language: all descendents of Model concept->Tinkar Model concept->Language
+        // language: all descendants of Model concept->Tinkar Model concept->Language
         option = filterOptions.getLanguage();
         setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.LANGUAGE.getPath()));
         FilterTitledPane languageFilterTitledPane = setupTitledPane(option);
@@ -346,12 +351,32 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         option.availableOptions().addAll(options);
     }
 
+    private void setInitialOptionsForStatus(FilterOptions.Option option) {
+        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
+        defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
+        if (option.isMultiSelectionAllowed()) {
+            defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.selectedOptions());
+        } else {
+            defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
+        }
+        defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
+    }
+
     private void setDefaultOptions(FilterOptions.Option option) {
         defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
         if (option.isMultiSelectionAllowed()) {
             defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.availableOptions());
         } else {
             defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
+        }
+        defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
+        if (defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().containsAll(
+                defaultFilterOptions.getOptionForItem(option.item()).availableOptions())) {
+            //FIXME this is a temporary work around, the custom control should be refactored to not use a text property
+            // for the default options but to instead inherit from the parent coordinate menu
+            defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(List.of("All"));
+        } else {
+            defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
         }
     }
 

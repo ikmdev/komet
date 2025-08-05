@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.kview.events;
 
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.komet.framework.preferences.PrefX;
 
 public class CreateJournalEvent extends Evt {

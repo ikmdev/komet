@@ -156,6 +156,6 @@ module dev.ikm.komet.kview {
             dev.ikm.komet.kview.klwindows.lidr.LidrKlWindowFactory,
             dev.ikm.komet.kview.klwindows.genediting.GenEditingKlWindowFactory;
 
-    uses dev.ikm.komet.framework.events.EvtBus;
+    uses dev.ikm.tinkar.events.EvtBus;
     uses EntityKlWindowFactory;
 }
