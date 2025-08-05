@@ -110,6 +110,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         region.getStyleClass().add("region");
 
         Button saveButton = new Button(resources.getString("button.save"), region);
+        //TODO: Disabling “Save to List” button in NextGen Search Filter Menu for now
+        // since this functionality has not been designed yet.
         saveButton.setDisable(true);
         saveButton.setOnAction(_ -> {
             // close all titled panes to update the current filter options
