@@ -110,6 +110,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         region.getStyleClass().add("region");
 
         Button saveButton = new Button(resources.getString("button.save"), region);
+        saveButton.setDisable(true);
         saveButton.setOnAction(_ -> {
             // close all titled panes to update the current filter options
             accordion.setExpandedPane(null);
