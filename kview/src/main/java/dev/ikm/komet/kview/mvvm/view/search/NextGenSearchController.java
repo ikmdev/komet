@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT_ALPHA;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC;
@@ -26,14 +25,11 @@ import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
-import dev.ikm.tinkar.events.EvtBus;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
-import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.FilterOptions;
@@ -46,13 +42,11 @@ import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.kview.tasks.FilterMenuTask;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
-import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
-import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
@@ -62,6 +56,9 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
@@ -102,10 +99,6 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.UUID;
-
-import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
-import static dev.ikm.komet.kview.events.SearchSortOptionEvent.*;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.*;
 
 
 
