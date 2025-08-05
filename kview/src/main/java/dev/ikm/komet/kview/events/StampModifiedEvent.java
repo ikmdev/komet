@@ -16,8 +16,8 @@
 package dev.ikm.komet.kview.events;
 
 import dev.ikm.komet.kview.data.schema.STAMPDetail;
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtType;
 
 public class StampModifiedEvent extends Evt {
     public static final EvtType<StampModifiedEvent> UPDATED = new EvtType<>(Evt.ANY, "UPDATED");
