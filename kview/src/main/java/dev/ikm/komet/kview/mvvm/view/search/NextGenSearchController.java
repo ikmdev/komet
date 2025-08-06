@@ -217,7 +217,6 @@ public class NextGenSearchController {
                     // update the STATUS
                     getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
                 }
-                //final String MASTER_PATH_STR = TinkarTerm.MASTER_PATH.toString();
                 if (!newFilterOptions.getPath().selectedOptions().isEmpty()) {
                     //NOTE: there is no known way to set multiple paths
                     String pathStr = newFilterOptions.getPath().selectedOptions().stream().findFirst().get();
@@ -338,7 +337,7 @@ public class NextGenSearchController {
                 });
             } else {
                 List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
-                LOG.info(String.valueOf(results.size()));
+                LOG.info("{} search results returned", results.size());
 
                 List processedResults;
                 switch (sortByButton.getText()) {
