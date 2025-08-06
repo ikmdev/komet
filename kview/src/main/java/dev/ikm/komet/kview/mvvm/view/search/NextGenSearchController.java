@@ -344,7 +344,7 @@ public class NextGenSearchController {
                     case BUTTON_TEXT_TOP_COMPONENT -> {
                         setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
 
-                        // used linked hash map to maintain insertion order
+                        // used a linked hash map to maintain insertion order
                         LinkedHashMap<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems = new LinkedHashMap<>();
 
                         // sort by top component score order
