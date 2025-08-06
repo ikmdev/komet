@@ -16,9 +16,9 @@
 package dev.ikm.komet.kview.lidr.mvvm.view.results;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.kview.data.schema.STAMPDetail;

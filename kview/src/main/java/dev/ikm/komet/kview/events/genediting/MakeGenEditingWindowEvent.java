@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.events.genediting;
 
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.terms.EntityFacade;
 
