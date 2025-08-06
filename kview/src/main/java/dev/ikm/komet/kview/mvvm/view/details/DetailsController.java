@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.details;
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.*;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.*;
 import static dev.ikm.komet.kview.fxutils.MenuHelper.*;
+
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.*;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.*;
@@ -1006,13 +1007,7 @@ public class DetailsController  {
      */
     private VBox generateOtherNameRow(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
         VBox textFlowsBox = new VBox();
-        DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
-
         String descrSemanticStr = String.join(", ", fieldDescriptions);
-
-        // update date
-        Instant stampInstance = Instant.ofEpochSecond(semanticEntityVersion.stamp().time()/1000);
-        String time = DATE_TIME_FORMATTER.format(stampInstance);
 
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
@@ -1037,18 +1032,36 @@ public class DetailsController  {
 
         TextFlow row2 = new TextFlow();
         Text dateAddedLabel = new Text("Date Added: ");
-        dateAddedLabel.getStyleClass().add("descr-semantic");
-        Text dateLabel = new Text(time);
-        dateLabel.getStyleClass().add("descr-semantic");
+        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
 
-        Region spacer = new Region();
-        spacer.setMinWidth(10);
+        if (semanticEntityVersion.publicId() != null) {
+            ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
+            Latest<EntityVersion> semanticVersionLatest = viewCalculator.latest(Entity.nid(semanticEntityVersion.publicId()));
+            semanticVersionLatest.ifPresent(entityVersion -> {
+                long rawTime = entityVersion.time();
+                String dateText = null;
+                if (rawTime == PREMUNDANE_TIME) {
+                    dateText = PREMUNDANE;
+                } else {
+                    Locale userLocale = Locale.getDefault();
+                    LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
+                    dateText = formatter.format(localDate);
+                }
 
-        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
-        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+                Text dateLabel = new Text(dateText);
+                dateLabel.getStyleClass().add("grey8-12pt-bold");
 
-        // Add the date info and additional hyperlinks
-        row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
+                Region spacer = new Region();
+                spacer.setMinWidth(10);
+
+                Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
+                Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+
+                // Add the date info and additional hyperlinks
+                row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
+            });
+        }
 
         textFlowsBox.getChildren().addAll(row1, row2);
         return textFlowsBox;
@@ -1056,7 +1069,6 @@ public class DetailsController  {
 
     private VBox generateOtherNameRow(DescrName otherName) {
         VBox textFlowsBox = new VBox();
-        DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         ConceptEntity caseSigConcept = otherName.getCaseSignificance();
         String casSigText = viewCalculator.getRegularDescriptionText(caseSigConcept.nid())
@@ -1067,11 +1079,6 @@ public class DetailsController  {
                 .orElse(String.valueOf(langConcept.nid()));
 
         String descrSemanticStr = "%s, %s".formatted(casSigText, langText);
-
-        // update date
-        long epochmillis = getStampViewModel() == null ? System.currentTimeMillis() : getStampViewModel().getValue(TIME);
-        Instant stampInstance = Instant.ofEpochSecond(epochmillis/1000);
-        String time = DATE_TIME_FORMATTER.format(stampInstance);
 
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
@@ -1109,19 +1116,35 @@ public class DetailsController  {
 
         TextFlow row2 = new TextFlow();
         Text dateAddedLabel = new Text("Date Added: ");
-        dateAddedLabel.getStyleClass().add("descr-semantic");
-        Text dateLabel = new Text(time);
-        dateLabel.getStyleClass().add("descr-semantic");
+        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
 
-        Region spacer = new Region();
-        spacer.setMinWidth(10);
+        if (otherName.getSemanticPublicId() != null) {
+            Latest<EntityVersion> semanticVersionLatest = viewCalculator.latest(Entity.nid(otherName.getSemanticPublicId()));
+            semanticVersionLatest.ifPresent(entityVersion -> {
+                long rawTime = entityVersion.time();
+                String dateText = null;
+                if (rawTime == PREMUNDANE_TIME) {
+                    dateText = PREMUNDANE;
+                } else {
+                    Locale userLocale = Locale.getDefault();
+                    LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
+                    dateText = formatter.format(localDate);
+                }
 
-        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
-        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+                Text dateLabel = new Text(dateText);
+                dateLabel.getStyleClass().add("grey8-12pt-bold");
 
-        // Add the date info and additional hyperlinks
-        row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
+                Region spacer = new Region();
+                spacer.setMinWidth(10);
 
+                Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
+                Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+
+                // Add the date info and additional hyperlinks
+                row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
+            });
+        }
         textFlowsBox.getChildren().addAll(row1, row2);
         return textFlowsBox;
     }
@@ -1147,10 +1170,19 @@ public class DetailsController  {
         fqnContainer.getChildren().setAll(latestFqnText, fqnDescriptionSemanticText);
 
         // update date
-        Instant stampInstance = Instant.ofEpochSecond(semanticEntityVersion.stamp().time()/1000);
-        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-        String time = DATE_TIME_FORMATTER.format(stampTime);
-        fqnAddDateLabel.setText("Date Added: " + time);
+        String dateAddedStr = "";
+        if (semanticEntityVersion.stamp() == null) {
+            dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+        } else {
+            Long fieldMilis = semanticEntityVersion.stamp().time();
+            if (fieldMilis.equals(PREMUNDANE_TIME)) {
+                dateAddedStr = PREMUNDANE;
+            } else {
+                LocalDate localDate = Instant.ofEpochMilli(fieldMilis).atZone(ZoneId.systemDefault()).toLocalDate();
+                dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+            }
+        }
+        fqnAddDateLabel.setText("Date Added: " + dateAddedStr);
 
         Region spacer = new Region();
         spacer.setMinWidth(10);
@@ -1324,6 +1356,7 @@ public class DetailsController  {
         definitionTextField.clear();
         identifierControl.setPublicId("");
         lastUpdatedLabel.setText("");
+        fqnAddDateLabel.setText("");
         moduleLabel.setText("");
         pathLabel.setText("");
         statusLabel.setText("");
