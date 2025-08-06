@@ -28,7 +28,7 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
-<BorderPane fx:id="detailsOuterBorderPane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane fx:id="detailsOuterBorderPane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.details.DetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane">
          <top>
@@ -233,7 +233,7 @@
 
                                        <ResponsiveTextFlow fx:id="fqnDateAddedTextFlow">
                                           <Label styleClass="descr-semantic" />
-                                          <Label fx:id="fqnAddDateLabel" styleClass="descr-semantic" text="May 10, 2023" />
+                                          <Label fx:id="fqnAddDateLabel" styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                           <Hyperlink text="Attachment" />
                                           <Hyperlink text="Comment" />
                                        </ResponsiveTextFlow>

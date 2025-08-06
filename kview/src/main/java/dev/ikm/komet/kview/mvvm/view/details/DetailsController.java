@@ -15,77 +15,104 @@
  */
 package dev.ikm.komet.kview.mvvm.view.details;
 
-import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.*;
-import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.*;
-import static dev.ikm.komet.kview.fxutils.MenuHelper.*;
+import dev.ikm.komet.framework.Identicon;
+import dev.ikm.tinkar.events.AxiomChangeEvent;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
+import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
+import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.propsheet.KometPropertySheet;
+import dev.ikm.komet.framework.propsheet.SheetItem;
+import dev.ikm.komet.framework.view.ViewMenuModel;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
+import dev.ikm.komet.kview.controls.PublicIDControl;
+import dev.ikm.komet.kview.events.*;
+import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
+import dev.ikm.komet.kview.fxutils.IconsHelper;
+import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
+import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
+import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
+import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
+import javafx.geometry.Side;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.*;
+import javafx.scene.shape.SVGPath;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import javafx.beans.Observable;
+import org.carlfx.cognitive.loader.*;
+import org.carlfx.cognitive.viewmodel.ValidationViewModel;
+import org.carlfx.cognitive.viewmodel.ViewModel;
+import org.controlsfx.control.PopOver;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
+import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
+import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.*;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.*;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.*;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.events.FrameworkTopics.*;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
-import dev.ikm.komet.framework.*;
-import dev.ikm.komet.framework.events.appevents.*;
-import dev.ikm.komet.framework.observable.*;
-import dev.ikm.komet.framework.propsheet.*;
-import dev.ikm.komet.framework.view.*;
-import dev.ikm.komet.kview.controls.*;
-import dev.ikm.komet.kview.events.*;
-import dev.ikm.komet.kview.events.genediting.*;
-import dev.ikm.komet.kview.fxutils.*;
-import dev.ikm.komet.kview.mvvm.model.*;
-import dev.ikm.komet.kview.mvvm.view.journal.*;
-import dev.ikm.komet.kview.mvvm.view.properties.*;
-import dev.ikm.komet.kview.mvvm.view.stamp.*;
-import dev.ikm.komet.kview.mvvm.viewmodel.*;
-import dev.ikm.komet.preferences.*;
-import dev.ikm.tinkar.common.id.*;
-import dev.ikm.tinkar.coordinate.stamp.calculator.*;
-import dev.ikm.tinkar.coordinate.view.calculator.*;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.entity.FieldDefinitionRecord;
-import dev.ikm.tinkar.events.*;
-import dev.ikm.tinkar.terms.*;
-import javafx.application.*;
-import javafx.beans.*;
-import javafx.beans.Observable;
-import javafx.beans.property.*;
-import javafx.collections.*;
-import javafx.css.*;
-import javafx.event.*;
-import javafx.fxml.*;
-import javafx.geometry.*;
-import javafx.scene.*;
-import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.image.*;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
-import javafx.scene.shape.*;
-import javafx.scene.text.*;
-import org.carlfx.cognitive.loader.*;
-import org.carlfx.cognitive.viewmodel.*;
-import org.controlsfx.control.*;
-import org.eclipse.collections.api.factory.*;
-import org.eclipse.collections.api.list.*;
-import org.slf4j.*;
-
-import java.time.*;
-import java.time.format.*;
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
 
 public class DetailsController  {
 
@@ -1006,13 +1033,7 @@ public class DetailsController  {
      */
     private VBox generateOtherNameRow(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
         VBox textFlowsBox = new VBox();
-        DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
-
         String descrSemanticStr = String.join(", ", fieldDescriptions);
-
-        // update date
-        Instant stampInstance = Instant.ofEpochSecond(semanticEntityVersion.stamp().time()/1000);
-        String time = DATE_TIME_FORMATTER.format(stampInstance);
 
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
@@ -1037,18 +1058,36 @@ public class DetailsController  {
 
         TextFlow row2 = new TextFlow();
         Text dateAddedLabel = new Text("Date Added: ");
-        dateAddedLabel.getStyleClass().add("descr-semantic");
-        Text dateLabel = new Text(time);
-        dateLabel.getStyleClass().add("descr-semantic");
+        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
 
-        Region spacer = new Region();
-        spacer.setMinWidth(10);
+        if (semanticEntityVersion.publicId() != null) {
+            ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
+            Latest<EntityVersion> semanticVersionLatest = viewCalculator.latest(Entity.nid(semanticEntityVersion.publicId()));
+            semanticVersionLatest.ifPresent(entityVersion -> {
+                long rawTime = entityVersion.time();
+                String dateText = null;
+                if (rawTime == PREMUNDANE_TIME) {
+                    dateText = PREMUNDANE;
+                } else {
+                    Locale userLocale = Locale.getDefault();
+                    LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
+                    dateText = formatter.format(localDate);
+                }
 
-        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
-        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+                Text dateLabel = new Text(dateText);
+                dateLabel.getStyleClass().add("grey8-12pt-bold");
 
-        // Add the date info and additional hyperlinks
-        row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
+                Region spacer = new Region();
+                spacer.setMinWidth(10);
+
+                Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
+                Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+
+                // Add the date info and additional hyperlinks
+                row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
+            });
+        }
 
         textFlowsBox.getChildren().addAll(row1, row2);
         return textFlowsBox;
@@ -1056,7 +1095,6 @@ public class DetailsController  {
 
     private VBox generateOtherNameRow(DescrName otherName) {
         VBox textFlowsBox = new VBox();
-        DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         ConceptEntity caseSigConcept = otherName.getCaseSignificance();
         String casSigText = viewCalculator.getRegularDescriptionText(caseSigConcept.nid())
@@ -1067,11 +1105,6 @@ public class DetailsController  {
                 .orElse(String.valueOf(langConcept.nid()));
 
         String descrSemanticStr = "%s, %s".formatted(casSigText, langText);
-
-        // update date
-        long epochmillis = getStampViewModel() == null ? System.currentTimeMillis() : getStampViewModel().getValue(TIME);
-        Instant stampInstance = Instant.ofEpochSecond(epochmillis/1000);
-        String time = DATE_TIME_FORMATTER.format(stampInstance);
 
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
@@ -1109,19 +1142,35 @@ public class DetailsController  {
 
         TextFlow row2 = new TextFlow();
         Text dateAddedLabel = new Text("Date Added: ");
-        dateAddedLabel.getStyleClass().add("descr-semantic");
-        Text dateLabel = new Text(time);
-        dateLabel.getStyleClass().add("descr-semantic");
+        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
 
-        Region spacer = new Region();
-        spacer.setMinWidth(10);
+        if (otherName.getSemanticPublicId() != null) {
+            Latest<EntityVersion> semanticVersionLatest = viewCalculator.latest(Entity.nid(otherName.getSemanticPublicId()));
+            semanticVersionLatest.ifPresent(entityVersion -> {
+                long rawTime = entityVersion.time();
+                String dateText = null;
+                if (rawTime == PREMUNDANE_TIME) {
+                    dateText = PREMUNDANE;
+                } else {
+                    Locale userLocale = Locale.getDefault();
+                    LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
+                    dateText = formatter.format(localDate);
+                }
 
-        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
-        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+                Text dateLabel = new Text(dateText);
+                dateLabel.getStyleClass().add("grey8-12pt-bold");
 
-        // Add the date info and additional hyperlinks
-        row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
+                Region spacer = new Region();
+                spacer.setMinWidth(10);
 
+                Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
+                Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
+
+                // Add the date info and additional hyperlinks
+                row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
+            });
+        }
         textFlowsBox.getChildren().addAll(row1, row2);
         return textFlowsBox;
     }
@@ -1147,10 +1196,19 @@ public class DetailsController  {
         fqnContainer.getChildren().setAll(latestFqnText, fqnDescriptionSemanticText);
 
         // update date
-        Instant stampInstance = Instant.ofEpochSecond(semanticEntityVersion.stamp().time()/1000);
-        ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-        String time = DATE_TIME_FORMATTER.format(stampTime);
-        fqnAddDateLabel.setText("Date Added: " + time);
+        String dateAddedStr = "";
+        if (semanticEntityVersion.stamp() == null) {
+            dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+        } else {
+            Long fieldMilis = semanticEntityVersion.stamp().time();
+            if (fieldMilis.equals(PREMUNDANE_TIME)) {
+                dateAddedStr = PREMUNDANE;
+            } else {
+                LocalDate localDate = Instant.ofEpochMilli(fieldMilis).atZone(ZoneId.systemDefault()).toLocalDate();
+                dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+            }
+        }
+        fqnAddDateLabel.setText("Date Added: " + dateAddedStr);
 
         Region spacer = new Region();
         spacer.setMinWidth(10);
@@ -1324,6 +1382,7 @@ public class DetailsController  {
         definitionTextField.clear();
         identifierControl.setPublicId("");
         lastUpdatedLabel.setText("");
+        fqnAddDateLabel.setText("");
         moduleLabel.setText("");
         pathLabel.setText("");
         statusLabel.setText("");
