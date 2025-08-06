@@ -21,10 +21,10 @@
             <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
          </BorderPane.margin>
          <children>
-            <Button fx:id="cancelButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#cancelForm" prefHeight="32.0" text="CANCEL" HBox.hgrow="ALWAYS" />
+            <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#cancelForm" prefHeight="32.0" text="CANCEL" HBox.hgrow="ALWAYS" />
             <Region maxWidth="1.7976931348623157E308" prefHeight="32.0" prefWidth="150.0" HBox.hgrow="ALWAYS" />
             <Button fx:id="resetButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#resetForm" text="RESET FORM" />
-            <Button fx:id="submitButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#confirm" styleClass="primary" text="SUBMIT" />
+            <Button fx:id="submitButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#submit" styleClass="primary" text="SUBMIT" />
          </children>
       </HBox>
    </bottom>

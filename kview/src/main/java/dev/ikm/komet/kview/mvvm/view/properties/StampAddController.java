@@ -24,9 +24,6 @@ public class StampAddController {
     private Button resetButton;
 
     @FXML
-    private Button cancelButton;
-
-    @FXML
     private ComboBox<ComponentWithNid> statusComboBox;
 
     @FXML
@@ -72,9 +69,7 @@ public class StampAddController {
     }
 
     private void initModuleComboBox() {
-        // populate modules
-        Bindings.bindContent(moduleComboBox.itemsProperty().get(), stampViewModel.getObservableList(MODULES));
-        //moduleComboBox.setItems(stampViewModel.getObservableList(MODULES));
+        moduleComboBox.setItems(stampViewModel.getObservableList(MODULES));
 
         moduleComboBox.setCellFactory(_ -> createConceptListCell());
         moduleComboBox.setButtonCell(createConceptListCell());
@@ -112,16 +107,7 @@ public class StampAddController {
     }
 
     @FXML
-    public void resetForm(ActionEvent actionEvent) {
-        ConfirmationDialogController.showConfirmationDialog((Node) actionEvent.getSource(), CONFIRM_CLEAR_TITLE, CONFIRM_CLEAR_MESSAGE)
-                .thenAccept(confirmed -> {
-                    if (confirmed) {
-                        stampViewModel.reset();
-                    }
-                });
-    }
+    public void resetForm(ActionEvent actionEvent) { stampViewModel.resetForm(actionEvent); }
 
-    public void confirm(ActionEvent actionEvent) {
-
-    }
+    public void submit(ActionEvent actionEvent) { stampViewModel.save(); }
 }

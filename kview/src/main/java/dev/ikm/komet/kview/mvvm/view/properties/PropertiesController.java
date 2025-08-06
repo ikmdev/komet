@@ -336,14 +336,6 @@ public class PropertiesController implements Serializable {
         addStampSubscriber = evt -> {
             contentBorderPane.setCenter(stampJFXNode.node());
             editButton.setSelected(true);
-
-//            stampJFXNode.updateViewModel("stampViewModel", stampViewModel -> {
-//                ((StampViewModel2)stampViewModel).init(entityFacade, conceptTopic, viewProperties);
-//                                // TODO:
-//                                //        LAST_MOD_DATE,        // The previous stamp date time (read-only?) we could use PREV_STAMP's time
-//                                //        SAME_AS_PREVIOUS,     // Custom validator
-//                                //         SUBMITTED,             // Flag when user pressed submit.
-//            });
         };
 
         eventBus.subscribe(conceptTopic, AddStampEvent.class, addStampSubscriber);

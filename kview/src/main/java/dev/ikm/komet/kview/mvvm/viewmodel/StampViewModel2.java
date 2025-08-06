@@ -1,21 +1,43 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
-import dev.ikm.komet.framework.view.*;
-import dev.ikm.komet.kview.events.*;
-import dev.ikm.tinkar.component.*;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.events.*;
-import dev.ikm.tinkar.terms.*;
-import org.carlfx.cognitive.validator.*;
-import org.carlfx.cognitive.viewmodel.*;
-import org.slf4j.*;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
+import dev.ikm.tinkar.component.Stamp;
+import dev.ikm.tinkar.composer.Composer;
+import dev.ikm.tinkar.composer.Session;
+import dev.ikm.tinkar.composer.assembler.ConceptAssembler;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
+import dev.ikm.tinkar.terms.ComponentWithNid;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.event.ActionEvent;
+import javafx.scene.Node;
+import org.carlfx.cognitive.validator.ValidationResult;
+import org.carlfx.cognitive.viewmodel.ViewModel;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 import java.util.*;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.CURRENT_STAMP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATHS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
+
 public class StampViewModel2 extends FormViewModel {
-    private static final Logger LOG = LoggerFactory.getLogger(StampViewModel2.class);
     /**
      * Provide the standard Confirm Clear dialog title for use in other classes
      */
@@ -78,10 +100,7 @@ public class StampViewModel2 extends FormViewModel {
         EvtBusFactory.getDefaultEvtBus().subscribe(topic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
 
         // TODO: Remove the entityFocusProperty from DetailsNode it often calls init with a null entity.
-//        if (entity == null
-//                || (entity != null
-//                    && this.entityFacade != null
-//                    && entity.nid() == this.entityFacade.nid())) {
+
         if (entity == null) {
             return;
         } else {
@@ -104,7 +123,6 @@ public class StampViewModel2 extends FormViewModel {
         loadStampValuesFromDB(modules, paths); // MODULE
 
         save(true);
-        LOG.info("StampViewModel2 init complete");
     }
 
     private void onPropertiesPanelClose() {
@@ -131,7 +149,7 @@ public class StampViewModel2 extends FormViewModel {
     }
 
     private boolean updateIsStampValuesChanged() {
-        StampEntity stampEntity = getPropertyValue(StampProperties.CURRENT_STAMP);
+        StampEntity stampEntity = getPropertyValue(CURRENT_STAMP);
 
         boolean same = stampEntity.state() == getPropertyValue(STATUS)
                 && stampEntity.path() == getPropertyValue(PATH)
@@ -148,9 +166,71 @@ public class StampViewModel2 extends FormViewModel {
         reset();
     }
 
+    public void resetForm(ActionEvent actionEvent) {
+        ConfirmationDialogController.showConfirmationDialog((Node) actionEvent.getSource(), CONFIRM_CLEAR_TITLE, CONFIRM_CLEAR_MESSAGE)
+            .thenAccept(confirmed -> {
+                if (confirmed) {
+                    reset();
+                }
+            });
+    }
+
     @Override
-    public StampViewModel2 save(boolean force) {
-        super.save(force);
+    public StampViewModel2 save() {
+        super.save();
+
+        if (invalidProperty().get()) {
+            // Validation error so returning and not going to run the code to save to DB
+            return this;
+        }
+
+        // -----------  Get values from the UI form ------------
+        State status = getValue(STATUS);
+        EntityFacade module = getValue(MODULE);
+        EntityFacade path = getValue(PATH);
+
+
+        // -----------  Save stamp on the Database --------------
+
+
+        // ------ ObservableStamp version
+
+//        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get(); // Concept Version
+//        StampEntity stampEntity = latestVersion.stamp();  // Stamp for ConceptVersion.
+//
+//        ObservableStamp observableStamp = ObservableEntity.get(stampEntity.nid()); //ObservableStamp for ConceptVersion.
+//        ObservableStampVersion observableStampVersion = observableStamp.lastVersion(); // Concept STAMP
+//
+//        Transaction transaction = Transaction.make();
+//
+//        StampEntity stampEntity2 = transaction.getStamp(status, stampEntity.authorNid(), module.nid(), path.nid()); // create an uncomitted stamp for records in transaction
+//
+//        observableStampVersion.stateProperty().set(status);
+//        observableStampVersion.timeProperty().set(stampEntity2.time());
+//        observableStampVersion.authorProperty().set(stampEntity.author());
+//        observableStampVersion.moduleProperty().set((ConceptFacade) module);
+//        observableStampVersion.pathProperty().set((ConceptFacade) path);
+//
+//        transaction.commit();
+
+
+        // ------- Composer version
+
+        Composer composer = new Composer("Save new STAMP in Concept");
+
+        Session session = composer.open(status, TinkarTerm.USER, module.toProxy(), path.toProxy());
+
+        session.compose((ConceptAssembler conceptAssembler) -> {
+            conceptAssembler.concept(entityFacade.toProxy());
+        });
+
+        composer.commitSession(session);
+
+
+        // Load the new STAMP and store the new initial values
+        loadStamp();
+        save(true);
+
         return this;
     }
 
