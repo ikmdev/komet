@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.54.0-SNAPSHOT</version>
+        <version>1.54.0-IIa-2513-FQN-Date-Concept-Window-SNAPSHOT</version>
     </parent>
     <artifactId>search</artifactId>
     <dependencies>
