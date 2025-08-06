@@ -93,6 +93,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
@@ -1066,7 +1067,7 @@ public class DetailsController  {
                 long rawTime = entityVersion.time();
                 String dateText = null;
                 if (rawTime == PREMUNDANE_TIME) {
-                    dateText = "Premundane";
+                    dateText = PREMUNDANE;
                 } else {
                     Locale userLocale = Locale.getDefault();
                     LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -1149,7 +1150,7 @@ public class DetailsController  {
                 long rawTime = entityVersion.time();
                 String dateText = null;
                 if (rawTime == PREMUNDANE_TIME) {
-                    dateText = "Premundane";
+                    dateText = PREMUNDANE;
                 } else {
                     Locale userLocale = Locale.getDefault();
                     LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -1201,7 +1202,7 @@ public class DetailsController  {
         } else {
             Long fieldMilis = semanticEntityVersion.stamp().time();
             if (fieldMilis.equals(PREMUNDANE_TIME)) {
-                dateAddedStr = "Premundane";
+                dateAddedStr = PREMUNDANE;
             } else {
                 LocalDate localDate = Instant.ofEpochMilli(fieldMilis).atZone(ZoneId.systemDefault()).toLocalDate();
                 dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
