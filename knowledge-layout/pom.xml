@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.54.0-SNAPSHOT</version>
+        <version>1.54.0-IIA-2229-next-gen-search-path-filter-SNAPSHOT</version>
     </parent>
 
     <artifactId>knowledge-layout</artifactId>
