@@ -28,7 +28,7 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
-<BorderPane fx:id="detailsOuterBorderPane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.details.DetailsController">
+<BorderPane fx:id="detailsOuterBorderPane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane">
          <top>
