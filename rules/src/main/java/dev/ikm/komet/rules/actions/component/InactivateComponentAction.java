@@ -26,7 +26,10 @@ import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.PatternRecord;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampEntity;
@@ -34,6 +37,7 @@ import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.State;
 import javafx.event.ActionEvent;
+import org.eclipse.collections.api.list.ImmutableList;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
@@ -74,6 +78,13 @@ public class InactivateComponentAction extends AbstractActionSuggested {
             } else if (entity instanceof ConceptRecord conceptRecord) {
                 ConceptVersionRecord newConceptVersion = new ConceptVersionRecord(conceptRecord, stampEntity.nid());
                 ConceptRecord analogue = conceptRecord.with(newConceptVersion).build();
+                transaction.addComponent(analogue);
+                Entity.provider().putEntity(analogue);
+            } else if (entity instanceof PatternRecord patternRecord) {
+                PatternVersionRecord newPatternVersion = new PatternVersionRecord(patternRecord, stampEntity.nid(),
+                        patternEntityVersion.semanticPurposeNid(), patternEntityVersion.semanticMeaningNid(),
+                        patternRecord.versions().get(0).fieldDefinitions());
+                PatternRecord analogue = patternRecord.with(newPatternVersion).build();
                 transaction.addComponent(analogue);
                 Entity.provider().putEntity(analogue);
             }
