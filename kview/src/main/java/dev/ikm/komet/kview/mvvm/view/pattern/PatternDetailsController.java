@@ -54,6 +54,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
@@ -416,7 +417,7 @@ public class PatternDetailsController {
                 ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
                 return DATE_TIME_FORMATTER.format(stampTime);
             } else {
-                return patternViewModel.getPropertyValue(MODE).equals("CREATE")? "" : "Premundane";
+                return patternViewModel.getPropertyValue(MODE).equals("CREATE")? "" : PREMUNDANE;
             }
         }));
 
@@ -461,7 +462,7 @@ public class PatternDetailsController {
                     long rawTime = entityVersion.time();
                     String dateText = null;
                     if (rawTime == PREMUNDANE_TIME) {
-                        dateText = "Premundane";
+                        dateText = PREMUNDANE;
                     } else {
                         Locale userLocale = Locale.getDefault();
                         LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -725,7 +726,7 @@ public class PatternDetailsController {
                 long rawTime = entityVersion.time();
                 String dateText = null;
                 if (rawTime == PREMUNDANE_TIME) {
-                    dateText = "Premundane";
+                    dateText = PREMUNDANE;
                 } else {
                     Locale userLocale = Locale.getDefault();
                     LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -795,7 +796,7 @@ public class PatternDetailsController {
         } else {
             Long fieldMilis = patternField.stamp().time();
             if (fieldMilis.equals(PREMUNDANE_TIME)) {
-                dateAddedStr = "Premundane";
+                dateAddedStr = PREMUNDANE;
             } else {
                 LocalDate localDate = Instant.ofEpochMilli(fieldMilis).atZone(ZoneId.systemDefault()).toLocalDate();
                 dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
