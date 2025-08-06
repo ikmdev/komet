@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.54.0-IIA-2548-summon-concept-bugfix-SNAPSHOT</version>
+        <version>1.54.0-SNAPSHOT</version>
     </parent>
     <artifactId>rules</artifactId>
     <dependencies>
