@@ -26,6 +26,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
@@ -54,19 +55,19 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     private Label addFqnTitleLabel;
 
     @FXML
-    private ComboBox<ConceptEntity> moduleComboBox;
+    private ComboBox<EntityFacade> moduleComboBox;
 
     @FXML
     private TextField fullyQualifiedNameTextField;
 
     @FXML
-    private ComboBox<ConceptEntity> statusComboBox;
+    private ComboBox<EntityFacade> statusComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> caseSignificanceComboBox;
+    private ComboBox<EntityFacade> caseSignificanceComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> languageComboBox;
+    private ComboBox<EntityFacade> languageComboBox;
 
     @FXML
     private Button submitButton;
@@ -141,10 +142,10 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
         populate(languageComboBox, fqnViewModel.findAllLanguages(getViewProperties()));
 
         // Set UI to default values
-        caseSignificanceComboBox.setValue(Entity.getFast(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE.nid()));
+        caseSignificanceComboBox.setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
         statusComboBox.setValue(Entity.getFast(State.ACTIVE.nid()));
-        moduleComboBox.setValue(Entity.getFast(TinkarTerm.DEVELOPMENT_MODULE.nid()));
-        languageComboBox.setValue(Entity.getFast(TinkarTerm.ENGLISH_LANGUAGE.nid()));
+        moduleComboBox.setValue(TinkarTerm.DEVELOPMENT_MODULE);
+        languageComboBox.setValue(TinkarTerm.ENGLISH_LANGUAGE);
     }
 
     @Override
