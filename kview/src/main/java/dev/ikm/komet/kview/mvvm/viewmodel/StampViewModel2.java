@@ -1,39 +1,21 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
-import dev.ikm.tinkar.component.Stamp;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.events.EvtBus;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
+import dev.ikm.komet.framework.view.*;
+import dev.ikm.komet.kview.events.*;
+import dev.ikm.tinkar.component.*;
+import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.events.*;
+import dev.ikm.tinkar.terms.*;
+import org.carlfx.cognitive.validator.*;
+import org.carlfx.cognitive.viewmodel.*;
+import org.slf4j.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
-import javafx.scene.Node;
-import org.carlfx.cognitive.validator.ValidationResult;
-import org.carlfx.cognitive.viewmodel.ViewModel;
-
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.CURRENT_STAMP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATHS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
+import java.util.*;
 
 public class StampViewModel2 extends FormViewModel {
-
+    private static final Logger LOG = LoggerFactory.getLogger(StampViewModel2.class);
     /**
      * Provide the standard Confirm Clear dialog title for use in other classes
      */
@@ -43,7 +25,6 @@ public class StampViewModel2 extends FormViewModel {
      */
     public static final String CONFIRM_CLEAR_MESSAGE =  "Are you sure you want to clear the form? All entered data will be lost.";
 
-    private EvtBus eventBus;
     private EntityFacade entityFacade;
     private ViewProperties viewProperties;
     private UUID topic;
@@ -68,8 +49,8 @@ public class StampViewModel2 extends FormViewModel {
         super();
         addProperty(CURRENT_STAMP, (Stamp) null);
         addProperty(STATUS, State.ACTIVE);
-        addProperty(MODULE, (ConceptEntity) null);
-        addProperty(PATH, (ConceptEntity) null);
+        addProperty(MODULE, (ComponentWithNid) null);
+        addProperty(PATH, (ComponentWithNid) null);
 
         addProperty(IS_STAMP_VALUES_THE_SAME, true);
         addValidator(IS_STAMP_VALUES_THE_SAME, "Validator Property", (ValidationResult vr, ViewModel vm) -> {
@@ -84,47 +65,69 @@ public class StampViewModel2 extends FormViewModel {
         addProperty(PATHS, Collections.emptyList(), true);
         addProperty(STATUSES, Collections.emptyList(), true);
 
-        this.eventBus = EvtBusFactory.getDefaultEvtBus();
+        // run validators when the following properties change.
+        doOnChange(this::validate, STATUS, MODULE, PATH);
     }
 
     public void init(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
-        this.entityFacade = entity;
         this.viewProperties = viewProperties;
         this.topic = topic;
 
         // listen to events that the properties panel is going to be closed
         closePropertiesPanelEventSubscriber = evt -> onPropertiesPanelClose();
-        eventBus.subscribe(topic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(topic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+
+        // TODO: Remove the entityFocusProperty from DetailsNode it often calls init with a null entity.
+//        if (entity == null
+//                || (entity != null
+//                    && this.entityFacade != null
+//                    && entity.nid() == this.entityFacade.nid())) {
+        if (entity == null) {
+            return;
+        } else {
+            this.entityFacade = entity;
+        }
 
         // initialize observable lists
-        setPropertyValues(MODULES, fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()));
-        setPropertyValues(PATHS, fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()));
+        Set<ConceptEntity> modules = fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId());
+        Set<ConceptEntity> paths = fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId());
+
+        // populate sets which are bound to the combo boxes.
+        setPropertyValues(MODULES, modules);
+        setPropertyValues(PATHS, paths);
         setPropertyValues(STATUSES, List.of(State.values()));
 
         loadStamp();
-        loadStampValuesFromDB();
-        save(true);
 
-        doOnChange(this::validate, STATUS, MODULE, PATH);
+        // Obtain current module and path concept objects from the modules set and paths set respectively.
+        // NOTE: value property must be the same object in the combobox items.
+        loadStampValuesFromDB(modules, paths); // MODULE
+
+        save(true);
+        LOG.info("StampViewModel2 init complete");
     }
 
     private void onPropertiesPanelClose() {
-        loadStampValuesFromDB(); // every time the properties panel closes we reset the form
+        reset();
     }
 
     private void loadStamp() {
         EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
         StampEntity stampEntity = latestVersion.stamp();
 
-        setPropertyValue(StampProperties.CURRENT_STAMP, stampEntity);
+        setPropertyValue(CURRENT_STAMP, stampEntity);
     }
 
-    private void loadStampValuesFromDB() {
+    private void loadStampValuesFromDB(Set<ConceptEntity> modules, Set<ConceptEntity> paths) {
         StampEntity stampEntity = getPropertyValue(StampProperties.CURRENT_STAMP);
 
+        // Choose one item from the Sets as the module and path. Items will use .equals(). STATUS property value is an Enum.
+        ConceptEntity module = modules.stream().filter( m -> m.nid() == stampEntity.moduleNid()).findFirst().orElse(null);
+        ConceptEntity path = paths.stream().filter( m -> m.nid() == stampEntity.pathNid()).findFirst().orElse(null);
+
         setPropertyValue(STATUS, stampEntity.state());
-        setPropertyValue(MODULE, stampEntity.module());
-        setPropertyValue(PATH, stampEntity.path());
+        setPropertyValue(MODULE, module);
+        setPropertyValue(PATH, path);
     }
 
     private boolean updateIsStampValuesChanged() {
@@ -139,22 +142,19 @@ public class StampViewModel2 extends FormViewModel {
         return same;
     }
 
-    public void cancel(Node eventSource) {
-        eventBus.publish(topic, new ClosePropertiesPanelEvent(eventSource,
+    public void cancel() {
+        EvtBusFactory.getDefaultEvtBus().publish(topic, new ClosePropertiesPanelEvent("StampViewModel2 cancel()",
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
-    }
-
-    public void reset(Node eventSource) {
-        ConfirmationDialogController.showConfirmationDialog(eventSource, CONFIRM_CLEAR_TITLE, CONFIRM_CLEAR_MESSAGE)
-            .thenAccept(confirmed -> {
-                if (confirmed) {
-                    loadStampValuesFromDB();
-                }
-            });
+        reset();
     }
 
     @Override
     public StampViewModel2 save(boolean force) {
-        return (StampViewModel2) super.save(force);
+        super.save(force);
+        return this;
+    }
+
+    public ViewProperties getViewProperties() {
+        return viewProperties;
     }
 }

@@ -1,29 +1,18 @@
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
-import javafx.beans.property.BooleanProperty;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.util.Callback;
-import org.carlfx.cognitive.loader.InjectViewModel;
-
-import java.util.UUID;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATHS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
+import dev.ikm.komet.framework.view.*;
+import dev.ikm.komet.kview.mvvm.view.genediting.*;
+import dev.ikm.komet.kview.mvvm.viewmodel.*;
+import dev.ikm.tinkar.terms.*;
+import javafx.beans.binding.*;
+import javafx.beans.property.*;
+import javafx.event.*;
+import javafx.fxml.*;
+import javafx.scene.*;
+import javafx.scene.control.*;
+import org.carlfx.cognitive.loader.*;
 
 
 public class StampAddController {
@@ -38,18 +27,16 @@ public class StampAddController {
     private Button cancelButton;
 
     @FXML
-    private ComboBox<State> statusComboBox;
+    private ComboBox<ComponentWithNid> statusComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> moduleComboBox;
+    private ComboBox<ComponentWithNid> moduleComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> pathComboBox;
+    private ComboBox<ComponentWithNid> pathComboBox;
 
     @InjectViewModel
     private StampViewModel2 stampViewModel;
-
-    private ViewProperties viewProperties;
 
     @FXML
     public void initialize() {
@@ -62,19 +49,15 @@ public class StampAddController {
         resetButton.disableProperty().bind(isStampValuesTheSame);
     }
 
-    public void updateModel(ViewProperties viewProperties, EntityFacade entity, UUID topic) {
-        this.viewProperties = viewProperties;
-
-        if (entity != null) {
-            stampViewModel.init(entity, topic, viewProperties);
-        }
+    private ViewProperties getViewProperties() {
+        return stampViewModel.getViewProperties();
     }
 
     private void initStatusComboBox() {
         statusComboBox.setItems(stampViewModel.getObservableList(STATUSES));
 
-        statusComboBox.setCellFactory(stateListView -> createStateListCell());
-        statusComboBox.setButtonCell(createStateListCell());
+        statusComboBox.setCellFactory(stateListView -> createConceptListCell());
+        statusComboBox.setButtonCell(createConceptListCell());
 
         statusComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(STATUS));
     }
@@ -90,7 +73,8 @@ public class StampAddController {
 
     private void initModuleComboBox() {
         // populate modules
-        moduleComboBox.setItems(stampViewModel.getObservableList(MODULES));
+        Bindings.bindContent(moduleComboBox.itemsProperty().get(), stampViewModel.getObservableList(MODULES));
+        //moduleComboBox.setItems(stampViewModel.getObservableList(MODULES));
 
         moduleComboBox.setCellFactory(_ -> createConceptListCell());
         moduleComboBox.setButtonCell(createConceptListCell());
@@ -98,31 +82,23 @@ public class StampAddController {
         moduleComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(MODULE));
     }
 
-    private ListCell<ConceptEntity> createConceptListCell() {
+    private String getDescriptionTextWithFallbackOrNid(ComponentWithNid conceptEntity) {
+        String descr = "" + conceptEntity.nid();
+        if (getViewProperties() != null) {
+            descr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptEntity.nid());
+        }
+        return descr;
+    }
+
+    private ListCell<ComponentWithNid> createConceptListCell() {
         return new ListCell<>(){
             @Override
-            protected void updateItem(ConceptEntity item, boolean empty) {
+            protected void updateItem(ComponentWithNid item, boolean empty) {
                 super.updateItem(item, empty);
-
                 if (item == null || empty) {
                     setText(null);
                 } else {
-                    setText(item.description());
-                }
-            }
-        };
-    }
-
-    private ListCell<State> createStateListCell() {
-        return new ListCell<>() {
-            @Override
-            protected void updateItem(State state, boolean empty) {
-                super.updateItem(state, empty);
-
-                if (state == null || empty) {
-                    setText(null);
-                } else {
-                    setText(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(state.nid()));
+                    setText(getDescriptionTextWithFallbackOrNid(item));
                 }
             }
         };
@@ -130,12 +106,19 @@ public class StampAddController {
 
     public StampViewModel2 getStampViewModel() { return stampViewModel; }
 
+    @FXML
     public void cancelForm(ActionEvent actionEvent) {
-        stampViewModel.cancel(cancelButton);
+        stampViewModel.cancel();
     }
 
+    @FXML
     public void resetForm(ActionEvent actionEvent) {
-        stampViewModel.reset(resetButton);
+        ConfirmationDialogController.showConfirmationDialog((Node) actionEvent.getSource(), CONFIRM_CLEAR_TITLE, CONFIRM_CLEAR_MESSAGE)
+                .thenAccept(confirmed -> {
+                    if (confirmed) {
+                        stampViewModel.reset();
+                    }
+                });
     }
 
     public void confirm(ActionEvent actionEvent) {
