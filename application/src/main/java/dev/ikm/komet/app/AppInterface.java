@@ -1,12 +1,17 @@
 package dev.ikm.komet.app;
 
 import com.jpro.webapi.WebAPI;
+import dev.ikm.komet.framework.events.EvtBus;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
+import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.image.Image;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import one.jpro.platform.auth.core.authentication.User;
+
+import java.util.List;
 
 /**
  * Contains the shared elements between App and WebApp.
@@ -47,12 +52,22 @@ public interface AppInterface {
      */
     GitHubPreferencesDao getGitHubPreferencesDao();
 
+    void saveJournalWindowsToPreferences();
+
+    List<JournalController> getJournalControllersList();
+
     /**
      * Quits the application.
      */
     void quit();
 
+    void stopServer();
+
+    StackPane getRootPane();
+
     void launchLandingPage(Stage stage, User user);
 
     Stage getPrimaryStage();
+
+    EvtBus getKViewEventBus();
 }

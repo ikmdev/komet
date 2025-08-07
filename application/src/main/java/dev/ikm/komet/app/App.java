@@ -158,6 +158,7 @@ public class App extends Application implements AppInterface {
     AppGithub appGithub;
     AppClassicKomet appClassicKomet;
     AppMenu appMenu;
+    AppPages appPages;
 
     @Override
     public AppGithub getAppGithub() {
@@ -195,6 +196,11 @@ public class App extends Application implements AppInterface {
     }
 
     @Override
+    public StackPane getRootPane() {
+        return null;
+    }
+
+    @Override
     public LandingPageController getLandingPageController() {
         return landingPageController;
     }
@@ -202,6 +208,16 @@ public class App extends Application implements AppInterface {
     @Override
     public GitHubPreferencesDao getGitHubPreferencesDao() {
         return gitHubPreferencesDao;
+    }
+
+    @Override
+    public List<JournalController> getJournalControllersList() {
+        return journalControllersList;
+    }
+
+    @Override
+    public EvtBus getKViewEventBus() {
+        return kViewEventBus;
     }
 
     /**
@@ -246,7 +262,7 @@ public class App extends Application implements AppInterface {
                     .findFirst()
                     .ifPresentOrElse(
                             JournalController::windowToFront, /* Window already launched now make window to the front (so user sees window) */
-                            () -> launchJournalViewPage(journalWindowSettingsObjectMap) /* launch new Journal view window */
+                            () -> appPages.launchJournalViewPage(journalWindowSettingsObjectMap) /* launch new Journal view window */
                     );
         };
         // subscribe to the topic
@@ -260,6 +276,7 @@ public class App extends Application implements AppInterface {
         appGithub = new AppGithub(this);
         appClassicKomet = new AppClassicKomet(this);
         appMenu = new AppMenu(this);
+        appPages = new AppPages(this);
 
         try {
             primaryStage = stage;
@@ -425,94 +442,6 @@ public class App extends Application implements AppInterface {
     }
 
     /**
-     * When a user selects the menu option View/New Journal a new Stage Window is launched.
-     * This method will load a navigation panel to be a publisher and windows will be connected (subscribed) to the activity stream.
-     *
-     * @param journalWindowSettings if present will give the size and positioning of the journal window
-     */
-    private void launchJournalViewPage(PrefX journalWindowSettings) {
-        Objects.requireNonNull(journalWindowSettings, "journalWindowSettings cannot be null");
-        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-        final WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        final UUID journalTopic = journalWindowSettings.getValue(JOURNAL_TOPIC);
-        Objects.requireNonNull(journalTopic, "journalTopic cannot be null");
-
-        // Ask service loader for a journal window factory.
-        Stage journalStageWindow = new Stage();
-        Config journalConfig = new Config(JournalController.class.getResource("journal.fxml"))
-                .updateViewModel("journalViewModel", journalViewModel -> {
-                    journalViewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
-                    journalViewModel.setPropertyValue(WINDOW_VIEW, windowSettings.getView());
-                });
-        JFXNode<BorderPane, JournalController> journalJFXNode = FXMLMvvmLoader.make(journalConfig);
-        BorderPane journalBorderPane = journalJFXNode.node();
-        JournalController journalController = journalJFXNode.controller();
-        journalController.setup(windowPreferences);
-        Scene sourceScene = new Scene(journalBorderPane, DEFAULT_JOURNAL_WIDTH, DEFAULT_JOURNAL_HEIGHT);
-        addStylesheets(sourceScene, KOMET_CSS, KVIEW_CSS);
-
-        journalStageWindow.setScene(sourceScene);
-        // if NOT on Mac OS
-        if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-            appMenu.generateMsWindowsMenu(journalBorderPane, journalStageWindow);
-        }
-
-        // load journal specific window settings
-        final String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
-        journalStageWindow.setTitle(journalName);
-
-        // Get the UUID-based directory name from preferences
-        String journalDirName = journalWindowSettings.getValue(JOURNAL_DIR_NAME);
-
-        // For new journals (no UUID yet), generate one using the controller's UUID
-        if (journalDirName == null) {
-            journalDirName = journalController.getJournalDirName();
-            journalWindowSettings.setValue(JOURNAL_DIR_NAME, journalDirName);
-        }
-
-        if (journalWindowSettings.getValue(JOURNAL_HEIGHT) != null) {
-            journalStageWindow.setHeight(journalWindowSettings.getValue(JOURNAL_HEIGHT));
-            journalStageWindow.setWidth(journalWindowSettings.getValue(JOURNAL_WIDTH));
-            journalStageWindow.setX(journalWindowSettings.getValue(JOURNAL_XPOS));
-            journalStageWindow.setY(journalWindowSettings.getValue(JOURNAL_YPOS));
-            journalController.restoreWindowsAsync(journalWindowSettings);
-        } else {
-            journalStageWindow.setMaximized(true);
-        }
-
-        journalStageWindow.setOnHidden(windowEvent -> {
-            saveJournalWindowsToPreferences();
-            // call shutdown method on the view
-            journalController.shutdown();
-            journalControllersList.remove(journalController);
-            // enable Delete menu option
-            journalWindowSettings.setValue(CAN_DELETE, true);
-            kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
-        });
-
-        // Launch windows window pane inside journal view
-        journalStageWindow.setOnShown(windowEvent -> {
-            //TODO: Refactor factory constructor calls below to use PluggableService (make constructors private)
-            KometNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
-            KometNodeFactory searchNodeFactory = new SearchNodeFactory();
-
-            journalController.launchKometFactoryNodes(
-                    journalWindowSettings.getValue(JOURNAL_TITLE),
-                    navigatorNodeFactory,
-                    searchNodeFactory);
-            // load additional panels
-            journalController.loadNextGenReasonerPanel();
-            journalController.loadNextGenSearchPanel();
-        });
-        // disable the delete menu option for a Journal Card.
-        journalWindowSettings.setValue(CAN_DELETE, false);
-        kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
-        journalControllersList.add(journalController);
-        journalStageWindow.show();
-    }
-
-    /**
      * Saves the current state of the journals and its windows to the application's preferences system.
      * <p>
      * This method persists all journal-related data, including:
@@ -533,7 +462,7 @@ public class App extends Application implements AppInterface {
      *           └── Window states
      * </pre>
      */
-    private void saveJournalWindowsToPreferences() {
+    public void saveJournalWindowsToPreferences() {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences journalsPreferences = appPreferences.node(JOURNALS);
 
@@ -689,5 +618,11 @@ public class App extends Application implements AppInterface {
 
     public enum AppKeys {
         APP_INITIALIZED
+    }
+
+    @Override
+    public void stopServer() {
+        // No server to stop in this application
+        LOG.info("No server to stop in this application.");
     }
 }
