@@ -129,7 +129,7 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     }
 
     public void populate(ComboBox comboBox, Collection<ConceptEntity> entities) {
-        comboBox.getItems().addAll(entities);
+        comboBox.getItems().setAll(entities);
     }
 
     @Override
