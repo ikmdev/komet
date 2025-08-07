@@ -3,9 +3,11 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.kview.controls.skin.ConceptNavigatorHelper;
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -22,6 +24,9 @@ import javafx.util.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -119,10 +124,9 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         ConceptNavigatorHelper.setConceptNavigatorAccessor(new ConceptNavigatorHelper.ConceptNavigatorAccessor() {
 
             @Override
-            public void markCellDirty(KLConceptNavigatorTreeCell treeCell) {}
-
-            @Override
-            public void unselectItem(KLConceptNavigatorTreeCell treeCell) {}
+            public Future<Boolean> fetchChildrenTask(KLConceptNavigatorControl treeView, ConceptNavigatorTreeItem item) {
+                return treeView.fetchChildrenTask(item);
+            }
 
             @Override
             public ConceptNavigatorTreeItem getConceptNavigatorTreeItem(KLConceptNavigatorControl treeView, int nid, int parentNid) {
@@ -369,6 +373,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         return Arrays.stream(getNavigator().getRootNids())
                 .mapToObj(rootNid -> {
                     ConceptNavigatorTreeItem treeItem = getConceptNavigatorTreeItem(rootNid, -1);
+                    fetchChildren(treeItem);
                     treeItem.setExpanded(true);
                     return treeItem;
                 })
@@ -392,7 +397,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * <p>Create a {@link ConceptNavigatorTreeItem} without descendents.
      * </p>
      * <p> Only if this item is not a leaf and the user expands it, its children are
-     * really generated.
+     * really generated, in a background thread.
      * </p>
      * @param nid the nid of the concept
      * @param parentNid the nid of the parent of the concept, or -1 if root.
@@ -402,7 +407,28 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         ConceptNavigatorTreeItem conceptNavigatorTreeItem = createSingleConceptNavigatorTreeItem(nid, parentNid);
         conceptNavigatorTreeItem.expandedProperty().subscribe((_, expanded) -> {
             if (expanded && conceptNavigatorTreeItem.getChildren().isEmpty()) {
-                fetchChildren(conceptNavigatorTreeItem);
+                // when a new branch is expanded, prune the collapsed branches of the treeView,
+                // to keep as much low number of items in the treeView as possible
+                if (getRoot() != null) {
+                    ConceptNavigatorUtils.iterateTree((ConceptNavigatorTreeItem) getRoot(), i -> {
+                        if (i != null && i.getValue().nid() != nid && !i.getChildren().isEmpty() && !i.isExpanded()) {
+                            i.getChildren().clear();
+                        }
+                    });
+                }
+                TinkExecutor.threadPool().execute(() -> {
+                    Future<Boolean> booleanFuture = fetchChildrenTask(conceptNavigatorTreeItem);
+                    if (booleanFuture != null) {
+                        try {
+                            if (!booleanFuture.get()) {
+                                // There was an error, the list of children was null or empty
+                            }
+                        } catch (InterruptedException | ExecutionException e) {
+                            // log error
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
             }
         });
         return conceptNavigatorTreeItem;
@@ -410,15 +436,41 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
 
     /**
      * <p>Gets the children of a given {@link ConceptNavigatorTreeItem} that doesn't have its descendents
-     * generated yet.
+     * generated yet, in the JavaFX Application Thread.
      * </p>
-     * @param conceptNavigatorTreeItem the same {@link ConceptNavigatorTreeItem} but with its children.
+     * @param conceptNavigatorTreeItem the {@link ConceptNavigatorTreeItem} that doesn't have its children added yet.
      */
     private void fetchChildren(ConceptNavigatorTreeItem conceptNavigatorTreeItem) {
         int nid = conceptNavigatorTreeItem.getValue().nid();
         if (!getNavigator().getChildEdges(nid).isEmpty()) {
             conceptNavigatorTreeItem.getChildren().addAll(getChildren(nid));
         }
+    }
+
+    /**
+     * <p>A task that generates the children of a given {@link ConceptNavigatorTreeItem}, in a background thread,
+     * and returns true if a non-empty children list is found.
+     * </p>
+     * @param conceptNavigatorTreeItem the {@link ConceptNavigatorTreeItem} that doesn't have its children added yet.
+     * @return a future with a boolean result that is true if the {@link ConceptNavigatorTreeItem} has its children
+     * added, false if the list is null or empty, or null if the item doesn't have any children to fetch
+     * in the first place.
+     */
+    private Future<Boolean> fetchChildrenTask(ConceptNavigatorTreeItem conceptNavigatorTreeItem) {
+        int nid = conceptNavigatorTreeItem.getValue().nid();
+        if (getNavigator().getChildEdges(nid).isEmpty()) {
+            return null;
+        }
+        return TinkExecutor.threadPool().submit(() -> {
+            List<ConceptNavigatorTreeItem> children = getChildren(nid);
+            CountDownLatch latch = new CountDownLatch(1);
+            Platform.runLater(() -> {
+                conceptNavigatorTreeItem.getChildren().addAll(children);
+                latch.countDown();
+            });
+            latch.await();
+            return children != null && !children.isEmpty();
+        });
     }
 
     /**
