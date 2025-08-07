@@ -36,8 +36,8 @@ import java.io.IOException;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.app.AppState.RUNNING;
-import static dev.ikm.komet.app.WebApp.IS_BROWSER;
-import static dev.ikm.komet.app.WebApp.IS_MAC_AND_NOT_TESTFX_TEST;
+import static dev.ikm.komet.app.App.IS_BROWSER;
+import static dev.ikm.komet.app.App.IS_MAC_AND_NOT_TESTFX_TEST;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.SYNC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;

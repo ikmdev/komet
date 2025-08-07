@@ -4,7 +4,6 @@ import dev.ikm.komet.details.DetailsNodeFactory;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
-import dev.ikm.komet.framework.events.FrameworkTopics;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
 import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.tabs.DetachableTab;
@@ -12,8 +11,6 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.KometStageController;
 import dev.ikm.komet.framework.window.MainWindowRecord;
 import dev.ikm.komet.framework.window.WindowComponent;
-import dev.ikm.komet.framework.window.WindowSettings;
-import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
 import dev.ikm.komet.list.ListNodeFactory;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.navigator.pattern.PatternNavigatorFactory;
@@ -34,13 +31,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.JFXNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
@@ -51,14 +42,11 @@ import java.lang.annotation.Annotation;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
-import static dev.ikm.komet.app.WebApp.*;
+import static dev.ikm.komet.app.App.*;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
 import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
-import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 
@@ -95,7 +83,7 @@ public class AppClassicKomet {
         //Starting up preferences and getting configurations
         Preferences.start();
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        boolean appInitialized = appPreferences.getBoolean(WebApp.AppKeys.APP_INITIALIZED, false);
+        boolean appInitialized = appPreferences.getBoolean(App.AppKeys.APP_INITIALIZED, false);
         if (appInitialized) {
             LOG.info("Restoring configuration preferences.");
         } else {
@@ -128,7 +116,7 @@ public class AppClassicKomet {
             controller.setCenterTabs(makeDefaultCenterTabs(controller.windowView()), 0);
             controller.setRightTabs(makeDefaultRightTabs(controller.windowView()), 1);
             windowPreferences.putBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, true);
-            appPreferences.putBoolean(WebApp.AppKeys.APP_INITIALIZED, true);
+            appPreferences.putBoolean(App.AppKeys.APP_INITIALIZED, true);
         } else {
             // Restore nodes from preferences.
             windowPreferences.get(LEFT_TAB_PREFERENCES).ifPresent(leftTabPreferencesName ->

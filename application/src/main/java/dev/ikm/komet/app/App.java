@@ -16,144 +16,106 @@
 package dev.ikm.komet.app;
 
 import com.jpro.webapi.WebAPI;
-import com.sun.management.OperatingSystemMXBean;
-import de.jangassen.MenuToolkit;
-import de.jangassen.model.AppearanceMode;
-import dev.ikm.komet.app.aboutdialog.AboutDialog;
-import dev.ikm.komet.details.DetailsNodeFactory;
-import dev.ikm.komet.framework.KometNode;
-import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.ScreenInfo;
-import dev.ikm.komet.framework.activity.ActivityStreamOption;
-import dev.ikm.komet.framework.activity.ActivityStreams;
-import dev.ikm.komet.framework.events.*;
-import dev.ikm.komet.framework.graphics.Icon;
+import dev.ikm.komet.framework.events.Evt;
+import dev.ikm.komet.framework.events.EvtBus;
+import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.graphics.LoadFonts;
-import dev.ikm.komet.framework.preferences.KometPreferencesStage;
 import dev.ikm.komet.framework.preferences.PrefX;
-import dev.ikm.komet.framework.preferences.Reconstructor;
-import dev.ikm.komet.framework.progress.ProgressHelper;
-import dev.ikm.komet.framework.tabs.DetachableTab;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
-import dev.ikm.komet.framework.window.KometStageController;
-import dev.ikm.komet.framework.window.MainWindowRecord;
-import dev.ikm.komet.framework.window.WindowComponent;
 import dev.ikm.komet.framework.window.WindowSettings;
-import dev.ikm.komet.kview.controls.GlassPane;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
-import dev.ikm.komet.kview.events.JournalTileEvent;
+import dev.ikm.komet.kview.events.SignInUserEvent;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
-import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
-import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.*;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
-import dev.ikm.komet.kview.mvvm.viewmodel.GitHubPreferencesViewModel;
-import dev.ikm.komet.list.ListNodeFactory;
-import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
-import dev.ikm.komet.navigator.pattern.PatternNavigatorFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.Preferences;
-import dev.ikm.komet.progress.CompletionNodeFactory;
-import dev.ikm.komet.progress.ProgressNodeFactory;
-import dev.ikm.komet.search.SearchNodeFactory;
-import dev.ikm.komet.table.TableNodeFactory;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
-import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.service.ServiceKeys;
-import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.util.Duration;
 import one.jpro.platform.auth.core.authentication.User;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.JFXNode;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
+import one.jpro.platform.utils.CommandRunner;
+import one.jpro.platform.utils.PlatformUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.management.ManagementFactory;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.app.AppState.*;
+import static dev.ikm.komet.app.LoginFeatureFlag.ENABLED_WEB_ONLY;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
-import static dev.ikm.komet.framework.KometNode.PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.framework.KometNodeFactory.KOMET_NODES;
-import static dev.ikm.komet.framework.events.FrameworkTopics.*;
-import static dev.ikm.komet.framework.window.WindowSettings.Keys.*;
+import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
-import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*;
-import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.*;
-import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.LANDING_PAGE_SOURCE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
+import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
-
 /**
- * JavaFX App
+ * Main application class for the Komet application, extending JavaFX {@link Application}.
+ * <p>
+ * The {@code WebApp} class serves as the entry point for launching the Komet application,
+ * which is a JavaFX-based application supporting both desktop and web platforms via JPro.
+ * It manages initialization, startup, and shutdown processes, and handles various application states
+ * such as starting, login, data source selection, running, and shutdown.
+ * </p>
+ * <p>
+ * <h4>Platform-Specific Features:</h4>
+ * <ul>
+ *   <li><strong>Web Support:</strong> Utilizes JPro's {@link WebAPI} to support running the application in a web browser.</li>
+ *   <li><strong>macOS Integration:</strong> Configures macOS-specific properties and menus.</li>
+ * </ul>
+ * </p>
+ * <p>
+ * <h4>Event Bus and Subscriptions:</h4>
+ * The application uses an event bus ({@link EvtBus}) for inter-component communication. It subscribes to various events like
+ * {@code CreateJournalEvent} and {@code SignInUserEvent} to handle user actions and state changes.
+ * </p>
+ *
+ * @see Application
+ * @see AppState
+ * @see LoginFeatureFlag
+ * @see KometPreferences
  */
-public class App extends Application implements AppInterface {
-
-    private static final String OS_NAME_MAC = "mac";
-    private static final String CHANGESETS_DIR = "changeSets";
+public class App extends Application implements AppInterface  {
 
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
+    public static final String ICON_LOCATION = "/icons/Komet.png";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
-    private Stage primaryStage;
+    public static final SimpleObjectProperty<User> userProperty = new SimpleObjectProperty<>();
 
-    private static Stage classicKometStage;
+    private static Stage primaryStage;
 
-    // variables specific to resource overlay
-    private Stage overlayStage;
-    private Timeline resourceUsageTimeline;
+    private static WebAPI webAPI;
+    static final boolean IS_BROWSER = WebAPI.isBrowser();
+    static final boolean IS_DESKTOP = !IS_BROWSER && PlatformUtils.isDesktop();
+    static final boolean IS_MAC = !IS_BROWSER && PlatformUtils.isMac();
+    static final boolean IS_MAC_AND_NOT_TESTFX_TEST = IS_MAC && !isTestFXTest();
+    private final StackPane rootPane = createRootPane();
+    private Image appIcon;
     private LandingPageController landingPageController;
     private EvtBus kViewEventBus;
-    private static Stage landingPageWindow;
 
     AppGithub appGithub;
     AppClassicKomet appClassicKomet;
@@ -177,19 +139,17 @@ public class App extends Application implements AppInterface {
 
     @Override
     public WebAPI getWebAPI() {
-        return null;
+        return webAPI;
     }
 
     @Override
     public Image getAppIcon() {
-        return null;
+        return appIcon;
     }
-
     @Override
     public Stage getPrimaryStage() {
         return primaryStage;
     }
-
     @Override
     public SimpleObjectProperty<AppState> getState() {
         return state;
@@ -197,7 +157,7 @@ public class App extends Application implements AppInterface {
 
     @Override
     public StackPane getRootPane() {
-        return null;
+        return rootPane;
     }
 
     @Override
@@ -221,6 +181,11 @@ public class App extends Application implements AppInterface {
     }
 
     /**
+     * An entry point to launch the newer UI panels.
+     */
+    private MenuItem createJournalViewMenuItem;
+
+    /**
      * This is a list of new windows that have been launched. During shutdown, the application close each stage gracefully.
      */
     private final List<JournalController> journalControllersList = new ArrayList<>();
@@ -230,215 +195,299 @@ public class App extends Application implements AppInterface {
      */
     private final GitHubPreferencesDao gitHubPreferencesDao = new GitHubPreferencesDao();
 
+    /**
+     * Main method that serves as the entry point for the JavaFX application.
+     *
+     * @param args Command line arguments for the application.
+     */
     public static void main(String[] args) {
-        System.setProperty("apple.laf.useScreenMenuBar", "false");
-        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Komet");
-        // https://stackoverflow.com/questions/42598097/using-javafx-application-stop-method-over-shutdownhook
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            LOG.info("Starting shutdown hook");
-            PrimitiveData.save();
-            PrimitiveData.stop();
-            LOG.info("Finished shutdown hook");
-        }));
-        launch();
+        // Launch the JavaFX application
+        launch(args);
     }
 
-    public void init() {
-        File logDirectory = new File(System.getProperty("user.home"), "Solor/komet/logs");
-        logDirectory.mkdirs();
+    /**
+     * Configures system properties specific to macOS to ensure proper integration
+     * with the macOS application menu.
+     */
+    private static void configureMacOSProperties() {
+        // Ensures that the macOS application menu is used instead of a screen menu bar
+        System.setProperty("apple.laf.useScreenMenuBar", "false");
+
+        // Sets the name of the application in the macOS application menu
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Komet");
+    }
+
+    /**
+     * Adds a shutdown hook to the Java Virtual Machine (JVM) to ensure that data is saved and resources
+     * are released gracefully before the application exits.
+     * This method should be called during the application's initialization phase to ensure that the shutdown
+     * hook is registered before the application begins execution. By doing so, it guarantees that critical
+     * cleanup operations are performed even if the application is terminated unexpectedly.
+     */
+    private static void addShutdownHook() {
+        // Adding a shutdown hook that ensures data is saved and resources are released before the application exits
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            LOG.info("Starting shutdown hook");
+
+            try {
+                // Save and stop primitive data services gracefully
+                PrimitiveData.save();
+                PrimitiveData.stop();
+            } catch (Exception e) {
+                LOG.error("Error during shutdown hook execution", e);
+            }
+
+            LOG.info("Finished shutdown hook");
+        }));
+    }
+
+    @Override
+    public void init() throws Exception {
         LOG.info("Starting Komet");
+
+        // Set system properties for macOS look and feel and application name in the menu bar
+        configureMacOSProperties();
+
+        // Add a shutdown hook to ensure resources are saved and properly cleaned up before the application exits
+        addShutdownHook();
+
+        // Load custom fonts required by the application
         LoadFonts.load();
 
-        // get the instance of the event bus
+        // Load the application icon
+        appIcon = new Image(App.class.getResource(ICON_LOCATION).toString(), true);
+
+        // Initialize the event bus for inter-component communication
         kViewEventBus = EvtBusFactory.getInstance(EvtBus.class);
+
+        // Create a subscriber for handling CreateJournalEvent
         Subscriber<CreateJournalEvent> detailsSubscriber = evt -> {
             final PrefX journalWindowSettingsObjectMap = evt.getWindowSettingsObjectMap();
             final UUID journalTopic = journalWindowSettingsObjectMap.getValue(JOURNAL_TOPIC);
-            // Inspects the existing journal windows to see if it is already open
-            // So that we do not open duplicate journal windows
+            final String journalName = journalWindowSettingsObjectMap.getValue(JOURNAL_TITLE);
+            // Check if a journal window with the same title is already open
             journalControllersList.stream()
                     .filter(journalController ->
                             journalController.getJournalTopic().equals(journalTopic))
                     .findFirst()
-                    .ifPresentOrElse(
-                            JournalController::windowToFront, /* Window already launched now make window to the front (so user sees window) */
-                            () -> appPages.launchJournalViewPage(journalWindowSettingsObjectMap) /* launch new Journal view window */
-                    );
+                    .ifPresentOrElse(journalController -> {
+                                if (IS_BROWSER) {
+                                    // Similar to the desktop version, bring the existing tab to the front
+                                    Stage journalStage = (Stage) journalController.getJournalBorderPane().getScene().getWindow();
+                                    webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
+                                } else {
+                                    // Bring the existing window to the front
+                                    journalController.windowToFront();
+                                }
+                            },
+                            () -> appPages.launchJournalViewPage(journalWindowSettingsObjectMap));
         };
-        // subscribe to the topic
+
+        // Subscribe the subscriber to the JOURNAL_TOPIC
         kViewEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, detailsSubscriber);
+
+        Subscriber<SignInUserEvent> signInUserEventSubscriber = evt -> {
+            final User user = evt.getUser();
+            userProperty.set(user);
+
+            if (state.get() == RUNNING) {
+                launchLandingPage(primaryStage, user);
+            } else {
+                state.set(AppState.SELECT_DATA_SOURCE);
+                state.addListener(this::appStateChangeListener);
+                appPages.launchSelectDataSourcePage(primaryStage);
+            }
+        };
+
+        // Subscribe the subscriber to the USER_TOPIC
+        kViewEventBus.subscribe(USER_TOPIC, SignInUserEvent.class, signInUserEventSubscriber);
+
+        //Pops up the import dialog window on any events received on the IMPORT_TOPIC
+        Subscriber<Evt> importSubscriber = _ -> {
+            appMenu.openImport(primaryStage);
+        };
+        kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
     }
 
     @Override
     public void start(Stage stage) {
-
-        /*
         appGithub = new AppGithub(this);
         appClassicKomet = new AppClassicKomet(this);
         appMenu = new AppMenu(this);
         appPages = new AppPages(this);
 
         try {
-            primaryStage = stage;
-            Thread.currentThread().setUncaughtExceptionHandler((t, e) -> AlertStreams.getRoot().dispatch(AlertObject.makeError(e)));
-            // Get the toolkit
-            MenuToolkit tk = MenuToolkit.toolkit();
-            Menu kometAppMenu = tk.createDefaultApplicationMenu("Komet");
+            App.primaryStage = stage;
+            Thread.currentThread().setUncaughtExceptionHandler((thread, exception) ->
+                    AlertStreams.getRoot().dispatch(AlertObject.makeError(exception)));
 
-            MenuItem prefsItem = new MenuItem("Komet preferences...");
-            prefsItem.setAccelerator(new KeyCodeCombination(KeyCode.COMMA, KeyCombination.META_DOWN));
-            prefsItem.setOnAction(event -> appClassicKomet.kometPreferencesStage.showPreferences());
-
-            kometAppMenu.getItems().add(2, prefsItem);
-            kometAppMenu.getItems().add(3, new SeparatorMenuItem());
-            MenuItem appleQuit = kometAppMenu.getItems().getLast();
-            appleQuit.setOnAction(event -> quit());
-
-            MenuItem appleAbout = kometAppMenu.getItems().getFirst();
-            appleAbout.setOnAction(event -> showAboutDialog());
-
-            tk.setApplicationMenu(kometAppMenu);
-
-            // File Menu
-            Menu fileMenu = new Menu("File");
-
-
-            MenuItem importDatasetMenuItem = new MenuItem("Import Dataset");
-            importDatasetMenuItem.setOnAction(actionEvent -> openImport(primaryStage));
-
-            // Exporting data
-            MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
-            exportDatasetMenuItem.setOnAction(actionEvent -> openExport(primaryStage));
-            fileMenu.getItems().add(exportDatasetMenuItem);
-
-            fileMenu.getItems().addAll(importDatasetMenuItem, exportDatasetMenuItem, new SeparatorMenuItem(), tk.createCloseWindowMenuItem());
-
-            // Edit
-            Menu editMenu = new Menu("Edit");
-            editMenu.getItems().addAll(createMenuItem("Undo"), createMenuItem("Redo"), new SeparatorMenuItem(),
-                    createMenuItem("Cut"), createMenuItem("Copy"), createMenuItem("Paste"), createMenuItem("Select All"));
-
-            // View
-            Menu viewMenu = new Menu("View");
-            MenuItem classicKometMenuItem = createClassicKometMenuItem();
-            MenuItem resourceUsageMenuItem = createResourceUsageItem();
-            viewMenu.getItems().addAll(classicKometMenuItem, resourceUsageMenuItem);
-
-            // Window Menu
-            Menu windowMenu = new Menu("Window");
-            windowMenu.getItems().addAll(tk.createMinimizeMenuItem(), tk.createZoomMenuItem(), tk.createCycleWindowsItem(),
-                    new SeparatorMenuItem(), tk.createBringAllToFrontItem());
-
-            // Exchange Menu
-            Menu exchangeMenu = createExchangeMenu();
-
-            // Help Menu
-            Menu helpMenu = new Menu("Help");
-            helpMenu.getItems().addAll(new MenuItem("Getting started"));
-
-            MenuBar bar = new MenuBar();
-            bar.getMenus().addAll(kometAppMenu, fileMenu, editMenu, viewMenu, windowMenu, exchangeMenu, helpMenu);
-            tk.setAppearanceMode(AppearanceMode.AUTO);
-            tk.setDockIconMenu(createDockMenu());
-            tk.autoAddWindowMenuItems(windowMenu);
-
-            if (System.getProperty("os.name") != null &&
-                    System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-                tk.setGlobalMenuBar(bar);
+            // Initialize the JPro WebAPI
+            if (IS_BROWSER) {
+                webAPI = WebAPI.getWebAPI(stage);
             }
 
-            tk.setTrayMenu(createSampleMenu());
+            // Set the application icon
+            stage.getIcons().setAll(appIcon);
 
-            FXMLLoader sourceLoader = new FXMLLoader(getClass().getResource("SelectDataSource.fxml"));
-            BorderPane sourceRoot = sourceLoader.load();
-            SelectDataSourceController selectDataSourceController = sourceLoader.getController();
-            selectDataSourceController.getCancelButton().setOnAction(actionEvent -> quit());
-            Scene sourceScene = new Scene(sourceRoot);
-            addStylesheets(sourceScene, KOMET_CSS, KVIEW_CSS);
+            Scene scene = new Scene(rootPane);
+            addStylesheets(scene, KOMET_CSS, KVIEW_CSS);
+            stage.setScene(scene);
 
-            stage.setScene(sourceScene);
-            stage.setTitle("KOMET Startup");
+            // Handle the login feature based on the platform and the provided feature flag
+            handleLoginFeature(ENABLED_WEB_ONLY, stage);
 
-            stage.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-                ScreenInfo.mouseIsPressed(true);
-                ScreenInfo.mouseWasDragged(false);
-            });
-            stage.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> {
-                ScreenInfo.mouseIsPressed(false);
-                ScreenInfo.mouseIsDragging(false);
-            });
-            stage.addEventFilter(MouseEvent.DRAG_DETECTED, event -> {
-                ScreenInfo.mouseIsDragging(true);
-                ScreenInfo.mouseWasDragged(true);
-            });
+            addEventFilters(stage);
 
-            // Ensure app is shutdown gracefully. Once state changes it calls appStateChangeListener.
+            // This is called only when the user clicks the close button on the window
             stage.setOnCloseRequest(windowEvent -> state.set(SHUTDOWN));
+
+            // Show stage and set initial state
             stage.show();
-            state.set(AppState.SELECT_DATA_SOURCE);
-            state.addListener(this::appStateChangeListener);
-
-            //Pops up the import dialog window on any events received on the IMPORT_TOPIC
-            Subscriber<Evt> importSubscriber = event -> {
-                openImport(LANDING_PAGE_SOURCE.equals(event.getSource()) ? LANDING_PAGE_TOPIC :  PROGRESS_TOPIC);
-            };
-            kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
-
-        } catch (IOException e) {
-            LOG.error(e.getLocalizedMessage(), e);
+        } catch (Exception ex) {
+            LOG.error("Failed to initialize the application", ex);
             Platform.exit();
-        }*/
+        }
+    }
+
+    /**
+     * Handles the login feature based on the provided {@link LoginFeatureFlag} and platform.
+     *
+     * @param loginFeatureFlag the current state of the login feature
+     * @param stage            the current application stage
+     */
+    public void handleLoginFeature(LoginFeatureFlag loginFeatureFlag, Stage stage) {
+        switch (loginFeatureFlag) {
+            case ENABLED_WEB_ONLY -> {
+                if (IS_BROWSER) {
+                    startLogin(stage);
+                } else {
+                    startSelectDataSource(stage);
+                }
+            }
+            case ENABLED_DESKTOP_ONLY -> {
+                if (IS_DESKTOP) {
+                    startLogin(stage);
+                } else {
+                    startSelectDataSource(stage);
+                }
+            }
+            case ENABLED -> startLogin(stage);
+            case DISABLED -> startSelectDataSource(stage);
+        }
+    }
+
+    /**
+     * Initiates the login process by setting the application state to {@link AppState#LOGIN}
+     * and launching the login page.
+     *
+     * @param stage the current application stage
+     */
+    private void startLogin(Stage stage) {
+        state.set(LOGIN);
+        appPages.launchLoginPage(stage);
+    }
+
+    /**
+     * Initiates the data source selection process by setting the application state
+     * to {@link AppState#SELECT_DATA_SOURCE}, adding a state change listener, and launching
+     * the data source selection page.
+     *
+     * @param stage the current application stage
+     */
+    private void startSelectDataSource(Stage stage) {
+        state.set(SELECT_DATA_SOURCE);
+        state.addListener(this::appStateChangeListener);
+        appPages.launchSelectDataSourcePage(stage);
+    }
+
+    @Override
+    public void stop() {
+        LOG.info("Stopping application\n\n###############\n\n");
+
+        appGithub.disconnectFromGithub();
+
+        if (IS_DESKTOP) {
+            // close all journal windows
+            journalControllersList.forEach(JournalController::close);
+        }
+    }
+
+    private StackPane createRootPane(Node... children) {
+        return new StackPane(children) {
+
+            @Override
+            protected void layoutChildren() {
+                if (IS_BROWSER) {
+                    Scene scene = primaryStage.getScene();
+                    if (scene != null) {
+                        webAPI.layoutRoot(scene);
+                    }
+                }
+                super.layoutChildren();
+            }
+        };
+    }
+
+    /**
+     * Checks if the application is being tested using TestFX Framework.
+     *
+     * @return {@code true} if testing mode; {@code false} otherwise.
+     */
+    private static boolean isTestFXTest() {
+        String testFxTest = System.getProperty("testfx.headless");
+        return testFxTest != null && !testFxTest.isBlank();
+    }
+
+
+    private void addEventFilters(Stage stage) {
+        stage.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
+            ScreenInfo.mouseIsPressed(true);
+            ScreenInfo.mouseWasDragged(false);
+        });
+        stage.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> {
+            ScreenInfo.mouseIsPressed(false);
+            ScreenInfo.mouseIsDragging(false);
+        });
+        stage.addEventFilter(MouseEvent.DRAG_DETECTED, event -> {
+            ScreenInfo.mouseIsDragging(true);
+            ScreenInfo.mouseWasDragged(true);
+        });
     }
 
     public void launchLandingPage(Stage stage, User user) {
-        if (landingPageWindow != null) {
-            primaryStage = landingPageWindow;
-            landingPageWindow.show();
-            landingPageWindow.toFront();
-            landingPageWindow.setMaximized(true);
-            return;
-        }
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences windowPreferences = appPreferences.node("main-komet-window");
-        WindowSettings windowSettings = new WindowSettings(windowPreferences);
-
-        Stage kViewStage = new Stage();
-
         try {
+            rootPane.getChildren().clear(); // Clear the root pane before adding new content
+
+            KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+            KometPreferences windowPreferences = appPreferences.node("main-komet-window");
+            WindowSettings windowSettings = new WindowSettings(windowPreferences);
+
             FXMLLoader landingPageLoader = LandingPageViewFactory.createFXMLLoader();
             BorderPane landingPageBorderPane = landingPageLoader.load();
-            // if NOT on Mac OS
-            if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
+
+            if (!IS_MAC) {
                 appMenu.createMenuOptions(landingPageBorderPane);
             }
+
             landingPageController = landingPageLoader.getController();
+            landingPageController.getWelcomeTitleLabel().setText("Welcome " + user.getName());
             landingPageController.setSelectedDatasetTitle(PrimitiveData.get().name());
             landingPageController.getGithubStatusHyperlink().setOnAction(_ -> appGithub.connectToGithub());
-            Scene sourceScene = new Scene(landingPageBorderPane, 1200, 800);
 
-            kViewStage.setScene(sourceScene);
-            kViewStage.setTitle("Landing Page");
-
-            kViewStage.setMaximized(true);
-            kViewStage.setOnCloseRequest(windowEvent -> {
-                // call shutdown method on the view
+            stage.setTitle("Landing Page");
+            stage.setMaximized(true);
+            stage.setOnCloseRequest(windowEvent -> {
+                // This is called only when the user clicks the close button on the window
                 state.set(SHUTDOWN);
                 landingPageController.cleanup();
-                landingPageWindow.close();
-                landingPageWindow = null;
             });
+
+            rootPane.getChildren().add(landingPageBorderPane);
+
+            getAppMenu().setupMenus();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            LOG.error("Failed to initialize the landing page window", e);
         }
-
-        // Launch windows window pane inside journal view
-        kViewStage.setOnShown(windowEvent -> {
-            // do stuff when shown.
-        });
-
-        landingPageWindow = kViewStage;
-        kViewStage.show();
-        kViewStage.setMaximized(true);
     }
 
     /**
@@ -497,16 +546,6 @@ public class App extends Application implements AppInterface {
         }
     }
 
-    @Override
-    public void stop() {
-        LOG.info("Stopping application\n\n###############\n\n");
-
-        appGithub.disconnectFromGithub();
-
-        // close all journal windows
-        Lists.immutable.ofAll(this.journalControllersList).forEach(JournalController::close);
-    }
-
     private void appStateChangeListener(ObservableValue<? extends AppState> observable, AppState oldValue, AppState newValue) {
         try {
             switch (newValue) {
@@ -514,17 +553,18 @@ public class App extends Application implements AppInterface {
                     Platform.runLater(() -> state.set(LOADING_DATA_SOURCE));
                     TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
                 }
-
                 case RUNNING -> {
-                    primaryStage.hide();
-                    launchLandingPage(primaryStage, null);
+                    if (userProperty.get() == null) {
+                        String username = System.getProperty("user.name");
+                        String capitalizeUsername = username.substring(0, 1).toUpperCase() + username.substring(1);
+                        userProperty.set(new User(capitalizeUsername));
+                    }
+                    launchLandingPage(primaryStage, userProperty.get());
                 }
-                case SHUTDOWN -> {
-                    quit();
-                }
+                case SHUTDOWN -> quit();
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            LOG.error("Error during state change", e);
             Platform.exit();
         }
     }
@@ -534,95 +574,48 @@ public class App extends Application implements AppInterface {
         PrimitiveData.stop();
         Preferences.stop();
         Platform.exit();
+        stopServer();
     }
 
     /**
-     * Create a Resource Usage overlay to display metrics
-     *
-     * @return The menu item for launching the resource usage overlay.
+     * Stops the JPro server by running the stop script.
      */
-    private MenuItem createResourceUsageItem() {
-        MenuItem resourceUsageItem = new MenuItem("Resource Usage");
-        KeyCombination classicKometKeyCombo = new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN);
-        resourceUsageItem.setOnAction(actionEvent -> {
-            if (overlayStage != null && overlayStage.isShowing()) {
-                overlayStage.hide();
+    public void stopServer() {
+        if (IS_BROWSER) {
+            LOG.info("Stopping JPro server...");
+            final String jproMode = WebAPI.getServerInfo().getJProMode();
+            final String[] stopScriptArgs;
+            final CommandRunner stopCommandRunner;
+            final File workingDir;
+            if ("dev".equalsIgnoreCase(jproMode)) {
+                workingDir = new File(System.getProperty("user.dir")).getParentFile();
+                stopScriptArgs = PlatformUtils.isWindows() ?
+                        new String[]{"cmd", "/c", "mvnw.bat", "-f", "application", "-Pjpro", "jpro:stop"} :
+                        new String[]{"bash", "./mvnw", "-f", "application", "-Pjpro", "jpro:stop"};
+                stopCommandRunner = new CommandRunner(stopScriptArgs);
             } else {
-                showResourceUsageOverlay();
+                workingDir = new File("bin");
+                final String scriptExtension = PlatformUtils.isWindows() ? ".bat" : ".sh";
+                final String stopScriptName = "stop" + scriptExtension;
+                stopScriptArgs = PlatformUtils.isWindows() ?
+                        new String[]{"cmd", "/c", stopScriptName} : new String[]{"bash", stopScriptName};
+                stopCommandRunner = new CommandRunner(stopScriptArgs);
             }
-        });
-        resourceUsageItem.setAccelerator(classicKometKeyCombo);
-        return resourceUsageItem;
-    }
-
-    /**
-     * Show the resource usage overlay.
-     */
-    private void showResourceUsageOverlay() {
-        overlayStage = new Stage();
-        overlayStage.initOwner(getFocusedWindow());
-        overlayStage.initModality(Modality.APPLICATION_MODAL);
-        overlayStage.initStyle(StageStyle.TRANSPARENT);
-
-        VBox overlayContent = new VBox();
-        overlayContent.setAlignment(Pos.CENTER);
-        overlayContent.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-padding: 20;");
-
-        Label cpuUsageLabel = new Label();
-        Label memoryUsageLabel = new Label();
-        cpuUsageLabel.setTextFill(Color.WHITE);
-        memoryUsageLabel.setTextFill(Color.WHITE);
-        overlayContent.getChildren().addAll(cpuUsageLabel, memoryUsageLabel);
-
-        Scene overlayScene = new Scene(overlayContent, 300, 200, Color.TRANSPARENT);
-        overlayStage.setScene(overlayScene);
-
-        // Set custom close request handler
-        overlayStage.setOnCloseRequest(event -> {
-            if (resourceUsageTimeline != null) {
-                resourceUsageTimeline.stop(); // Stop the timeline
+            try {
+                stopCommandRunner.setPrintToConsole(true);
+                final int exitCode = stopCommandRunner.run("jpro-stop", workingDir);
+                if (exitCode == 0) {
+                    LOG.info("JPro server stopped successfully.");
+                } else {
+                    LOG.error("Failed to stop JPro server. Exit code: {}", exitCode);
+                }
+            } catch (IOException | InterruptedException ex) {
+                LOG.error("Error stopping the server", ex);
             }
-            overlayStage.hide(); // Hide the stage
-        });
-        overlayStage.show();
-
-        // Create and start the timeline to update resource usage
-        resourceUsageTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-            updateResourceUsage(cpuUsageLabel, memoryUsageLabel);
-        }));
-        resourceUsageTimeline.setCycleCount(Timeline.INDEFINITE);
-        resourceUsageTimeline.play();
-    }
-
-    /**
-     * Update the resource usage labels with CPU and memory usage.
-     *
-     * @param cpuUsageLabel the label to be used for the CPU usage
-     * @param memoryUsageLabel the label to be used for the memory usage
-     */
-    private void updateResourceUsage(final Label cpuUsageLabel, final Label memoryUsageLabel) {
-        java.lang.management.OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
-        double cpuLoad = -1;
-        if (osBean instanceof OperatingSystemMXBean sunOsBean) {
-            cpuLoad = sunOsBean.getCpuLoad() * 100;
-
-            long totalMemory = Runtime.getRuntime().totalMemory();
-            long freeMemory = Runtime.getRuntime().freeMemory();
-            long usedMemory = totalMemory - freeMemory;
-
-            cpuUsageLabel.setText("CPU Usage: %.2f%%".formatted(cpuLoad));
-            memoryUsageLabel.setText("Memory Usage: %d MB / %d MB".formatted(
-                    usedMemory / (1024 * 1024), totalMemory / (1024 * 1024)));
         }
     }
 
     public enum AppKeys {
         APP_INITIALIZED
-    }
-
-    @Override
-    public void stopServer() {
-        // No server to stop in this application
-        LOG.info("No server to stop in this application.");
     }
 }

@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
 
-import static dev.ikm.komet.app.WebApp.IS_BROWSER;
-import static dev.ikm.komet.app.WebApp.IS_MAC;
+import static dev.ikm.komet.app.App.IS_BROWSER;
+import static dev.ikm.komet.app.App.IS_MAC;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;

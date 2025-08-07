@@ -187,8 +187,6 @@ public class SelectDataSourceController {
         progressTabPane.getTabs().add(progressTab);
 
         App.state.set(AppState.SELECTED_DATA_SOURCE);
-        // TODO: The following line will be removed in the future, when the WebApp class will be merged with the App class.
-        WebApp.state.set(AppState.SELECTED_DATA_SOURCE);
     }
 
     private void saveDataServiceProperties(DataServiceController<?> dataServiceController) {
