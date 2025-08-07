@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -10,6 +11,8 @@ import javafx.scene.control.TreeItem;
 
 import java.util.BitSet;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorControl.MAX_LEVEL;
 
@@ -140,6 +143,9 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
 
     private final InvertedTree invertedTree;
 
+    private Boolean isLeaf;
+    private final Future<Boolean> future;
+
     /**
      * <p>Creates a ConceptNavigatorTreeItem instance.
      * </p>
@@ -153,6 +159,7 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
         this.navigator = navigator;
         invertedTree = new InvertedTree(new InvertedTree.ConceptItem(conceptFacade.nid(), parentNid, conceptFacade.description()));
         setValue(conceptFacade);
+        future = TinkExecutor.threadPool().submit(() -> navigator.isLeaf(conceptFacade.nid()));
     }
 
     /**
@@ -298,7 +305,14 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
         if (nid == Integer.MAX_VALUE) {
             return false;
         }
-        return navigator.isLeaf(nid);
+        if (isLeaf == null) {
+            try {
+                isLeaf = future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return isLeaf;
     }
 
     /**
