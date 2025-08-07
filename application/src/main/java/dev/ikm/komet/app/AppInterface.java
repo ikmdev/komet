@@ -54,11 +54,5 @@ public interface AppInterface {
 
     void launchLandingPage(Stage stage, User user);
 
-    //void showAboutDialog();
-
-    void openImport(Stage stage);
-
-    void openExport(Stage stage);
-
     Stage getPrimaryStage();
 }

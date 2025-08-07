@@ -349,7 +349,7 @@ public class WebApp extends Application implements AppInterface  {
 
         //Pops up the import dialog window on any events received on the IMPORT_TOPIC
         Subscriber<Evt> importSubscriber = _ -> {
-            openImport(primaryStage);
+            appMenu.openImport(primaryStage);
         };
         kViewEventBus.subscribe(IMPORT_TOPIC, Evt.class, importSubscriber);
     }
@@ -731,44 +731,6 @@ public class WebApp extends Application implements AppInterface  {
             LOG.error("Error during state change", e);
             Platform.exit();
         }
-    }
-
-    public void openImport(Stage owner) {
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-        WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        Stage importStage = new Stage(StageStyle.TRANSPARENT);
-        importStage.initOwner(owner);
-        //set up ImportViewModel
-        Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
-                .updateViewModel("importViewModel", (importViewModel) ->
-                        importViewModel.setPropertyValue(VIEW_PROPERTIES,
-                                windowSettings.getView().makeOverridableViewProperties()));
-        JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
-
-        Pane importPane = importJFXNode.node();
-        Scene importScene = new Scene(importPane, Color.TRANSPARENT);
-        importStage.setScene(importScene);
-        importStage.show();
-    }
-
-    public void openExport(Stage owner) {
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-        WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        Stage exportStage = new Stage(StageStyle.TRANSPARENT);
-        exportStage.initOwner(owner);
-        //set up ExportViewModel
-        Config exportConfig = new Config(ExportController.class.getResource("export.fxml"))
-                .updateViewModel("exportViewModel", (exportViewModel) ->
-                        exportViewModel.setPropertyValue(VIEW_PROPERTIES,
-                                windowSettings.getView().makeOverridableViewProperties()));
-        JFXNode<Pane, ExportController> exportJFXNode = FXMLMvvmLoader.make(exportConfig);
-
-        Pane exportPane = exportJFXNode.node();
-        Scene exportScene = new Scene(exportPane, Color.TRANSPARENT);
-        exportStage.setScene(exportScene);
-        exportStage.show();
     }
 
     public void quit() {

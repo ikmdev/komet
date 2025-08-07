@@ -5,6 +5,11 @@ import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.app.aboutdialog.AboutDialog;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.preferences.KometPreferencesStage;
+import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
+import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.KometPreferencesImpl;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
@@ -16,8 +21,14 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +40,8 @@ import static dev.ikm.komet.app.WebApp.IS_BROWSER;
 import static dev.ikm.komet.app.WebApp.IS_MAC_AND_NOT_TESTFX_TEST;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.SYNC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 
 public class AppMenu {
 
@@ -53,12 +66,12 @@ public class AppMenu {
 
         // Importing data
         MenuItem importMenuItem = new MenuItem("Import Dataset");
-        importMenuItem.setOnAction(actionEvent -> app.openImport(stage));
+        importMenuItem.setOnAction(actionEvent -> openImport(stage));
         fileMenu.getItems().add(importMenuItem);
 
         // Exporting data
         MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
-        exportDatasetMenuItem.setOnAction(actionEvent -> app.openExport(stage));
+        exportDatasetMenuItem.setOnAction(actionEvent -> openExport(stage));
         fileMenu.getItems().add(exportDatasetMenuItem);
 
         MenuItem menuItemQuit = new MenuItem("Quit");
@@ -227,11 +240,11 @@ public class AppMenu {
 
         // Import Dataset Menu Item
         MenuItem importDatasetMenuItem = new MenuItem("Import Dataset...");
-        importDatasetMenuItem.setOnAction(actionEvent -> app.openImport(app.getPrimaryStage()));
+        importDatasetMenuItem.setOnAction(actionEvent -> openImport(app.getPrimaryStage()));
 
         // Export Dataset Menu Item
         MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset...");
-        exportDatasetMenuItem.setOnAction(actionEvent -> app.openExport(app.getPrimaryStage()));
+        exportDatasetMenuItem.setOnAction(actionEvent -> openExport(app.getPrimaryStage()));
 
         // Add menu items to the File menu
         fileMenu.getItems().addAll(importDatasetMenuItem, exportDatasetMenuItem);
@@ -335,6 +348,45 @@ public class AppMenu {
         stage.setScene(new Scene(new StackPane()));
         stage.setTitle("New stage" + " " + (windowCount++));
         stage.show();
+    }
+
+
+    public void openImport(Stage owner) {
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        Stage importStage = new Stage(StageStyle.TRANSPARENT);
+        importStage.initOwner(owner);
+        //set up ImportViewModel
+        Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
+                .updateViewModel("importViewModel", (importViewModel) ->
+                        importViewModel.setPropertyValue(VIEW_PROPERTIES,
+                                windowSettings.getView().makeOverridableViewProperties()));
+        JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
+
+        Pane importPane = importJFXNode.node();
+        Scene importScene = new Scene(importPane, Color.TRANSPARENT);
+        importStage.setScene(importScene);
+        importStage.show();
+    }
+
+    public void openExport(Stage owner) {
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        Stage exportStage = new Stage(StageStyle.TRANSPARENT);
+        exportStage.initOwner(owner);
+        //set up ExportViewModel
+        Config exportConfig = new Config(ExportController.class.getResource("export.fxml"))
+                .updateViewModel("exportViewModel", (exportViewModel) ->
+                        exportViewModel.setPropertyValue(VIEW_PROPERTIES,
+                                windowSettings.getView().makeOverridableViewProperties()));
+        JFXNode<Pane, ExportController> exportJFXNode = FXMLMvvmLoader.make(exportConfig);
+
+        Pane exportPane = exportJFXNode.node();
+        Scene exportScene = new Scene(exportPane, Color.TRANSPARENT);
+        exportStage.setScene(exportScene);
+        exportStage.show();
     }
 
 }

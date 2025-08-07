@@ -600,49 +600,6 @@ public class App extends Application implements AppInterface {
         }
     }
 
-    private void openImport(FrameworkTopics destinationTopic) {
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-        WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        Stage importStage = new Stage(StageStyle.TRANSPARENT);
-        importStage.initOwner(getFocusedWindow());
-        //set up ImportViewModel
-        Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
-                .updateViewModel("importViewModel", importViewModel ->
-                        importViewModel
-                                .setPropertyValue(VIEW_PROPERTIES, windowSettings.getView().makeOverridableViewProperties())
-                                .setPropertyValue(DESTINATION_TOPIC, destinationTopic));
-        JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
-
-        Pane importPane = importJFXNode.node();
-        Scene importScene = new Scene(importPane, Color.TRANSPARENT);
-        importStage.setScene(importScene);
-        importStage.show();
-    }
-
-    public void openImport(Stage stage) {
-        openImport(PROGRESS_TOPIC);
-    }
-
-    public void openExport(Stage stage) {
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-        WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        Stage exportStage = new Stage(StageStyle.TRANSPARENT);
-        exportStage.initOwner(getFocusedWindow());
-        //set up ExportViewModel
-        Config exportConfig = new Config(ExportController.class.getResource("export.fxml"))
-                .updateViewModel("exportViewModel", (exportViewModel) ->
-                        exportViewModel.setPropertyValue(VIEW_PROPERTIES,
-                                windowSettings.getView().makeOverridableViewProperties()));
-        JFXNode<Pane, ExportController> exportJFXNode = FXMLMvvmLoader.make(exportConfig);
-
-        Pane exportPane = exportJFXNode.node();
-        Scene exportScene = new Scene(exportPane, Color.TRANSPARENT);
-        exportStage.setScene(exportScene);
-        exportStage.show();
-    }
-
     public void quit() {
         saveJournalWindowsToPreferences();
         PrimitiveData.stop();
