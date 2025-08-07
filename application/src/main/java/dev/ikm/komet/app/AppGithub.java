@@ -2,11 +2,11 @@ package dev.ikm.komet.app;
 
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.kview.controls.GlassPane;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitHubPreferencesController;
-import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask;
+import dev.ikm.komet.kview.mvvm.view.changeset.exchange.*;
 import dev.ikm.komet.kview.mvvm.viewmodel.GitHubPreferencesViewModel;
 import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.layout.Pane;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -15,12 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.framework.events.FrameworkTopics.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*;
+import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_STATUS;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.CONNECT;
 
 public class AppGithub {
@@ -285,4 +288,125 @@ public class AppGithub {
         // Update the UI state
         gotoGitHubDisconnectedState();
     }
+
+
+
+    /**
+     * Displays information about the current Git repository.
+     * <p>
+     * This method checks if a Git repository exists and displays basic information about it.
+     * If no repository exists or is not properly configured, the user will be prompted to
+     * enter GitHub preferences before proceeding. Upon successful connection to GitHub,
+     * repository information will be fetched and displayed in a dialog.
+     * <p>
+     * The method performs the following operations:
+     * <ol>
+     *   <li>Verifies that the data store root is available</li>
+     *   <li>Checks if a Git repository exists in the changeset folder</li>
+     *   <li>If no repository exists, prompts for GitHub preferences and initiates connection</li>
+     *   <li>Fetches and displays repository information</li>
+     * </ol>
+     */
+    void infoAction() {
+        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
+        if (optionalDataStoreRoot.isEmpty()) {
+            LOG.error("ServiceKeys.DATA_STORE_ROOT not provided.");
+            return;
+        }
+
+        final File changeSetFolder = new File(optionalDataStoreRoot.get(), CHANGESETS_DIR);
+        final File gitDir = new File(changeSetFolder, ".git");
+
+        if (gitDir.exists()) {
+            fetchAndShowRepositoryInfo(changeSetFolder);
+        } else {
+            // Prompt for preferences before proceeding
+            promptForGitHubPrefs().thenCompose(confirmed -> {
+                if (confirmed) {
+                    // Preferences entered successfully, now run the GitTask
+                    return createAndRunGitTask(CONNECT, changeSetFolder);
+                } else {
+                    return CompletableFuture.completedFuture(false);
+                }
+            }).thenAccept(confirmed -> {
+                if (confirmed) {
+                    fetchAndShowRepositoryInfo(changeSetFolder);
+                }
+            });
+        }
+    }
+
+    /**
+     * Fetches repository information and displays it in a dialog.
+     * <p>
+     * This method asynchronously retrieves information about the Git repository
+     * located in the specified folder using an {@code InfoTask}, then displays
+     * the results in a dialog. The operation is performed on a background thread
+     * to avoid blocking the UI.
+     *
+     * @param changeSetFolder The repository folder to fetch information from
+     */
+    private void fetchAndShowRepositoryInfo(File changeSetFolder) {
+        CompletableFuture.supplyAsync(() -> {
+                    try {
+                        InfoTask task = new InfoTask(changeSetFolder.toPath());
+                        return task.call();
+                    } catch (Exception ex) {
+                        throw new RuntimeException("Failed to fetch repository information", ex);
+                    }
+                }, TinkExecutor.threadPool())
+                .thenCompose(repoInfo -> showRepositoryInfoDialog(repoInfo)
+                        .thenAccept(confirmed -> {
+                            if (confirmed) {
+                                LOG.info("User closed the repository info dialog");
+                            }
+                        }));
+    }
+
+    /**
+     * Displays the repository information dialog.
+     * <p>
+     * This method creates and displays a dialog showing Git repository information
+     * including URL, username, email, and status. The dialog is displayed using a
+     * glass pane overlay on top of the landing page.
+     * <p>
+     * The method returns a CompletableFuture that will be completed when the user
+     * closes the dialog.
+     *
+     * @param repoInfo Map containing repository information with keys defined in {@code GitPropertyName}
+     * @return A CompletableFuture that completes with {@code true} when the user closes the dialog
+     */
+    private CompletableFuture<Boolean> showRepositoryInfoDialog(Map<GitPropertyName, String> repoInfo) {
+        // Create a CompletableFuture that will be completed when the user makes a choice
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+        // Show dialog on JavaFX thread
+        runOnFxThread(() -> {
+            GlassPane glassPane = new GlassPane(app.getLandingPageController().getRoot());
+
+            final JFXNode<Pane, GitHubInfoController> githubInfoNode = FXMLMvvmLoader
+                    .make(GitHubInfoController.class.getResource("github-info.fxml"));
+            final Pane dialogPane = githubInfoNode.node();
+            final GitHubInfoController controller = githubInfoNode.controller();
+
+            controller.getGitUrlTextField().setText(repoInfo.get(GIT_URL));
+            controller.getGitUsernameTextField().setText(repoInfo.get(GIT_USERNAME));
+            controller.getGitEmailTextField().setText(repoInfo.get(GIT_EMAIL));
+            controller.getStatusTextArea().setText(repoInfo.get(GIT_STATUS));
+
+            controller.getCloseButton().setOnAction(_ -> {
+                glassPane.removeContent(dialogPane);
+                glassPane.hide();
+                future.complete(true); // Complete with true on close
+            });
+
+            glassPane.addContent(dialogPane);
+            glassPane.show();
+        });
+
+        return future;
+    }
+
+
+
 }

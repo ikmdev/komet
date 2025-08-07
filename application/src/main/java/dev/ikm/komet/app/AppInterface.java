@@ -13,14 +13,19 @@ import one.jpro.platform.auth.core.authentication.User;
  */
 public interface AppInterface {
 
+
+    AppMenu getAppMenu();
+
+    AppGithub getAppGithub();
+
+    AppClassicKomet getAppClassicKomet();
+
     /**
      * Returns the default App icon.
      *
      * @return the {@link Image} representing the app icon
      */
     Image getAppIcon();
-
-    AppMenu getAppMenu();
 
     WebAPI getWebAPI();
 
@@ -45,7 +50,7 @@ public interface AppInterface {
 
     void launchLandingPage(Stage stage, User user);
 
-    void showAboutDialog();
+    //void showAboutDialog();
 
     void openImport(Stage stage);
 

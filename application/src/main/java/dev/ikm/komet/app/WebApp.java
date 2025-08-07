@@ -186,8 +186,18 @@ public class WebApp extends Application implements AppInterface  {
     AppMenu appMenu;
 
     @Override
+    public AppGithub getAppGithub() {
+        return appGithub;
+    }
+
+    @Override
     public AppMenu getAppMenu() {
         return appMenu;
+    }
+
+    @Override
+    public AppClassicKomet getAppClassicKomet() {
+        return appClassicKomet;
     }
 
     @Override
@@ -524,7 +534,7 @@ public class WebApp extends Application implements AppInterface  {
         }
 
         // Create and add the exchange menu to the menu bar
-        Menu exchangeMenu = createExchangeMenu();
+        Menu exchangeMenu = appMenu.createExchangeMenu();
         menuBar.getMenus().add(exchangeMenu);
 
         // Create and add the help menu to the menu bar
@@ -596,19 +606,7 @@ public class WebApp extends Application implements AppInterface  {
         return windowMenu;
     }
 
-    private Menu createExchangeMenu() {
-        Menu exchangeMenu = new Menu("Exchange");
 
-        MenuItem infoMenuItem = new MenuItem("Info");
-        infoMenuItem.setOnAction(actionEvent -> infoAction());
-        MenuItem pullMenuItem = new MenuItem("Pull");
-        pullMenuItem.setOnAction(actionEvent -> appGithub.executeGitTask(PULL));
-        MenuItem pushMenuItem = new MenuItem("Sync");
-        pushMenuItem.setOnAction(actionEvent -> appGithub.executeGitTask(SYNC));
-
-        exchangeMenu.getItems().addAll(infoMenuItem, pullMenuItem, pushMenuItem);
-        return exchangeMenu;
-    }
 
     private Menu createHelpMenu() {
         Menu helpMenu = new Menu("Help");
@@ -672,7 +670,7 @@ public class WebApp extends Application implements AppInterface  {
             BorderPane landingPageBorderPane = landingPageLoader.load();
 
             if (!IS_MAC) {
-                createMenuOptions(landingPageBorderPane);
+                appMenu.createMenuOptions(landingPageBorderPane);
             }
 
             landingPageController = landingPageLoader.getController();
@@ -942,128 +940,6 @@ public class WebApp extends Application implements AppInterface  {
         exportStage.show();
     }
 
-
-    /**
-     * Displays information about the current Git repository.
-     * <p>
-     * This method checks if a Git repository exists and displays basic information about it.
-     * If no repository exists or is not properly configured, the user will be prompted to
-     * enter GitHub preferences before proceeding. Upon successful connection to GitHub,
-     * repository information will be fetched and displayed in a dialog.
-     * <p>
-     * The method performs the following operations:
-     * <ol>
-     *   <li>Verifies that the data store root is available</li>
-     *   <li>Checks if a Git repository exists in the changeset folder</li>
-     *   <li>If no repository exists, prompts for GitHub preferences and initiates connection</li>
-     *   <li>Fetches and displays repository information</li>
-     * </ol>
-     */
-    private void infoAction() {
-        Optional<File> optionalDataStoreRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT);
-        if (optionalDataStoreRoot.isEmpty()) {
-            LOG.error("ServiceKeys.DATA_STORE_ROOT not provided.");
-            return;
-        }
-
-        final File changeSetFolder = new File(optionalDataStoreRoot.get(), AppGithub.CHANGESETS_DIR);
-        final File gitDir = new File(changeSetFolder, ".git");
-
-        if (gitDir.exists()) {
-            fetchAndShowRepositoryInfo(changeSetFolder);
-        } else {
-            // Prompt for preferences before proceeding
-            appGithub.promptForGitHubPrefs().thenCompose(confirmed -> {
-                if (confirmed) {
-                    // Preferences entered successfully, now run the GitTask
-                    return appGithub.createAndRunGitTask(CONNECT, changeSetFolder);
-                } else {
-                    return CompletableFuture.completedFuture(false);
-                }
-            }).thenAccept(confirmed -> {
-                if (confirmed) {
-                    fetchAndShowRepositoryInfo(changeSetFolder);
-                }
-            });
-        }
-    }
-
-    /**
-     * Fetches repository information and displays it in a dialog.
-     * <p>
-     * This method asynchronously retrieves information about the Git repository
-     * located in the specified folder using an {@code InfoTask}, then displays
-     * the results in a dialog. The operation is performed on a background thread
-     * to avoid blocking the UI.
-     *
-     * @param changeSetFolder The repository folder to fetch information from
-     */
-    private void fetchAndShowRepositoryInfo(File changeSetFolder) {
-        CompletableFuture.supplyAsync(() -> {
-                    try {
-                        InfoTask task = new InfoTask(changeSetFolder.toPath());
-                        return task.call();
-                    } catch (Exception ex) {
-                        throw new RuntimeException("Failed to fetch repository information", ex);
-                    }
-                }, TinkExecutor.threadPool())
-                .thenCompose(repoInfo -> showRepositoryInfoDialog(repoInfo)
-                        .thenAccept(confirmed -> {
-                            if (confirmed) {
-                                LOG.info("User closed the repository info dialog");
-                            }
-                        }));
-    }
-
-    /**
-     * Displays the repository information dialog.
-     * <p>
-     * This method creates and displays a dialog showing Git repository information
-     * including URL, username, email, and status. The dialog is displayed using a
-     * glass pane overlay on top of the landing page.
-     * <p>
-     * The method returns a CompletableFuture that will be completed when the user
-     * closes the dialog.
-     *
-     * @param repoInfo Map containing repository information with keys defined in {@code GitPropertyName}
-     * @return A CompletableFuture that completes with {@code true} when the user closes the dialog
-     */
-    private CompletableFuture<Boolean> showRepositoryInfoDialog(Map<GitPropertyName, String> repoInfo) {
-        // Create a CompletableFuture that will be completed when the user makes a choice
-        CompletableFuture<Boolean> future = new CompletableFuture<>();
-
-        // Show dialog on JavaFX thread
-        runOnFxThread(() -> {
-            GlassPane glassPane = new GlassPane(landingPageController.getRoot());
-
-            final JFXNode<Pane, GitHubInfoController> githubInfoNode = FXMLMvvmLoader
-                    .make(GitHubInfoController.class.getResource("github-info.fxml"));
-            final Pane dialogPane = githubInfoNode.node();
-            final GitHubInfoController controller = githubInfoNode.controller();
-
-            controller.getGitUrlTextField().setText(repoInfo.get(GIT_URL));
-            controller.getGitUsernameTextField().setText(repoInfo.get(GIT_USERNAME));
-            controller.getGitEmailTextField().setText(repoInfo.get(GIT_EMAIL));
-            controller.getStatusTextArea().setText(repoInfo.get(GIT_STATUS));
-
-            controller.getCloseButton().setOnAction(_ -> {
-                glassPane.removeContent(dialogPane);
-                glassPane.hide();
-                future.complete(true); // Complete with true on close
-            });
-
-            glassPane.addContent(dialogPane);
-            glassPane.show();
-        });
-
-        return future;
-    }
-
-    public void showAboutDialog() {
-        AboutDialog aboutDialog = new AboutDialog();
-        aboutDialog.showAndWait();
-    }
-
     public void quit() {
         saveJournalWindowsToPreferences();
         PrimitiveData.stop();
@@ -1108,77 +984,6 @@ public class WebApp extends Application implements AppInterface  {
                 LOG.error("Error stopping the server", ex);
             }
         }
-    }
-
-    private void restoreTab(KometPreferences windowPreferences, String tabPreferenceNodeName, ObservableViewNoOverride windowView, Consumer<Node> nodeConsumer) {
-        LOG.info("Restoring from: " + tabPreferenceNodeName);
-        KometPreferences itemPreferences = windowPreferences.node(KOMET_NODES + tabPreferenceNodeName);
-        itemPreferences.get(WindowComponent.WindowComponentKeys.FACTORY_CLASS).ifPresent(factoryClassName -> {
-            try {
-                Class<?> objectClass = Class.forName(factoryClassName);
-                Class<? extends Annotation> annotationClass = Reconstructor.class;
-                Object[] parameters = new Object[]{windowView, itemPreferences};
-                WindowComponent windowComponent = (WindowComponent) Encodable.decode(objectClass, annotationClass, parameters);
-                nodeConsumer.accept(windowComponent.getNode());
-
-            } catch (Exception e) {
-                AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
-            }
-        });
-    }
-
-    public void createMenuOptions(BorderPane landingPageRoot) {
-        MenuBar menuBar = new MenuBar();
-
-        Menu fileMenu = new Menu("File");
-        MenuItem about = new MenuItem("About");
-        about.setOnAction(_ -> showAboutDialog());
-        fileMenu.getItems().add(about);
-
-        MenuItem menuItemQuit = new MenuItem("Quit");
-        KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
-        menuItemQuit.setOnAction(actionEvent -> quit());
-        menuItemQuit.setAccelerator(quitKeyCombo);
-        fileMenu.getItems().add(menuItemQuit);
-
-        Menu viewMenu = new Menu("View");
-        MenuItem classicKometMenuItem = createClassicKometMenuItem();
-        viewMenu.getItems().add(classicKometMenuItem);
-
-        Menu windowMenu = new Menu("Window");
-        MenuItem minimizeWindow = new MenuItem("Minimize");
-        KeyCombination minimizeKeyCombo = new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN);
-        minimizeWindow.setOnAction(event -> {
-            Stage obj = (Stage) landingPageRoot.getScene().getWindow();
-            obj.setIconified(true);
-        });
-        minimizeWindow.setAccelerator(minimizeKeyCombo);
-        minimizeWindow.setDisable(IS_BROWSER);
-        windowMenu.getItems().add(minimizeWindow);
-
-        Menu exchangeMenu = createExchangeMenu();
-
-        menuBar.getMenus().add(fileMenu);
-        menuBar.getMenus().add(viewMenu);
-        menuBar.getMenus().add(windowMenu);
-        menuBar.getMenus().add(exchangeMenu);
-        landingPageRoot.setTop(menuBar);
-    }
-
-    private MenuItem createClassicKometMenuItem() {
-        MenuItem classicKometMenuItem = new MenuItem("Classic Komet");
-        KeyCombination classicKometKeyCombo = new KeyCodeCombination(KeyCode.K, KeyCombination.CONTROL_DOWN);
-        classicKometMenuItem.setOnAction(actionEvent -> {
-            try {
-                appClassicKomet.launchClassicKomet();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (BackingStoreException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        classicKometMenuItem.setAccelerator(classicKometKeyCombo);
-        return classicKometMenuItem;
     }
 
     public enum AppKeys {
