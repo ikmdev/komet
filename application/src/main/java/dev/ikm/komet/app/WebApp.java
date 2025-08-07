@@ -168,8 +168,6 @@ public class WebApp extends Application implements AppInterface  {
     public static final SimpleObjectProperty<User> userProperty = new SimpleObjectProperty<>();
 
     private static Stage primaryStage;
-    private static long windowCount = 1;
-    private static KometPreferencesStage kometPreferencesStage;
 
     private static WebAPI webAPI;
     static final boolean IS_BROWSER = WebAPI.isBrowser();
@@ -212,6 +210,10 @@ public class WebApp extends Application implements AppInterface  {
     @Override
     public Stage getPrimaryStage() {
         return primaryStage;
+    }
+    @Override
+    public SimpleObjectProperty<AppState> getState() {
+        return state;
     }
     @Override
     public LandingPageController getLandingPageController() {
@@ -282,13 +284,6 @@ public class WebApp extends Application implements AppInterface  {
 
             LOG.info("Finished shutdown hook");
         }));
-    }
-
-    private static void createNewStage() {
-        Stage stage = new Stage();
-        stage.setScene(new Scene(new StackPane()));
-        stage.setTitle("New stage" + " " + (windowCount++));
-        stage.show();
     }
 
     @Override
@@ -487,133 +482,6 @@ public class WebApp extends Application implements AppInterface  {
         return testFxTest != null && !testFxTest.isBlank();
     }
 
-    private void setupMenus() {
-        Menu kometAppMenu;
-
-        if (IS_MAC_AND_NOT_TESTFX_TEST) {
-            MenuToolkit menuToolkit = MenuToolkit.toolkit();
-            kometAppMenu = menuToolkit.createDefaultApplicationMenu("Komet");
-        } else {
-            kometAppMenu = new Menu("Komet");
-        }
-
-        MenuItem prefsItem = new MenuItem("Komet preferences...");
-        prefsItem.setAccelerator(new KeyCodeCombination(KeyCode.COMMA, KeyCombination.META_DOWN));
-        prefsItem.setOnAction(event -> WebApp.kometPreferencesStage.showPreferences());
-
-        if (IS_MAC_AND_NOT_TESTFX_TEST) {
-            kometAppMenu.getItems().add(2, prefsItem);
-            kometAppMenu.getItems().add(3, new SeparatorMenuItem());
-            MenuItem appleQuit = kometAppMenu.getItems().getLast();
-            appleQuit.setOnAction(event -> quit());
-        } else {
-            kometAppMenu.getItems().addAll(prefsItem, new SeparatorMenuItem());
-        }
-
-        MenuBar menuBar = new MenuBar(kometAppMenu);
-
-        if (state.get() == RUNNING) {
-            Menu fileMenu = createFileMenu();
-            Menu editMenu = createEditMenu();
-            Menu viewMenu = createViewMenu();
-            menuBar.getMenus().addAll(fileMenu, editMenu, viewMenu);
-        }
-
-        if (IS_MAC_AND_NOT_TESTFX_TEST) {
-            MenuToolkit menuToolkit = MenuToolkit.toolkit();
-            menuToolkit.setApplicationMenu(kometAppMenu);
-            menuToolkit.setAppearanceMode(AppearanceMode.AUTO);
-            menuToolkit.setDockIconMenu(createDockMenu());
-            Menu windowMenu = createWindowMenuOnMacOS();
-            menuToolkit.autoAddWindowMenuItems(windowMenu);
-            menuToolkit.setGlobalMenuBar(menuBar);
-            menuToolkit.setTrayMenu(createSampleMenu());
-
-            // Add the window menu to the menu bar
-            menuBar.getMenus().add(windowMenu);
-        }
-
-        // Create and add the exchange menu to the menu bar
-        Menu exchangeMenu = appMenu.createExchangeMenu();
-        menuBar.getMenus().add(exchangeMenu);
-
-        // Create and add the help menu to the menu bar
-        Menu helpMenu = createHelpMenu();
-        menuBar.getMenus().add(helpMenu);
-    }
-
-    private Menu createFileMenu() {
-        Menu fileMenu = new Menu("File");
-
-        // Import Dataset Menu Item
-        MenuItem importDatasetMenuItem = new MenuItem("Import Dataset...");
-        importDatasetMenuItem.setOnAction(actionEvent -> openImport(primaryStage));
-
-        // Export Dataset Menu Item
-        MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset...");
-        exportDatasetMenuItem.setOnAction(actionEvent -> openExport(primaryStage));
-
-        // Add menu items to the File menu
-        fileMenu.getItems().addAll(importDatasetMenuItem, exportDatasetMenuItem);
-
-        if (IS_MAC_AND_NOT_TESTFX_TEST) {
-            // Close Window Menu Item
-            MenuToolkit tk = MenuToolkit.toolkit();
-            MenuItem closeWindowMenuItem = tk.createCloseWindowMenuItem();
-            fileMenu.getItems().addAll(new SeparatorMenuItem(), closeWindowMenuItem);
-        }
-
-        return fileMenu;
-    }
-
-    private Menu createEditMenu() {
-        Menu editMenu = new Menu("Edit");
-        editMenu.getItems().addAll(
-                createMenuItem("Undo"),
-                createMenuItem("Redo"),
-                new SeparatorMenuItem(),
-                createMenuItem("Cut"),
-                createMenuItem("Copy"),
-                createMenuItem("Paste"),
-                createMenuItem("Select All"));
-        return editMenu;
-    }
-
-    private Menu createViewMenu() {
-        Menu viewMenu = new Menu("View");
-        MenuItem classicKometMenuItem = new MenuItem("Classic Komet");
-        classicKometMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.K, KeyCombination.SHORTCUT_DOWN));
-        classicKometMenuItem.setOnAction(actionEvent -> {
-            try {
-                appClassicKomet.launchClassicKomet();
-            } catch (IOException | BackingStoreException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        viewMenu.getItems().add(classicKometMenuItem);
-        return viewMenu;
-    }
-
-    private Menu createWindowMenuOnMacOS() {
-        MenuToolkit menuToolkit = MenuToolkit.toolkit();
-        Menu windowMenu = new Menu("Window");
-        windowMenu.getItems().addAll(
-                menuToolkit.createMinimizeMenuItem(),
-                menuToolkit.createZoomMenuItem(),
-                menuToolkit.createCycleWindowsItem(),
-                new SeparatorMenuItem(),
-                menuToolkit.createBringAllToFrontItem());
-        return windowMenu;
-    }
-
-
-
-    private Menu createHelpMenu() {
-        Menu helpMenu = new Menu("Help");
-        helpMenu.getItems().add(new MenuItem("Getting started"));
-        return helpMenu;
-    }
-
     private void launchLoginPage(Stage stage) {
         JFXNode<BorderPane, Void> loginNode = FXMLMvvmLoader.make(
                 LoginPageController.class.getResource("login-page.fxml"));
@@ -621,7 +489,7 @@ public class WebApp extends Application implements AppInterface  {
         rootPane.getChildren().setAll(loginPane);
         stage.setTitle("KOMET Login");
 
-        setupMenus();
+        appMenu.setupMenus();
     }
 
     private void launchSelectDataSourcePage(Stage stage) {
@@ -637,7 +505,7 @@ public class WebApp extends Application implements AppInterface  {
             rootPane.getChildren().setAll(sourceRoot);
             stage.setTitle("KOMET Startup");
 
-            setupMenus();
+            appMenu.setupMenus();
         } catch (IOException ex) {
             LOG.error("Failed to initialize the select data source window", ex);
         }
@@ -688,7 +556,7 @@ public class WebApp extends Application implements AppInterface  {
 
             rootPane.getChildren().add(landingPageBorderPane);
 
-            setupMenus();
+            getAppMenu().setupMenus();
         } catch (IOException e) {
             LOG.error("Failed to initialize the landing page window", e);
         }
@@ -840,43 +708,6 @@ public class WebApp extends Application implements AppInterface  {
         } catch (BackingStoreException e) {
             LOG.error("error writing journal window flag to preferences", e);
         }
-    }
-
-    private MenuItem createMenuItem(String title) {
-        MenuItem menuItem = new MenuItem(title);
-        menuItem.setOnAction(this::handleEvent);
-        return menuItem;
-    }
-
-    private Menu createDockMenu() {
-        Menu dockMenu = createSampleMenu();
-        MenuItem open = new MenuItem("New Window");
-        open.setGraphic(Icon.OPEN.makeIcon());
-        open.setOnAction(e -> createNewStage());
-        dockMenu.getItems().addAll(new SeparatorMenuItem(), open);
-        return dockMenu;
-    }
-
-    private Menu createSampleMenu() {
-        Menu trayMenu = new Menu();
-        trayMenu.setGraphic(Icon.TEMPORARY_FIX.makeIcon());
-        MenuItem reload = new MenuItem("Reload");
-        reload.setGraphic(Icon.SYNCHRONIZE_WITH_STREAM.makeIcon());
-        reload.setOnAction(this::handleEvent);
-        MenuItem print = new MenuItem("Print");
-        print.setOnAction(this::handleEvent);
-
-        Menu share = new Menu("Share");
-        MenuItem mail = new MenuItem("Mail");
-        mail.setOnAction(this::handleEvent);
-        share.getItems().add(mail);
-
-        trayMenu.getItems().addAll(reload, print, new SeparatorMenuItem(), share);
-        return trayMenu;
-    }
-
-    private void handleEvent(ActionEvent actionEvent) {
-        LOG.debug("clicked " + actionEvent.getSource());  // NOSONAR
     }
 
     private void appStateChangeListener(ObservableValue<? extends AppState> observable, AppState oldValue, AppState newValue) {

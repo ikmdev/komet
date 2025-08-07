@@ -147,7 +147,6 @@ public class App extends Application implements AppInterface {
     private Stage primaryStage;
 
     private static Stage classicKometStage;
-    private static long windowCount = 1;
 
     // variables specific to resource overlay
     private Stage overlayStage;
@@ -191,6 +190,11 @@ public class App extends Application implements AppInterface {
     }
 
     @Override
+    public SimpleObjectProperty<AppState> getState() {
+        return state;
+    }
+
+    @Override
     public LandingPageController getLandingPageController() {
         return landingPageController;
     }
@@ -221,83 +225,6 @@ public class App extends Application implements AppInterface {
             LOG.info("Finished shutdown hook");
         }));
         launch();
-    }
-
-    private static void createNewStage() {
-        Stage stage = new Stage();
-        stage.setScene(new Scene(new StackPane()));
-        stage.setTitle("New stage" + " " + (windowCount++));
-        stage.show();
-    }
-
-    private static ImmutableList<DetachableTab> makeDefaultLeftTabs(ObservableViewNoOverride windowView) {
-
-        GraphNavigatorNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
-        KometNode navigatorNode1 = navigatorNodeFactory.create(windowView,
-                ActivityStreams.NAVIGATION, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab navigatorNode1Tab = new DetachableTab(navigatorNode1);
-
-
-        PatternNavigatorFactory patternNavigatorNodeFactory = new PatternNavigatorFactory();
-
-        KometNode patternNavigatorNode2 = patternNavigatorNodeFactory.create(windowView,
-                ActivityStreams.NAVIGATION, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-
-        DetachableTab patternNavigatorNode1Tab = new DetachableTab(patternNavigatorNode2);
-
-        return Lists.immutable.of(navigatorNode1Tab, patternNavigatorNode1Tab);
-    }
-
-    private static ImmutableList<DetachableTab> makeDefaultCenterTabs(ObservableViewNoOverride windowView) {
-
-        DetailsNodeFactory detailsNodeFactory = new DetailsNodeFactory();
-        KometNode detailsNode1 = detailsNodeFactory.create(windowView,
-                ActivityStreams.NAVIGATION, ActivityStreamOption.SUBSCRIBE.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-
-        DetachableTab detailsNode1Tab = new DetachableTab(detailsNode1);
-        // TODO: setting up tab graphic, title, and tooltip needs to be standardized by the factory...
-        detailsNode1Tab.textProperty().bind(detailsNode1.getTitle());
-        detailsNode1Tab.tooltipProperty().setValue(detailsNode1.makeToolTip());
-
-        KometNode detailsNode2 = detailsNodeFactory.create(windowView,
-                ActivityStreams.SEARCH, ActivityStreamOption.SUBSCRIBE.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab detailsNode2Tab = new DetachableTab(detailsNode2);
-
-        KometNode detailsNode3 = detailsNodeFactory.create(windowView,
-                ActivityStreams.UNLINKED, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab detailsNode3Tab = new DetachableTab(detailsNode3);
-
-        ListNodeFactory listNodeFactory = new ListNodeFactory();
-        KometNode listNode = listNodeFactory.create(windowView,
-                ActivityStreams.LIST, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab listNodeNodeTab = new DetachableTab(listNode);
-
-        TableNodeFactory tableNodeFactory = new TableNodeFactory();
-        KometNode tableNode = tableNodeFactory.create(windowView,
-                ActivityStreams.UNLINKED, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab tableNodeTab = new DetachableTab(tableNode);
-
-        return Lists.immutable.of(detailsNode1Tab, detailsNode2Tab, detailsNode3Tab, listNodeNodeTab, tableNodeTab);
-    }
-
-    private static ImmutableList<DetachableTab> makeDefaultRightTabs(ObservableViewNoOverride windowView) {
-
-        SearchNodeFactory searchNodeFactory = new SearchNodeFactory();
-        KometNode searchNode = searchNodeFactory.create(windowView,
-                ActivityStreams.SEARCH, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab newSearchTab = new DetachableTab(searchNode);
-
-        ProgressNodeFactory progressNodeFactory = new ProgressNodeFactory();
-        KometNode kometNode = progressNodeFactory.create(windowView,
-                null, null, AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab progressTab = new DetachableTab(kometNode);
-
-        CompletionNodeFactory completionNodeFactory = new CompletionNodeFactory();
-        KometNode completionNode = completionNodeFactory.create(windowView,
-                null, null, AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab completionTab = new DetachableTab(completionNode);
-
-        return Lists.immutable.of(newSearchTab, progressTab, completionTab);
     }
 
     public void init() {
@@ -649,43 +576,6 @@ public class App extends Application implements AppInterface {
 
         // close all journal windows
         Lists.immutable.ofAll(this.journalControllersList).forEach(JournalController::close);
-    }
-
-    private MenuItem createMenuItem(String title) {
-        MenuItem menuItem = new MenuItem(title);
-        menuItem.setOnAction(this::handleEvent);
-        return menuItem;
-    }
-
-    private Menu createDockMenu() {
-        Menu dockMenu = createSampleMenu();
-        MenuItem open = new MenuItem("New Window");
-        open.setGraphic(Icon.OPEN.makeIcon());
-        open.setOnAction(e -> createNewStage());
-        dockMenu.getItems().addAll(new SeparatorMenuItem(), open);
-        return dockMenu;
-    }
-
-    private Menu createSampleMenu() {
-        Menu trayMenu = new Menu();
-        trayMenu.setGraphic(Icon.TEMPORARY_FIX.makeIcon());
-        MenuItem reload = new MenuItem("Reload");
-        reload.setGraphic(Icon.SYNCHRONIZE_WITH_STREAM.makeIcon());
-        reload.setOnAction(this::handleEvent);
-        MenuItem print = new MenuItem("Print");
-        print.setOnAction(this::handleEvent);
-
-        Menu share = new Menu("Share");
-        MenuItem mail = new MenuItem("Mail");
-        mail.setOnAction(this::handleEvent);
-        share.getItems().add(mail);
-
-        trayMenu.getItems().addAll(reload, print, new SeparatorMenuItem(), share);
-        return trayMenu;
-    }
-
-    private void handleEvent(ActionEvent actionEvent) {
-        LOG.debug("clicked " + actionEvent.getSource());  // NOSONAR
     }
 
     private void appStateChangeListener(ObservableValue<? extends AppState> observable, AppState oldValue, AppState newValue) {

@@ -70,8 +70,6 @@ public class AppClassicKomet {
 
     private final AppInterface app;
 
-    KometPreferencesStage kometPreferencesStage;
-
     /**
      * An entry point to launch the newer UI panels.
      */
@@ -154,7 +152,7 @@ public class AppClassicKomet {
             app.getWebAPI().openStageAsTab(classicKometStage);
         }
 
-        kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties());
+        app.getAppMenu().kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties());
 
         windowPreferences.sync();
         appPreferences.sync();

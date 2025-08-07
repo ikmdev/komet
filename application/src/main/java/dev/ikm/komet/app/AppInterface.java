@@ -3,6 +3,7 @@ package dev.ikm.komet.app;
 import com.jpro.webapi.WebAPI;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import one.jpro.platform.auth.core.authentication.User;
@@ -28,6 +29,9 @@ public interface AppInterface {
     Image getAppIcon();
 
     WebAPI getWebAPI();
+
+
+    SimpleObjectProperty<AppState> getState();
 
     /**
      * Returns the controller for the landing page.
