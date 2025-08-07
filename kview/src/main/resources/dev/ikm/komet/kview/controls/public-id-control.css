@@ -20,7 +20,7 @@
 }
 
 .public-id > .title-label {
-    -fx-font-family: "Noto Sans Bold";
+    -fx-font-family: "System Bold";
     -fx-font-size: inherit;
 }
 

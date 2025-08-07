@@ -3,17 +3,42 @@
 <?import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl?>
 <?import dev.ikm.komet.kview.controls.PublicIDControl?>
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
-<?import javafx.scene.text.*?>
-<?import java.lang.*?>
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController">
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Ellipse?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
          <top>
@@ -245,16 +270,16 @@
                               <ColumnConstraints />
                            </columnConstraints>
                            <rowConstraints>
-                              <RowConstraints minHeight="48.0" prefHeight="56.0" />
-                              <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="24.0" vgrow="SOMETIMES" />
-                              <RowConstraints maxHeight="65.0" minHeight="-Infinity" prefHeight="22.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="9.0" prefHeight="22.0" vgrow="NEVER" />
+                              <RowConstraints maxHeight="117.33333587646484" minHeight="10.0" prefHeight="88.00002034505208" vgrow="ALWAYS" />
+                              <RowConstraints maxHeight="50.66665140787761" minHeight="-Infinity" prefHeight="33.99997965494792" vgrow="SOMETIMES" />
+                              <RowConstraints maxHeight="32.66667683919272" minHeight="-Infinity" prefHeight="20.00001271565756" vgrow="SOMETIMES" />
+                              <RowConstraints maxHeight="25.33331298828125" minHeight="-Infinity" prefHeight="20.666656494140625" vgrow="SOMETIMES" />
                            </rowConstraints>
                            <children>
-                              <ImageView fx:id="identiconImageView" fitWidth="44.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                              <ImageView fx:id="identiconImageView" fitWidth="44.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.valignment="TOP">
                                  <Image url="@../images/identicon-placeholder.png" />
                               </ImageView>
-                              <Label fx:id="semanticTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="40.0" prefWidth="495.0" text="SEMANTIC TITLE" textFill="#212430" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                              <Label fx:id="semanticTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="87.0" prefWidth="429.0" text="SEMANTIC TITLE" textFill="#212430" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0">
                                  <font>
                                     <Font name="Open Sans Regular" size="17.0" />
                                  </font>
@@ -263,7 +288,7 @@
                                  </tooltip>
                               </Label>
                               <Label fx:id="semanticDescriptionLabel" text="Semantic for Test Performed Pattern" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" />
-                              <TextFlow GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.rowSpan="1">
+                              <TextFlow prefHeight="22.0" prefWidth="437.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.rowSpan="1" GridPane.valignment="TOP">
                                  <children>
                                     <Text fx:id="semanticMeaningLabelText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-label" text="Meaning:  " />
                                     <Text fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />
@@ -272,7 +297,7 @@
                                     <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />
                                  </children>
                               </TextFlow>
-                              <PublicIDControl fx:id="identifierControl" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.rowSpan="1"/>
+                              <PublicIDControl fx:id="identifierControl" prefHeight="8.0" prefWidth="437.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.rowSpan="1" />
                            </children>
                            <padding>
                               <Insets bottom="8.0" left="12.0" right="8.0" top="8.0" />
@@ -289,7 +314,7 @@
                                  <children>
                                     <FlowPane>
                                        <children>
-                                          <Label text="Status:">
+                                          <Label styleClass="stamp-text" text="Status:">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
@@ -303,7 +328,7 @@
                                     </FlowPane>
                                     <FlowPane>
                                        <children>
-                                          <Label minWidth="-Infinity" text="Last Updated:">
+                                          <Label minWidth="-Infinity" styleClass="stamp-text" text="Last Updated:">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
@@ -317,7 +342,7 @@
                                     </FlowPane>
                                     <FlowPane>
                                        <children>
-                                          <Label text="Module:">
+                                          <Label styleClass="stamp-text" text="Module:">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
@@ -331,7 +356,7 @@
                                     </FlowPane>
                                     <FlowPane>
                                        <children>
-                                          <Label text="Path:">
+                                          <Label styleClass="stamp-text" text="Path:">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
@@ -341,7 +366,7 @@
                                     </FlowPane>
                                     <FlowPane prefHeight="43.0" prefWidth="202.0">
                                        <children>
-                                          <Label text="Origination:">
+                                          <Label styleClass="stamp-text" text="Origination:">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>

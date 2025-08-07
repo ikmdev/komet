@@ -575,7 +575,7 @@
                                  <children>
                                     <FlowPane>
                                        <children>
-                                          <Label text="Status:">
+                                          <Label styleClass="stamp-text" text="Status:">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
@@ -592,7 +592,7 @@
                                     </FlowPane>
                                     <FlowPane>
                                        <children>
-                                          <Label minWidth="-Infinity" text="Last Updated:">
+                                          <Label minWidth="-Infinity" styleClass="stamp-text" text="Last Updated:">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
@@ -609,7 +609,7 @@
                                     </FlowPane>
                                     <FlowPane>
                                        <children>
-                                          <Label text="Module:">
+                                          <Label styleClass="stamp-text" text="Module:">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
@@ -626,7 +626,7 @@
                                     </FlowPane>
                                     <FlowPane>
                                        <children>
-                                          <Label text="Path:">
+                                          <Label styleClass="stamp-text" text="Path:">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
@@ -639,7 +639,7 @@
                                     </FlowPane>
                                     <FlowPane prefHeight="43.0" prefWidth="202.0">
                                        <children>
-                                          <Label text="Origination:">
+                                          <Label styleClass="stamp-text" text="Origination:">
                                              <font>
                                                 <Font name="Open Sans Regular" size="12.0" />
                                              </font>
