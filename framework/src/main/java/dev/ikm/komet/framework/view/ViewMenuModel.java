@@ -104,8 +104,6 @@ public class ViewMenuModel {
             this.whichMenu = whichMenu;
         }
 
-        updateCoordinateMenu();
-
     }
 
     public void updateCoordinateMenu() {
