@@ -168,26 +168,46 @@ public class WebApp extends Application implements AppInterface  {
     public static final SimpleObjectProperty<User> userProperty = new SimpleObjectProperty<>();
 
     private static Stage primaryStage;
-    private static Stage classicKometStage;
     private static long windowCount = 1;
     private static KometPreferencesStage kometPreferencesStage;
 
     private static WebAPI webAPI;
-    private static final boolean IS_BROWSER = WebAPI.isBrowser();
-    private static final boolean IS_DESKTOP = !IS_BROWSER && PlatformUtils.isDesktop();
-    private static final boolean IS_MAC = !IS_BROWSER && PlatformUtils.isMac();
-    private static final boolean IS_MAC_AND_NOT_TESTFX_TEST = IS_MAC && !isTestFXTest();
+    static final boolean IS_BROWSER = WebAPI.isBrowser();
+    static final boolean IS_DESKTOP = !IS_BROWSER && PlatformUtils.isDesktop();
+    static final boolean IS_MAC = !IS_BROWSER && PlatformUtils.isMac();
+    static final boolean IS_MAC_AND_NOT_TESTFX_TEST = IS_MAC && !isTestFXTest();
     private final StackPane rootPane = createRootPane();
     private Image appIcon;
     private LandingPageController landingPageController;
     private EvtBus kViewEventBus;
 
     AppGithub appGithub;
+    AppClassicKomet appClassicKomet;
+    AppMenu appMenu;
 
+    @Override
+    public AppMenu getAppMenu() {
+        return appMenu;
+    }
+
+    @Override
+    public WebAPI getWebAPI() {
+        return webAPI;
+    }
+
+    @Override
+    public Image getAppIcon() {
+        return appIcon;
+    }
+    @Override
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
     @Override
     public LandingPageController getLandingPageController() {
         return landingPageController;
     }
+
     @Override
     public GitHubPreferencesDao getGitHubPreferencesDao() {
         return gitHubPreferencesDao;
@@ -261,73 +281,6 @@ public class WebApp extends Application implements AppInterface  {
         stage.show();
     }
 
-    private static ImmutableList<DetachableTab> makeDefaultLeftTabs(ObservableViewNoOverride windowView) {
-        GraphNavigatorNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
-        KometNode navigatorNode1 = navigatorNodeFactory.create(windowView,
-                ActivityStreams.NAVIGATION, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab navigatorNode1Tab = new DetachableTab(navigatorNode1);
-
-
-        PatternNavigatorFactory patternNavigatorNodeFactory = new PatternNavigatorFactory();
-
-        KometNode patternNavigatorNode2 = patternNavigatorNodeFactory.create(windowView,
-                ActivityStreams.NAVIGATION, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-
-        DetachableTab patternNavigatorNode1Tab = new DetachableTab(patternNavigatorNode2);
-
-        return Lists.immutable.of(navigatorNode1Tab, patternNavigatorNode1Tab);
-    }
-
-    private static ImmutableList<DetachableTab> makeDefaultCenterTabs(ObservableViewNoOverride windowView) {
-        DetailsNodeFactory detailsNodeFactory = new DetailsNodeFactory();
-        KometNode detailsNode1 = detailsNodeFactory.create(windowView,
-                ActivityStreams.NAVIGATION, ActivityStreamOption.SUBSCRIBE.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-
-        DetachableTab detailsNode1Tab = new DetachableTab(detailsNode1);
-        // TODO: setting up tab graphic, title, and tooltip needs to be standardized by the factory...
-        detailsNode1Tab.textProperty().bind(detailsNode1.getTitle());
-        detailsNode1Tab.tooltipProperty().setValue(detailsNode1.makeToolTip());
-
-        KometNode detailsNode2 = detailsNodeFactory.create(windowView,
-                ActivityStreams.SEARCH, ActivityStreamOption.SUBSCRIBE.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab detailsNode2Tab = new DetachableTab(detailsNode2);
-
-        KometNode detailsNode3 = detailsNodeFactory.create(windowView,
-                ActivityStreams.UNLINKED, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab detailsNode3Tab = new DetachableTab(detailsNode3);
-
-        ListNodeFactory listNodeFactory = new ListNodeFactory();
-        KometNode listNode = listNodeFactory.create(windowView,
-                ActivityStreams.LIST, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab listNodeNodeTab = new DetachableTab(listNode);
-
-        TableNodeFactory tableNodeFactory = new TableNodeFactory();
-        KometNode tableNode = tableNodeFactory.create(windowView,
-                ActivityStreams.UNLINKED, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab tableNodeTab = new DetachableTab(tableNode);
-
-        return Lists.immutable.of(detailsNode1Tab, detailsNode2Tab, detailsNode3Tab, listNodeNodeTab, tableNodeTab);
-    }
-
-    private static ImmutableList<DetachableTab> makeDefaultRightTabs(ObservableViewNoOverride windowView) {
-        SearchNodeFactory searchNodeFactory = new SearchNodeFactory();
-        KometNode searchNode = searchNodeFactory.create(windowView,
-                ActivityStreams.SEARCH, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab newSearchTab = new DetachableTab(searchNode);
-
-        ProgressNodeFactory progressNodeFactory = new ProgressNodeFactory();
-        KometNode kometNode = progressNodeFactory.create(windowView,
-                null, null, AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab progressTab = new DetachableTab(kometNode);
-
-        CompletionNodeFactory completionNodeFactory = new CompletionNodeFactory();
-        KometNode completionNode = completionNodeFactory.create(windowView,
-                null, null, AlertStreams.ROOT_ALERT_STREAM_KEY);
-        DetachableTab completionTab = new DetachableTab(completionNode);
-
-        return Lists.immutable.of(newSearchTab, progressTab, completionTab);
-    }
-
     @Override
     public void init() throws Exception {
         LOG.info("Starting Komet");
@@ -399,6 +352,8 @@ public class WebApp extends Application implements AppInterface  {
     @Override
     public void start(Stage stage) {
         appGithub = new AppGithub(this);
+        appClassicKomet = new AppClassicKomet(this);
+        appMenu = new AppMenu(this);
 
         try {
             WebApp.primaryStage = stage;
@@ -620,7 +575,7 @@ public class WebApp extends Application implements AppInterface  {
         classicKometMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.K, KeyCombination.SHORTCUT_DOWN));
         classicKometMenuItem.setOnAction(actionEvent -> {
             try {
-                launchClassicKomet();
+                appClassicKomet.launchClassicKomet();
             } catch (IOException | BackingStoreException e) {
                 throw new RuntimeException(e);
             }
@@ -705,7 +660,7 @@ public class WebApp extends Application implements AppInterface  {
         });
     }
 
-    private void launchLandingPage(Stage stage, User user) {
+    public void launchLandingPage(Stage stage, User user) {
         try {
             rootPane.getChildren().clear(); // Clear the root pane before adding new content
 
@@ -773,7 +728,7 @@ public class WebApp extends Application implements AppInterface  {
         journalStage.setScene(sourceScene);
 
         if (!IS_MAC) {
-            generateMsWindowsMenu(journalBorderPane, journalStage);
+            appMenu.generateMsWindowsMenu(journalBorderPane, journalStage);
         }
 
         // load journal specific window settings
@@ -949,93 +904,7 @@ public class WebApp extends Application implements AppInterface  {
         }
     }
 
-    private void launchClassicKomet() throws IOException, BackingStoreException {
-        if (IS_DESKTOP) {
-            // If already launched bring to the front
-            if (classicKometStage != null && classicKometStage.isShowing()) {
-                classicKometStage.show();
-                classicKometStage.toFront();
-                return;
-            }
-        }
-
-        classicKometStage = new Stage();
-        classicKometStage.getIcons().setAll(appIcon);
-
-        //Starting up preferences and getting configurations
-        Preferences.start();
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        boolean appInitialized = appPreferences.getBoolean(AppKeys.APP_INITIALIZED, false);
-        if (appInitialized) {
-            LOG.info("Restoring configuration preferences.");
-        } else {
-            LOG.info("Creating new configuration preferences.");
-        }
-
-        MainWindowRecord mainWindowRecord = MainWindowRecord.make();
-
-        BorderPane kometRoot = mainWindowRecord.root();
-        KometStageController controller = mainWindowRecord.controller();
-
-        //Loading/setting the Komet screen
-        Scene kometScene = new Scene(kometRoot, 1800, 1024);
-        addStylesheets(kometScene, KOMET_CSS);
-
-        // if NOT on macOS
-        if (!IS_MAC) {
-            generateMsWindowsMenu(kometRoot, classicKometStage);
-        }
-
-        classicKometStage.setScene(kometScene);
-
-        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-        boolean mainWindowInitialized = windowPreferences.getBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, false);
-        controller.setup(windowPreferences, classicKometStage);
-        classicKometStage.setTitle("Komet");
-
-        if (!mainWindowInitialized) {
-            controller.setLeftTabs(makeDefaultLeftTabs(controller.windowView()), 0);
-            controller.setCenterTabs(makeDefaultCenterTabs(controller.windowView()), 0);
-            controller.setRightTabs(makeDefaultRightTabs(controller.windowView()), 1);
-            windowPreferences.putBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, true);
-            appPreferences.putBoolean(AppKeys.APP_INITIALIZED, true);
-        } else {
-            // Restore nodes from preferences.
-            windowPreferences.get(LEFT_TAB_PREFERENCES).ifPresent(leftTabPreferencesName ->
-                    restoreTab(windowPreferences, leftTabPreferencesName, controller.windowView(),
-                            controller::leftBorderPaneSetCenter));
-            windowPreferences.get(CENTER_TAB_PREFERENCES).ifPresent(centerTabPreferencesName ->
-                    restoreTab(windowPreferences, centerTabPreferencesName, controller.windowView(),
-                            controller::centerBorderPaneSetCenter));
-            windowPreferences.get(RIGHT_TAB_PREFERENCES).ifPresent(rightTabPreferencesName ->
-                    restoreTab(windowPreferences, rightTabPreferencesName, controller.windowView(),
-                            controller::rightBorderPaneSetCenter));
-        }
-        //Setting X and Y coordinates for location of the Komet stage
-        classicKometStage.setX(controller.windowSettings().xLocationProperty().get());
-        classicKometStage.setY(controller.windowSettings().yLocationProperty().get());
-        classicKometStage.setHeight(controller.windowSettings().heightProperty().get());
-        classicKometStage.setWidth(controller.windowSettings().widthProperty().get());
-        classicKometStage.show();
-
-        if (IS_BROWSER) {
-            webAPI.openStageAsTab(classicKometStage);
-        }
-
-        WebApp.kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties());
-
-        windowPreferences.sync();
-        appPreferences.sync();
-
-        if (createJournalViewMenuItem != null) {
-            createJournalViewMenuItem.setDisable(false);
-            KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
-            createJournalViewMenuItem.setAccelerator(newJournalKeyCombo);
-            KometPreferences journalPreferences = appPreferences.node(JOURNALS);
-        }
-    }
-
-    private void openImport(Window owner) {
+    public void openImport(Stage owner) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
@@ -1054,7 +923,7 @@ public class WebApp extends Application implements AppInterface  {
         importStage.show();
     }
 
-    private void openExport(Window owner) {
+    public void openExport(Stage owner) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
@@ -1190,62 +1059,12 @@ public class WebApp extends Application implements AppInterface  {
         return future;
     }
 
-    private void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
-        MenuBar menuBar = new MenuBar();
-        Menu fileMenu = new Menu("File");
-
-        MenuItem about = new MenuItem("About");
-        about.setOnAction(_ -> showAboutDialog());
-        fileMenu.getItems().add(about);
-
-        // Importing data
-        MenuItem importMenuItem = new MenuItem("Import Dataset");
-        importMenuItem.setOnAction(actionEvent -> openImport(stage));
-        fileMenu.getItems().add(importMenuItem);
-
-        // Exporting data
-        MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
-        exportDatasetMenuItem.setOnAction(actionEvent -> openExport(stage));
-        fileMenu.getItems().add(exportDatasetMenuItem);
-
-        MenuItem menuItemQuit = new MenuItem("Quit");
-        KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
-        menuItemQuit.setOnAction(actionEvent -> quit());
-        menuItemQuit.setAccelerator(quitKeyCombo);
-        fileMenu.getItems().add(menuItemQuit);
-
-        Menu editMenu = new Menu("Edit");
-        MenuItem landingPage = new MenuItem("Landing Page");
-        KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN);
-        landingPage.setOnAction(actionEvent -> launchLandingPage(primaryStage, userProperty.get()));
-        landingPage.setAccelerator(landingPageKeyCombo);
-        landingPage.setDisable(IS_BROWSER);
-        editMenu.getItems().add(landingPage);
-
-        Menu windowMenu = new Menu("Window");
-        MenuItem minimizeWindow = new MenuItem("Minimize");
-        KeyCombination minimizeKeyCombo = new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN);
-        minimizeWindow.setOnAction(event -> {
-            Stage obj = (Stage) kometRoot.getScene().getWindow();
-            obj.setIconified(true);
-        });
-        minimizeWindow.setAccelerator(minimizeKeyCombo);
-        minimizeWindow.setDisable(IS_BROWSER);
-        windowMenu.getItems().add(minimizeWindow);
-
-        menuBar.getMenus().add(fileMenu);
-        menuBar.getMenus().add(editMenu);
-        menuBar.getMenus().add(windowMenu);
-        //hBox.getChildren().add(menuBar);
-        Platform.runLater(() -> kometRoot.setTop(menuBar));
-    }
-
-    private void showAboutDialog() {
+    public void showAboutDialog() {
         AboutDialog aboutDialog = new AboutDialog();
         aboutDialog.showAndWait();
     }
 
-    private void quit() {
+    public void quit() {
         saveJournalWindowsToPreferences();
         PrimitiveData.stop();
         Preferences.stop();
@@ -1351,7 +1170,7 @@ public class WebApp extends Application implements AppInterface  {
         KeyCombination classicKometKeyCombo = new KeyCodeCombination(KeyCode.K, KeyCombination.CONTROL_DOWN);
         classicKometMenuItem.setOnAction(actionEvent -> {
             try {
-                launchClassicKomet();
+                appClassicKomet.launchClassicKomet();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (BackingStoreException e) {

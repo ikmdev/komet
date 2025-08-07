@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.app;
 
+import com.jpro.webapi.WebAPI;
 import com.sun.management.OperatingSystemMXBean;
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
@@ -79,6 +80,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -92,6 +94,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import one.jpro.platform.auth.core.authentication.User;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -141,11 +144,10 @@ public class App extends Application implements AppInterface {
 
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
-    private static Stage primaryStage;
+    private Stage primaryStage;
 
     private static Stage classicKometStage;
     private static long windowCount = 1;
-    private static KometPreferencesStage kometPreferencesStage;
 
     // variables specific to resource overlay
     private Stage overlayStage;
@@ -155,6 +157,28 @@ public class App extends Application implements AppInterface {
     private static Stage landingPageWindow;
 
     AppGithub appGithub;
+    AppClassicKomet appClassicKomet;
+    AppMenu appMenu;
+
+    @Override
+    public AppMenu getAppMenu() {
+        return appMenu;
+    }
+
+    @Override
+    public WebAPI getWebAPI() {
+        return null;
+    }
+
+    @Override
+    public Image getAppIcon() {
+        return null;
+    }
+
+    @Override
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
 
     @Override
     public LandingPageController getLandingPageController() {
@@ -165,11 +189,6 @@ public class App extends Application implements AppInterface {
     public GitHubPreferencesDao getGitHubPreferencesDao() {
         return gitHubPreferencesDao;
     }
-
-    /**
-     * An entry point to launch the newer UI panels.
-     */
-    private MenuItem createJournalViewMenuItem;
 
     /**
      * This is a list of new windows that have been launched. During shutdown, the application close each stage gracefully.
@@ -290,7 +309,7 @@ public class App extends Application implements AppInterface {
                     .findFirst()
                     .ifPresentOrElse(
                             JournalController::windowToFront, /* Window already launched now make window to the front (so user sees window) */
-                            () -> launchJournalViewWindow(journalWindowSettingsObjectMap) /* launch new Journal view window */
+                            () -> launchJournalViewPage(journalWindowSettingsObjectMap) /* launch new Journal view window */
                     );
         };
         // subscribe to the topic
@@ -301,9 +320,11 @@ public class App extends Application implements AppInterface {
     public void start(Stage stage) {
 
         appGithub = new AppGithub(this);
+        appClassicKomet = new AppClassicKomet(this);
+        appMenu = new AppMenu(this);
 
         try {
-            App.primaryStage = stage;
+            primaryStage = stage;
             Thread.currentThread().setUncaughtExceptionHandler((t, e) -> AlertStreams.getRoot().dispatch(AlertObject.makeError(e)));
             // Get the toolkit
             MenuToolkit tk = MenuToolkit.toolkit();
@@ -311,7 +332,7 @@ public class App extends Application implements AppInterface {
 
             MenuItem prefsItem = new MenuItem("Komet preferences...");
             prefsItem.setAccelerator(new KeyCodeCombination(KeyCode.COMMA, KeyCombination.META_DOWN));
-            prefsItem.setOnAction(event -> App.kometPreferencesStage.showPreferences());
+            prefsItem.setOnAction(event -> appClassicKomet.kometPreferencesStage.showPreferences());
 
             kometAppMenu.getItems().add(2, prefsItem);
             kometAppMenu.getItems().add(3, new SeparatorMenuItem());
@@ -327,11 +348,11 @@ public class App extends Application implements AppInterface {
             Menu fileMenu = new Menu("File");
 
             MenuItem importDatasetMenuItem = new MenuItem("Import Dataset");
-            importDatasetMenuItem.setOnAction(actionEvent -> openImport());
+            importDatasetMenuItem.setOnAction(actionEvent -> openImport(primaryStage));
 
             // Exporting data
             MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
-            exportDatasetMenuItem.setOnAction(actionEvent -> openExport());
+            exportDatasetMenuItem.setOnAction(actionEvent -> openExport(primaryStage));
             fileMenu.getItems().add(exportDatasetMenuItem);
 
             fileMenu.getItems().addAll(importDatasetMenuItem, exportDatasetMenuItem, new SeparatorMenuItem(), tk.createCloseWindowMenuItem());
@@ -413,9 +434,9 @@ public class App extends Application implements AppInterface {
         }
     }
 
-    private void launchLandingPage() {
+    public void launchLandingPage(Stage stage, User user) {
         if (landingPageWindow != null) {
-            App.primaryStage = landingPageWindow;
+            primaryStage = landingPageWindow;
             landingPageWindow.show();
             landingPageWindow.toFront();
             landingPageWindow.setMaximized(true);
@@ -470,7 +491,7 @@ public class App extends Application implements AppInterface {
      *
      * @param journalWindowSettings if present will give the size and positioning of the journal window
      */
-    private void launchJournalViewWindow(PrefX journalWindowSettings) {
+    private void launchJournalViewPage(PrefX journalWindowSettings) {
         Objects.requireNonNull(journalWindowSettings, "journalWindowSettings cannot be null");
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
@@ -495,7 +516,7 @@ public class App extends Application implements AppInterface {
         journalStageWindow.setScene(sourceScene);
         // if NOT on Mac OS
         if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-            generateMsWindowsMenu(journalBorderPane);
+            appMenu.generateMsWindowsMenu(journalBorderPane, journalStageWindow);
         }
 
         // load journal specific window settings
@@ -665,7 +686,7 @@ public class App extends Application implements AppInterface {
 
                 case RUNNING -> {
                     primaryStage.hide();
-                    launchLandingPage();
+                    launchLandingPage(primaryStage, null);
                 }
                 case SHUTDOWN -> {
                     quit();
@@ -674,85 +695,6 @@ public class App extends Application implements AppInterface {
         } catch (Throwable e) {
             e.printStackTrace();
             Platform.exit();
-        }
-    }
-
-    private void launchClassicKomet() throws IOException, BackingStoreException {
-        // If already launched bring to the front
-        if (classicKometStage != null && classicKometStage.isShowing()) {
-            classicKometStage.show();
-            classicKometStage.toFront();
-            return;
-        }
-        classicKometStage = new Stage();
-        //Starting up preferences and getting configurations
-        Preferences.start();
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        boolean appInitialized = appPreferences.getBoolean(AppKeys.APP_INITIALIZED, false);
-        if (appInitialized) {
-            LOG.info("Restoring configuration preferences. ");
-        } else {
-            LOG.info("Creating new configuration preferences. ");
-        }
-
-        MainWindowRecord mainWindowRecord = MainWindowRecord.make();
-
-        BorderPane kometRoot = mainWindowRecord.root();
-        KometStageController controller = mainWindowRecord.controller();
-
-        //Loading/setting the Komet screen
-        Scene kometScene = new Scene(kometRoot, 1800, 1024);
-        addStylesheets(kometScene, KOMET_CSS);
-
-        // if NOT on Mac OS
-        if (System.getProperty("os.name") != null && !System.getProperty("os.name").toLowerCase().startsWith(OS_NAME_MAC)) {
-            generateMsWindowsMenu(controller.getTopBarVBox());
-        }
-
-        classicKometStage.setScene(kometScene);
-
-        KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-        boolean mainWindowInitialized = windowPreferences.getBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, false);
-        controller.setup(windowPreferences, classicKometStage);
-        classicKometStage.setTitle("Komet");
-
-        if (!mainWindowInitialized) {
-            controller.setLeftTabs(makeDefaultLeftTabs(controller.windowView()), 0);
-            controller.setCenterTabs(makeDefaultCenterTabs(controller.windowView()), 0);
-            controller.setRightTabs(makeDefaultRightTabs(controller.windowView()), 1);
-            windowPreferences.putBoolean(KometStageController.WindowKeys.WINDOW_INITIALIZED, true);
-            appPreferences.putBoolean(AppKeys.APP_INITIALIZED, true);
-        } else {
-            // Restore nodes from preferences.
-            windowPreferences.get(LEFT_TAB_PREFERENCES).ifPresent(leftTabPreferencesName -> {
-                restoreTab(windowPreferences, leftTabPreferencesName, controller.windowView(),
-                        controller::leftBorderPaneSetCenter);
-            });
-            windowPreferences.get(CENTER_TAB_PREFERENCES).ifPresent(centerTabPreferencesName -> {
-                restoreTab(windowPreferences, centerTabPreferencesName, controller.windowView(),
-                        controller::centerBorderPaneSetCenter);
-            });
-            windowPreferences.get(RIGHT_TAB_PREFERENCES).ifPresent(rightTabPreferencesName -> {
-                restoreTab(windowPreferences, rightTabPreferencesName, controller.windowView(),
-                        controller::rightBorderPaneSetCenter);
-            });
-        }
-        //Setting X and Y coordinates for location of the Komet stage
-        classicKometStage.setX(controller.windowSettings().xLocationProperty().get());
-        classicKometStage.setY(controller.windowSettings().yLocationProperty().get());
-        classicKometStage.setHeight(controller.windowSettings().heightProperty().get());
-        classicKometStage.setWidth(controller.windowSettings().widthProperty().get());
-        classicKometStage.show();
-
-        App.kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties());
-
-        windowPreferences.sync();
-        appPreferences.sync();
-        if (createJournalViewMenuItem != null) {
-            createJournalViewMenuItem.setDisable(false);
-            KeyCombination newJournalKeyCombo = new KeyCodeCombination(KeyCode.J, KeyCombination.SHORTCUT_DOWN);
-            createJournalViewMenuItem.setAccelerator(newJournalKeyCombo);
-            KometPreferences journalPreferences = appPreferences.node(JOURNALS);
         }
     }
 
@@ -776,11 +718,11 @@ public class App extends Application implements AppInterface {
         importStage.show();
     }
 
-    private void openImport() {
+    public void openImport(Stage stage) {
         openImport(PROGRESS_TOPIC);
     }
 
-    private void openExport() {
+    public void openExport(Stage stage) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
@@ -915,61 +857,7 @@ public class App extends Application implements AppInterface {
         return future;
     }
 
-    private void generateMsWindowsMenu(Node node) {
-        MenuBar menuBar = new MenuBar();
-        Menu fileMenu = new Menu("File");
-
-        MenuItem about = new MenuItem("About");
-        about.setOnAction(actionEvent -> showAboutDialog());
-        fileMenu.getItems().add(about);
-
-        MenuItem importMenuItem = new MenuItem("Import Dataset");
-        importMenuItem.setOnAction(actionEvent -> openImport());
-        fileMenu.getItems().add(importMenuItem);
-
-        // Exporting data
-        MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset");
-        exportDatasetMenuItem.setOnAction(actionEvent -> openExport());
-        fileMenu.getItems().add(exportDatasetMenuItem);
-
-        MenuItem menuItemQuit = new MenuItem("Quit");
-        KeyCombination quitKeyCombo = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
-        menuItemQuit.setOnAction(actionEvent -> quit());
-        menuItemQuit.setAccelerator(quitKeyCombo);
-        fileMenu.getItems().add(menuItemQuit);
-
-        Menu editMenu = new Menu("Edit");
-        MenuItem landingPage = new MenuItem("Landing Page");
-        KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN);
-        landingPage.setOnAction(actionEvent -> launchLandingPage());
-        landingPage.setAccelerator(landingPageKeyCombo);
-        editMenu.getItems().add(landingPage);
-
-        Menu windowMenu = new Menu("Window");
-        MenuItem minimizeWindow = new MenuItem("Minimize");
-        KeyCombination minimizeKeyCombo = new KeyCodeCombination(KeyCode.M, KeyCombination.CONTROL_DOWN);
-        minimizeWindow.setOnAction(event -> {
-            Stage obj = (Stage) node.getScene().getWindow();
-            obj.setIconified(true);
-        });
-        minimizeWindow.setAccelerator(minimizeKeyCombo);
-        windowMenu.getItems().add(minimizeWindow);
-
-        menuBar.getMenus().add(fileMenu);
-        menuBar.getMenus().add(editMenu);
-        menuBar.getMenus().add(windowMenu);
-
-        // when we add to the journal view we are adding the menu to the top of a border pane
-        if (node instanceof BorderPane kometRoot) {
-            kometRoot.setTop(menuBar);
-        } else if (node instanceof VBox topBarVBox) {
-            // when we add to the classic Komet view, we are adding to the topGridPane, which
-            // is not the outer BorderPane of the window but a VBox across the top of the window
-            topBarVBox.getChildren().add(0, menuBar);
-        }
-    }
-
-    private void showAboutDialog() {
+    public void showAboutDialog() {
         AboutDialog aboutDialog = new AboutDialog();
         aboutDialog.showAndWait();
     }
@@ -987,28 +875,11 @@ public class App extends Application implements AppInterface {
         return exchangeMenu;
     }
 
-    private void quit() {
+    public void quit() {
         saveJournalWindowsToPreferences();
         PrimitiveData.stop();
         Preferences.stop();
         Platform.exit();
-    }
-
-    private void restoreTab(KometPreferences windowPreferences, String tabPreferenceNodeName, ObservableViewNoOverride windowView, Consumer<Node> nodeConsumer) {
-        LOG.info("Restoring from: " + tabPreferenceNodeName);
-        KometPreferences itemPreferences = windowPreferences.node(KOMET_NODES + tabPreferenceNodeName);
-        itemPreferences.get(WindowComponent.WindowComponentKeys.FACTORY_CLASS).ifPresent(factoryClassName -> {
-            try {
-                Class<?> objectClass = Class.forName(factoryClassName);
-                Class<? extends Annotation> annotationClass = Reconstructor.class;
-                Object[] parameters = new Object[]{windowView, itemPreferences};
-                WindowComponent windowComponent = (WindowComponent) Encodable.decode(objectClass, annotationClass, parameters);
-                nodeConsumer.accept(windowComponent.getNode());
-
-            } catch (Exception e) {
-                AlertStreams.getRoot().dispatch(AlertObject.makeError(e));
-            }
-        });
     }
 
     /**
@@ -1065,7 +936,7 @@ public class App extends Application implements AppInterface {
         KeyCombination classicKometKeyCombo = new KeyCodeCombination(KeyCode.K, KeyCombination.CONTROL_DOWN);
         classicKometMenuItem.setOnAction(actionEvent -> {
             try {
-                launchClassicKomet();
+                appClassicKomet.launchClassicKomet();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (BackingStoreException e) {
