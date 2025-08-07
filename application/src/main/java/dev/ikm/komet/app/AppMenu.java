@@ -10,30 +10,35 @@ import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.prefs.BackingStoreException;
+import com.sun.management.OperatingSystemMXBean;
 
 import static dev.ikm.komet.app.AppState.RUNNING;
 import static dev.ikm.komet.app.App.IS_BROWSER;
@@ -51,6 +56,8 @@ public class AppMenu {
     KometPreferencesStage kometPreferencesStage;
 
     private static long windowCount = 1;
+    private Stage overlayStage;
+    private Timeline resourceUsageTimeline;
 
     public AppMenu(AppInterface app) {
         this.app = app;
@@ -141,7 +148,8 @@ public class AppMenu {
 
         Menu viewMenu = new Menu("View");
         MenuItem classicKometMenuItem = createClassicKometMenuItem();
-        viewMenu.getItems().add(classicKometMenuItem);
+        MenuItem resourceUsageMenuItem = createResourceUsageItem();
+        viewMenu.getItems().addAll(classicKometMenuItem, resourceUsageMenuItem);
 
         Menu windowMenu = new Menu("Window");
         MenuItem minimizeWindow = new MenuItem("Minimize");
@@ -387,6 +395,87 @@ public class AppMenu {
         Scene exportScene = new Scene(exportPane, Color.TRANSPARENT);
         exportStage.setScene(exportScene);
         exportStage.show();
+    }
+
+
+    /**
+     * Create a Resource Usage overlay to display metrics
+     *
+     * @return The menu item for launching the resource usage overlay.
+     */
+    private MenuItem createResourceUsageItem() {
+        MenuItem resourceUsageItem = new MenuItem("Resource Usage");
+        KeyCombination classicKometKeyCombo = new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN);
+        resourceUsageItem.setOnAction(actionEvent -> {
+            if (overlayStage != null && overlayStage.isShowing()) {
+                overlayStage.hide();
+            } else {
+                showResourceUsageOverlay();
+            }
+        });
+        resourceUsageItem.setAccelerator(classicKometKeyCombo);
+        return resourceUsageItem;
+    }
+
+    /**
+     * Show the resource usage overlay.
+     */
+    private void showResourceUsageOverlay() {
+        overlayStage = new Stage();
+        overlayStage.initOwner(getFocusedWindow());
+        overlayStage.initModality(Modality.APPLICATION_MODAL);
+        overlayStage.initStyle(StageStyle.TRANSPARENT);
+
+        VBox overlayContent = new VBox();
+        overlayContent.setAlignment(Pos.CENTER);
+        overlayContent.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-padding: 20;");
+
+        Label cpuUsageLabel = new Label();
+        Label memoryUsageLabel = new Label();
+        cpuUsageLabel.setTextFill(Color.WHITE);
+        memoryUsageLabel.setTextFill(Color.WHITE);
+        overlayContent.getChildren().addAll(cpuUsageLabel, memoryUsageLabel);
+
+        Scene overlayScene = new Scene(overlayContent, 300, 200, Color.TRANSPARENT);
+        overlayStage.setScene(overlayScene);
+
+        // Set custom close request handler
+        overlayStage.setOnCloseRequest(event -> {
+            if (resourceUsageTimeline != null) {
+                resourceUsageTimeline.stop(); // Stop the timeline
+            }
+            overlayStage.hide(); // Hide the stage
+        });
+        overlayStage.show();
+
+        // Create and start the timeline to update resource usage
+        resourceUsageTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            updateResourceUsage(cpuUsageLabel, memoryUsageLabel);
+        }));
+        resourceUsageTimeline.setCycleCount(Timeline.INDEFINITE);
+        resourceUsageTimeline.play();
+    }
+
+    /**
+     * Update the resource usage labels with CPU and memory usage.
+     *
+     * @param cpuUsageLabel the label to be used for the CPU usage
+     * @param memoryUsageLabel the label to be used for the memory usage
+     */
+    private void updateResourceUsage(final Label cpuUsageLabel, final Label memoryUsageLabel) {
+        java.lang.management.OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+        double cpuLoad = -1;
+        if (osBean instanceof OperatingSystemMXBean sunOsBean) {
+            cpuLoad = sunOsBean.getCpuLoad() * 100;
+
+            long totalMemory = Runtime.getRuntime().totalMemory();
+            long freeMemory = Runtime.getRuntime().freeMemory();
+            long usedMemory = totalMemory - freeMemory;
+
+            cpuUsageLabel.setText("CPU Usage: %.2f%%".formatted(cpuLoad));
+            memoryUsageLabel.setText("Memory Usage: %d MB / %d MB".formatted(
+                    usedMemory / (1024 * 1024), totalMemory / (1024 * 1024)));
+        }
     }
 
 }
