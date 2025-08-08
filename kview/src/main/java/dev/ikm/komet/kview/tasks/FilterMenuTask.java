@@ -50,7 +50,11 @@ public class FilterMenuTask extends TrackingCallable {
                 filterOptions.getStatus().defaultOptions().addAll(currentStatesStr);
 
             }
+<<<<<<< Updated upstream
             //TODO Type, Module, Path, Language, Description Type, Kind of, Membership, Sort By, Date
+=======
+            //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
+>>>>>>> Stashed changes
         }
         return filterOptions;
     }
