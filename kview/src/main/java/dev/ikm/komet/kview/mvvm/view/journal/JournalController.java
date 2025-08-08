@@ -144,7 +144,7 @@ import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalP
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
@@ -319,8 +319,10 @@ public class JournalController {
         // Initialize journal topic (UUID) value
         journalTopic = journalViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
 
-        // Initialize the journal window view
-        windowView = journalViewModel.getPropertyValue(WINDOW_VIEW);
+        WindowSettings windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
+
+        // Initialize the journal window view, which is provided in the WindowSettings
+        windowView = windowSettings.getView();
 
         // Initialize the journal windows list
         journalWindows = FXCollections.unmodifiableObservableList(workspace.getWindows());
@@ -424,9 +426,7 @@ public class JournalController {
      */
     public void setup(KometPreferences nodePreferences) {
         this.nodePreferences = nodePreferences;
-        this.windowSettings = new WindowSettings(nodePreferences);
-
-        windowView = windowSettings.getView();
+        this.windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
 
         ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
 
