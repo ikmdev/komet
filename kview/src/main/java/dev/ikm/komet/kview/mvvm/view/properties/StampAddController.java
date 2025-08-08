@@ -1,9 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
 import dev.ikm.komet.framework.view.*;
-import dev.ikm.komet.kview.mvvm.view.genediting.*;
+import dev.ikm.komet.kview.mvvm.view.ControllerUtils;
 import dev.ikm.komet.kview.mvvm.viewmodel.*;
 import dev.ikm.tinkar.terms.*;
 import javafx.beans.binding.*;
@@ -35,8 +34,12 @@ public class StampAddController {
     @InjectViewModel
     private StampViewModel2 stampViewModel;
 
+    private ControllerUtils<ComponentWithNid> controllerUtils;
+
     @FXML
     public void initialize() {
+        controllerUtils = new ControllerUtils<>(this::getViewProperties);
+
         initModuleComboBox();
         initPathComboBox();
         initStatusComboBox();
@@ -51,53 +54,23 @@ public class StampAddController {
     }
 
     private void initStatusComboBox() {
-        statusComboBox.setItems(stampViewModel.getObservableList(STATUSES));
-
-        statusComboBox.setCellFactory(stateListView -> createConceptListCell());
-        statusComboBox.setButtonCell(createConceptListCell());
+        controllerUtils.initComboBox(statusComboBox, stampViewModel.getObservableList(STATUSES));
 
         statusComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(STATUS));
     }
 
     private void initPathComboBox() {
-        pathComboBox.setItems(stampViewModel.getObservableList(PATHS));
-
-        pathComboBox.setCellFactory(_ -> createConceptListCell());
-        pathComboBox.setButtonCell(createConceptListCell());
+        controllerUtils.initComboBox(pathComboBox, stampViewModel.getObservableList(PATHS));
 
         pathComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(PATH));
     }
 
     private void initModuleComboBox() {
-        moduleComboBox.setItems(stampViewModel.getObservableList(MODULES));
-
-        moduleComboBox.setCellFactory(_ -> createConceptListCell());
-        moduleComboBox.setButtonCell(createConceptListCell());
+        controllerUtils.initComboBox(moduleComboBox, stampViewModel.getObservableList(MODULES));
 
         moduleComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(MODULE));
     }
 
-    private String getDescriptionTextWithFallbackOrNid(ComponentWithNid conceptEntity) {
-        String descr = "" + conceptEntity.nid();
-        if (getViewProperties() != null) {
-            descr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptEntity.nid());
-        }
-        return descr;
-    }
-
-    private ListCell<ComponentWithNid> createConceptListCell() {
-        return new ListCell<>(){
-            @Override
-            protected void updateItem(ComponentWithNid item, boolean empty) {
-                super.updateItem(item, empty);
-                if (item == null || empty) {
-                    setText(null);
-                } else {
-                    setText(getDescriptionTextWithFallbackOrNid(item));
-                }
-            }
-        };
-    }
 
     public StampViewModel2 getStampViewModel() { return stampViewModel; }
 
