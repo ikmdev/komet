@@ -2831,7 +2831,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
 
-    -fx-prompt-text-fill: #111;
+    -fx-prompt-text-fill: #909090;
 }
 
 .blue-arrow-combo-box {
