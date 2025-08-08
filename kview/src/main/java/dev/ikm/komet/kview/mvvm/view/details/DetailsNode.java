@@ -133,11 +133,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
             this.propertiesViewController = propsFXMLLoader.getController();
             // style the same as the details view
             this.propertiesViewBorderPane.getStylesheets().add(styleSheet);
-            entityFocusProperty.addListener((observable, oldValue, newValue) -> {
-               if (newValue != null) {
-                   this.propertiesViewController.updateModel(viewProperties, newValue);
-               }
-            });
+            this.propertiesViewController.updateModel(viewProperties, null);
 
             // setup view and view into details view
             detailsViewController.attachPropertiesViewSlideoutTray(this.propertiesViewBorderPane, this.propertiesViewController);

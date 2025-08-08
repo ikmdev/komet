@@ -19,6 +19,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Path;
 
 import java.util.BitSet;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.PS_STATE;
@@ -38,7 +39,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
      * {@link dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin}.
      */
     static {
-        ConceptNavigatorHelper.setConceptNavigatorAccessor(new ConceptNavigatorHelper.ConceptNavigatorAccessor() {
+        ConceptNavigatorHelper.setConceptNavigatorCellAccessor(new ConceptNavigatorHelper.ConceptNavigatorCellAccessor() {
 
             @Override
             public void markCellDirty(KLConceptNavigatorTreeCell treeCell) {
@@ -50,10 +51,6 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
                 treeCell.unselectItem();
             }
 
-            @Override
-            public ConceptNavigatorTreeItem getConceptNavigatorTreeItem(KLConceptNavigatorControl treeView, int nid, int parentNid) {
-                return null;
-            }
         });
     }
 
