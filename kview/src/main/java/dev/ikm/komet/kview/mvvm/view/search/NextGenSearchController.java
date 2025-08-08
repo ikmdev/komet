@@ -229,7 +229,7 @@ public class NextGenSearchController {
                     };
                     getViewProperties().nodeView().stampCoordinate().pathConceptProperty().setValue(conceptPath);
                 }
-                //TODO Type, Module, Path, Language, Description Type, Kind of, Membership, Sort By, Date
+                //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By, Date
             }
         });
 
