@@ -266,7 +266,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         setAvailableOptions(option, ALL_STATES); //ACTIVE, INACTIVE, WITHDRAWN
         FilterTitledPane statusFilterTitledPane = setupTitledPane(option);
         //
-        setInitialOptionsForStatus(control.getInitialFilterOptions().getStatus());
+        setInitialOptionsFor(option);
 
         // module: all descendants of Module
         option = filterOptions.getModule();
@@ -275,10 +275,12 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         setDefaultOptions(option);
 
         // path: all descendants of Path
-        option = filterOptions.getPath();
+        option = control.getInitialFilterOptions().getPath();
+        // option = filterOptions.getPath();
         setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath()));
         FilterTitledPane pathFilterTitledPane = setupTitledPane(option);
-        setDefaultOptions(option);
+//        setDefaultOptions(option);
+        setInitialOptionsFor(option);
 
         // language: all descendants of Model concept->Tinkar Model concept->Language
         option = filterOptions.getLanguage();
@@ -353,7 +355,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         option.availableOptions().addAll(options);
     }
 
-    private void setInitialOptionsForStatus(FilterOptions.Option option) {
+    private void setInitialOptionsFor(FilterOptions.Option option) {
         defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
         defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
         if (option.isMultiSelectionAllowed()) {
