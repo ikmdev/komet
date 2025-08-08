@@ -6,9 +6,11 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,11 +34,12 @@ public class FilterMenuTask extends TrackingCallable {
     protected FilterOptions compute() throws Exception {
         FilterOptions filterOptions = new FilterOptions();
 
-        // populate the STATUS
+        // get parent menu settings
         ObservableCoordinate parentView = viewProperties.parentView();
         for (ObservableCoordinate<?> observableCoordinate : parentView.getCompositeCoordinates()) {
             if (observableCoordinate instanceof ObservableStampCoordinate observableStampCoordinate) {
-                // get parent menu settings
+
+                // populate the STATUS
                 StateSet currentStates = observableStampCoordinate.allowedStatesProperty().getValue();
                 List<String> currentStatesStr = currentStates.toEnumSet().stream().map(s -> s.name()).toList();
 
@@ -49,8 +52,18 @@ public class FilterMenuTask extends TrackingCallable {
                 filterOptions.getStatus().defaultOptions().clear();
                 filterOptions.getStatus().defaultOptions().addAll(currentStatesStr);
 
+                // populate the PATH
+                ConceptFacade currentPath = observableStampCoordinate.pathConceptProperty().getValue();
+                String currentPathStr = currentPath.description();
+
+                List<String> defaultSelectedPaths = new ArrayList(List.of(currentPathStr));
+                filterOptions.getPath().defaultOptions().clear();
+                filterOptions.getPath().defaultOptions().addAll(defaultSelectedPaths);
+
+                filterOptions.getPath().selectedOptions().clear();
+                filterOptions.getPath().selectedOptions().addAll(defaultSelectedPaths);
             }
-            //TODO Type, Module, Path, Language, Description Type, Kind of, Membership, Sort By, Date
+            //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By, Date
         }
         return filterOptions;
     }
