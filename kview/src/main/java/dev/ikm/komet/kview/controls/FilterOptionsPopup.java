@@ -37,7 +37,7 @@ public class FilterOptionsPopup extends PopupControl {
     }
 
     // initialFilterOptionsProperty
-    private final ObjectProperty<FilterOptions> initialFilterOptionsProperty = new SimpleObjectProperty<>(this, "initialFilterOPpions");
+    private final ObjectProperty<FilterOptions> initialFilterOptionsProperty = new SimpleObjectProperty<>(this, "initialFilterOptions", new FilterOptions());
     public final ObjectProperty<FilterOptions> initialFilterOptionsProperty() {
         return initialFilterOptionsProperty;
     }
