@@ -90,7 +90,7 @@ public class AppMenu {
         Menu editMenu = new Menu("Edit");
         MenuItem landingPage = new MenuItem("Landing Page");
         KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN);
-        landingPage.setOnAction(actionEvent -> app.launchLandingPage(app.getPrimaryStage(), null /* userProperty.get()*/));
+        landingPage.setOnAction(actionEvent -> app.appPages.launchLandingPage(App.primaryStage, null /* userProperty.get()*/));
         landingPage.setAccelerator(landingPageKeyCombo);
         landingPage.setDisable(IS_BROWSER);
         editMenu.getItems().add(landingPage);
@@ -117,11 +117,11 @@ public class AppMenu {
         Menu exchangeMenu = new Menu("Exchange");
 
         MenuItem infoMenuItem = new MenuItem("Info");
-        infoMenuItem.setOnAction(actionEvent -> app.getAppGithub().infoAction());
+        infoMenuItem.setOnAction(actionEvent -> app.appGithub.infoAction());
         MenuItem pullMenuItem = new MenuItem("Pull");
-        pullMenuItem.setOnAction(actionEvent -> app.getAppGithub().executeGitTask(PULL));
+        pullMenuItem.setOnAction(actionEvent -> app.appGithub.executeGitTask(PULL));
         MenuItem pushMenuItem = new MenuItem("Sync");
-        pushMenuItem.setOnAction(actionEvent -> app.getAppGithub().executeGitTask(SYNC));
+        pushMenuItem.setOnAction(actionEvent -> app.appGithub.executeGitTask(SYNC));
 
         exchangeMenu.getItems().addAll(infoMenuItem, pullMenuItem, pushMenuItem);
         return exchangeMenu;
@@ -176,7 +176,7 @@ public class AppMenu {
         KeyCombination classicKometKeyCombo = new KeyCodeCombination(KeyCode.K, KeyCombination.CONTROL_DOWN);
         classicKometMenuItem.setOnAction(actionEvent -> {
             try {
-                app.getAppClassicKomet().launchClassicKomet();
+                app.appClassicKomet.launchClassicKomet();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (BackingStoreException e) {
@@ -213,7 +213,7 @@ public class AppMenu {
 
         MenuBar menuBar = new MenuBar(kometAppMenu);
 
-        if (app.getStateProperty().get() == RUNNING) {
+        if (App.state.get() == RUNNING) {
             Menu fileMenu = createFileMenu();
             Menu editMenu = createEditMenu();
             Menu viewMenu = createViewMenu();
@@ -248,11 +248,11 @@ public class AppMenu {
 
         // Import Dataset Menu Item
         MenuItem importDatasetMenuItem = new MenuItem("Import Dataset...");
-        importDatasetMenuItem.setOnAction(actionEvent -> openImport(app.getPrimaryStage()));
+        importDatasetMenuItem.setOnAction(actionEvent -> openImport(App.primaryStage));
 
         // Export Dataset Menu Item
         MenuItem exportDatasetMenuItem = new MenuItem("Export Dataset...");
-        exportDatasetMenuItem.setOnAction(actionEvent -> openExport(app.getPrimaryStage()));
+        exportDatasetMenuItem.setOnAction(actionEvent -> openExport(App.primaryStage));
 
         // Add menu items to the File menu
         fileMenu.getItems().addAll(importDatasetMenuItem, exportDatasetMenuItem);
@@ -286,7 +286,7 @@ public class AppMenu {
         classicKometMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.K, KeyCombination.SHORTCUT_DOWN));
         classicKometMenuItem.setOnAction(actionEvent -> {
             try {
-                app.getAppClassicKomet().launchClassicKomet();
+                app.appClassicKomet.launchClassicKomet();
             } catch (IOException | BackingStoreException e) {
                 throw new RuntimeException(e);
             }

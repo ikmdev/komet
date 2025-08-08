@@ -5,16 +5,19 @@ import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
+import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.search.SearchNodeFactory;
+import dev.ikm.tinkar.common.service.PrimitiveData;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import one.jpro.platform.auth.core.authentication.User;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -27,6 +30,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.app.App.IS_BROWSER;
 import static dev.ikm.komet.app.App.IS_MAC;
+import static dev.ikm.komet.app.AppState.SHUTDOWN;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
@@ -51,10 +55,10 @@ public class AppPages {
         JFXNode<BorderPane, Void> loginNode = FXMLMvvmLoader.make(
                 LoginPageController.class.getResource("login-page.fxml"));
         BorderPane loginPane = loginNode.node();
-        app.getRootPane().getChildren().setAll(loginPane);
+        app.rootPane.getChildren().setAll(loginPane);
         stage.setTitle("KOMET Login");
 
-        app.getAppMenu().setupMenus();
+        app.appMenu.setupMenus();
     }
 
     void launchSelectDataSourcePage(Stage stage) {
@@ -67,12 +71,48 @@ public class AppPages {
                 Platform.exit();
                 app.stopServer();
             });
-            app.getRootPane().getChildren().setAll(sourceRoot);
+            app.rootPane.getChildren().setAll(sourceRoot);
             stage.setTitle("KOMET Startup");
 
-            app.getAppMenu().setupMenus();
+            app.appMenu.setupMenus();
         } catch (IOException ex) {
             LOG.error("Failed to initialize the select data source window", ex);
+        }
+    }
+
+    public void launchLandingPage(Stage stage, User user) {
+        try {
+            app.rootPane.getChildren().clear(); // Clear the root pane before adding new content
+
+            KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+            KometPreferences windowPreferences = appPreferences.node("main-komet-window");
+            WindowSettings windowSettings = new WindowSettings(windowPreferences);
+
+            FXMLLoader landingPageLoader = LandingPageViewFactory.createFXMLLoader();
+            BorderPane landingPageBorderPane = landingPageLoader.load();
+
+            if (!IS_MAC) {
+                app.appMenu.createMenuOptions(landingPageBorderPane);
+            }
+
+            app.landingPageController = landingPageLoader.getController();
+            app.landingPageController.getWelcomeTitleLabel().setText("Welcome " + user.getName());
+            app.landingPageController.setSelectedDatasetTitle(PrimitiveData.get().name());
+            app.landingPageController.getGithubStatusHyperlink().setOnAction(_ -> app.appGithub.connectToGithub());
+
+            stage.setTitle("Landing Page");
+            stage.setMaximized(true);
+            stage.setOnCloseRequest(windowEvent -> {
+                // This is called only when the user clicks the close button on the window
+                App.state.set(SHUTDOWN);
+                app.landingPageController.cleanup();
+            });
+
+            app.rootPane.getChildren().add(landingPageBorderPane);
+
+            app.appMenu.setupMenus();
+        } catch (IOException e) {
+            LOG.error("Failed to initialize the landing page window", e);
         }
     }
 
@@ -105,11 +145,11 @@ public class AppPages {
         addStylesheets(sourceScene, KOMET_CSS, KVIEW_CSS);
 
         Stage journalStage = new Stage();
-        journalStage.getIcons().setAll(app.getAppIcon());
+        journalStage.getIcons().setAll(app.appIcon);
         journalStage.setScene(sourceScene);
 
         if (!IS_MAC) {
-            app.getAppMenu().generateMsWindowsMenu(journalBorderPane, journalStage);
+            app.appMenu.generateMsWindowsMenu(journalBorderPane, journalStage);
         }
 
         // load journal specific window settings
@@ -138,10 +178,10 @@ public class AppPages {
         journalStage.setOnHidden(windowEvent -> {
             app.saveJournalWindowsToPreferences();
             journalController.shutdown();
-            app.getJournalControllersList().remove(journalController);
+            app.journalControllersList.remove(journalController);
 
             journalWindowSettings.setValue(CAN_DELETE, true);
-            app.getKViewEventBus().publish(JOURNAL_TOPIC,
+            app.kViewEventBus.publish(JOURNAL_TOPIC,
                     new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
         });
 
@@ -159,11 +199,11 @@ public class AppPages {
         });
         // disable the delete menu option for a Journal Card.
         journalWindowSettings.setValue(CAN_DELETE, false);
-        app.getKViewEventBus().publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
-        app.getJournalControllersList().add(journalController);
+        app.kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, journalWindowSettings));
+        app.journalControllersList.add(journalController);
 
         if (IS_BROWSER) {
-            app.getWebAPI().openStageAsTab(journalStage, journalName.replace(" ", "_"));
+            app.webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
         } else {
             journalStage.show();
         }

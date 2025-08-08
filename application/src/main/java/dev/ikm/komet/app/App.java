@@ -105,70 +105,22 @@ public class App extends Application  {
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
     public static final SimpleObjectProperty<User> userProperty = new SimpleObjectProperty<>();
 
-    private static Stage primaryStage;
+    static Stage primaryStage;
 
-    private static WebAPI webAPI;
+    WebAPI webAPI;
     static final boolean IS_BROWSER = WebAPI.isBrowser();
     static final boolean IS_DESKTOP = !IS_BROWSER && PlatformUtils.isDesktop();
     static final boolean IS_MAC = !IS_BROWSER && PlatformUtils.isMac();
     static final boolean IS_MAC_AND_NOT_TESTFX_TEST = IS_MAC && !isTestFXTest();
-    private final StackPane rootPane = createRootPane();
-    private Image appIcon;
-    private LandingPageController landingPageController;
-    private EvtBus kViewEventBus;
+    final StackPane rootPane = createRootPane();
+    Image appIcon;
+    LandingPageController landingPageController;
+    EvtBus kViewEventBus;
 
     AppGithub appGithub;
     AppClassicKomet appClassicKomet;
     AppMenu appMenu;
     AppPages appPages;
-
-    AppGithub getAppGithub() {
-        return appGithub;
-    }
-
-    AppMenu getAppMenu() {
-        return appMenu;
-    }
-
-    AppClassicKomet getAppClassicKomet() {
-        return appClassicKomet;
-    }
-
-    WebAPI getWebAPI() {
-        return webAPI;
-    }
-
-    Image getAppIcon() {
-        return appIcon;
-    }
-
-    Stage getPrimaryStage() {
-        return primaryStage;
-    }
-
-    SimpleObjectProperty<AppState> getStateProperty() {
-        return state;
-    }
-
-    StackPane getRootPane() {
-        return rootPane;
-    }
-
-    LandingPageController getLandingPageController() {
-        return landingPageController;
-    }
-
-    GitHubPreferencesDao getGitHubPreferencesDao() {
-        return gitHubPreferencesDao;
-    }
-
-    List<JournalController> getJournalControllersList() {
-        return journalControllersList;
-    }
-
-    EvtBus getKViewEventBus() {
-        return kViewEventBus;
-    }
 
     /**
      * An entry point to launch the newer UI panels.
@@ -178,12 +130,12 @@ public class App extends Application  {
     /**
      * This is a list of new windows that have been launched. During shutdown, the application close each stage gracefully.
      */
-    private final List<JournalController> journalControllersList = new ArrayList<>();
+    final List<JournalController> journalControllersList = new ArrayList<>();
 
     /**
      * GitHub preferences data access object.
      */
-    private final GitHubPreferencesDao gitHubPreferencesDao = new GitHubPreferencesDao();
+    final GitHubPreferencesDao gitHubPreferencesDao = new GitHubPreferencesDao();
 
     /**
      * Main method that serves as the entry point for the JavaFX application.
@@ -281,7 +233,7 @@ public class App extends Application  {
             userProperty.set(user);
 
             if (state.get() == RUNNING) {
-                launchLandingPage(primaryStage, user);
+                appPages.launchLandingPage(primaryStage, user);
             } else {
                 state.set(AppState.SELECT_DATA_SOURCE);
                 state.addListener(this::appStateChangeListener);
@@ -444,41 +396,6 @@ public class App extends Application  {
         });
     }
 
-    public void launchLandingPage(Stage stage, User user) {
-        try {
-            rootPane.getChildren().clear(); // Clear the root pane before adding new content
-
-            KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-            KometPreferences windowPreferences = appPreferences.node("main-komet-window");
-            WindowSettings windowSettings = new WindowSettings(windowPreferences);
-
-            FXMLLoader landingPageLoader = LandingPageViewFactory.createFXMLLoader();
-            BorderPane landingPageBorderPane = landingPageLoader.load();
-
-            if (!IS_MAC) {
-                appMenu.createMenuOptions(landingPageBorderPane);
-            }
-
-            landingPageController = landingPageLoader.getController();
-            landingPageController.getWelcomeTitleLabel().setText("Welcome " + user.getName());
-            landingPageController.setSelectedDatasetTitle(PrimitiveData.get().name());
-            landingPageController.getGithubStatusHyperlink().setOnAction(_ -> appGithub.connectToGithub());
-
-            stage.setTitle("Landing Page");
-            stage.setMaximized(true);
-            stage.setOnCloseRequest(windowEvent -> {
-                // This is called only when the user clicks the close button on the window
-                state.set(SHUTDOWN);
-                landingPageController.cleanup();
-            });
-
-            rootPane.getChildren().add(landingPageBorderPane);
-
-            getAppMenu().setupMenus();
-        } catch (IOException e) {
-            LOG.error("Failed to initialize the landing page window", e);
-        }
-    }
 
     /**
      * Saves the current state of the journals and its windows to the application's preferences system.
@@ -549,7 +466,7 @@ public class App extends Application  {
                         String capitalizeUsername = username.substring(0, 1).toUpperCase() + username.substring(1);
                         userProperty.set(new User(capitalizeUsername));
                     }
-                    launchLandingPage(primaryStage, userProperty.get());
+                    appPages.launchLandingPage(primaryStage, userProperty.get());
                 }
                 case SHUTDOWN -> quit();
             }

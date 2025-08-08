@@ -78,7 +78,7 @@ public class AppClassicKomet {
         }
 
         classicKometStage = new Stage();
-        classicKometStage.getIcons().setAll(app.getAppIcon());
+        classicKometStage.getIcons().setAll(app.appIcon);
 
         //Starting up preferences and getting configurations
         Preferences.start();
@@ -101,7 +101,7 @@ public class AppClassicKomet {
 
         // if NOT on macOS
         if (!IS_MAC) {
-            app.getAppMenu().generateMsWindowsMenu(kometRoot, classicKometStage);
+            app.appMenu.generateMsWindowsMenu(kometRoot, classicKometStage);
         }
 
         classicKometStage.setScene(kometScene);
@@ -137,10 +137,10 @@ public class AppClassicKomet {
         classicKometStage.show();
 
         if (IS_BROWSER) {
-            app.getWebAPI().openStageAsTab(classicKometStage);
+            app.webAPI.openStageAsTab(classicKometStage);
         }
 
-        app.getAppMenu().kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties());
+        app.appMenu.kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties());
 
         windowPreferences.sync();
         appPreferences.sync();

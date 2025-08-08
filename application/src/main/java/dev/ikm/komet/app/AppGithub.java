@@ -54,7 +54,7 @@ public class AppGithub {
 
         // Show dialog on JavaFX thread
         runOnFxThread(() -> {
-            GlassPane glassPane = new GlassPane(app.getLandingPageController().getRoot());
+            GlassPane glassPane = new GlassPane(app.landingPageController.getRoot());
 
             final JFXNode<Pane, GitHubPreferencesController> githubPreferencesNode = FXMLMvvmLoader
                     .make(GitHubPreferencesController.class.getResource("github-preferences.fxml"));
@@ -99,8 +99,8 @@ public class AppGithub {
      */
     private void gotoGitHubDisconnectedState() {
         runOnFxThread(() -> {
-            if (app.getLandingPageController() != null) {
-                Hyperlink githubStatusHyperlink = app.getLandingPageController().getGithubStatusHyperlink();
+            if (app.landingPageController != null) {
+                Hyperlink githubStatusHyperlink = app.landingPageController.getGithubStatusHyperlink();
                 githubStatusHyperlink.setText("Disconnected, Select to connect");
                 githubStatusHyperlink.setOnAction(event -> connectToGithub());
             }
@@ -119,8 +119,8 @@ public class AppGithub {
      */
     private void gotoGitHubConnectedState() {
         runOnFxThread(() -> {
-            if (app.getLandingPageController() != null) {
-                Hyperlink githubStatusHyperlink = app.getLandingPageController().getGithubStatusHyperlink();
+            if (app.landingPageController != null) {
+                Hyperlink githubStatusHyperlink = app.landingPageController.getGithubStatusHyperlink();
                 githubStatusHyperlink.setText("Connected");
                 githubStatusHyperlink.setOnAction(event -> disconnectFromGithub());
             }
@@ -159,7 +159,7 @@ public class AppGithub {
         }
 
         // Check if GitHub preferences are valid first
-        if (!app.getGitHubPreferencesDao().validate()) {
+        if (!app.gitHubPreferencesDao.validate()) {
             LOG.info("GitHub preferences missing or incomplete. Prompting user...");
 
             // Prompt for preferences before proceeding
@@ -246,7 +246,7 @@ public class AppGithub {
 
         // Delete stored user preferences related to GitHub
         try {
-            app.getGitHubPreferencesDao().delete();
+            app.gitHubPreferencesDao.delete();
             LOG.info("Successfully deleted GitHub preferences");
         } catch (BackingStoreException e) {
             LOG.error("Failed to delete GitHub preferences", e);
@@ -382,7 +382,7 @@ public class AppGithub {
 
         // Show dialog on JavaFX thread
         runOnFxThread(() -> {
-            GlassPane glassPane = new GlassPane(app.getLandingPageController().getRoot());
+            GlassPane glassPane = new GlassPane(app.landingPageController.getRoot());
 
             final JFXNode<Pane, GitHubInfoController> githubInfoNode = FXMLMvvmLoader
                     .make(GitHubInfoController.class.getResource("github-info.fxml"));
