@@ -98,7 +98,7 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.*;
  * @see LoginFeatureFlag
  * @see KometPreferences
  */
-public class App extends Application implements AppInterface  {
+public class App extends Application  {
 
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
     public static final String ICON_LOCATION = "/icons/Komet.png";
@@ -122,61 +122,51 @@ public class App extends Application implements AppInterface  {
     AppMenu appMenu;
     AppPages appPages;
 
-    @Override
-    public AppGithub getAppGithub() {
+    AppGithub getAppGithub() {
         return appGithub;
     }
 
-    @Override
-    public AppMenu getAppMenu() {
+    AppMenu getAppMenu() {
         return appMenu;
     }
 
-    @Override
-    public AppClassicKomet getAppClassicKomet() {
+    AppClassicKomet getAppClassicKomet() {
         return appClassicKomet;
     }
 
-    @Override
-    public WebAPI getWebAPI() {
+    WebAPI getWebAPI() {
         return webAPI;
     }
 
-    @Override
-    public Image getAppIcon() {
+    Image getAppIcon() {
         return appIcon;
     }
-    @Override
-    public Stage getPrimaryStage() {
+
+    Stage getPrimaryStage() {
         return primaryStage;
     }
-    @Override
-    public SimpleObjectProperty<AppState> getState() {
+
+    SimpleObjectProperty<AppState> getStateProperty() {
         return state;
     }
 
-    @Override
-    public StackPane getRootPane() {
+    StackPane getRootPane() {
         return rootPane;
     }
 
-    @Override
-    public LandingPageController getLandingPageController() {
+    LandingPageController getLandingPageController() {
         return landingPageController;
     }
 
-    @Override
-    public GitHubPreferencesDao getGitHubPreferencesDao() {
+    GitHubPreferencesDao getGitHubPreferencesDao() {
         return gitHubPreferencesDao;
     }
 
-    @Override
-    public List<JournalController> getJournalControllersList() {
+    List<JournalController> getJournalControllersList() {
         return journalControllersList;
     }
 
-    @Override
-    public EvtBus getKViewEventBus() {
+    EvtBus getKViewEventBus() {
         return kViewEventBus;
     }
 

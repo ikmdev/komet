@@ -56,14 +56,14 @@ public class AppClassicKomet {
 
     private Stage classicKometStage;
 
-    private final AppInterface app;
+    private final App app;
 
     /**
      * An entry point to launch the newer UI panels.
      */
     private MenuItem createJournalViewMenuItem;
 
-    public AppClassicKomet(AppInterface app) {
+    public AppClassicKomet(App app) {
         this.app = app;
     }
 

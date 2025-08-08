@@ -41,12 +41,11 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
 public class AppPages {
     private static final Logger LOG = LoggerFactory.getLogger(AppGithub.class);
 
-    private final AppInterface app;
+    private final App app;
 
-    public AppPages(AppInterface app) {
+    public AppPages(App app) {
         this.app = app;
     }
-
 
     void launchLoginPage(Stage stage) {
         JFXNode<BorderPane, Void> loginNode = FXMLMvvmLoader.make(

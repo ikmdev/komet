@@ -52,14 +52,14 @@ public class AppMenu {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppMenu.class);
 
-    private final AppInterface app;
+    private final App app;
     KometPreferencesStage kometPreferencesStage;
 
     private static long windowCount = 1;
     private Stage overlayStage;
     private Timeline resourceUsageTimeline;
 
-    public AppMenu(AppInterface app) {
+    public AppMenu(App app) {
         this.app = app;
     }
 
@@ -213,7 +213,7 @@ public class AppMenu {
 
         MenuBar menuBar = new MenuBar(kometAppMenu);
 
-        if (app.getState().get() == RUNNING) {
+        if (app.getStateProperty().get() == RUNNING) {
             Menu fileMenu = createFileMenu();
             Menu editMenu = createEditMenu();
             Menu viewMenu = createViewMenu();

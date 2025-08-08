@@ -31,9 +31,9 @@ public class AppGithub {
     private static final Logger LOG = LoggerFactory.getLogger(AppGithub.class);
     static final String CHANGESETS_DIR = "changeSets";
 
-    private final AppInterface app;
+    private final App app;
 
-    public AppGithub(AppInterface app) {
+    public AppGithub(App app) {
         this.app = app;
     }
 
