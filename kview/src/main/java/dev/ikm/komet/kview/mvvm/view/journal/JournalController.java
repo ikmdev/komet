@@ -1256,7 +1256,7 @@ public class JournalController {
 
     /**
      * Loads up a navigation panel into the sidebar area.
-     *set
+     *
      * @param navigationActivityStreamKey The newly generated navigation activity stream for this Journal window and all children.
      * @param windowView                  Any window view information
      * @param navigationFactory           The navigation factory to create the navigation panel to be used in the sidebar.
