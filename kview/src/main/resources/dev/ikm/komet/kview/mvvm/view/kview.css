@@ -153,6 +153,7 @@
     -fx-font-family: "Noto Sans";
     -fx-font-size: 11px;
     -fx-fill: -Grey-11;
+    -fx-font-weight: bold;
 }
 
 .stamp-label {
@@ -218,6 +219,11 @@
     -fx-alignment: top-left;
     -fx-max-width: infinity;
     -fx-max-height: infinity;
+}
+
+.concept-definition-title{
+    -fx-text-fill: -Grey-11;
+    -fx-font-weight: bold;
 }
 
 .titled-pane {
