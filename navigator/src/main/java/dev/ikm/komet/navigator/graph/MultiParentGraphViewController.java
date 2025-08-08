@@ -771,14 +771,18 @@ public class MultiParentGraphViewController implements RefreshListener {
     }
 
     private void saveExpanded(MultiParentVertexImpl item) {
-        if (!item.isLeaf() && item.isExpanded()) {
-            expandedNids.add(item.getConceptNid());
+        try {
+            if (!item.isLeaf() && item.isExpanded()) {
+                expandedNids.add(item.getConceptNid());
 
-            if (!item.isLeaf()) {
-                for (TreeItem<ConceptFacade> child : item.getChildren()) {
-                    saveExpanded((MultiParentVertexImpl) child);
+                if (!item.isLeaf()) {
+                    for (TreeItem<ConceptFacade> child : item.getChildren()) {
+                        saveExpanded((MultiParentVertexImpl) child);
+                    }
                 }
             }
+        } catch (IllegalStateException e) {
+            LOG.error("IllegalStateException checking leaf", e);
         }
     }
 

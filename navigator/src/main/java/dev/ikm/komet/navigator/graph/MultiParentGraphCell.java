@@ -15,16 +15,6 @@
  */
 package dev.ikm.komet.navigator.graph;
 
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.layout.TilePane;
-import javafx.scene.transform.NonInvertibleTransformException;
-import org.eclipse.collections.api.collection.ImmutableCollection;
 import dev.ikm.komet.framework.MenuItemWithText;
 import dev.ikm.komet.framework.PseudoClasses;
 import dev.ikm.komet.framework.dnd.DragDetectedCellEventHandler;
@@ -36,6 +26,16 @@ import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.layout.TilePane;
+import javafx.scene.transform.NonInvertibleTransformException;
+import org.eclipse.collections.api.collection.ImmutableCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,11 +97,15 @@ final public class MultiParentGraphCell
                 final MultiParentVertexImpl treeItem = (MultiParentVertexImpl) getTreeItem();
                 conceptDescriptionText = treeItem.toString();
 
-                if (!treeItem.isLeaf()) {
-                    Node iv = treeItem.isExpanded() ? Icon.TAXONOMY_CLICK_TO_CLOSE.makeIcon()
-                            : Icon.TAXONOMY_CLICK_TO_OPEN.makeIcon();
+                try {
+                    if (!treeItem.isLeaf()) {
+                        Node iv = treeItem.isExpanded() ? Icon.TAXONOMY_CLICK_TO_CLOSE.makeIcon()
+                                : Icon.TAXONOMY_CLICK_TO_OPEN.makeIcon();
 
-                    setDisclosureNode(iv);
+                        setDisclosureNode(iv);
+                    }
+                } catch (IllegalStateException e) {
+                    LOG.error("IllegalStateException checking leaf", e);
                 }
                 if (concept != null) {
                     boolean conceptActive = treeItem.getGraphController().getObservableView().calculator().isLatestActive(concept);

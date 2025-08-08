@@ -15,13 +15,8 @@
  */
 package dev.ikm.komet.navigator.graph;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
- import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
- import dev.ikm.komet.navigator.graph.MultiParentVertexImpl;
- import javafx.beans.property.DoubleProperty;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.value.WritableValue;
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
@@ -34,9 +29,12 @@ import javafx.scene.Node;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.skin.CellSkinBase;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -139,7 +137,12 @@ public class MultiParentGraphCellSkin extends CellSkinBase<TreeCell<ConceptFacad
         x += leftMargin;
 
         // position the disclosure node so that it is at the proper indent
-        boolean disclosureVisible = disclosureNode != null && methodTreeItem != null && !methodTreeItem.isLeaf();
+        boolean disclosureVisible = false;
+        try {
+            disclosureVisible = disclosureNode != null && methodTreeItem != null && !methodTreeItem.isLeaf();
+        } catch (IllegalStateException e) {
+            LOG.error("IllegalStateException checking leaf", e);
+        }
 
         double disclosureWidth = defaultDisclosureWidth;
 
@@ -220,9 +223,14 @@ public class MultiParentGraphCellSkin extends CellSkinBase<TreeCell<ConceptFacad
         }
         MultiParentVertexImpl methodTreeItem = (MultiParentVertexImpl) getSkinnable().getTreeItem();
 
-        boolean disclosureVisible = methodTreeItem != null && !methodTreeItem.isLeaf();
-        disclosureNode.setVisible(disclosureVisible);
+        boolean disclosureVisible = false;
+        try {
+            disclosureVisible = methodTreeItem != null && !methodTreeItem.isLeaf();
+        } catch (IllegalStateException e) {
+            LOG.error("IllegalStateException checking leaf", e);
+        }
 
+        disclosureNode.setVisible(disclosureVisible);
         if (!disclosureVisible) {
             getChildren().remove(disclosureNode);
         } else if (disclosureNode.getParent() == null) {
