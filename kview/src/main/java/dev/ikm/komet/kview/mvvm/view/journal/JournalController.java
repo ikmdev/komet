@@ -40,7 +40,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
@@ -342,7 +342,7 @@ public class JournalController {
     @InjectViewModel
     private JournalViewModel journalViewModel;
 
-    private ObservableViewNoOverride windowView;
+//    private WindowSettings windowSettings;
 
     /**
      * Called after JavaFX FXML DI has occurred. Any annotated items above should be valid.
@@ -353,7 +353,7 @@ public class JournalController {
         journalTopic = journalViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
 
         // Initialize the journal window view
-        windowView = journalViewModel.getPropertyValue(WINDOW_VIEW);
+        windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
 
         // Initialize the journal windows list
         journalWindows = FXCollections.unmodifiableObservableList(workspace.getWindows());
@@ -457,20 +457,17 @@ public class JournalController {
      */
     public void setup(KometPreferences nodePreferences) {
         this.nodePreferences = nodePreferences;
-        this.windowSettings = new WindowSettings(nodePreferences);
 
-        windowView = windowSettings.getView();
+        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(windowSettings.getView().toViewCoordinateRecord());
 
-        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
-
-        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowView, "JournalController"),
+        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView(), "JournalController"),
                 (List<MenuItem> result) -> {
                     FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
                 }));
 
         windowSettings.getView().addListener((observable, oldValue, newValue) -> {
             windowCoordinates.getItems().clear();
-            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowView, "JournalController"),
+            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView(), "JournalController"),
                     (List<MenuItem> result) ->
                             FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result))
             ));
@@ -663,7 +660,7 @@ public class JournalController {
      */
     public void createWindowFromUuids(UUID[] uuids) {
         createAndSetupWindow(() -> createFromUuids(uuids, journalTopic,
-                        windowView.makeOverridableViewProperties(), null),
+                        windowSettings.getView().makeOverridableViewProperties(), null),
                 "UUID array: " + ArrayIterate.makeString(uuids));
     }
 
@@ -678,7 +675,7 @@ public class JournalController {
         if (entityFacade == null) return;
 
         createAndSetupWindow(() -> createFromEntity(entityFacade, journalTopic,
-                        windowView.makeOverridableViewProperties(), null),
+                        windowSettings.getView().makeOverridableViewProperties(), null),
                 "entity " + entityFacade.nid());
     }
 
@@ -913,16 +910,16 @@ public class JournalController {
         navigatorActivityStream = ActivityStreams.create(navigationActivityStreamKey);
         activityStreams.add(navigationActivityStreamKey);
 
-        loadNavigationPanel(this.windowView);
-        loadClassicConceptNavigatorPanel(navigationActivityStreamKey, this.windowView, navigationFactory);
+        loadNavigationPanel(this.windowSettings.getView());
+        loadClassicConceptNavigatorPanel(navigationActivityStreamKey, this.windowSettings.getView(), navigationFactory);
 
         String uniqueSearchTopic = "search-%s".formatted(journalName);
         UUID uuidSearch = UuidT5Generator.get(uniqueSearchTopic);
         final PublicIdStringKey<ActivityStream> searchActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuidSearch.toString()), uniqueSearchTopic);
         searchActivityStream = ActivityStreams.create(searchActivityStreamKey);
 
-        loadSearchPanel(searchActivityStreamKey, windowView, searchFactory);
-        loadReasonerPanel(ActivityStreams.REASONER, windowView);
+        loadSearchPanel(searchActivityStreamKey, windowSettings.getView(), searchFactory);
+        loadReasonerPanel(ActivityStreams.REASONER, windowSettings.getView());
 
 
         isSlideOutOpen = false;
@@ -939,7 +936,7 @@ public class JournalController {
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
                             nextGenSearchViewModel.setPropertyValue(MODE, CREATE)
-                                .setPropertyValue(VIEW_PROPERTIES, this.windowView.makeOverridableViewProperties())
+                                .setPropertyValue(VIEW_PROPERTIES, this.windowSettings.getView().makeOverridableViewProperties())
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                 );
 
@@ -1085,7 +1082,7 @@ public class JournalController {
 
         // TODO: Test and Fixme this takes a snapshot of the navigator's view coordinate
         //       and makes a new view properties.
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+        ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties();
 
         // copying the observable view
         viewProperties.nodeView().setValue(navigatorNode.getViewProperties().nodeView().getValue());
@@ -1613,7 +1610,7 @@ public class JournalController {
      */
     @FXML
     public void newCreateLidrWindow(ActionEvent actionEvent) {
-        createLidrWindow(windowView, null);
+        createLidrWindow(windowSettings.getView(), null);
     }
 
     /**
@@ -1627,7 +1624,7 @@ public class JournalController {
      */
     @FXML
     public void newCreatePatternWindow(ActionEvent actionEvent) {
-        createPatternWindow(null, windowView.makeOverridableViewProperties());
+        createPatternWindow(null, windowSettings.getView().makeOverridableViewProperties());
     }
 
     public static Toast toast() { return toast; }
