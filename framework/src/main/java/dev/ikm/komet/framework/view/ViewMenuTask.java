@@ -59,6 +59,7 @@ import java.util.*;
 import java.util.function.LongConsumer;
 
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 
 public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
     private static final Logger LOG = LoggerFactory.getLogger(ViewMenuTask.class);
@@ -199,7 +200,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             Menu aYearMenu = yearMenuMap.getIfAbsentPutWithKey(localTime.getYear(), (int year) -> {
                 String yearString = Integer.toString(year);
                 if (time == PREMUNDANE_TIME){
-                    yearString = "Premundane";
+                    yearString = PREMUNDANE;
                 }
                 Menu yearMenu = new Menu(yearString);
                 changePositionMenu.getItems().add(yearMenu);

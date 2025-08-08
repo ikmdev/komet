@@ -50,29 +50,11 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_W
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_CASE_SIGNIFICANCE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DATE_ADDED_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_LANGUAGE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TITLE_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.SELECTED_PATTERN_FIELD;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
@@ -80,9 +62,9 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.EvtType;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtType;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KometIcon;
@@ -118,34 +100,23 @@ import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.StringBinding;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.TilePane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
@@ -254,6 +225,9 @@ public class PatternDetailsController {
     @FXML
     private Button savePatternButton;
 
+    @FXML
+    private StackPane publishStackPane;
+
     // pattern definition fields
     @FXML
     private Text meaningText;
@@ -317,6 +291,8 @@ public class PatternDetailsController {
     @InjectViewModel
     private PatternViewModel patternViewModel;
 
+    private final Tooltip publishTooltip = new Tooltip();
+
     private Subscriber<PropertyPanelEvent> patternPropertiesEventSubscriber;
 
     private Subscriber<PatternDefinitionEvent> patternDefinitionEventSubscriber;
@@ -342,6 +318,18 @@ public class PatternDetailsController {
 
         setUpAddSemanticMenu();
 
+        // Bind the Publish button's disable property to the ViewModel
+        BooleanProperty newChangeProp = patternViewModel.getProperty(PUBLISH_PENDING);
+        publishTooltip.textProperty().bind(Bindings.when(savePatternButton.disableProperty())
+                .then("Publish: Disabled")
+                .otherwise("Submit"));
+
+        // Assign the tooltip to the StackPane (container of Publish button)
+        setupTooltipForDisabledButton(savePatternButton);
+
+        // Disable button when not valid or newChangeProp is false.
+        savePatternButton.disableProperty().bind(patternViewModel.getBooleanProperty(IS_INVALID).or(newChangeProp.not()));
+
         // listen for open and close events
         patternPropertiesEventSubscriber = (evt) -> {
             if (evt.getEventType() == CLOSE_PANEL) {
@@ -363,9 +351,6 @@ public class PatternDetailsController {
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PropertyPanelEvent.class, patternPropertiesEventSubscriber);
-
-        savePatternButton.disableProperty().bind(patternViewModel.getProperty(IS_INVALID));
-
 
         patternDefinitionEventSubscriber = evt -> patternViewModel.setPurposeAndMeaningText(evt.getPatternDefinition());
 
@@ -415,6 +400,7 @@ public class PatternDetailsController {
                 descrNameObservableList.add(evt.getDescrName());
                 patternSM.t("otherNameDone");
             }
+            patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
@@ -431,7 +417,7 @@ public class PatternDetailsController {
                 ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
                 return DATE_TIME_FORMATTER.format(stampTime);
             } else {
-                return patternViewModel.getPropertyValue(MODE).equals("CREATE")? "" : "Premundane";
+                return patternViewModel.getPropertyValue(MODE).equals("CREATE")? "" : PREMUNDANE;
             }
         }));
 
@@ -476,7 +462,7 @@ public class PatternDetailsController {
                     long rawTime = entityVersion.time();
                     String dateText = null;
                     if (rawTime == PREMUNDANE_TIME) {
-                        dateText = "Premundane";
+                        dateText = PREMUNDANE;
                     } else {
                         Locale userLocale = Locale.getDefault();
                         LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -517,6 +503,7 @@ public class PatternDetailsController {
             patternFieldList.add(fieldPosition, patternField);
             // save and therefore validate
             patternViewModel.save();
+            patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
@@ -557,6 +544,7 @@ public class PatternDetailsController {
     private void setupDisplayUUID() {
         identifierControl.publicIdProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
                 String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
+
     }
 
     private DragAndDropType getDragAndDropType(EntityFacade entityFacade) {
@@ -738,7 +726,7 @@ public class PatternDetailsController {
                 long rawTime = entityVersion.time();
                 String dateText = null;
                 if (rawTime == PREMUNDANE_TIME) {
-                    dateText = "Premundane";
+                    dateText = PREMUNDANE;
                 } else {
                     Locale userLocale = Locale.getDefault();
                     LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -808,7 +796,7 @@ public class PatternDetailsController {
         } else {
             Long fieldMilis = patternField.stamp().time();
             if (fieldMilis.equals(PREMUNDANE_TIME)) {
-                dateAddedStr = "Premundane";
+                dateAddedStr = PREMUNDANE;
             } else {
                 LocalDate localDate = Instant.ofEpochMilli(fieldMilis).atZone(ZoneId.systemDefault()).toLocalDate();
                 dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
@@ -1083,7 +1071,7 @@ public class PatternDetailsController {
             EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
                     new MakePatternWindowEvent(actionEvent.getSource(), OPEN_PATTERN, patternViewModel.getPropertyValue(PATTERN), patternViewModel.getViewProperties()));
 
-            patternViewModel.setPropertyValue(IS_INVALID, true);
+            patternViewModel.setPropertyValue(PUBLISH_PENDING, false);
             patternViewModel.reLoadPatternValues();
         }
     }
@@ -1140,5 +1128,57 @@ public class PatternDetailsController {
         }
 
         updateDraggableNodesForPropertiesPanel(isOpen);
+    }
+
+    private void setupTooltipForDisabledButton(Button button) {
+
+        button.disabledProperty().subscribe(isNowDisabled -> {
+            if (isNowDisabled) {
+                Tooltip.uninstall(button, publishTooltip);
+
+                // Create unique handlers for each button-tooltip pair
+                EventHandler<MouseEvent> showHandler = showTooltipOnDisabledButton(button, publishTooltip);
+                EventHandler<MouseEvent> hideHandler = hideTooltipHandler(publishTooltip);
+
+                // Store handlers on the button's properties for later removal
+                button.getProperties().put("showHandler", showHandler);
+                button.getProperties().put("hideHandler", hideHandler);
+
+                publishStackPane.addEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
+                publishStackPane.addEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
+            } else {
+                Tooltip.install(button, publishTooltip);
+                publishTooltip.hide();
+
+                // Remove handlers if present
+                EventHandler<MouseEvent> showHandler = (EventHandler<MouseEvent>) button.getProperties().get("showHandler");
+                EventHandler<MouseEvent> hideHandler = (EventHandler<MouseEvent>) button.getProperties().get("hideHandler");
+                if (showHandler != null) publishStackPane.removeEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
+                if (hideHandler != null) publishStackPane.removeEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
+            }
+        });
+    }
+
+    private EventHandler<MouseEvent> showTooltipOnDisabledButton(Button button, Tooltip tooltip) {
+        return event -> {
+            if (button.isDisabled()) {
+                Bounds bounds = button.localToScreen(button.getBoundsInLocal());
+                double mouseX = event.getScreenX();
+                double mouseY = event.getScreenY();
+                if (bounds.contains(mouseX, mouseY)) {
+                    if (!tooltip.isShowing()) {
+                        tooltip.show(button, mouseX, mouseY + 10);
+                    }
+                } else {
+                    tooltip.hide();
+                }
+            } else {
+                tooltip.hide();
+            }
+        };
+    }
+
+    private EventHandler<MouseEvent> hideTooltipHandler(Tooltip tooltip) {
+        return event -> tooltip.hide();
     }
 }

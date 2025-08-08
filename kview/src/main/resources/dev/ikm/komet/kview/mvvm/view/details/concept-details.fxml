@@ -233,7 +233,7 @@
 
                                        <ResponsiveTextFlow fx:id="fqnDateAddedTextFlow">
                                           <Label styleClass="descr-semantic" />
-                                          <Label fx:id="fqnAddDateLabel" styleClass="descr-semantic" text="May 10, 2023" />
+                                          <Label fx:id="fqnAddDateLabel" styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                           <Hyperlink text="Attachment" />
                                           <Hyperlink text="Comment" />
                                        </ResponsiveTextFlow>

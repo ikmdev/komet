@@ -36,6 +36,18 @@ public class FilterOptionsPopup extends PopupControl {
         });
     }
 
+    // initialFilterOptionsProperty
+    private final ObjectProperty<FilterOptions> initialFilterOptionsProperty = new SimpleObjectProperty<>(this, "initialFilterOptions", new FilterOptions());
+    public final ObjectProperty<FilterOptions> initialFilterOptionsProperty() {
+        return initialFilterOptionsProperty;
+    }
+    public final FilterOptions getInitialFilterOptions() {
+        return initialFilterOptionsProperty.get();
+    }
+    public final void setInitialFilterOptions(FilterOptions value) {
+        initialFilterOptionsProperty.set(value);
+    }
+
     // filterOptionsProperty
     private final ObjectProperty<FilterOptions> filterOptionsProperty = new SimpleObjectProperty<>(this, "filterOptions");
     public final ObjectProperty<FilterOptions> filterOptionsProperty() {

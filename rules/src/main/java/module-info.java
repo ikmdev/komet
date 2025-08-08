@@ -29,5 +29,5 @@ open module dev.ikm.komet.rules {
 
     provides RuleService with EvreteRulesService;
 
-    uses dev.ikm.komet.framework.events.EvtBus;
+    uses dev.ikm.tinkar.events.EvtBus;
 }

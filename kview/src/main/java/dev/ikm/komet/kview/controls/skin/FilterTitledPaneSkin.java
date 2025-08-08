@@ -131,11 +131,11 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
 
         subscription = subscription.and(selectedOption.textProperty().subscribe(text -> {
-            String defaultOption = currentOption.defaultOption();
-            if (defaultOption.isEmpty()) {
-                defaultOption = currentOption.availableOptions().getFirst();
+            List<String> defaultOptions = currentOption.defaultOptions();
+            if (defaultOptions.isEmpty()) {
+                defaultOptions.add(currentOption.availableOptions().getFirst());
             }
-            pseudoClassStateChanged(MODIFIED_TITLED_PANE, !defaultOption.equals(text));
+            pseudoClassStateChanged(MODIFIED_TITLED_PANE, !text.isEmpty() && !text.equals(String.join(", ", defaultOptions)));
         }));
 
         if (control.getParent() instanceof Accordion accordion) {
@@ -241,7 +241,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         subscription = subscription.and(control.optionProperty().subscribe((_, _) -> setupTitledPane()));
         subscription = subscription.and(control.expandedProperty().subscribe((_, expanded) -> {
             if (!expanded) {
-                control.setOption(currentOption);
+                control.setOption(currentOption.copy());
                 selectedOption.setText(getOptionText(currentOption));
             }
         }));

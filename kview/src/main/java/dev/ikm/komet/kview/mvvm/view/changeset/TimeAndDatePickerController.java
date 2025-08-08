@@ -17,8 +17,8 @@ package dev.ikm.komet.kview.mvvm.view.changeset;
 
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.events.ExportDateTimePopOverEvent;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

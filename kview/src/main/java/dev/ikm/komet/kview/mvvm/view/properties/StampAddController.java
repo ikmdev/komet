@@ -1,122 +1,86 @@
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
-import dev.ikm.tinkar.common.util.text.NaturalOrder;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
-import javafx.beans.property.ObjectProperty;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import org.carlfx.cognitive.loader.InjectViewModel;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATHS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
+import dev.ikm.komet.framework.view.*;
+import dev.ikm.komet.kview.mvvm.view.ControllerUtils;
+import dev.ikm.komet.kview.mvvm.viewmodel.*;
+import dev.ikm.tinkar.terms.*;
+import javafx.beans.binding.*;
+import javafx.beans.property.*;
+import javafx.event.*;
+import javafx.fxml.*;
+import javafx.scene.*;
+import javafx.scene.control.*;
+import org.carlfx.cognitive.loader.*;
 
 
 public class StampAddController {
 
     @FXML
-    private ComboBox<String> statusComboBox;
+    private Button submitButton;
 
     @FXML
-    private ComboBox<String> moduleComboBox;
+    private Button resetButton;
 
     @FXML
-    private ComboBox<String> pathComboBox;
+    private ComboBox<ComponentWithNid> statusComboBox;
+
+    @FXML
+    private ComboBox<ComponentWithNid> moduleComboBox;
+
+    @FXML
+    private ComboBox<ComponentWithNid> pathComboBox;
 
     @InjectViewModel
     private StampViewModel2 stampViewModel;
 
+    private ControllerUtils<ComponentWithNid> controllerUtils;
+
     @FXML
     public void initialize() {
+        controllerUtils = new ControllerUtils<>(this::getViewProperties);
+
         initModuleComboBox();
         initPathComboBox();
         initStatusComboBox();
+
+        BooleanProperty isStampValuesTheSame = stampViewModel.getProperty(IS_STAMP_VALUES_THE_SAME);
+        submitButton.disableProperty().bind(isStampValuesTheSame);
+        resetButton.disableProperty().bind(isStampValuesTheSame);
+    }
+
+    private ViewProperties getViewProperties() {
+        return stampViewModel.getViewProperties();
     }
 
     private void initStatusComboBox() {
-        ObservableList<State> statuses = stampViewModel.getObservableList(STATUSES);
-        statuses.addListener((ListChangeListener<State>) c -> {
-            List<String> statusesStrings = statuses.stream()
-                                                   .map(this::toFirstLetterCapitalized)
-                                                   .collect(Collectors.toList());
-            Collections.sort(statusesStrings, NaturalOrder.getObjectComparator());
-            statusComboBox.getItems().setAll(statusesStrings);
-        });
+        controllerUtils.initComboBox(statusComboBox, stampViewModel.getObservableList(STATUSES));
 
-        ObjectProperty<State> statusProperty = stampViewModel.getProperty(STATUS);
-        statusProperty.subscribe(state -> {
-            if (state != null) {
-                statusComboBox.setValue(toFirstLetterCapitalized(state));
-            }
-        });
+        statusComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(STATUS));
     }
 
     private void initPathComboBox() {
-        ObservableList<ConceptEntity> paths = stampViewModel.getObservableList(PATHS);
-        paths.addListener((ListChangeListener<ConceptEntity>) c -> {
-            List<String> pathStrings = paths.stream()
-                    .map(EntityFacade::description)
-                    .collect(Collectors.toList());
-            Collections.sort(pathStrings, NaturalOrder.getObjectComparator());
-            pathComboBox.getItems().setAll(pathStrings);
-        });
+        controllerUtils.initComboBox(pathComboBox, stampViewModel.getObservableList(PATHS));
 
-        ObjectProperty<ConceptEntity> pathProperty = stampViewModel.getProperty(PATH);
-        pathProperty.subscribe(conceptEntity -> {
-            if (conceptEntity != null) {
-                pathComboBox.setValue(conceptEntity.description());
-            }
-        });
+        pathComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(PATH));
     }
 
     private void initModuleComboBox() {
-        // populate modules
-        ObservableList<ConceptEntity> modules = stampViewModel.getObservableList(MODULES);
+        controllerUtils.initComboBox(moduleComboBox, stampViewModel.getObservableList(MODULES));
 
-        modules.addListener((ListChangeListener<ConceptEntity>) c -> {
-            List<String> moduleStrings = modules.stream()
-                    .map(EntityFacade::description)
-                    .collect(Collectors.toList());
-            Collections.sort(moduleStrings, NaturalOrder.getObjectComparator());
-            moduleComboBox.getItems().setAll(moduleStrings);
-        });
-
-        ObjectProperty<ConceptEntity> moduleProperty = stampViewModel.getProperty(MODULE);
-        moduleProperty.subscribe(conceptEntity -> {
-            if (conceptEntity != null) {
-                moduleComboBox.setValue(conceptEntity.description());
-            }
-        });
+        moduleComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(MODULE));
     }
 
-    private String toFirstLetterCapitalized(State status) {
-        String statusString = status.toString();
-        return statusString.substring(0, 1).toUpperCase() + statusString.substring(1).toLowerCase();
+
+    public StampViewModel2 getStampViewModel() { return stampViewModel; }
+
+    @FXML
+    public void cancelForm(ActionEvent actionEvent) {
+        stampViewModel.cancel();
     }
 
-    public void cancel(ActionEvent actionEvent) {
+    @FXML
+    public void resetForm(ActionEvent actionEvent) { stampViewModel.resetForm(actionEvent); }
 
-    }
-
-    public void clearForm(ActionEvent actionEvent) {
-
-    }
-
-    public void confirm(ActionEvent actionEvent) {
-
-    }
+    public void submit(ActionEvent actionEvent) { stampViewModel.save(); }
 }
