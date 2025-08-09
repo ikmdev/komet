@@ -1,4 +1,4 @@
-package org.example;
+package dev.ikm.komet.kview.mvvm.view.loginuserlist;
 
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -38,7 +38,7 @@ public class LoginUserlistController {
 
         /// with this call we produce the fake users List and the fake passwords List. You need to implement your dataprovider instead of this to have a
 // real login functionality. This is just a mockup for later use.
-        LoginUserListdatamodel.fakeusers();
+     LoginUserListdatamodel.fakeusers();
 
 
         userchooser.setPromptText("Select a user");
@@ -168,7 +168,7 @@ LoginButton.setDisable(true);
         //it also swaps the visibility icon from hidden to visible and vice versa
         //this is used to show the password in plain text or as a password field with masked text
         if (!isvisible) {
-            visibilityicon.setImage(new javafx.scene.image.Image("view.png"));
+            visibilityicon.setImage(new javafx.scene.image.Image("dev.ikm.komet.kview.mvvm.view.images.view.png"));
             String a = passwordfield.getText();
             passwordfield.setVisible(false);
             passwordtextfield.setText(a);
@@ -176,7 +176,7 @@ LoginButton.setDisable(true);
             passwordtextfield.setVisible(true);
             isvisible = true;
         } else {
-            visibilityicon.setImage(new javafx.scene.image.Image("hidden.png"));
+            visibilityicon.setImage(new javafx.scene.image.Image("dev.ikm.komet.kview.mvvm.view.images.hidden.png"));
             String a = passwordtextfield.getText();
             passwordtextfield.setVisible(false);
             passwordfield.setText(a);

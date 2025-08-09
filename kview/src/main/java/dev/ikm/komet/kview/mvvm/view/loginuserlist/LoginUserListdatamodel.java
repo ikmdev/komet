@@ -1,4 +1,4 @@
-package org.example;
+package dev.ikm.komet.kview.mvvm.view.loginuserlist;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
