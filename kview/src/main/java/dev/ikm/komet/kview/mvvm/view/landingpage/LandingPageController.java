@@ -16,8 +16,8 @@
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
 import static dev.ikm.komet.framework.controls.TimeAgoCalculatorUtil.calculateTimeAgoWithPeriodAndDuration;
-import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
-import static dev.ikm.komet.framework.events.FrameworkTopics.LANDING_PAGE_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
 import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -44,10 +44,10 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.progress.ProgressHelper;

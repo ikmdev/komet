@@ -36,8 +36,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERT
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
 import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;

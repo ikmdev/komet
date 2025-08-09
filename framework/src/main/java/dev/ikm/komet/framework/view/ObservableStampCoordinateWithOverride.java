@@ -15,17 +15,17 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.value.ObservableValue;
-import org.eclipse.collections.api.set.ImmutableSet;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
-import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinate;
+import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampPositionRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.beans.value.ObservableValue;
+import org.eclipse.collections.api.set.ImmutableSet;
 
 public class ObservableStampCoordinateWithOverride extends ObservableStampCoordinateBase {
 
@@ -178,7 +178,7 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
         }
 
         if (!this.excludedModuleSpecificationsProperty().isOverridden()) {
-            ImmutableSet<ConceptFacade> excludedModuleSet = newValue.moduleNids().map(nid -> EntityProxy.Concept.make(nid));
+            ImmutableSet<ConceptFacade> excludedModuleSet = newValue.excludedModuleNids().map(nid -> EntityProxy.Concept.make(nid));
             if (!excludedModuleSet.equals(this.excludedModuleSpecificationsProperty().get())) {
                 this.excludedModuleSpecificationsProperty().setAll(excludedModuleSet.castToSet());
             }

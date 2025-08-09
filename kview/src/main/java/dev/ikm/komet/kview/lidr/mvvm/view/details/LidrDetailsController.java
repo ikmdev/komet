@@ -49,10 +49,10 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.EvtType;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtType;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.data.schema.STAMPDetail;
 import dev.ikm.komet.kview.events.StampModifiedEvent;

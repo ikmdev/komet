@@ -150,9 +150,9 @@
                            <ColumnConstraints halignment="LEFT" hgrow="NEVER" />
                         </columnConstraints>
                         <rowConstraints>
-                           <RowConstraints minHeight="48.0" prefHeight="56.0" valignment="TOP" />
-                           <RowConstraints valignment="CENTER" />
-                           <RowConstraints valignment="CENTER" />
+                           <RowConstraints minHeight="48.0" prefHeight="56.0" valignment="TOP" fillHeight="false"/>
+                           <RowConstraints valignment="CENTER" fillHeight="false" />
+                           <RowConstraints valignment="CENTER" fillHeight="false" />
                         </rowConstraints>
                         <ImageView fx:id="identiconImageView" fitWidth="44.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="0" GridPane.rowIndex="0">
                            <Image url="@../images/identicon-placeholder.png" />
@@ -192,10 +192,6 @@
                               <HBox>
                                  <Text styleClass="stamp-text" text="Path: " />
                                  <Label fx:id="pathLabel" styleClass="stamp-label" />
-                              </HBox>
-                              <HBox>
-                                 <Text styleClass="stamp-text" text="Origination: " />
-                                 <Label fx:id="originationLabel" styleClass="stamp-label" />
                               </HBox>
                            </VBox>
                            <Button contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#popupStampEdit" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0" StackPane.alignment="TOP_RIGHT">
@@ -237,7 +233,7 @@
 
                                        <ResponsiveTextFlow fx:id="fqnDateAddedTextFlow">
                                           <Label styleClass="descr-semantic" />
-                                          <Label fx:id="fqnAddDateLabel" styleClass="descr-semantic" text="May 10, 2023" />
+                                          <Label fx:id="fqnAddDateLabel" styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                           <Hyperlink text="Attachment" />
                                           <Hyperlink text="Comment" />
                                        </ResponsiveTextFlow>

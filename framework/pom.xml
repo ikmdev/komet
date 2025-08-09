@@ -25,6 +25,10 @@
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>terms</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>events</artifactId>
+        </dependency>
 
         <!-- JPMS wrapped dependencies -->
         <dependency>

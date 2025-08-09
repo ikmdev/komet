@@ -20,11 +20,14 @@ import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
@@ -52,19 +55,19 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     private Label addFqnTitleLabel;
 
     @FXML
-    private ComboBox<ConceptEntity> moduleComboBox;
+    private ComboBox<EntityFacade> moduleComboBox;
 
     @FXML
     private TextField fullyQualifiedNameTextField;
 
     @FXML
-    private ComboBox<ConceptEntity> statusComboBox;
+    private ComboBox<EntityFacade> statusComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> caseSignificanceComboBox;
+    private ComboBox<EntityFacade> caseSignificanceComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> languageComboBox;
+    private ComboBox<EntityFacade> languageComboBox;
 
     @FXML
     private Button submitButton;
@@ -103,6 +106,7 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
             submitButton.setDisable(!isFormValid);
         };
 
+        fullyQualifiedNameTextField.textProperty().addListener(formValid);
         setupComboBox(moduleComboBox, formValid);
         setupComboBox(statusComboBox, formValid);
         setupComboBox(caseSignificanceComboBox, formValid);
@@ -125,7 +129,7 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     }
 
     public void populate(ComboBox comboBox, Collection<ConceptEntity> entities) {
-        comboBox.getItems().addAll(entities);
+        comboBox.getItems().setAll(entities);
     }
 
     @Override
@@ -136,6 +140,12 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
         populate(statusComboBox, fqnViewModel.findAllStatuses(getViewProperties()));
         populate(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
         populate(languageComboBox, fqnViewModel.findAllLanguages(getViewProperties()));
+
+        // Set UI to default values
+        caseSignificanceComboBox.setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+        statusComboBox.setValue(Entity.getFast(State.ACTIVE.nid()));
+        moduleComboBox.setValue(TinkarTerm.DEVELOPMENT_MODULE);
+        languageComboBox.setValue(TinkarTerm.ENGLISH_LANGUAGE);
     }
 
     @Override

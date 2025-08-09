@@ -52,11 +52,9 @@ public class PatternSemanticListCell extends ListCell<Object> {
     private String currentSemanticTitle;
 
     public PatternSemanticListCell(Function<Integer, String> fetchDescriptionByNid,
-                                   Function<EntityFacade, String> fetchDescriptionByFacade,
                                    ViewProperties viewProperties) {
 
         this.fetchDescriptionByNid = fetchDescriptionByNid;
-        this.fetchDescriptionByFacade = fetchDescriptionByFacade;
         this.viewProperties = viewProperties;
 
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);

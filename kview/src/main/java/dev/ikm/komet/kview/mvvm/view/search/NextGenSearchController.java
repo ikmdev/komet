@@ -15,32 +15,53 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT_ALPHA;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC;
+import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC_ALPHA;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
 import dev.ikm.komet.framework.search.SearchPanelController;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
+import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
+import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
-import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
+import dev.ikm.komet.kview.tasks.FilterMenuTask;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
+import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -60,7 +81,6 @@ import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -69,14 +89,20 @@ import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.OptionalInt;
+import java.util.TreeMap;
+import java.util.UUID;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.SEARCH_SORT_TOPIC;
-import static dev.ikm.komet.kview.events.SearchSortOptionEvent.*;
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.*;
 
 
-public class NextGenSearchController extends AbstractBasicController {
+public class NextGenSearchController {
 
     private static final Logger LOG = LoggerFactory.getLogger(NextGenSearchController.class);
 
@@ -111,11 +137,7 @@ public class NextGenSearchController extends AbstractBasicController {
 
     private PopOver sortOptions;
 
-    private ObservableViewNoOverride windowView;
-
     private EvtBus eventBus;
-
-    private UUID journalTopic;
 
     private FilterOptionsPopup filterOptionsPopup;
 
@@ -155,6 +177,13 @@ public class NextGenSearchController extends AbstractBasicController {
         initSearchResultType();
 
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
+
+        TinkExecutor.threadPool().execute(TaskWrapper.make(new FilterMenuTask(getViewProperties()),
+                (FilterOptions filterOptions) ->
+                        FXUtils.runOnFxThread(() ->
+                            filterOptionsPopup.initialFilterOptionsProperty().setValue(filterOptions))
+        ));
+
         root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
         filterPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (filterOptionsPopup.getNavigator() == null) {
@@ -173,6 +202,25 @@ public class NextGenSearchController extends AbstractBasicController {
         });
         filterOptionsPopup.showingProperty().subscribe(showing ->
                 filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
+
+        // listen for changes to the filter options
+        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, newFilterOptions) -> {
+            if (newFilterOptions != null) {
+                // state
+                if (!newFilterOptions.getStatus().selectedOptions().isEmpty()) {
+                    StateSet stateSet = StateSet.make(
+                            newFilterOptions.getStatus().selectedOptions().stream().map(
+                                    s -> State.valueOf(s.toUpperCase())).toList());
+                    // update the STATUS
+                    getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
+                }
+                //TODO Type, Module, Path, Language, Description Type, Kind of, Membership, Sort By, Date
+            }
+        });
+
+        getViewProperties().nodeView().addListener((observableValue, oldViewRecord, newViewRecord) -> {
+            doSearch(new ActionEvent(null, null));
+        });
     }
 
     private void initSearchResultType() {
@@ -190,14 +238,14 @@ public class NextGenSearchController extends AbstractBasicController {
         switch (newSearchResultType) {
             case TOP_COMPONENT ->
                 searchResultsListView.setCellFactory((Callback<ListView<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>, ListCell<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>>) param ->
-                        new SearchCellTopComponent(getViewProperties(), getJournalTopic(), windowView)
+                        new SearchCellTopComponent(getViewProperties(), getJournalTopic(), getViewProperties().parentView())
                 );
             case DESCRIPTION_SEMANTICS ->
                 searchResultsListView.setCellFactory((Callback<ListView<LatestVersionSearchResult>, ListCell<LatestVersionSearchResult>>) param ->
-                        new SearchCellDescriptionSemantic(getViewProperties(), getJournalTopic(), windowView));
+                        new SearchCellDescriptionSemantic(getViewProperties(), getJournalTopic(), getViewProperties().parentView()));
             case NID ->
                 searchResultsListView.setCellFactory((Callback<ListView<Integer>, ListCell<Integer>>) param ->
-                        new SearchCellNid(getViewProperties(), windowView, journalTopic));
+                        new SearchCellNid(getViewProperties(), getViewProperties().parentView(), getJournalTopic()));
         }
 
         currentSearchResultType = newSearchResultType;
@@ -437,8 +485,12 @@ public class NextGenSearchController extends AbstractBasicController {
         }
     }
 
+    public ViewProperties getViewProperties() {
+        return nextGenSearchViewModel.getPropertyValue(VIEW_PROPERTIES);
+    }
+
     private UUID getJournalTopic() {
-        return journalTopic;
+        return nextGenSearchViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
     }
 
     private String formatHighlightedString(String highlightedString) {
@@ -448,33 +500,16 @@ public class NextGenSearchController extends AbstractBasicController {
                 .replaceAll("\\s+", " ");
     }
 
-    @Override
-    public void updateView() {
 
-    }
 
-    @Override
     public void clearView() {
         searchResultsListView.getItems().clear();
     }
 
-    @Override
     public void cleanup() {
 
     }
 
-    @Override
-    public <T extends ViewModel> T getViewModel() {
-        return null;
-    }
-
-    public void setWindowView(ObservableViewNoOverride windowView) {
-        this.windowView = windowView;
-    }
-
-    public void setJournalTopic(UUID journalTopic) {
-        this.journalTopic = journalTopic;
-    }
 
     /***************************************************************************
      *                                                                         *

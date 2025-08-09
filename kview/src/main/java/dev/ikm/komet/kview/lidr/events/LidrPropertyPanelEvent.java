@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.kview.lidr.events;
 
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtType;
 
 /**
  * Listen to events to open or close the property bump out.

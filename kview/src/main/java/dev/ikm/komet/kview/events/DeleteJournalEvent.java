@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.kview.events;
 
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtType;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtType;
 
 import java.util.UUID;
 
@@ -27,8 +27,8 @@ import java.util.UUID;
  * for handling journal deletion events within the application. The event carries
  * information about which journal topic should be deleted.
  *
- * @see dev.ikm.komet.framework.events.Evt
- * @see dev.ikm.komet.framework.events.EvtType
+ * @see dev.ikm.tinkar.events.Evt
+ * @see dev.ikm.tinkar.events.EvtType
  */
 public class DeleteJournalEvent extends Evt {
 

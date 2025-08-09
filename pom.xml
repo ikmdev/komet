@@ -72,7 +72,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.6.0</tinkar-composer.version>
-        <tinkar-core.version>1.118.0</tinkar-core.version>
+        <tinkar-core.version>1.119.0</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -98,7 +98,7 @@
         <roaringbitmap.version>1.4.0</roaringbitmap.version>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
         <classgraph.version>4.8.179</classgraph.version>
-        <cognitive.version>1.6.0</cognitive.version>
+        <cognitive.version>1.6.1</cognitive.version>
         <fxcomponents.version>1.6.2</fxcomponents.version>
         <axonic.version>1.1.5</axonic.version>
         <common-java5.version>3.5.2</common-java5.version>
@@ -280,6 +280,11 @@
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>terms</artifactId>
+                <version>${tinkar-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>events</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
             <dependency>

@@ -15,27 +15,22 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
+import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.*;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.events.*;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.scene.shape.SVGPath;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,15 +38,13 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
 
-import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-
 /**
  * The properties window providing tabs of Edit, Hierarchy, History, and Comments.
  * This view is associated with the view file history-change-selection.fxml.
  */
 public class PropertiesController implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesController.class);
+
     protected static final String HISTORY_CHANGE_FXML_FILE = "history-change-selection.fxml";
     protected static final String HIERARCHY_VIEW_FXML_FILE = "hierarchy-view.fxml";
 
@@ -66,6 +59,8 @@ public class PropertiesController implements Serializable {
     protected static final String EDIT_FQN_FXML_FILE = "edit-fully-qualified-name.fxml";
 
     protected static final String ADD_FQN_FXML_FILE = "add-fully-qualified-name.fxml";
+
+    protected static final String ADD_STAMP_FXML_FILE = "stamp-add.fxml";
 
     @FXML
     private SVGPath commentsButton;
@@ -88,6 +83,7 @@ public class PropertiesController implements Serializable {
     @FXML
     private FlowPane propertiesTabsPane;
 
+    private JFXNode<Pane, StampAddController> stampJFXNode;
     private Pane historyTabsBorderPane;
     private HistoryChangeController historyChangeController;
 
@@ -138,6 +134,8 @@ public class PropertiesController implements Serializable {
 
     private Subscriber<ShowEditDescriptionPanelEvent> editDescriptionPaneSubscriber;
 
+    private Subscriber<AddStampEvent> addStampSubscriber;
+
     private Subscriber<OpenPropertiesPanelEvent> propsPanelOpen;
 
 
@@ -159,6 +157,10 @@ public class PropertiesController implements Serializable {
         clearView();
 
         eventBus = EvtBusFactory.getDefaultEvtBus();
+
+        // Load Stamp add View Panel (FXML & Controller)
+        Config stampConfig = new Config(PropertiesController.class.getResource(ADD_STAMP_FXML_FILE));
+        stampJFXNode = FXMLMvvmLoader.make(stampConfig);
 
         // Load History tabs View Panel (FXML & Controller)
         FXMLLoader loader = new FXMLLoader(getClass().getResource(HISTORY_CHANGE_FXML_FILE));
@@ -324,11 +326,19 @@ public class PropertiesController implements Serializable {
 
         // when opening the properties panel the default toggle to view is the history tab
         propsPanelOpen = evt -> {
-            historyButton.setSelected(true);
-            contentBorderPane.setCenter(historyTabsBorderPane);
+            if (contentBorderPane.getCenter() == null) {
+                historyButton.setSelected(true);
+                contentBorderPane.setCenter(historyTabsBorderPane);
+            }
         };
         eventBus.subscribe(conceptTopic, OpenPropertiesPanelEvent.class, propsPanelOpen);
 
+        addStampSubscriber = evt -> {
+            contentBorderPane.setCenter(stampJFXNode.node());
+            editButton.setSelected(true);
+        };
+
+        eventBus.subscribe(conceptTopic, AddStampEvent.class, addStampSubscriber);
     }
 
     public ViewProperties getViewProperties() {
@@ -369,6 +379,10 @@ public class PropertiesController implements Serializable {
 
         // Create a new DescrNameViewModel for the addfqncontroller.
         this.addFullyQualifiedNameController.updateModel(viewProperties);
+
+        this.stampJFXNode.updateViewModel("stampViewModel", (StampViewModel2 viewModel) -> {
+            viewModel.init(entityFacade, conceptTopic, viewProperties);
+        });
     }
 
     public void updateView() {

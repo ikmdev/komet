@@ -139,7 +139,7 @@
     -fx-border-color: transparent;
     -fx-border-radius: 3px;
 
-    -fx-padding: 4px;
+    -fx-padding: 5px;
 }
 
 .stamp-container:selected {
@@ -160,6 +160,31 @@
     -fx-font-weight: 500;
     -fx-font-size: 12px;
     -fx-text-fill: -Grey-11;
+}
+
+.stamp-form-container .help-icon-container {
+    -fx-padding: 8px 10px 0 0;
+
+    -fx-max-width: 28px;
+    -fx-max-height: 28px;
+}
+
+.stamp-form-container .form-title {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 14px;
+    -fx-text-fill: #111;
+
+    -fx-padding: 12px 0 0 0;
+}
+
+.stamp-form-container .form-container {
+    -fx-padding: 10px 16px 0px 16px;
+}
+
+.stamp-form-container .form-container .form-label {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 14px;
+    -fx-text-fill: #111;
 }
 
 .identicon-frame {
@@ -2800,7 +2825,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
 
-    -fx-prompt-text-fill: #111;
+    -fx-prompt-text-fill: #909090;
 }
 
 .blue-arrow-combo-box {
@@ -3127,6 +3152,14 @@ Timeline Year line segment (will overlay change circles)
 
 .search-entry-title-pane {
     -fx-border-color: -Secondary-05;
+}
+
+.search-entry-title-pane-pattern {
+    -fx-border-color: -Secondary-05;
+    -fx-border-width: 3px;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+    -fx-background-color: -Grey-2;
 }
 
 .search-entry-title-pane > .content {
