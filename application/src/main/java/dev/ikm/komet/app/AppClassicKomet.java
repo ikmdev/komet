@@ -236,5 +236,4 @@ public class AppClassicKomet {
 
         return Lists.immutable.of(newSearchTab, progressTab, completionTab);
     }
-
 }

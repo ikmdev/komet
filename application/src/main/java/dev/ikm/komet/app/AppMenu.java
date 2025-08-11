@@ -477,5 +477,4 @@ public class AppMenu {
                     usedMemory / (1024 * 1024), totalMemory / (1024 * 1024)));
         }
     }
-
 }
