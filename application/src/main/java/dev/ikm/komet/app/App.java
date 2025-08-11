@@ -17,10 +17,7 @@ package dev.ikm.komet.app;
 
 import com.jpro.webapi.WebAPI;
 import dev.ikm.komet.framework.ScreenInfo;
-import dev.ikm.komet.framework.events.Evt;
-import dev.ikm.komet.framework.events.EvtBus;
-import dev.ikm.komet.framework.events.EvtBusFactory;
-import dev.ikm.komet.framework.events.Subscriber;
+import dev.ikm.tinkar.events.*;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.window.WindowSettings;
@@ -66,7 +63,7 @@ import static dev.ikm.komet.app.LoginFeatureFlag.ENABLED_WEB_ONLY;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
-import static dev.ikm.komet.framework.events.FrameworkTopics.IMPORT_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.*;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
@@ -459,6 +456,9 @@ public class App extends Application  {
                 case SELECTED_DATA_SOURCE -> {
                     Platform.runLater(() -> state.set(LOADING_DATA_SOURCE));
                     TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
+                }
+                case SELECT_USER -> {
+                    appPages.launchLoginUserList(primaryStage);
                 }
                 case RUNNING -> {
                     if (userProperty.get() == null) {

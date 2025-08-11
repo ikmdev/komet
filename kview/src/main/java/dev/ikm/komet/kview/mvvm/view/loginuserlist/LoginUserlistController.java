@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import java.util.concurrent.CompletableFuture;
 
 public class LoginUserlistController {
     private static boolean isvisible = false;
@@ -31,13 +32,15 @@ public class LoginUserlistController {
 
     private boolean Loginenabled=false;
 
+    private CompletableFuture<LoginUserListUsermodel> onLoginFuture = new CompletableFuture<>();
+
     @FXML
     public void initialize() {
 
 
 
-        /// with this call we produce the fake users List and the fake passwords List. You need to implement your dataprovider instead of this to have a
-// real login functionality. This is just a mockup for later use.
+     // with this call we produce the fake users List and the fake passwords List. You need to implement your dataprovider instead of this to have a
+     // real login functionality. This is just a mockup for later use.
      LoginUserListdatamodel.fakeusers();
 
 
@@ -57,12 +60,10 @@ LoginButton.setDisable(true);
             SwapVisibility();
         }
 
-
         System.out.println("Signup");
         boolean error = false;
         String Errormessage = "";
         boolean loginproceed = false;
-
 
         System.out.println(userchooser.getValue());
         if (userchooser.getValue() == null) {
@@ -70,9 +71,7 @@ LoginButton.setDisable(true);
             error = true;
             Errormessage = "Error: " + "Please select a User";
             usererrorlabel.setText(Errormessage);
-
         } else {
-
             String username = userchooser.getValue().toString();
             String password = "";
             if (!isvisible) {
@@ -110,7 +109,9 @@ LoginButton.setDisable(true);
                 //Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
                 //stage.close();
 
-                System.out.println("Login Successful");
+                System.out.println("Login Successful!!!!!!!!");
+
+                onLoginFuture.complete(null);
             } else {
 
                 loginerrorlabel.setText("Login failed, please check your credentials");
@@ -184,6 +185,10 @@ LoginButton.setDisable(true);
             isvisible = false;
         }
 
+    }
+
+    public CompletableFuture<LoginUserListUsermodel> onLogin() {
+        return onLoginFuture;
     }
 
 

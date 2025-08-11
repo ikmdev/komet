@@ -20,7 +20,6 @@
 package dev.ikm.komet.app;
 
 
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;

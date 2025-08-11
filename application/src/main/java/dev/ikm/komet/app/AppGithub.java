@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.prefs.BackingStoreException;
 
-import static dev.ikm.komet.framework.events.FrameworkTopics.LANDING_PAGE_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.*;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_STATUS;

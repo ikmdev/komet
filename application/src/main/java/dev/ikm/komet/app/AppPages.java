@@ -7,6 +7,7 @@ import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
+import dev.ikm.komet.kview.mvvm.view.loginuserlist.LoginUserlistController;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -14,6 +15,7 @@ import dev.ikm.komet.search.SearchNodeFactory;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -73,6 +75,31 @@ public class AppPages {
             });
             app.rootPane.getChildren().setAll(sourceRoot);
             stage.setTitle("KOMET Startup");
+
+            app.appMenu.setupMenus();
+        } catch (IOException ex) {
+            LOG.error("Failed to initialize the select data source window", ex);
+        }
+    }
+
+    void launchLoginUserList(Stage stage) {
+
+        try {
+            var clazz = LoginUserlistController.class;
+            var url = clazz.getResource("/dev/ikm/komet/kview/mvvm/view/loginuserlist/LoginUserList.fxml");
+            LOG.info(" ######################## url :" + url);
+            var loader = new FXMLLoader(url);
+            var content = (Node) loader.load();
+            var controller = (LoginUserlistController) loader.getController();
+            app.rootPane.getChildren().setAll(content);
+            stage.setTitle("KOMET User List");
+
+            controller.onLogin().thenAccept(userModel -> {
+                App.state.set(AppState.RUNNING);
+            });
+
+            stage.setWidth(content.prefWidth(-1));
+            stage.setHeight(content.prefHeight(-1));
 
             app.appMenu.setupMenus();
         } catch (IOException ex) {
