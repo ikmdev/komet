@@ -16,7 +16,7 @@ public class LoginAuthorDataModel {
     protected static ObservableList<String> list = FXCollections.observableArrayList();
 
     protected static void fakeusers() {
-            userList.clear();
+        userList.clear();
         for (int i = 0; i < 10; i++) {
             LoginAuthorUserModel user = new LoginAuthorUserModel();
             user.username = "KometUser" + (i + 1);
@@ -25,7 +25,7 @@ public class LoginAuthorDataModel {
             String username = user.getUsername();
             list.add(username);
         }
-            }
+    }
 
     public static boolean validateUser(String username, String userpassword) {
         boolean result = false;

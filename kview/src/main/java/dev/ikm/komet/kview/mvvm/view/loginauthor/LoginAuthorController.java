@@ -127,7 +127,7 @@ public class LoginAuthorController {
     }
 
     public void swapVisibility() {
-       if (!isvisible) {
+        if (!isvisible) {
             visibilityicon.setImage(new javafx.scene.image.Image("dev.ikm.komet.kview.mvvm.view.images.view.png"));
             String a = passwordfield.getText();
             passwordfield.setVisible(false);
