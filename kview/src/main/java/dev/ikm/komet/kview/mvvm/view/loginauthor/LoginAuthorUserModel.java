@@ -2,22 +2,22 @@ package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
 public class LoginAuthorUserModel {
 
-    public String username;
-    public String userpassword;
+    public String userName;
+    public String userPassword;
 
-    public String getUsername() {
-        return username;
+    public String getUserName() {
+        return userName;
     }
 
     public void setUsername(String username) {
-        this.username = username;
+        this.userName = userName;
     }
 
     public String getUserpassword() {
-        return userpassword;
+        return userPassword;
     }
 
     public void setUserpassword(String userpassword) {
-        this.userpassword = userpassword;
+        this.userPassword = userpassword;
     }
 }

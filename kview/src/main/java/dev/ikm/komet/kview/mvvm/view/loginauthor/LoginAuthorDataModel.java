@@ -5,8 +5,8 @@ import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
 
-/*
-This Class contains functionality for generting fake users for test implementation, origonal authorlist should be implemented for later use.
+/**
+This Class contains functionality for generating fake users for test implementation, original authorlist should be implemented for later use.
  */
 
 public class LoginAuthorDataModel {
@@ -19,18 +19,18 @@ public class LoginAuthorDataModel {
         userList.clear();
         for (int i = 0; i < 10; i++) {
             LoginAuthorUserModel user = new LoginAuthorUserModel();
-            user.username = "KometUser" + (i + 1);
-            user.userpassword = "KometUser" + (i + 1);
+            user.userName = "KometUser" + (i + 1);
+            user.userPassword = "KometUser" + (i + 1);
             userList.add(user);
-            String username = user.getUsername();
-            list.add(username);
+            String userName = user.getUserName();
+            list.add(userName);
         }
     }
 
     public static boolean validateUser(String username, String userpassword) {
         boolean result = false;
         for (LoginAuthorUserModel user : userList) {
-            if (user.getUsername().equals(username) && user.getUserpassword().equals(userpassword)) {
+            if (user.getUserName().equals(username) && user.getUserpassword().equals(userpassword)) {
                 result = true;
                 break;
             }

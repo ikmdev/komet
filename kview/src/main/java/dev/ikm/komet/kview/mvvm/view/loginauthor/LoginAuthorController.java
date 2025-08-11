@@ -30,11 +30,7 @@ public class LoginAuthorController {
     @FXML
     private TextField passwordtextfield;
     @FXML
-    private AnchorPane MainPane;
-    @FXML
     private Label loginerrorlabel;
-
-    private boolean Loginenabled = false;
 
     private CompletableFuture<LoginAuthorUserModel> onLoginFuture = new CompletableFuture<>();
 
