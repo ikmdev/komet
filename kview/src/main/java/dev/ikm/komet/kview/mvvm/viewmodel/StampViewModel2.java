@@ -41,11 +41,11 @@ public class StampViewModel2 extends FormViewModel {
     /**
      * Provide the standard Confirm Clear dialog title for use in other classes
      */
-    public static final String CONFIRM_CLEAR_TITLE = "Confirm Clear Form";
+    public static final String CONFIRM_CLEAR_TITLE = "Confirm Reset Form";
     /**
      * Provide the standard Confirm Clear dialog message for use in other classes
      */
-    public static final String CONFIRM_CLEAR_MESSAGE =  "Are you sure you want to clear the form? All entered data will be lost.";
+    public static final String CONFIRM_CLEAR_MESSAGE =  "Are you sure you want to reset the form? All entered data will be lost.";
 
     private EntityFacade entityFacade;
     private ViewProperties viewProperties;
