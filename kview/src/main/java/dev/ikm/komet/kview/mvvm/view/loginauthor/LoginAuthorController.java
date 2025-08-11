@@ -1,9 +1,9 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
-
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import org.slf4j.Logger;
@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class LoginAuthorController {
     private static final Logger LOG = LoggerFactory.getLogger(LoginAuthorController.class);
-    private static boolean isvisible = false;
+    private static boolean isVisible = false;
 
     @FXML
     private PasswordField passwordField;
@@ -43,7 +43,7 @@ public class LoginAuthorController {
 
     @FXML
     public void signupAction(ActionEvent actionEvent) {
-        if (isvisible) {
+        if (isVisible) {
             swapVisibility();
         }
         String errormessage = "";
@@ -54,7 +54,7 @@ public class LoginAuthorController {
         } else {
             String username = userChooser.getValue().toString();
             String password = "";
-            if (!isvisible) {
+            if (!isVisible) {
                 password = passwordField.getText();
             } else {
                 password = passwordTextField.getText();
@@ -92,7 +92,7 @@ public class LoginAuthorController {
     public void clicked() {
         cleanErrorLabels();
         String pwvalidate = "";
-        if (!isvisible) {
+        if (!isVisible) {
             pwvalidate = passwordField.getText();
         } else {
             pwvalidate = passwordTextField.getText();
@@ -104,21 +104,21 @@ public class LoginAuthorController {
     }
 
     public void swapVisibility() {
-        if (!isvisible) {
+        if (!isVisible) {
             visibilityIcon.setImage(new javafx.scene.image.Image("dev.ikm.komet.kview.mvvm.view.images.view.png"));
             String a = passwordField.getText();
             passwordField.setVisible(false);
             passwordTextField.setText(a);
             passwordTextField.setPromptText("Password");
             passwordTextField.setVisible(true);
-            isvisible = true;
+            isVisible = true;
         } else {
-            visibilityIcon.setImage(new javafx.scene.image.Image("dev.ikm.komet.kview.mvvm.view.images.hidden.png"));
+            visibilityIcon.setImage(new Image("dev.ikm.komet.kview.mvvm.view.images.hidden.png"));
             String a = passwordTextField.getText();
             passwordTextField.setVisible(false);
             passwordField.setText(a);
             passwordField.setVisible(true);
-            isvisible = false;
+            isVisible = false;
         }
     }
 
