@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.view.loginuserlist;
+package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,10 +10,10 @@ import java.util.ArrayList;
 //so there is no Binding, neither in controller class or here. When refactoring with security relevant data, change the data structure
 //to provide the needed secure login.
 
-public class LoginUserListdatamodel {
+public class LoginAuthorDataModel {
 
 
-    private static final ArrayList<LoginUserListUsermodel> userList = new ArrayList<LoginUserListUsermodel>();
+    private static final ArrayList<LoginAuthorUserModel> userList = new ArrayList<LoginAuthorUserModel>();
     protected static ObservableList<String> list = FXCollections.observableArrayList();
 
     protected static void fakeusers() {
@@ -21,7 +21,7 @@ public class LoginUserListdatamodel {
         //this is just a mockup for later use. Please do not forget to remove this class and the call of this class in Scene initilizing Controller!
         userList.clear();
         for (int i = 0; i < 10; i++) {
-            LoginUserListUsermodel user = new LoginUserListUsermodel();
+            LoginAuthorUserModel user = new LoginAuthorUserModel();
             user.username = "KometUser" + (i + 1);
             user.userpassword = "KometUser" + (i + 1);
             userList.add(user);
@@ -36,7 +36,7 @@ public class LoginUserListdatamodel {
 
     public static boolean validateUser(String username, String userpassword) {
         boolean result = false;
-        for (LoginUserListUsermodel user : userList) {
+        for (LoginAuthorUserModel user : userList) {
             if (user.getUsername().equals(username) && user.getUserpassword().equals(userpassword)) {
                 result = true;
                 break;

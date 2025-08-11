@@ -1,6 +1,6 @@
-package dev.ikm.komet.kview.mvvm.view.loginuserlist;
+package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
-public class LoginUserListUsermodel {
+public class LoginAuthorUserModel {
 
     public String username;
     public String userpassword;

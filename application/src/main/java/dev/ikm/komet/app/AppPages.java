@@ -7,7 +7,7 @@ import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
-import dev.ikm.komet.kview.mvvm.view.loginuserlist.LoginUserlistController;
+import dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorController;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -82,15 +82,15 @@ public class AppPages {
         }
     }
 
-    void launchLoginUserList(Stage stage) {
+    void launchLoginAuthor(Stage stage) {
 
         try {
-            var clazz = LoginUserlistController.class;
-            var url = clazz.getResource("/dev/ikm/komet/kview/mvvm/view/loginuserlist/LoginUserList.fxml");
+            var clazz = LoginAuthorController.class;
+            var url = clazz.getResource("/dev/ikm/komet/kview/mvvm/view/loginauthor/LoginAuthor.fxml");
             LOG.info(" ######################## url :" + url);
             var loader = new FXMLLoader(url);
             var content = (Node) loader.load();
-            var controller = (LoginUserlistController) loader.getController();
+            var controller = (LoginAuthorController) loader.getController();
             app.rootPane.getChildren().setAll(content);
             stage.setTitle("KOMET User List");
 

@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.view.loginuserlist;
+package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -8,7 +8,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import java.util.concurrent.CompletableFuture;
 
-public class LoginUserlistController {
+public class LoginAuthorController {
     private static boolean isvisible = false;
 
     @FXML
@@ -32,7 +32,7 @@ public class LoginUserlistController {
 
     private boolean Loginenabled=false;
 
-    private CompletableFuture<LoginUserListUsermodel> onLoginFuture = new CompletableFuture<>();
+    private CompletableFuture<LoginAuthorUserModel> onLoginFuture = new CompletableFuture<>();
 
     @FXML
     public void initialize() {
@@ -41,11 +41,11 @@ public class LoginUserlistController {
 
      // with this call we produce the fake users List and the fake passwords List. You need to implement your dataprovider instead of this to have a
      // real login functionality. This is just a mockup for later use.
-     LoginUserListdatamodel.fakeusers();
+     LoginAuthorDataModel.fakeusers();
 
 
         userchooser.setPromptText("Select a user");
-        userchooser.setItems(LoginUserListdatamodel.list);
+        userchooser.setItems(LoginAuthorDataModel.list);
         passwordtextfield.setVisible(false);
 LoginButton.setDisable(true);
 
@@ -99,7 +99,7 @@ LoginButton.setDisable(true);
                 //visibleclicked(null);
             }
 
-            boolean valid = LoginUserListdatamodel.validateUser(userchooser.getValue().toString(), passwordfield.getText());
+            boolean valid = LoginAuthorDataModel.validateUser(userchooser.getValue().toString(), passwordfield.getText());
             if (valid) {
 
                 loginerrorlabel.setText("");
@@ -187,7 +187,7 @@ LoginButton.setDisable(true);
 
     }
 
-    public CompletableFuture<LoginUserListUsermodel> onLogin() {
+    public CompletableFuture<LoginAuthorUserModel> onLogin() {
         return onLoginFuture;
     }
 

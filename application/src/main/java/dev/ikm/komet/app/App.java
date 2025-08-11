@@ -20,13 +20,11 @@ import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.tinkar.events.*;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.PrefX;
-import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.SignInUserEvent;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController;
-import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.Preferences;
@@ -38,13 +36,11 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import one.jpro.platform.auth.core.authentication.User;
@@ -458,7 +454,7 @@ public class App extends Application  {
                     TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
                 }
                 case SELECT_USER -> {
-                    appPages.launchLoginUserList(primaryStage);
+                    appPages.launchLoginAuthor(primaryStage);
                 }
                 case RUNNING -> {
                     if (userProperty.get() == null) {
