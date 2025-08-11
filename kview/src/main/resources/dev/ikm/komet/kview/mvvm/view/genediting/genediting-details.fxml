@@ -261,25 +261,25 @@
                   </VBox>
                </center>
                <top>
-                  <BorderPane prefHeight="180.0" prefWidth="894.0" styleClass="concept-detail-banner-background" BorderPane.alignment="CENTER">
+                  <BorderPane prefWidth="894.0" styleClass="concept-detail-banner-background" BorderPane.alignment="CENTER">
                      <center>
-                        <GridPane hgap="8.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="66.0" prefWidth="507.0" styleClass="concept-detail-banner-background">
+                        <GridPane hgap="8.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefWidth="507.0" styleClass="concept-detail-banner-background">
                            <columnConstraints>
                               <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="-Infinity" prefWidth="42.0" />
                               <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="234.0" prefWidth="416.0" />
                               <ColumnConstraints />
                            </columnConstraints>
                            <rowConstraints>
-                              <RowConstraints maxHeight="117.33333587646484" minHeight="10.0" prefHeight="88.00002034505208" vgrow="ALWAYS" />
-                              <RowConstraints maxHeight="50.66665140787761" minHeight="-Infinity" prefHeight="33.99997965494792" vgrow="SOMETIMES" />
-                              <RowConstraints maxHeight="32.66667683919272" minHeight="-Infinity" prefHeight="20.00001271565756" vgrow="SOMETIMES" />
-                              <RowConstraints maxHeight="25.33331298828125" minHeight="-Infinity" prefHeight="20.666656494140625" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="48.0" />
+                              <RowConstraints minHeight="0.0" />
+                              <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="22.0" vgrow="SOMETIMES" />
+                              <RowConstraints maxHeight="22.0" minHeight="-Infinity" prefHeight="22.0" vgrow="SOMETIMES" />
                            </rowConstraints>
                            <children>
-                              <ImageView fx:id="identiconImageView" fitWidth="44.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.valignment="TOP">
+                              <ImageView fx:id="identiconImageView" fitWidth="44.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.rowSpan="2" GridPane.valignment="TOP">
                                  <Image url="@../images/identicon-placeholder.png" />
                               </ImageView>
-                              <Label fx:id="semanticTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="87.0" prefWidth="429.0" text="SEMANTIC TITLE" textFill="#212430" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                              <Label fx:id="semanticTitleText" alignment="TOP_LEFT" maxWidth="1.7976931348623157E308" prefWidth="495.0" text="SEMANTIC TITLE" textFill="#212430" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.valignment="TOP">
                                  <font>
                                     <Font name="Open Sans Regular" size="17.0" />
                                  </font>
@@ -287,30 +287,30 @@
                                     <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip" />
                                  </tooltip>
                               </Label>
-                              <Label fx:id="semanticDescriptionLabel" text="Semantic for Test Performed Pattern" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" />
-                              <TextFlow prefHeight="22.0" prefWidth="437.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.rowSpan="1" GridPane.valignment="TOP">
+                              <Label fx:id="semanticDescriptionLabel" text="Semantic for Test Performed Pattern" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+                              <TextFlow GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.rowSpan="1">
                                  <children>
-                                    <Text fx:id="semanticMeaningLabelText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-label" text="Meaning:  " />
-                                    <Text fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />
+                                    <Text fx:id="semanticMeaningLabelText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-label" text="Meaning:  " translateY="3.0" />
+                                    <Text fx:id="semanticMeaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" translateY="3.5" />
                                     <Region prefHeight="10.0" prefWidth="10.0" />
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-label" text="Purpose:  " />
-                                    <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" />
+                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-label" text="Purpose:  " translateY="3.5" />
+                                    <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-banner-value" text="[]" translateY="3.5" />
                                  </children>
                               </TextFlow>
-                              <PublicIDControl fx:id="identifierControl" prefHeight="8.0" prefWidth="437.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.rowSpan="1" />
+                              <PublicIDControl fx:id="identifierControl" styleClass="concept-definition-title" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.rowSpan="1" />
                            </children>
                            <padding>
-                              <Insets bottom="8.0" left="12.0" right="8.0" top="8.0" />
+                              <Insets bottom="2.0" left="12.0" right="8.0" top="8.0" />
                            </padding>
                         </GridPane>
                      </center>
                      <right>
-                        <AnchorPane prefHeight="128.0" prefWidth="210.0" BorderPane.alignment="CENTER">
+                        <AnchorPane prefWidth="210.0" BorderPane.alignment="CENTER">
                            <BorderPane.margin>
                               <Insets />
                            </BorderPane.margin>
                            <children>
-                              <VBox prefHeight="108.0" prefWidth="210.0">
+                              <VBox prefWidth="210.0">
                                  <children>
                                     <FlowPane>
                                        <children>

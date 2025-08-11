@@ -222,6 +222,9 @@
 }
 
 .concept-definition-title{
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-weight: 500;
+    -fx-font-size: 12px;
     -fx-text-fill: -Grey-11;
     -fx-font-weight: bold;
 }
