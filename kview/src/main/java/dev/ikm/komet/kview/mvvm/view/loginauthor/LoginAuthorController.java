@@ -6,9 +6,14 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+ import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.CompletableFuture;
 
 public class LoginAuthorController {
+    private static final Logger LOG = LoggerFactory.getLogger(LoginAuthorController.class);
+
     private static boolean isvisible = false;
 
     @FXML
@@ -101,21 +106,11 @@ LoginButton.setDisable(true);
 
             boolean valid = LoginAuthorDataModel.validateUser(userchooser.getValue().toString(), passwordfield.getText());
             if (valid) {
-
                 loginerrorlabel.setText("");
-
-                // Here you can add the code to proceed with the login, e.g. opening a new window or changing the scene
-
-                //Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-                //stage.close();
-
-                System.out.println("Login Successful!!!!!!!!");
-
+                LOG.info("Author selected: " + userchooser.getValue().toString());
                 onLoginFuture.complete(null);
             } else {
-
                 loginerrorlabel.setText("Login failed, please check your credentials");
-
             }
         }
 
