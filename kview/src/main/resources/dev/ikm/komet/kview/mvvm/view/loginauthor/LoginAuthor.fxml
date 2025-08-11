@@ -16,19 +16,16 @@
       <AnchorPane fx:id="MainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="635.0" prefWidth="903.0" stylesheets="@../kview.css">
          <children>
             <ImageView fitHeight="635.0" fitWidth="903.0" pickOnBounds="true">
-               <image>
-                  <Image url="@../images/LoginBbackgrd.png" />
-               </image>
+               <Image url="@../images/LoginBackground.png"/>
             </ImageView>
             <ComboBox id="Button" fx:id="userchooser" layoutX="83.0" layoutY="288.0" onAction="#cleanerror" prefHeight="43.0" prefWidth="285.0" promptText="choose user" style="-fx-background-color: #fff;" stylesheets="@../kview.css" />
             <PasswordField fx:id="passwordfield" layoutX="83.0" layoutY="379.0" onKeyPressed="#countlength" prefHeight="43.0" prefWidth="285.0" promptText="Password" styleClass="text-field" stylesheets="@../kview.css" />
             <Button fx:id="LoginButton" layoutX="83.0" layoutY="496.0" mnemonicParsing="false" onAction="#SignupAction" prefHeight="43.0" prefWidth="285.0" style="-fx-background-color: #4581deff;" stylesheets="@../kview.css" text="SIGN IN" textFill="WHITE" />
             <Label fx:id="usererrorlabel" layoutX="83.0" layoutY="341.0" prefHeight="18.0" prefWidth="340.0" textFill="RED" />
             <Label fx:id="passworderrorlabel" layoutX="83.0" layoutY="432.0" prefHeight="18.0" prefWidth="340.0" textFill="RED" />
-            <ImageView fitHeight="37.0" fitWidth="120.0" layoutX="83.0" layoutY="82.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@../../kometlogo.png" />
-               </image>
+            <ImageView fitHeight="37.0" fitWidth="120.0" layoutX="83.0" layoutY="82.0" pickOnBounds="true"
+                       preserveRatio="true">
+               <Image url="@../images/kometlogo.png"/>
             </ImageView>
             <Label layoutX="83.0" layoutY="132.0" prefHeight="18.0" prefWidth="285.0" text="Welcome to Komet">
                <font>
