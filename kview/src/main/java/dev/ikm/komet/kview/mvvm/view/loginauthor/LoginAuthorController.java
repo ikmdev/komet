@@ -48,17 +48,16 @@ public class LoginAuthorController {
     }
 
     @FXML
-    public void SignupAction(ActionEvent actionEvent) {
+    public void signupAction(ActionEvent actionEvent) {
         if (isvisible) {
-            SwapVisibility();
+            swapVisibility();
         }
-        boolean error = false;
-        String Errormessage = "";
+        String errormessage = "";
         boolean loginproceed = false;
         if (userchooser.getValue() == null) {
-            error = true;
-            Errormessage = "Error: " + "Please select a User";
-            usererrorlabel.setText(Errormessage);
+
+            errormessage = "Error: " + "Please select a User";
+            usererrorlabel.setText(errormessage);
         } else {
             String username = userchooser.getValue().toString();
             String password = "";
@@ -72,9 +71,9 @@ public class LoginAuthorController {
                 loginproceed = true;
                 passworderrorlabel.setText("");
             } else {
-                error = true;
-                Errormessage = "ERROR: Password must be at least 5 characters long";
-                passworderrorlabel.setText(Errormessage);
+
+                errormessage = "ERROR: Password must be at least 5 characters long";
+                passworderrorlabel.setText(errormessage);
                 passworderrorlabel.setVisible(true);
             }
         }
@@ -123,11 +122,11 @@ public class LoginAuthorController {
 
     @FXML
     public void visibleclicked(Event event) {
-        SwapVisibility();
+        swapVisibility();
         cleanerrorlabels();
     }
 
-    public void SwapVisibility() {
+    public void swapVisibility() {
        if (!isvisible) {
             visibilityicon.setImage(new javafx.scene.image.Image("dev.ikm.komet.kview.mvvm.view.images.view.png"));
             String a = passwordfield.getText();
