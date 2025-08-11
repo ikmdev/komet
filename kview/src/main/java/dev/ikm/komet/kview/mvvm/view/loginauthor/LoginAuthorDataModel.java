@@ -6,7 +6,7 @@ import javafx.collections.ObservableList;
 import java.util.ArrayList;
 
 /**
-* This Class contains functionality for generating fake users for test
+ * This Class contains functionality for generating fake users for test
  * implementation, original authorlist should be implemented for later use.
  */
 public class LoginAuthorDataModel {
