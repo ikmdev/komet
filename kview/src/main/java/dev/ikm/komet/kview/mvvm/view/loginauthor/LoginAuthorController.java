@@ -5,10 +5,8 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.CompletableFuture;
 
 public class LoginAuthorController {
@@ -16,31 +14,31 @@ public class LoginAuthorController {
     private static boolean isvisible = false;
 
     @FXML
-    private PasswordField passwordfield;
+    private PasswordField passwordField;
     @FXML
-    private ComboBox userchooser;
+    private ComboBox userChooser;
     @FXML
-    private Button LoginButton;
+    private Button loginButton;
     @FXML
-    private Label passworderrorlabel;
+    private Label passwordErrorlabel;
     @FXML
-    private Label usererrorlabel;
+    private Label userErrorLabel;
     @FXML
-    private ImageView visibilityicon;
+    private ImageView visibilityIcon;
     @FXML
-    private TextField passwordtextfield;
+    private TextField passwordTextField;
     @FXML
-    private Label loginerrorlabel;
+    private Label loginerrorLabel;
 
     private CompletableFuture<LoginAuthorUserModel> onLoginFuture = new CompletableFuture<>();
 
     @FXML
     public void initialize() {
         LoginAuthorDataModel.fakeusers();
-        userchooser.setPromptText("Select a user");
-        userchooser.setItems(LoginAuthorDataModel.list);
-        passwordtextfield.setVisible(false);
-        LoginButton.setDisable(true);
+        userChooser.setPromptText("Select a user");
+        userChooser.setItems(LoginAuthorDataModel.list);
+        passwordTextField.setVisible(false);
+        loginButton.setDisable(true);
     }
 
     @FXML
@@ -50,37 +48,35 @@ public class LoginAuthorController {
         }
         String errormessage = "";
         boolean loginproceed = false;
-        if (userchooser.getValue() == null) {
-
+        if (userChooser.getValue() == null) {
             errormessage = "Error: " + "Please select a User";
-            usererrorlabel.setText(errormessage);
+            userErrorLabel.setText(errormessage);
         } else {
-            String username = userchooser.getValue().toString();
+            String username = userChooser.getValue().toString();
             String password = "";
             if (!isvisible) {
-                password = passwordfield.getText();
+                password = passwordField.getText();
             } else {
-                password = passwordtextfield.getText();
+                password = passwordTextField.getText();
             }
-            usererrorlabel.setText("");
+            userErrorLabel.setText("");
             if (password.length() > 4) {
                 loginproceed = true;
-                passworderrorlabel.setText("");
+                passwordErrorlabel.setText("");
             } else {
-
                 errormessage = "ERROR: Password must be at least 5 characters long";
-                passworderrorlabel.setText(errormessage);
-                passworderrorlabel.setVisible(true);
+                passwordErrorlabel.setText(errormessage);
+                passwordErrorlabel.setVisible(true);
             }
         }
         if (loginproceed) {
-            boolean valid = LoginAuthorDataModel.validateUser(userchooser.getValue().toString(), passwordfield.getText());
+            boolean valid = LoginAuthorDataModel.validateUser(userChooser.getValue().toString(), passwordField.getText());
             if (valid) {
-                loginerrorlabel.setText("");
-                LOG.info("Author selected: " + userchooser.getValue().toString());
+                loginerrorLabel.setText("");
+                LOG.info("Author selected: " + userChooser.getValue().toString());
                 onLoginFuture.complete(null);
             } else {
-                loginerrorlabel.setText("Login failed, please check your credentials");
+                loginerrorLabel.setText("Login failed, please check your credentials");
             }
         }
     }
@@ -91,9 +87,9 @@ public class LoginAuthorController {
     }
 
     public void cleanerrorlabels() {
-        usererrorlabel.setText("");
-        passworderrorlabel.setText("");
-        loginerrorlabel.setText("");
+        userErrorLabel.setText("");
+        passwordErrorlabel.setText("");
+        loginerrorLabel.setText("");
     }
 
     @FXML
@@ -106,13 +102,13 @@ public class LoginAuthorController {
         cleanerrorlabels();
         String pwvalidate = "";
         if (!isvisible) {
-            pwvalidate = passwordfield.getText();
+            pwvalidate = passwordField.getText();
         } else {
-            pwvalidate = passwordtextfield.getText();
+            pwvalidate = passwordTextField.getText();
         }
         if (pwvalidate.length() >= 4) {
-            passworderrorlabel.setText("");
-            LoginButton.setDisable(false);
+            passwordErrorlabel.setText("");
+            loginButton.setDisable(false);
         }
     }
 
@@ -124,19 +120,19 @@ public class LoginAuthorController {
 
     public void swapVisibility() {
         if (!isvisible) {
-            visibilityicon.setImage(new javafx.scene.image.Image("dev.ikm.komet.kview.mvvm.view.images.view.png"));
-            String a = passwordfield.getText();
-            passwordfield.setVisible(false);
-            passwordtextfield.setText(a);
-            passwordtextfield.setPromptText("Password");
-            passwordtextfield.setVisible(true);
+            visibilityIcon.setImage(new javafx.scene.image.Image("dev.ikm.komet.kview.mvvm.view.images.view.png"));
+            String a = passwordField.getText();
+            passwordField.setVisible(false);
+            passwordTextField.setText(a);
+            passwordTextField.setPromptText("Password");
+            passwordTextField.setVisible(true);
             isvisible = true;
         } else {
-            visibilityicon.setImage(new javafx.scene.image.Image("dev.ikm.komet.kview.mvvm.view.images.hidden.png"));
-            String a = passwordtextfield.getText();
-            passwordtextfield.setVisible(false);
-            passwordfield.setText(a);
-            passwordfield.setVisible(true);
+            visibilityIcon.setImage(new javafx.scene.image.Image("dev.ikm.komet.kview.mvvm.view.images.hidden.png"));
+            String a = passwordTextField.getText();
+            passwordTextField.setVisible(false);
+            passwordField.setText(a);
+            passwordField.setVisible(true);
             isvisible = false;
         }
     }
