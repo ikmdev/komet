@@ -60,8 +60,10 @@ import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -216,9 +218,6 @@ public class NextGenSearchController {
                     // update the STATUS
                     getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
                 }
-<<<<<<< Updated upstream
-                //TODO Type, Module, Path, Language, Description Type, Kind of, Membership, Sort By, Date
-=======
                 if (!newFilterOptions.getPath().selectedOptions().isEmpty()) {
                     //NOTE: there is no known way to set multiple paths
                     String pathStr = newFilterOptions.getPath().selectedOptions().stream().findFirst().get();
@@ -237,9 +236,12 @@ public class NextGenSearchController {
                     long millis = getMillis(newFilterOptions);
                     // update the time
                     getViewProperties().nodeView().stampCoordinate().timeProperty().set(millis);
+                } else {
+                    // revert to the Latest
+                    Date latest = new Date();
+                    getViewProperties().nodeView().stampCoordinate().timeProperty().set(latest.getTime());
                 }
                 //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
->>>>>>> Stashed changes
             }
         });
 
