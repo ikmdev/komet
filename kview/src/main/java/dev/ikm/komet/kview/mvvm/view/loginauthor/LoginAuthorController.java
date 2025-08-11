@@ -5,6 +5,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.CompletableFuture;
@@ -20,17 +21,17 @@ public class LoginAuthorController {
     @FXML
     private Button loginButton;
     @FXML
-    private Label passwordErrorlabel;
-    @FXML
     private Label userErrorLabel;
     @FXML
     private ImageView visibilityIcon;
     @FXML
     private TextField passwordTextField;
-    @FXML
-    private Label loginerrorLabel;
 
     private CompletableFuture<LoginAuthorUserModel> onLoginFuture = new CompletableFuture<>();
+    @FXML
+    private Label passwordErrorLabel;
+    @FXML
+    private Label loginErrorLabel;
 
     @FXML
     public void initialize() {
@@ -62,34 +63,34 @@ public class LoginAuthorController {
             userErrorLabel.setText("");
             if (password.length() > 4) {
                 loginproceed = true;
-                passwordErrorlabel.setText("");
+                passwordErrorLabel.setText("");
             } else {
                 errormessage = "ERROR: Password must be at least 5 characters long";
-                passwordErrorlabel.setText(errormessage);
-                passwordErrorlabel.setVisible(true);
+                passwordErrorLabel.setText(errormessage);
+                passwordErrorLabel.setVisible(true);
             }
         }
         if (loginproceed) {
             boolean valid = LoginAuthorDataModel.validateUser(userChooser.getValue().toString(), passwordField.getText());
             if (valid) {
-                loginerrorLabel.setText("");
+                loginErrorLabel.setText("");
                 LOG.info("Author selected: " + userChooser.getValue().toString());
                 onLoginFuture.complete(null);
             } else {
-                loginerrorLabel.setText("Login failed, please check your credentials");
+                loginErrorLabel.setText("Login failed, please check your credentials");
             }
         }
     }
 
-    @FXML
+    @Deprecated
     public void cleanerror(ActionEvent actionEvent) {
         cleanerrorlabels();
     }
 
     public void cleanerrorlabels() {
         userErrorLabel.setText("");
-        passwordErrorlabel.setText("");
-        loginerrorLabel.setText("");
+        passwordErrorLabel.setText("");
+        loginErrorLabel.setText("");
     }
 
     @FXML
@@ -107,7 +108,7 @@ public class LoginAuthorController {
             pwvalidate = passwordTextField.getText();
         }
         if (pwvalidate.length() >= 4) {
-            passwordErrorlabel.setText("");
+            passwordErrorLabel.setText("");
             loginButton.setDisable(false);
         }
     }
@@ -139,5 +140,9 @@ public class LoginAuthorController {
 
     public CompletableFuture<LoginAuthorUserModel> onLogin() {
         return onLoginFuture;
+    }
+
+    @FXML
+    public void cleanError(ActionEvent actionEvent) {
     }
 }
