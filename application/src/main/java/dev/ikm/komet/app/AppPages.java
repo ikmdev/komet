@@ -83,16 +83,13 @@ public class AppPages {
     }
 
     void launchLoginAuthor(Stage stage) {
-
         try {
-            var clazz = LoginAuthorController.class;
-            var url = clazz.getResource("/dev/ikm/komet/kview/mvvm/view/loginauthor/LoginAuthor.fxml");
-            LOG.info(" ######################## url :" + url);
+            var url = LoginAuthorController.class.getResource("/dev/ikm/komet/kview/mvvm/view/loginauthor/LoginAuthor.fxml");
             var loader = new FXMLLoader(url);
             var content = (Node) loader.load();
             var controller = (LoginAuthorController) loader.getController();
             app.rootPane.getChildren().setAll(content);
-            stage.setTitle("KOMET User List");
+            stage.setTitle("KOMET Author selection");
 
             controller.onLogin().thenAccept(userModel -> {
                 App.state.set(AppState.RUNNING);
