@@ -39,7 +39,7 @@ import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_VIEW;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
@@ -159,7 +159,7 @@ public class AppPages {
         Config journalConfig = new Config(JournalController.class.getResource("journal.fxml"))
                 .updateViewModel("journalViewModel", journalViewModel -> {
                     journalViewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
-                    journalViewModel.setPropertyValue(WINDOW_VIEW, windowSettings.getView());
+                    journalViewModel.setPropertyValue(WINDOW_SETTINGS, windowSettings);
                 });
         JFXNode<BorderPane, JournalController> journalJFXNode = FXMLMvvmLoader.make(journalConfig);
         BorderPane journalBorderPane = journalJFXNode.node();
