@@ -26,7 +26,6 @@ public class LoginAuthorController {
     private ImageView visibilityIcon;
     @FXML
     private TextField passwordTextField;
-
     private CompletableFuture<LoginAuthorUserModel> onLoginFuture = new CompletableFuture<>();
     @FXML
     private Label passwordErrorLabel;
@@ -82,25 +81,16 @@ public class LoginAuthorController {
         }
     }
 
-    @Deprecated
-    public void cleanerror(ActionEvent actionEvent) {
-        cleanerrorlabels();
-    }
 
-    public void cleanerrorlabels() {
+    public void cleanErrorLabels() {
         userErrorLabel.setText("");
         passwordErrorLabel.setText("");
         loginErrorLabel.setText("");
     }
 
     @FXML
-    public void countlength(Event event) {
-        clicked();
-    }
-
-    @FXML
     public void clicked() {
-        cleanerrorlabels();
+        cleanErrorLabels();
         String pwvalidate = "";
         if (!isvisible) {
             pwvalidate = passwordField.getText();
@@ -111,12 +101,6 @@ public class LoginAuthorController {
             passwordErrorLabel.setText("");
             loginButton.setDisable(false);
         }
-    }
-
-    @FXML
-    public void visibleclicked(Event event) {
-        swapVisibility();
-        cleanerrorlabels();
     }
 
     public void swapVisibility() {
@@ -144,5 +128,17 @@ public class LoginAuthorController {
 
     @FXML
     public void cleanError(ActionEvent actionEvent) {
+        cleanErrorLabels();
+    }
+
+    @FXML
+    public void visibleClicked(Event event) {
+        swapVisibility();
+        cleanErrorLabels();
+    }
+
+    @FXML
+    public void countLength(Event event) {
+        clicked();
     }
 }

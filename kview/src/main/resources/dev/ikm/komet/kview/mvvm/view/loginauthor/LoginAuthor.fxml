@@ -19,7 +19,7 @@
                <Image url="@../images/LoginBackground.png" />
             </ImageView>
             <ComboBox id="Button" fx:id="userChooser" layoutX="83.0" layoutY="288.0" onAction="#cleanError" prefHeight="43.0" prefWidth="285.0" promptText="choose user" style="-fx-background-color: #fff;" stylesheets="@../kview.css" />
-            <PasswordField fx:id="passwordField" layoutX="83.0" layoutY="379.0" onAction="#signupAction" onKeyPressed="#countlength" prefHeight="43.0" prefWidth="285.0" promptText="Password" styleClass="text-field" stylesheets="@../kview.css" />
+            <PasswordField fx:id="passwordField" layoutX="83.0" layoutY="379.0" onAction="#signupAction" onKeyPressed="#countLength" prefHeight="43.0" prefWidth="285.0" promptText="Password" styleClass="text-field" stylesheets="@../kview.css" />
             <Button fx:id="loginButton" layoutX="83.0" layoutY="496.0" mnemonicParsing="false" onAction="#signupAction" prefHeight="43.0" prefWidth="285.0" style="-fx-background-color: #4581deff;" stylesheets="@../kview.css" text="SIGN IN" textFill="WHITE" />
             <Label fx:id="userErrorLabel" layoutX="83.0" layoutY="341.0" prefHeight="18.0" prefWidth="340.0" textFill="RED" />
             <Label fx:id="passwordErrorLabel" layoutX="83.0" layoutY="432.0" prefHeight="18.0" prefWidth="340.0" textFill="RED" />
@@ -42,7 +42,7 @@
                </font>
             </Label>
             <TextField fx:id="passwordTextField" layoutX="83.0" layoutY="379.0" onAction="#signupAction" onKeyTyped="#clicked" prefHeight="43.0" prefWidth="285.0" />
-            <ImageView fx:id="visibilityIcon" fitHeight="20.0" fitWidth="20.0" layoutX="339.0" layoutY="391.0" onMouseClicked="#visibleclicked" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="339.0" AnchorPane.topAnchor="391.0">
+            <ImageView fx:id="visibilityIcon" fitHeight="20.0" fitWidth="20.0" layoutX="339.0" layoutY="391.0" onMouseClicked="#visibleClicked" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="339.0" AnchorPane.topAnchor="391.0">
                <image>
                   <Image url="@../images/hidden.png" />
                </image>
