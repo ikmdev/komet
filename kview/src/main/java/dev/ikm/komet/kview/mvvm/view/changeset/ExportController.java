@@ -281,6 +281,7 @@ public class ExportController {
      * @param toDate the end date of the export range in epoch milliseconds
      */
     private void performChangeSetExport(final FileSavePicker fileSavePicker, final long fromDate, final long toDate) {
+
         fileSavePicker.setOnFileSelected(exportFile -> {
             if (exportFile == null) {
                 LOG.warn("Export file is null");
@@ -293,22 +294,41 @@ public class ExportController {
             closeDialog();
 
             return CompletableFuture.runAsync(() -> {
+                boolean delete = false;
+
                 try {
-                    exportFuture.get(); // Wait for the export task to complete
+                    exportFuture.get(); // Wait for completion
                     LOG.info("Export completed successfully to file {}", exportFile);
-                } catch (CancellationException cex) {
+                } catch (CancellationException e) {
                     LOG.info("Export to file '{}' canceled", exportFile);
-                    deleteFile(exportFile);
-                    throw new CompletionException(cex);
-                } catch (InterruptedException | ExecutionException ex) {
-                    LOG.error("Export to file '{}' failed", exportFile);
-                    deleteFile(exportFile);
-                    throw new CompletionException(ex);
+                    delete = true;
+                    throw new CompletionException(e);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt(); // preserve status
+                    LOG.info("Export to file '{}' interrupted", exportFile);
+                    delete = true;
+                    throw new CompletionException(e);
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof RuntimeException && cause.getCause() instanceof InterruptedException) {
+                        // Handle the wrapped InterruptedException case
+                        LOG.info("Export to file '{}' interrupted (wrapped in RuntimeException)", exportFile);
+                        Thread.currentThread().interrupt();
+                        delete = true;
+                    } else {
+                        LOG.error("Export to file '{}' failed", exportFile, e);
+                        delete = true;
+                    }
+                    throw new CompletionException(e);
+                } finally {
+                    if (delete) {
+                        deleteFile(exportFile);
+                    }
                 }
             });
         });
     }
-
+    
     private long transformStringInLocalDateTimeToEpochMillis(String localDateTimeFormat) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, hh:mm a", Locale.ENGLISH);
         LocalDateTime localDateTime = LocalDateTime.parse(localDateTimeFormat, formatter);
