@@ -91,8 +91,11 @@ import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -209,7 +212,6 @@ public class NextGenSearchController {
         // listen for changes to the filter options
         filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, newFilterOptions) -> {
             if (newFilterOptions != null) {
-                // state
                 if (!newFilterOptions.getStatus().selectedOptions().isEmpty()) {
                     StateSet stateSet = StateSet.make(
                             newFilterOptions.getStatus().selectedOptions().stream().map(
@@ -227,9 +229,20 @@ public class NextGenSearchController {
                         case "Sandbox path" -> TinkarTerm.SANDBOX_PATH;
                         default -> TinkarTerm.DEVELOPMENT_PATH;
                     };
+                    // update the Path
                     getViewProperties().nodeView().stampCoordinate().pathConceptProperty().setValue(conceptPath);
                 }
-                //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By, Date
+                if (!newFilterOptions.getDate().selectedOptions().isEmpty() &&
+                        !oldFilterOptions.getDate().selectedOptions().equals(newFilterOptions.getDate().selectedOptions())) {
+                    long millis = getMillis(newFilterOptions);
+                    // update the time
+                    getViewProperties().nodeView().stampCoordinate().timeProperty().set(millis);
+                } else {
+                    // revert to the Latest
+                    Date latest = new Date();
+                    getViewProperties().nodeView().stampCoordinate().timeProperty().set(latest.getTime());
+                }
+                //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
             }
         });
 
@@ -240,6 +253,21 @@ public class NextGenSearchController {
             doSearch(new ActionEvent(null, null));
         });
 
+    }
+
+    private long getMillis(FilterOptions newFilterOptions) {
+        int lastElementIndex = newFilterOptions.getDate().selectedOptions().size() - 1;
+        String newDate = newFilterOptions.getDate().selectedOptions().get(lastElementIndex);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        Date date;
+        try {
+            date = sdf.parse(newDate);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        long millis = date.getTime();
+        return millis;
     }
 
     private void initSearchResultType() {
