@@ -32,7 +32,7 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
             textLabel.setText(control.getValue().getText());
             iconImageView.setImage(control.getValue().getIcon());
         }
-        control.valueProperty().addListener((obs, oldVal, newVal) -> {
+        control.valueProperty().subscribe((oldVal, newVal) -> {
             if (newVal != null) {
                 textLabel.setText(newVal.getText());
                 iconImageView.setImage(newVal.getIcon());

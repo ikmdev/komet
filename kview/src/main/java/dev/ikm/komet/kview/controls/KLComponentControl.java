@@ -29,6 +29,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+
 /**
  * <p>KLComponentControl is a custom control that acts as a template capable of populating a single,
  * independent item, with relevant information.
@@ -89,7 +91,7 @@ public class KLComponentControl extends Control {
 
     // -- empty
     public boolean isEmpty() {
-        return getEntity() == null;
+        return isEmpty(getEntity());
     }
 
     // -- title
@@ -227,7 +229,7 @@ public class KLComponentControl extends Control {
      * A property with an action to be executed when the user clicks on the remove button. By default, it will
      * remove the entity that was added.
      */
-    private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(null));
+    private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(BLANK_CONCEPT));
     public final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty() {
        return onRemoveActionProperty;
     }
@@ -255,6 +257,16 @@ public class KLComponentControl extends Control {
      * Public API                                                              *
      *                                                                         *
      **************************************************************************/
+
+    /**
+     * Returns whether the EntityProxy means empty.
+     *
+     * @param entityProxy the EntityProxy
+     * @return true if the EntityProxy means empty.
+     */
+    public static boolean isEmpty(EntityProxy entityProxy) {
+        return entityProxy == null || entityProxy.nid() == BLANK_CONCEPT.nid();
+    }
 
     /** {@inheritDoc} */
     @Override

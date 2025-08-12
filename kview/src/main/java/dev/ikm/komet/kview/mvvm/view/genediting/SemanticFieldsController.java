@@ -62,8 +62,8 @@ import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
-import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 
 public class SemanticFieldsController {
@@ -252,10 +252,8 @@ public class SemanticFieldsController {
             observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(true, false).get());
         }
         observableFields.forEach(observableField -> {
-            if (genEditingViewModel.getPropertyValue(MODE) == CREATE && observableField.value() instanceof EntityProxy entityProxy){
-                if(entityProxy.nid() == ANONYMOUS_CONCEPT.nid()){
-                    observableField.valueProperty().setValue(null);
-                }
+            if (genEditingViewModel.getPropertyValue(MODE) == CREATE && observableField.value() instanceof EntityProxy){
+                ((ObservableField<EntityProxy>)observableField).valueProperty().setValue(EntityProxy.make(BLANK_CONCEPT.nid()));
             }
             // disable calling writeToData method of observable field by setting refresh flag to true.
             FieldRecord<?> fieldRecord = observableField.field();
