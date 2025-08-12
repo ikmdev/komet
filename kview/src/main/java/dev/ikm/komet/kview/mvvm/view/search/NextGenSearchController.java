@@ -60,8 +60,10 @@ import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -119,6 +121,7 @@ public class NextGenSearchController {
     public static final int MAX_RESULT_SIZE = 1000;
 
     private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
+
 
     @FXML
     private Pane root;
@@ -214,13 +217,29 @@ public class NextGenSearchController {
                     // update the STATUS
                     getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
                 }
-                //TODO Type, Module, Path, Language, Description Type, Kind of, Membership, Sort By, Date
+                if (!newFilterOptions.getPath().selectedOptions().isEmpty()) {
+                    //NOTE: there is no known way to set multiple paths
+                    String pathStr = newFilterOptions.getPath().selectedOptions().stream().findFirst().get();
+
+                    ConceptFacade conceptPath = switch(pathStr) {
+                        case "Master path" -> TinkarTerm.MASTER_PATH;
+                        case "Primordial path" -> TinkarTerm.PRIMORDIAL_PATH;
+                        case "Sandbox path" -> TinkarTerm.SANDBOX_PATH;
+                        default -> TinkarTerm.DEVELOPMENT_PATH;
+                    };
+                    getViewProperties().nodeView().stampCoordinate().pathConceptProperty().setValue(conceptPath);
+                }
+                //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By, Date
             }
         });
 
-        getViewProperties().nodeView().addListener((observableValue, oldViewRecord, newViewRecord) -> {
+        getViewProperties().nodeView().addListener((obs, oldVC, newVC) -> {
+                    doSearch(new ActionEvent(null, null));
+        });
+        getViewProperties().nodeView().stampCoordinate().pathConceptProperty().addListener((obs, oldVC, newVC) -> {
             doSearch(new ActionEvent(null, null));
         });
+
     }
 
     private void initSearchResultType() {
@@ -318,14 +337,14 @@ public class NextGenSearchController {
                 });
             } else {
                 List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
-                LOG.info(String.valueOf(results.size()));
+                LOG.info("{} search results returned", results.size());
 
                 List processedResults;
                 switch (sortByButton.getText()) {
                     case BUTTON_TEXT_TOP_COMPONENT -> {
                         setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
 
-                        // used linked hash map to maintain insertion order
+                        // used a linked hash map to maintain insertion order
                         LinkedHashMap<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems = new LinkedHashMap<>();
 
                         // sort by top component score order
