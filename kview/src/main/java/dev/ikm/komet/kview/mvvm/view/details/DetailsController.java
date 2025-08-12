@@ -27,7 +27,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
 import static dev.ikm.tinkar.common.service.PrimitiveData.*;
@@ -47,6 +46,7 @@ import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.events.genediting.*;
 import dev.ikm.komet.kview.fxutils.*;
 import dev.ikm.komet.kview.mvvm.model.*;
+import dev.ikm.komet.kview.mvvm.view.ViewCalculatorUtils;
 import dev.ikm.komet.kview.mvvm.view.journal.*;
 import dev.ikm.komet.kview.mvvm.view.properties.*;
 import dev.ikm.komet.kview.mvvm.view.stamp.*;
@@ -143,6 +143,9 @@ public class DetailsController  {
 
     @FXML
     private Label lastUpdatedLabel;
+
+    @FXML
+    private Label authorLabel;
 
     @FXML
     private Label moduleLabel;
@@ -869,16 +872,20 @@ public class DetailsController  {
         StampEntity stamp = latestVersion.stamp();
 
         // Status
-        String status = stamp.state() != null && State.ACTIVE == stamp.state() ? "Active" : "Inactive";
-        statusLabel.setText(status);
+        String statusText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.state(), conceptViewModel.getViewProperties());
+        statusLabel.setText(statusText);
 
         // Module
-        String module = stamp.module().description();
-        moduleLabel.setText(module);
+        String moduleText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.module(), conceptViewModel.getViewProperties());
+        moduleLabel.setText(moduleText);
+
+        // Author
+        String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.author(), conceptViewModel.getViewProperties());
+        authorLabel.setText(authorDescription);
 
         // Path
-        String path = stamp.path().description();
-        pathLabel.setText(path);
+        String pathText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.path(), conceptViewModel.getViewProperties());
+        pathLabel.setText(pathText);
 
         // Latest update time
         DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("yyyy-MMM-dd HH:mm:ss");
@@ -907,6 +914,7 @@ public class DetailsController  {
         if (conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL) != null) {
             stampViewModel.setPropertyValue(MODE, mode)
                     .setPropertyValue(STATUS, stamp.state())
+                    .setPropertyValue(AUTHOR, stamp.authorNid())
                     .setPropertyValue(MODULE, stamp.moduleNid())
                     .setPropertyValue(PATH, stamp.pathNid())
                     .setPropertyValue(TIME, stamp.time())
@@ -1356,6 +1364,7 @@ public class DetailsController  {
         identifierControl.setPublicId("");
         lastUpdatedLabel.setText("");
         fqnAddDateLabel.setText("");
+        authorLabel.setText("");
         moduleLabel.setText("");
         pathLabel.setText("");
         statusLabel.setText("");
@@ -1555,6 +1564,15 @@ public class DetailsController  {
         String lastUpdated = DATE_TIME_FORMATTER.format(stampInstance);
 
         lastUpdatedLabel.setText(lastUpdated);
+
+        EntityProxy.Concept authorConcept = stampViewModel.getValue(AUTHOR);
+        if (authorConcept == null) {
+            LOG.warn("Stamp should have an Author and doesn't");
+            return;
+        }
+        String authorDescription = conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(authorConcept.nid());
+        authorLabel.setText(authorDescription);
+
         ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
             LOG.warn("Must select a valid module for Stamp.");

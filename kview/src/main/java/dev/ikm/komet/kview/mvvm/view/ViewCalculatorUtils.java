@@ -9,11 +9,11 @@ import javafx.scene.control.ListCell;
 
 import java.util.function.Supplier;
 
-public class ControllerUtils<T extends ComponentWithNid> {
+public class ViewCalculatorUtils<T extends ComponentWithNid> {
 
     private final Supplier<ViewProperties> viewPropertiesSupplier;
 
-    public ControllerUtils(Supplier<ViewProperties> viewPropertiesSupplier) {
+    public ViewCalculatorUtils(Supplier<ViewProperties> viewPropertiesSupplier) {
         this.viewPropertiesSupplier = viewPropertiesSupplier;
     }
 
@@ -36,15 +36,14 @@ public class ControllerUtils<T extends ComponentWithNid> {
                 if (item == null || empty) {
                     setText(null);
                 } else {
-                    setText(getDescriptionTextWithFallbackOrNid(item));
+                    setText(getDescriptionTextWithFallbackOrNid(item, viewPropertiesSupplier.get()));
                 }
             }
         };
     }
 
-    private String getDescriptionTextWithFallbackOrNid(T conceptEntity) {
+    public static <T extends ComponentWithNid> String getDescriptionTextWithFallbackOrNid(T conceptEntity, ViewProperties viewProperties) {
         String descr = "" + conceptEntity.nid();
-        ViewProperties viewProperties = viewPropertiesSupplier.get();
 
         if (viewProperties != null) {
             descr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptEntity.nid());
