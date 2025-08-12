@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
@@ -69,6 +70,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -742,45 +746,101 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         expandConcept(conceptItem, false);
     }
 
-    private void expandConcept(InvertedTree.ConceptItem conceptItem, boolean highlight) {
-        ConceptNavigatorUtils.resetConceptNavigator(treeView);
+    private final AtomicInteger counter = new AtomicInteger();
+    private boolean lock;
 
+    private void expandConcept(InvertedTree.ConceptItem conceptItem, boolean highlight) {
+        if (lock) {
+            // wait until running expansion ends before starting a new one
+            return;
+        }
+
+        ConceptNavigatorUtils.resetConceptNavigator(treeView);
         List<InvertedTree.ConceptItem> lineage = ConceptNavigatorUtils.findShorterLineage(conceptItem, treeView.getNavigator());
-        ConceptNavigatorTreeItem parent = (ConceptNavigatorTreeItem) treeView.getRoot();
-        for (int i = 0; i < lineage.size(); i++) {
-            int parentNid = lineage.get(i).nid();
-            int nid = lineage.get(i).childNid();
-            ConceptNavigatorTreeItem item = (ConceptNavigatorTreeItem) parent.getChildren().stream()
-                    .filter(c -> c.getValue().nid() == nid)
-                    .findFirst()
-                    .orElse(ConceptNavigatorHelper.getConceptNavigatorTreeItem(treeView, nid, parentNid));
-            if (item == null) {
-                return;
+        TinkExecutor.threadPool().execute(() -> {
+            lock = true;
+            counter.set(0);
+            expandAncestor(lineage, (ConceptNavigatorTreeItem) treeView.getRoot(), highlight);
+        });
+    }
+
+    private void expandAncestor(List<InvertedTree.ConceptItem> lineage, ConceptNavigatorTreeItem parent, boolean highlight) {
+        int i = counter.get();
+        ConceptNavigatorTreeItem item = getItemAndExpand(lineage, parent, i);
+        if (item != null) {
+            if (i < lineage.size() - 1) {
+                processAncestor(lineage, highlight, i, item);
+            } else {
+                processItem(item, highlight);
             }
-            item.setExpanded(true);
-            parent = item;
+        } else {
+            lock = false;
+        }
+    }
+
+    private void processAncestor(List<InvertedTree.ConceptItem> lineage, boolean highlight, int i, ConceptNavigatorTreeItem item) {
+        if (item.getChildren() != null) {
+            // direct parent of item
             if (i == lineage.size() - 2) { // select and scroll to parent, so it stays visible on top of the treeView
-                treeView.getSelectionModel().select(item);
-                Platform.runLater(() -> treeView.scrollTo(treeView.getSelectionModel().getSelectedIndex()));
-                treeView.getSelectionModel().clearSelection();
-            } else if (i == lineage.size() - 1) { // then, select, and highlight item
-                treeView.getSelectionModel().select(item);
-                int index = treeView.getSelectionModel().getSelectedIndex();
                 Platform.runLater(() -> {
-                    // check if the item is visible
-                    if (getCellForTreeItem(item).isEmpty()) {
-                        // else scroll to it (in case of a long list of previous siblings)
-                        treeView.scrollTo(index);
-                    }
-                });
-                item.setViewLineage(false);
-                if (highlight) {
+                    treeView.getSelectionModel().select(item);
+                    treeView.scrollTo(treeView.getSelectionModel().getSelectedIndex());
                     treeView.getSelectionModel().clearSelection();
-                    item.setHighlighted(true);
-                    highlighted.set(true);
+                });
+            }
+
+            // run next iteration
+            counter.getAndIncrement();
+            expandAncestor(lineage, item, highlight);
+        } else {
+            lock = false;
+        }
+    }
+
+    private void processItem(ConceptNavigatorTreeItem item, boolean highlight) {
+        // finally, we reached the item, select or highlight it
+        Platform.runLater(() -> {
+            treeView.getSelectionModel().select(item);
+            int index = treeView.getSelectionModel().getSelectedIndex();
+            // check if the item is visible
+            if (getCellForTreeItem(item).isEmpty()) {
+                // else scroll to it (in case of a long list of previous siblings)
+                treeView.scrollTo(index);
+            }
+            item.setViewLineage(false);
+            if (highlight) {
+                treeView.getSelectionModel().clearSelection();
+                item.setHighlighted(true);
+                highlighted.set(true);
+            }
+            lock = false;
+        });
+    }
+
+    private ConceptNavigatorTreeItem getItemAndExpand(List<InvertedTree.ConceptItem> lineage, ConceptNavigatorTreeItem parent, int i) {
+        int parentNid = lineage.get(i).nid();
+        int nid = lineage.get(i).childNid();
+        ConceptNavigatorTreeItem item = (ConceptNavigatorTreeItem) parent.getChildren().stream()
+                .filter(c -> c.getValue().nid() == nid)
+                .findFirst()
+                .orElse(ConceptNavigatorHelper.getConceptNavigatorTreeItem(treeView, nid, parentNid));
+        if (item == null) {
+            lock = false;
+            return null;
+        }
+        if (item.getChildren().isEmpty()) {
+            try {
+                Future<Boolean> booleanFuture = ConceptNavigatorHelper.fetchChildrenTask(treeView, item);
+                if (booleanFuture != null) {
+                    booleanFuture.get();
+                        // LOG error
                 }
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
             }
         }
+        Platform.runLater(() -> item.setExpanded(true));
+        return item;
     }
 
     /**

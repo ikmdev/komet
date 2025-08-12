@@ -18,7 +18,6 @@ package dev.ikm.komet.kview.mvvm.view.details;
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.*;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.*;
 import static dev.ikm.komet.kview.fxutils.MenuHelper.*;
-
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.*;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.*;
@@ -31,6 +30,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
+import static dev.ikm.tinkar.common.service.PrimitiveData.*;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.*;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
@@ -67,7 +68,6 @@ import javafx.css.*;
 import javafx.event.*;
 import javafx.fxml.*;
 import javafx.geometry.*;
-import javafx.scene.*;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
@@ -87,31 +87,6 @@ import java.time.format.*;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
-import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
-import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
-import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
-import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
-import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class DetailsController  {
 
@@ -804,16 +779,15 @@ public class DetailsController  {
         }
         LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierControl.getPublicId(), fqnTitleText.getText()));
         // unsubscribe listeners
-        eventBus.unsubscribe(editConceptFullyQualifiedNameEventSubscriber,
-                addFullyQualifiedNameEventSubscriber,
-                editOtherNameConceptEventSubscriber,
-                editConceptEventSubscriber,
-                addOtherNameToConceptEventSubscriber,
-                closePropertiesPanelEventSubscriber,
-                createConceptEventSubscriber,
-                changeSetTypeEventSubscriber,
-                refreshCalculatorEventSubscriber
-        );
+        eventBus.unsubscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);
+        eventBus.unsubscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFullyQualifiedNameEventSubscriber);
+        eventBus.unsubscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameConceptEventSubscriber);
+        eventBus.unsubscribe(conceptTopic, AddOtherNameToConceptEvent.class, addOtherNameToConceptEventSubscriber);
+        eventBus.unsubscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+        eventBus.unsubscribe(conceptTopic, CreateConceptEvent.class, createConceptEventSubscriber);
+        eventBus.unsubscribe(conceptTopic, EditConceptEvent.class, editConceptEventSubscriber);
+        eventBus.unsubscribe(RULES_TOPIC, AxiomChangeEvent.class, changeSetTypeEventSubscriber);
+        eventBus.unsubscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
     }
     public Pane getPropertiesSlideoutTrayPane() {
         return propertiesSlideoutTrayPane;
