@@ -900,7 +900,7 @@ public class DetailsController  {
         String idStr = String.join(", ", idList);
 
         identifierControl.setPublicId(idStr);
-        identifierControl.setStyle("-fx-font-weight: normal;");
+        identifierControl.setStyle("public-id-text");
     }
 
     private void updateStampViewModel(String mode, StampEntity stamp) {

@@ -150,10 +150,9 @@
 }
 
 .stamp-text {
-    -fx-font-family: "Noto Sans";
+    -fx-font-family: "Noto Sans Bold";
     -fx-font-size: 11px;
     -fx-fill: -Grey-11;
-    -fx-font-weight: bold;
 }
 
 .stamp-label {
@@ -222,8 +221,7 @@
 }
 
 .concept-definition-title {
-    -fx-font-family: "Noto Sans Medium";
-    -fx-font-weight: bold;
+    -fx-font-family: "Noto Sans Bold";
     -fx-font-size: 12px;
     -fx-text-fill: -Grey-11;
     -fx-padding: 0;

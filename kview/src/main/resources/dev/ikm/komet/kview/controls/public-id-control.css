@@ -4,8 +4,10 @@
        the control.  30px seems to work well for the current settings for
        fontSize and the icon scale. */
 
-    -fx-pref-height: 22px;
-    -fx-min-height: 22px;
+    -public-id-height: 22px;
+
+    -fx-pref-height: -public-id-height;
+    -fx-min-height: -public-id-height;
 
     /* the spacing for the HBoxes in the control, is inherited in child nodes */
     -fx-spacing: 4;
@@ -19,11 +21,9 @@
 }
 
 .public-id > .title-label {
-   -fx-font-family: "Noto Sans Medium";
-   -fx-font-weight: 500;
+   -fx-font-family: "Noto Sans Bold";
    -fx-font-size: 12px;
    -fx-text-fill: black;
-   -fx-font-weight: bold;
 }
 
 .public-id > .public-id-box > .public-id-textfield {
@@ -31,6 +31,10 @@
     -fx-font-family: "Noto Sans";
     -fx-font-size: inherit;
     -fx-text-fill: -Grey-10;
+}
+
+.public-id-text {
+    -fx-font-weight: normal;
 }
 
 .public-id > .public-id-box > .copy-to-clipboard-button {
