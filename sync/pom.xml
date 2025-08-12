@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.55.0-SNAPSHOT</version>
+        <version>1.55.0-IIA-2229-path-non-multiselect-SNAPSHOT</version>
     </parent>
 
     <artifactId>sync</artifactId>
