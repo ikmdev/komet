@@ -19,11 +19,13 @@ import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
@@ -51,19 +53,19 @@ public class AddOtherNameController extends AbstractBasicController {
     private Label addOtherNameTitleLabel;
 
     @FXML
-    private ComboBox<ConceptEntity> moduleComboBox;
+    private ComboBox<EntityFacade> moduleComboBox;
 
     @FXML
     private TextField otherNameTextField;
 
     @FXML
-    private ComboBox<ConceptEntity> statusComboBox;
+    private ComboBox<EntityFacade> statusComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> caseSignificanceComboBox;
+    private ComboBox<EntityFacade> caseSignificanceComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> languageComboBox;
+    private ComboBox<EntityFacade> languageComboBox;
 
     @FXML
     private Button submitButton;
@@ -103,6 +105,7 @@ public class AddOtherNameController extends AbstractBasicController {
             submitButton.setDisable(!isFormValid);
         };
 
+        otherNameTextField.textProperty().addListener(formValid);
         setupComboBox(moduleComboBox, formValid);
         setupComboBox(statusComboBox, formValid);
         setupComboBox(caseSignificanceComboBox, formValid);
@@ -225,6 +228,11 @@ public class AddOtherNameController extends AbstractBasicController {
         populate(statusComboBox, otherNameViewModel.findAllStatuses(getViewProperties()));
         populate(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
         populate(languageComboBox, otherNameViewModel.findAllLanguages(getViewProperties()));
+
+        caseSignificanceComboBox.setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+        statusComboBox.setValue(Entity.getFast(State.ACTIVE.nid()));
+        moduleComboBox.setValue(TinkarTerm.DEVELOPMENT_MODULE);
+        languageComboBox.setValue(TinkarTerm.ENGLISH_LANGUAGE);
     }
 
 

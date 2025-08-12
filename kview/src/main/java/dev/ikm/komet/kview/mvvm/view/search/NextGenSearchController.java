@@ -125,6 +125,7 @@ public class NextGenSearchController {
 
     private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
 
+
     @FXML
     private Pane root;
 
@@ -245,9 +246,13 @@ public class NextGenSearchController {
             }
         });
 
-        getViewProperties().nodeView().addListener((observableValue, oldViewRecord, newViewRecord) -> {
+        getViewProperties().nodeView().addListener((obs, oldVC, newVC) -> {
+                    doSearch(new ActionEvent(null, null));
+        });
+        getViewProperties().nodeView().stampCoordinate().pathConceptProperty().addListener((obs, oldVC, newVC) -> {
             doSearch(new ActionEvent(null, null));
         });
+
     }
 
     private long getMillis(FilterOptions newFilterOptions) {
@@ -360,14 +365,14 @@ public class NextGenSearchController {
                 });
             } else {
                 List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
-                LOG.info(String.valueOf(results.size()));
+                LOG.info("{} search results returned", results.size());
 
                 List processedResults;
                 switch (sortByButton.getText()) {
                     case BUTTON_TEXT_TOP_COMPONENT -> {
                         setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
 
-                        // used linked hash map to maintain insertion order
+                        // used a linked hash map to maintain insertion order
                         LinkedHashMap<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems = new LinkedHashMap<>();
 
                         // sort by top component score order
