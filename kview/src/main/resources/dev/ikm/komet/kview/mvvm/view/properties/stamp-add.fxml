@@ -14,6 +14,8 @@
 <?import javafx.scene.shape.Circle?>
 
 <?import java.lang.String?>
+<?import javafx.scene.control.TextField?>
+
 <BorderPane prefHeight="339.0" prefWidth="501.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.properties.StampAddController">
    <bottom>
       <HBox spacing="10.0" styleClass="button-bar">
@@ -53,14 +55,17 @@
           <RowConstraints maxHeight="50.0" prefHeight="50.0" vgrow="SOMETIMES" />
           <RowConstraints maxHeight="50.0" prefHeight="50.0" vgrow="SOMETIMES" />
           <RowConstraints maxHeight="50.0" prefHeight="50.0" vgrow="SOMETIMES" />
+          <RowConstraints maxHeight="50.0" prefHeight="50.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
             <Label styleClass="form-label" text="Status" />
             <ComboBox fx:id="statusComboBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" />
-            <Label styleClass="form-label" text="Module" GridPane.rowIndex="1" />
-            <ComboBox fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Label styleClass="form-label" text="Path" GridPane.rowIndex="2" />
-            <ComboBox fx:id="pathComboBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label fx:id="lastUpdatedLabel" styleClass="form-label" text="Last Updated" GridPane.rowIndex="1" />
+            <TextField fx:id="lastUpdatedTextField" disable="true" styleClass="komet-text-field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label styleClass="form-label" text="Module" GridPane.rowIndex="2" />
+            <ComboBox fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label styleClass="form-label" text="Path" GridPane.rowIndex="3" />
+            <ComboBox fx:id="pathComboBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.rowIndex="3" />
          </children>
       </GridPane>
    </center>

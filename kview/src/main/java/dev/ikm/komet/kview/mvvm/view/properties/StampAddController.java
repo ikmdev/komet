@@ -9,12 +9,22 @@ import javafx.beans.binding.*;
 import javafx.beans.property.*;
 import javafx.event.*;
 import javafx.fxml.*;
-import javafx.scene.*;
 import javafx.scene.control.*;
 import org.carlfx.cognitive.loader.*;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
 
 public class StampAddController {
+
+    @FXML
+    private Label lastUpdatedLabel;
+
+    @FXML
+    private TextField lastUpdatedTextField;
 
     @FXML
     private Button submitButton;
@@ -40,6 +50,7 @@ public class StampAddController {
     public void initialize() {
         controllerUtils = new ControllerUtils<>(this::getViewProperties);
 
+        initLastUpdatedField();
         initModuleComboBox();
         initPathComboBox();
         initStatusComboBox();
@@ -51,6 +62,31 @@ public class StampAddController {
 
     private ViewProperties getViewProperties() {
         return stampViewModel.getViewProperties();
+    }
+
+    private void initLastUpdatedField() {
+        // Label
+        lastUpdatedLabel.setText("Last\nUpdated");
+
+        // TextField
+        StringBinding timeTextProperty = new StringBinding() {
+            DateTimeFormatter dateTimeFormatter;
+            {
+                dateTimeFormatter = DateTimeFormatter
+                        .ofPattern("yyyy-MMM-dd HH:mm:ss")
+                        .withLocale(Locale.getDefault())
+                        .withZone(ZoneId.systemDefault());
+
+                super.bind(stampViewModel.getProperty(TIME));
+            }
+
+            @Override
+            protected String computeValue() {
+                Instant stampInstance = Instant.ofEpochSecond((Long)stampViewModel.getPropertyValue(TIME) / 1000);
+                return dateTimeFormatter.format(stampInstance);
+            }
+        };
+        lastUpdatedTextField.textProperty().bind(timeTextProperty);
     }
 
     private void initStatusComboBox() {
