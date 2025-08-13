@@ -9,34 +9,28 @@ import javafx.scene.control.ListCell;
 
 import java.util.function.Supplier;
 
-public class ViewCalculatorUtils<T extends ComponentWithNid> {
+public class ViewCalculatorUtils {
 
-    private final Supplier<ViewProperties> viewPropertiesSupplier;
-
-    public ViewCalculatorUtils(Supplier<ViewProperties> viewPropertiesSupplier) {
-        this.viewPropertiesSupplier = viewPropertiesSupplier;
+    public static <T extends ComponentWithNid> void initComboBox(ComboBox<T> comboBox, Supplier<ViewProperties> viewProperties) {
+        initComboBox(comboBox, FXCollections.observableArrayList(), viewProperties);
     }
 
-    public void initComboBox(ComboBox<T> comboBox) {
-        initComboBox(comboBox, FXCollections.observableArrayList());
-    }
-
-    public void initComboBox(ComboBox<T> comboBox, ObservableList<T> items) {
+    public static <T extends ComponentWithNid> void initComboBox(ComboBox<T> comboBox, ObservableList items, Supplier<ViewProperties> viewProperties) {
         comboBox.setItems(items);
 
-        comboBox.setCellFactory(_ -> createConceptListCell());
-        comboBox.setButtonCell(createConceptListCell());
+        comboBox.setCellFactory(_ -> createConceptListCell(viewProperties));
+        comboBox.setButtonCell(createConceptListCell(viewProperties));
     }
 
-    private ListCell<T> createConceptListCell() {
-        return new ListCell<>(){
+    private static <T extends ComponentWithNid> ListCell<T> createConceptListCell(Supplier<ViewProperties> viewProperties) {
+        return new ListCell<T>(){
             @Override
             protected void updateItem(T item, boolean empty) {
                 super.updateItem(item, empty);
                 if (item == null || empty) {
                     setText(null);
                 } else {
-                    setText(getDescriptionTextWithFallbackOrNid(item, viewPropertiesSupplier.get()));
+                    setText(getDescriptionTextWithFallbackOrNid(item, viewProperties.get()));
                 }
             }
         };

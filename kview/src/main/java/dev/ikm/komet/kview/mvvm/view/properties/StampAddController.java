@@ -32,12 +32,8 @@ public class StampAddController {
     @InjectViewModel
     private StampViewModel2 stampViewModel;
 
-    private ViewCalculatorUtils<ComponentWithNid> viewCalculatorUtils;
-
     @FXML
     public void initialize() {
-        viewCalculatorUtils = new ViewCalculatorUtils<>(this::getViewProperties);
-
         initModuleComboBox();
         initPathComboBox();
         initStatusComboBox();
@@ -52,19 +48,19 @@ public class StampAddController {
     }
 
     private void initStatusComboBox() {
-        viewCalculatorUtils.initComboBox(statusComboBox, stampViewModel.getObservableList(STATUSES));
+        ViewCalculatorUtils.initComboBox(statusComboBox, stampViewModel.getObservableList(STATUSES), this::getViewProperties);
 
         statusComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(STATUS));
     }
 
     private void initPathComboBox() {
-        viewCalculatorUtils.initComboBox(pathComboBox, stampViewModel.getObservableList(PATHS));
+        ViewCalculatorUtils.initComboBox(pathComboBox, stampViewModel.getObservableList(PATHS), this::getViewProperties);
 
         pathComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(PATH));
     }
 
     private void initModuleComboBox() {
-        viewCalculatorUtils.initComboBox(moduleComboBox, stampViewModel.getObservableList(MODULES));
+        ViewCalculatorUtils.initComboBox(moduleComboBox, stampViewModel.getObservableList(MODULES), this::getViewProperties);
 
         moduleComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(MODULE));
     }
