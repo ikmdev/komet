@@ -3299,7 +3299,7 @@ Timeline Year line segment (will overlay change circles)
 
 
 .search-context-menu-item.menu-item:hover .label {
-    -fx-background-color: -Grey-11;
+    -fx-background-color:  -Grey-9;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 16px;
@@ -3308,7 +3308,7 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-context-menu-item.menu-item:hover {
-    -fx-background-color: -Grey-11;
+    -fx-background-color:  -Grey-9;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 16px;
