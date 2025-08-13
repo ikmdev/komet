@@ -63,7 +63,7 @@ public class FilterMenuTask extends TrackingCallable {
                 filterOptions.getPath().selectedOptions().clear();
                 filterOptions.getPath().selectedOptions().addAll(defaultSelectedPaths);
             }
-            //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By, Date
+            //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
         }
         return filterOptions;
     }
