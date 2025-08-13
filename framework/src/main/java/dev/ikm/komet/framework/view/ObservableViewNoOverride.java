@@ -17,12 +17,12 @@ package dev.ikm.komet.framework.view;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
+import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import javafx.beans.property.ListProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
-import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 
 //~--- non-JDK imports --------------------------------------------------------
 
@@ -45,6 +45,10 @@ public class ObservableViewNoOverride extends ObservableViewBase {
 
     public ViewProperties makeOverridableViewProperties() {
         return new ViewProperties(new ObservableViewWithOverride(this), this);
+    }
+
+    public ViewProperties makeOverridableViewProperties(String name) {
+        return new ViewProperties(new ObservableViewWithOverride(this, name), this);
     }
 
     @Override

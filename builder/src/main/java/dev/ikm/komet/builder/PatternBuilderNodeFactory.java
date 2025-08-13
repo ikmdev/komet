@@ -52,7 +52,7 @@ public class PatternBuilderNodeFactory implements KometNodeFactory {
 
     @Reconstructor
     public static PatternBuilderNode reconstructor(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
-        return new PatternBuilderNode(windowView.makeOverridableViewProperties(), nodePreferences);
+        return new PatternBuilderNode(windowView.makeOverridableViewProperties("PatternBuilderNodeFactory.reconstructor"), nodePreferences);
     }
 
     @Override

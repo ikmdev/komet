@@ -290,7 +290,7 @@ public class JournalController {
     private ConceptPatternNavController conceptPatternNavController;
 
     //////////////////// Subscribers /////////////////////////////////////////////////
-    private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
+    private Subscriber<MakeConceptWindowEvent> makeComponentWindowEventSubscriber;
 
     private Subscriber<MakePatternWindowEvent> makePatternWindowEventSubscriber;
 
@@ -356,17 +356,19 @@ public class JournalController {
         });
         reasonerToggleConsumer = createReasonerToggleConsumer();
 
-        makeConceptWindowEventSubscriber = evt -> {
+        makeComponentWindowEventSubscriber = evt -> {
             EntityFacade entityFacade = evt.getEntityFacade();
             if (entityFacade instanceof ConceptFacade conceptFacade) {
                 createConceptWindow(conceptFacade, NID_TEXT, null);
             } else if (entityFacade instanceof PatternFacade patternFacade) {
-                createPatternWindow(patternFacade, getNavigatorNode().getViewProperties());
+                // TODO is this used??  The makePatternWindowEventSubscriber below is handling the event to create the Pattern Window
+                createPatternWindow(patternFacade, windowView.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.PatternFacade"));
             } else if (entityFacade instanceof SemanticFacade semanticFacade) {
-                createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
+                // TODO is this used??  The makeGenEditWindowEventSubscriber below is handling the event to create the Semantic (GenEdit) Window
+                createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.SemanticFacade"), false);
             }
         };
-        journalEventBus.subscribe(journalTopic, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
+        journalEventBus.subscribe(journalTopic, MakeConceptWindowEvent.class, makeComponentWindowEventSubscriber);
 
         makePatternWindowEventSubscriber = evt ->
                 createPatternWindow(evt.getPatternFacade(), evt.getViewProperties());
@@ -633,7 +635,7 @@ public class JournalController {
      */
     public void createWindowFromUuids(UUID[] uuids) {
         createAndSetupWindow(() -> createFromUuids(uuids, journalTopic,
-                        windowView.makeOverridableViewProperties(), null),
+                        windowView.makeOverridableViewProperties("JournalController.createWindowFromUuids"), null),
                 "UUID array: " + ArrayIterate.makeString(uuids));
     }
 
@@ -648,7 +650,7 @@ public class JournalController {
         if (entityFacade == null) return;
 
         createAndSetupWindow(() -> createFromEntity(entityFacade, journalTopic,
-                        windowView.makeOverridableViewProperties(), null),
+                        windowView.makeOverridableViewProperties("JournalController.createWindowFromEntity"), null),
                 "entity " + entityFacade.nid());
     }
 
@@ -858,7 +860,7 @@ public class JournalController {
         navigatorNode = null;
         activityStreams.forEach(ActivityStreams::delete);
 
-        journalEventBus.unsubscribe(makeConceptWindowEventSubscriber,
+        journalEventBus.unsubscribe(makeComponentWindowEventSubscriber,
                 makePatternWindowEventSubscriber,
                 makeGenEditWindowEventSubscriber,
                 showNavigationalPanelEventSubscriber,
@@ -909,7 +911,7 @@ public class JournalController {
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
                             nextGenSearchViewModel.setPropertyValue(MODE, CREATE)
-                                .setPropertyValue(VIEW_PROPERTIES, this.windowView.makeOverridableViewProperties())
+                                .setPropertyValue(VIEW_PROPERTIES, this.windowView.makeOverridableViewProperties("JournalController.loadNextGenSearchPanel"))
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                 );
 
@@ -950,13 +952,13 @@ public class JournalController {
                 if (entity instanceof ConceptFacade conceptFacade) {
                     createConceptWindow(conceptFacade, nidTextEnum, null);
                 } else if (entity instanceof PatternFacade patternFacade) {
-                    createPatternWindow(patternFacade, getNavigatorNode().getViewProperties());
+                    createPatternWindow(patternFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.ConceptFacade"));
                 } else if (entity instanceof SemanticFacade semanticFacade) {
-                    createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
+                    createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.SemanticFacade"), false);
                 }
             } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
                 SemanticFacade semanticFacade = semanticEntityVersion.entity();
-                createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
+                createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.SemanticEntityVersion"), false);
             }
         };
         controller.getDoubleCLickConsumers().add(displayInDetailsView);
@@ -1053,12 +1055,7 @@ public class JournalController {
             preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
         }
 
-        // TODO: Test and Fixme this takes a snapshot of the navigator's view coordinate
-        //       and makes a new view properties.
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
-
-        // copying the observable view
-        viewProperties.nodeView().setValue(navigatorNode.getViewProperties().nodeView().getValue());
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.createConceptWindow");
 
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
                 journalTopic, conceptFacade, viewProperties, preferences);
@@ -1173,7 +1170,7 @@ public class JournalController {
                                   ConceptFacade deviceConcept,
                                   KometPreferences preferences) {
         AbstractEntityChapterKlWindow lidrKlWindow = createWindow(EntityKlWindowTypes.LIDR,
-                journalTopic, deviceConcept, windowView.makeOverridableViewProperties(), preferences);
+                journalTopic, deviceConcept, windowView.makeOverridableViewProperties("JournalController.createLidrWindow"), preferences);
         setupWorkspaceWindow(lidrKlWindow);
     }
 
@@ -1240,7 +1237,7 @@ public class JournalController {
                 navigationActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
 
         // What to do when you can double-click on a cell
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.loadClassicConceptNavigator");
         TreeView<ConceptFacade> treeView = navigatorNode.getController().getTreeView();
 
         // Create a context menu allowing user to Launch as a Lidr Record window.
@@ -1299,7 +1296,7 @@ public class JournalController {
     }
 
     private void loadNavigationPanel(ObservableViewNoOverride windowView) {
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.loadNavigationPanel");
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
                 .controller(new ConceptPatternNavController(this))
                 .updateViewModel("patternNavViewModel", (patternNavViewModel) ->
@@ -1597,7 +1594,7 @@ public class JournalController {
      */
     @FXML
     public void newCreatePatternWindow(ActionEvent actionEvent) {
-        createPatternWindow(null, windowView.makeOverridableViewProperties());
+        createPatternWindow(null, windowView.makeOverridableViewProperties("JournalController.newCreatePatternWindow"));
     }
 
     public static Toast toast() { return toast; }

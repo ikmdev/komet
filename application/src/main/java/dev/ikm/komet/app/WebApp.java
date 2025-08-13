@@ -1010,7 +1010,7 @@ public class WebApp extends Application {
             webAPI.openStageAsTab(classicKometStage);
         }
 
-        WebApp.kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties());
+        WebApp.kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties("WebAppLaunchClassicKomet"));
 
         windowPreferences.sync();
         appPreferences.sync();
@@ -1033,7 +1033,7 @@ public class WebApp extends Application {
         Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
                 .updateViewModel("importViewModel", (importViewModel) ->
                         importViewModel.setPropertyValue(VIEW_PROPERTIES,
-                                windowSettings.getView().makeOverridableViewProperties()));
+                                windowSettings.getView().makeOverridableViewProperties("WebAppOpenImport")));
         JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
 
         Pane importPane = importJFXNode.node();
@@ -1052,7 +1052,7 @@ public class WebApp extends Application {
         Config exportConfig = new Config(ExportController.class.getResource("export.fxml"))
                 .updateViewModel("exportViewModel", (exportViewModel) ->
                         exportViewModel.setPropertyValue(VIEW_PROPERTIES,
-                                windowSettings.getView().makeOverridableViewProperties()));
+                                windowSettings.getView().makeOverridableViewProperties("WebAppOpenExport")));
         JFXNode<Pane, ExportController> exportJFXNode = FXMLMvvmLoader.make(exportConfig);
 
         Pane exportPane = exportJFXNode.node();
