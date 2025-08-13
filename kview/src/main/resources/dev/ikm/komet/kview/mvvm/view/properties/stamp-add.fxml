@@ -30,7 +30,7 @@
    </bottom>
    <top>
       <StackPane prefHeight="30.0" >
-        <Label styleClass="form-title" text="Add STAMP Version" StackPane.alignment="CENTER" />
+        <Label styleClass="form-title" text="New Concept Version" StackPane.alignment="CENTER" />
         <StackPane styleClass="help-icon-container" minHeight="-Infinity" minWidth="-Infinity" prefHeight="28.0" prefWidth="28.0" StackPane.alignment="CENTER_RIGHT" >
            <children>
               <Circle fill="#4a7ad2" radius="10.0" stroke="BLACK" strokeType="INSIDE" styleClass="edit-concept-about-circle-icon" />
