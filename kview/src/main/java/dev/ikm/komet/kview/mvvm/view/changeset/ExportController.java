@@ -281,7 +281,6 @@ public class ExportController {
      * @param toDate the end date of the export range in epoch milliseconds
      */
     private void performChangeSetExport(final FileSavePicker fileSavePicker, final long fromDate, final long toDate) {
-
         fileSavePicker.setOnFileSelected(exportFile -> {
             if (exportFile == null) {
                 LOG.warn("Export file is null");
@@ -295,7 +294,6 @@ public class ExportController {
 
             return CompletableFuture.runAsync(() -> {
                 boolean delete = false;
-
                 try {
                     exportFuture.get(); // Wait for completion
                     LOG.info("Export completed successfully to file {}", exportFile);
