@@ -3,7 +3,8 @@
        where the height is not changed as the mouse cursor enters and exits
        the control.  30px seems to work well for the current settings for
        fontSize and the icon scale. */
-    -public-id-height: 30px;
+
+    -public-id-height: 22px;
 
     -fx-pref-height: -public-id-height;
     -fx-min-height: -public-id-height;
@@ -20,8 +21,9 @@
 }
 
 .public-id > .title-label {
-    -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: inherit;
+   -fx-font-family: "Noto Sans Bold";
+   -fx-font-size: 12px;
+   -fx-text-fill: black;
 }
 
 .public-id > .public-id-box > .public-id-textfield {
@@ -29,6 +31,10 @@
     -fx-font-family: "Noto Sans";
     -fx-font-size: inherit;
     -fx-text-fill: -Grey-10;
+}
+
+.public-id-text {
+    -fx-font-weight: normal;
 }
 
 .public-id > .public-id-box > .copy-to-clipboard-button {
