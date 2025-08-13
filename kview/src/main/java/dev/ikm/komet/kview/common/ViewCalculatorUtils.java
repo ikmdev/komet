@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.view;
+package dev.ikm.komet.kview.common;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.terms.ComponentWithNid;

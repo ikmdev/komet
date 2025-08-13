@@ -2,7 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.properties;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
 import dev.ikm.komet.framework.view.*;
-import dev.ikm.komet.kview.mvvm.view.ViewCalculatorUtils;
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.mvvm.viewmodel.*;
 import dev.ikm.tinkar.terms.*;
 import javafx.beans.property.*;

@@ -147,6 +147,8 @@ module dev.ikm.komet.kview {
 
     exports dev.ikm.komet.kview.mvvm.view.confirmation;
     opens dev.ikm.komet.kview.mvvm.view.confirmation;
+    exports dev.ikm.komet.kview.common;
+    opens dev.ikm.komet.kview.common;
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory, dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
 

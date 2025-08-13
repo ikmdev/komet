@@ -46,7 +46,7 @@ import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.events.genediting.*;
 import dev.ikm.komet.kview.fxutils.*;
 import dev.ikm.komet.kview.mvvm.model.*;
-import dev.ikm.komet.kview.mvvm.view.ViewCalculatorUtils;
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.mvvm.view.journal.*;
 import dev.ikm.komet.kview.mvvm.view.properties.*;
 import dev.ikm.komet.kview.mvvm.view.stamp.*;
