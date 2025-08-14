@@ -30,7 +30,6 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
-import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.component.graph.Vertex;
 import dev.ikm.tinkar.coordinate.Coordinates;
@@ -111,7 +110,7 @@ public class DataModelHelper {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         KometPreferences windowPreferences = appPreferences.node("main-komet-window");
         WindowSettings windowSettings = new WindowSettings(windowPreferences);
-        ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties();
+        ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties("DataModelHelper.createViewProperties");
         return viewProperties;
     }
 

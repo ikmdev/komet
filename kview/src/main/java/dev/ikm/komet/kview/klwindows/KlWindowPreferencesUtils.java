@@ -105,7 +105,7 @@ public interface KlWindowPreferencesUtils {
         KometPreferences journalPreferences = appPreferences.node(journalPath);
         WindowSettings journalWindowSettings = new WindowSettings(journalPreferences);
         ObservableViewNoOverride windowView = journalWindowSettings.getView();
-        return windowView.makeOverridableViewProperties();
+        return windowView.makeOverridableViewProperties("KlWindowPreferencesUtils.getJournalViewProperties");
     }
 
     /**

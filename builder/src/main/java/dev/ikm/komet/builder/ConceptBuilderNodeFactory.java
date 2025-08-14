@@ -15,9 +15,6 @@
  */
 package dev.ikm.komet.builder;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -27,6 +24,8 @@ import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 
 public class ConceptBuilderNodeFactory implements KometNodeFactory {
     protected static final String STYLE_ID = ConceptBuilderNode.STYLE_ID;
@@ -52,7 +51,7 @@ public class ConceptBuilderNodeFactory implements KometNodeFactory {
 
     @Reconstructor
     public static ConceptBuilderNode reconstructor(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
-        return new ConceptBuilderNode(windowView.makeOverridableViewProperties(), nodePreferences);
+        return new ConceptBuilderNode(windowView.makeOverridableViewProperties("ConceptBuilderNodeFactory.reconstructor"), nodePreferences);
     }
 
     @Override

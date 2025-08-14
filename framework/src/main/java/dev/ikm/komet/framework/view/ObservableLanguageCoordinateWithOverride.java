@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.value.ObservableValue;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinate;
@@ -23,6 +22,7 @@ import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
+import javafx.beans.value.ObservableValue;
 
 public class ObservableLanguageCoordinateWithOverride extends ObservableLanguageCoordinateBase {
 
@@ -93,6 +93,11 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     }
 
     @Override
+    public ListPropertyWithOverride<PatternFacade> descriptionPatternPreferenceListProperty() {
+        return (ListPropertyWithOverride<PatternFacade>) super.descriptionPatternPreferenceListProperty();
+    }
+
+    @Override
     public ObjectPropertyWithOverride<ConceptFacade> languageConceptProperty() {
         return (ObjectPropertyWithOverride<ConceptFacade>) super.languageConceptProperty();
     }
@@ -130,7 +135,7 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     @Override
     public LanguageCoordinateRecord getOriginalValue() {
         return LanguageCoordinateRecord.make(languageConceptProperty().getOriginalValue().nid(),
-                IntIds.list.of(dialectPatternPreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
+                IntIds.list.of(descriptionPatternPreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
                 IntIds.list.of(descriptionTypePreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
                 IntIds.list.of(dialectPatternPreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
                 IntIds.list.of(modulePreferenceListForLanguageProperty().getOriginalValue(), EntityFacade::toNid));
@@ -141,7 +146,7 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
                                                                              LanguageCoordinateRecord oldValue,
                                                                              LanguageCoordinateRecord newValue) {
         this.languageConceptProperty().setValue(newValue.languageConcept());
-        this.dialectPatternPreferenceListProperty().setAll(this.descriptionPatternPreferenceNidList().mapToList(PatternFacade::make));
+        this.descriptionPatternPreferenceListProperty().setAll(this.descriptionPatternPreferenceNidList().mapToList(PatternFacade::make));
         this.dialectPatternPreferenceListProperty().setAll(newValue.dialectPatternPreferenceNidList().mapToList(PatternFacade::make));
         this.descriptionTypePreferenceListProperty().setAll(newValue.descriptionTypePreferenceNidList().mapToList(ConceptFacade::make));
         this.modulePreferenceListForLanguageProperty().setAll(newValue.modulePreferenceNidListForLanguage().mapToList(ConceptFacade::make));
