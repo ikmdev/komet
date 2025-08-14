@@ -1,5 +1,6 @@
 package dev.ikm.komet.app;
 
+import com.sun.management.OperatingSystemMXBean;
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import dev.ikm.komet.app.aboutdialog.AboutDialog;
@@ -34,15 +35,15 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
+
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.prefs.BackingStoreException;
-import com.sun.management.OperatingSystemMXBean;
 
-import static dev.ikm.komet.app.AppState.RUNNING;
 import static dev.ikm.komet.app.App.IS_BROWSER;
 import static dev.ikm.komet.app.App.IS_MAC_AND_NOT_TESTFX_TEST;
+import static dev.ikm.komet.app.AppState.RUNNING;
+import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.SYNC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
@@ -369,7 +370,7 @@ public class AppMenu {
         Config importConfig = new Config(ImportController.class.getResource("import.fxml"))
                 .updateViewModel("importViewModel", (importViewModel) ->
                         importViewModel.setPropertyValue(VIEW_PROPERTIES,
-                                windowSettings.getView().makeOverridableViewProperties()));
+                                windowSettings.getView().makeOverridableViewProperties("AppMenu.openImport")));
         JFXNode<Pane, ImportController> importJFXNode = FXMLMvvmLoader.make(importConfig);
 
         Pane importPane = importJFXNode.node();
@@ -388,7 +389,7 @@ public class AppMenu {
         Config exportConfig = new Config(ExportController.class.getResource("export.fxml"))
                 .updateViewModel("exportViewModel", (exportViewModel) ->
                         exportViewModel.setPropertyValue(VIEW_PROPERTIES,
-                                windowSettings.getView().makeOverridableViewProperties()));
+                                windowSettings.getView().makeOverridableViewProperties("AppMenu.openExport")));
         JFXNode<Pane, ExportController> exportJFXNode = FXMLMvvmLoader.make(exportConfig);
 
         Pane exportPane = exportJFXNode.node();

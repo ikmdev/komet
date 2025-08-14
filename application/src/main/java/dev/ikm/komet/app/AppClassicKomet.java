@@ -140,7 +140,7 @@ public class AppClassicKomet {
             app.webAPI.openStageAsTab(classicKometStage);
         }
 
-        app.appMenu.kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties());
+        app.appMenu.kometPreferencesStage = new KometPreferencesStage(controller.windowView().makeOverridableViewProperties("AppClassicKomet.launchClassicKomet"));
 
         windowPreferences.sync();
         appPreferences.sync();
