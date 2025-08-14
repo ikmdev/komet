@@ -777,7 +777,7 @@ public class JournalController {
      * the right of the {@code progressToggleButton} and near the lower edge of
      * the workspace.
      * <p>
-     * The resulting anchor point is used by {@link NotificationPopup#show(Node, Supplier)}
+     * The resulting anchor point is used by {@link NotificationPopup#show(javafx.scene.Node, Supplier)}
      * or similar popup methods to place the popup on the screen.
      *
      * @return a {@code Point2D} representing the (X, Y) coordinates where the progress
@@ -860,12 +860,13 @@ public class JournalController {
         navigatorNode = null;
         activityStreams.forEach(ActivityStreams::delete);
 
-        journalEventBus.unsubscribe(makeComponentWindowEventSubscriber,
-                makePatternWindowEventSubscriber,
-                makeGenEditWindowEventSubscriber,
-                showNavigationalPanelEventSubscriber,
-                closeReasonerPanelEventSubscriber,
-                refreshCalculatorEventSubscriber);
+        journalEventBus.unsubscribe(journalTopic, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
+        journalEventBus.unsubscribe(journalTopic, MakeConceptWindowEvent.class, makeComponentWindowEventSubscriber);
+        journalEventBus.unsubscribe(journalTopic, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
+        journalEventBus.unsubscribe(journalTopic, MakeGenEditingWindowEvent.class, makeGenEditWindowEventSubscriber);
+        journalEventBus.unsubscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
+        journalEventBus.unsubscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
+
     }
 
     /**
