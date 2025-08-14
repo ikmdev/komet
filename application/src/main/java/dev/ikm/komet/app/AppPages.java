@@ -42,7 +42,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_W
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
 
 public class AppPages {
     private static final Logger LOG = LoggerFactory.getLogger(AppGithub.class);
@@ -165,6 +164,8 @@ public class AppPages {
         BorderPane journalBorderPane = journalJFXNode.node();
         JournalController journalController = journalJFXNode.controller();
 
+        journalController.setup(windowPreferences);
+        
         Scene sourceScene = new Scene(journalBorderPane, DEFAULT_JOURNAL_WIDTH, DEFAULT_JOURNAL_HEIGHT);
         addStylesheets(sourceScene, KOMET_CSS, KVIEW_CSS);
 
