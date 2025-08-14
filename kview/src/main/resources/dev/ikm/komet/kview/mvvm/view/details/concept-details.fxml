@@ -176,7 +176,7 @@
                            </tooltip>
                         </Label>
                         <HBox alignment="CENTER_LEFT" GridPane.columnSpan="2" GridPane.rowIndex="1">
-                           <Text style="-fx-text-fill: -Grey-11;" text="Definition: ">
+                           <Text styleClass="concept-definition-title" text="Definition: ">
                               <font>
                                  <Font name="Noto Sans" size="12.0" />
                               </font>
@@ -239,7 +239,7 @@
 
                                     <!-- LEFT COLUMN: Fully Qualified Name area -->
                                     <VBox maxHeight="Infinity" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.fillWidth="true">
-                                       <Text style="-fx-fill: -Grey-8;" text="FULLY QUALIFIED NAME:">
+                                       <Text styleClass="grey8-12pt-bold" text="FULLY QUALIFIED NAME:">
                                           <font>
                                              <Font name="Noto Sans SemiBold" size="12.0" />
                                           </font>
@@ -260,7 +260,7 @@
 
                                     <!-- RIGHT COLUMN: Other Names area -->
                                     <VBox maxHeight="Infinity" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.fillWidth="true">
-                                       <Text fx:id="otherNamesHeaderText" style="-fx-fill: -Grey-8;" text="OTHER NAMES:">
+                                       <Text fx:id="otherNamesHeaderText" styleClass="grey8-12pt-bold" text="OTHER NAMES:">
                                           <font>
                                              <Font name="Noto Sans SemiBold" size="12.0" />
                                           </font>
