@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.changeset;
 
 import com.jpro.webapi.WebAPI;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
@@ -289,39 +290,24 @@ public class ExportController {
             }
 
             ExportEntitiesToProtobufFile exportEntities = new ExportEntitiesToProtobufFile(exportFile, fromDate, toDate);
-            Future<?> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
-            closeDialog();
+            CompletableFuture<EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
 
-            return CompletableFuture.runAsync(() -> {
-                boolean delete = false;
-                try {
-                    exportFuture.get(); // Wait for completion
+            exportFuture.handle((result, throwable) -> {
+                if (throwable != null) {
+                    LOG.error("Export to file '{}' failed", exportFile, throwable);
+                    deleteFile(exportFile);
+                } else {
                     LOG.info("Export completed successfully to file {}", exportFile);
-                } catch (CancellationException e) {
-                    LOG.info("Export to file '{}' canceled", exportFile);
-                    delete = true;
-                    throw new CompletionException(e);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // preserve status
-                    LOG.info("Export to file '{}' interrupted", exportFile);
-                    delete = true;
-                    throw new CompletionException(e);
-                } catch (ExecutionException e) {
-                    Throwable cause = e.getCause();
-                    if (cause instanceof RuntimeException && cause.getCause() instanceof InterruptedException) {
-                        // Handle the wrapped InterruptedException case
-                        LOG.info("Export to file '{}' interrupted (wrapped in RuntimeException)", exportFile);
-                        Thread.currentThread().interrupt();
-                        delete = true;
-                    } else {
-                        LOG.error("Export to file '{}' failed", exportFile, e);
-                        delete = true;
-                    }
-                    throw new CompletionException(e);
-                } finally {
-                    if (delete) {
-                        deleteFile(exportFile);
-                    }
+                }
+                return result;
+            });
+            return  exportFuture.thenAccept(exportResult -> {
+                if (exportResult != null) {
+                    LOG.info("Exported Total records: {}", exportResult.conceptsCount());
+                    LOG.info("Exported      Concepts: {}", exportResult.conceptsCount());
+                    LOG.info("Exported     Patterns : {}", exportResult.patternsCount());
+                    LOG.info("Exported     Semantics: {}", exportResult.semanticsCount());
+                    LOG.info("Exported        Stamps: {}", exportResult.stampsCount());
                 }
             });
         });
