@@ -150,7 +150,7 @@
 }
 
 .stamp-text {
-    -fx-font-family: "Noto Sans";
+    -fx-font-family: "Noto Sans Bold";
     -fx-font-size: 11px;
     -fx-fill: -Grey-11;
 }
@@ -218,6 +218,13 @@
     -fx-alignment: top-left;
     -fx-max-width: infinity;
     -fx-max-height: infinity;
+}
+
+.concept-definition-title {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 12px;
+    -fx-text-fill: -Grey-11;
+    -fx-padding: 0;
 }
 
 .titled-pane {
@@ -3299,7 +3306,7 @@ Timeline Year line segment (will overlay change circles)
 
 
 .search-context-menu-item.menu-item:hover .label {
-    -fx-background-color: -Grey-11;
+    -fx-background-color: -Grey-9;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 16px;
@@ -3308,7 +3315,7 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .search-context-menu-item.menu-item:hover {
-    -fx-background-color: -Grey-11;
+    -fx-background-color: -Grey-9;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 16px;

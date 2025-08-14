@@ -60,8 +60,10 @@ import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -89,8 +91,11 @@ import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -119,6 +124,7 @@ public class NextGenSearchController {
     public static final int MAX_RESULT_SIZE = 1000;
 
     private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
+
 
     @FXML
     private Pane root;
@@ -206,7 +212,6 @@ public class NextGenSearchController {
         // listen for changes to the filter options
         filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, newFilterOptions) -> {
             if (newFilterOptions != null) {
-                // state
                 if (!newFilterOptions.getStatus().selectedOptions().isEmpty()) {
                     StateSet stateSet = StateSet.make(
                             newFilterOptions.getStatus().selectedOptions().stream().map(
@@ -214,13 +219,55 @@ public class NextGenSearchController {
                     // update the STATUS
                     getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
                 }
-                //TODO Type, Module, Path, Language, Description Type, Kind of, Membership, Sort By, Date
+                if (!newFilterOptions.getPath().selectedOptions().isEmpty()) {
+                    //NOTE: there is no known way to set multiple paths
+                    String pathStr = newFilterOptions.getPath().selectedOptions().stream().findFirst().get();
+
+                    ConceptFacade conceptPath = switch(pathStr) {
+                        case "Master path" -> TinkarTerm.MASTER_PATH;
+                        case "Primordial path" -> TinkarTerm.PRIMORDIAL_PATH;
+                        case "Sandbox path" -> TinkarTerm.SANDBOX_PATH;
+                        default -> TinkarTerm.DEVELOPMENT_PATH;
+                    };
+                    // update the Path
+                    getViewProperties().nodeView().stampCoordinate().pathConceptProperty().setValue(conceptPath);
+                }
+                if (!newFilterOptions.getDate().selectedOptions().isEmpty() &&
+                        !oldFilterOptions.getDate().selectedOptions().equals(newFilterOptions.getDate().selectedOptions())) {
+                    long millis = getMillis(newFilterOptions);
+                    // update the time
+                    getViewProperties().nodeView().stampCoordinate().timeProperty().set(millis);
+                } else {
+                    // revert to the Latest
+                    Date latest = new Date();
+                    getViewProperties().nodeView().stampCoordinate().timeProperty().set(latest.getTime());
+                }
+                //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
             }
         });
 
-        getViewProperties().nodeView().addListener((observableValue, oldViewRecord, newViewRecord) -> {
+        getViewProperties().nodeView().addListener((obs, oldVC, newVC) -> {
+                    doSearch(new ActionEvent(null, null));
+        });
+        getViewProperties().nodeView().stampCoordinate().pathConceptProperty().addListener((obs, oldVC, newVC) -> {
             doSearch(new ActionEvent(null, null));
         });
+
+    }
+
+    private long getMillis(FilterOptions newFilterOptions) {
+        int lastElementIndex = newFilterOptions.getDate().selectedOptions().size() - 1;
+        String newDate = newFilterOptions.getDate().selectedOptions().get(lastElementIndex);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        Date date;
+        try {
+            date = sdf.parse(newDate);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        long millis = date.getTime();
+        return millis;
     }
 
     private void initSearchResultType() {
@@ -318,14 +365,14 @@ public class NextGenSearchController {
                 });
             } else {
                 List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
-                LOG.info(String.valueOf(results.size()));
+                LOG.info("{} search results returned", results.size());
 
                 List processedResults;
                 switch (sortByButton.getText()) {
                     case BUTTON_TEXT_TOP_COMPONENT -> {
                         setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
 
-                        // used linked hash map to maintain insertion order
+                        // used a linked hash map to maintain insertion order
                         LinkedHashMap<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems = new LinkedHashMap<>();
 
                         // sort by top component score order
