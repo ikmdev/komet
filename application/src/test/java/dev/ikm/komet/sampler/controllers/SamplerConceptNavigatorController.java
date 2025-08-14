@@ -2,13 +2,13 @@ package dev.ikm.komet.sampler.controllers;
 
 import dev.ikm.komet.app.AppState;
 import dev.ikm.komet.app.LoadDataSourceTask;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLSearchControl;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -26,11 +26,7 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.*;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
@@ -310,7 +306,7 @@ public class SamplerConceptNavigatorController {
                 if (RUNNING == s) {
                     KometPreferences windowPreferences = KometPreferencesImpl.getConfigurationRootPreferences().node(MAIN_KOMET_WINDOW);
                     ObservableViewNoOverride view = new WindowSettings(windowPreferences).getView();
-                    ViewProperties viewProperties = view.makeOverridableViewProperties();
+                    ViewProperties viewProperties = view.makeOverridableViewProperties("LoadDataSet");
                     Navigator navigator = new ViewNavigator(viewProperties.nodeView());
                     consumer.accept(navigator);
                 }

@@ -15,11 +15,6 @@
  */
 package dev.ikm.komet.navigator.graph;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -29,6 +24,10 @@ import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -60,7 +59,7 @@ public class GraphNavigatorNodeFactory
 
     @Reconstructor
     public static GraphNavigatorNode reconstructor(ObservableViewNoOverride windowViewReference, KometPreferences nodePreferences) {
-        return new GraphNavigatorNode(windowViewReference.makeOverridableViewProperties(), nodePreferences);
+        return new GraphNavigatorNode(windowViewReference.makeOverridableViewProperties("GraphNavigatorNodeFactory.reconstructor"), nodePreferences);
     }
 
     @Override
