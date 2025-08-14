@@ -1,7 +1,7 @@
 package dev.ikm.komet.app.test.integration.testfx;
 
+import dev.ikm.komet.app.App;
 import dev.ikm.komet.app.AppState;
-import dev.ikm.komet.app.WebApp;
 import dev.ikm.tinkar.common.service.DataServiceController;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
@@ -100,7 +100,7 @@ public class PatternWindowITestFX {
     private static final int TIMEOUT_SECONDS = 10;
 
     private Path screenshotDirectory;
-    private WebApp webApp;
+    private App webApp;
 
     /**
      * Enum representing available data sources.
@@ -141,7 +141,7 @@ public class PatternWindowITestFX {
     void setUp() throws Exception {
         // Initialize the application
         FxToolkit.setupApplication(() -> {
-            webApp = new WebApp();
+            webApp = new App();
             return webApp;
         });
     }
@@ -265,7 +265,7 @@ public class PatternWindowITestFX {
         waitForFxEvents();
 
         // Get the App state and close the primary stage
-        LOG.info("WebApp.state.get() = {}", WebApp.state.get());
+        LOG.info("WebApp.state.get() = {}", App.state.get());
         Platform.runLater(primaryStage::close);
     }
 
@@ -273,7 +273,7 @@ public class PatternWindowITestFX {
      * Asserts that the initial state of the application is SELECT_DATA_SOURCE.
      */
     private void assertInitialAppState() {
-        assertEquals(AppState.SELECT_DATA_SOURCE, WebApp.state.get(),
+        assertEquals(AppState.SELECT_DATA_SOURCE, App.state.get(),
                 "Initial state should be SELECT_DATA_SOURCE");
     }
 
@@ -284,8 +284,8 @@ public class PatternWindowITestFX {
      */
     private void assertRunningAppState() throws TimeoutException {
         LOG.info("Waiting up to {} seconds for the application state to become RUNNING.", TIMEOUT_SECONDS);
-        waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS, () -> WebApp.state.get() == AppState.RUNNING);
-        assertEquals(AppState.RUNNING, WebApp.state.get(), "Application state should be RUNNING");
+        waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS, () -> App.state.get() == AppState.RUNNING);
+        assertEquals(AppState.RUNNING, App.state.get(), "Application state should be RUNNING");
         LOG.info("Application state has reached RUNNING.");
         waitForFxEvents();
     }
