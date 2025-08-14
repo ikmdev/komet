@@ -50,6 +50,11 @@ public enum AppState {
     LOADING_DATA_SOURCE,
 
     /**
+     *
+     */
+    SELECT_USER,
+
+    /**
      * The application is fully operational and running.
      */
     RUNNING,
