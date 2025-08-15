@@ -15,14 +15,14 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
 
 /**
  * Manages journal entry state and actions, building on common form behavior provided by {@link FormViewModel}.
  */
 public class JournalViewModel extends FormViewModel {
 
-    public static String WINDOW_VIEW = "windowView";
+    public static String WINDOW_SETTINGS = "windowSettings";
 
     /**
      * Initializes a new JournalViewModel with default form configuration.
@@ -30,7 +30,7 @@ public class JournalViewModel extends FormViewModel {
     public JournalViewModel() {
         super();
 
-        addProperty(WINDOW_VIEW, (ViewProperties) null);
+        addProperty(WINDOW_SETTINGS, (WindowSettings) null);
     }
 
     // Add journal-specific properties and commands as needed

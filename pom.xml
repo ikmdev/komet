@@ -5,13 +5,13 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.63.0</version>
+        <version>1.64.0</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
     <name>KOMET</name>
-    <version>1.54.0-SNAPSHOT</version>
+    <version>1.55.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <inceptionYear>2015</inceptionYear>
     <licenses>
@@ -63,12 +63,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- Properties Needed To Build On Java 24 (Start) -->
-        <java.version>24</java.version>
-        <maven-dependency-analyzer.version>1.16.0</maven-dependency-analyzer.version>
-        <maven-pmd-plugin.version>3.27.0</maven-pmd-plugin.version>
-        <!-- Properties Needed To Build On Java 24 (End) -->
-
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.6.0</tinkar-composer.version>
@@ -98,7 +92,7 @@
         <roaringbitmap.version>1.4.0</roaringbitmap.version>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
         <classgraph.version>4.8.179</classgraph.version>
-        <cognitive.version>1.6.0</cognitive.version>
+        <cognitive.version>1.6.1</cognitive.version>
         <fxcomponents.version>1.6.2</fxcomponents.version>
         <axonic.version>1.1.5</axonic.version>
         <common-java5.version>3.5.2</common-java5.version>
@@ -666,40 +660,6 @@
                     <artifactId>jpro-maven-plugin</artifactId>
                     <version>${jpro.version}</version>
                 </plugin>
-                <!-- Maven Dependency Plugin Fix (Start) -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>analyze</id>
-                            <goals>
-                                <goal>analyze-only</goal>
-                            </goals>
-                            <configuration>
-                                <ignoredNonTestScopedDependencies>
-                                    <ignoredNonTestScopedDependency>org.slf4j:*</ignoredNonTestScopedDependency>
-                                </ignoredNonTestScopedDependencies>
-                                <ignoredUnusedDeclaredDependencies>
-                                    <ignoredUnusedDeclaredDependency>org.slf4j:*</ignoredUnusedDeclaredDependency>
-                                </ignoredUnusedDeclaredDependencies>
-                                <ignoreUnusedRuntime>true</ignoreUnusedRuntime>
-                                <ignoredUsedUndeclaredDependencies>
-                                    <ignoredUsedUndeclaredDependency>dev.ikm.jpms:eclipse-collections-api</ignoredUsedUndeclaredDependency>
-                                </ignoredUsedUndeclaredDependencies>
-                            </configuration>
-                        </execution>
-                    </executions>
-                    <dependencies>
-                        <!-- Necessary for JDK 24. Should be removed for updates of dependency plugin -->
-                        <dependency>
-                            <groupId>org.apache.maven.shared</groupId>
-                            <artifactId>maven-dependency-analyzer</artifactId>
-                            <version>${maven-dependency-analyzer.version}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <!-- Maven Dependency Plugin Fix (End) -->
             </plugins>
         </pluginManagement>
         <plugins>
@@ -820,28 +780,6 @@
                                 <phase>none</phase>
                             </execution>
                         </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <!-- codeQuality profile to override pmd configuration from build-parent
-         Need to override aggregate parameter as it is deprecated. -->
-        <profile>
-            <!-- To disable this, use something like "mvn install -P!codeQuality" -->
-            <id>codeQuality</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-pmd-plugin</artifactId>
-                        <configuration>
-                            <aggregate combine.self="override"></aggregate> <!-- Overridden due to deprecation -->
-                            <targetJdk>${java.version}</targetJdk>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

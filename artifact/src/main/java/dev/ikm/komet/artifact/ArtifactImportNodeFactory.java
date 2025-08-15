@@ -15,9 +15,6 @@
  */
 package dev.ikm.komet.artifact;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -26,6 +23,8 @@ import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 
 public class ArtifactImportNodeFactory implements KometNodeFactory {
     protected static final String STYLE_ID = ArtifactImportNode.STYLE_ID;
@@ -54,7 +53,7 @@ public class ArtifactImportNodeFactory implements KometNodeFactory {
     }
     @Reconstructor
     public static ArtifactImportNode reconstructor(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
-        return new ArtifactImportNode(windowView.makeOverridableViewProperties(), nodePreferences);
+        return new ArtifactImportNode(windowView.makeOverridableViewProperties("ArtifactImportNodeFactory.reconstructor"), nodePreferences);
     }
     @Override
     public KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {

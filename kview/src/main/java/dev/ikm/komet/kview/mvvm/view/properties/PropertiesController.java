@@ -15,49 +15,28 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import dev.ikm.tinkar.events.EvtBus;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.Subscriber;
+import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.events.*;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.scene.shape.SVGPath;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.List;
 import java.util.UUID;
-
-import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATHS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PREV_STAMP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
 
 /**
  * The properties window providing tabs of Edit, Hierarchy, History, and Comments.
@@ -104,10 +83,7 @@ public class PropertiesController implements Serializable {
     @FXML
     private FlowPane propertiesTabsPane;
 
-    private Pane stampAddPane;
-
-    private StampAddController stampAddController;
-
+    private JFXNode<Pane, StampAddController> stampJFXNode;
     private Pane historyTabsBorderPane;
     private HistoryChangeController historyChangeController;
 
@@ -184,9 +160,7 @@ public class PropertiesController implements Serializable {
 
         // Load Stamp add View Panel (FXML & Controller)
         Config stampConfig = new Config(PropertiesController.class.getResource(ADD_STAMP_FXML_FILE));
-        JFXNode<Pane, StampAddController> stampJFXNode = FXMLMvvmLoader.make(stampConfig);
-        stampAddPane = stampJFXNode.node();
-        stampAddController = stampJFXNode.controller();
+        stampJFXNode = FXMLMvvmLoader.make(stampConfig);
 
         // Load History tabs View Panel (FXML & Controller)
         FXMLLoader loader = new FXMLLoader(getClass().getResource(HISTORY_CHANGE_FXML_FILE));
@@ -352,37 +326,19 @@ public class PropertiesController implements Serializable {
 
         // when opening the properties panel the default toggle to view is the history tab
         propsPanelOpen = evt -> {
-            historyButton.setSelected(true);
-            contentBorderPane.setCenter(historyTabsBorderPane);
+            if (contentBorderPane.getCenter() == null) {
+                historyButton.setSelected(true);
+                contentBorderPane.setCenter(historyTabsBorderPane);
+            }
         };
         eventBus.subscribe(conceptTopic, OpenPropertiesPanelEvent.class, propsPanelOpen);
 
         addStampSubscriber = evt -> {
-            contentBorderPane.setCenter(stampAddPane);
+            contentBorderPane.setCenter(stampJFXNode.node());
             editButton.setSelected(true);
-
-            stampJFXNode.updateViewModel("stampViewModel", stampViewModel -> {
-                EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
-                StampEntity stampEntity = latestVersion.stamp();
-
-                stampViewModel.setPropertyValue(ENTITY, entityFacade)
-                              .setPropertyValue(PREV_STAMP, stampEntity)
-                              .setPropertyValue(StampViewModel2.StampProperties.STATUS, stampEntity.state())
-                              .setPropertyValue(StampViewModel2.StampProperties.MODULE, stampEntity.module())
-                              .setPropertyValue(PATH, stampEntity.path());
-
-                stampViewModel.setPropertyValues(MODULES, fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()))
-                              .setPropertyValues(PATHS, fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()))
-                              .setPropertyValues(STATUSES, List.of(State.values()));
-                                // TODO:
-                                //        LAST_MOD_DATE,        // The previous stamp date time (read-only?) we could use PREV_STAMP's time
-                                //        SAME_AS_PREVIOUS,     // Custom validator
-                                //         SUBMITTED,             // Flag when user pressed submit.
-            });
         };
 
         eventBus.subscribe(conceptTopic, AddStampEvent.class, addStampSubscriber);
-
     }
 
     public ViewProperties getViewProperties() {
@@ -423,6 +379,10 @@ public class PropertiesController implements Serializable {
 
         // Create a new DescrNameViewModel for the addfqncontroller.
         this.addFullyQualifiedNameController.updateModel(viewProperties);
+
+        this.stampJFXNode.updateViewModel("stampViewModel", (StampViewModel2 viewModel) -> {
+            viewModel.init(entityFacade, conceptTopic, viewProperties);
+        });
     }
 
     public void updateView() {

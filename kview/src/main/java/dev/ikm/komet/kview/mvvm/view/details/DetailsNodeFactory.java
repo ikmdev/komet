@@ -15,11 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.details;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -30,6 +25,10 @@ import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @KometNodeFactoryDisplay(journalView = false, dockFXView = false)
 public class DetailsNodeFactory implements KometNodeFactory {
@@ -67,7 +66,7 @@ public class DetailsNodeFactory implements KometNodeFactory {
 
     @Reconstructor
     public static DetailsNode reconstructor(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
-        return new DetailsNode(windowView.makeOverridableViewProperties(), nodePreferences);
+        return new DetailsNode(windowView.makeOverridableViewProperties("DetailsNodeFactory.reconstructor"), nodePreferences);
     }
     @Override
     public KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
@@ -76,7 +75,7 @@ public class DetailsNodeFactory implements KometNodeFactory {
 
     @Override
     public KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences, boolean displayOnJournalView) {
-        return new DetailsNode(windowView.makeOverridableViewProperties(), nodePreferences, displayOnJournalView);
+        return new DetailsNode(windowView.makeOverridableViewProperties("DetailsNodeFactory.create"), nodePreferences, displayOnJournalView);
     }
 
     @Override

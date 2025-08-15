@@ -77,7 +77,7 @@ public class AutoCompleteTextFieldSkin<T> extends FXTextFieldSkin {
 
         timeline.stop();
 
-        if (autoCompletePopup != null) {
+        if (autoCompletePopup != null && autoCompletePopup.isShowing()) {
             autoCompletePopup.hide();
         }
     }
