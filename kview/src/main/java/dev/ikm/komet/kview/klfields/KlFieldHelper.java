@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.klfields;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.ANONYMOUS_CONCEPT;
+import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
@@ -117,7 +117,7 @@ public class KlFieldHelper {
         MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(patternVersion.fieldDefinitions().size());
         patternVersion.fieldDefinitions().forEach(f -> {
             if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
-                fieldsValues.add(ANONYMOUS_CONCEPT);
+                fieldsValues.add(BLANK_CONCEPT);
             } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
                     || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
                 fieldsValues.add("");

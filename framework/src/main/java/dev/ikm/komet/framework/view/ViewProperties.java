@@ -43,7 +43,7 @@ public class ViewProperties {
             throw new IllegalStateException(Keys.VIEW_COORDINATE_BYTES + " not initialized: " + preferencesNode);
         }
         ViewCoordinateRecord viewCoordinateRecord = ViewCoordinateRecord.decode(new DecoderInput(optionalCoordinateData.get()));
-        ViewProperties viewProperties = parentView.makeOverridableViewProperties();
+        ViewProperties viewProperties = parentView.makeOverridableViewProperties("ViewProperties.makeOverridableView");
         viewProperties.overridableView.setOverrides(viewCoordinateRecord);
         return viewProperties;
     }
