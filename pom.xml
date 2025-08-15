@@ -703,11 +703,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                         <configuration>
-                         <forkCount>1</forkCount>
-                         <reuseForks>false</reuseForks>
-                         <argLine>-Xmx1g</argLine>
-                         </configuration>
                         <executions>
                             <execution>
                                 <id>testfx-integration-tests</id>
@@ -753,11 +748,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                         <forkCount>1</forkCount>
-                         <reuseForks>false</reuseForks>
-                         <argLine>-Xmx1g</argLine>
-                         </configuration>
                         <executions>
                             <execution>
                                 <id>testfx-unit-tests</id>
