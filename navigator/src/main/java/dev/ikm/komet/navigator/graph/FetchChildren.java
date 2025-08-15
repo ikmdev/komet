@@ -16,10 +16,8 @@
 package dev.ikm.komet.navigator.graph;
 
 
-import dev.ikm.tinkar.common.alert.AlertStreams;
-import javafx.application.Platform;
-import org.eclipse.collections.api.collection.ImmutableCollection;
 import dev.ikm.komet.framework.view.ObservableView;
+import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.common.util.thread.TaskCountManager;
@@ -28,6 +26,8 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.application.Platform;
+import org.eclipse.collections.api.collection.ImmutableCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,7 +128,11 @@ public class FetchChildren extends TrackingCallable<Void> {
                                 LOG.trace("Adding children for: " + parentGraphItem.getValue().nid()
                                         + " from: " + fetcherId);
                                 parentGraphItem.getChildren().setAll(childrenToAdd);
-                                parentGraphItem.setExpanded(true);
+                                try {
+                                    parentGraphItem.setExpanded(true);
+                                } catch (IllegalStateException e) {
+                                    LOG.error("IllegalStateException checking leaf", e);
+                                }
                                 completedUnitOfWork();
                             }
 
