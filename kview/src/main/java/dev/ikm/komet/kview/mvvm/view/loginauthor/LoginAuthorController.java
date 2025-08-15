@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.AUTHORS;
+import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class LoginAuthorController {
@@ -65,13 +65,15 @@ public class LoginAuthorController {
                 return null;
             }
         });
-//        userChooser.setItems(LoginAuthorDataModel.list);
         passwordTextField.setVisible(false);
         loginButton.setDisable(true);
+
+        userChooser.valueProperty().bindBidirectional(loginAuthorViewModel.getProperty(SELECTED_AUTHOR));
+        loginErrorLabel.textProperty().bindBidirectional(loginAuthorViewModel.getProperty(LOGIN_ERROR));
     }
 
     @FXML
-    public void signupAction(ActionEvent actionEvent) {
+    public void signInAction(ActionEvent actionEvent) {
         if (isVisible) {
             swapVisibility();
         }
