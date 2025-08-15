@@ -126,8 +126,8 @@ public class FilterOptions implements Serializable {
     private Option module = new Option(OPTION_ITEM.MODULE, "module.title", new ArrayList<>(Arrays.asList("All")),
             new ArrayList<>(), new ArrayList<>(), null, true);
 
-    private Option path = new Option(OPTION_ITEM.PATH, "path.title", new ArrayList<>(Arrays.asList("All")),
-            new ArrayList<>(), new ArrayList<>(), null, true);
+    private Option path = new Option(OPTION_ITEM.PATH, "path.title", new ArrayList<>(),
+            new ArrayList<>(), new ArrayList<>(), null, false);
 
     private Option language = new Option(OPTION_ITEM.LANGUAGE, "language.title", new ArrayList<>(Arrays.asList("All")),
             new ArrayList<>(), new ArrayList<>(), null, true);

@@ -2,14 +2,12 @@ package dev.ikm.komet.kview.mvvm.view.properties;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
 import dev.ikm.komet.framework.view.*;
-import dev.ikm.komet.kview.mvvm.view.ControllerUtils;
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.mvvm.viewmodel.*;
 import dev.ikm.tinkar.terms.*;
-import javafx.beans.binding.*;
 import javafx.beans.property.*;
 import javafx.event.*;
 import javafx.fxml.*;
-import javafx.scene.*;
 import javafx.scene.control.*;
 import org.carlfx.cognitive.loader.*;
 
@@ -34,12 +32,8 @@ public class StampAddController {
     @InjectViewModel
     private StampViewModel2 stampViewModel;
 
-    private ControllerUtils<ComponentWithNid> controllerUtils;
-
     @FXML
     public void initialize() {
-        controllerUtils = new ControllerUtils<>(this::getViewProperties);
-
         initModuleComboBox();
         initPathComboBox();
         initStatusComboBox();
@@ -54,19 +48,19 @@ public class StampAddController {
     }
 
     private void initStatusComboBox() {
-        controllerUtils.initComboBox(statusComboBox, stampViewModel.getObservableList(STATUSES));
+        ViewCalculatorUtils.initComboBox(statusComboBox, stampViewModel.getObservableList(STATUSES), this::getViewProperties);
 
         statusComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(STATUS));
     }
 
     private void initPathComboBox() {
-        controllerUtils.initComboBox(pathComboBox, stampViewModel.getObservableList(PATHS));
+        ViewCalculatorUtils.initComboBox(pathComboBox, stampViewModel.getObservableList(PATHS), this::getViewProperties);
 
         pathComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(PATH));
     }
 
     private void initModuleComboBox() {
-        controllerUtils.initComboBox(moduleComboBox, stampViewModel.getObservableList(MODULES));
+        ViewCalculatorUtils.initComboBox(moduleComboBox, stampViewModel.getObservableList(MODULES), this::getViewProperties);
 
         moduleComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(MODULE));
     }

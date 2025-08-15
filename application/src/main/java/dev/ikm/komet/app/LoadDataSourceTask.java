@@ -35,7 +35,7 @@ public class LoadDataSourceTask extends TrackingCallable<Void> {
     protected Void compute() throws Exception {
         try {
             PrimitiveData.start();
-            Platform.runLater(() -> state.set(AppState.RUNNING));
+            Platform.runLater(() -> state.set(AppState.SELECT_USER));
             return null;
         } catch (Throwable ex) {
             ex.printStackTrace();

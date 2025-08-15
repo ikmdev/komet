@@ -15,13 +15,15 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinate;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.PatternFacade;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import org.eclipse.collections.api.list.ImmutableList;
 
 /**
  * The Class ObservableLanguageCoordinateImpl.
@@ -96,7 +98,7 @@ public final class ObservableLanguageCoordinateNoOverride
             ObservableValue<? extends LanguageCoordinateRecord> observable,
             LanguageCoordinateRecord oldValue, LanguageCoordinateRecord newValue) {
         this.languageConceptProperty().setValue(newValue.languageConcept());
-        this.descriptionPatternPreferenceListProperty().setAll(newValue.dialectPatternPreferenceNidList().mapToList(PatternFacade::make));
+        this.descriptionPatternPreferenceListProperty().setAll(newValue.descriptionPatternPreferenceNidList().mapToList(PatternFacade::make));
         this.dialectPatternPreferenceListProperty().setAll(newValue.dialectPatternPreferenceNidList().mapToList(PatternFacade::make));
         this.descriptionTypePreferenceListProperty().setAll(newValue.descriptionTypePreferenceNidList().mapToList(ConceptFacade::make));
         this.modulePreferenceListForLanguageProperty().setAll(newValue.modulePreferenceNidListForLanguage().mapToList(ConceptFacade::make));
