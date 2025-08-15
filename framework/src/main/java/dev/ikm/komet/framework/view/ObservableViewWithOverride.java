@@ -40,9 +40,27 @@ public class ObservableViewWithOverride extends ObservableViewBase {
         });
     }
 
+    public ObservableViewWithOverride(ObservableViewBase observableViewBase, String name) {
+        super(observableViewBase, name);
+        if (observableViewBase instanceof ObservableViewWithOverride) {
+            throw new IllegalStateException("Cannot override an overridden Coordinate. ");
+        }
+        observableViewBase.baseCoordinateProperty().addListener(this::overriddenBaseChanged);
+        observableViewBase.listening.addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                this.addListeners();
+            } else {
+                this.removeListeners();
+            }
+
+        });
+    }
+
     private void overriddenBaseChanged(ObservableValue<? extends ViewCoordinateRecord> observableValue,
                                        ViewCoordinateRecord oldValue,
                                        ViewCoordinateRecord newValue) {
+        var name = super.getName();
+
         if (this.hasOverrides()) {
             setExceptOverrides(newValue);
         } else {

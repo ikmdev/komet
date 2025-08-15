@@ -20,7 +20,6 @@
 package dev.ikm.komet.app;
 
 
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -187,8 +186,6 @@ public class SelectDataSourceController {
         progressTabPane.getTabs().add(progressTab);
 
         App.state.set(AppState.SELECTED_DATA_SOURCE);
-        // TODO: The following line will be removed in the future, when the WebApp class will be merged with the App class.
-        WebApp.state.set(AppState.SELECTED_DATA_SOURCE);
     }
 
     private void saveDataServiceProperties(DataServiceController<?> dataServiceController) {

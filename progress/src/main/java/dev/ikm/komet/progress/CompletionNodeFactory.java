@@ -15,9 +15,6 @@
  */
 package dev.ikm.komet.progress;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -26,6 +23,8 @@ import dev.ikm.komet.framework.preferences.Reconstructor;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 
 public class CompletionNodeFactory implements KometNodeFactory {
 	
@@ -49,7 +48,7 @@ public class CompletionNodeFactory implements KometNodeFactory {
 
     @Reconstructor
     public static CompletionNode reconstructor(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
-        return new CompletionNode(windowView.makeOverridableViewProperties(), nodePreferences);
+        return new CompletionNode(windowView.makeOverridableViewProperties("CompletionNodeFactory.reconstructor"), nodePreferences);
     }
 
     @Override

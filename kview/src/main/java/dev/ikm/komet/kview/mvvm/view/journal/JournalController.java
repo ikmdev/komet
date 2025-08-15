@@ -15,89 +15,143 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
-import static dev.ikm.komet.framework.dnd.KometClipboard.*;
-import static dev.ikm.komet.framework.events.appevents.ProgressEvent.*;
-import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.*;
-import static dev.ikm.komet.kview.controls.KLWorkspace.*;
-import static dev.ikm.komet.kview.events.EventTopics.*;
-import static dev.ikm.komet.kview.events.JournalTileEvent.*;
-import static dev.ikm.komet.kview.fxutils.FXUtils.*;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.*;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.*;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.*;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.*;
-import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
-import static dev.ikm.komet.preferences.NidTextEnum.*;
-import static dev.ikm.tinkar.events.FrameworkTopics.*;
-import static javafx.stage.PopupWindow.AnchorLocation.*;
-import dev.ikm.komet.framework.*;
-import dev.ikm.komet.framework.activity.*;
-import dev.ikm.komet.framework.concurrent.*;
-import dev.ikm.komet.framework.events.appevents.*;
-import dev.ikm.komet.framework.preferences.*;
-import dev.ikm.komet.framework.progress.*;
-import dev.ikm.komet.framework.search.*;
-import dev.ikm.komet.framework.tabs.*;
-import dev.ikm.komet.framework.view.*;
-import dev.ikm.komet.framework.window.*;
-import dev.ikm.komet.kview.controls.*;
-import dev.ikm.komet.kview.events.*;
-import dev.ikm.komet.kview.events.genediting.*;
+import dev.ikm.komet.framework.KometNode;
+import dev.ikm.komet.framework.KometNodeFactory;
+import dev.ikm.komet.framework.activity.ActivityStream;
+import dev.ikm.komet.framework.activity.ActivityStreamOption;
+import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
+import dev.ikm.komet.framework.events.appevents.ProgressEvent;
+import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
+import dev.ikm.komet.framework.preferences.PrefX;
+import dev.ikm.komet.framework.progress.ProgressHelper;
+import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.search.SearchResultCell;
+import dev.ikm.komet.framework.tabs.DetachableTab;
+import dev.ikm.komet.framework.tabs.TabGroup;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewMenuTask;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.KLWorkspace;
+import dev.ikm.komet.kview.controls.NotificationPopup;
+import dev.ikm.komet.kview.controls.Toast;
+import dev.ikm.komet.kview.events.JournalTileEvent;
+import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
+import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
-import dev.ikm.komet.kview.events.pattern.*;
-import dev.ikm.komet.kview.events.reasoner.*;
-import dev.ikm.komet.kview.fxutils.*;
-import dev.ikm.komet.kview.klwindows.*;
-import dev.ikm.komet.kview.klwindows.concept.*;
-import dev.ikm.komet.kview.lidr.mvvm.model.*;
+import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
+import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
+import dev.ikm.komet.kview.fxutils.FXUtils;
+import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
+import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
+import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
+import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
-import dev.ikm.komet.kview.mvvm.model.*;
-import dev.ikm.komet.kview.mvvm.view.details.*;
-import dev.ikm.komet.kview.mvvm.view.navigation.*;
-import dev.ikm.komet.kview.mvvm.view.progress.*;
-import dev.ikm.komet.kview.mvvm.view.reasoner.*;
-import dev.ikm.komet.kview.mvvm.view.search.*;
-import dev.ikm.komet.kview.mvvm.viewmodel.*;
-import dev.ikm.komet.navigator.graph.*;
-import dev.ikm.komet.preferences.*;
-import dev.ikm.komet.progress.*;
-import dev.ikm.komet.reasoner.*;
-import dev.ikm.komet.search.*;
-import dev.ikm.tinkar.common.alert.*;
-import dev.ikm.tinkar.common.id.*;
-import dev.ikm.tinkar.common.service.*;
-import dev.ikm.tinkar.common.util.uuid.*;
-import dev.ikm.tinkar.coordinate.stamp.calculator.*;
-import dev.ikm.tinkar.coordinate.view.calculator.*;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.events.*;
-import dev.ikm.tinkar.terms.*;
-import javafx.collections.*;
-import javafx.concurrent.*;
-import javafx.event.*;
-import javafx.fxml.*;
-import javafx.geometry.*;
-import javafx.scene.*;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
+import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
+import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
+import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
+import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
+import dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
+import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.NidTextEnum;
+import dev.ikm.komet.progress.CompletionNodeFactory;
+import dev.ikm.komet.progress.ProgressNodeFactory;
+import dev.ikm.komet.reasoner.ReasonerResultsController;
+import dev.ikm.komet.reasoner.ReasonerResultsNode;
+import dev.ikm.komet.reasoner.ReasonerResultsNodeFactory;
+import dev.ikm.komet.reasoner.StringWithOptionalConceptFacade;
+import dev.ikm.komet.search.SearchNode;
+import dev.ikm.tinkar.common.alert.AlertStreams;
+import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
+import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
+import dev.ikm.tinkar.terms.SemanticFacade;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
+import javafx.geometry.Side;
+import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.*;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.stage.*;
-import org.carlfx.cognitive.loader.*;
-import org.eclipse.collections.api.factory.*;
-import org.eclipse.collections.api.list.*;
-import org.eclipse.collections.impl.utility.*;
-import org.slf4j.*;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.loader.JFXNode;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.ArrayIterate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.*;
-import java.util.prefs.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.prefs.BackingStoreException;
+
+import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
+import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
+import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.*;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.GEN_EDITING;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.PATTERN;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
+import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
+import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.PROGRESS_TOPIC;
+import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 
 /**
  * This view is responsible for updating the kView journal window by loading a navigation panel
@@ -236,7 +290,7 @@ public class JournalController {
     private ConceptPatternNavController conceptPatternNavController;
 
     //////////////////// Subscribers /////////////////////////////////////////////////
-    private Subscriber<MakeConceptWindowEvent> makeConceptWindowEventSubscriber;
+    private Subscriber<MakeConceptWindowEvent> makeComponentWindowEventSubscriber;
 
     private Subscriber<MakePatternWindowEvent> makePatternWindowEventSubscriber;
 
@@ -302,17 +356,19 @@ public class JournalController {
         });
         reasonerToggleConsumer = createReasonerToggleConsumer();
 
-        makeConceptWindowEventSubscriber = evt -> {
+        makeComponentWindowEventSubscriber = evt -> {
             EntityFacade entityFacade = evt.getEntityFacade();
             if (entityFacade instanceof ConceptFacade conceptFacade) {
                 createConceptWindow(conceptFacade, NID_TEXT, null);
             } else if (entityFacade instanceof PatternFacade patternFacade) {
-                createPatternWindow(patternFacade, getNavigatorNode().getViewProperties());
+                // TODO is this used??  The makePatternWindowEventSubscriber below is handling the event to create the Pattern Window
+                createPatternWindow(patternFacade, windowView.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.PatternFacade"));
             } else if (entityFacade instanceof SemanticFacade semanticFacade) {
-                createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
+                // TODO is this used??  The makeGenEditWindowEventSubscriber below is handling the event to create the Semantic (GenEdit) Window
+                createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.SemanticFacade"), false);
             }
         };
-        journalEventBus.subscribe(journalTopic, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
+        journalEventBus.subscribe(journalTopic, MakeConceptWindowEvent.class, makeComponentWindowEventSubscriber);
 
         makePatternWindowEventSubscriber = evt ->
                 createPatternWindow(evt.getPatternFacade(), evt.getViewProperties());
@@ -579,7 +635,7 @@ public class JournalController {
      */
     public void createWindowFromUuids(UUID[] uuids) {
         createAndSetupWindow(() -> createFromUuids(uuids, journalTopic,
-                        windowView.makeOverridableViewProperties(), null),
+                        windowView.makeOverridableViewProperties("JournalController.createWindowFromUuids"), null),
                 "UUID array: " + ArrayIterate.makeString(uuids));
     }
 
@@ -594,7 +650,7 @@ public class JournalController {
         if (entityFacade == null) return;
 
         createAndSetupWindow(() -> createFromEntity(entityFacade, journalTopic,
-                        windowView.makeOverridableViewProperties(), null),
+                        windowView.makeOverridableViewProperties("JournalController.createWindowFromEntity"), null),
                 "entity " + entityFacade.nid());
     }
 
@@ -805,7 +861,7 @@ public class JournalController {
         activityStreams.forEach(ActivityStreams::delete);
 
         journalEventBus.unsubscribe(journalTopic, ShowNavigationalPanelEvent.class, showNavigationalPanelEventSubscriber);
-        journalEventBus.unsubscribe(journalTopic, MakeConceptWindowEvent.class, makeConceptWindowEventSubscriber);
+        journalEventBus.unsubscribe(journalTopic, MakeConceptWindowEvent.class, makeComponentWindowEventSubscriber);
         journalEventBus.unsubscribe(journalTopic, MakePatternWindowEvent.class, makePatternWindowEventSubscriber);
         journalEventBus.unsubscribe(journalTopic, MakeGenEditingWindowEvent.class, makeGenEditWindowEventSubscriber);
         journalEventBus.unsubscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
@@ -856,7 +912,7 @@ public class JournalController {
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
                             nextGenSearchViewModel.setPropertyValue(MODE, CREATE)
-                                .setPropertyValue(VIEW_PROPERTIES, this.windowView.makeOverridableViewProperties())
+                                .setPropertyValue(VIEW_PROPERTIES, this.windowView.makeOverridableViewProperties("JournalController.loadNextGenSearchPanel"))
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                 );
 
@@ -897,13 +953,13 @@ public class JournalController {
                 if (entity instanceof ConceptFacade conceptFacade) {
                     createConceptWindow(conceptFacade, nidTextEnum, null);
                 } else if (entity instanceof PatternFacade patternFacade) {
-                    createPatternWindow(patternFacade, getNavigatorNode().getViewProperties());
+                    createPatternWindow(patternFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.ConceptFacade"));
                 } else if (entity instanceof SemanticFacade semanticFacade) {
-                    createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
+                    createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.SemanticFacade"), false);
                 }
             } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
                 SemanticFacade semanticFacade = semanticEntityVersion.entity();
-                createGenEditWindow(semanticFacade, getNavigatorNode().getViewProperties(), false);
+                createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.SemanticEntityVersion"), false);
             }
         };
         controller.getDoubleCLickConsumers().add(displayInDetailsView);
@@ -1000,12 +1056,7 @@ public class JournalController {
             preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
         }
 
-        // TODO: Test and Fixme this takes a snapshot of the navigator's view coordinate
-        //       and makes a new view properties.
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
-
-        // copying the observable view
-        viewProperties.nodeView().setValue(navigatorNode.getViewProperties().nodeView().getValue());
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.createConceptWindow");
 
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
                 journalTopic, conceptFacade, viewProperties, preferences);
@@ -1120,7 +1171,7 @@ public class JournalController {
                                   ConceptFacade deviceConcept,
                                   KometPreferences preferences) {
         AbstractEntityChapterKlWindow lidrKlWindow = createWindow(EntityKlWindowTypes.LIDR,
-                journalTopic, deviceConcept, windowView.makeOverridableViewProperties(), preferences);
+                journalTopic, deviceConcept, windowView.makeOverridableViewProperties("JournalController.createLidrWindow"), preferences);
         setupWorkspaceWindow(lidrKlWindow);
     }
 
@@ -1187,7 +1238,7 @@ public class JournalController {
                 navigationActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
 
         // What to do when you can double-click on a cell
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.loadClassicConceptNavigator");
         TreeView<ConceptFacade> treeView = navigatorNode.getController().getTreeView();
 
         // Create a context menu allowing user to Launch as a Lidr Record window.
@@ -1246,7 +1297,7 @@ public class JournalController {
     }
 
     private void loadNavigationPanel(ObservableViewNoOverride windowView) {
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties();
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.loadNavigationPanel");
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
                 .controller(new ConceptPatternNavController(this))
                 .updateViewModel("patternNavViewModel", (patternNavViewModel) ->
@@ -1544,7 +1595,7 @@ public class JournalController {
      */
     @FXML
     public void newCreatePatternWindow(ActionEvent actionEvent) {
-        createPatternWindow(null, windowView.makeOverridableViewProperties());
+        createPatternWindow(null, windowView.makeOverridableViewProperties("JournalController.newCreatePatternWindow"));
     }
 
     public static Toast toast() { return toast; }
