@@ -2,6 +2,7 @@ package dev.ikm.komet.app;
 
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.preferences.PrefX;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
@@ -13,11 +14,14 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.search.SearchNodeFactory;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import one.jpro.platform.auth.core.authentication.User;
 import org.carlfx.cognitive.loader.Config;
@@ -28,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import static dev.ikm.komet.app.App.IS_BROWSER;
@@ -38,8 +43,11 @@ import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
@@ -81,9 +89,41 @@ public class AppPages {
         }
     }
 
-    void launchLoginAuthor(Stage stage) {
+    void launchLoginAuthor(Stage stage){
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences windowPreferences = appPreferences.node(AUTHOR_LOGIN_WINDOW);
+        final WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties("login-author");
+
+        Config loginConfig = new Config(LoginAuthorController.class.getResource("loginAuthor.fxml"))
+                .updateViewModel("loginAuthorViewModel", loginAuthorViewModel -> {
+                    loginAuthorViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties);
+                });
+
+
+        JFXNode<StackPane, LoginAuthorController> journalJFXNode = FXMLMvvmLoader.make(loginConfig);
+        StackPane authorLoginBorderPane = journalJFXNode.node();
+
+//        Scene loginScene = new Scene(authorLoginBorderPane);
+//        Stage stage = new Stage();
+//        stage.setScene(loginScene);
+        stage.getIcons().setAll(app.appIcon);
+        stage.setTitle("KOMET Author selection");
+        stage.setWidth(authorLoginBorderPane.prefWidth(-1));
+        stage.setHeight(authorLoginBorderPane.prefHeight(-1));
+        app.rootPane.getChildren().setAll(authorLoginBorderPane);
+
+        LoginAuthorController loginAuthorController = journalJFXNode.controller();
+        loginAuthorController.onLogin().thenAccept(userModel -> {
+            App.state.set(AppState.RUNNING);
+        });
+  //      stage.show();
+       app.appMenu.setupMenus();
+    }
+
+    void launchLoginAuthor1(Stage stage) {
         try {
-            var url = LoginAuthorController.class.getResource("/dev/ikm/komet/kview/mvvm/view/loginauthor/LoginAuthor.fxml");
+            var url = LoginAuthorController.class.getResource("/dev/ikm/komet/kview/mvvm/view/loginauthor/loginAuthor.fxml");
             var loader = new FXMLLoader(url);
             var content = (Node) loader.load();
             var controller = (LoginAuthorController) loader.getController();

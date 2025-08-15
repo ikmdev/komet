@@ -1,4 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -6,9 +10,17 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.util.StringConverter;
+import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.AUTHORS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class LoginAuthorController {
     private static final Logger LOG = LoggerFactory.getLogger(LoginAuthorController.class);
@@ -17,7 +29,7 @@ public class LoginAuthorController {
     @FXML
     private PasswordField passwordField;
     @FXML
-    private ComboBox userChooser;
+    private ComboBox<ConceptEntity> userChooser;
     @FXML
     private Button loginButton;
     @FXML
@@ -32,11 +44,28 @@ public class LoginAuthorController {
     @FXML
     private Label loginErrorLabel;
 
+    @InjectViewModel
+    private LoginAuthorViewModel loginAuthorViewModel;
+
     @FXML
     public void initialize() {
         LoginAuthorDataModel.fakeusers();
+        ViewProperties viewProperties = loginAuthorViewModel.getPropertyValue(VIEW_PROPERTIES);
+        loginAuthorViewModel.getObservableList(AUTHORS).addAll(fetchDescendentsOfConcept(viewProperties, TinkarTerm.USER.publicId()));
         userChooser.setPromptText("Select a user");
-        userChooser.setItems(LoginAuthorDataModel.list);
+        userChooser.setItems(loginAuthorViewModel.getObservableList(AUTHORS));
+        userChooser.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(ConceptEntity user) {
+                return viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(user.nid());
+            }
+
+            @Override
+            public ConceptEntity fromString(String s) {
+                return null;
+            }
+        });
+//        userChooser.setItems(LoginAuthorDataModel.list);
         passwordTextField.setVisible(false);
         loginButton.setDisable(true);
     }
