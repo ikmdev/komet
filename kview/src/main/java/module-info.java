@@ -147,6 +147,10 @@ module dev.ikm.komet.kview {
 
     exports dev.ikm.komet.kview.mvvm.view.confirmation;
     opens dev.ikm.komet.kview.mvvm.view.confirmation;
+
+    exports dev.ikm.komet.kview.common;
+    opens dev.ikm.komet.kview.common;
+
     exports dev.ikm.komet.kview.mvvm.view.loginauthor;
     opens dev.ikm.komet.kview.mvvm.view.loginauthor;
 

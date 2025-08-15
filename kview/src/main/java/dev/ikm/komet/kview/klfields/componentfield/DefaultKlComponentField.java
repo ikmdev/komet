@@ -46,10 +46,9 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
 
     private void updateControlValue(EntityProxy entityProxy, KLReadOnlyComponentControl klReadOnlyComponentControl) {
         ComponentItem componentItem;
-        if (entityProxy == null) {
+        if (KLComponentControl.isEmpty(entityProxy)) {
             componentItem = null;
         } else {
-
             String description = observableView.calculator().languageCalculator()
                     .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
             Image identicon = Identicon.generateIdenticonImage(observableField.valueProperty().get().publicId());
