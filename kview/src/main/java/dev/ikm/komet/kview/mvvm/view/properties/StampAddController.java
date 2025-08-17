@@ -21,6 +21,9 @@ import java.util.Locale;
 public class StampAddController {
 
     @FXML
+    private TextField authorTextField;
+
+    @FXML
     private Label lastUpdatedLabel;
 
     @FXML
@@ -47,7 +50,7 @@ public class StampAddController {
     @FXML
     public void initialize() {
         initLastUpdatedField();
-
+        initAuthorField();
         initModuleComboBox();
         initPathComboBox();
         initStatusComboBox();
@@ -59,6 +62,20 @@ public class StampAddController {
 
     private ViewProperties getViewProperties() {
         return stampViewModel.getViewProperties();
+    }
+
+    private void initAuthorField() {
+        StringBinding authorTextBinding = new StringBinding() {
+            {
+                super.bind(stampViewModel.getProperty(AUTHOR));
+            }
+
+            @Override
+            protected String computeValue() {
+                return "Author";
+            }
+        };
+        authorTextField.textProperty().bind(authorTextBinding);
     }
 
     private void initLastUpdatedField() {

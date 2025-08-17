@@ -62,10 +62,12 @@
             <ComboBox fx:id="statusComboBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" />
             <Label fx:id="lastUpdatedLabel" styleClass="form-label" text="Last Updated" GridPane.rowIndex="1" />
             <TextField fx:id="lastUpdatedTextField" disable="true" styleClass="komet-text-field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Label styleClass="form-label" text="Module" GridPane.rowIndex="2" />
-            <ComboBox fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Label styleClass="form-label" text="Path" GridPane.rowIndex="3" />
-            <ComboBox fx:id="pathComboBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label styleClass="form-label" text="Author" GridPane.rowIndex="2" />
+            <TextField fx:id="authorTextField" disable="true" styleClass="komet-text-field" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label styleClass="form-label" text="Module" GridPane.rowIndex="3" />
+            <ComboBox fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label styleClass="form-label" text="Path" GridPane.rowIndex="4" />
+            <ComboBox fx:id="pathComboBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" styleClass="blue-arrow-combo-box" GridPane.columnIndex="1" GridPane.rowIndex="4" />
          </children>
       </GridPane>
    </center>
