@@ -5,6 +5,7 @@ import dev.ikm.komet.framework.view.*;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.mvvm.viewmodel.*;
 import dev.ikm.tinkar.terms.*;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.property.*;
 import javafx.event.*;
 import javafx.fxml.*;
@@ -45,8 +46,6 @@ public class StampAddController {
 
     @FXML
     public void initialize() {
-        controllerUtils = new ControllerUtils<>(this::getViewProperties);
-
         initLastUpdatedField();
 
         initModuleComboBox();
