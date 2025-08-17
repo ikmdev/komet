@@ -21,6 +21,16 @@ import java.util.UUID;
 
 public class KometTerm {
 
+    /**
+     * Java binding for the concept described as <strong><em>Blank Concept</em></strong>;
+     * identified by UUID: {@code
+     * <a href="http://localhost:8080/terminology/rest/concept/cd23d88d-2fcd-4007-8829-97e37bf336aa">
+     * cd23d88d-2fcd-4007-8829-97e37bf336aa</a>}.
+     *
+     * This Concept is used to store empty Components in the Database.
+     * */
+    public static final EntityProxy.Concept BLANK_CONCEPT = EntityProxy.Concept.make("Blank Concept", UUID.fromString("cd23d88d-2fcd-4007-8829-97e37bf336aa"));
+
     /** Java binding for the concept described as <strong><em>Module preference order for stamp coordinate (SOLOR)</em></strong>;
      * identified by UUID: {@code
      * <a href="http://localhost:8080/terminology/rest/concept/ddeda759-e89c-5186-aa40-d63070756ab4">
