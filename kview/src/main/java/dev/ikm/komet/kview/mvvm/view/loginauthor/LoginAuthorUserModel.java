@@ -20,5 +20,4 @@ public class LoginAuthorUserModel {
     public void setUserpassword(String userpassword) {
         this.userPassword = userpassword;
     }
-
 }
