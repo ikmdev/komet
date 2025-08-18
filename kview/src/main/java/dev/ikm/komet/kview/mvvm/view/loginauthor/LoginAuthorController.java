@@ -17,6 +17,7 @@ import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -51,14 +52,16 @@ public class LoginAuthorController {
 
     @FXML
     public void initialize() {
-        ViewProperties viewProperties = loginAuthorViewModel.getPropertyValue(VIEW_PROPERTIES);
+        ViewProperties viewProperties = getViewProperties();
         loginAuthorViewModel.getObservableList(AUTHORS).addAll(fetchDescendentsOfConcept(viewProperties, TinkarTerm.USER.publicId()));
         userChooser.setPromptText("Select a user");
         userChooser.setItems(loginAuthorViewModel.getObservableList(AUTHORS));
+        userChooser.getItems().sort(Comparator.comparing(this::getUserName));
+
         userChooser.setConverter(new StringConverter<>() {
             @Override
             public String toString(ConceptEntity user) {
-                return viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(user.nid());
+                return getUserName(user);
             }
 
             @Override
@@ -74,6 +77,15 @@ public class LoginAuthorController {
         loginButton.setDisable(true);
         loginErrorLabel.textProperty().bindBidirectional(loginAuthorViewModel.getProperty(LOGIN_ERROR));
 
+    }
+
+    private ViewProperties getViewProperties() {
+        return loginAuthorViewModel.getPropertyValue(VIEW_PROPERTIES);
+    }
+
+    private String getUserName(ConceptEntity conceptEntity) {
+        ViewProperties viewProperties = getViewProperties();
+        return viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptEntity.nid());
     }
 
     @FXML
