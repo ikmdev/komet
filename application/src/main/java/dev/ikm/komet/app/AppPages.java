@@ -103,10 +103,6 @@ public class AppPages {
 
         JFXNode<StackPane, LoginAuthorController> journalJFXNode = FXMLMvvmLoader.make(loginConfig);
         StackPane authorLoginBorderPane = journalJFXNode.node();
-
-//        Scene loginScene = new Scene(authorLoginBorderPane);
-//        Stage stage = new Stage();
-//        stage.setScene(loginScene);
         stage.getIcons().setAll(app.appIcon);
         stage.setTitle("KOMET Author selection");
         stage.setWidth(authorLoginBorderPane.prefWidth(-1));
@@ -117,30 +113,7 @@ public class AppPages {
         loginAuthorController.onLogin().thenAccept(userModel -> {
             App.state.set(AppState.RUNNING);
         });
-  //      stage.show();
-       app.appMenu.setupMenus();
-    }
-
-    void launchLoginAuthor1(Stage stage) {
-        try {
-            var url = LoginAuthorController.class.getResource("/dev/ikm/komet/kview/mvvm/view/loginauthor/loginAuthor.fxml");
-            var loader = new FXMLLoader(url);
-            var content = (Node) loader.load();
-            var controller = (LoginAuthorController) loader.getController();
-            app.rootPane.getChildren().setAll(content);
-            stage.setTitle("KOMET Author selection");
-
-            controller.onLogin().thenAccept(userModel -> {
-                App.state.set(AppState.RUNNING);
-            });
-
-            stage.setWidth(content.prefWidth(-1));
-            stage.setHeight(content.prefHeight(-1));
-
-            app.appMenu.setupMenus();
-        } catch (IOException ex) {
-            LOG.error("Failed to initialize the select data source window", ex);
-        }
+//       app.appMenu.setupMenus();
     }
 
     public void launchLandingPage(Stage stage, User user) {
