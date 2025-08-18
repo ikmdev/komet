@@ -88,6 +88,9 @@ public class EditDescriptionFormController implements BasicController {
     private TextField otherNameTextField;
 
     @FXML
+    private ComboBox<ConceptEntity> comboBox;
+
+    @FXML
     private ComboBox<ConceptEntity> moduleComboBox;
 
     @FXML
@@ -294,13 +297,15 @@ public class EditDescriptionFormController implements BasicController {
     public void setConceptAndPopulateForm(PublicId publicId) {
         editDescrName = null;
         this.publicId = publicId;
-        ViewCalculator viewCalculator = ViewCoordinateHelper.createViewCalculatorLatestByTime(viewProperties);
-
+        //ViewCalculator viewCalculator = ViewCoordinateHelper.createViewCalculatorLatestByTime(viewProperties);
+        ViewCalculator viewCalculator = viewProperties.calculator();
         int nid = EntityService.get().nidForPublicId(publicId);
 
         // this is the Other Name
         Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(nid);
-
+        if(latestEntityVersion.isAbsent()) {
+            return;
+        }
         StampEntity stampEntity = latestEntityVersion.get().stamp();
 
         // populate the other name text field (e.g. 'Chronic lung disease')

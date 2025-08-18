@@ -249,25 +249,22 @@ public class EditFullyQualifiedNameController implements BasicController {
 
         // this is the Other Name
         Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(nid);
+        latestEntityVersion.ifPresent(semanticEntityVersion -> {
+            StampEntity stampEntity = latestEntityVersion.get().stamp();
+            String otherName = viewCalculator.getDescriptionText(nid).get();
+            this.fqnText.setText(otherName);
 
-        StampEntity stampEntity = latestEntityVersion.get().stamp();
+            // get all descendant modules
+            IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.MODULE.nid());
+            Set<ConceptEntity> allModules =
+                    moduleDescendents.intStream()
+                            .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
+                            .collect(Collectors.toSet());
+            setupComboBox(moduleComboBox, allModules);
 
-        //FIX ME: we need to get the Fully Qualified Name and not the Other Name
-        // populate the other name text field (e.g. 'Chronic lung disease')
-        String otherName = viewCalculator.getDescriptionText(nid).get();
-        this.fqnText.setText(otherName);
-
-        // get all descendant modules
-        IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.MODULE.nid());
-        Set<ConceptEntity> allModules =
-                moduleDescendents.intStream()
-                        .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                        .collect(Collectors.toSet());
-        setupComboBox(moduleComboBox, allModules);
-
-        // populate the current module and select it (e.g. 'SNOMED CT core module')
-        ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
-        moduleComboBox.getSelectionModel().select(currentModule);
+            // populate the current module and select it (e.g. 'SNOMED CT core module')
+            ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
+            moduleComboBox.getSelectionModel().select(currentModule);
 
         // get all statuses
         IntIdSet statusDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.STATUS_VALUE.nid());
@@ -306,13 +303,15 @@ public class EditFullyQualifiedNameController implements BasicController {
         int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
         ConceptFacade langConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexLang);
 
-        ConceptEntity langConcept = Entity.getFast(langConceptFacade.nid());
-        languageComboBox.getSelectionModel().select(langConcept);
+            ConceptEntity langConcept = Entity.getFast(langConceptFacade.nid());
+            languageComboBox.getSelectionModel().select(langConcept);
 
-        //initial state of edit screen, the submit button should be disabled
-        submitButton.setDisable(true);
+            //initial state of edit screen, the submit button should be disabled
+            submitButton.setDisable(true);
 
-        LOG.info(publicId.toString());
+            LOG.info(publicId.toString());
+
+        });
     }
 
     @FXML
