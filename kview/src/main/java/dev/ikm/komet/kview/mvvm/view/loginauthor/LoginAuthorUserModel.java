@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
+import dev.ikm.tinkar.entity.ConceptEntity;
+
 public class LoginAuthorUserModel {
 
     public String userName;
@@ -20,4 +22,5 @@ public class LoginAuthorUserModel {
     public void setUserpassword(String userpassword) {
         this.userPassword = userpassword;
     }
+
 }

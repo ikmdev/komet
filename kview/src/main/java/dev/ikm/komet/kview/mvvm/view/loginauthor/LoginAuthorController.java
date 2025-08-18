@@ -12,6 +12,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,6 @@ public class LoginAuthorController {
 
     @FXML
     public void initialize() {
-        LoginAuthorDataModel.fakeusers();
         ViewProperties viewProperties = loginAuthorViewModel.getPropertyValue(VIEW_PROPERTIES);
         loginAuthorViewModel.getObservableList(AUTHORS).addAll(fetchDescendentsOfConcept(viewProperties, TinkarTerm.USER.publicId()));
         userChooser.setPromptText("Select a user");
@@ -65,11 +65,14 @@ public class LoginAuthorController {
                 return null;
             }
         });
-        passwordTextField.setVisible(false);
-        loginButton.setDisable(true);
 
         userChooser.valueProperty().bindBidirectional(loginAuthorViewModel.getProperty(SELECTED_AUTHOR));
+        passwordField.textProperty().bindBidirectional(loginAuthorViewModel.getProperty(PASSWORD));
+
+        passwordTextField.setVisible(false);
+        loginButton.setDisable(true);
         loginErrorLabel.textProperty().bindBidirectional(loginAuthorViewModel.getProperty(LOGIN_ERROR));
+
     }
 
     @FXML
@@ -77,38 +80,13 @@ public class LoginAuthorController {
         if (isVisible) {
             swapVisibility();
         }
-        String errormessage = "";
-        boolean loginproceed = false;
-        if (userChooser.getValue() == null) {
-            errormessage = "Error: " + "Please select a User";
-            userErrorLabel.setText(errormessage);
-        } else {
-            String username = userChooser.getValue().toString();
-            String password = "";
-            if (!isVisible) {
-                password = passwordField.getText();
-            } else {
-                password = passwordTextField.getText();
-            }
-            userErrorLabel.setText("");
-            if (password.length() > 4) {
-                loginproceed = true;
-                passwordErrorLabel.setText("");
-            } else {
-                errormessage = "ERROR: Password must be at least 5 characters long";
-                passwordErrorLabel.setText(errormessage);
-                passwordErrorLabel.setVisible(true);
-            }
-        }
-        if (loginproceed) {
-            boolean valid = LoginAuthorDataModel.validateUser(userChooser.getValue().toString(), passwordField.getText());
-            if (valid) {
-                loginErrorLabel.setText("");
-                LOG.info("Author selected: " + userChooser.getValue().toString());
-                onLoginFuture.complete(null);
-            } else {
-                loginErrorLabel.setText("Login failed, please check your credentials");
-            }
+        loginErrorLabel.setText("");
+        loginAuthorViewModel.setPropertyValue(LOGIN_ERROR, "");
+        ValidationViewModel validationViewModel = loginAuthorViewModel.validate();
+        if(!validationViewModel.hasErrorMsgs()){
+            loginErrorLabel.setText("");
+            LOG.info("Author selected: " + userChooser.getValue().toString());
+            onLoginFuture.complete(null);
         }
     }
 
