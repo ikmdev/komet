@@ -17,6 +17,10 @@ package dev.ikm.komet.kview.mvvm.view.properties;
 
 import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
+
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
@@ -141,6 +145,8 @@ public class PropertiesController implements Serializable {
 
     private UUID conceptTopic;
 
+    private boolean hasOtherNames = false;
+
 
     public PropertiesController() {
     }
@@ -242,7 +248,13 @@ public class PropertiesController implements Serializable {
                             .setValue(MODULE, null)
                             .setValue(LANGUAGE, null)
                             .setValue(STATUS, TinkarTerm.ACTIVE_STATE)
-                            .setValue(IS_SUBMITTED, false);
+                            .setValue(IS_SUBMITTED, false)
+
+                            .setValue(FQN_CASE_SIGNIFICANCE, addFullyQualifiedNameController.getViewModel().getValue(CASE_SIGNIFICANCE))
+                            .setValue(FQN_LANGUAGE, addFullyQualifiedNameController.getViewModel().getValue(LANGUAGE))
+
+                            .setValue(HAS_OTHER_NAME, hasOtherNames);
+
                     // if in edit mode and navigating from the properties > edit > add other name
                     // then the public id will be set
                     if (evt.getPublicId() != null) {
@@ -434,5 +446,9 @@ public class PropertiesController implements Serializable {
      */
     public FlowPane getPropertiesTabsPane() {
         return propertiesTabsPane;
+    }
+
+    public void setHasOtherName(boolean value) {
+        hasOtherNames = value;
     }
 }

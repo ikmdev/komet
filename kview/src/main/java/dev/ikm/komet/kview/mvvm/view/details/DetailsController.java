@@ -406,7 +406,12 @@ public class DetailsController  {
             updateFQNConceptDescription(fqnDescrName);
         });
         ObservableList<DescrName> otherNames = getConceptViewModel().getObservableList(OTHER_NAMES);
-        otherNames.addListener((InvalidationListener) obs -> updateOtherNamesDescription(otherNames));
+        otherNames.addListener((InvalidationListener) obs -> {
+            if (!otherNames.isEmpty()) {
+                propertiesController.setHasOtherName(true);
+            }
+            updateOtherNamesDescription(otherNames);
+        });
 
         // Listens for events related to new fqn or other names added to this concept. Subscriber is responsible for
         // the final create concept transaction.
