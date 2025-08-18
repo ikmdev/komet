@@ -455,7 +455,6 @@ public class App extends Application  {
                 }
                 case SELECT_USER -> {
                     appPages.launchLoginAuthor(primaryStage);
-//                    appPages.launchLoginAuthor(primaryStage);
                 }
                 case RUNNING -> {
                     if (userProperty.get() == null) {

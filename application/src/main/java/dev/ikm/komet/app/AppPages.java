@@ -44,6 +44,7 @@ import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.SELECTED_AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
@@ -110,10 +111,14 @@ public class AppPages {
         app.rootPane.getChildren().setAll(authorLoginBorderPane);
 
         LoginAuthorController loginAuthorController = journalJFXNode.controller();
-        loginAuthorController.onLogin().thenAccept(userModel -> {
+
+        loginAuthorController.onLogin().thenAccept(loginAuthorViewModel -> {
+            ConceptEntity userConceptEntity = loginAuthorViewModel.getPropertyValue(SELECTED_AUTHOR);
+            String username = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(userConceptEntity.nid());
+            User user = new User(username);
+            App.userProperty.set(user);
             App.state.set(AppState.RUNNING);
         });
-//       app.appMenu.setupMenus();
     }
 
     public void launchLandingPage(Stage stage, User user) {

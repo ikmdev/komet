@@ -11,6 +11,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.StringConverter;
+import one.jpro.platform.auth.core.authentication.User;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ public class LoginAuthorController {
     private ImageView visibilityIcon;
     @FXML
     private TextField passwordTextField;
-    private CompletableFuture<LoginAuthorUserModel> onLoginFuture = new CompletableFuture<>();
+    private CompletableFuture<LoginAuthorViewModel> onLoginFuture = new CompletableFuture<>();
     @FXML
     private Label passwordErrorLabel;
     @FXML
@@ -86,7 +87,7 @@ public class LoginAuthorController {
         if(!validationViewModel.hasErrorMsgs()){
             loginErrorLabel.setText("");
             LOG.info("Author selected: " + userChooser.getValue().toString());
-            onLoginFuture.complete(null);
+            onLoginFuture.complete(loginAuthorViewModel);
         }
     }
 
@@ -131,7 +132,7 @@ public class LoginAuthorController {
         }
     }
 
-    public CompletableFuture<LoginAuthorUserModel> onLogin() {
+    public CompletableFuture<LoginAuthorViewModel> onLogin() {
         return onLoginFuture;
     }
 
