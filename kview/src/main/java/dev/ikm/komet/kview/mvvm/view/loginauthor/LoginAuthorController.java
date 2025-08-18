@@ -1,6 +1,5 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
@@ -9,16 +8,13 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.util.StringConverter;
-import one.jpro.platform.auth.core.authentication.User;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;

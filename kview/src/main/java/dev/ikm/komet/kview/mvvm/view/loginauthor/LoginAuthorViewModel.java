@@ -4,16 +4,12 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.scene.control.PasswordField;
 import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-
-import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorDataModel.validateUser;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
 
 public class LoginAuthorViewModel extends FormViewModel {
     private static final Logger LOG = LoggerFactory.getLogger(LoginAuthorViewModel.class);

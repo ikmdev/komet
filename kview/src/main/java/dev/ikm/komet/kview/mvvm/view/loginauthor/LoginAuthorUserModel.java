@@ -1,7 +1,5 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
-import dev.ikm.tinkar.entity.ConceptEntity;
-
 public class LoginAuthorUserModel {
 
     public String userName;

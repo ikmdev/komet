@@ -1,11 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.util.ArrayList;
-
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 
 /**
  * This Class contains functionality for generating fake users for test
@@ -19,7 +16,6 @@ public class LoginAuthorDataModel {
 
     protected static void fakeusers() {
         userList.clear();
-      //  fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId())
         for (int i = 0; i < 10; i++) {
             LoginAuthorUserModel user = new LoginAuthorUserModel();
             user.userName = "KometUser" + (i + 1);
