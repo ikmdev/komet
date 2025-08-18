@@ -28,6 +28,7 @@ import java.util.UUID;
 import java.util.*;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.CURRENT_STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULE;
@@ -36,6 +37,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATHS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.TIME;
 
 public class StampViewModel2 extends FormViewModel {
     /**
@@ -57,8 +59,10 @@ public class StampViewModel2 extends FormViewModel {
         CURRENT_STAMP,                  // The current stamp
 
         STATUS,                         // User selected Status
+        AUTHOR,                         // Author of the Stamp
         MODULE,                         // User selected Module
         PATH,                           // User selected Path
+        TIME,                           // Time of the Stamp
 
         IS_STAMP_VALUES_THE_SAME,       // Are the Stamp values in the properties the same as of the current Stamp
 
@@ -71,8 +75,10 @@ public class StampViewModel2 extends FormViewModel {
         super();
         addProperty(CURRENT_STAMP, (Stamp) null);
         addProperty(STATUS, State.ACTIVE);
+        addProperty(AUTHOR, (ComponentWithNid) null);
         addProperty(MODULE, (ComponentWithNid) null);
         addProperty(PATH, (ComponentWithNid) null);
+        addProperty(TIME, 0L);
 
         addProperty(IS_STAMP_VALUES_THE_SAME, true);
         addValidator(IS_STAMP_VALUES_THE_SAME, "Validator Property", (ValidationResult vr, ViewModel vm) -> {
@@ -144,8 +150,10 @@ public class StampViewModel2 extends FormViewModel {
         ConceptEntity path = paths.stream().filter( m -> m.nid() == stampEntity.pathNid()).findFirst().orElse(null);
 
         setPropertyValue(STATUS, stampEntity.state());
+        setPropertyValue(AUTHOR, stampEntity.author());
         setPropertyValue(MODULE, module);
         setPropertyValue(PATH, path);
+        setPropertyValue(TIME, stampEntity.time());
     }
 
     private boolean updateIsStampValuesChanged() {
