@@ -123,7 +123,7 @@ public class LoginAuthorController {
 
     public void swapVisibility() {
         if (!isVisible) {
-            visibilityIcon.setImage(new javafx.scene.image.Image("dev.ikm.komet.kview.mvvm.view.images.view.png"));
+            visibilityIcon.setImage(new Image(getClass().getResource("/dev/ikm/komet/kview/mvvm/view/images/view.png").toString()));
             String a = passwordField.getText();
             passwordField.setVisible(false);
             passwordTextField.setText(a);
@@ -131,7 +131,7 @@ public class LoginAuthorController {
             passwordTextField.setVisible(true);
             isVisible = true;
         } else {
-            visibilityIcon.setImage(new Image("dev.ikm.komet.kview.mvvm.view.images.hidden.png"));
+            visibilityIcon.setImage(new Image(getClass().getResource("/dev/ikm/komet/kview/mvvm/view/images/hidden.png").toString()));
             String a = passwordTextField.getText();
             passwordTextField.setVisible(false);
             passwordField.setText(a);

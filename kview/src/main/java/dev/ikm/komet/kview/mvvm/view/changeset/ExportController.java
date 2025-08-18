@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.changeset;
 
 import com.jpro.webapi.WebAPI;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
@@ -289,26 +290,29 @@ public class ExportController {
             }
 
             ExportEntitiesToProtobufFile exportEntities = new ExportEntitiesToProtobufFile(exportFile, fromDate, toDate);
-            Future<?> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
-            closeDialog();
+            CompletableFuture<EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
 
-            return CompletableFuture.runAsync(() -> {
-                try {
-                    exportFuture.get(); // Wait for the export task to complete
+            exportFuture.handle((result, throwable) -> {
+                if (throwable != null) {
+                    LOG.error("Export to file '{}' failed", exportFile, throwable);
+                    deleteFile(exportFile);
+                } else {
                     LOG.info("Export completed successfully to file {}", exportFile);
-                } catch (CancellationException cex) {
-                    LOG.info("Export to file '{}' canceled", exportFile);
-                    deleteFile(exportFile);
-                    throw new CompletionException(cex);
-                } catch (InterruptedException | ExecutionException ex) {
-                    LOG.error("Export to file '{}' failed", exportFile);
-                    deleteFile(exportFile);
-                    throw new CompletionException(ex);
+                }
+                return result;
+            });
+            return  exportFuture.thenAccept(exportResult -> {
+                if (exportResult != null) {
+                    LOG.info("Exported Total records: {}", exportResult.conceptsCount());
+                    LOG.info("Exported      Concepts: {}", exportResult.conceptsCount());
+                    LOG.info("Exported     Patterns : {}", exportResult.patternsCount());
+                    LOG.info("Exported     Semantics: {}", exportResult.semanticsCount());
+                    LOG.info("Exported        Stamps: {}", exportResult.stampsCount());
                 }
             });
         });
     }
-
+    
     private long transformStringInLocalDateTimeToEpochMillis(String localDateTimeFormat) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, hh:mm a", Locale.ENGLISH);
         LocalDateTime localDateTime = LocalDateTime.parse(localDateTimeFormat, formatter);
