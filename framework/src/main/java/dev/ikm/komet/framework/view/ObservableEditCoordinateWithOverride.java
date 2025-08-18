@@ -16,10 +16,10 @@
 package dev.ikm.komet.framework.view;
 
 
-import javafx.beans.value.ObservableValue;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.beans.value.ObservableValue;
 
 public class ObservableEditCoordinateWithOverride
         extends ObservableEditCoordinateBase {
@@ -99,7 +99,7 @@ int authorNid, int defaultModuleNid, int promotionPathNid, int destinationModule
                 destinationModule = destinationModuleProperty().get();
             }
             ;
-            setValue(EditCoordinateRecord.make(author, defaultModule, promotionPath, defaultPath, destinationModule));
+            setValue(EditCoordinateRecord.make(author, defaultModule, destinationModule, defaultPath, promotionPath));
         } else {
             setValue(updatedCoordinate);
         }
@@ -162,7 +162,7 @@ int authorNid, int defaultModuleNid, int promotionPathNid, int destinationModule
 
     @Override
     public ObjectPropertyWithOverride<ConceptFacade> defaultPathProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.promotionPathProperty();
+        return (ObjectPropertyWithOverride<ConceptFacade>) super.defaultPathProperty();
     }
 
     @Override
