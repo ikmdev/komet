@@ -6,35 +6,47 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 
-public class LoginAuthorViewModel extends FormViewModel {
-    private static final Logger LOG = LoggerFactory.getLogger(LoginAuthorViewModel.class);
+import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.LoginProperties.*;
 
-    public static final String AUTHORS = "authors";
-    public static final String SELECTED_AUTHOR = "selected-author";
-    public static final String LOGIN_ERROR = "login-error";
-    public static final String PASSWORD = "password";
+public class LoginAuthorViewModel extends FormViewModel {
+
+    public enum LoginProperties {
+
+        AUTHORS("authors"),
+        SELECTED_AUTHOR("selected author"),
+        LOGIN_ERROR("login-error"),
+        PASSWORD("password");
+
+        public final String name;
+
+        LoginProperties(String name) {
+            this.name = name;
+        }
+
+        LoginProperties() {
+            this.name = this.name();
+        }
+    }
 
     public LoginAuthorViewModel() {
         super();
-        addProperty(AUTHORS, Collections.emptyList())
-                .addProperty(SELECTED_AUTHOR, (ConceptEntity) null) // new LoginAuthorUserModel())
+        addProperty(AUTHORS, Collections.emptyList(), true)
+                .addProperty(SELECTED_AUTHOR, (ConceptEntity) null)
                 .addProperty(PASSWORD, "")
                 .addProperty(LOGIN_ERROR, "");
 
-        addValidator(SELECTED_AUTHOR, "selected-author", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
+        addValidator(SELECTED_AUTHOR, SELECTED_AUTHOR.name(), (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
             if (prop.isNull().get()) {
                 validationResult.error("Error: Please select a User");
                 setPropertyValue(LOGIN_ERROR, "Error: Please select a User");
             }
         });
-        addValidator(PASSWORD, "password", (ValidationResult validationResult, ViewModel viewModel) -> {
+        addValidator(PASSWORD, PASSWORD.name, (ValidationResult validationResult, ViewModel viewModel) -> {
             String password = viewModel.getPropertyValue(PASSWORD);
-            if (password.isBlank() || password.length() < 4 || !isPasswordValid()) {
+            if (password.isBlank() || password.length() < 4 || !authenticateUser()) {
                 validationResult.error("Login failed, please check your credentials");
                 setPropertyValue(LOGIN_ERROR, "Login failed, please check your credentials");
             }
@@ -43,10 +55,10 @@ public class LoginAuthorViewModel extends FormViewModel {
 
     /***
      * TODO Make a service call instead to validate the credentials. This is a
-     * temporary workaround where the check is to see if uername is same as password.
+     * temporary workaround where the check is to see if username is same as password.
      * @return boolean
      */
-    private boolean isPasswordValid() {
+    private boolean authenticateUser() {
         ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
         ConceptEntity user = getPropertyValue(SELECTED_AUTHOR);
         String username = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(user.nid());

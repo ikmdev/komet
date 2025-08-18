@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
+
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -18,7 +19,7 @@ import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.*;
+import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.LoginProperties.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class LoginAuthorController {
@@ -28,7 +29,7 @@ public class LoginAuthorController {
     @FXML
     private PasswordField passwordField;
     @FXML
-    private ComboBox<ConceptEntity> userChooser;
+    private ComboBox<ComponentWithNid> userChooser;
     @FXML
     private Button loginButton;
     @FXML
@@ -56,12 +57,12 @@ public class LoginAuthorController {
 
         userChooser.setConverter(new StringConverter<>() {
             @Override
-            public String toString(ConceptEntity user) {
-                return getUserName(user);
+            public String toString(ComponentWithNid componentWithNid) {
+                return getUserName(componentWithNid);
             }
 
             @Override
-            public ConceptEntity fromString(String s) {
+            public ComponentWithNid fromString(String s) {
                 return null;
             }
         });
@@ -79,9 +80,9 @@ public class LoginAuthorController {
         return loginAuthorViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
 
-    private String getUserName(ConceptEntity conceptEntity) {
+    private String getUserName(ComponentWithNid componentWithNid) {
         ViewProperties viewProperties = getViewProperties();
-        return viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptEntity.nid());
+        return viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(componentWithNid.nid());
     }
 
     @FXML
@@ -92,7 +93,7 @@ public class LoginAuthorController {
         loginErrorLabel.setText("");
         loginAuthorViewModel.setPropertyValue(LOGIN_ERROR, "");
         ValidationViewModel validationViewModel = loginAuthorViewModel.validate();
-        if(!validationViewModel.hasErrorMsgs()){
+        if (!validationViewModel.hasErrorMsgs()) {
             loginErrorLabel.setText("");
             LOG.info("Author selected: " + userChooser.getValue().toString());
             onLoginFuture.complete(loginAuthorViewModel);
