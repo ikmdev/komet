@@ -821,9 +821,11 @@ public class DetailsController  {
             }
 
             // TODO: Ability to change Concept record. but for now user can edit stamp but not affect Concept version.
-            EntityVersion latestVersion = conceptViewModel.getViewProperties().calculator().latest(entityFacade).get();
-            StampEntity stamp = latestVersion.stamp();
-            updateStampViewModel(EDIT, stamp);
+            conceptViewModel.getViewProperties().calculator().latest(entityFacade)
+                .ifPresent(latestVersion -> {
+                    StampEntity stamp = latestVersion.stamp();
+                    updateStampViewModel(EDIT, stamp);
+                });
         } else { // create concept
             getConceptViewModel().setPropertyValue(MODE, CREATE);
             stampViewModel.setPropertyValue(MODE, CREATE);
@@ -1164,7 +1166,6 @@ public class DetailsController  {
 
     private void updateFQNSemantics(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
         DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
-//        String fqnTextDescr = getFieldValueByMeaning(semanticEntityVersion, TinkarTerm.TEXT_FOR_DESCRIPTION);
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         String fqnTextDescr = viewCalculator.languageCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(semanticEntityVersion.entity());
         // obtain the fqn description
@@ -1250,20 +1251,8 @@ public class DetailsController  {
                     //              concept navigator's view coordinates based on stamp (date time).
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
-//                    ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntity.nid());
-//                    ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
-//                    Latest<SemanticEntityVersion>  semanticVersion =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
                     Latest<SemanticEntityVersion> semanticEntityVersionLatest = conceptViewModel.getViewProperties().calculator().latest(semanticEntity.nid());
                     // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
-//                    EntityFacade descriptionTypeConceptValue = getFieldValueByMeaning(semanticEntityVersionLatest.get(), TinkarTerm.DESCRIPTION_TYPE);
-//                    if(descriptionTypeConceptValue instanceof EntityFacade descriptionTypeConcept ){
-//                        int typeId = descriptionTypeConcept.nid();
-//                        return (typeId == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() ||
-//                                typeId == REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
-//                                typeId == DEFINITION_DESCRIPTION_TYPE.nid());
-//                    }
-//                    return false;
-
                     if (semanticEntityVersionLatest.isPresent()) {
                         EntityFacade descriptionTypeConceptValue = getFieldValueByMeaning(
                                 semanticEntityVersionLatest.get(), TinkarTerm.DESCRIPTION_TYPE
@@ -1290,15 +1279,11 @@ public class DetailsController  {
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
 
-//                    ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntity.nid());
-//                    ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
-//                    Latest<SemanticEntityVersion>  semanticVersion =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
                     Latest<SemanticEntityVersion> semanticEntityVersionLatest = conceptViewModel.getViewProperties().calculator().latest(semanticEntity.nid());
                     if(semanticEntityVersionLatest.isAbsent()) {
                         return;
                     }
                     // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
-
                     EntityFacade descriptionTypeConceptValue = getFieldValueByMeaning(semanticEntityVersionLatest.get(), TinkarTerm.DESCRIPTION_TYPE);
 
                     PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();

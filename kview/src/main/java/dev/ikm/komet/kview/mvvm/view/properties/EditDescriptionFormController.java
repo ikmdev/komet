@@ -297,7 +297,6 @@ public class EditDescriptionFormController implements BasicController {
     public void setConceptAndPopulateForm(PublicId publicId) {
         editDescrName = null;
         this.publicId = publicId;
-        //ViewCalculator viewCalculator = ViewCoordinateHelper.createViewCalculatorLatestByTime(viewProperties);
         ViewCalculator viewCalculator = viewProperties.calculator();
         int nid = EntityService.get().nidForPublicId(publicId);
 
