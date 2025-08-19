@@ -2,6 +2,7 @@ package dev.ikm.komet.app;
 
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.preferences.PrefX;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
@@ -13,11 +14,12 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.search.SearchNodeFactory;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import one.jpro.platform.auth.core.authentication.User;
 import org.carlfx.cognitive.loader.Config;
@@ -38,7 +40,9 @@ import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.LoginProperties.SELECTED_AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
@@ -81,26 +85,35 @@ public class AppPages {
         }
     }
 
-    void launchLoginAuthor(Stage stage) {
-        try {
-            var url = LoginAuthorController.class.getResource("/dev/ikm/komet/kview/mvvm/view/loginauthor/LoginAuthor.fxml");
-            var loader = new FXMLLoader(url);
-            var content = (Node) loader.load();
-            var controller = (LoginAuthorController) loader.getController();
-            app.rootPane.getChildren().setAll(content);
-            stage.setTitle("KOMET Author selection");
+    void launchLoginAuthor(Stage stage){
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences windowPreferences = appPreferences.node(AUTHOR_LOGIN_WINDOW);
+        final WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties("login-author");
 
-            controller.onLogin().thenAccept(userModel -> {
-                App.state.set(AppState.RUNNING);
-            });
+        Config loginConfig = new Config(LoginAuthorController.class.getResource("LoginAuthor.fxml"))
+                .updateViewModel("loginAuthorViewModel", loginAuthorViewModel -> {
+                    loginAuthorViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties);
+                });
 
-            stage.setWidth(content.prefWidth(-1));
-            stage.setHeight(content.prefHeight(-1));
 
-            app.appMenu.setupMenus();
-        } catch (IOException ex) {
-            LOG.error("Failed to initialize the select data source window", ex);
-        }
+        JFXNode<StackPane, LoginAuthorController> journalJFXNode = FXMLMvvmLoader.make(loginConfig);
+        StackPane authorLoginBorderPane = journalJFXNode.node();
+        stage.getIcons().setAll(app.appIcon);
+        stage.setTitle("KOMET Author selection");
+        stage.setWidth(authorLoginBorderPane.prefWidth(-1));
+        stage.setHeight(authorLoginBorderPane.prefHeight(-1));
+        app.rootPane.getChildren().setAll(authorLoginBorderPane);
+
+        LoginAuthorController loginAuthorController = journalJFXNode.controller();
+
+        loginAuthorController.onLogin().thenAccept(loginAuthorViewModel -> {
+            ConceptEntity userConceptEntity = loginAuthorViewModel.getPropertyValue(SELECTED_AUTHOR);
+            String username = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(userConceptEntity.nid());
+            User user = new User(username);
+            App.userProperty.set(user);
+            App.state.set(AppState.RUNNING);
+        });
     }
 
     public void launchLandingPage(Stage stage, User user) {
