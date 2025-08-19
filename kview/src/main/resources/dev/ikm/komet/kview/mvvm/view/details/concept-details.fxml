@@ -200,7 +200,7 @@
                               </HBox>
                               <HBox>
                                  <children>
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Author: " />
+                                    <Text styleClass="stamp-text" strokeType="OUTSIDE" strokeWidth="0.0" text="Author: " />
                                     <Label fx:id="authorLabel" text="Label" />
                                  </children>
                               </HBox>
