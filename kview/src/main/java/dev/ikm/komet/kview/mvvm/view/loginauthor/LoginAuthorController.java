@@ -11,7 +11,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,8 +71,10 @@ public class LoginAuthorController {
 
         passwordTextField.setVisible(false);
         loginButton.setDisable(true);
-        loginErrorLabel.textProperty().bindBidirectional(loginAuthorViewModel.getProperty(LOGIN_ERROR));
-
+        loginButton.disableProperty().bind(loginAuthorViewModel.invalidProperty());
+        loginErrorLabel.textProperty().bind(loginAuthorViewModel.getStringProperty(LOGIN_ERROR));
+        loginAuthorViewModel.doOnChange(() -> loginAuthorViewModel.validate(), SELECTED_AUTHOR, PASSWORD);
+        loginAuthorViewModel.save(true);
     }
 
     private ViewProperties getViewProperties() {
@@ -90,13 +91,12 @@ public class LoginAuthorController {
         if (isVisible) {
             swapVisibility();
         }
-        loginErrorLabel.setText("");
-        loginAuthorViewModel.setPropertyValue(LOGIN_ERROR, "");
-        ValidationViewModel validationViewModel = loginAuthorViewModel.validate();
-        if (!validationViewModel.hasErrorMsgs()) {
-            loginErrorLabel.setText("");
+        if (loginAuthorViewModel.validProperty().get() && loginAuthorViewModel.authenticateUser()) {
+            loginAuthorViewModel.setPropertyValue(LOGIN_ERROR, "");
             LOG.info("Author selected: " + userChooser.getValue().toString());
             onLoginFuture.complete(loginAuthorViewModel);
+        } else {
+            loginAuthorViewModel.setPropertyValue(LOGIN_ERROR, "Login failed, please check your credentials");
         }
     }
 
@@ -104,7 +104,7 @@ public class LoginAuthorController {
     public void cleanErrorLabels() {
         userErrorLabel.setText("");
         passwordErrorLabel.setText("");
-        loginErrorLabel.setText("");
+        loginAuthorViewModel.setPropertyValue(LOGIN_ERROR, "");
     }
 
     @FXML
@@ -115,10 +115,6 @@ public class LoginAuthorController {
             pwvalidate = passwordField.getText();
         } else {
             pwvalidate = passwordTextField.getText();
-        }
-        if (pwvalidate.length() >= 4) {
-            passwordErrorLabel.setText("");
-            loginButton.setDisable(false);
         }
     }
 

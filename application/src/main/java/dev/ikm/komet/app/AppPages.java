@@ -91,7 +91,7 @@ public class AppPages {
         final WindowSettings windowSettings = new WindowSettings(windowPreferences);
         ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties("login-author");
 
-        Config loginConfig = new Config(LoginAuthorController.class.getResource("loginAuthor.fxml"))
+        Config loginConfig = new Config(LoginAuthorController.class.getResource("LoginAuthor.fxml"))
                 .updateViewModel("loginAuthorViewModel", loginAuthorViewModel -> {
                     loginAuthorViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties);
                 });

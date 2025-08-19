@@ -41,14 +41,12 @@ public class LoginAuthorViewModel extends FormViewModel {
         addValidator(SELECTED_AUTHOR, SELECTED_AUTHOR.name(), (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
             if (prop.isNull().get()) {
                 validationResult.error("Error: Please select a User");
-                setPropertyValue(LOGIN_ERROR, "Error: Please select a User");
             }
         });
         addValidator(PASSWORD, PASSWORD.name, (ValidationResult validationResult, ViewModel viewModel) -> {
             String password = viewModel.getPropertyValue(PASSWORD);
-            if (password.isBlank() || password.length() < 4 || !authenticateUser()) {
+            if (password.isBlank() || password.length() < 4) {
                 validationResult.error("Login failed, please check your credentials");
-                setPropertyValue(LOGIN_ERROR, "Login failed, please check your credentials");
             }
         });
     }
@@ -58,7 +56,7 @@ public class LoginAuthorViewModel extends FormViewModel {
      * temporary workaround where the check is to see if username is same as password.
      * @return boolean
      */
-    private boolean authenticateUser() {
+    public boolean authenticateUser() {
         ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
         ConceptEntity user = getPropertyValue(SELECTED_AUTHOR);
         String username = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(user.nid());
