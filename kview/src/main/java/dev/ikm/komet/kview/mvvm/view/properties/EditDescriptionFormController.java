@@ -294,6 +294,14 @@ public class EditDescriptionFormController implements BasicController {
         comboBox.getItems().addAll(conceptEntities);
     }
 
+    private Optional<ConceptEntity> findByNid(List<ConceptEntity> items, int nid) {
+
+        Optional<ConceptEntity> conceptOption = items.stream().parallel()
+                .filter(item -> (item.nid() == nid)).findAny();
+
+        return conceptOption;
+    }
+
     public void setConceptAndPopulateForm(PublicId publicId) {
         editDescrName = null;
         this.publicId = publicId;
@@ -310,7 +318,7 @@ public class EditDescriptionFormController implements BasicController {
             this.otherNameTextField.setText(otherName);
 
             Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
-            IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
+            IntIdSet moduleDescendents = viewProperties.parentView().calculator().descendentsOf(moduleEntity.nid());
 
             // get all descendant modules
             Set<ConceptEntity> allModules =
@@ -320,22 +328,22 @@ public class EditDescriptionFormController implements BasicController {
             setupComboBox(moduleComboBox, allModules);
 
             // populate the current module and select it (e.g. 'SNOMED CT core module')
-            ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
-            moduleComboBox.getSelectionModel().select(currentModule);
+            findByNid(moduleComboBox.getItems(), stampEntity.moduleNid())
+                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(MODULE, concept));
 
             // get all statuses
-            IntIdSet statusDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.STATUS_VALUE.nid());
+            IntIdSet statusDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.STATUS_VALUE.nid());
             Set<ConceptEntity> allStatuses = statusDescendents.intStream()
                     .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
                     .collect(Collectors.toSet());
             setupComboBox(statusComboBox, allStatuses);
 
             // populate the current status (ACTIVE | INACTIVE) and select it
-            ConceptEntity currentStatus = Entity.getFast(stampEntity.state().nid());
-            statusComboBox.getSelectionModel().select(currentStatus);
+            findByNid(statusComboBox.getItems(), stampEntity.stateNid())
+                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(STATUS, concept));
 
             // populate all case significance choices
-            IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
+            IntIdSet caseSenseDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
             Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
                     .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
                     .collect(Collectors.toSet());
@@ -346,11 +354,11 @@ public class EditDescriptionFormController implements BasicController {
             PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
             int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
             EntityFacade caseSigConceptFacade = (EntityFacade) latestEntityVersion.get().fieldValues().get(indexCaseSig);
-            ConceptEntity caseSigConcept = Entity.getFast(caseSigConceptFacade.nid());
-            caseSignificanceComboBox.getSelectionModel().select(caseSigConcept);
+            findByNid(caseSignificanceComboBox.getItems(), caseSigConceptFacade.nid())
+                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, concept));
 
             // get all available languages
-            IntIdSet languageDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
+            IntIdSet languageDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
             Set<ConceptEntity> allLangs = languageDescendents.intStream()
                     .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
                     .collect(Collectors.toSet());
@@ -359,9 +367,8 @@ public class EditDescriptionFormController implements BasicController {
             // get the language (e.g. 'English language')
             int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
             ConceptFacade langConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexLang);
-
-            ConceptEntity langConcept = Entity.getFast(langConceptFacade.nid());
-            languageComboBox.getSelectionModel().select(langConcept);
+            findByNid(languageComboBox.getItems(), langConceptFacade.nid())
+                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(LANGUAGE, concept));
 
             //initial state of edit screen, the submit button should be disabled
             submitButton.setDisable(true);
