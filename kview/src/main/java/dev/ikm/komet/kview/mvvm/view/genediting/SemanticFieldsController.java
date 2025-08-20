@@ -123,18 +123,22 @@ public class SemanticFieldsController {
      */
     private boolean checkForEmptyFields() {
         AtomicBoolean invalid = new AtomicBoolean(false);
-        observableFields.forEach(observableField -> {
+
+        for (ObservableField<?> observableField : observableFields) {
             if (observableField.dataTypeNid() == IMAGE_FIELD.nid()) {
                 invalid.set(observableField.valueProperty().get() == null || (((byte[]) observableField.valueProperty().get()).length == 0));
-            }
-            if (observableField.dataTypeNid() == COMPONENT_FIELD.nid()) {
+            } else if (observableField.dataTypeNid() == COMPONENT_FIELD.nid()) {
                 invalid.set(observableField.valueProperty().get() == null || observableField.valueProperty().get() == BLANK_CONCEPT);
             }
             if (!invalid.get()) {
                 invalid.set((observableField.value() == null || observableField.value().toString().isEmpty()));
             }
-        });
-        return invalid.get();
+            if (invalid.get()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void processCommittedValues() {
@@ -257,7 +261,7 @@ public class SemanticFieldsController {
         }
         observableFields.forEach(observableField -> {
             if (genEditingViewModel.getPropertyValue(MODE) == CREATE && observableField.value() instanceof EntityProxy){
-                ((ObservableField<EntityProxy>)observableField).valueProperty().setValue(EntityProxy.make(BLANK_CONCEPT.nid()));
+                ((ObservableField<EntityProxy>)observableField).valueProperty().setValue(BLANK_CONCEPT);
             }
             // disable calling writeToData method of observable field by setting refresh flag to true.
             FieldRecord<?> fieldRecord = observableField.field();
