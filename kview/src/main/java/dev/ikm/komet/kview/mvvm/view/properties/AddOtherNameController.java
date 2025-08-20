@@ -18,7 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.properties;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
-import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -42,6 +42,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
 
 public class AddOtherNameController extends AbstractBasicController {
 
@@ -77,7 +80,7 @@ public class AddOtherNameController extends AbstractBasicController {
     private EntityFacade entityFacade;
 
     @InjectViewModel
-    private DescrNameViewModel otherNameViewModel;
+    private OtherNameViewModel otherNameViewModel;
 
 
     public AddOtherNameController() { }
@@ -137,7 +140,7 @@ public class AddOtherNameController extends AbstractBasicController {
 
 
     @Override
-    public DescrNameViewModel getViewModel() {
+    public OtherNameViewModel getViewModel() {
         return otherNameViewModel;
     }
 
@@ -229,10 +232,20 @@ public class AddOtherNameController extends AbstractBasicController {
         populate(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
         populate(languageComboBox, otherNameViewModel.findAllLanguages(getViewProperties()));
 
-        caseSignificanceComboBox.setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+        boolean hasOtherName = getViewModel().getValue(HAS_OTHER_NAME);
+
+        if (hasOtherName) {
+            caseSignificanceComboBox.setValue(getViewModel().getValue(FQN_CASE_SIGNIFICANCE));
+        } else {
+            caseSignificanceComboBox.setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+        }
         statusComboBox.setValue(Entity.getFast(State.ACTIVE.nid()));
         moduleComboBox.setValue(TinkarTerm.DEVELOPMENT_MODULE);
-        languageComboBox.setValue(TinkarTerm.ENGLISH_LANGUAGE);
+        if (hasOtherName) {
+            languageComboBox.setValue(getViewModel().getValue(FQN_LANGUAGE));
+        } else {
+            languageComboBox.setValue(TinkarTerm.ENGLISH_LANGUAGE);
+        }
     }
 
 
