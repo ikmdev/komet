@@ -302,73 +302,72 @@ public class EditDescriptionFormController implements BasicController {
 
         // this is the Other Name
         Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(nid);
-        if(latestEntityVersion.isAbsent()) {
-            return;
-        }
-        StampEntity stampEntity = latestEntityVersion.get().stamp();
+        latestEntityVersion.ifPresent(semanticEntityVersion -> {
+            StampEntity stampEntity = latestEntityVersion.get().stamp();
 
-        // populate the other name text field (e.g. 'Chronic lung disease')
-        String otherName = viewCalculator.getDescriptionText(nid).get();
-        this.otherNameTextField.setText(otherName);
+            // populate the other name text field (e.g. 'Chronic lung disease')
+            String otherName = viewCalculator.getDescriptionText(nid).get();
+            this.otherNameTextField.setText(otherName);
 
-        Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
-        IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
+            Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
+            IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
 
-        // get all descendant modules
-        Set<ConceptEntity> allModules =
-                moduleDescendents.intStream()
-                        .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                        .collect(Collectors.toSet());
-        setupComboBox(moduleComboBox, allModules);
+            // get all descendant modules
+            Set<ConceptEntity> allModules =
+                    moduleDescendents.intStream()
+                            .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
+                            .collect(Collectors.toSet());
+            setupComboBox(moduleComboBox, allModules);
 
-        // populate the current module and select it (e.g. 'SNOMED CT core module')
-        ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
-        moduleComboBox.getSelectionModel().select(currentModule);
+            // populate the current module and select it (e.g. 'SNOMED CT core module')
+            ConceptEntity currentModule = (ConceptEntity) stampEntity.module();
+            moduleComboBox.getSelectionModel().select(currentModule);
 
-        // get all statuses
-        IntIdSet statusDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.STATUS_VALUE.nid());
-        Set<ConceptEntity> allStatuses = statusDescendents.intStream()
-                .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
-                .collect(Collectors.toSet());
-        setupComboBox(statusComboBox, allStatuses);
+            // get all statuses
+            IntIdSet statusDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.STATUS_VALUE.nid());
+            Set<ConceptEntity> allStatuses = statusDescendents.intStream()
+                    .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
+                    .collect(Collectors.toSet());
+            setupComboBox(statusComboBox, allStatuses);
 
-        // populate the current status (ACTIVE | INACTIVE) and select it
-        ConceptEntity currentStatus = Entity.getFast(stampEntity.state().nid());
-        statusComboBox.getSelectionModel().select(currentStatus);
+            // populate the current status (ACTIVE | INACTIVE) and select it
+            ConceptEntity currentStatus = Entity.getFast(stampEntity.state().nid());
+            statusComboBox.getSelectionModel().select(currentStatus);
 
-        // populate all case significance choices
-        IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
-        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
-                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
-                .collect(Collectors.toSet());
-        setupComboBox(caseSignificanceComboBox, allCaseDescendents);
+            // populate all case significance choices
+            IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
+            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+                    .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
+                    .collect(Collectors.toSet());
+            setupComboBox(caseSignificanceComboBox, allCaseDescendents);
 
-        // get case concept's case sensitivity (e.g. 'Case insensitive')
-        PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
-        PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
-        int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
-        EntityFacade caseSigConceptFacade = (EntityFacade) latestEntityVersion.get().fieldValues().get(indexCaseSig);
-        ConceptEntity caseSigConcept = Entity.getFast(caseSigConceptFacade.nid());
-        caseSignificanceComboBox.getSelectionModel().select(caseSigConcept);
+            // get case concept's case sensitivity (e.g. 'Case insensitive')
+            PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
+            PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
+            int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
+            EntityFacade caseSigConceptFacade = (EntityFacade) latestEntityVersion.get().fieldValues().get(indexCaseSig);
+            ConceptEntity caseSigConcept = Entity.getFast(caseSigConceptFacade.nid());
+            caseSignificanceComboBox.getSelectionModel().select(caseSigConcept);
 
-        // get all available languages
-        IntIdSet languageDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
-        Set<ConceptEntity> allLangs = languageDescendents.intStream()
-                .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
-                .collect(Collectors.toSet());
-        setupComboBox(languageComboBox, allLangs);
+            // get all available languages
+            IntIdSet languageDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
+            Set<ConceptEntity> allLangs = languageDescendents.intStream()
+                    .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
+                    .collect(Collectors.toSet());
+            setupComboBox(languageComboBox, allLangs);
 
-        // get the language (e.g. 'English language')
-        int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
-        ConceptFacade langConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexLang);
+            // get the language (e.g. 'English language')
+            int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
+            ConceptFacade langConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexLang);
 
-        ConceptEntity langConcept = Entity.getFast(langConceptFacade.nid());
-        languageComboBox.getSelectionModel().select(langConcept);
+            ConceptEntity langConcept = Entity.getFast(langConceptFacade.nid());
+            languageComboBox.getSelectionModel().select(langConcept);
 
-        //initial state of edit screen, the submit button should be disabled
-        submitButton.setDisable(true);
+            //initial state of edit screen, the submit button should be disabled
+            submitButton.setDisable(true);
 
-        LOG.info(publicId.toString());
+            LOG.info(publicId.toString());
+        });
     }
 
     @FXML
