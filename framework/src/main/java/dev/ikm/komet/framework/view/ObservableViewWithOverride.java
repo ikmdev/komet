@@ -25,19 +25,7 @@ import javafx.collections.ObservableList;
 public class ObservableViewWithOverride extends ObservableViewBase {
 
     public ObservableViewWithOverride(ObservableViewBase observableViewBase) {
-        super(observableViewBase);
-        if (observableViewBase instanceof ObservableViewWithOverride) {
-            throw new IllegalStateException("Cannot override an overridden Coordinate. ");
-        }
-        observableViewBase.baseCoordinateProperty().addListener(this::overriddenBaseChanged);
-        observableViewBase.listening.addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                this.addListeners();
-            } else {
-                this.removeListeners();
-            }
-
-        });
+        this(observableViewBase, null);
     }
 
     public ObservableViewWithOverride(ObservableViewBase observableViewBase, String name) {
@@ -52,7 +40,6 @@ public class ObservableViewWithOverride extends ObservableViewBase {
             } else {
                 this.removeListeners();
             }
-
         });
     }
 

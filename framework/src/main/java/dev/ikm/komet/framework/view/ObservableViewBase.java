@@ -15,15 +15,6 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.Observable;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
 import dev.ikm.tinkar.coordinate.logic.LogicCoordinateRecord;
@@ -35,6 +26,14 @@ import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 
 public abstract class ObservableViewBase
         extends ObservableCoordinateAbstract<ViewCoordinateRecord>
@@ -76,12 +75,12 @@ public abstract class ObservableViewBase
      * @param viewRecord the taxonomy coordinate
      */
     public ObservableViewBase(ViewCoordinate viewRecord) {
-        this(viewRecord, "View");
+        this(viewRecord, null);
     }
 
     //~--- constructors --------------------------------------------------------
     public ObservableViewBase(ViewCoordinate viewRecord, String name) {
-        super(viewRecord.toViewCoordinateRecord(), name);
+        super(viewRecord.toViewCoordinateRecord(), name != null ? name: "View");
         this.stampCoordinateObservable = makeStampCoordinateObservable(viewRecord);
         this.navigationCoordinateObservable = makeNavigationCoordinateObservable(viewRecord);
         this.languageCoordinates = makeLanguageCoordinateListProperty(viewRecord);
