@@ -78,27 +78,27 @@ int authorNid, int defaultModuleNid, int promotionPathNid, int destinationModule
             if (authorForChangesProperty().isOverridden()) {
                 author = authorForChangesProperty().get();
             }
-            ;
+
             ConceptFacade defaultModule = updatedCoordinate.getDefaultModule();
             if (defaultModuleProperty().isOverridden()) {
                 defaultModule = defaultModuleProperty().get();
             }
-            ;
+
             ConceptFacade defaultPath = updatedCoordinate.getDefaultPath();
             if (defaultPathProperty().isOverridden()) {
                 defaultPath = promotionPathProperty().get();
             }
-            ;
+
             ConceptFacade promotionPath = updatedCoordinate.getPromotionPath();
             if (promotionPathProperty().isOverridden()) {
                 promotionPath = promotionPathProperty().get();
             }
-            ;
+
             ConceptFacade destinationModule = updatedCoordinate.getDestinationModule();
             if (destinationModuleProperty().isOverridden()) {
                 destinationModule = destinationModuleProperty().get();
             }
-            ;
+
             setValue(EditCoordinateRecord.make(author, defaultModule, destinationModule, defaultPath, promotionPath));
         } else {
             setValue(updatedCoordinate);
