@@ -15,12 +15,12 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.value.ObservableValue;
 import dev.ikm.tinkar.coordinate.logic.LogicCoordinate;
 import dev.ikm.tinkar.coordinate.logic.LogicCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ObservableValue;
 
 public class ObservableLogicCoordinateWithOverride extends ObservableLogicCoordinateBase {
 
@@ -47,24 +47,24 @@ public class ObservableLogicCoordinateWithOverride extends ObservableLogicCoordi
             classifierNid = classifierProperty().get().nid();
         }
         int conceptMemberPatternNid = updatedCoordinate.conceptMemberPatternNid();
-        if (this.conceptMemberPatternProperty().isOverridden()) {
-            conceptMemberPatternNid = conceptMemberPatternProperty.get().nid();
+        if (conceptMemberPatternProperty().isOverridden()) {
+            conceptMemberPatternNid = conceptMemberPatternProperty().get().nid();
         }
         int descriptionLogicProfileNid = updatedCoordinate.descriptionLogicProfileNid();
         if (descriptionLogicProfileProperty().isOverridden()) {
             descriptionLogicProfileNid = descriptionLogicProfileProperty().get().nid();
         }
         int inferredAxiomsPatternNid = updatedCoordinate.inferredAxiomsPatternNid();
-        if (this.inferredAxiomsPatternProperty().isOverridden()) {
-            inferredAxiomsPatternNid = this.inferredAxiomsPatternProperty().get().nid();
+        if (inferredAxiomsPatternProperty().isOverridden()) {
+            inferredAxiomsPatternNid = inferredAxiomsPatternProperty().get().nid();
         }
         int statedAxiomsPatternNid = updatedCoordinate.statedAxiomsPatternNid();
-        if (this.statedAxiomsPatternProperty().isOverridden()) {
-            statedAxiomsPatternNid = this.statedAxiomsPatternProperty().get().nid();
+        if (statedAxiomsPatternProperty().isOverridden()) {
+            statedAxiomsPatternNid = statedAxiomsPatternProperty().get().nid();
         }
         int inferredNavigationPatternNid = updatedCoordinate.inferredNavigationPatternNid();
         if (inferredNavigationPatternProperty().isOverridden()) {
-            inferredNavigationPatternNid = statedNavigationPatternProperty().get().nid();
+            inferredNavigationPatternNid = inferredNavigationPatternProperty().get().nid();
         }
         int statedNavigationPatternNid = updatedCoordinate.statedNavigationPatternNid();
         if (statedNavigationPatternProperty().isOverridden()) {

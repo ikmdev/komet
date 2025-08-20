@@ -17,11 +17,11 @@ package dev.ikm.komet.framework.view;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import javafx.beans.value.ObservableValue;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.value.ObservableValue;
 
 //~--- classes ----------------------------------------------------------------
 
@@ -49,10 +49,13 @@ public class ObservableEditCoordinateNoOverride
     }
 
     @Override
-    protected EditCoordinateRecord baseCoordinateChangedListenersRemoved(ObservableValue<? extends EditCoordinateRecord> observable, EditCoordinateRecord oldValue, EditCoordinateRecord newValue) {
+    protected EditCoordinateRecord baseCoordinateChangedListenersRemoved(ObservableValue<? extends EditCoordinateRecord> observable,
+                                                                         EditCoordinateRecord oldValue,
+                                                                         EditCoordinateRecord newValue) {
         this.authorForChangesProperty().setValue(newValue.getAuthorForChanges());
         this.defaultModuleProperty().setValue(newValue.getDefaultModule());
         this.destinationModuleProperty().setValue(newValue.getDestinationModule());
+        this.defaultPathProperty().setValue(newValue.getDefaultPath());
         this.promotionPathProperty().setValue(newValue.getPromotionPath());
         return newValue;
     }
@@ -93,7 +96,7 @@ public class ObservableEditCoordinateNoOverride
         return new SimpleEqualityBasedObjectProperty<>(this,
                 //TODO make concept for PATH_FOR_EDIT_COORDINATE
                 TinkarTerm.PATH_FOR_PATH_COORDINATE.toXmlFragment(),
-                editCoordinate.getAuthorForChanges());
+                editCoordinate.getDefaultPath());
     }
 
     @Override
