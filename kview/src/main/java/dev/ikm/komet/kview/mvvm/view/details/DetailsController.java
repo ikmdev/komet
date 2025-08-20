@@ -524,7 +524,6 @@ public class DetailsController  {
             }
         });
 
-        // TODO attach a listener to the view properties to refresh screen when user changes the view coordinates e.g. language to spanish
         conceptViewModel.getViewProperties().nodeView().addListener((obs, oldViewCoord, newViewCoord) -> {
             if (newViewCoord != null) {
                 LOG.info("refresh concept window when view coordinate has changed." + newViewCoord);
@@ -1251,25 +1250,25 @@ public class DetailsController  {
                     //              concept navigator's view coordinates based on stamp (date time).
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
-                    Latest<SemanticEntityVersion> semanticEntityVersionLatest = conceptViewModel.getViewProperties().calculator().latest(semanticEntity.nid());
-                    // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
-                    if (semanticEntityVersionLatest.isPresent()) {
-                        EntityFacade descriptionTypeConceptValue = getFieldValueByMeaning(
-                                semanticEntityVersionLatest.get(), TinkarTerm.DESCRIPTION_TYPE
-                        );
 
-                        if (descriptionTypeConceptValue instanceof EntityFacade descriptionTypeConcept) {
-                            int typeId = descriptionTypeConcept.nid();
-                            return (typeId == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() ||
-                                    typeId == REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
-                                    typeId == DEFINITION_DESCRIPTION_TYPE.nid());
-                        }
-                        // Optionally handle case where descriptionTypeConceptValue is not an EntityFacade
-                        return false;
-                    } else {
-                        // Handle the case where semanticEntityVersionLatest is empty
-                        return false;
+                    Latest<SemanticEntityVersion> semanticEntityVersionLatest = conceptViewModel.getViewProperties().calculator().latest(semanticEntity.nid());
+                    if (semanticEntityVersionLatest.isAbsent()) {
+                        return false; // No version found
                     }
+
+                    SemanticEntityVersion latestVersion = semanticEntityVersionLatest.get();
+
+                    if (!latestVersion.uncommitted()) {
+                        // Latest version is committed
+                        return true;
+                    }
+
+                    // Latest is uncommitted, search for latest committed version in history
+                    ImmutableList<EntityVersion> entityVersionsList = Entity.getFast(semanticEntity.nid()).versions();
+
+                    // Return true if any committed version exists
+                    return entityVersionsList.stream()
+                            .anyMatch(p -> !p.uncommitted());
 
                 }).forEach(semanticEntity -> {
                     // Each description obtain the latest semantic version, pattern version and their field values based on index
