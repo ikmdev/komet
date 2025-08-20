@@ -893,10 +893,15 @@ public class DetailsController  {
         pathLabel.setText(pathText);
 
         // Latest update time
-        DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("yyyy-MMM-dd HH:mm:ss");
-        Instant stampInstance = Instant.ofEpochSecond(stamp.time()/1000);
-        String time = DATE_TIME_FORMATTER.format(stampInstance);
-        lastUpdatedLabel.setText(time);
+        long stampTime = stamp.time();
+        if (!(stampTime == PREMUNDANE_TIME)) {
+            DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("yyyy-MMM-dd HH:mm:ss");
+            Instant stampInstance = Instant.ofEpochSecond(stamp.time() / 1000);
+            String time = DATE_TIME_FORMATTER.format(stampInstance);
+            lastUpdatedLabel.setText(time);
+        } else {
+            lastUpdatedLabel.setText(PREMUNDANE);
+        }
 
         // Author tooltip
         authorTooltip.setText(stamp.author().description());
