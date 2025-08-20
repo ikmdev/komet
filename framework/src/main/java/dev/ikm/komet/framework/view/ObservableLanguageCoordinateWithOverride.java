@@ -145,11 +145,26 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     protected LanguageCoordinateRecord baseCoordinateChangedListenersRemoved(ObservableValue<? extends LanguageCoordinateRecord> observable,
                                                                              LanguageCoordinateRecord oldValue,
                                                                              LanguageCoordinateRecord newValue) {
-        this.languageConceptProperty().setValue(newValue.languageConcept());
-        this.descriptionPatternPreferenceListProperty().setAll(this.descriptionPatternPreferenceNidList().mapToList(PatternFacade::make));
-        this.dialectPatternPreferenceListProperty().setAll(newValue.dialectPatternPreferenceNidList().mapToList(PatternFacade::make));
-        this.descriptionTypePreferenceListProperty().setAll(newValue.descriptionTypePreferenceNidList().mapToList(ConceptFacade::make));
-        this.modulePreferenceListForLanguageProperty().setAll(newValue.modulePreferenceNidListForLanguage().mapToList(ConceptFacade::make));
+        if (!this.languageConceptProperty().isOverridden()) {
+            this.languageConceptProperty().setValue(newValue.languageConcept());
+        }
+
+        if (!this.descriptionPatternPreferenceListProperty().isOverridden()) {
+            this.descriptionPatternPreferenceListProperty().setAll(this.descriptionPatternPreferenceNidList().mapToList(PatternFacade::make));
+        }
+
+        if (!this.dialectPatternPreferenceListProperty().isOverridden()) {
+            this.dialectPatternPreferenceListProperty().setAll(newValue.dialectPatternPreferenceNidList().mapToList(PatternFacade::make));
+        }
+
+        if (!this.descriptionTypePreferenceListProperty().isOverridden()) {
+            this.descriptionTypePreferenceListProperty().setAll(newValue.descriptionTypePreferenceNidList().mapToList(ConceptFacade::make));
+        }
+
+        if (!this.modulePreferenceListForLanguageProperty().isOverridden()) {
+            this.modulePreferenceListForLanguageProperty().setAll(newValue.modulePreferenceNidListForLanguage().mapToList(ConceptFacade::make));
+        }
+
         return newValue;
     }
 
