@@ -40,8 +40,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.prefs.BackingStoreException;
 
-import static dev.ikm.komet.app.App.IS_BROWSER;
-import static dev.ikm.komet.app.App.IS_MAC_AND_NOT_TESTFX_TEST;
+import static dev.ikm.komet.app.App.*;
 import static dev.ikm.komet.app.AppState.RUNNING;
 import static dev.ikm.komet.kview.fxutils.FXUtils.getFocusedWindow;
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.OperationMode.PULL;
@@ -91,7 +90,7 @@ public class AppMenu {
         Menu editMenu = new Menu("Edit");
         MenuItem landingPage = new MenuItem("Landing Page");
         KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN);
-        landingPage.setOnAction(actionEvent -> app.appPages.launchLandingPage(App.primaryStage, null /* userProperty.get()*/));
+        landingPage.setOnAction(actionEvent -> app.appPages.launchLandingPage(App.primaryStage, userProperty.get()));
         landingPage.setAccelerator(landingPageKeyCombo);
         landingPage.setDisable(IS_BROWSER);
         editMenu.getItems().add(landingPage);
