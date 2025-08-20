@@ -15,14 +15,14 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.property.ListProperty;
-import javafx.beans.value.ObservableValue;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinate;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
+import javafx.beans.property.ListProperty;
+import javafx.beans.value.ObservableValue;
 
 public class ObservableNavigationCoordinateWithOverride extends ObservableNavigationCoordinateBase {
 
@@ -113,11 +113,25 @@ public class ObservableNavigationCoordinateWithOverride extends ObservableNaviga
             ObservableValue<? extends NavigationCoordinateRecord> observable,
             NavigationCoordinateRecord oldValue,
             NavigationCoordinateRecord newValue) {
-        this.navigationPatternsProperty().setAll(newValue.navigationPatternNids()
-                .map(nid -> (PatternFacade) EntityProxy.Pattern.make(nid)).toSet());
-        this.vertexStatesProperty().set(newValue.vertexStates());
-        this.sortVerticesProperty().set(newValue.sortVertices());
-        this.verticesSortPatternListProperty().setAll(newValue.verticesSortPatternNidList().map(nid -> EntityProxy.Pattern.make(nid)).castToList());
+
+        if (!this.navigationPatternsProperty().isOverridden()) {
+            this.navigationPatternsProperty().setAll(newValue.navigationPatternNids()
+                    .map(nid -> (PatternFacade) EntityProxy.Pattern.make(nid)).toSet());
+        }
+
+        if (!this.vertexStatesProperty().isOverridden()) {
+            this.vertexStatesProperty().set(newValue.vertexStates());
+        }
+
+        if (!this.sortVerticesProperty().isOverridden()) {
+            this.sortVerticesProperty().set(newValue.sortVertices());
+        }
+
+        if (!this.verticesSortPatternListProperty().isOverridden()) {
+            this.verticesSortPatternListProperty().setAll(
+                    newValue.verticesSortPatternNidList().map(nid -> EntityProxy.Pattern.make(nid)).castToList());
+        }
+
         return newValue;
     }
 }
