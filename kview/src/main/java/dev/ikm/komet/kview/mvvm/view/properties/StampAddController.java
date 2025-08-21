@@ -21,6 +21,9 @@ import java.util.Locale;
 public class StampAddController {
 
     @FXML
+    private Label formTitle;
+
+    @FXML
     private TextField authorTextField;
 
     @FXML
@@ -49,6 +52,8 @@ public class StampAddController {
 
     @FXML
     public void initialize() {
+        initFormTitle();
+
         initLastUpdatedField();
         initAuthorField();
         initModuleComboBox();
@@ -58,6 +63,10 @@ public class StampAddController {
         BooleanProperty isStampValuesTheSame = stampViewModel.getProperty(IS_STAMP_VALUES_THE_SAME);
         submitButton.disableProperty().bind(isStampValuesTheSame);
         resetButton.disableProperty().bind(isStampValuesTheSame);
+    }
+
+    private void initFormTitle() {
+        formTitle.textProperty().bind(stampViewModel.getProperty(FORM_TITLE));
     }
 
     private ViewProperties getViewProperties() {
@@ -83,24 +92,7 @@ public class StampAddController {
         lastUpdatedLabel.setText("Last\nUpdated");
 
         // TextField
-        StringBinding timeTextProperty = new StringBinding() {
-            DateTimeFormatter dateTimeFormatter;
-            {
-                dateTimeFormatter = DateTimeFormatter
-                        .ofPattern("yyyy-MMM-dd HH:mm:ss")
-                        .withLocale(Locale.getDefault())
-                        .withZone(ZoneId.systemDefault());
-
-                super.bind(stampViewModel.getProperty(TIME));
-            }
-
-            @Override
-            protected String computeValue() {
-                Instant stampInstance = Instant.ofEpochSecond((Long)stampViewModel.getPropertyValue(TIME) / 1000);
-                return dateTimeFormatter.format(stampInstance);
-            }
-        };
-        lastUpdatedTextField.textProperty().bind(timeTextProperty);
+        lastUpdatedTextField.textProperty().bind(stampViewModel.getProperty(TIME_TEXT));
     }
 
     private void initStatusComboBox() {
