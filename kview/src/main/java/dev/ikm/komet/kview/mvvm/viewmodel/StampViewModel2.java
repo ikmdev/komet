@@ -98,6 +98,13 @@ public class StampViewModel2 extends FormViewModel {
     }
 
     public void init(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
+        // entityFocusProperty from DetailsNode often calls init with a null entity.
+        if (entity == null || entity == this.entityFacade) {
+            return; // null entity or the entity hasn't changed
+        } else {
+            this.entityFacade = entity;
+        }
+
         this.viewProperties = viewProperties;
         this.topic = topic;
 
@@ -105,22 +112,21 @@ public class StampViewModel2 extends FormViewModel {
         closePropertiesPanelEventSubscriber = evt -> onPropertiesPanelClose();
         EvtBusFactory.getDefaultEvtBus().subscribe(topic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
 
-        // TODO: Remove the entityFocusProperty from DetailsNode it often calls init with a null entity.
 
-        if (entity == null) {
-            return;
-        } else {
-            this.entityFacade = entity;
-        }
 
         // initialize observable lists
         Set<ConceptEntity> modules = fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId());
         Set<ConceptEntity> paths = fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId());
 
-        // populate sets which are bound to the combo boxes.
-        setPropertyValues(MODULES, modules);
-        setPropertyValues(PATHS, paths);
-        setPropertyValues(STATUSES, List.of(State.values()));
+        if (getObservableList(MODULES).isEmpty()) {
+            setPropertyValues(MODULES, modules);
+        }
+        if (getObservableList(PATHS).isEmpty()) {
+            setPropertyValues(PATHS, paths);
+        }
+        if (getObservableList(STATUSES).isEmpty()) {
+            setPropertyValues(STATUSES, List.of(State.values()));
+        }
 
         loadStamp();
 
