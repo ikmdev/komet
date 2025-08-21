@@ -85,7 +85,9 @@ public class ViewMenuModel {
         this.coordinateMenuButton = coordinateMenuButton;
         this.viewProperties.nodeView().addListener(this.viewChangedListener);
         ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
-        FxGet.pathCoordinates(viewCalculator).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change -> updateCoordinateMenu());
+        FxGet.pathCoordinates(viewCalculator).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change ->
+                updateCoordinateMenu()
+        );
 
         this.baseControlToShowOverride = coordinateMenuButton;
         if (baseControlToShowOverride instanceof Labeled) {

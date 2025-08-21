@@ -6,6 +6,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,11 @@ public class FilterMenuTask extends TrackingCallable {
         for (ObservableCoordinate<?> observableCoordinate : parentView.getCompositeCoordinates()) {
             if (observableCoordinate instanceof ObservableStampCoordinate observableStampCoordinate) {
 
+                // populate the TYPE; this isn't in the parent view coordinate
+                // it is All | Concepts | Semantics
+                filterOptions.getType().selectedOptions().clear();
+                filterOptions.getType().selectedOptions().addAll(new ArrayList(List.of("All")));
+
                 // populate the STATUS
                 StateSet currentStates = observableStampCoordinate.allowedStatesProperty().getValue();
                 List<String> currentStatesStr = currentStates.toEnumSet().stream().map(s -> s.name()).toList();
@@ -51,6 +57,14 @@ public class FilterMenuTask extends TrackingCallable {
 
                 filterOptions.getStatus().defaultOptions().clear();
                 filterOptions.getStatus().defaultOptions().addAll(currentStatesStr);
+
+                // MODULE
+                filterOptions.getModule().defaultOptions().clear();
+                observableStampCoordinate.moduleNids().intStream().forEach(moduleNid -> {
+                    String moduleStr = viewProperties.calculator().getPreferredDescriptionStringOrNid(moduleNid);
+                    filterOptions.getModule().defaultOptions().add(moduleStr);
+                });
+
 
                 // populate the PATH
                 ConceptFacade currentPath = observableStampCoordinate.pathConceptProperty().getValue();

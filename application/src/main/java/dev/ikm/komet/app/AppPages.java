@@ -132,7 +132,7 @@ public class AppPages {
             }
 
             app.landingPageController = landingPageLoader.getController();
-            app.landingPageController.getWelcomeTitleLabel().setText("Welcome " + user.getName());
+            app.landingPageController.getWelcomeTitleLabel().setText("Welcome Doug" /*+ user.getName()*/);
             app.landingPageController.setSelectedDatasetTitle(PrimitiveData.get().name());
             app.landingPageController.getGithubStatusHyperlink().setOnAction(_ -> app.appGithub.connectToGithub());
 

@@ -35,6 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -149,6 +150,10 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             if (!showing) {
                 filterPane.setSelected(false);
             }
+        }));
+        //experimental... trying to listen to changes when the inherited options change to change what is selected
+        subscription = subscription.and(control.inheritedFilterOptionsProperty().subscribe((oldVal, newVal) -> {
+            currentFilterOptionsProperty.setValue(control.getInheritedFilterOptions());
         }));
         subscription = subscription.and(filterPane.selectedProperty().subscribe((_, selected) -> {
             if (selected) {
@@ -350,6 +355,20 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     private void setAvailableOptions(FilterOptions.Option option, List<String> options) {
         option.availableOptions().clear();
         option.availableOptions().addAll(options);
+    }
+
+    private void setSelectedOptions(FilterOptions filterOptions) {
+
+
+
+//        inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
+//        //inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
+//        if (option.isMultiSelectionAllowed()) {
+//            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.selectedOptions());
+//        } else {
+//            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.selectedOptions().getFirst());
+//        }
+        //inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
     }
 
     private void setInheritedOptions(FilterOptions.Option option) {

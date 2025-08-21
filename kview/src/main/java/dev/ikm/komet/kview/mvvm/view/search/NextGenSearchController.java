@@ -26,10 +26,14 @@ import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
+import static dev.ikm.tinkar.terms.TinkarTerm.MODULE;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.temp.FxGet;
+import dev.ikm.komet.framework.view.ObservableCoordinate;
+import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.FilterOptions;
@@ -42,20 +46,25 @@ import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.kview.tasks.FilterMenuTask;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
+import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
+import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
@@ -64,6 +73,11 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableSet;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -80,6 +94,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import javafx.util.Subscription;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -94,6 +109,7 @@ import org.slf4j.LoggerFactory;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -104,7 +120,7 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.UUID;
-
+import java.util.stream.Collectors;
 
 
 public class NextGenSearchController {
@@ -125,6 +141,7 @@ public class NextGenSearchController {
 
     private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
 
+    private static Map<String, ConceptFacade> moduleNamesMap = new HashMap<>();
 
     @FXML
     private Pane root;
@@ -148,6 +165,15 @@ public class NextGenSearchController {
     private FilterOptionsPopup filterOptionsPopup;
 
     private SearchResultType currentSearchResultType;
+
+    private Subscription parentSubscription;
+
+    private Subscription childSubscription;
+
+    private Subscription stampSubscription;
+
+    private static final List<String> ALL_STATES = StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN.toEnumSet().stream().map(s -> s.name()).toList();
+
 
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
@@ -190,6 +216,9 @@ public class NextGenSearchController {
                             filterOptionsPopup.inheritedFilterOptionsProperty().setValue(filterOptions))
         ));
 
+        //experimental... doing on the same thread:
+        //filterOptionsPopup.inheritedFilterOptionsProperty().setValue(loadFilterOptions());
+
         root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
         filterPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (filterOptionsPopup.getNavigator() == null) {
@@ -209,8 +238,13 @@ public class NextGenSearchController {
         filterOptionsPopup.showingProperty().subscribe(showing ->
                 filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
 
-        // listen for changes to the filter options
-        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, newFilterOptions) -> {
+        // create a map strings of module names and concept facades
+        getViewProperties().calculator().descendentsOf(MODULE).intStream().boxed().forEach(nid -> {
+            moduleNamesMap.put(getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(nid),
+                    Entity.getFast(nid));
+        });
+
+        ChangeListener<FilterOptions> changeListener = ((obs, oldFilterOptions, newFilterOptions) -> {
             if (newFilterOptions != null) {
                 if (!newFilterOptions.getStatus().selectedOptions().isEmpty()) {
                     StateSet stateSet = StateSet.make(
@@ -242,17 +276,116 @@ public class NextGenSearchController {
                     Date latest = new Date();
                     getViewProperties().nodeView().stampCoordinate().timeProperty().set(latest.getTime());
                 }
-                //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
-            }
-        });
+//                if (newFilterOptions.getModule() != null) {
+//                    getViewProperties().calculator().descendentsOf(MODULE).intStream().boxed().forEach(nid -> {
+//                        String moduleStr =  getViewProperties().calculator().getPreferredDescriptionStringOrNid(nid);
+//                        ConceptFacade moduleConcept = moduleNamesMap.get(moduleStr);
+//                        if (!newFilterOptions.getModule().selectedOptions().contains(moduleStr)) {
+//                            Platform.runLater(() -> getViewProperties().nodeView().stampCoordinate().moduleSpecificationsProperty().remove(moduleConcept));
+//                        } else {
+//                            Platform.runLater(() -> getViewProperties().nodeView().stampCoordinate().moduleSpecificationsProperty().add(moduleConcept));
+//                        }
+//                    });
+//                }
 
-        getViewProperties().nodeView().addListener((obs, oldVC, newVC) -> {
-                    doSearch(new ActionEvent(null, null));
-        });
-        getViewProperties().nodeView().stampCoordinate().pathConceptProperty().addListener((obs, oldVC, newVC) -> {
+                //TODO Type, *Module*, Language, Description Type, Kind of, Membership, Sort By
+            }
             doSearch(new ActionEvent(null, null));
         });
 
+
+
+        // listen for changes to the filter options
+        filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
+
+        // listen to changes to the parent of the current overrideable view
+        parentSubscription = getViewProperties().parentView().subscribe((oldValue, newValue) -> {
+            filterOptionsPopup.filterOptionsProperty().removeListener(changeListener);
+            System.out.println(newValue);
+//            TinkExecutor.threadPool().execute(TaskWrapper.make(new FilterMenuTask(getViewProperties()),
+//                    (FilterOptions filterOptions) ->
+//                            FXUtils.runOnFxThread(() ->
+//                                    filterOptionsPopup.inheritedFilterOptionsProperty().setValue(filterOptions))
+//            ));
+            // experimental: try on the same thread...
+            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(loadFilterOptions());
+
+            filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
+        });
+
+        //TODO subscribe to overridenBasedChanged...???
+
+        //getViewProperties().nodeView().
+//        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(getViewProperties().nodeView().getValue());
+//        FxGet.pathCoordinates(viewCalculator).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change ->
+//            updateFilterOptionsPopup()
+//        );
+
+        // listen to changes to the current overrideable view (nodeView)
+//        childSubscription = getViewProperties().nodeView().subscribe((oldVC, newVC) -> {
+//            System.out.println(newVC);
+//            //doSearch(new ActionEvent(null, null));
+//        });
+//        stampSubscription = getViewProperties().nodeView().stampCoordinate().pathConceptProperty().subscribe((oldVC, newVC) -> {
+//            System.out.println(newVC);
+//            doSearch(new ActionEvent(null, null));
+//        });
+
+    }
+
+    private void updateFilterOptionsPopup() {
+        //TODO update the pop up window
+        System.out.println("parent!");
+    }
+
+    private FilterOptions loadFilterOptions() {
+        FilterOptions filterOptions = new FilterOptions();
+
+        // get parent menu settings
+        ObservableCoordinate parentView = getViewProperties().parentView();
+        for (ObservableCoordinate<?> observableCoordinate : parentView.getCompositeCoordinates()) {
+            if (observableCoordinate instanceof ObservableStampCoordinate observableStampCoordinate) {
+
+                // populate the TYPE; this isn't in the parent view coordinate
+                // it is All | Concepts | Semantics
+                filterOptions.getType().selectedOptions().clear();
+                filterOptions.getType().selectedOptions().addAll(new ArrayList(List.of("All")));
+
+                // populate the STATUS
+                StateSet currentStates = observableStampCoordinate.allowedStatesProperty().getValue();
+                List<String> currentStatesStr = currentStates.toEnumSet().stream().map(s -> s.name()).toList();
+
+                filterOptions.getStatus().selectedOptions().clear();
+                filterOptions.getStatus().selectedOptions().addAll(currentStatesStr);
+
+                filterOptions.getStatus().availableOptions().clear();
+                filterOptions.getStatus().availableOptions().addAll(ALL_STATES);
+
+                filterOptions.getStatus().defaultOptions().clear();
+                filterOptions.getStatus().defaultOptions().addAll(currentStatesStr);
+
+                // MODULE
+                filterOptions.getModule().defaultOptions().clear();
+                observableStampCoordinate.moduleNids().intStream().forEach(moduleNid -> {
+                    String moduleStr = getViewProperties().calculator().getPreferredDescriptionStringOrNid(moduleNid);
+                    filterOptions.getModule().defaultOptions().add(moduleStr);
+                });
+
+
+                // populate the PATH
+                ConceptFacade currentPath = observableStampCoordinate.pathConceptProperty().getValue();
+                String currentPathStr = currentPath.description();
+
+                List<String> defaultSelectedPaths = new ArrayList(List.of(currentPathStr));
+                filterOptions.getPath().defaultOptions().clear();
+                filterOptions.getPath().defaultOptions().addAll(defaultSelectedPaths);
+
+                filterOptions.getPath().selectedOptions().clear();
+                filterOptions.getPath().selectedOptions().addAll(defaultSelectedPaths);
+            }
+            //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
+        }
+        return filterOptions;
     }
 
     private long getMillis(FilterOptions newFilterOptions) {
@@ -554,7 +687,15 @@ public class NextGenSearchController {
     }
 
     public void cleanup() {
-
+        if (parentSubscription != null) {
+            parentSubscription.unsubscribe();
+        }
+        if (childSubscription != null) {
+            childSubscription.unsubscribe();
+        }
+        if (stampSubscription != null) {
+            stampSubscription.unsubscribe();
+        }
     }
 
 
