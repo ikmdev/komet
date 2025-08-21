@@ -248,6 +248,7 @@ public class JournalController {
     // Private Data
     /// //////////////////////////////////////////////////////////////
 
+    private WindowSettings windowSettings;
     private KometPreferences nodePreferences;
 
     private final VBox progressPopupPane = new VBox();
@@ -427,6 +428,7 @@ public class JournalController {
      */
     public void setup(KometPreferences nodePreferences) {
         this.nodePreferences = nodePreferences;
+        this.windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
 
         ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
 
