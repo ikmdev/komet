@@ -33,6 +33,7 @@ import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ObservableCoordinate;
+import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
 import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
@@ -108,6 +109,8 @@ import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -141,7 +144,7 @@ public class NextGenSearchController {
 
     private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
 
-    private static Map<String, ConceptFacade> moduleNamesMap = new HashMap<>();
+    //private static Map<String, ConceptFacade> moduleNamesMap = new HashMap<>();
 
     @FXML
     private Pane root;
@@ -210,14 +213,15 @@ public class NextGenSearchController {
 
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
 
-        TinkExecutor.threadPool().execute(TaskWrapper.make(new FilterMenuTask(getViewProperties()),
-                (FilterOptions filterOptions) ->
-                        FXUtils.runOnFxThread(() ->
-                            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(filterOptions))
-        ));
+        // initialize the FilterOptions on the first load of the Next Gen Search
+//        TinkExecutor.threadPool().execute(TaskWrapper.make(new FilterMenuTask(getViewProperties()),
+//                (FilterOptions filterOptions) ->
+//                        FXUtils.runOnFxThread(() ->
+//                            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(filterOptions))
+//        ));
 
         //experimental... doing on the same thread:
-        //filterOptionsPopup.inheritedFilterOptionsProperty().setValue(loadFilterOptions());
+        filterOptionsPopup.inheritedFilterOptionsProperty().setValue(loadFilterOptions());
 
         root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
         filterPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
@@ -239,10 +243,10 @@ public class NextGenSearchController {
                 filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
 
         // create a map strings of module names and concept facades
-        getViewProperties().calculator().descendentsOf(MODULE).intStream().boxed().forEach(nid -> {
-            moduleNamesMap.put(getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(nid),
-                    Entity.getFast(nid));
-        });
+//        getViewProperties().calculator().descendentsOf(MODULE).intStream().boxed().forEach(nid -> {
+//            moduleNamesMap.put(getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(nid),
+//                    Entity.getFast(nid));
+//        });
 
         ChangeListener<FilterOptions> changeListener = ((obs, oldFilterOptions, newFilterOptions) -> {
             if (newFilterOptions != null) {
@@ -313,7 +317,7 @@ public class NextGenSearchController {
             filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
         });
 
-        //TODO subscribe to overridenBasedChanged...???
+        //TODO subscribe to overriddenBasedChanged...???
 
         //getViewProperties().nodeView().
 //        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(getViewProperties().nodeView().getValue());
@@ -339,6 +343,7 @@ public class NextGenSearchController {
     }
 
     private FilterOptions loadFilterOptions() {
+        Instant start = Instant.now();
         FilterOptions filterOptions = new FilterOptions();
 
         // get parent menu settings
@@ -349,7 +354,9 @@ public class NextGenSearchController {
                 // populate the TYPE; this isn't in the parent view coordinate
                 // it is All | Concepts | Semantics
                 filterOptions.getType().selectedOptions().clear();
-                filterOptions.getType().selectedOptions().addAll(new ArrayList(List.of("All")));
+                filterOptions.getType().selectedOptions().addAll(new ArrayList<>(List.of("Concepts", "Semantics")));
+                filterOptions.getType().defaultOptions().clear();
+                filterOptions.getType().defaultOptions().addAll(filterOptions.getType().selectedOptions());
 
                 // populate the STATUS
                 StateSet currentStates = observableStampCoordinate.allowedStatesProperty().getValue();
@@ -371,7 +378,6 @@ public class NextGenSearchController {
                     filterOptions.getModule().defaultOptions().add(moduleStr);
                 });
 
-
                 // populate the PATH
                 ConceptFacade currentPath = observableStampCoordinate.pathConceptProperty().getValue();
                 String currentPathStr = currentPath.description();
@@ -382,9 +388,28 @@ public class NextGenSearchController {
 
                 filterOptions.getPath().selectedOptions().clear();
                 filterOptions.getPath().selectedOptions().addAll(defaultSelectedPaths);
+            } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
+                // populate the LANGUAGE
+                filterOptions.getLanguage().defaultOptions().clear();
+                String languageStr = getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(
+                        observableLanguageCoordinate.languageConceptProperty().get().nid());
+                filterOptions.getLanguage().defaultOptions().add(languageStr);
+                filterOptions.getLanguage().selectedOptions().clear();
+                filterOptions.getLanguage().selectedOptions().addAll(filterOptions.getLanguage().defaultOptions());
+
+                // which one is it???
+                observableLanguageCoordinate.descriptionPatternPreferenceListProperty();
+                observableLanguageCoordinate.getLanguageCoordinate().descriptionPatternPreferenceArray();
+
             }
-            //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
+            //TODO Type, Description Type, Kind of, Membership, Sort By
         }
+        filterOptions.getKindOf().defaultOptions().clear();
+        filterOptions.getKindOf().defaultOptions().add("All");
+        filterOptions.getKindOf().selectedOptions().addAll(filterOptions.getKindOf().defaultOptions());
+
+        Instant end = Instant.now();
+        LOG.info("----- LOAD FILTER OPTIONS DURATION = " + Duration.between(start, end) + " -----");
         return filterOptions;
     }
 

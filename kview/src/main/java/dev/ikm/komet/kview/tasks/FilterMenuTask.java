@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.tasks;
 
 import dev.ikm.komet.framework.view.ObservableCoordinate;
+import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
 import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.FilterOptions;
@@ -43,7 +44,9 @@ public class FilterMenuTask extends TrackingCallable {
                 // populate the TYPE; this isn't in the parent view coordinate
                 // it is All | Concepts | Semantics
                 filterOptions.getType().selectedOptions().clear();
-                filterOptions.getType().selectedOptions().addAll(new ArrayList(List.of("All")));
+                filterOptions.getType().selectedOptions().addAll(new ArrayList<>(List.of("Concepts", "Semantics")));
+                filterOptions.getType().defaultOptions().clear();
+                filterOptions.getType().defaultOptions().addAll(filterOptions.getType().selectedOptions());
 
                 // populate the STATUS
                 StateSet currentStates = observableStampCoordinate.allowedStatesProperty().getValue();
@@ -76,8 +79,18 @@ public class FilterMenuTask extends TrackingCallable {
 
                 filterOptions.getPath().selectedOptions().clear();
                 filterOptions.getPath().selectedOptions().addAll(defaultSelectedPaths);
+
+
+            } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
+                // populate the LANGUAGE
+                filterOptions.getLanguage().defaultOptions().clear();
+                String languageStr = viewProperties.calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(
+                        observableLanguageCoordinate.languageConceptProperty().get().nid());
+                filterOptions.getLanguage().defaultOptions().add(languageStr);
+                filterOptions.getLanguage().selectedOptions().clear();
+                filterOptions.getLanguage().selectedOptions().addAll(filterOptions.getLanguage().defaultOptions());
             }
-            //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
+            //TODO Type, Description Type, Kind of, Membership, Sort By
         }
         return filterOptions;
     }

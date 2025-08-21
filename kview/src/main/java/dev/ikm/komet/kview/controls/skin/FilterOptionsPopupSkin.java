@@ -249,10 +249,11 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         }
         int rootNid = navigator.getRootNids()[0];
 
-        FilterOptions.Option option = filterOptions.getType();
+        FilterOptions.Option option = control.getInheritedFilterOptions().getType();
         FilterTitledPane typeFilterTitledPane = setupTitledPane(option);
         if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.SEARCH) {
-            setDefaultOptions(option);
+            setInheritedOptions(option);
+            System.out.println("meh");
         }
 
         // header: All first children of root
@@ -273,10 +274,10 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         setInheritedOptions(option);
 
         // module: all descendants of Module
-        option = filterOptions.getModule();
+        option = control.getInheritedFilterOptions().getModule();
         setAvailableOptions(option, getDescendentsList(navigator, rootNid, MODULE.getPath()));
         FilterTitledPane moduleFilterTitledPane = setupTitledPane(option);
-        setDefaultOptions(option);
+        setInheritedOptions(option);
 
         // path: all descendants of Path
         option = control.getInheritedFilterOptions().getPath();
@@ -285,18 +286,18 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         setInheritedOptions(option);
 
         // language: all descendants of Model concept->Tinkar Model concept->Language
-        option = filterOptions.getLanguage();
+        option = control.getInheritedFilterOptions().getLanguage();
         setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.LANGUAGE.getPath()));
         FilterTitledPane languageFilterTitledPane = setupTitledPane(option);
-        setDefaultOptions(option);
+        setInheritedOptions(option);
 
         option = filterOptions.getDescription();
         FilterTitledPane descriptionFilterTitledPane = setupTitledPane(option);
         setDefaultOptions(option);
 
-        option = filterOptions.getKindOf();
+        option = control.getInheritedFilterOptions().getKindOf();
         FilterTitledPane kindOfFilterTitledPane = setupTitledPane(option);
-        setDefaultOptions(option);
+        setInheritedOptions(option);
 
         option = filterOptions.getMembership();
         FilterTitledPane membershipFilterTitledPane = setupTitledPane(option);
@@ -375,9 +376,19 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
         inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
         if (option.isMultiSelectionAllowed()) {
-            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.selectedOptions());
+            if (!option.selectedOptions().isEmpty()) {
+                inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.selectedOptions());
+            } else if (inheritedFilterOptions.getOptionForItem(option.item()).hasAny()) {
+                inheritedFilterOptions.getOptionForItem(option.item()).setAny(true);
+            } else {
+                inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.availableOptions());
+            }
         } else {
-            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
+            if (!option.selectedOptions().isEmpty()) {
+                inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.selectedOptions().getFirst());
+            } else {
+                inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
+            }
         }
         inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
     }
@@ -428,7 +439,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
     private static int findNidForDescription(Navigator navigator, int nid, String description) {
         return navigator.getChildEdges(nid).stream()
-                .filter(edge -> Entity.getFast(edge.destinationNid()).description().equals(description))
+                .filter(edge -> navigator.getViewCalculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(edge.destinationNid()).equals(description))
                 .findFirst()
                 .map(Edge::destinationNid)
                 .orElseThrow();
@@ -440,7 +451,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             nid = findNidForDescription(navigator, nid, s);
         }
         return navigator.getViewCalculator().descendentsOf(nid).intStream().boxed()
-                .map(i -> Entity.getFast(i).description())
+                .map(i -> navigator.getViewCalculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(i))
                 .sorted()
                 .toList();
     }
