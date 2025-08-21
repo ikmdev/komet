@@ -248,7 +248,6 @@ public class JournalController {
     // Private Data
     /// //////////////////////////////////////////////////////////////
 
-    private WindowSettings windowSettings;
     private KometPreferences nodePreferences;
 
     private final VBox progressPopupPane = new VBox();
@@ -319,7 +318,7 @@ public class JournalController {
         // Initialize journal topic (UUID) value
         journalTopic = journalViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
 
-        this.windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
+        WindowSettings windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
 
         // Initialize the journal window view, which is provided in the WindowSettings
         windowView = windowSettings.getView();
