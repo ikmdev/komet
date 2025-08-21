@@ -52,7 +52,7 @@ import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WIND
 
 public class AppClassicKomet {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AppGithub.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AppClassicKomet.class);
 
     private Stage classicKometStage;
 

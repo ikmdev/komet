@@ -37,6 +37,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.events.FrameworkTopics.*;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 import dev.ikm.komet.framework.*;
+import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.events.appevents.*;
 import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.propsheet.*;
@@ -903,14 +904,7 @@ public class DetailsController  {
 
         // Latest update time
         long stampTime = stamp.time();
-        if (!(stampTime == PREMUNDANE_TIME)) {
-            DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("yyyy-MMM-dd HH:mm:ss");
-            Instant stampInstance = Instant.ofEpochSecond(stamp.time() / 1000);
-            String time = DATE_TIME_FORMATTER.format(stampInstance);
-            lastUpdatedLabel.setText(time);
-        } else {
-            lastUpdatedLabel.setText(PREMUNDANE);
-        }
+        lastUpdatedLabel.setText(TimeUtils.parseDateText(stampTime));
 
         // Author tooltip
         authorTooltip.setText(stamp.author().description());
