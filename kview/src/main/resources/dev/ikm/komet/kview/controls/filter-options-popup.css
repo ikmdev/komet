@@ -4,8 +4,8 @@
 
 .filter-options-popup {
     -fx-background-color: #2E3240;
-    -fx-min-width: 280;
-    -fx-pref-width: 280;
+    -fx-min-width: 326;
+    -fx-pref-width: 326;
     -fx-pref-height: -popup-pref-height;
     -fx-padding: 12 8 12 8;
     -fx-spacing: 8;
@@ -87,7 +87,7 @@
     -fx-background-insets: 0, 1;
     -fx-background-radius: 4, 4;
     -fx-pref-height: 24;
-    -fx-min-width: 256;
+    -fx-min-width: 302;
 }
 
 .filter-options-popup > .bottom-box > .button.apply {
@@ -228,8 +228,8 @@
     -fx-background-color: #2E3240, #545D72, #2E3240;
     -fx-background-insets: 0, 0 0 6 0, 1 1 7 1;
     -fx-background-radius: 0, 4, 4;
-    -fx-min-width: 256;
-    -fx-pref-width: 256;
+    -fx-min-width: 302;
+    -fx-pref-width: 302;
     -fx-padding: 4;
 }
 
@@ -298,7 +298,7 @@
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-text-fill: #5896F6;
-    -fx-pref-width: 220;
+    -fx-pref-width: 266;
     -fx-pref-height: 20;
     -fx-content-display: right;
     -fx-alignment: center-left;
@@ -337,6 +337,7 @@
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box {
     -fx-managed: false;
     visibility: hidden;
+    -fx-spacing: 8;
 }
 
 .filter-options-popup > .scroll-pane .accordion > .titled-pane:expanded > .title > .title-box > .toggles-box {
@@ -353,8 +354,8 @@
     -fx-background-color: #4A7AD2, white;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 12, 12;
-    -fx-pref-height: 26;
-    -fx-min-width: 40;
+    -fx-padding: 2 12 2 12;
+    -fx-pref-height: 20;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 13px;
     -fx-font-style: normal;
@@ -367,11 +368,13 @@
     -fx-text-fill: black;
 }
 
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box > .any-toggle.toggle-button,
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box > .exclude-toggle.toggle-button {
     -fx-managed: false;
     visibility: hidden;
 }
 
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box:any > .any-toggle.toggle-button,
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .title-box > .toggles-box:excluding > .exclude-toggle.toggle-button {
     -fx-managed: true;
     visibility: visible;
@@ -460,9 +463,10 @@
     -fx-background-color: #4A7AD2, white;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 12, 12;
+    -fx-padding: 0 8 0 8;
     -fx-pref-height: 18;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 12px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: #4A7AD2;
@@ -542,7 +546,7 @@
     -fx-font-size: 14;
     -fx-text-base-color: #2E3240;
     -fx-text-fill: #2E3240;
-    -fx-pref-width: 233;
+    -fx-pref-width: 279;
     -fx-min-height: 28;
     -fx-pref-height: 28;
     -fx-font-family: "Noto Sans";
@@ -599,7 +603,7 @@
     -fx-background-insets: 0, 1;
     -fx-background-radius: 4, 4;
     -fx-pref-height: 24;
-    -fx-min-width: 233;
+    -fx-min-width: 279;
 }
 
 .filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.titled-pane > .content > .content-box > .bottom-box > .button.additional {
