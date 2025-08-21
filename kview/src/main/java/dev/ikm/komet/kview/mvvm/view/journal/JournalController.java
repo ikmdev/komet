@@ -319,7 +319,7 @@ public class JournalController {
         // Initialize journal topic (UUID) value
         journalTopic = journalViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
 
-        WindowSettings windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
+        this.windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
 
         // Initialize the journal window view, which is provided in the WindowSettings
         windowView = windowSettings.getView();
@@ -428,7 +428,6 @@ public class JournalController {
      */
     public void setup(KometPreferences nodePreferences) {
         this.nodePreferences = nodePreferences;
-        this.windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
 
         ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
 
@@ -437,16 +436,6 @@ public class JournalController {
                     FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
                 }));
 
-        windowSettings.getView().addListener((observable, oldValue, newValue) -> {
-            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowView, "JournalController"),
-                    (List<MenuItem> result) ->
-                            FXUtils.runOnFxThread(() -> {
-                                var menuItems = windowCoordinates.getItems();
-                                menuItems.clear();
-                                menuItems.addAll(result);
-                            })
-            ));
-        });
     }
 
     private void onMouseClickedOnDesktopSurfacePane(MouseEvent mouseEvent) {
