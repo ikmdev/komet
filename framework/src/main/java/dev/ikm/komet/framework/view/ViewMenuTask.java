@@ -391,7 +391,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             item.setSelected(observableCoordinate.getDestinationModuleNid() == module.nid());
             changeDestinationModuleMenu.getItems().add(item);
             item.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.promotionPathProperty().setValue(module));
+                Platform.runLater(() -> observableCoordinate.destinationModuleProperty().setValue(module));
                 event.consume();
             });
         }
