@@ -4,6 +4,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -18,22 +19,28 @@ public class FilterOptions implements Serializable {
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
 
     public enum OPTION_ITEM {
-        TYPE(""),
-        HEADER(""),
-        STATUS("Status"),
-        MODULE("Module"),
-        PATH("Path"),
-        LANGUAGE("Model concept, Tinkar Model concept, Language"),
-        DESCRIPTION_TYPE(""),
-        KIND_OF(""),
-        MEMBERSHIP(""),
-        SORT_BY(""),
-        DATE("");
+        TYPE("type", ""),
+        HEADER("header", ""),
+        STATUS("status", "Status"),
+        MODULE("module", "Module"),
+        PATH("path", "Path"),
+        LANGUAGE("language", "Model concept, Tinkar Model concept, Language"),
+        DESCRIPTION_TYPE("description", ""),
+        KIND_OF("kindof", ""),
+        MEMBERSHIP("membership", ""),
+        SORT_BY("sortby", ""),
+        DATE("date", "");
 
+        private final String name;
         private final String path;
 
-        OPTION_ITEM(String path) {
+        OPTION_ITEM(String name, String path) {
+            this.name = name;
             this.path = path;
+        }
+
+        public String getName() {
+            return name;
         }
 
         public String getPath() {
@@ -41,23 +48,60 @@ public class FilterOptions implements Serializable {
         }
     }
 
-    public record Option(OPTION_ITEM item, String title, List<String> defaultOptions, List<String> availableOptions,
-                         List<String> selectedOptions, List<String> excludedOptions, boolean multiSelect)
-            implements Serializable {
+    public static final class Option implements Serializable {
+        @Serial
+        private static final long serialVersionUID = 0L;
+        private final OPTION_ITEM item;
+        private final String title;
+        private final List<String> defaultOptions;
+        private final List<String> availableOptions;
+        private final List<String> selectedOptions;
+        private final List<String> excludedOptions;
+        private final boolean multiSelect;
+        private boolean any;
+        private final EnumSet<BUTTON> buttonType;
 
-        @Override
+        public Option(OPTION_ITEM item, String title, List<String> defaultOptions, List<String> availableOptions,
+                      List<String> selectedOptions, List<String> excludedOptions, boolean multiSelect, boolean any, EnumSet<BUTTON> buttonType) {
+            this.item = item;
+            this.title = title;
+            this.defaultOptions = defaultOptions;
+            this.availableOptions = availableOptions;
+            this.selectedOptions = selectedOptions;
+            this.excludedOptions = excludedOptions;
+            this.multiSelect = multiSelect;
+            this.any = any;
+            this.buttonType = buttonType;
+        }
+
+        public enum BUTTON {
+            NONE(""),
+            ALL(".button.all"),
+            ANY(".button.any"),
+            EXCLUDING(".button.excluding");
+
+            private final String label;
+
+            BUTTON(String label) {
+                this.label = label;
+            }
+
+            public String getLabel() {
+                return label;
+            }
+        }
+
         public String title() {
             return resources.getString(title);
         }
 
-        @Override
         public List<String> defaultOptions() {
             return defaultOptions;
         }
 
         @Override
         public String toString() {
-            return item + ": " + selectedOptions +
+            return item + ": " + (any ? "Any of: " : "All of: ") + selectedOptions +
                     (excludedOptions == null || excludedOptions.isEmpty() ? "" : " - " + excludedOptions);
         }
 
@@ -65,8 +109,24 @@ public class FilterOptions implements Serializable {
             return multiSelect;
         }
 
-        public boolean isExcluding() {
-            return excludedOptions != null;
+        public boolean hasAll() {
+            return buttonType.contains(BUTTON.ALL);
+        }
+
+        public boolean hasAny() {
+            return buttonType.contains(BUTTON.ANY);
+        }
+
+        public boolean hasExcluding() {
+            return buttonType.contains(BUTTON.EXCLUDING);
+        }
+
+        public boolean areAllSelected() {
+            return selectedOptions.size() == availableOptions.size();
+        }
+
+        public boolean hasExclusions() {
+            return hasExcluding() && excludedOptions() != null && !excludedOptions().isEmpty();
         }
 
         @Override
@@ -76,20 +136,10 @@ public class FilterOptions implements Serializable {
             Option option = (Option) o;
             if (!Objects.equals(item, option.item)) return false;
             if (!Objects.equals(title, option.title)) return false;
-            if (selectedOptions == null && option.selectedOptions != null) return false;
-            if (selectedOptions != null && option.selectedOptions == null) return false;
-            if (selectedOptions != null &&
-                    selectedOptions.size() != option.selectedOptions.size()) return false;
-            if (selectedOptions != null &&
-                    !selectedOptions.stream().sorted().toList().equals(
-                            option.selectedOptions.stream().sorted().toList())) return false;
-            if (excludedOptions == null && option.excludedOptions != null) return false;
-            if (excludedOptions != null && option.excludedOptions == null) return false;
-            if (excludedOptions != null &&
-                    excludedOptions.size() != option.excludedOptions.size()) return false;
-            return excludedOptions == null ||
-                    excludedOptions.stream().sorted().toList().equals(
-                            option.excludedOptions.stream().sorted().toList());
+            if (any != option.any) return false;
+            if (!compareLists(selectedOptions, option.selectedOptions)) return false;
+            if (!compareLists(excludedOptions, option.excludedOptions)) return false;
+            return true;
         }
 
         @Override
@@ -98,13 +148,52 @@ public class FilterOptions implements Serializable {
         }
 
         public Option copy() {
-            return new Option(item, title, defaultOptions,
+            return new Option(item, title,
+                    new ArrayList<>(defaultOptions.stream().toList()),
                     new ArrayList<>(availableOptions.stream().toList()),
                     new ArrayList<>(selectedOptions.stream().toList()),
                     excludedOptions != null ? new ArrayList<>(excludedOptions.stream().toList()) : null,
-                    multiSelect);
+                    multiSelect, any, buttonType);
         }
+
+        public OPTION_ITEM item() {
+            return item;
+        }
+
+        public List<String> availableOptions() {
+            return availableOptions;
+        }
+
+        public List<String> selectedOptions() {
+            return selectedOptions;
+        }
+
+        public List<String> excludedOptions() {
+            return excludedOptions;
+        }
+
+        public boolean multiSelect() {
+            return multiSelect;
+        }
+
+        public boolean any() {
+            return any;
+        }
+
+        public void setAny(boolean any) {
+            this.any = any;
+        }
+
+        public EnumSet<BUTTON> buttonType() {
+            return buttonType;
+        }
+
     }
+
+    private final EnumSet<Option.BUTTON> noneSet = EnumSet.of(Option.BUTTON.NONE);
+    private final EnumSet<Option.BUTTON> allSet = EnumSet.of(Option.BUTTON.ALL);
+    private final EnumSet<Option.BUTTON> allExcludingSet = EnumSet.of(Option.BUTTON.ALL, Option.BUTTON.EXCLUDING);
+    private final EnumSet<Option.BUTTON> allAnyExcludingSet = EnumSet.of(Option.BUTTON.ALL, Option.BUTTON.ANY, Option.BUTTON.EXCLUDING);
 
     private Option type;
     {
@@ -113,24 +202,24 @@ public class FilterOptions implements Serializable {
                 .map(resources::getString)
                 .toList();
         type = new Option(OPTION_ITEM.TYPE, "type.title", new ArrayList<>(Arrays.asList("All")),
-            typeOptions, new ArrayList<>(), null, true);
+            typeOptions, new ArrayList<>(), null, true, false, allSet);
     }
 
     private Option header = new Option(OPTION_ITEM.HEADER, "header.title", new ArrayList<>(),
-            new ArrayList<>(), new ArrayList<>(), null, false);
+            new ArrayList<>(), new ArrayList<>(), null, false, false, allSet);
 
     // can we pass a lambda to default options here?
     private Option status = new Option(OPTION_ITEM.STATUS, "status.title", new ArrayList<>(),
-            new ArrayList<>(), new ArrayList<>(), null, true);
+            new ArrayList<>(), new ArrayList<>(), null, true, false, allSet);
 
     private Option module = new Option(OPTION_ITEM.MODULE, "module.title", new ArrayList<>(Arrays.asList("All")),
-            new ArrayList<>(), new ArrayList<>(), null, true);
+            new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, false, allAnyExcludingSet);
 
     private Option path = new Option(OPTION_ITEM.PATH, "path.title", new ArrayList<>(),
-            new ArrayList<>(), new ArrayList<>(), null, false);
+            new ArrayList<>(), new ArrayList<>(), null, false, false, noneSet);
 
     private Option language = new Option(OPTION_ITEM.LANGUAGE, "language.title", new ArrayList<>(Arrays.asList("All")),
-            new ArrayList<>(), new ArrayList<>(), null, true);
+            new ArrayList<>(), new ArrayList<>(), null, true, false, allSet);
 
     private Option descriptionType;
     {
@@ -140,7 +229,7 @@ public class FilterOptions implements Serializable {
                 .map(resources::getString)
                 .toList();
         descriptionType = new Option(OPTION_ITEM.DESCRIPTION_TYPE, "description.title", new ArrayList<>(Arrays.asList("All")),
-                descriptionTypeOptions, new ArrayList<>(), null, true);
+                descriptionTypeOptions, new ArrayList<>(), null, true, false, allSet);
     }
 
     private Option kindOf;
@@ -152,7 +241,7 @@ public class FilterOptions implements Serializable {
                 .map(resources::getString)
                 .toList();
         kindOf = new Option(OPTION_ITEM.KIND_OF, "kindof.title", new ArrayList<>(Arrays.asList("All")),
-                kindOfOptions, new ArrayList<>(), new ArrayList<>(), true);
+                kindOfOptions, new ArrayList<>(), new ArrayList<>(), true, false, allExcludingSet);
     }
 
     private Option membership;
@@ -163,7 +252,7 @@ public class FilterOptions implements Serializable {
                 .map(resources::getString)
                 .toList();
         membership = new Option(OPTION_ITEM.MEMBERSHIP, "membership.title", new ArrayList<>(Arrays.asList("All")),
-                membershipOptions, new ArrayList<>(), null, true);
+                membershipOptions, new ArrayList<>(), null, true, false, allSet);
     }
 
     private Option sortBy;
@@ -173,7 +262,7 @@ public class FilterOptions implements Serializable {
                 .map(resources::getString)
                 .toList();
         sortBy = new Option(OPTION_ITEM.SORT_BY, "sortby.title", new ArrayList<>(),
-                typeOptions, new ArrayList<>(), null, false);
+                typeOptions, new ArrayList<>(), null, false, false, allSet);
     }
 
     private Option date;
@@ -182,7 +271,7 @@ public class FilterOptions implements Serializable {
                 .map(resources::getString)
                 .toList();
         date = new Option(OPTION_ITEM.DATE, "date.title", new ArrayList<>(Arrays.asList("Latest")),
-                dateOptions, new ArrayList<>(), new ArrayList<>(), true);
+                dateOptions, new ArrayList<>(), new ArrayList<>(), true, false, noneSet);
     }
 
     private final List<Option> options;
@@ -303,4 +392,13 @@ public class FilterOptions implements Serializable {
                         .collect(Collectors.joining(", ")) +
                 "}";
     }
+
+    static boolean compareLists(List<String> list1, List<String> list2) {
+        if (list1 == null && list2 != null) return false;
+        if (list1 != null && list2 == null) return false;
+        if (list1 != null && list1.size() != list2.size()) return false;
+        return list1 == null ||
+                list1.stream().sorted().toList().equals(list2.stream().sorted().toList());
+    }
+
 }
