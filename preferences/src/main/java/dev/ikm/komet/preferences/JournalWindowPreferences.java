@@ -18,6 +18,8 @@ package dev.ikm.komet.preferences;
 public class JournalWindowPreferences {
     public static final String MAIN_KOMET_WINDOW = "main-komet-window";
 
+    public static final String AUTHOR_LOGIN_WINDOW = "author-login-window";
+
     public static final String JOURNALS = "journals";
 
     public static final String JOURNAL_FOLDER_PREFIX = "journal_";

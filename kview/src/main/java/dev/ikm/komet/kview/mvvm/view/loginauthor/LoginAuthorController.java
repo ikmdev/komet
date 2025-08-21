@@ -1,14 +1,25 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
+
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.terms.ComponentWithNid;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
+import javafx.util.StringConverter;
+import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
+
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.LoginProperties.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class LoginAuthorController {
     private static final Logger LOG = LoggerFactory.getLogger(LoginAuthorController.class);
@@ -17,7 +28,7 @@ public class LoginAuthorController {
     @FXML
     private PasswordField passwordField;
     @FXML
-    private ComboBox userChooser;
+    private ComboBox<ComponentWithNid> userChooser;
     @FXML
     private Button loginButton;
     @FXML
@@ -26,58 +37,66 @@ public class LoginAuthorController {
     private ImageView visibilityIcon;
     @FXML
     private TextField passwordTextField;
-    private CompletableFuture<LoginAuthorUserModel> onLoginFuture = new CompletableFuture<>();
+    private CompletableFuture<LoginAuthorViewModel> onLoginFuture = new CompletableFuture<>();
     @FXML
     private Label passwordErrorLabel;
     @FXML
     private Label loginErrorLabel;
 
+    @InjectViewModel
+    private LoginAuthorViewModel loginAuthorViewModel;
+
     @FXML
     public void initialize() {
-        LoginAuthorDataModel.fakeusers();
+        ViewProperties viewProperties = getViewProperties();
+        loginAuthorViewModel.getObservableList(AUTHORS).addAll(fetchDescendentsOfConcept(viewProperties, TinkarTerm.USER.publicId()));
         userChooser.setPromptText("Select a user");
-        userChooser.setItems(LoginAuthorDataModel.list);
+        userChooser.setItems(loginAuthorViewModel.getObservableList(AUTHORS));
+        userChooser.getItems().sort(Comparator.comparing(this::getUserName));
+
+        userChooser.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(ComponentWithNid componentWithNid) {
+                return getUserName(componentWithNid);
+            }
+
+            @Override
+            public ComponentWithNid fromString(String s) {
+                return null;
+            }
+        });
+
+        userChooser.valueProperty().bindBidirectional(loginAuthorViewModel.getProperty(SELECTED_AUTHOR));
+        passwordField.textProperty().bindBidirectional(loginAuthorViewModel.getProperty(PASSWORD));
+
         passwordTextField.setVisible(false);
         loginButton.setDisable(true);
+        loginButton.disableProperty().bind(loginAuthorViewModel.invalidProperty());
+        loginErrorLabel.textProperty().bind(loginAuthorViewModel.getStringProperty(LOGIN_ERROR));
+        loginAuthorViewModel.doOnChange(() -> loginAuthorViewModel.validate(), SELECTED_AUTHOR, PASSWORD);
+        loginAuthorViewModel.save(true);
+    }
+
+    private ViewProperties getViewProperties() {
+        return loginAuthorViewModel.getPropertyValue(VIEW_PROPERTIES);
+    }
+
+    private String getUserName(ComponentWithNid componentWithNid) {
+        ViewProperties viewProperties = getViewProperties();
+        return viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(componentWithNid.nid());
     }
 
     @FXML
-    public void signupAction(ActionEvent actionEvent) {
+    public void signInAction(ActionEvent actionEvent) {
         if (isVisible) {
             swapVisibility();
         }
-        String errormessage = "";
-        boolean loginproceed = false;
-        if (userChooser.getValue() == null) {
-            errormessage = "Error: " + "Please select a User";
-            userErrorLabel.setText(errormessage);
+        if (loginAuthorViewModel.validProperty().get() && loginAuthorViewModel.authenticateUser()) {
+            loginAuthorViewModel.setPropertyValue(LOGIN_ERROR, "");
+            LOG.info("Author selected: " + userChooser.getValue().toString());
+            onLoginFuture.complete(loginAuthorViewModel);
         } else {
-            String username = userChooser.getValue().toString();
-            String password = "";
-            if (!isVisible) {
-                password = passwordField.getText();
-            } else {
-                password = passwordTextField.getText();
-            }
-            userErrorLabel.setText("");
-            if (password.length() > 4) {
-                loginproceed = true;
-                passwordErrorLabel.setText("");
-            } else {
-                errormessage = "ERROR: Password must be at least 5 characters long";
-                passwordErrorLabel.setText(errormessage);
-                passwordErrorLabel.setVisible(true);
-            }
-        }
-        if (loginproceed) {
-            boolean valid = LoginAuthorDataModel.validateUser(userChooser.getValue().toString(), passwordField.getText());
-            if (valid) {
-                loginErrorLabel.setText("");
-                LOG.info("Author selected: " + userChooser.getValue().toString());
-                onLoginFuture.complete(null);
-            } else {
-                loginErrorLabel.setText("Login failed, please check your credentials");
-            }
+            loginAuthorViewModel.setPropertyValue(LOGIN_ERROR, "Login failed, please check your credentials");
         }
     }
 
@@ -85,7 +104,7 @@ public class LoginAuthorController {
     public void cleanErrorLabels() {
         userErrorLabel.setText("");
         passwordErrorLabel.setText("");
-        loginErrorLabel.setText("");
+        loginAuthorViewModel.setPropertyValue(LOGIN_ERROR, "");
     }
 
     @FXML
@@ -96,10 +115,6 @@ public class LoginAuthorController {
             pwvalidate = passwordField.getText();
         } else {
             pwvalidate = passwordTextField.getText();
-        }
-        if (pwvalidate.length() >= 4) {
-            passwordErrorLabel.setText("");
-            loginButton.setDisable(false);
         }
     }
 
@@ -122,7 +137,7 @@ public class LoginAuthorController {
         }
     }
 
-    public CompletableFuture<LoginAuthorUserModel> onLogin() {
+    public CompletableFuture<LoginAuthorViewModel> onLogin() {
         return onLoginFuture;
     }
 

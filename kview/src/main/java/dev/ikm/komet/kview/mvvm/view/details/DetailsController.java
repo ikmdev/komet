@@ -406,7 +406,12 @@ public class DetailsController  {
             updateFQNConceptDescription(fqnDescrName);
         });
         ObservableList<DescrName> otherNames = getConceptViewModel().getObservableList(OTHER_NAMES);
-        otherNames.addListener((InvalidationListener) obs -> updateOtherNamesDescription(otherNames));
+        otherNames.addListener((InvalidationListener) obs -> {
+            if (!otherNames.isEmpty()) {
+                propertiesController.setHasOtherName(true);
+            }
+            updateOtherNamesDescription(otherNames);
+        });
 
         // Listens for events related to new fqn or other names added to this concept. Subscriber is responsible for
         // the final create concept transaction.
@@ -521,6 +526,13 @@ public class DetailsController  {
                     stampContainer.getScene().addEventFilter(MouseEvent.MOUSE_PRESSED, mouseFilterPressedOnScene);
                     stampContainer.sceneProperty().removeListener(this);
                 }
+            }
+        });
+
+        conceptViewModel.getViewProperties().nodeView().addListener((obs, oldViewCoord, newViewCoord) -> {
+            if (newViewCoord != null) {
+                LOG.info("refresh concept window when view coordinate has changed." + newViewCoord);
+                updateView();
             }
         });
     }
@@ -813,9 +825,11 @@ public class DetailsController  {
             }
 
             // TODO: Ability to change Concept record. but for now user can edit stamp but not affect Concept version.
-            EntityVersion latestVersion = conceptViewModel.getViewProperties().calculator().latest(entityFacade).get();
-            StampEntity stamp = latestVersion.stamp();
-            updateStampViewModel(EDIT, stamp);
+            conceptViewModel.getViewProperties().calculator().latest(entityFacade)
+                .ifPresent(latestVersion -> {
+                    StampEntity stamp = latestVersion.stamp();
+                    updateStampViewModel(EDIT, stamp);
+                });
         } else { // create concept
             getConceptViewModel().setPropertyValue(MODE, CREATE);
             stampViewModel.setPropertyValue(MODE, CREATE);
@@ -854,12 +868,12 @@ public class DetailsController  {
         // TODO do a null check on the entityFacade
         // Title (FQN of concept)
         final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-        String conceptNameStr = viewCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
+        String conceptNameStr = viewCalculator.languageCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
         fqnTitleText.setText(conceptNameStr);
         conceptNameTooltip.setText(conceptNameStr);
 
         // Definition description text
-        definitionTextField.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
+        definitionTextField.setText(viewCalculator.languageCalculator().getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
 
         setupDisplayUUID(entityFacade, viewCalculator);
 
@@ -888,10 +902,15 @@ public class DetailsController  {
         pathLabel.setText(pathText);
 
         // Latest update time
-        DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("yyyy-MMM-dd HH:mm:ss");
-        Instant stampInstance = Instant.ofEpochSecond(stamp.time()/1000);
-        String time = DATE_TIME_FORMATTER.format(stampInstance);
-        lastUpdatedLabel.setText(time);
+        long stampTime = stamp.time();
+        if (!(stampTime == PREMUNDANE_TIME)) {
+            DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("yyyy-MMM-dd HH:mm:ss");
+            Instant stampInstance = Instant.ofEpochSecond(stamp.time() / 1000);
+            String time = DATE_TIME_FORMATTER.format(stampInstance);
+            lastUpdatedLabel.setText(time);
+        } else {
+            lastUpdatedLabel.setText(PREMUNDANE);
+        }
 
         // Author tooltip
         authorTooltip.setText(stamp.author().description());
@@ -1078,12 +1097,10 @@ public class DetailsController  {
         VBox textFlowsBox = new VBox();
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         ConceptEntity caseSigConcept = otherName.getCaseSignificance();
-        String casSigText = viewCalculator.getRegularDescriptionText(caseSigConcept.nid())
-                .orElse(caseSigConcept.nid()+"");
+        String casSigText = viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(caseSigConcept.nid());
         ConceptEntity langConcept = otherName.getLanguage();
 
-        String langText = viewCalculator.getRegularDescriptionText(langConcept.nid())
-                .orElse(String.valueOf(langConcept.nid()));
+        String langText = viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(langConcept.nid());
 
         String descrSemanticStr = "%s, %s".formatted(casSigText, langText);
 
@@ -1158,7 +1175,8 @@ public class DetailsController  {
 
     private void updateFQNSemantics(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
         DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
-        String fqnTextDescr = getFieldValueByMeaning(semanticEntityVersion, TinkarTerm.TEXT_FOR_DESCRIPTION);
+        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
+        String fqnTextDescr = viewCalculator.languageCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(semanticEntityVersion.entity());
         // obtain the fqn description
         latestFqnText.setText(fqnTextDescr);
 
@@ -1242,19 +1260,25 @@ public class DetailsController  {
                     //              concept navigator's view coordinates based on stamp (date time).
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
-                    ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntity.nid());
-                    ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
-                    Latest<SemanticEntityVersion>  semanticVersion =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
 
-                    // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
-                    EntityFacade descriptionTypeConceptValue = getFieldValueByMeaning(semanticVersion.get(), TinkarTerm.DESCRIPTION_TYPE);
-                    if(descriptionTypeConceptValue instanceof EntityFacade descriptionTypeConcept ){
-                        int typeId = descriptionTypeConcept.nid();
-                        return (typeId == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() ||
-                                typeId == REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
-                                typeId == DEFINITION_DESCRIPTION_TYPE.nid());
+                    Latest<SemanticEntityVersion> semanticEntityVersionLatest = conceptViewModel.getViewProperties().calculator().latest(semanticEntity.nid());
+                    if (semanticEntityVersionLatest.isAbsent()) {
+                        return false; // No version found
                     }
-                    return false;
+
+                    SemanticEntityVersion latestVersion = semanticEntityVersionLatest.get();
+
+                    if (!latestVersion.uncommitted()) {
+                        // Latest version is committed
+                        return true;
+                    }
+
+                    // Latest is uncommitted, search for latest committed version in history
+                    ImmutableList<EntityVersion> entityVersionsList = Entity.getFast(semanticEntity.nid()).versions();
+
+                    // Return true if any committed version exists
+                    return entityVersionsList.stream()
+                            .anyMatch(p -> !p.uncommitted());
 
                 }).forEach(semanticEntity -> {
                     // Each description obtain the latest semantic version, pattern version and their field values based on index
@@ -1264,9 +1288,12 @@ public class DetailsController  {
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
 
-                    ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntity.nid());
-                    ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
-                    Latest<SemanticEntityVersion>  semanticVersion =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
+                    Latest<SemanticEntityVersion> semanticEntityVersionLatest = conceptViewModel.getViewProperties().calculator().latest(semanticEntity.nid());
+                    if(semanticEntityVersionLatest.isAbsent()) {
+                        return;
+                    }
+                    // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
+                    EntityFacade descriptionTypeConceptValue = getFieldValueByMeaning(semanticEntityVersionLatest.get(), TinkarTerm.DESCRIPTION_TYPE);
 
                     PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
                     PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
@@ -1275,15 +1302,13 @@ public class DetailsController  {
                     int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
 
                     List<String> descrFields = new ArrayList<>();
-                    descriptionSemanticsMap.put(semanticVersion.get(), descrFields);
-                    Object caseSigConcept = semanticVersion.get().fieldValues().get(indexCaseSig);
-                    Object langConcept = semanticVersion.get().fieldValues().get(indexLang);
+                    descriptionSemanticsMap.put(semanticEntityVersionLatest.get(), descrFields);
+                    Object caseSigConcept = semanticEntityVersionLatest.get().fieldValues().get(indexCaseSig);
+                    Object langConcept = semanticEntityVersionLatest.get().fieldValues().get(indexLang);
 
                     // e.g. FQN - English | Case Sensitive
-                    String casSigText = viewCalculator.getRegularDescriptionText(((EntityFacade) caseSigConcept).nid())
-                            .orElse(String.valueOf(((EntityFacade) caseSigConcept).nid()));
-                    String langText = viewCalculator.getRegularDescriptionText(((EntityFacade) langConcept).nid())
-                            .orElse(String.valueOf(((EntityFacade) langConcept).nid()));
+                    String casSigText = viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(((EntityFacade) caseSigConcept).nid());
+                    String langText = viewCalculator.languageCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(((EntityFacade) langConcept).nid());
 
                     descrFields.add(casSigText);
                     descrFields.add(langText);
