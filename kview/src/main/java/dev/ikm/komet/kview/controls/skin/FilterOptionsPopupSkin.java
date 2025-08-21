@@ -61,7 +61,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
     private static final List<String> ALL_STATES = StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN.toEnumSet().stream().map(s -> s.name()).toList();
 
-    private final FilterOptions defaultFilterOptions = new FilterOptions();
+    private final FilterOptions inheritedFilterOptions = new FilterOptions();
     private final ObjectProperty<FilterOptions> currentFilterOptionsProperty = new SimpleObjectProperty<>() {
         @Override
         protected void invalidated() {
@@ -72,7 +72,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 }
                 // Keep button always enabled, though it won't do anything, since filterOptions are already passed to the control
 //                applyButton.setDisable(control.getFilterOptions().equals(filterOptions));
-                revertButton.setDisable(defaultFilterOptions.equals(filterOptions));
+                revertButton.setDisable(inheritedFilterOptions.equals(filterOptions));
             }
         }
     };
@@ -191,7 +191,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                     pane.setOption(optionForItem);
                 });
         updateCurrentFilterOptions();
-        control.getProperties().put(DEFAULT_OPTIONS_KEY, defaultFilterOptions.equals(control.getFilterOptions()));
+        control.getProperties().put(DEFAULT_OPTIONS_KEY, inheritedFilterOptions.equals(control.getFilterOptions()));
         updating = false;
     }
 
@@ -262,11 +262,10 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         }
 
         // status: all descendants of Status
-        option = control.getInitialFilterOptions().getStatus();
+        option = control.getInheritedFilterOptions().getStatus();
         setAvailableOptions(option, ALL_STATES); //ACTIVE, INACTIVE, WITHDRAWN
         FilterTitledPane statusFilterTitledPane = setupTitledPane(option);
-        //
-        setInitialOptions(option);
+        setInheritedOptions(option);
 
         // module: all descendants of Module
         option = filterOptions.getModule();
@@ -275,10 +274,10 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         setDefaultOptions(option);
 
         // path: all descendants of Path
-        option = control.getInitialFilterOptions().getPath();
+        option = control.getInheritedFilterOptions().getPath();
         setAvailableOptions(option, getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath()));
         FilterTitledPane pathFilterTitledPane = setupTitledPane(option);
-        setInitialOptions(option);
+        setInheritedOptions(option);
 
         // language: all descendants of Model concept->Tinkar Model concept->Language
         option = filterOptions.getLanguage();
@@ -306,7 +305,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
         option = filterOptions.getDate();
         FilterTitledPane dateFilterTitledPane = setupTitledPane(option);
-        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear(); // latest has no selected options
+        inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().clear(); // latest has no selected options
 
         if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.NAVIGATOR) {
             accordion.getPanes().setAll(
@@ -334,8 +333,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         }
 
         // initially, set default options
-        currentFilterOptionsProperty.set(defaultFilterOptions);
-        setupFilter(defaultFilterOptions);
+        currentFilterOptionsProperty.set(inheritedFilterOptions);
+        setupFilter(inheritedFilterOptions);
         updateCurrentFilterOptions();
     }
 
@@ -353,32 +352,32 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         option.availableOptions().addAll(options);
     }
 
-    private void setInitialOptions(FilterOptions.Option option) {
-        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
-        defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
+    private void setInheritedOptions(FilterOptions.Option option) {
+        inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
+        inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
         if (option.isMultiSelectionAllowed()) {
-            defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.selectedOptions());
+            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.selectedOptions());
         } else {
-            defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
+            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
         }
-        defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
+        inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
     }
 
     private void setDefaultOptions(FilterOptions.Option option) {
-        defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
+        inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
         if (option.isMultiSelectionAllowed()) {
-            defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.availableOptions());
+            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.availableOptions());
         } else {
-            defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
+            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
         }
-        defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
-        if (defaultFilterOptions.getOptionForItem(option.item()).selectedOptions().containsAll(
-                defaultFilterOptions.getOptionForItem(option.item()).availableOptions())) {
+        inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
+        if (inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().containsAll(
+                inheritedFilterOptions.getOptionForItem(option.item()).availableOptions())) {
             //FIXME this is a temporary work around, the custom control should be refactored to not use a text property
             // for the default options but to instead inherit from the parent coordinate menu
-            defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(List.of("All"));
+            inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(List.of("All"));
         } else {
-            defaultFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
+            inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
         }
     }
 

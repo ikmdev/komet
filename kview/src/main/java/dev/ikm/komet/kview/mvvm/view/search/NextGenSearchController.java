@@ -187,7 +187,7 @@ public class NextGenSearchController {
         TinkExecutor.threadPool().execute(TaskWrapper.make(new FilterMenuTask(getViewProperties()),
                 (FilterOptions filterOptions) ->
                         FXUtils.runOnFxThread(() ->
-                            filterOptionsPopup.initialFilterOptionsProperty().setValue(filterOptions))
+                            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(filterOptions))
         ));
 
         root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
