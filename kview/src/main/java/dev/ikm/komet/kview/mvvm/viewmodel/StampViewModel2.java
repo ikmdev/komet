@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
@@ -30,6 +31,7 @@ import java.util.*;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.CURRENT_STAMP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.FORM_TITLE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
@@ -38,8 +40,10 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.TIME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.TIME_TEXT;
 
 public class StampViewModel2 extends FormViewModel {
+    public static final String INITIAL_FORM_TITLE = "Latest Concept Version";
     /**
      * Provide the standard Confirm Clear dialog title for use in other classes
      */
@@ -68,11 +72,14 @@ public class StampViewModel2 extends FormViewModel {
 
         STATUSES,
         MODULES,
-        PATHS
+        PATHS,
+
+        FORM_TITLE,
+        TIME_TEXT
     }
 
     public StampViewModel2() {
-        super();
+        // Add Properties
         addProperty(CURRENT_STAMP, (Stamp) null);
         addProperty(STATUS, State.ACTIVE);
         addProperty(AUTHOR, (ComponentWithNid) null);
@@ -92,6 +99,9 @@ public class StampViewModel2 extends FormViewModel {
         addProperty(MODULES, Collections.emptyList(), true);
         addProperty(PATHS, Collections.emptyList(), true);
         addProperty(STATUSES, Collections.emptyList(), true);
+
+        addProperty(FORM_TITLE, INITIAL_FORM_TITLE);
+        addProperty(TIME_TEXT, "");
 
         // run validators when the following properties change.
         doOnChange(this::validate, STATUS, MODULE, PATH);
@@ -134,6 +144,8 @@ public class StampViewModel2 extends FormViewModel {
         // NOTE: value property must be the same object in the combobox items.
         loadStampValuesFromDB(modules, paths); // MODULE
 
+        setPropertyValue(TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
+
         save(true);
     }
 
@@ -170,6 +182,14 @@ public class StampViewModel2 extends FormViewModel {
                 && stampEntity.module() == getPropertyValue(MODULE);
 
         setPropertyValue(IS_STAMP_VALUES_THE_SAME, same);
+
+        if (same) {
+            setPropertyValue(FORM_TITLE, INITIAL_FORM_TITLE);
+            setPropertyValue(TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
+        } else {
+            setPropertyValue(FORM_TITLE, "New Concept Version");
+            setPropertyValue(TIME_TEXT, "Uncommitted");
+        }
 
         return same;
     }
@@ -244,6 +264,7 @@ public class StampViewModel2 extends FormViewModel {
         // Load the new STAMP and store the new initial values
         loadStamp();
         save(true);
+        updateIsStampValuesChanged();
 
         return this;
     }

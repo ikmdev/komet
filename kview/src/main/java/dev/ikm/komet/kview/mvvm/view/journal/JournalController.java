@@ -431,9 +431,9 @@ public class JournalController {
         this.nodePreferences = nodePreferences;
         this.windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
 
-        ViewCalculator viewCalculator = windowView.calculator();
+        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
 
-        TinkExecutor.threadPool().execute(TaskWrapper.make( new ViewMenuTask(viewCalculator, windowView, "JournalController"),
+        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowView, "JournalController"),
                 (List<MenuItem> result) -> {
                     FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
                 }));
@@ -448,7 +448,6 @@ public class JournalController {
                             })
             ));
         });
-
     }
 
     private void onMouseClickedOnDesktopSurfacePane(MouseEvent mouseEvent) {
@@ -1059,9 +1058,6 @@ public class JournalController {
         }
 
         ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.createConceptWindow");
-        EditCoordinateRecord editCoordinateRecord = viewProperties.calculator().viewCoordinateRecord().editCoordinate();
-
-
 
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
                 journalTopic, conceptFacade, viewProperties, preferences);
