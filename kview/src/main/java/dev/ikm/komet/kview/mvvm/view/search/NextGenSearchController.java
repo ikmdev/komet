@@ -99,6 +99,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -130,6 +131,7 @@ public class NextGenSearchController {
 
     private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
 
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy");
 
     @FXML
     private Pane root;
@@ -315,6 +317,16 @@ public class NextGenSearchController {
 
                 filterOptions.getPath().selectedOptions().clear();
                 filterOptions.getPath().selectedOptions().addAll(defaultSelectedPaths);
+
+                // TIME
+                filterOptions.getDate().defaultOptions().clear();
+                filterOptions.getDate().selectedOptions().clear();
+
+                Long time = observableStampCoordinate.timeProperty().getValue();
+                Date date = new Date(time);
+
+                filterOptions.getDate().selectedOptions().add(simpleDateFormat.format(date));
+                filterOptions.getDate().defaultOptions().addAll(filterOptions.getDate().selectedOptions());
             } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
                 // populate the LANGUAGE
                 filterOptions.getLanguage().defaultOptions().clear();
