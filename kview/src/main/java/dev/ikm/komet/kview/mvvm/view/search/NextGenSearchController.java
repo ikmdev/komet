@@ -26,6 +26,7 @@ import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
+import static dev.ikm.tinkar.terms.TinkarTerm.MODULE;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.search.SearchPanelController;
@@ -51,6 +52,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -63,6 +65,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -250,19 +253,8 @@ public class NextGenSearchController {
                     Date latest = new Date();
                     getViewProperties().nodeView().stampCoordinate().timeProperty().set(latest.getTime());
                 }
-//                if (newFilterOptions.getModule() != null) {
-//                    getViewProperties().calculator().descendentsOf(MODULE).intStream().boxed().forEach(nid -> {
-//                        String moduleStr =  getViewProperties().calculator().getPreferredDescriptionStringOrNid(nid);
-//                        ConceptFacade moduleConcept = moduleNamesMap.get(moduleStr);
-//                        if (!newFilterOptions.getModule().selectedOptions().contains(moduleStr)) {
-//                            Platform.runLater(() -> getViewProperties().nodeView().stampCoordinate().moduleSpecificationsProperty().remove(moduleConcept));
-//                        } else {
-//                            Platform.runLater(() -> getViewProperties().nodeView().stampCoordinate().moduleSpecificationsProperty().add(moduleConcept));
-//                        }
-//                    });
-//                }
 
-                //TODO Type, *Module*, Language, Description Type, Kind of, Membership, Sort By
+                //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
             }
             doSearch(new ActionEvent(null, null));
         });
@@ -279,25 +271,6 @@ public class NextGenSearchController {
             filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
             doSearch(new ActionEvent(null, null));
         });
-
-        //TODO subscribe to overriddenBasedChanged...???
-
-        //getViewProperties().nodeView().
-//        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(getViewProperties().nodeView().getValue());
-//        FxGet.pathCoordinates(viewCalculator).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change ->
-//            updateFilterOptionsPopup()
-//        );
-
-        // listen to changes to the current overrideable view (nodeView)
-//        childSubscription = getViewProperties().nodeView().subscribe((oldVC, newVC) -> {
-//            System.out.println(newVC);
-//            //doSearch(new ActionEvent(null, null));
-//        });
-//        stampSubscription = getViewProperties().nodeView().stampCoordinate().pathConceptProperty().subscribe((oldVC, newVC) -> {
-//            System.out.println(newVC);
-//            doSearch(new ActionEvent(null, null));
-//        });
-
     }
 
     private FilterOptions loadFilterOptions() {
