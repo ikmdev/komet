@@ -76,8 +76,9 @@ import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
+import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.events.EvtBus;
@@ -430,12 +431,23 @@ public class JournalController {
         this.nodePreferences = nodePreferences;
         this.windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
 
-        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
+        ViewCalculator viewCalculator = windowView.calculator();
 
-        TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowView, "JournalController"),
+        TinkExecutor.threadPool().execute(TaskWrapper.make( new ViewMenuTask(viewCalculator, windowView, "JournalController"),
                 (List<MenuItem> result) -> {
                     FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
                 }));
+
+        windowSettings.getView().addListener((observable, oldValue, newValue) -> {
+            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowView, "JournalController"),
+                    (List<MenuItem> result) ->
+                            FXUtils.runOnFxThread(() -> {
+                                var menuItems = windowCoordinates.getItems();
+                                menuItems.clear();
+                                menuItems.addAll(result);
+                            })
+            ));
+        });
 
     }
 
@@ -1047,6 +1059,9 @@ public class JournalController {
         }
 
         ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.createConceptWindow");
+        EditCoordinateRecord editCoordinateRecord = viewProperties.calculator().viewCoordinateRecord().editCoordinate();
+
+
 
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
                 journalTopic, conceptFacade, viewProperties, preferences);
