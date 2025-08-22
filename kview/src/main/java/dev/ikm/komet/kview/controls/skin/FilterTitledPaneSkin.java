@@ -312,6 +312,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                 selectedOption.setText(getOptionText(currentOption));
             }
         }));
+
     }
 
     private void setupToggleBox(FilterOptions.Option currentOption) {

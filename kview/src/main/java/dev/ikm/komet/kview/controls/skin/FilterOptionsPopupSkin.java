@@ -35,7 +35,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -253,7 +252,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         FilterTitledPane typeFilterTitledPane = setupTitledPane(option);
         if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.SEARCH) {
             setInheritedOptions(option);
-            System.out.println("meh");
         }
 
         // header: All first children of root

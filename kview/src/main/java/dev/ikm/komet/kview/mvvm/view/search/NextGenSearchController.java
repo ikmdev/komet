@@ -156,10 +156,6 @@ public class NextGenSearchController {
 
     private Subscription parentSubscription;
 
-    private Subscription childSubscription;
-
-    private Subscription stampSubscription;
-
     private static final List<String> ALL_STATES = StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN.toEnumSet().stream().map(s -> s.name()).toList();
 
 
@@ -653,12 +649,6 @@ public class NextGenSearchController {
     public void cleanup() {
         if (parentSubscription != null) {
             parentSubscription.unsubscribe();
-        }
-        if (childSubscription != null) {
-            childSubscription.unsubscribe();
-        }
-        if (stampSubscription != null) {
-            stampSubscription.unsubscribe();
         }
     }
 
