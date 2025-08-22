@@ -25,6 +25,7 @@ import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.MODULE;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
@@ -323,9 +324,15 @@ public class NextGenSearchController {
                 filterOptions.getDate().selectedOptions().clear();
 
                 Long time = observableStampCoordinate.timeProperty().getValue();
-                Date date = new Date(time);
-
-                filterOptions.getDate().selectedOptions().add(simpleDateFormat.format(date));
+                if (time.equals(Long.MAX_VALUE)) {
+                    filterOptions.getDate().selectedOptions().add("Latest");
+                } else if (time.equals(PREMUNDANE_TIME)) {
+                    //FIXME the custom control doesn't support premundane yet
+                    filterOptions.getDate().selectedOptions().add("Latest");
+                } else {
+                    Date date = new Date(time);
+                    filterOptions.getDate().selectedOptions().add(simpleDateFormat.format(date));
+                }
                 filterOptions.getDate().defaultOptions().addAll(filterOptions.getDate().selectedOptions());
             } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
                 // populate the LANGUAGE
