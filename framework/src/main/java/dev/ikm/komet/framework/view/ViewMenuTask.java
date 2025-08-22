@@ -687,12 +687,17 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
     @Override
     protected List<MenuItem> compute() throws Exception {
         List<MenuItem> menuItems = new ArrayList<>();
-        makeCoordinateDisplayMenu(viewCalculator,
-                menuItems,
-                observableCoordinate);
-        updateTitle("Updated View Menu");
-        updateMessage("In " + durationString());
-        LOG.info("Updated View Menu in " + durationString());
+        try {
+            makeCoordinateDisplayMenu(viewCalculator,
+                    menuItems,
+                    observableCoordinate);
+            updateTitle("Updated View Menu");
+            updateMessage("In " + durationString());
+            LOG.info("Updated View Menu in " + durationString());
+        } catch (Exception e) {
+            LOG.error("Exception building view menu", e);
+            throw e;
+        }
         return menuItems;
     }
 
