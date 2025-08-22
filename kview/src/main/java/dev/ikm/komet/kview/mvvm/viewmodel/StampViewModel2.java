@@ -144,7 +144,7 @@ public class StampViewModel2 extends FormViewModel {
         // NOTE: value property must be the same object in the combobox items.
         loadStampValuesFromDB(modules, paths); // MODULE
 
-        setPropertyValue(TIME_TEXT, TimeUtils.parseDateText(getPropertyValue(TIME)));
+        setPropertyValue(TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
 
         save(true);
     }
@@ -185,7 +185,7 @@ public class StampViewModel2 extends FormViewModel {
 
         if (same) {
             setPropertyValue(FORM_TITLE, INITIAL_FORM_TITLE);
-            setPropertyValue(TIME_TEXT, TimeUtils.parseDateText(getPropertyValue(TIME)));
+            setPropertyValue(TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
         } else {
             setPropertyValue(FORM_TITLE, "New Concept Version");
             setPropertyValue(TIME_TEXT, "Uncommitted");

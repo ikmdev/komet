@@ -21,7 +21,6 @@ import static dev.ikm.komet.kview.fxutils.MenuHelper.*;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.*;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.*;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.*;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
@@ -62,7 +61,6 @@ import dev.ikm.tinkar.events.*;
 import dev.ikm.tinkar.terms.*;
 import javafx.application.*;
 import javafx.beans.*;
-import javafx.beans.Observable;
 import javafx.beans.property.*;
 import javafx.collections.*;
 import javafx.css.*;
@@ -96,9 +94,6 @@ public class DetailsController  {
     private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
 
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
-
-    @FXML
-    private Pane stampContainer;
 
     @FXML
     private MenuButton coordinatesMenuButton;
@@ -143,24 +138,7 @@ public class DetailsController  {
     private PublicIDControl identifierControl;
 
     @FXML
-    private Label lastUpdatedLabel;
-
-    @FXML
-    private Label authorLabel;
-
-    @FXML
-    private Label moduleLabel;
-
-    @FXML
-    private Label pathLabel;
-
-    @FXML
-    private Label statusLabel;
-
-    /**
-     * Applied to lastUpdatedText component.
-     */
-    private Tooltip authorTooltip = new Tooltip();
+    private StampViewControl stampViewControl;
 
     @FXML
     private ScrollPane conceptContentScrollPane;
@@ -297,10 +275,6 @@ public class DetailsController  {
      */
     private ViewCalculatorWithCache viewCalculatorWithCache;
 
-    private final EventHandler<MouseEvent> mouseFilterPressedOnScene = this::onMouseFilterPressedOnScene;
-
-    private BooleanProperty stampSelected;
-
     public DetailsController() {
     }
 
@@ -310,8 +284,8 @@ public class DetailsController  {
 
     @FXML
     public void initialize() {
-        stampSelected = new SimpleBooleanProperty(false);
-        stampSelected.subscribe(this::onStampSelectionChanged);
+        stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
+        stampViewControl.setParentContainer(detailsOuterBorderPane);
 
         identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
             // query all available memberships (semantics having the purpose as 'membership', and no fields)
@@ -356,7 +330,6 @@ public class DetailsController  {
                     contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
         });
 
-        Tooltip.install(lastUpdatedLabel, authorTooltip);
         Tooltip.install(fqnTitleText, conceptNameTooltip);
 
         clearView();
@@ -520,29 +493,12 @@ public class DetailsController  {
         EvtBusFactory.getDefaultEvtBus().subscribe(conceptViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
 
-        stampContainer.sceneProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                if (stampContainer.getScene() != null) {
-                    stampContainer.getScene().addEventFilter(MouseEvent.MOUSE_PRESSED, mouseFilterPressedOnScene);
-                    stampContainer.sceneProperty().removeListener(this);
-                }
-            }
-        });
-
         conceptViewModel.getViewProperties().nodeView().addListener((obs, oldViewCoord, newViewCoord) -> {
             if (newViewCoord != null) {
                 LOG.info("refresh concept window when view coordinate has changed." + newViewCoord);
                 updateView();
             }
         });
-    }
-
-    private void onMouseFilterPressedOnScene(MouseEvent mouseEvent) {
-        Point2D localMousePos = detailsOuterBorderPane.sceneToLocal(mouseEvent.getSceneX(), mouseEvent.getSceneY());
-        if (!detailsOuterBorderPane.contains(localMousePos)) {
-            stampSelected.set(false);
-        }
     }
 
     /**
@@ -888,27 +844,23 @@ public class DetailsController  {
 
         // Status
         String statusText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.state(), conceptViewModel.getViewProperties());
-        statusLabel.setText(statusText);
+        stampViewControl.setStatus(statusText);
 
         // Module
         String moduleText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.module(), conceptViewModel.getViewProperties());
-        moduleLabel.setText(moduleText);
+        stampViewControl.setModule(moduleText);
 
         // Author
         String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.author(), conceptViewModel.getViewProperties());
-        authorLabel.setText(authorDescription);
+        stampViewControl.setAuthor(authorDescription);
 
         // Path
         String pathText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.path(), conceptViewModel.getViewProperties());
-        pathLabel.setText(pathText);
+        stampViewControl.setPath(pathText);
 
         // Latest update time
         long stampTime = stamp.time();
-        lastUpdatedLabel.setText(TimeUtils.parseDateText(stampTime));
-
-        // Author tooltip
-        authorTooltip.setText(stamp.author().description());
-
+        stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
     }
 
     /// Show the public ID
@@ -1381,13 +1333,10 @@ public class DetailsController  {
     public void clearView() {
         definitionTextField.clear();
         identifierControl.setPublicId("");
-        lastUpdatedLabel.setText("");
         fqnAddDateLabel.setText("");
-        authorLabel.setText("");
-        moduleLabel.setText("");
-        pathLabel.setText("");
-        statusLabel.setText("");
-        authorTooltip.setText("");
+
+        stampViewControl.clear();
+
         notAvailInferredAxiomLabel.setVisible(true);
         notAvailStatedAxiomLabel.setVisible(true);
         fqnContainer.getChildren().clear();
@@ -1407,26 +1356,14 @@ public class DetailsController  {
         return conceptHeaderControlToolBarHbox;
     }
 
-    @FXML
-    private void onMousePressedOnStamp(MouseEvent mouseEvent) {
-        stampSelected.setValue(!stampSelected.get());
-    }
-
     private void onStampSelectionChanged() {
-        boolean isSelected = stampSelected.get();
-
-        stampContainer.pseudoClassStateChanged(STAMP_SELECTED, isSelected);
-
-        if (isSelected) {
-            eventBus.publish(conceptTopic, new AddStampEvent(stampContainer,
-                    AddStampEvent.ANY));
+        if (stampViewControl.isSelected()) {
+            eventBus.publish(conceptTopic, new AddStampEvent(stampViewControl, AddStampEvent.ANY));
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
-
-
         } else {
-            eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(stampContainer, CLOSE_PROPERTIES));
+            eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
         }
     }
 
@@ -1578,33 +1515,27 @@ public class DetailsController  {
 
     private void updateUIStamp(ViewModel stampViewModel) {
         long time = stampViewModel.getValue(TIME);
-        DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("yyyy-MMM-dd HH:mm:ss");
-        Instant stampInstance = Instant.ofEpochSecond(time/1000);
-        String lastUpdated = DATE_TIME_FORMATTER.format(stampInstance);
-
-        lastUpdatedLabel.setText(lastUpdated);
+        stampViewControl.setLastUpdated(TimeUtils.toDateString(time));
 
         EntityProxy.Concept authorConcept = stampViewModel.getValue(AUTHOR);
         if (authorConcept == null) {
             LOG.warn("Stamp should have an Author and doesn't");
             return;
         }
-        String authorDescription = conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(authorConcept.nid());
-        authorLabel.setText(authorDescription);
+        stampViewControl.setAuthor(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(authorConcept, conceptViewModel.getViewProperties()));
 
         ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
             LOG.warn("Must select a valid module for Stamp.");
             return;
         }
-        String moduleDescr = conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
-        moduleLabel.setText(moduleDescr);
+        stampViewControl.setModule(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(moduleEntity, conceptViewModel.getViewProperties()));
+
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
-        String pathDescr = conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
-        pathLabel.setText(pathDescr);
+        stampViewControl.setPath(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(pathEntity, conceptViewModel.getViewProperties()));
+
         State status = stampViewModel.getValue(STATUS);
-        String statusMsg = status == null ? "Active" : conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
-        statusLabel.setText(statusMsg);
+        stampViewControl.setStatus(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(status, conceptViewModel.getViewProperties()));
     }
 
     public void compactSizeWindow() {
