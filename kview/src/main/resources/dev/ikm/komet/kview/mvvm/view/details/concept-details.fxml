@@ -41,6 +41,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
+<?import dev.ikm.komet.kview.controls.StampViewControl?>
 <BorderPane fx:id="detailsOuterBorderPane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane">
@@ -188,31 +189,8 @@
                            </TextField>
                         </HBox>
                         <PublicIDControl fx:id="identifierControl" GridPane.columnSpan="2" GridPane.rowIndex="2" />
-                        <StackPane fx:id="stampContainer" onMousePressed="#onMousePressedOnStamp" prefWidth="208.0" styleClass="stamp-container" GridPane.columnIndex="2" GridPane.rowSpan="3">
-                           <VBox prefWidth="208.0" spacing="2.0">
-                              <HBox>
-                                 <Text styleClass="stamp-text" text="Status: " />
-                                 <Label fx:id="statusLabel" styleClass="stamp-label" />
-                              </HBox>
-                              <HBox>
-                                 <Text styleClass="stamp-text" text="Last Updated: " />
-                                 <Label fx:id="lastUpdatedLabel" styleClass="stamp-label" />
-                              </HBox>
-                              <HBox>
-                                 <children>
-                                    <Text styleClass="stamp-text" strokeType="OUTSIDE" strokeWidth="0.0" text="Author: " />
-                                    <Label fx:id="authorLabel" text="Label" />
-                                 </children>
-                              </HBox>
-                              <HBox>
-                                 <Text styleClass="stamp-text" text="Module: " />
-                                 <Label fx:id="moduleLabel" styleClass="stamp-label" />
-                              </HBox>
-                              <HBox>
-                                 <Text styleClass="stamp-text" text="Path: " />
-                                 <Label fx:id="pathLabel" styleClass="stamp-label" />
-                              </HBox>
-                           </VBox>
+                        <StackPane fx:id="stampContainer" prefWidth="208.0" styleClass="stamp-container" GridPane.columnIndex="2" GridPane.rowSpan="3">
+                           <StampViewControl fx:id="stampViewControl" prefWidth="208" />
                            <Button contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#popupStampEdit" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0" StackPane.alignment="TOP_RIGHT">
                               <graphic>
                                  <Region styleClass="hamburger" />

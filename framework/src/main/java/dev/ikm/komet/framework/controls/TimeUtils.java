@@ -60,7 +60,13 @@ public class TimeUtils {
         return offsetdatetime;
     }
 
-    public static String parseDateText(long stampTime) {
+    /**
+     * Converts a date represented using a long to a human readable String.
+     *
+     * @param stampTime the time represented as long
+     * @return a human readable String
+     */
+    public static String toDateString(long stampTime) {
         if (!(stampTime == PREMUNDANE_TIME)) {
             Instant stampInstance = Instant.ofEpochSecond(stampTime / 1000);
             return DATE_TIME_FORMATTER.format(stampInstance);

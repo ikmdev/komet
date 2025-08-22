@@ -1,0 +1,14 @@
+.stamp-view-control .stamp-container {
+    -fx-border-width: 2px;
+    -fx-border-color: transparent;
+    -fx-border-radius: 3px;
+
+    -fx-padding: 5px;
+}
+
+.stamp-view-control:selected .stamp-container{
+    -fx-background-color: #f2faee;
+    -fx-background-radius: 3px;
+
+    -fx-border-color: #9ae281;
+}
