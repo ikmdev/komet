@@ -38,6 +38,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
+<?import dev.ikm.komet.kview.controls.StampViewControl?>
 <BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
@@ -307,96 +308,26 @@
                      <right>
                         <AnchorPane prefWidth="210.0" BorderPane.alignment="CENTER">
                            <BorderPane.margin>
-                              <Insets />
+                              <Insets top="5" bottom="5" right="5"/>
                            </BorderPane.margin>
-                           <children>
-                              <VBox prefWidth="210.0">
-                                 <children>
-                                    <FlowPane>
-                                       <children>
-                                          <Label styleClass="stamp-text" text="Status:">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Label>
-                                          <Text fx:id="statusText" strokeType="OUTSIDE" strokeWidth="0.0">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Text>
-                                       </children>
-                                    </FlowPane>
-                                    <FlowPane>
-                                       <children>
-                                          <Label minWidth="-Infinity" styleClass="stamp-text" text="Last Updated:">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Label>
-                                          <Text fx:id="lastUpdatedText" strokeType="OUTSIDE" strokeWidth="0.0">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Text>
-                                       </children>
-                                    </FlowPane>
-                                    <FlowPane>
-                                       <children>
-                                          <Label styleClass="stamp-text" text="Module:">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Label>
-                                          <Text fx:id="moduleText" strokeType="OUTSIDE" strokeWidth="0.0">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Text>
-                                       </children>
-                                    </FlowPane>
-                                    <FlowPane>
-                                       <children>
-                                          <Label styleClass="stamp-text" text="Path:">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Label>
-                                          <Text fx:id="pathText" strokeType="OUTSIDE" strokeWidth="0.0" />
-                                       </children>
-                                    </FlowPane>
-                                    <FlowPane prefHeight="43.0" prefWidth="202.0">
-                                       <children>
-                                          <Label styleClass="stamp-text" text="Origination:">
-                                             <font>
-                                                <Font name="Open Sans Regular" size="12.0" />
-                                             </font>
-                                          </Label>
-                                          <Text fx:id="originationText" strokeType="OUTSIDE" strokeWidth="0.0" />
-                                       </children>
-                                    </FlowPane>
-                                 </children>
-                                 <padding>
-                                    <Insets left="8.0" top="8.0" />
-                                 </padding>
-                              </VBox>
-                              <Button contentDisplay="GRAPHIC_ONLY" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#popupStampEdit" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" text="Button" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0">
-                                 <graphic>
-                                    <Region styleClass="hamburger" />
-                                 </graphic>
-                                 <contextMenu>
-                                    <ContextMenu styleClass="kview-context-menu">
-                                       <items>
-                                          <MenuItem mnemonicParsing="false" styleClass="menu-header" text="EDIT STAMP" />
-                                          <SeparatorMenuItem mnemonicParsing="false" />
-                                          <Menu mnemonicParsing="false" text="Status" />
-                                          <Menu mnemonicParsing="false" text="Path" />
-                                          <Menu mnemonicParsing="false" text="Module" />
-                                          <SeparatorMenuItem mnemonicParsing="false" />
-                                       </items>
-                                    </ContextMenu>
-                                 </contextMenu>
-                              </Button>
-                           </children>
+                           <StampViewControl fx:id="stampViewControl" prefWidth="210" />
+                           <Button contentDisplay="GRAPHIC_ONLY" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#popupStampEdit" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" text="Button" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0">
+                              <graphic>
+                                 <Region styleClass="hamburger" />
+                              </graphic>
+                              <contextMenu>
+                                 <ContextMenu styleClass="kview-context-menu">
+                                    <items>
+                                       <MenuItem mnemonicParsing="false" styleClass="menu-header" text="EDIT STAMP" />
+                                       <SeparatorMenuItem mnemonicParsing="false" />
+                                       <Menu mnemonicParsing="false" text="Status" />
+                                       <Menu mnemonicParsing="false" text="Path" />
+                                       <Menu mnemonicParsing="false" text="Module" />
+                                       <SeparatorMenuItem mnemonicParsing="false" />
+                                    </items>
+                                 </ContextMenu>
+                              </contextMenu>
+                           </Button>
                         </AnchorPane>
                      </right>
                   </BorderPane>
