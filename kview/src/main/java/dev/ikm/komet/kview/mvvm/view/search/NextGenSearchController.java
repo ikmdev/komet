@@ -26,12 +26,9 @@ import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.MODULE;
-import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.search.SearchPanelController;
-import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ObservableCoordinate;
 import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
 import dev.ikm.komet.framework.view.ObservableStampCoordinate;
@@ -40,32 +37,24 @@ import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
-import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
-import dev.ikm.komet.kview.tasks.FilterMenuTask;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
-import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
@@ -74,11 +63,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
-import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableSet;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -112,7 +97,6 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -123,7 +107,6 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 
 public class NextGenSearchController {
@@ -144,7 +127,6 @@ public class NextGenSearchController {
 
     private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
 
-    //private static Map<String, ConceptFacade> moduleNamesMap = new HashMap<>();
 
     @FXML
     private Pane root;
@@ -213,14 +195,7 @@ public class NextGenSearchController {
 
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
 
-        // initialize the FilterOptions on the first load of the Next Gen Search
-//        TinkExecutor.threadPool().execute(TaskWrapper.make(new FilterMenuTask(getViewProperties()),
-//                (FilterOptions filterOptions) ->
-//                        FXUtils.runOnFxThread(() ->
-//                            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(filterOptions))
-//        ));
-
-        //experimental... doing on the same thread:
+        // initialize the filter options
         filterOptionsPopup.inheritedFilterOptionsProperty().setValue(loadFilterOptions());
 
         root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
@@ -242,12 +217,7 @@ public class NextGenSearchController {
         filterOptionsPopup.showingProperty().subscribe(showing ->
                 filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
 
-        // create a map strings of module names and concept facades
-//        getViewProperties().calculator().descendentsOf(MODULE).intStream().boxed().forEach(nid -> {
-//            moduleNamesMap.put(getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(nid),
-//                    Entity.getFast(nid));
-//        });
-
+        // listen for changes to the filter options
         ChangeListener<FilterOptions> changeListener = ((obs, oldFilterOptions, newFilterOptions) -> {
             if (newFilterOptions != null) {
                 if (!newFilterOptions.getStatus().selectedOptions().isEmpty()) {
@@ -305,16 +275,9 @@ public class NextGenSearchController {
         // listen to changes to the parent of the current overrideable view
         parentSubscription = getViewProperties().parentView().subscribe((oldValue, newValue) -> {
             filterOptionsPopup.filterOptionsProperty().removeListener(changeListener);
-            System.out.println(newValue);
-//            TinkExecutor.threadPool().execute(TaskWrapper.make(new FilterMenuTask(getViewProperties()),
-//                    (FilterOptions filterOptions) ->
-//                            FXUtils.runOnFxThread(() ->
-//                                    filterOptionsPopup.inheritedFilterOptionsProperty().setValue(filterOptions))
-//            ));
-            // experimental: try on the same thread...
             filterOptionsPopup.inheritedFilterOptionsProperty().setValue(loadFilterOptions());
-
             filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
+            doSearch(new ActionEvent(null, null));
         });
 
         //TODO subscribe to overriddenBasedChanged...???
@@ -335,11 +298,6 @@ public class NextGenSearchController {
 //            doSearch(new ActionEvent(null, null));
 //        });
 
-    }
-
-    private void updateFilterOptionsPopup() {
-        //TODO update the pop up window
-        System.out.println("parent!");
     }
 
     private FilterOptions loadFilterOptions() {
@@ -397,19 +355,27 @@ public class NextGenSearchController {
                 filterOptions.getLanguage().selectedOptions().clear();
                 filterOptions.getLanguage().selectedOptions().addAll(filterOptions.getLanguage().defaultOptions());
 
-                // which one is it???
-                observableLanguageCoordinate.descriptionPatternPreferenceListProperty();
-                observableLanguageCoordinate.getLanguageCoordinate().descriptionPatternPreferenceArray();
-
+                //FIXME description choices don't yet align with parent/classic menu, more discussion needs to happen on
+                // how we want to fix this.
+                filterOptions.getDescription().selectedOptions().add("All");
+                filterOptions.getDescription().defaultOptions().addAll(filterOptions.getDescription().selectedOptions());
             }
-            //TODO Type, Description Type, Kind of, Membership, Sort By
         }
+        // set values for 'Kind Of'
         filterOptions.getKindOf().defaultOptions().clear();
         filterOptions.getKindOf().defaultOptions().add("All");
         filterOptions.getKindOf().selectedOptions().addAll(filterOptions.getKindOf().defaultOptions());
 
-        Instant end = Instant.now();
-        LOG.info("----- LOAD FILTER OPTIONS DURATION = " + Duration.between(start, end) + " -----");
+        // membership
+        filterOptions.getMembership().defaultOptions().clear();
+        filterOptions.getMembership().defaultOptions().add("All");
+        filterOptions.getMembership().selectedOptions().addAll(filterOptions.getMembership().defaultOptions());
+
+        // sort by
+        filterOptions.getSortBy().defaultOptions().clear();
+
+        //TODO Description Type
+
         return filterOptions;
     }
 

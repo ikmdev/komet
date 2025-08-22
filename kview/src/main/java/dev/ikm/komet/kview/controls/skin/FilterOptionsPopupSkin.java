@@ -291,22 +291,22 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         FilterTitledPane languageFilterTitledPane = setupTitledPane(option);
         setInheritedOptions(option);
 
-        option = filterOptions.getDescription();
+        option = control.getInheritedFilterOptions().getDescription();
         FilterTitledPane descriptionFilterTitledPane = setupTitledPane(option);
-        setDefaultOptions(option);
+        setInheritedOptions(option);
 
         option = control.getInheritedFilterOptions().getKindOf();
         FilterTitledPane kindOfFilterTitledPane = setupTitledPane(option);
         setInheritedOptions(option);
 
-        option = filterOptions.getMembership();
+        option = control.getInheritedFilterOptions().getMembership();
         FilterTitledPane membershipFilterTitledPane = setupTitledPane(option);
-        setDefaultOptions(option);
+        setInheritedOptions(option);
 
-        option = filterOptions.getSortBy();
+        option = control.getInheritedFilterOptions().getSortBy();
         FilterTitledPane sortByFilterTitledPane = setupTitledPane(option);
         if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.SEARCH) {
-            setDefaultOptions(option);
+            setInheritedOptions(option);
         }
 
         option = filterOptions.getDate();
@@ -358,20 +358,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         option.availableOptions().addAll(options);
     }
 
-    private void setSelectedOptions(FilterOptions filterOptions) {
-
-
-
-//        inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
-//        //inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
-//        if (option.isMultiSelectionAllowed()) {
-//            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.selectedOptions());
-//        } else {
-//            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.selectedOptions().getFirst());
-//        }
-        //inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
-    }
-
     private void setInheritedOptions(FilterOptions.Option option) {
         inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
         inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
@@ -386,8 +372,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         } else {
             if (!option.selectedOptions().isEmpty()) {
                 inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.selectedOptions().getFirst());
-            } else {
-                inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
             }
         }
         inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
