@@ -48,7 +48,7 @@ import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 public class AppPages {
-    private static final Logger LOG = LoggerFactory.getLogger(AppGithub.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AppPages.class);
 
     private final App app;
 

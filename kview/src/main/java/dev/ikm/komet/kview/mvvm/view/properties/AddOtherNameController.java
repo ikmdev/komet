@@ -146,7 +146,7 @@ public class AddOtherNameController extends AbstractBasicController {
 
 
     private String getDisplayText(ConceptEntity conceptEntity) {
-        Optional<String> stringOptional = getViewProperties().calculator().getRegularDescriptionText(conceptEntity.nid());
+        Optional<String> stringOptional = getViewProperties().calculator().languageCalculator().getRegularDescriptionText(conceptEntity.nid());
         return stringOptional.orElse("");
     }
 
