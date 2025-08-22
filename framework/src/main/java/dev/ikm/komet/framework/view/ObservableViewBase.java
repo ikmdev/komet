@@ -116,7 +116,9 @@ public abstract class ObservableViewBase
     @Override
     public Iterable<ObservableLanguageCoordinateBase> languageCoordinateIterable() {
         return this.languageCoordinates;
-    }    @Override
+    }
+
+    @Override
     public ViewCalculator calculator() {
         return ViewCalculatorWithCache.getCalculator(getValue());
     }

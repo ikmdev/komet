@@ -127,21 +127,26 @@ public class ViewMenuModel {
             }
         }
 
-        //this.manifoldMenu.setTooltip();
-
         Platform.runLater(() -> {
-            ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
+            List<MenuItem> menuItems = null;
+
             if (this.coordinateMenu != null) {
-                this.coordinateMenu.getItems().clear();
-                TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, this.viewProperties.nodeView(), whichMenu),
-                        (List<MenuItem> result) -> {
-                            this.coordinateMenu.getItems().setAll(result);
-                        }));
+                menuItems = coordinateMenu.getItems();
             } else if (coordinateMenuButton != null) {
-                this.coordinateMenuButton.getItems().clear();
-                TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, this.viewProperties.nodeView(), whichMenu),
+                menuItems = coordinateMenuButton.getItems();
+            }
+
+            if (menuItems != null) {
+                ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(viewProperties.nodeView().getValue());
+                var viewMenuTask = new ViewMenuTask(viewCalculator, viewProperties.nodeView(), whichMenu);
+
+                final List<MenuItem> finalMenuItems = menuItems;
+                TinkExecutor.threadPool().execute(TaskWrapper.make(viewMenuTask,
                         (List<MenuItem> result) -> {
-                            this.coordinateMenuButton.getItems().setAll(result);
+                            Platform.runLater(() -> {
+                                finalMenuItems.clear();
+                                finalMenuItems.addAll(result);
+                            });
                         }));
             }
         });

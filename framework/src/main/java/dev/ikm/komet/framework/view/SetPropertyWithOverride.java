@@ -22,6 +22,7 @@ import javafx.collections.ObservableSet;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.function.Predicate;
 
 public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<T>
@@ -96,14 +97,28 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
         return super.remove(obj);
     }
 
+    /**
+     * Note:  cannot use the parent's overriddenProperty because doing so causes the
+     * parent property to be changed when the child property is changed
+     *
+     * @see https://openjfx.io/javadoc/21/javafx.base/javafx/collections/FXCollections.html#observableSet(java.util.Set)
+     */
     @Override
     public boolean add(T element) {
         if (!overridden) {
             overridden = true;
-            ObservableSet<T> set = FXCollections.observableSet(get());
             this.unbind();
-            boolean returnValue = set.add(element);
-            super.set(FXCollections.observableSet(get()));
+
+            // make a copy of the current set
+            HashSet<T> copiedSet = new HashSet<T>(get());
+
+            ObservableSet<T> observableSet = FXCollections.observableSet(copiedSet);
+            boolean returnValue = copiedSet.add(element);
+
+            // replace the current observable set with the newly created one, which is a copy
+            // of the parent set property
+            super.set(observableSet);
+
             return returnValue;
         }
         return super.add(element);

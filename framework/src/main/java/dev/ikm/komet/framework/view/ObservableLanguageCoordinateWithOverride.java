@@ -150,7 +150,7 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
         }
 
         if (!this.descriptionPatternPreferenceListProperty().isOverridden()) {
-            this.descriptionPatternPreferenceListProperty().setAll(this.descriptionPatternPreferenceNidList().mapToList(PatternFacade::make));
+            this.descriptionPatternPreferenceListProperty().setAll(newValue.descriptionPatternPreferenceNidList().mapToList(PatternFacade::make));
         }
 
         if (!this.dialectPatternPreferenceListProperty().isOverridden()) {
