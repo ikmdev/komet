@@ -228,3 +228,8 @@ Temporary Items
 ###################
 **.zip
 htmlReport
+
+###################
+ # Develocity
+###################
+**.develocity/

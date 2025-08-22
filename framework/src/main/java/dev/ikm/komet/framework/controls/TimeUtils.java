@@ -16,8 +16,18 @@
 package dev.ikm.komet.framework.controls;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
-public class TimeAgoCalculatorUtil {
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
+
+public class TimeUtils {
+
+    private final static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
+            .ofPattern("yyyy-MMM-dd HH:mm:ss")
+            .withLocale(Locale.getDefault())
+            .withZone(ZoneId.systemDefault());
 
     /**
      * utility method to give a readable phrase to a last edited timestamp
@@ -48,5 +58,20 @@ public class TimeAgoCalculatorUtil {
     private static OffsetDateTime getCurrentTimeByTimeZone(ZoneId zone) {
         OffsetDateTime offsetdatetime = OffsetDateTime.now();
         return offsetdatetime;
+    }
+
+    /**
+     * Converts a date represented using a long to a human readable String.
+     *
+     * @param stampTime the time represented as long
+     * @return a human readable String
+     */
+    public static String toDateString(long stampTime) {
+        if (!(stampTime == PREMUNDANE_TIME)) {
+            Instant stampInstance = Instant.ofEpochSecond(stampTime / 1000);
+            return DATE_TIME_FORMATTER.format(stampInstance);
+        } else {
+            return PREMUNDANE;
+        }
     }
 }

@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
-import static dev.ikm.komet.framework.controls.TimeAgoCalculatorUtil.calculateTimeAgoWithPeriodAndDuration;
+import static dev.ikm.komet.framework.controls.TimeUtils.calculateTimeAgoWithPeriodAndDuration;
 import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;

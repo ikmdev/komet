@@ -64,8 +64,8 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
             // Populate STAMP values
             Latest<EntityVersion> patternStamp = viewProperties.calculator().stampCalculator().latest(patternEntity);
             stampViewModel.setPropertyValue(STATUS, patternStamp.get().stamp().state())
+                    .setPropertyValue(AUTHOR, patternStamp.get().author())
                     .setPropertyValue(TIME, patternStamp.get().stamp().time())
-                    .setPropertyValue(AUTHOR, TinkarTerm.USER)
                     .setPropertyValue(MODULE, patternStamp.get().stamp().module())
                     .setPropertyValue(PATH, patternStamp.get().stamp().path())
             ;

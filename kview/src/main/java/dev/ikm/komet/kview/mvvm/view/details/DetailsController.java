@@ -21,7 +21,6 @@ import static dev.ikm.komet.kview.fxutils.MenuHelper.*;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.*;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.*;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.*;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
@@ -37,6 +36,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.events.FrameworkTopics.*;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 import dev.ikm.komet.framework.*;
+import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.events.appevents.*;
 import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.propsheet.*;
@@ -61,7 +61,6 @@ import dev.ikm.tinkar.events.*;
 import dev.ikm.tinkar.terms.*;
 import javafx.application.*;
 import javafx.beans.*;
-import javafx.beans.Observable;
 import javafx.beans.property.*;
 import javafx.collections.*;
 import javafx.css.*;
@@ -95,9 +94,6 @@ public class DetailsController  {
     private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
 
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
-
-    @FXML
-    private Pane stampContainer;
 
     @FXML
     private MenuButton coordinatesMenuButton;
@@ -142,24 +138,7 @@ public class DetailsController  {
     private PublicIDControl identifierControl;
 
     @FXML
-    private Label lastUpdatedLabel;
-
-    @FXML
-    private Label authorLabel;
-
-    @FXML
-    private Label moduleLabel;
-
-    @FXML
-    private Label pathLabel;
-
-    @FXML
-    private Label statusLabel;
-
-    /**
-     * Applied to lastUpdatedText component.
-     */
-    private Tooltip authorTooltip = new Tooltip();
+    private StampViewControl stampViewControl;
 
     @FXML
     private ScrollPane conceptContentScrollPane;
@@ -296,10 +275,6 @@ public class DetailsController  {
      */
     private ViewCalculatorWithCache viewCalculatorWithCache;
 
-    private final EventHandler<MouseEvent> mouseFilterPressedOnScene = this::onMouseFilterPressedOnScene;
-
-    private BooleanProperty stampSelected;
-
     public DetailsController() {
     }
 
@@ -309,8 +284,8 @@ public class DetailsController  {
 
     @FXML
     public void initialize() {
-        stampSelected = new SimpleBooleanProperty(false);
-        stampSelected.subscribe(this::onStampSelectionChanged);
+        stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
+        stampViewControl.setParentContainer(detailsOuterBorderPane);
 
         identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
             // query all available memberships (semantics having the purpose as 'membership', and no fields)
@@ -355,7 +330,6 @@ public class DetailsController  {
                     contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
         });
 
-        Tooltip.install(lastUpdatedLabel, authorTooltip);
         Tooltip.install(fqnTitleText, conceptNameTooltip);
 
         clearView();
@@ -519,22 +493,12 @@ public class DetailsController  {
         EvtBusFactory.getDefaultEvtBus().subscribe(conceptViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
 
-        stampContainer.sceneProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                if (stampContainer.getScene() != null) {
-                    stampContainer.getScene().addEventFilter(MouseEvent.MOUSE_PRESSED, mouseFilterPressedOnScene);
-                    stampContainer.sceneProperty().removeListener(this);
-                }
+        conceptViewModel.getViewProperties().nodeView().addListener((obs, oldViewCoord, newViewCoord) -> {
+            if (newViewCoord != null) {
+                LOG.info("refresh concept window when view coordinate has changed." + newViewCoord);
+                updateView();
             }
         });
-    }
-
-    private void onMouseFilterPressedOnScene(MouseEvent mouseEvent) {
-        Point2D localMousePos = detailsOuterBorderPane.sceneToLocal(mouseEvent.getSceneX(), mouseEvent.getSceneY());
-        if (!detailsOuterBorderPane.contains(localMousePos)) {
-            stampSelected.set(false);
-        }
     }
 
     /**
@@ -818,9 +782,11 @@ public class DetailsController  {
             }
 
             // TODO: Ability to change Concept record. but for now user can edit stamp but not affect Concept version.
-            EntityVersion latestVersion = conceptViewModel.getViewProperties().calculator().latest(entityFacade).get();
-            StampEntity stamp = latestVersion.stamp();
-            updateStampViewModel(EDIT, stamp);
+            conceptViewModel.getViewProperties().calculator().latest(entityFacade)
+                .ifPresent(latestVersion -> {
+                    StampEntity stamp = latestVersion.stamp();
+                    updateStampViewModel(EDIT, stamp);
+                });
         } else { // create concept
             getConceptViewModel().setPropertyValue(MODE, CREATE);
             stampViewModel.setPropertyValue(MODE, CREATE);
@@ -859,12 +825,12 @@ public class DetailsController  {
         // TODO do a null check on the entityFacade
         // Title (FQN of concept)
         final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-        String conceptNameStr = viewCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
+        String conceptNameStr = viewCalculator.languageCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
         fqnTitleText.setText(conceptNameStr);
         conceptNameTooltip.setText(conceptNameStr);
 
         // Definition description text
-        definitionTextField.setText(viewCalculator.getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
+        definitionTextField.setText(viewCalculator.languageCalculator().getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
 
         setupDisplayUUID(entityFacade, viewCalculator);
 
@@ -878,34 +844,23 @@ public class DetailsController  {
 
         // Status
         String statusText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.state(), conceptViewModel.getViewProperties());
-        statusLabel.setText(statusText);
+        stampViewControl.setStatus(statusText);
 
         // Module
         String moduleText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.module(), conceptViewModel.getViewProperties());
-        moduleLabel.setText(moduleText);
+        stampViewControl.setModule(moduleText);
 
         // Author
         String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.author(), conceptViewModel.getViewProperties());
-        authorLabel.setText(authorDescription);
+        stampViewControl.setAuthor(authorDescription);
 
         // Path
         String pathText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.path(), conceptViewModel.getViewProperties());
-        pathLabel.setText(pathText);
+        stampViewControl.setPath(pathText);
 
         // Latest update time
         long stampTime = stamp.time();
-        if (!(stampTime == PREMUNDANE_TIME)) {
-            DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("yyyy-MMM-dd HH:mm:ss");
-            Instant stampInstance = Instant.ofEpochSecond(stamp.time() / 1000);
-            String time = DATE_TIME_FORMATTER.format(stampInstance);
-            lastUpdatedLabel.setText(time);
-        } else {
-            lastUpdatedLabel.setText(PREMUNDANE);
-        }
-
-        // Author tooltip
-        authorTooltip.setText(stamp.author().description());
-
+        stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
     }
 
     /// Show the public ID
@@ -1088,12 +1043,10 @@ public class DetailsController  {
         VBox textFlowsBox = new VBox();
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         ConceptEntity caseSigConcept = otherName.getCaseSignificance();
-        String casSigText = viewCalculator.getRegularDescriptionText(caseSigConcept.nid())
-                .orElse(caseSigConcept.nid()+"");
+        String casSigText = viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(caseSigConcept.nid());
         ConceptEntity langConcept = otherName.getLanguage();
 
-        String langText = viewCalculator.getRegularDescriptionText(langConcept.nid())
-                .orElse(String.valueOf(langConcept.nid()));
+        String langText = viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(langConcept.nid());
 
         String descrSemanticStr = "%s, %s".formatted(casSigText, langText);
 
@@ -1168,7 +1121,8 @@ public class DetailsController  {
 
     private void updateFQNSemantics(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
         DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
-        String fqnTextDescr = getFieldValueByMeaning(semanticEntityVersion, TinkarTerm.TEXT_FOR_DESCRIPTION);
+        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
+        String fqnTextDescr = viewCalculator.languageCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(semanticEntityVersion.entity());
         // obtain the fqn description
         latestFqnText.setText(fqnTextDescr);
 
@@ -1252,19 +1206,25 @@ public class DetailsController  {
                     //              concept navigator's view coordinates based on stamp (date time).
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
-                    ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntity.nid());
-                    ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
-                    Latest<SemanticEntityVersion>  semanticVersion =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
 
-                    // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
-                    EntityFacade descriptionTypeConceptValue = getFieldValueByMeaning(semanticVersion.get(), TinkarTerm.DESCRIPTION_TYPE);
-                    if(descriptionTypeConceptValue instanceof EntityFacade descriptionTypeConcept ){
-                        int typeId = descriptionTypeConcept.nid();
-                        return (typeId == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() ||
-                                typeId == REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
-                                typeId == DEFINITION_DESCRIPTION_TYPE.nid());
+                    Latest<SemanticEntityVersion> semanticEntityVersionLatest = conceptViewModel.getViewProperties().calculator().latest(semanticEntity.nid());
+                    if (semanticEntityVersionLatest.isAbsent()) {
+                        return false; // No version found
                     }
-                    return false;
+
+                    SemanticEntityVersion latestVersion = semanticEntityVersionLatest.get();
+
+                    if (!latestVersion.uncommitted()) {
+                        // Latest version is committed
+                        return true;
+                    }
+
+                    // Latest is uncommitted, search for latest committed version in history
+                    ImmutableList<EntityVersion> entityVersionsList = Entity.getFast(semanticEntity.nid()).versions();
+
+                    // Return true if any committed version exists
+                    return entityVersionsList.stream()
+                            .anyMatch(p -> !p.uncommitted());
 
                 }).forEach(semanticEntity -> {
                     // Each description obtain the latest semantic version, pattern version and their field values based on index
@@ -1274,9 +1234,12 @@ public class DetailsController  {
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
 
-                    ObservableSemantic observableSemantic = ObservableEntity.get(semanticEntity.nid());
-                    ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
-                    Latest<SemanticEntityVersion>  semanticVersion =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
+                    Latest<SemanticEntityVersion> semanticEntityVersionLatest = conceptViewModel.getViewProperties().calculator().latest(semanticEntity.nid());
+                    if(semanticEntityVersionLatest.isAbsent()) {
+                        return;
+                    }
+                    // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
+                    EntityFacade descriptionTypeConceptValue = getFieldValueByMeaning(semanticEntityVersionLatest.get(), TinkarTerm.DESCRIPTION_TYPE);
 
                     PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
                     PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
@@ -1285,15 +1248,13 @@ public class DetailsController  {
                     int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
 
                     List<String> descrFields = new ArrayList<>();
-                    descriptionSemanticsMap.put(semanticVersion.get(), descrFields);
-                    Object caseSigConcept = semanticVersion.get().fieldValues().get(indexCaseSig);
-                    Object langConcept = semanticVersion.get().fieldValues().get(indexLang);
+                    descriptionSemanticsMap.put(semanticEntityVersionLatest.get(), descrFields);
+                    Object caseSigConcept = semanticEntityVersionLatest.get().fieldValues().get(indexCaseSig);
+                    Object langConcept = semanticEntityVersionLatest.get().fieldValues().get(indexLang);
 
                     // e.g. FQN - English | Case Sensitive
-                    String casSigText = viewCalculator.getRegularDescriptionText(((EntityFacade) caseSigConcept).nid())
-                            .orElse(String.valueOf(((EntityFacade) caseSigConcept).nid()));
-                    String langText = viewCalculator.getRegularDescriptionText(((EntityFacade) langConcept).nid())
-                            .orElse(String.valueOf(((EntityFacade) langConcept).nid()));
+                    String casSigText = viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(((EntityFacade) caseSigConcept).nid());
+                    String langText = viewCalculator.languageCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(((EntityFacade) langConcept).nid());
 
                     descrFields.add(casSigText);
                     descrFields.add(langText);
@@ -1372,13 +1333,10 @@ public class DetailsController  {
     public void clearView() {
         definitionTextField.clear();
         identifierControl.setPublicId("");
-        lastUpdatedLabel.setText("");
         fqnAddDateLabel.setText("");
-        authorLabel.setText("");
-        moduleLabel.setText("");
-        pathLabel.setText("");
-        statusLabel.setText("");
-        authorTooltip.setText("");
+
+        stampViewControl.clear();
+
         notAvailInferredAxiomLabel.setVisible(true);
         notAvailStatedAxiomLabel.setVisible(true);
         fqnContainer.getChildren().clear();
@@ -1398,26 +1356,14 @@ public class DetailsController  {
         return conceptHeaderControlToolBarHbox;
     }
 
-    @FXML
-    private void onMousePressedOnStamp(MouseEvent mouseEvent) {
-        stampSelected.setValue(!stampSelected.get());
-    }
-
     private void onStampSelectionChanged() {
-        boolean isSelected = stampSelected.get();
-
-        stampContainer.pseudoClassStateChanged(STAMP_SELECTED, isSelected);
-
-        if (isSelected) {
-            eventBus.publish(conceptTopic, new AddStampEvent(stampContainer,
-                    AddStampEvent.ANY));
+        if (stampViewControl.isSelected()) {
+            eventBus.publish(conceptTopic, new AddStampEvent(stampViewControl, AddStampEvent.ANY));
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
-
-
         } else {
-            eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(stampContainer, CLOSE_PROPERTIES));
+            eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
         }
     }
 
@@ -1569,33 +1515,27 @@ public class DetailsController  {
 
     private void updateUIStamp(ViewModel stampViewModel) {
         long time = stampViewModel.getValue(TIME);
-        DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("yyyy-MMM-dd HH:mm:ss");
-        Instant stampInstance = Instant.ofEpochSecond(time/1000);
-        String lastUpdated = DATE_TIME_FORMATTER.format(stampInstance);
-
-        lastUpdatedLabel.setText(lastUpdated);
+        stampViewControl.setLastUpdated(TimeUtils.toDateString(time));
 
         EntityProxy.Concept authorConcept = stampViewModel.getValue(AUTHOR);
         if (authorConcept == null) {
             LOG.warn("Stamp should have an Author and doesn't");
             return;
         }
-        String authorDescription = conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(authorConcept.nid());
-        authorLabel.setText(authorDescription);
+        stampViewControl.setAuthor(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(authorConcept, conceptViewModel.getViewProperties()));
 
         ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
             LOG.warn("Must select a valid module for Stamp.");
             return;
         }
-        String moduleDescr = conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleEntity.nid());
-        moduleLabel.setText(moduleDescr);
+        stampViewControl.setModule(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(moduleEntity, conceptViewModel.getViewProperties()));
+
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
-        String pathDescr = conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(pathEntity.nid());
-        pathLabel.setText(pathDescr);
+        stampViewControl.setPath(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(pathEntity, conceptViewModel.getViewProperties()));
+
         State status = stampViewModel.getValue(STATUS);
-        String statusMsg = status == null ? "Active" : conceptViewModel.getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
-        statusLabel.setText(statusMsg);
+        stampViewControl.setStatus(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(status, conceptViewModel.getViewProperties()));
     }
 
     public void compactSizeWindow() {
