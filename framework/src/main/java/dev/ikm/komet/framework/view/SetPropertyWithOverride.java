@@ -101,7 +101,7 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
      * Note:  cannot use the parent's overriddenProperty because doing so causes the
      * parent property to be changed when the child property is changed
      *
-     * @see https://openjfx.io/javadoc/21/javafx.base/javafx/collections/FXCollections.html#observableSet(java.util.Set)
+     * see https://openjfx.io/javadoc/21/javafx.base/javafx/collections/FXCollections.html#observableSet(java.util.Set)
      */
     @Override
     public boolean add(T element) {
