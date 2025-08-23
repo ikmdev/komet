@@ -13,10 +13,7 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.terms.ComponentWithNid;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import org.carlfx.cognitive.validator.ValidationResult;
@@ -166,12 +163,14 @@ public class StampViewModel2 extends FormViewModel {
         // Choose one item from the Sets as the module and path. Items will use .equals(). STATUS property value is an Enum.
         ConceptEntity module = modules.stream().filter( m -> m.nid() == stampEntity.moduleNid()).findFirst().orElse(null);
         ConceptEntity path = paths.stream().filter( m -> m.nid() == stampEntity.pathNid()).findFirst().orElse(null);
+        ConceptFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
+
 
         setPropertyValue(STATUS, stampEntity.state());
-        setPropertyValue(AUTHOR, stampEntity.author());
+        setPropertyValue(TIME, stampEntity.time());
+        setPropertyValue(AUTHOR, authorConcept);
         setPropertyValue(MODULE, module);
         setPropertyValue(PATH, path);
-        setPropertyValue(TIME, stampEntity.time());
     }
 
     private boolean updateIsStampValuesChanged() {
@@ -222,6 +221,7 @@ public class StampViewModel2 extends FormViewModel {
         State status = getValue(STATUS);
         EntityFacade module = getValue(MODULE);
         EntityFacade path = getValue(PATH);
+        EntityFacade author = getValue(AUTHOR);
 
 
         // -----------  Save stamp on the Database --------------
@@ -252,7 +252,7 @@ public class StampViewModel2 extends FormViewModel {
 
         Composer composer = new Composer("Save new STAMP in Concept");
 
-        Session session = composer.open(status, TinkarTerm.USER, module.toProxy(), path.toProxy());
+        Session session = composer.open(status, author.toProxy(), module.toProxy(), path.toProxy());
 
         session.compose((ConceptAssembler conceptAssembler) -> {
             conceptAssembler.concept(entityFacade.toProxy());
