@@ -17,7 +17,6 @@ package dev.ikm.komet.app;
 
 import com.jpro.webapi.WebAPI;
 import dev.ikm.komet.framework.ScreenInfo;
-import dev.ikm.tinkar.events.*;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
@@ -32,18 +31,23 @@ import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import one.jpro.platform.auth.core.authentication.User;
 import one.jpro.platform.utils.CommandRunner;
 import one.jpro.platform.utils.PlatformUtils;
 import org.slf4j.Logger;
@@ -51,7 +55,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.app.AppState.*;
@@ -59,11 +65,12 @@ import static dev.ikm.komet.app.LoginFeatureFlag.ENABLED_WEB_ONLY;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
-import static dev.ikm.tinkar.events.FrameworkTopics.*;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
 
 /**
  * Main application class for the Komet application, extending JavaFX {@link Application}.
@@ -96,7 +103,7 @@ public class App extends Application  {
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
     public static final String ICON_LOCATION = "/icons/Komet.png";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
-    public static final SimpleObjectProperty<User> userProperty = new SimpleObjectProperty<>();
+    public static final SimpleObjectProperty<ConceptFacade> userProperty = new SimpleObjectProperty<>();
 
     static Stage primaryStage;
 
@@ -215,18 +222,18 @@ public class App extends Application  {
                                     journalController.windowToFront();
                                 }
                             },
-                            () -> appPages.launchJournalViewPage(journalWindowSettingsObjectMap));
+                            () -> appPages.launchJournalViewPage(journalWindowSettingsObjectMap, userProperty.get()));
         };
 
         // Subscribe the subscriber to the JOURNAL_TOPIC
         kViewEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, detailsSubscriber);
 
         Subscriber<SignInUserEvent> signInUserEventSubscriber = evt -> {
-            final User user = evt.getUser();
-            userProperty.set(user);
+            final ConceptFacade loggedInUser = (ConceptFacade) evt.getLoggedInUser();
+            userProperty.set(loggedInUser);
 
             if (state.get() == RUNNING) {
-                appPages.launchLandingPage(primaryStage, user);
+                appPages.launchLandingPage(primaryStage, loggedInUser);
             } else {
                 state.set(AppState.SELECT_DATA_SOURCE);
                 state.addListener(this::appStateChangeListener);
@@ -458,11 +465,10 @@ public class App extends Application  {
                 }
                 case RUNNING -> {
                     if (userProperty.get() == null) {
-                        String username = System.getProperty("user.name");
-                        String capitalizeUsername = username.substring(0, 1).toUpperCase() + username.substring(1);
-                        userProperty.set(new User(capitalizeUsername));
+                        //If user property is not set then use the TinkarTerm.User concept.
+                        userProperty.set(TinkarTerm.USER);
                     }
-                    appPages.launchLandingPage(primaryStage, userProperty.get());
+                    appPages.launchLandingPage(primaryStage, (ConceptFacade) userProperty.get());
                 }
                 case SHUTDOWN -> quit();
             }

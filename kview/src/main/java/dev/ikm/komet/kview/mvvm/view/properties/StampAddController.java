@@ -1,21 +1,21 @@
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
-import dev.ikm.komet.framework.view.*;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
-import dev.ikm.komet.kview.mvvm.viewmodel.*;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
+import dev.ikm.tinkar.terms.ComponentWithNid;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.binding.StringBinding;
-import javafx.beans.property.*;
-import javafx.event.*;
-import javafx.fxml.*;
-import javafx.scene.control.*;
-import org.carlfx.cognitive.loader.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import org.carlfx.cognitive.loader.InjectViewModel;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
 
 
 public class StampAddController {
@@ -81,7 +81,12 @@ public class StampAddController {
 
             @Override
             protected String computeValue() {
-                return "Author";
+                if (getViewProperties() != null) {
+                    ConceptFacade authorConcept = stampViewModel.getPropertyValue(AUTHOR);
+                    return getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(authorConcept.nid());
+                } else {
+                    return "Author Not selected";
+                }
             }
         };
         authorTextField.textProperty().bind(authorTextBinding);

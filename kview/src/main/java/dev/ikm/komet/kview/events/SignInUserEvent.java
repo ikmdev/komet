@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.events;
 
 import dev.ikm.tinkar.events.Evt;
 import dev.ikm.tinkar.events.EvtType;
+import dev.ikm.tinkar.terms.EntityFacade;
 import one.jpro.platform.auth.core.authentication.User;
 
 /**
@@ -42,18 +43,18 @@ public class SignInUserEvent extends Evt {
      */
     public static final EvtType<SignInUserEvent> SIGN_IN_USER = new EvtType<>(Evt.ANY, "SIGN_IN_USER");
 
-    private final User user;
+    private final EntityFacade loggedInUser;
 
     /**
      * Constructs a new {@code SignInUserEvent}.
      *
      * @param source  The source object that generated the event.
      * @param evtType The type of the event, typically {@link #SIGN_IN_USER}.
-     * @param user    The authenticated {@link User} associated with this event.
+     * @param loggedInUser    The authenticated {@link User} associated with this event.
      */
-    public SignInUserEvent(Object source, EvtType<? extends Evt> evtType, User user) {
+    public SignInUserEvent(Object source, EvtType<? extends Evt> evtType, EntityFacade loggedInUser) {
         super(source, evtType);
-        this.user = user;
+        this.loggedInUser = loggedInUser;
     }
 
     /**
@@ -61,7 +62,7 @@ public class SignInUserEvent extends Evt {
      *
      * @return the {@link User} who has signed in.
      */
-    public User getUser() {
-        return user;
+    public EntityFacade getLoggedInUser() {
+        return loggedInUser;
     }
 }
