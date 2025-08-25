@@ -88,7 +88,11 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
     public boolean remove(Object obj) {
         if (!overridden) {
             overridden = true;
-            ObservableSet<T> set = FXCollections.observableSet(get());
+
+            // make a copy of the current set
+            HashSet<T> copiedSet = new HashSet<>(get());
+
+            ObservableSet<T> set = FXCollections.observableSet(copiedSet);
             this.unbind();
             boolean returnValue = set.remove(obj);
             super.set(set);
@@ -107,17 +111,14 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
     public boolean add(T element) {
         if (!overridden) {
             overridden = true;
-            this.unbind();
 
             // make a copy of the current set
-            HashSet<T> copiedSet = new HashSet<T>(get());
+            HashSet<T> copiedSet = new HashSet<>(get());
 
-            ObservableSet<T> observableSet = FXCollections.observableSet(copiedSet);
-            boolean returnValue = copiedSet.add(element);
-
-            // replace the current observable set with the newly created one, which is a copy
-            // of the parent set property
-            super.set(observableSet);
+            ObservableSet<T> set = FXCollections.observableSet(copiedSet);
+            this.unbind();
+            boolean returnValue = set.add(element);
+            super.set(set);
 
             return returnValue;
         }
@@ -128,7 +129,11 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
     public boolean addAll(Collection<? extends T> elements) {
         if (!overridden) {
             overridden = true;
-            ObservableSet<T> set = FXCollections.observableSet(get());
+
+            // make a copy of the current set
+            HashSet<T> copiedSet = new HashSet<>(get());
+
+            ObservableSet<T> set = FXCollections.observableSet(copiedSet);
             this.unbind();
             boolean returnValue = set.addAll(elements);
             super.set(set);
@@ -141,7 +146,11 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
     public boolean removeAll(Collection<?> objects) {
         if (!overridden) {
             overridden = true;
-            ObservableSet<T> set = FXCollections.observableSet(get());
+
+            // make a copy of the current set
+            HashSet<T> copiedSet = new HashSet<>(get());
+
+            ObservableSet<T> set = FXCollections.observableSet(copiedSet);
             this.unbind();
             boolean returnValue = set.removeAll(objects);
             super.set(set);
@@ -154,7 +163,11 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
     public boolean retainAll(Collection<?> objects) {
         if (!overridden) {
             overridden = true;
-            ObservableSet<T> set = FXCollections.observableSet(get());
+
+            // make a copy of the current set
+            HashSet<T> copiedSet = new HashSet<>(get());
+
+            ObservableSet<T> set = FXCollections.observableSet(copiedSet);
             this.unbind();
             boolean returnValue = set.retainAll(objects);
             super.set(set);
@@ -168,7 +181,7 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
         if (!overridden) {
             overridden = true;
             this.unbind();
-            super.set(FXCollections.observableSet());
+            super.set(FXCollections.observableSet(new HashSet<>()));
         }
         super.clear();
     }
@@ -177,7 +190,11 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
     public boolean removeIf(Predicate<? super T> filter) {
         if (!overridden) {
             overridden = true;
-            ObservableSet<T> set = FXCollections.observableSet(get());
+
+            // make a copy of the current set
+            HashSet<T> copiedSet = new HashSet<>(get());
+
+            ObservableSet<T> set = FXCollections.observableSet(copiedSet);
             this.unbind();
             boolean returnValue = set.removeIf(filter);
             super.set(set);
