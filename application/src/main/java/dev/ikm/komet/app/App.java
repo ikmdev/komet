@@ -465,8 +465,7 @@ public class App extends Application  {
                 }
                 case RUNNING -> {
                     if (userProperty.get() == null) {
-                        String username = System.getProperty("user.name");
-                        String capitalizeUsername = username.substring(0, 1).toUpperCase() + username.substring(1);
+                        //If user property is not set then use the TinkarTerm.User concept.
                         userProperty.set(TinkarTerm.USER);
                     }
                     appPages.launchLandingPage(primaryStage, (ConceptFacade) userProperty.get());

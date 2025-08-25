@@ -165,7 +165,6 @@ public class StampViewModel2 extends FormViewModel {
         ConceptEntity path = paths.stream().filter( m -> m.nid() == stampEntity.pathNid()).findFirst().orElse(null);
         ConceptFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
 
-
         setPropertyValue(STATUS, stampEntity.state());
         setPropertyValue(TIME, stampEntity.time());
         setPropertyValue(AUTHOR, authorConcept);

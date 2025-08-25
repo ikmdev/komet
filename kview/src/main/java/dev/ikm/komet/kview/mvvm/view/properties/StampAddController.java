@@ -74,8 +74,6 @@ public class StampAddController {
     }
 
     private void initAuthorField() {
-
-
         StringBinding authorTextBinding = new StringBinding() {
             {
                 super.bind(stampViewModel.getProperty(AUTHOR));
@@ -89,10 +87,8 @@ public class StampAddController {
                 } else {
                     return "Author Not selected";
                 }
-
             }
         };
-
         authorTextField.textProperty().bind(authorTextBinding);
     }
 

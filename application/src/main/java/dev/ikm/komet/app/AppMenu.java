@@ -11,7 +11,6 @@ import dev.ikm.komet.kview.mvvm.view.changeset.ExportController;
 import dev.ikm.komet.kview.mvvm.view.changeset.ImportController;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -91,7 +90,7 @@ public class AppMenu {
         Menu editMenu = new Menu("Edit");
         MenuItem landingPage = new MenuItem("Landing Page");
         KeyCombination landingPageKeyCombo = new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN);
-        landingPage.setOnAction(actionEvent -> app.appPages.launchLandingPage(App.primaryStage, (ConceptFacade) userProperty.get()));
+        landingPage.setOnAction(actionEvent -> app.appPages.launchLandingPage(App.primaryStage, userProperty.get()));
         landingPage.setAccelerator(landingPageKeyCombo);
         landingPage.setDisable(IS_BROWSER);
         editMenu.getItems().add(landingPage);

@@ -92,7 +92,6 @@ public class AppPages {
         final WindowSettings windowSettings = new WindowSettings(windowPreferences);
         ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties("login-author");
 
-
         Config loginConfig = new Config(LoginAuthorController.class.getResource("LoginAuthor.fxml"))
                 .updateViewModel("loginAuthorViewModel", loginAuthorViewModel -> {
                     loginAuthorViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties);
@@ -125,7 +124,6 @@ public class AppPages {
             KometPreferences windowPreferences = appPreferences.node("main-komet-window");
 
             WindowSettings windowSettings = new WindowSettings(windowPreferences);
-
             FXMLLoader landingPageLoader = LandingPageViewFactory.createFXMLLoader();
             BorderPane landingPageBorderPane = landingPageLoader.load();
 
