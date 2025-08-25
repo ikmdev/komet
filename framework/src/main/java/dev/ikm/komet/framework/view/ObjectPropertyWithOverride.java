@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.view;
 
+import dev.ikm.tinkar.component.Concept;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
@@ -89,7 +90,7 @@ public class ObjectPropertyWithOverride<T> extends SimpleEqualityBasedObjectProp
             this.overridden = false;
             if (this.oldValue != null) {
                 super.set(null);
-                if (this.oldValue != null &! this.oldValue.equals(this.overriddenProperty.get())) {
+                if (this.oldValue != null && !this.oldValue.equals(this.overriddenProperty.get())) {
                     invalidated();
                     fireValueChangedEvent();
                 }
@@ -99,11 +100,29 @@ public class ObjectPropertyWithOverride<T> extends SimpleEqualityBasedObjectProp
             this.overridden = false;
             super.set(null);
         } else {
-            // values not equal
-             super.set(newValue);
-            this.overridden = true;
-            invalidated();
-            fireValueChangedEvent();
+            var valuesEqual = false;
+            var oldValue = this.overriddenProperty.get();
+
+            if (newValue instanceof Concept newValueConcept && oldValue instanceof Concept oldValueConcept) {
+                var newValuePublicId = newValueConcept.publicId();
+                var oldValuePublicId = oldValueConcept.publicId();
+
+                if (newValuePublicId.equals(oldValuePublicId)) {
+                    valuesEqual = true;
+
+                    // values equal so not an override.
+                    this.overridden = false;
+                    super.set(null);
+                }
+            }
+
+            if (!valuesEqual) {
+                // values not equal
+                super.set(newValue);
+                this.overridden = true;
+                invalidated();
+                fireValueChangedEvent();
+            }
         }
     }
 
