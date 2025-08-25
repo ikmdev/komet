@@ -163,11 +163,10 @@ public class StampViewModel2 extends FormViewModel {
         // Choose one item from the Sets as the module and path. Items will use .equals(). STATUS property value is an Enum.
         ConceptEntity module = modules.stream().filter( m -> m.nid() == stampEntity.moduleNid()).findFirst().orElse(null);
         ConceptEntity path = paths.stream().filter( m -> m.nid() == stampEntity.pathNid()).findFirst().orElse(null);
-        ConceptFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
 
         setPropertyValue(STATUS, stampEntity.state());
         setPropertyValue(TIME, stampEntity.time());
-        setPropertyValue(AUTHOR, authorConcept);
+        setPropertyValue(AUTHOR, stampEntity.author());
         setPropertyValue(MODULE, module);
         setPropertyValue(PATH, path);
     }
@@ -184,9 +183,12 @@ public class StampViewModel2 extends FormViewModel {
         if (same) {
             setPropertyValue(FORM_TITLE, INITIAL_FORM_TITLE);
             setPropertyValue(TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
+            setPropertyValue(AUTHOR, stampEntity.author());
         } else {
             setPropertyValue(FORM_TITLE, "New Concept Version");
             setPropertyValue(TIME_TEXT, "Uncommitted");
+            ConceptFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
+            setPropertyValue(AUTHOR, authorConcept);
         }
 
         return same;
