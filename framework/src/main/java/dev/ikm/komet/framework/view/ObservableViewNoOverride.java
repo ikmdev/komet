@@ -17,6 +17,7 @@ package dev.ikm.komet.framework.view;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import dev.ikm.tinkar.coordinate.language.LanguageCoordinate;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import javafx.beans.property.ListProperty;
@@ -102,8 +103,24 @@ public class ObservableViewNoOverride extends ObservableViewBase {
     protected ViewCoordinateRecord baseCoordinateChangedListenersRemoved(ObservableValue<? extends ViewCoordinateRecord> observable,
                                                                          ViewCoordinateRecord oldValue, ViewCoordinateRecord newValue) {
         this.stampCoordinateObservable.setValue(newValue.stampCoordinate());
-        this.languageCoordinates.setAll(newValue.languageCoordinates().stream()
-                .map(languageCoordinate -> new ObservableLanguageCoordinateNoOverride(languageCoordinate)).toList());
+
+        // rather than creating new language coordinate list elements, change the value like the way
+        // everything else is done in this method, which retains the existing property objects
+
+        for (LanguageCoordinate newLangCoord : newValue.languageCoordinates()) {
+
+            var newUuid = newLangCoord.getLanguageCoordinateUuid();
+
+            for (ObservableLanguageCoordinateBase observableLanguageCoordinateBase : this.languageCoordinates) {
+                var existingUuid = observableLanguageCoordinateBase.getLanguageCoordinateUuid();
+
+                if (newUuid.equals(existingUuid)) {
+                    observableLanguageCoordinateBase.setValue(newLangCoord.toLanguageCoordinateRecord());
+                    break;
+                }
+            }
+        }
+
         this.navigationCoordinateObservable.setValue(newValue.navigationCoordinate());
         this.logicCoordinateObservable.setValue(newValue.logicCoordinate());
         return newValue;
