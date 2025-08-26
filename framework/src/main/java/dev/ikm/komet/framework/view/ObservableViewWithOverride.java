@@ -67,6 +67,7 @@ public class ObservableViewWithOverride extends ObservableViewBase {
         }
     }
 
+    /// Set the value of the language coordinates to the updatedCoordinate value, but only if not overridden
     private void setLanguageCoordinatesExceptOverrides(ViewCoordinateRecord updatedCoordinate) {
         if (!languageCoordinates().isOverridden()) {
             for (int i = 0; i < languageCoordinates.size(); i++) {
