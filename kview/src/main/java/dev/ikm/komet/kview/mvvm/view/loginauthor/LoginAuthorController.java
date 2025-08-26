@@ -52,6 +52,8 @@ public class LoginAuthorController {
     @FXML
     public void initialize() {
         ViewProperties viewProperties = getViewProperties();
+        // The Coordinates.DefaultView does not have Stated Navigation Pattern, it is set to inferred navigation pattern.
+        // Hence, adding stated navigation to unreasoned dataset.
         viewProperties.nodeView().navigationCoordinate().navigationPatternsProperty().add(TinkarTerm.STATED_NAVIGATION_PATTERN);
         Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewProperties, TinkarTerm.USER.publicId());
         if(conceptEntitySet.isEmpty()){
