@@ -56,7 +56,9 @@ public class LoginAuthorController {
         // Hence, adding stated navigation to unreasoned dataset.
         viewProperties.nodeView().navigationCoordinate().navigationPatternsProperty().add(TinkarTerm.STATED_NAVIGATION_PATTERN);
         Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewProperties, TinkarTerm.USER.publicId());
-        if(conceptEntitySet.isEmpty()){
+
+        //If there are no authors mentioned in the stated or inferred then we use the default tinkar term user.
+        if (conceptEntitySet.isEmpty()) {
             conceptEntitySet.add(EntityService.get().getEntityFast(TinkarTerm.USER));
         }
         loginAuthorViewModel.getObservableList(AUTHORS).addAll(conceptEntitySet);
