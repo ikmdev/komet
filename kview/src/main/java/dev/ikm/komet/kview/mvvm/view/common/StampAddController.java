@@ -78,7 +78,12 @@ public class StampAddController {
 
             @Override
             protected String computeValue() {
-                return "Author";
+                if (getViewProperties() != null) {
+                    ConceptFacade authorConcept = stampViewModel.getPropertyValue(AUTHOR);
+                    return getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(authorConcept.nid());
+                } else {
+                    return "Author Not selected";
+                }
             }
         };
         authorTextField.textProperty().bind(authorTextBinding);

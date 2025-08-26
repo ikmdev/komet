@@ -201,10 +201,10 @@ public class StampViewModel2 extends FormViewModel {
         ConceptEntity path = paths.stream().filter( m -> m.nid() == stampEntity.pathNid()).findFirst().orElse(null);
 
         setPropertyValue(STATUS, stampEntity.state());
+        setPropertyValue(TIME, stampEntity.time());
         setPropertyValue(AUTHOR, stampEntity.author());
         setPropertyValue(MODULE, module);
         setPropertyValue(PATH, path);
-        setPropertyValue(TIME, stampEntity.time());
     }
 
     private boolean updateIsStampValuesChanged() {
@@ -221,9 +221,12 @@ public class StampViewModel2 extends FormViewModel {
         if (same) {
             setPropertyValue(FORM_TITLE, "Latest " + stampType.getTextDescription() + " Version");
             setPropertyValue(TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
+            setPropertyValue(AUTHOR, stampEntity.author());
         } else {
             setPropertyValue(FORM_TITLE, "New " + stampType.getTextDescription() + " Version");
             setPropertyValue(TIME_TEXT, "Uncommitted");
+            ConceptFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
+            setPropertyValue(AUTHOR, authorConcept);
         }
 
         return same;
@@ -257,6 +260,7 @@ public class StampViewModel2 extends FormViewModel {
         State status = getValue(STATUS);
         EntityFacade module = getValue(MODULE);
         EntityFacade path = getValue(PATH);
+        EntityFacade author = getValue(AUTHOR);
 
 
         // -----------  Save stamp on the Database --------------
@@ -287,7 +291,7 @@ public class StampViewModel2 extends FormViewModel {
 
         Composer composer = new Composer("Save new STAMP in Component");
 
-        Session session = composer.open(status, TinkarTerm.USER, module.toProxy(), path.toProxy());
+        Session session = composer.open(status, author.toProxy(), module.toProxy(), path.toProxy());
 
         switch (getPropertyValue(STAMP_TYPE)) {
             case CONCEPT -> {
