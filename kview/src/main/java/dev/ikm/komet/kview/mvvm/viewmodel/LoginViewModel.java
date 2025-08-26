@@ -19,6 +19,7 @@ import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.kview.events.SignInUserEvent;
 import dev.ikm.komet.kview.mvvm.model.BasicUserManager;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringProperty;
 import one.jpro.platform.auth.core.AuthAPI;
@@ -199,7 +200,7 @@ public class LoginViewModel extends ValidationViewModel {
                         // clear the password
                         setPropertyValue(PASSWORD, "");
                         // publish the user via the sign in event
-                        eventBus.publish(USER_TOPIC, new SignInUserEvent(this, SIGN_IN_USER, user));
+                        eventBus.publish(USER_TOPIC, new SignInUserEvent(this, SIGN_IN_USER, TinkarTerm.USER));
                     });
 
                     // Clear view model's values to remove passwords from memory
