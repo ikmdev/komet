@@ -1,9 +1,29 @@
 package dev.ikm.komet.kview.klfields;
 
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import static dev.ikm.tinkar.terms.TinkarTerm.ARRAY_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.DECIMAL_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.DIGRAPH_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.DITREE_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.DOUBLE_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT;
+import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.INSTANT_LITERAL;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.LOGICAL_EXPRESSION_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.LONG_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.POLYMORPHIC_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
+import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.UUID_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
@@ -28,15 +48,11 @@ import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.PatternVersionRecord;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.terms.*;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Node;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -47,14 +63,96 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class KlFieldHelper {
 
+    /**
+     * The currently supported field data types when editing a semantic.
+     */
+    public final static int[] SUPPORTED_FIELD_TYPE_NIDS = new int[]{
+            COMPONENT_FIELD.nid(),
+            STRING_FIELD.nid(),
+            COMPONENT_ID_SET_FIELD.nid(),
+            COMPONENT_ID_LIST_FIELD.nid(),
+            FLOAT_FIELD.nid(),
+            INTEGER_FIELD.nid(),
+            BOOLEAN_FIELD.nid(),
+            IMAGE_FIELD.nid(),
+    };
+
+    /**
+     * The unsupported field data types that defaults to read-only components.
+     */
+    public final static int[] UNSUPPORTED_FIELD_TYPE_NIDS = new int[]{
+            CONCEPT_FIELD.nid(), /* for edit mode you can see the field as a readonly component field. */
+            INSTANT_LITERAL.nid(),
+            DIGRAPH_FIELD.nid(),
+            DITREE_FIELD.nid(),
+            DECIMAL_FIELD.nid(),
+            BYTE_ARRAY_FIELD.nid(), /* for edit mode you can see the field as an image field. */
+            DECIMAL_FIELD.nid(),
+            ARRAY_FIELD.nid(),
+            UUID_FIELD.nid(),
+            LONG_FIELD.nid(),
+            DOUBLE_FIELD.nid(),
+            LOGICAL_EXPRESSION_FIELD.nid(),
+            POLYMORPHIC_FIELD.nid(),
+            VERTEX_FIELD.nid()
+    };
+
+    /**
+     * A useful utility based on a pattern facade to determine if any field datatypes are not supported.
+     * @param pattern a Pattern facade to detect field definitions
+     * @return boolean true if any field has an unsupported field.
+     */
+    public static boolean hasAnyUnsupportedFieldType(PatternFacade pattern) {
+        Optional<Entity<EntityVersion>> patternEntityOpt =  Entity.get(pattern);
+        if (patternEntityOpt.isPresent()) {
+            PatternEntityVersion patternEntityVersion = (PatternEntityVersion) patternEntityOpt.get().versions().get(0);
+            List<Integer> nids = patternEntityVersion
+                    .fieldDefinitions()
+                    .stream()
+                    .map(fieldDefinitionForEntity ->
+                            fieldDefinitionForEntity.dataTypeNid()).toList();
+            for (int value : UNSUPPORTED_FIELD_TYPE_NIDS) { // Iterate through each element in the int array
+                if (nids.contains(value)) { // Check if the current int is present in the List
+                    return true; // If found, return true immediately
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A useful utility based on a pattern facade to determine if all field datatypes are supported.
+     * @param pattern
+     * @return boolean true if all field are supported. otherwise false.
+     */
+    public static boolean hasAllFieldTypesSupported(PatternFacade pattern) {
+        if (pattern == null) {
+            return false;
+        }
+        Optional<Entity<EntityVersion>> patternEntityOpt =  Entity.get(pattern);
+        if (patternEntityOpt.isPresent()) {
+            PatternEntityVersion patternEntityVersion = (PatternEntityVersion) patternEntityOpt.get().versions().get(0);
+            List<Integer> nids = patternEntityVersion
+                    .fieldDefinitions()
+                    .stream()
+                    .map(fieldDefinitionForEntity ->
+                            fieldDefinitionForEntity.dataTypeNid()).toList();
+            // if any are not in the supported list than return false
+            List<Integer> supportedFieldTypeNids = Arrays.stream(SUPPORTED_FIELD_TYPE_NIDS).boxed().toList();
+            for (int value : nids) { // Iterate through each element in the int array
+                if (!supportedFieldTypeNids.contains(value)) { // Check if the current int is present in the List
+                    return false;
+                }
+            }
+            return  true; // all fields are supported. Some patterns (membership patterns) don't have fields.
+        }
+        return false; // no pattern
+    }
     /**
      * function to return the correct node given the semantic entity and field information
      * @param fieldRecord
@@ -70,31 +168,34 @@ public class KlFieldHelper {
 
         //TODO use service loader instead of factories
 
-        if (dataTypeNid == TinkarTerm.COMPONENT_FIELD.nid()) {
+        if (dataTypeNid == COMPONENT_FIELD.nid()) {
             // load a read-only component
             KlComponentFieldFactory componentFieldFactory = new KlComponentFieldFactory();
             node = componentFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-        } else if (dataTypeNid == TinkarTerm.STRING_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.STRING.nid()) {
+        } else if (dataTypeNid == CONCEPT_FIELD.nid()) {
+            // TODO: Create validation error message to the user to only allow concepts into this field.
+            //       This will be a read-only component field for now (editable = false).
+            KlComponentFieldFactory componentFieldFactory = new KlComponentFieldFactory();
+            node = componentFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+        } else if (dataTypeNid == STRING_FIELD.nid() || fieldRecord.dataType().nid() == STRING.nid()) {
             KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
             node = stringFieldTextFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-        } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+        } else if (dataTypeNid == COMPONENT_ID_SET_FIELD.nid()) {
             KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
             node = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), editable, journalTopic).klWidget();
-        } else if (dataTypeNid == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+        } else if (dataTypeNid == COMPONENT_ID_LIST_FIELD.nid()) {
             KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
             node = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), editable, journalTopic).klWidget();
-        } else if (dataTypeNid == TinkarTerm.DITREE_FIELD.nid()) {
-            node = rowf.createReadOnlyDiTree(viewProperties, fieldRecord);
-        } else if (dataTypeNid == TinkarTerm.FLOAT_FIELD.nid() || fieldRecord.dataType().nid() == TinkarTerm.FLOAT.nid()) {
+        } else if (dataTypeNid == FLOAT_FIELD.nid() || fieldRecord.dataType().nid() == FLOAT.nid()) {
             KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
             node = klFloatFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         } else if (dataTypeNid == INTEGER_FIELD.nid()) {
             KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
             node = klIntegerFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-        } else if (dataTypeNid == TinkarTerm.BOOLEAN_FIELD.nid()) {
+        } else if (dataTypeNid == BOOLEAN_FIELD.nid()) {
             KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
             node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
-        } else if (dataTypeNid == TinkarTerm.IMAGE_FIELD.nid()) {
+        } else if (dataTypeNid == IMAGE_FIELD.nid()) {
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
         } else if (dataTypeNid == BYTE_ARRAY_FIELD.nid()) {
@@ -103,6 +204,13 @@ public class KlFieldHelper {
             //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
             node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+        } else {
+            // This fixes the exceptions the user experiences when a semantic (GenEditWindow) is summoned. The exception
+            // happens when a datatype field that doesn't have a JavaFX custom control created yet.
+            // The else is a catchall for any datatypes we do not support to be shown as read-only.
+            // For example if a digraph or ditree the toString() would show text represented as OWL notation.
+            KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
+            node = stringFieldTextFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
         }
         return node;
     }
@@ -116,22 +224,22 @@ public class KlFieldHelper {
     public static <T extends List<Object>> T generateDefaultFieldValues(PatternEntityVersion patternVersion) {
         MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(patternVersion.fieldDefinitions().size());
         patternVersion.fieldDefinitions().forEach(f -> {
-            if (f.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+            if (f.dataTypeNid() == COMPONENT_FIELD.nid()) {
                 fieldsValues.add(BLANK_CONCEPT);
-            } else if (f.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
-                    || f.dataTypeNid() == TinkarTerm.STRING.nid()) {
+            } else if (f.dataTypeNid() == STRING_FIELD.nid()
+                    || f.dataTypeNid() == STRING.nid()) {
                 fieldsValues.add("");
             } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
                 fieldsValues.add(0);
-            } else if (f.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+            } else if (f.dataTypeNid() == FLOAT_FIELD.nid()) {
                 fieldsValues.add(0.0F);
-            } else if (f.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+            } else if (f.dataTypeNid() == BOOLEAN_FIELD.nid()) {
                 fieldsValues.add(false);
-            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+            } else if (f.dataTypeNid() == COMPONENT_ID_LIST_FIELD.nid()) {
                 fieldsValues.add(IntIds.list.empty());
-            } else if (f.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+            } else if (f.dataTypeNid() == COMPONENT_ID_SET_FIELD.nid()) {
                 fieldsValues.add(IntIds.set.empty());
-            } else if (f.dataTypeNid() == TinkarTerm.IMAGE_FIELD.nid()) {
+            } else if (f.dataTypeNid() == IMAGE_FIELD.nid()) {
                 // create empty byte array to save in DB implies blank image
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 byte [] ba = bos.toByteArray();
@@ -141,6 +249,10 @@ public class KlFieldHelper {
                 //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
                 //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
                 // The NULL value will not work since the object requires to be NON-NULL
+                fieldsValues.add(null);
+            } else {
+                // Any unsupported fields will be null value in the list. This will keep things aligned where the ui
+                // controls and values would be the same number.
                 fieldsValues.add(null);
             }
         });
@@ -228,28 +340,33 @@ public class KlFieldHelper {
             Tooltip tooltip = new Tooltip(viewProperties.calculator().getDescriptionTextOrNid(fieldDefinitionRecord.purposeNid()));
 
             KLReadOnlyBaseControl control = null;
-            if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_FIELD.nid()) {
+            if (fieldDefinitionRecord.dataTypeNid() == COMPONENT_FIELD.nid()) {
                 control = new KLReadOnlyComponentControl();
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING_FIELD.nid()
-                    || fieldDefinitionRecord.dataTypeNid() == TinkarTerm.STRING.nid()) {
+            } else if (fieldDefinitionRecord.dataTypeNid() == CONCEPT_FIELD.nid()) {
+                control = new KLReadOnlyComponentControl();
+            } else if (fieldDefinitionRecord.dataTypeNid() == STRING_FIELD.nid()
+                    || fieldDefinitionRecord.dataTypeNid() == STRING.nid()) {
                 control = new KLReadOnlyDataTypeControl<>(String.class);
             } else if (fieldDefinitionRecord.dataTypeNid() == INTEGER_FIELD.nid()) {
                 control = new KLReadOnlyDataTypeControl<>(Integer.class);
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.FLOAT_FIELD.nid()) {
+            } else if (fieldDefinitionRecord.dataTypeNid() == FLOAT_FIELD.nid()) {
                 control = new KLReadOnlyDataTypeControl<>(Float.class);
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.BOOLEAN_FIELD.nid()) {
+            } else if (fieldDefinitionRecord.dataTypeNid() == BOOLEAN_FIELD.nid()) {
                 control = new KLReadOnlyDataTypeControl<>(Boolean.class);
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_LIST_FIELD.nid()) {
+            } else if (fieldDefinitionRecord.dataTypeNid() == COMPONENT_ID_LIST_FIELD.nid()) {
                 control = new KLReadOnlyComponentListControl();
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.COMPONENT_ID_SET_FIELD.nid()) {
+            } else if (fieldDefinitionRecord.dataTypeNid() == COMPONENT_ID_SET_FIELD.nid()) {
                 control = new KLReadOnlyComponentSetControl();
-            } else if (fieldDefinitionRecord.dataTypeNid() == TinkarTerm.IMAGE_FIELD.nid()) {
+            } else if (fieldDefinitionRecord.dataTypeNid() == IMAGE_FIELD.nid()) {
                 control = new KLReadOnlyImageControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
                 //TODO: We're using BYTE_ARRAY for the moment for Image data type
                 //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
                 //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
                 control = new KLReadOnlyImageControl();
+            } else {
+                // This is temporary to avoid an exception for datatypes we don't support.
+                control = new KLReadOnlyDataTypeControl<>(String.class);
             }
 
             control.setTitle(fieldDefinitionRecord.meaning().description());
