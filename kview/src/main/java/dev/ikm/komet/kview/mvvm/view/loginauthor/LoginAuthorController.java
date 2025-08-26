@@ -1,6 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
@@ -15,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
@@ -49,7 +52,12 @@ public class LoginAuthorController {
     @FXML
     public void initialize() {
         ViewProperties viewProperties = getViewProperties();
-        loginAuthorViewModel.getObservableList(AUTHORS).addAll(fetchDescendentsOfConcept(viewProperties, TinkarTerm.USER.publicId()));
+        viewProperties.nodeView().navigationCoordinate().navigationPatternsProperty().add(TinkarTerm.STATED_NAVIGATION_PATTERN);
+        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewProperties, TinkarTerm.USER.publicId());
+        if(conceptEntitySet.isEmpty()){
+            conceptEntitySet.add(EntityService.get().getEntityFast(TinkarTerm.USER));
+        }
+        loginAuthorViewModel.getObservableList(AUTHORS).addAll(conceptEntitySet);
         userChooser.setPromptText("Select a user");
         userChooser.setItems(loginAuthorViewModel.getObservableList(AUTHORS));
         userChooser.getItems().sort(Comparator.comparing(this::getUserName));
