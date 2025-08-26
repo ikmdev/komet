@@ -17,7 +17,6 @@ package dev.ikm.komet.framework.view;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import dev.ikm.tinkar.coordinate.language.LanguageCoordinate;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import javafx.beans.property.ListProperty;
@@ -98,28 +97,20 @@ public class ObservableViewNoOverride extends ObservableViewBase {
         return getValue();
     }
 
+    /// Set the value of the language coordinates to the updatedCoordinate value
+    private void setLanguageCoordinates(ViewCoordinateRecord updatedCoordinate) {
+        for (int i = 0; i < languageCoordinates.size(); i++) {
+            languageCoordinates.get(i).setValue(
+                    updatedCoordinate.languageCoordinates().get(i).toLanguageCoordinateRecord());
+        }
+    }
 
     @Override
     protected ViewCoordinateRecord baseCoordinateChangedListenersRemoved(ObservableValue<? extends ViewCoordinateRecord> observable,
                                                                          ViewCoordinateRecord oldValue, ViewCoordinateRecord newValue) {
         this.stampCoordinateObservable.setValue(newValue.stampCoordinate());
 
-        // rather than creating new language coordinate list elements, change the value like the way
-        // everything else is done in this method, which retains the existing property objects
-
-        for (LanguageCoordinate newLangCoord : newValue.languageCoordinates()) {
-
-            var newUuid = newLangCoord.getLanguageCoordinateUuid();
-
-            for (ObservableLanguageCoordinateBase observableLanguageCoordinateBase : this.languageCoordinates) {
-                var existingUuid = observableLanguageCoordinateBase.getLanguageCoordinateUuid();
-
-                if (newUuid.equals(existingUuid)) {
-                    observableLanguageCoordinateBase.setValue(newLangCoord.toLanguageCoordinateRecord());
-                    break;
-                }
-            }
-        }
+        setLanguageCoordinates(newValue);
 
         this.navigationCoordinateObservable.setValue(newValue.navigationCoordinate());
         this.logicCoordinateObservable.setValue(newValue.logicCoordinate());
