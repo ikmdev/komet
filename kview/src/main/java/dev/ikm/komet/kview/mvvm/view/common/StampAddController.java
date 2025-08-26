@@ -1,24 +1,21 @@
-package dev.ikm.komet.kview.mvvm.view.properties;
+package dev.ikm.komet.kview.mvvm.view.common;
 
-import dev.ikm.komet.framework.view.ViewProperties;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.*;
+import dev.ikm.komet.framework.view.*;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
-import dev.ikm.tinkar.terms.ComponentWithNid;
-import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.komet.kview.mvvm.viewmodel.*;
+import dev.ikm.tinkar.terms.*;
 import javafx.beans.binding.StringBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import org.carlfx.cognitive.loader.InjectViewModel;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
+import javafx.beans.property.*;
+import javafx.event.*;
+import javafx.fxml.*;
+import javafx.scene.control.*;
+import org.carlfx.cognitive.loader.*;
 
 
 public class StampAddController {
+
+    public static final String ADD_STAMP_FXML_FILE = "stamp-add.fxml";
 
     @FXML
     private Label formTitle;
@@ -48,7 +45,7 @@ public class StampAddController {
     private ComboBox<ComponentWithNid> pathComboBox;
 
     @InjectViewModel
-    private StampViewModel2 stampViewModel;
+    private StampFormViewModel stampViewModel;
 
     @FXML
     public void initialize() {
@@ -119,7 +116,7 @@ public class StampAddController {
     }
 
 
-    public StampViewModel2 getStampViewModel() { return stampViewModel; }
+    public StampFormViewModel getStampViewModel() { return stampViewModel; }
 
     @FXML
     public void cancelForm(ActionEvent actionEvent) {
