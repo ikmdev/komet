@@ -15,7 +15,9 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-
+import dev.ikm.komet.kview.events.AddStampEvent;
+import dev.ikm.komet.kview.mvvm.view.common.StampAddController;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampType;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -61,6 +63,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STAMP_TYPE;
 import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
@@ -130,6 +133,8 @@ public class PropertiesController {
 
     private InstancesController instancesController;
 
+    private JFXNode<Pane, StampAddController> stampJFXNode;
+
     private Pane historyPane;
 
     private Pane confirmationPane;
@@ -150,9 +155,17 @@ public class PropertiesController {
 
     private Subscriber<PatternDescriptionEvent> patternDescriptionEventSubscriber;
 
+    private Subscriber<AddStampEvent> addStampSubscriber;
+
     @FXML
     private void initialize() {
         clearView();
+
+        // +-----------------------------------------------------------------------
+        // ! Add Stamp panel
+        // +-----------------------------------------------------------------------
+        Config stampConfig = new Config(StampAddController.class.getResource(StampAddController.ADD_STAMP_FXML_FILE));
+        stampJFXNode = FXMLMvvmLoader.make(stampConfig);
 
         // +-----------------------------------------------------------------------
         // ! history panel selected by default when an existing pattern is summoned
@@ -337,7 +350,23 @@ public class PropertiesController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
+        // Stamp
+        this.stampJFXNode.updateViewModel("stampViewModel", (StampViewModel2 viewModel) -> {
+            viewModel.setPropertyValue(STAMP_TYPE, StampType.PATTERN);
+        });
+        addStampSubscriber = evt -> {
+            contentBorderPane.setCenter(stampJFXNode.node());
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), AddStampEvent.class, addStampSubscriber);
+
+
         this.addEditButton.setSelected(true);
+    }
+
+    public void updateModel(EntityFacade newPattern) {
+        stampJFXNode.updateViewModel("stampViewModel", (StampViewModel2 viewModel) -> {
+            viewModel.init(newPattern, getPatternTopic(), getViewProperties());
+        });
     }
 
     private StateMachine getStateMachine() {

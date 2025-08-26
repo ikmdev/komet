@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.view.properties;
+package dev.ikm.komet.kview.mvvm.view.common;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
 import dev.ikm.komet.framework.view.*;
@@ -12,13 +12,10 @@ import javafx.fxml.*;
 import javafx.scene.control.*;
 import org.carlfx.cognitive.loader.*;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-
 
 public class StampAddController {
+
+    public static final String ADD_STAMP_FXML_FILE = "stamp-add.fxml";
 
     @FXML
     private Label formTitle;
