@@ -66,7 +66,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.10.0</tinkar-composer.version>
-        <tinkar-core.version>1.122.0</tinkar-core.version>
+        <tinkar-core.version>1.121.0</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -75,8 +75,8 @@
         <!-- JPMS Jar Variables-->
         <tinkar-jpms-deps.groupId>dev.ikm.jpms</tinkar-jpms-deps.groupId>
         <jpms-record-builder-core.version>36-r7</jpms-record-builder-core.version>
-        <eclipse-collections.version>11.1.0-r13</eclipse-collections.version>
-        <eclipse-collections-api.version>11.1.0-r11</eclipse-collections-api.version>
+        <eclipse-collections.version>13.0.0</eclipse-collections.version>
+        <eclipse-collections-api.version>13.0.0</eclipse-collections-api.version>
         <jsr305.version>3.0.2-r7</jsr305.version>
 
         <!-- JPRO Variables -->
@@ -331,12 +331,12 @@
                 <version>${jpms-record-builder-core.version}</version>
             </dependency>
             <dependency>
-                <groupId>${tinkar-jpms-deps.groupId}</groupId>
+                <groupId>org.eclipse.collections</groupId>
                 <artifactId>eclipse-collections</artifactId>
                 <version>${eclipse-collections.version}</version>
             </dependency>
             <dependency>
-                <groupId>${tinkar-jpms-deps.groupId}</groupId>
+                <groupId>org.eclipse.collections</groupId>
                 <artifactId>eclipse-collections-api</artifactId>
                 <version>${eclipse-collections-api.version}</version>
             </dependency>

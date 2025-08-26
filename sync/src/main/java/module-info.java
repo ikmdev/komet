@@ -19,8 +19,8 @@ module dev.ikm.komet.sync {
     requires dev.ikm.tinkar.common;
     requires dev.ikm.komet.preferences;
     requires javafx.controls;
-    requires dev.ikm.jpms.eclipse.collections.api;
-    requires dev.ikm.jpms.eclipse.collections;
+    requires org.eclipse.collections.api;
+    requires org.eclipse.collections.impl;
     requires org.controlsfx.controls;
     requires dev.ikm.tinkar.entity;
 
