@@ -415,7 +415,7 @@ public class PatternDetailsController {
 
         // -- author
         stampViewModel.getProperty(AUTHOR).subscribe(newAuthor -> {
-            String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid((ConceptEntity)newAuthor, getViewProperties());
+            String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid((EntityFacade)newAuthor, getViewProperties());
             stampViewControl.setAuthor(authorDescription);
         });
 
@@ -425,13 +425,23 @@ public class PatternDetailsController {
 
         // -- module
         stampViewModel.getProperty(MODULE).subscribe(newModule -> {
-            String moduleDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity)newModule).nid());
-            stampViewControl.setModule(moduleDescr);
+            String newModuleDescription;
+            if (newModule == null) {
+                newModuleDescription = "";
+            } else {
+                newModuleDescription = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity)newModule).nid());
+            }
+            stampViewControl.setModule(newModuleDescription);
         });
 
         // -- path
         stampViewModel.getProperty(PATH).subscribe(newPath -> {
-            String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity) newPath).nid());
+            String pathDescr;
+            if (newPath == null) {
+                pathDescr = "";
+            } else {
+                pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity) newPath).nid());
+            }
             stampViewControl.setPath(pathDescr);
         });
 
