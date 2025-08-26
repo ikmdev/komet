@@ -16,6 +16,9 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.controls.TimeUtils;
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
+import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -187,16 +190,7 @@ public class GenEditingDetailsController {
     private Label semanticDescriptionLabel;
 
     @FXML
-    private Text lastUpdatedText;
-
-    @FXML
-    private Text moduleText;
-
-    @FXML
-    private Text pathText;
-
-    @FXML
-    private Text statusText;
+    private StampViewControl stampViewControl;
 
     @FXML
     private TitledPane referenceComponentTitledPane;
@@ -267,6 +261,7 @@ public class GenEditingDetailsController {
 
     @FXML
     private void initialize() {
+        stampViewControl.setParentContainer(detailsOuterBorderPane);
 
         ObjectProperty<EntityFacade> refComponent = genEditingViewModel.getObjectProperty(REF_COMPONENT);
         //Enable edit fields button if refComponent is NOT null else disable it.
@@ -525,17 +520,30 @@ public class GenEditingDetailsController {
     }
 
     private void updateUIStamp(ViewModel stampViewModel) {
+        // -- Status
+        State status = stampViewModel.getValue(STATUS);
+        stampViewControl.setStatus(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(status, getViewProperties()));
+
+        // -- Time
         updateTimeText(stampViewModel.getValue(TIME));
+
+        // -- Author
+        ConceptEntity author = stampViewModel.getValue(AUTHOR);
+        stampViewControl.setAuthor(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(author, getViewProperties()));
+
+        // -- Module
         ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
             LOG.warn("Must select a valid module for Stamp.");
             return;
         }
-        moduleText.setText(moduleEntity.description());
+        stampViewControl.setModule(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(moduleEntity, getViewProperties()));
+
+        // -- Path
         ConceptEntity pathEntity = stampViewModel.getValue(PATH);
-        pathText.setText(pathEntity.description());
-        State status = stampViewModel.getValue(STATUS);
-        statusText.setText(status.name());
+        stampViewControl.setPath(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(pathEntity, getViewProperties()));
+
+
         genEditingViewModel.setPropertyValue(STAMP_VIEW_MODEL, stampViewModel);
     }
 
@@ -545,13 +553,9 @@ public class GenEditingDetailsController {
 
     private void updateTimeText(Long time) {
         if (genEditingViewModel.getPropertyValue(MODE) == CREATE) {
-            lastUpdatedText.setText("");
+            stampViewControl.setLastUpdated("");
         } else {
-            DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-            Instant stampInstance = Instant.ofEpochSecond(time / 1000);
-            ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-            String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
-            lastUpdatedText.setText(lastUpdated);
+            stampViewControl.setLastUpdated(TimeUtils.toDateString(time));
         }
     }
 
