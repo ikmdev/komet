@@ -17,7 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 
 import dev.ikm.komet.kview.events.AddStampEvent;
 import dev.ikm.komet.kview.mvvm.view.common.StampAddController;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampType;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampType;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -63,7 +63,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STAMP_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STAMP_TYPE;
 import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
@@ -351,7 +351,7 @@ public class PropertiesController {
         EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
         // Stamp
-        this.stampJFXNode.updateViewModel("stampViewModel", (StampViewModel2 viewModel) -> {
+        this.stampJFXNode.updateViewModel("stampViewModel", (StampFormViewModel viewModel) -> {
             viewModel.setPropertyValue(STAMP_TYPE, StampType.PATTERN);
         });
         addStampSubscriber = evt -> {
@@ -364,7 +364,7 @@ public class PropertiesController {
     }
 
     public void updateModel(EntityFacade newPattern) {
-        stampJFXNode.updateViewModel("stampViewModel", (StampViewModel2 viewModel) -> {
+        stampJFXNode.updateViewModel("stampViewModel", (StampFormViewModel viewModel) -> {
             viewModel.init(newPattern, getPatternTopic(), getViewProperties());
         });
     }

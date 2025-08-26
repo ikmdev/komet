@@ -20,13 +20,13 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_LANGUAGE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STAMP_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STAMP_TYPE;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.mvvm.view.common.StampAddController;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampType;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampType;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.events.*;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -347,7 +347,7 @@ public class PropertiesController implements Serializable {
         eventBus.subscribe(conceptTopic, OpenPropertiesPanelEvent.class, propsPanelOpen);
 
         // Stamp
-        this.stampJFXNode.updateViewModel("stampViewModel", (StampViewModel2 viewModel) -> {
+        this.stampJFXNode.updateViewModel("stampViewModel", (StampFormViewModel viewModel) -> {
             viewModel.setPropertyValue(STAMP_TYPE, StampType.CONCEPT);
         });
 
@@ -398,7 +398,7 @@ public class PropertiesController implements Serializable {
         // Create a new DescrNameViewModel for the addfqncontroller.
         this.addFullyQualifiedNameController.updateModel(viewProperties);
 
-        this.stampJFXNode.updateViewModel("stampViewModel", (StampViewModel2 viewModel) -> {
+        this.stampJFXNode.updateViewModel("stampViewModel", (StampFormViewModel viewModel) -> {
             viewModel.init(entityFacade, conceptTopic, viewProperties);
         });
     }

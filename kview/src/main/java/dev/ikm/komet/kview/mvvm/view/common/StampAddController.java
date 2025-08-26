@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.common;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.*;
 import dev.ikm.komet.framework.view.*;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.mvvm.viewmodel.*;
@@ -45,7 +45,7 @@ public class StampAddController {
     private ComboBox<ComponentWithNid> pathComboBox;
 
     @InjectViewModel
-    private StampViewModel2 stampViewModel;
+    private StampFormViewModel stampViewModel;
 
     @FXML
     public void initialize() {
@@ -116,7 +116,7 @@ public class StampAddController {
     }
 
 
-    public StampViewModel2 getStampViewModel() { return stampViewModel; }
+    public StampFormViewModel getStampViewModel() { return stampViewModel; }
 
     @FXML
     public void cancelForm(ActionEvent actionEvent) {

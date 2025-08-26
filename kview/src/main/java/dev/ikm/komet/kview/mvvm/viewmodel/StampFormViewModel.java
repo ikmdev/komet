@@ -24,7 +24,6 @@ import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
@@ -40,26 +39,25 @@ import java.util.UUID;
 import java.util.*;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.CURRENT_STAMP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.FORM_TITLE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATHS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STAMP_TYPE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.TIME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.TIME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampType.CONCEPT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampType.PATTERN;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampType.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.CURRENT_STAMP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.FORM_TITLE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.IS_STAMP_VALUES_THE_SAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.MODULES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.PATHS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STAMP_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUSES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampType.PATTERN;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
 
-public class StampViewModel2 extends FormViewModel {
+public class StampFormViewModel extends FormViewModel {
     /**
      * Provide the standard Confirm Clear dialog title for use in other classes
      */
@@ -110,7 +108,7 @@ public class StampViewModel2 extends FormViewModel {
         public String getTextDescription() { return textDescription; }
     }
 
-    public StampViewModel2() {
+    public StampFormViewModel() {
         // Add Properties
         addProperty(CURRENT_STAMP, (Stamp) null);
         addProperty(STATUS, State.ACTIVE);
@@ -248,7 +246,7 @@ public class StampViewModel2 extends FormViewModel {
     }
 
     @Override
-    public StampViewModel2 save() {
+    public StampFormViewModel save() {
         super.save();
 
         if (invalidProperty().get()) {
@@ -264,31 +262,6 @@ public class StampViewModel2 extends FormViewModel {
 
 
         // -----------  Save stamp on the Database --------------
-
-
-        // ------ ObservableStamp version
-
-//        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get(); // Concept Version
-//        StampEntity stampEntity = latestVersion.stamp();  // Stamp for ConceptVersion.
-//
-//        ObservableStamp observableStamp = ObservableEntity.get(stampEntity.nid()); //ObservableStamp for ConceptVersion.
-//        ObservableStampVersion observableStampVersion = observableStamp.lastVersion(); // Concept STAMP
-//
-//        Transaction transaction = Transaction.make();
-//
-//        StampEntity stampEntity2 = transaction.getStamp(status, stampEntity.authorNid(), module.nid(), path.nid()); // create an uncomitted stamp for records in transaction
-//
-//        observableStampVersion.stateProperty().set(status);
-//        observableStampVersion.timeProperty().set(stampEntity2.time());
-//        observableStampVersion.authorProperty().set(stampEntity.author());
-//        observableStampVersion.moduleProperty().set((ConceptFacade) module);
-//        observableStampVersion.pathProperty().set((ConceptFacade) path);
-//
-//        transaction.commit();
-
-
-        // ------- Composer version
-
         Composer composer = new Composer("Save new STAMP in Component");
 
         Session session = composer.open(status, author.toProxy(), module.toProxy(), path.toProxy());
@@ -343,7 +316,6 @@ public class StampViewModel2 extends FormViewModel {
         }
 
         composer.commitSession(session);
-
 
         // Load the new STAMP and store the new initial values
         loadStamp();
