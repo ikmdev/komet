@@ -59,10 +59,7 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.PatternFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
@@ -377,7 +374,7 @@ public class GenEditingDetailsController {
                 // If the window is in creation mode ignore the refresh event
                 return;
             }
-
+            // TODO update identicon and identifier fields.
             EntityFacade finalSemantic = semanticProperty.get();
             if (evt.getEventType() == GenEditingEvent.PUBLISH
                     && evt.getNid() == finalSemantic.nid()) {
@@ -528,7 +525,7 @@ public class GenEditingDetailsController {
         updateTimeText(stampViewModel.getValue(TIME));
 
         // -- Author
-        ConceptEntity author = stampViewModel.getValue(AUTHOR);
+        EntityFacade author = stampViewModel.getValue(AUTHOR);
         stampViewControl.setAuthor(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(author, getViewProperties()));
 
         // -- Module

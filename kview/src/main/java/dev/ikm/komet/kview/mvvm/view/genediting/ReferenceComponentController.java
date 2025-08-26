@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
+import dev.ikm.tinkar.common.alert.*;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLComponentControl;
@@ -10,9 +11,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.*;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -24,11 +23,13 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.UUID;
+import java.util.*;
 
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CONFIRM_REFERENCE_COMPONENT;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.hasAllFieldTypesSupported;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.hasAnyUnsupportedFieldType;
 import static dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController.CONFIRM_CLEAR_MESSAGE;
 import static dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController.CONFIRM_CLEAR_TITLE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
@@ -105,6 +106,12 @@ public class ReferenceComponentController {
     @FXML
     public void confirm(ActionEvent actionEvent) {
         EntityFacade semantic = createUncommitedSemanticRecord();
+        if (semantic == null) {
+            // prevent user from continuing
+            confirmButton.disableProperty().unbind();
+            confirmButton.setDisable(true);
+            return; // error, one of the field value's default value is null.
+        }
         genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), CONFIRM_REFERENCE_COMPONENT));
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
@@ -112,9 +119,17 @@ public class ReferenceComponentController {
     }
 
     private EntityFacade createUncommitedSemanticRecord() {
+        PatternFacade patternFacade = genEditingViewModel.getPropertyValue(PATTERN);
+        // check if any fields datatypes
+        boolean hasAnyUnsupportedFieldType = hasAnyUnsupportedFieldType(patternFacade);
+        if (hasAnyUnsupportedFieldType) {
+            AlertStreams
+                    .getRoot()
+                    .dispatch(AlertObject.makeError(new RuntimeException("Cannot Create Semantic Record because unsupported field data types don't have default values")));
+            return null;
+        }
         RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();
         UUID semanticUUID = UUID.randomUUID();
-        EntityFacade patternFacade = genEditingViewModel.getPropertyValue(PATTERN);
         EntityProxy referencedComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
 
         SemanticRecord semanticRecord = SemanticRecordBuilder.builder()
@@ -137,6 +152,17 @@ public class ReferenceComponentController {
         StampEntity stampEntity = transaction.getStampForEntities(state, authorNid, moduleNid, pathNid, semanticRecord);
 
         ImmutableList<Object> fieldValues = createDefaultFieldValues(patternFacade, getViewProperties());
+
+        // FIXME: validate if any fields are null, which means we don't have a default value for an unsupported
+        // TODO: When all field datatypes are supported we can obtain the default values to be populated.
+        boolean containsNull = fieldValues.stream().anyMatch(Objects::isNull);
+        if (containsNull) {
+            AlertStreams
+                    .getRoot()
+                    .dispatch(AlertObject.makeError(new RuntimeException("Cannot Create Semantic Record because unsupported field data types don't have default values")));
+            return null;
+        }
+
         versions.add(SemanticVersionRecordBuilder.builder()
                 .chronology(semanticRecord)
                 .stampNid(stampEntity.nid())
