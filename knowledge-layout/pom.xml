@@ -13,10 +13,10 @@
     <name>Knowledge Layout</name>
 
     <dependencies>
-        <dependency>
+        <!--<dependency>
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>coordinate</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>terms</artifactId>

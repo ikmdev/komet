@@ -79,12 +79,12 @@ open module dev.ikm.komet.framework {
     requires transitive dev.ikm.komet.preferences;
     requires transitive dev.ikm.komet.terms;
     requires transitive dev.ikm.tinkar.common;
-    requires transitive dev.ikm.tinkar.coordinate;
+//    requires transitive dev.ikm.tinkar.coordinate;
     requires transitive dev.ikm.tinkar.entity;
     requires transitive dev.ikm.tinkar.terms;
     requires transitive dev.ikm.tinkar.events;
-    requires transitive dev.ikm.jpms.eclipse.collections;
-    requires transitive dev.ikm.jpms.eclipse.collections.api;
+    requires transitive org.eclipse.collections.impl;
+    requires transitive org.eclipse.collections.api;
     requires transitive org.kordamp.ikonli.javafx;
     requires transitive org.slf4j;
     requires transitive dev.ikm.tinkar.ext.lang.owl; // Owl expression builder

@@ -15,7 +15,7 @@
  */
 open module dev.ikm.komet.rules.test {
     requires dev.ikm.komet.framework;
-    requires dev.ikm.tinkar.coordinate;
+//    requires dev.ikm.tinkar.coordinate;
     requires dev.ikm.tinkar.entity;
     requires dev.ikm.tinkar.terms;
     requires javafx.graphics;
