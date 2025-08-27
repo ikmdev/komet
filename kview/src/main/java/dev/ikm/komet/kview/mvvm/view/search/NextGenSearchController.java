@@ -273,7 +273,6 @@ public class NextGenSearchController {
     }
 
     private FilterOptions loadFilterOptions() {
-        Instant start = Instant.now();
         FilterOptions filterOptions = new FilterOptions();
 
         // get parent menu settings
@@ -361,6 +360,7 @@ public class NextGenSearchController {
 
         // sort by
         filterOptions.getSortBy().defaultOptions().clear();
+        filterOptions.getSortBy().selectedOptions().clear();
 
         //TODO Description Type
 

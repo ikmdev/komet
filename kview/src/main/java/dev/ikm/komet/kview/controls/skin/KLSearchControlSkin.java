@@ -1,16 +1,28 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
+import dev.ikm.komet.framework.view.ObservableCoordinate;
+import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
+import dev.ikm.komet.framework.view.ObservableStampCoordinate;
+import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.tinkar.coordinate.stamp.StateSet;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -36,6 +48,11 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 import javafx.util.Subscription;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -62,8 +79,14 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
     private final StackPane filterPane;
     private Subscription subscription;
 
+    // listen to parent view coordinate menu changes
+    private Subscription parentSubscription;
+
     private final ListView<KLSearchControl.SearchResult> resultsPane;
     private final FilterOptionsPopup filterOptionsPopup;
+
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy");
+    private static final List<String> ALL_STATES = StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN.toEnumSet().stream().map(s -> s.name()).toList();
 
     /**
      * <p>Creates a {@link KLSearchControlSkin} instance.
@@ -151,6 +174,10 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         subscription = Subscription.EMPTY;
 
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.NAVIGATOR);
+
+        // initialize the filter options
+        filterOptionsPopup.inheritedFilterOptionsProperty().setValue(loadFilterOptions(control));
+
         filterOptionsPopup.navigatorProperty().bind(control.navigatorProperty());
         getSkinnable().parentProperty().subscribe(parent -> {
             if (parent instanceof Region region) {
@@ -228,6 +255,168 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
                 resultsPane.setVisible(true);
             }
         });
+
+        // listen for changes to the filter options
+        ChangeListener<FilterOptions> changeListener = ((obs, oldFilterOptions, newFilterOptions) -> {
+            if (newFilterOptions != null) {
+                if (!newFilterOptions.getStatus().selectedOptions().isEmpty()) {
+                    StateSet stateSet = StateSet.make(
+                            newFilterOptions.getStatus().selectedOptions().stream().map(
+                                    s -> State.valueOf(s.toUpperCase())).toList());
+                    // update the STATUS
+                    control.getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
+                }
+                if (!newFilterOptions.getPath().selectedOptions().isEmpty()) {
+                    //NOTE: there is no known way to set multiple paths
+                    String pathStr = newFilterOptions.getPath().selectedOptions().stream().findFirst().get();
+
+                    ConceptFacade conceptPath = switch(pathStr) {
+                        case "Master path" -> TinkarTerm.MASTER_PATH;
+                        case "Primordial path" -> TinkarTerm.PRIMORDIAL_PATH;
+                        case "Sandbox path" -> TinkarTerm.SANDBOX_PATH;
+                        default -> TinkarTerm.DEVELOPMENT_PATH;
+                    };
+                    // update the Path
+                    control.getViewProperties().nodeView().stampCoordinate().pathConceptProperty().setValue(conceptPath);
+                }
+                if (!newFilterOptions.getDate().selectedOptions().isEmpty() &&
+                        !oldFilterOptions.getDate().selectedOptions().equals(newFilterOptions.getDate().selectedOptions())) {
+                    long millis = getMillis(newFilterOptions);
+                    // update the time
+                    control.getViewProperties().nodeView().stampCoordinate().timeProperty().set(millis);
+                } else {
+                    // revert to the Latest
+                    Date latest = new Date();
+                    control.getViewProperties().nodeView().stampCoordinate().timeProperty().set(latest.getTime());
+                }
+
+                //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
+                EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC,
+                        new RefreshCalculatorCacheEvent("child filter menu refresh next gen nav", RefreshCalculatorCacheEvent.GLOBAL_REFRESH));
+            }
+        });
+
+        // listen for changes to the filter options
+        filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
+
+        // listen to changes to the parent of the current overrideable view
+        parentSubscription = control.getViewProperties().parentView().subscribe((oldValue, newValue) -> {
+            filterOptionsPopup.filterOptionsProperty().removeListener(changeListener);
+            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(loadFilterOptions(control));
+            filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
+
+            // publish event to refresh the navigator
+            EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC,
+                    new RefreshCalculatorCacheEvent("parent refresh next gen nav", RefreshCalculatorCacheEvent.GLOBAL_REFRESH));
+        });
+    }
+
+    private FilterOptions loadFilterOptions(KLSearchControl control) {
+        FilterOptions filterOptions = new FilterOptions();
+
+        // get parent menu settings
+        ObservableCoordinate parentView = control.getViewProperties().parentView();
+        for (ObservableCoordinate<?> observableCoordinate : parentView.getCompositeCoordinates()) {
+            if (observableCoordinate instanceof ObservableStampCoordinate observableStampCoordinate) {
+
+                // populate the TYPE; this isn't in the parent view coordinate
+                // it is All | Concepts | Semantics
+                filterOptions.getType().selectedOptions().clear();
+                filterOptions.getType().selectedOptions().addAll(new ArrayList<>(List.of("Concepts", "Semantics")));
+                filterOptions.getType().defaultOptions().clear();
+                filterOptions.getType().defaultOptions().addAll(filterOptions.getType().selectedOptions());
+
+                // populate the STATUS
+                StateSet currentStates = observableStampCoordinate.allowedStatesProperty().getValue();
+                List<String> currentStatesStr = currentStates.toEnumSet().stream().map(s -> s.name()).toList();
+
+                filterOptions.getStatus().selectedOptions().clear();
+                filterOptions.getStatus().selectedOptions().addAll(currentStatesStr);
+
+                filterOptions.getStatus().availableOptions().clear();
+                filterOptions.getStatus().availableOptions().addAll(ALL_STATES);
+
+                filterOptions.getStatus().defaultOptions().clear();
+                filterOptions.getStatus().defaultOptions().addAll(currentStatesStr);
+
+                // MODULE
+                filterOptions.getModule().defaultOptions().clear();
+                observableStampCoordinate.moduleNids().intStream().forEach(moduleNid -> {
+                    String moduleStr = control.getViewProperties().calculator().getPreferredDescriptionStringOrNid(moduleNid);
+                    filterOptions.getModule().defaultOptions().add(moduleStr);
+                });
+
+                // populate the PATH
+                ConceptFacade currentPath = observableStampCoordinate.pathConceptProperty().getValue();
+                String currentPathStr = currentPath.description();
+
+                List<String> defaultSelectedPaths = new ArrayList(List.of(currentPathStr));
+                filterOptions.getPath().defaultOptions().clear();
+                filterOptions.getPath().defaultOptions().addAll(defaultSelectedPaths);
+
+                filterOptions.getPath().selectedOptions().clear();
+                filterOptions.getPath().selectedOptions().addAll(defaultSelectedPaths);
+
+                // TIME
+                filterOptions.getDate().defaultOptions().clear();
+                filterOptions.getDate().selectedOptions().clear();
+
+                Long time = observableStampCoordinate.timeProperty().getValue();
+                if (time.equals(Long.MAX_VALUE)) {
+                    filterOptions.getDate().selectedOptions().add("Latest");
+                } else if (time.equals(PREMUNDANE_TIME)) {
+                    //FIXME the custom control doesn't support premundane yet
+                    filterOptions.getDate().selectedOptions().add("Latest");
+                } else {
+                    Date date = new Date(time);
+                    filterOptions.getDate().selectedOptions().add(simpleDateFormat.format(date));
+                }
+                filterOptions.getDate().defaultOptions().addAll(filterOptions.getDate().selectedOptions());
+            } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
+                // populate the LANGUAGE
+                filterOptions.getLanguage().defaultOptions().clear();
+                String languageStr = control.getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(
+                        observableLanguageCoordinate.languageConceptProperty().get().nid());
+                filterOptions.getLanguage().defaultOptions().add(languageStr);
+                filterOptions.getLanguage().selectedOptions().clear();
+                filterOptions.getLanguage().selectedOptions().addAll(filterOptions.getLanguage().defaultOptions());
+
+                filterOptions.getDescription().selectedOptions().add("All");
+                filterOptions.getDescription().defaultOptions().addAll(filterOptions.getDescription().selectedOptions());
+            }
+        }
+
+        // set values for 'Kind Of'
+        filterOptions.getKindOf().defaultOptions().clear();
+        filterOptions.getKindOf().defaultOptions().add("All");
+        filterOptions.getKindOf().selectedOptions().addAll(filterOptions.getKindOf().defaultOptions());
+
+        // membership
+        filterOptions.getMembership().defaultOptions().clear();
+        filterOptions.getMembership().defaultOptions().add("All");
+        filterOptions.getMembership().selectedOptions().addAll(filterOptions.getMembership().defaultOptions());
+
+        // sort by
+        filterOptions.getSortBy().defaultOptions().clear();
+
+        //TODO Description Type
+
+        return filterOptions;
+    }
+
+    private long getMillis(FilterOptions newFilterOptions) {
+        int lastElementIndex = newFilterOptions.getDate().selectedOptions().size() - 1;
+        String newDate = newFilterOptions.getDate().selectedOptions().get(lastElementIndex);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        Date date;
+        try {
+            date = sdf.parse(newDate);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        long millis = date.getTime();
+        return millis;
     }
 
     /** {@inheritDoc} **/
