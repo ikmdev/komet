@@ -55,7 +55,7 @@ public class LoginAuthorController {
     public void initialize() {
         ViewProperties viewProperties = getViewProperties();
         // Create new instance of ViewCalculator to have stated navigation along with inffered.
-        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties,TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
         Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
 
         //If there are no authors mentioned in the stated or inferred then we use the default tinkar term user.
