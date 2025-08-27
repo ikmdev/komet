@@ -32,7 +32,17 @@ public final class ObservableConcept
 
     @Override
     protected ObservableConceptVersion wrap(ConceptVersionRecord version) {
-        return new ObservableConceptVersion(version);
+        ObservableConceptVersion observableConceptVersion = new ObservableConceptVersion(version);
+        observableConceptVersion.versionProperty.addListener((observable, oldValue, newValue) -> {
+            updateEntity(newValue, oldValue);
+        });
+        return observableConceptVersion;
+    }
+
+    private void updateEntity(ConceptVersionRecord newConceptVersionRecord, ConceptVersionRecord oldConceptVersionRecord) {
+        ConceptRecord semantic = Entity.getFast(newConceptVersionRecord.nid());
+        ConceptRecord analogue = semantic.with(newConceptVersionRecord).build();
+        saveToDB(analogue, newConceptVersionRecord, oldConceptVersionRecord);
     }
 
     @Override

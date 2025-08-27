@@ -1,61 +1,32 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.controls.TimeUtils;
+import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
+import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
 import dev.ikm.tinkar.component.Stamp;
-import dev.ikm.tinkar.composer.Composer;
-import dev.ikm.tinkar.composer.Session;
-import dev.ikm.tinkar.composer.assembler.ConceptAssembler;
-import dev.ikm.tinkar.composer.assembler.PatternAssemblerConsumer;
-import dev.ikm.tinkar.composer.template.FullyQualifiedNameConsumer;
-import dev.ikm.tinkar.composer.template.USDialect;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionRecord;
-import dev.ikm.tinkar.entity.PatternVersionRecord;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.terms.ComponentWithNid;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
-import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
-import java.util.*;
-
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.CURRENT_STAMP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.FORM_TITLE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.IS_STAMP_VALUES_THE_SAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.MODULES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.PATHS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STAMP_TYPE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUSES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampType.CONCEPT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampType.PATTERN;
-
-import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.*;
 
 public class StampFormViewModel extends FormViewModel {
     /**
@@ -185,6 +156,14 @@ public class StampFormViewModel extends FormViewModel {
     }
 
     private void loadStamp() {
+//        ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
+//        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+//        Latest<ObservableVersion> latestVersion = observableEntitySnapshot.getLatestVersion();
+//        latestVersion.ifPresent(version -> {
+//            EntityVersion entityVersion = version.getEntityVersion();
+//            StampEntity stampEntity = entityVersion.stamp();
+//            setPropertyValue(CURRENT_STAMP, stampEntity);
+//        });
         EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
         StampEntity stampEntity = latestVersion.stamp();
 
@@ -261,60 +240,81 @@ public class StampFormViewModel extends FormViewModel {
         EntityFacade author = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
 
         // -----------  Save stamp on the Database --------------
-        Composer composer = new Composer("Save new STAMP in Component");
+//        Composer composer = new Composer("Save new STAMP in Component");
+//
+//        Session session = composer.open(status, author.toProxy(), module.toProxy(), path.toProxy());
+//
+//        switch (getPropertyValue(STAMP_TYPE)) {
+//            case CONCEPT -> {
+//                session.compose((ConceptAssembler conceptAssembler) -> {
+//                    conceptAssembler.concept(entityFacade.toProxy());
+//                });
+//            }
+//            case PATTERN -> {
+//                Latest<EntityVersion> latestEntityVersion = viewProperties.calculator().latest(entityFacade);
+//                EntityVersion entityVersion = latestEntityVersion.get();
+//
+//                Entity purposeEntity = ((PatternVersionRecord) entityVersion).semanticPurpose();
+//                Entity meaningEntity = ((PatternVersionRecord) entityVersion).semanticMeaning();
+//
+//                // FQN
+//                SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().languageCalculator()
+//                        .getFullyQualifiedDescription(entityFacade).getWithContradictions().getFirstOptional().get();
+//                ConceptFacade fqnLanguage = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(0);
+//                String fqnString = (String) fqnSemanticEntityVersion.fieldValues().get(1);
+//                ConceptFacade fqnCaseSignificance = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(2);
+//                // ConceptFacade fqnDescriptionType = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(3);
+//
+//                session.compose((PatternAssemblerConsumer) patternAssembler -> {
+//                    patternAssembler
+//                            .pattern(entityFacade.toProxy())
+//                            .meaning(meaningEntity.toProxy())
+//                            .purpose(purposeEntity.toProxy())
+//                            .attach((FullyQualifiedNameConsumer) fqn -> fqn
+//                                    .semantic(fqnSemanticEntityVersion.entity().toProxy())
+//                                    .language(fqnLanguage.toProxy())
+//                                    .text(fqnString)
+//                                    .caseSignificance(fqnCaseSignificance.toProxy())
+//                                    .attach(new USDialect().acceptability(ACCEPTABLE))
+//                            );
+//
+//                    // Add the field definitions
+//                    ImmutableList<FieldDefinitionRecord> fieldDefinitions = ((PatternVersionRecord) entityVersion).fieldDefinitions();
+//                    for (int i = 0; i < fieldDefinitions.size(); i++) {
+//                        FieldDefinitionRecord fieldDefinitionRecord = fieldDefinitions.get(i);
+//
+//                        ConceptEntity fieldMeaning = fieldDefinitionRecord.meaning();
+//                        ConceptEntity fieldPurpose = fieldDefinitionRecord.purpose();
+//                        ConceptEntity fieldDataType = fieldDefinitionRecord.dataType();
+//                        patternAssembler.fieldDefinition(fieldMeaning.toProxy(), fieldPurpose.toProxy(), fieldDataType.toProxy(), i);
+//                    }
+//                });
+//            }
+//            default -> throw new RuntimeException("Stamp Type " + getPropertyValue(STAMP_TYPE) + " not supported");
+//        }
+//
+//        composer.commitSession(session);
 
-        Session session = composer.open(status, author.toProxy(), module.toProxy(), path.toProxy());
 
-        switch (getPropertyValue(STAMP_TYPE)) {
-            case CONCEPT -> {
-                session.compose((ConceptAssembler conceptAssembler) -> {
-                    conceptAssembler.concept(entityFacade.toProxy());
-                });
+        ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
+        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+        observableEntitySnapshot.getLatestVersion().ifPresent(latestVersion -> {
+            if (latestVersion instanceof ObservableVersion<?> observableVersion) {
+                observableVersion.stateProperty().set(status);
+                observableVersion.authorProperty().set((ConceptFacade) author);
+                observableVersion.moduleProperty().set((ConceptFacade) module);
+                observableVersion.pathProperty().set((ConceptFacade) path);
+
+                Transaction.forVersion(observableVersion).ifPresentOrElse(
+                        Transaction::commit,
+                        () ->{
+                            throw new RuntimeException("Unable to commit transaction");
+                        }
+                );
             }
-            case PATTERN -> {
-                Latest<EntityVersion> latestEntityVersion = viewProperties.calculator().latest(entityFacade);
-                EntityVersion entityVersion = latestEntityVersion.get();
 
-                Entity purposeEntity = ((PatternVersionRecord) entityVersion).semanticPurpose();
-                Entity meaningEntity = ((PatternVersionRecord) entityVersion).semanticMeaning();
 
-                // FQN
-                SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().languageCalculator()
-                        .getFullyQualifiedDescription(entityFacade).getWithContradictions().getFirstOptional().get();
-                ConceptFacade fqnLanguage = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(0);
-                String fqnString = (String) fqnSemanticEntityVersion.fieldValues().get(1);
-                ConceptFacade fqnCaseSignificance = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(2);
-                // ConceptFacade fqnDescriptionType = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(3);
-
-                session.compose((PatternAssemblerConsumer) patternAssembler -> {
-                    patternAssembler
-                            .pattern(entityFacade.toProxy())
-                            .meaning(meaningEntity.toProxy())
-                            .purpose(purposeEntity.toProxy())
-                            .attach((FullyQualifiedNameConsumer) fqn -> fqn
-                                    .semantic(fqnSemanticEntityVersion.entity().toProxy())
-                                    .language(fqnLanguage.toProxy())
-                                    .text(fqnString)
-                                    .caseSignificance(fqnCaseSignificance.toProxy())
-                                    .attach(new USDialect().acceptability(ACCEPTABLE))
-                            );
-
-                    // Add the field definitions
-                    ImmutableList<FieldDefinitionRecord> fieldDefinitions = ((PatternVersionRecord) entityVersion).fieldDefinitions();
-                    for (int i = 0; i < fieldDefinitions.size(); i++) {
-                        FieldDefinitionRecord fieldDefinitionRecord = fieldDefinitions.get(i);
-
-                        ConceptEntity fieldMeaning = fieldDefinitionRecord.meaning();
-                        ConceptEntity fieldPurpose = fieldDefinitionRecord.purpose();
-                        ConceptEntity fieldDataType = fieldDefinitionRecord.dataType();
-                        patternAssembler.fieldDefinition(fieldMeaning.toProxy(), fieldPurpose.toProxy(), fieldDataType.toProxy(), i);
-                    }
-                });
-            }
-            default -> throw new RuntimeException("Stamp Type " + getPropertyValue(STAMP_TYPE) + " not supported");
-        }
-
-        composer.commitSession(session);
+        });
 
         // Load the new STAMP and store the new initial values
         loadStamp();
