@@ -11,7 +11,6 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.StampVersionRecord;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,13 +63,15 @@ public class ViewCoordinateHelper {
      * @param viewProperties A given view property
      * @return newViewCalculatorWithCache
      */
-    public static ViewCalculatorWithCache createNavigationCalculatorLatest(ViewProperties viewProperties) {
+    public static ViewCalculatorWithCache createNavigationCalculatorWithPatternNidsLatest(ViewProperties viewProperties,  int... patternNids) {
         ViewCalculator existingViewCalculator = viewProperties.calculator();
-        IntIdSet intIdSet = existingViewCalculator.navigationCoordinate().navigationPatternNids().with(TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        IntIdSet intIdSet = existingViewCalculator.navigationCoordinate().navigationPatternNids().with(patternNids);
         NavigationCoordinateRecord latestNavigationCoordinate = existingViewCalculator.navigationCoordinate().withNavigationPatternNids(intIdSet);
         ViewCoordinateRecord latestViewCoordinate = existingViewCalculator.viewCoordinateRecord().withNavigationCoordinate(latestNavigationCoordinate);
         return new ViewCalculatorWithCache(latestViewCoordinate);
     }
+
+
 
     /**
      * TODO: Experimental - Returns an updated view calculator cache based on the latest committed stamp version.
