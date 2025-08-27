@@ -35,6 +35,7 @@ import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.composer.Composer;
 import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.PatternAssembler;
+import dev.ikm.tinkar.composer.assembler.PatternAssemblerConsumer;
 import dev.ikm.tinkar.composer.template.FullyQualifiedName;
 import dev.ikm.tinkar.composer.template.Synonym;
 import dev.ikm.tinkar.composer.template.USDialect;
@@ -407,6 +408,19 @@ public class PatternViewModel extends FormViewModel {
                 }
             });
         } else {
+
+            // only write when there is change in Semantic meaning or Semantic purpose
+            if ((conceptEntityMeaning.nid() != TinkarTerm.MEANING.nid()) ||
+                    (conceptEntityPurpose.nid() != TinkarTerm.PURPOSE.nid())) {
+                session.compose((PatternAssemblerConsumer) patternAssembler -> {
+                    patternAssembler
+                            .pattern(pattern)
+                            .meaning(conceptEntityMeaning)
+                            .purpose(conceptEntityPurpose);
+                });
+
+            }
+
             /*
             only write a fqn version IF there is a change to
                 - FQN language,
