@@ -8,12 +8,21 @@ import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.composer.Composer;
 import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.composer.assembler.ConceptAssembler;
+import dev.ikm.tinkar.composer.assembler.PatternAssemblerConsumer;
+import dev.ikm.tinkar.composer.template.FullyQualifiedNameConsumer;
+import dev.ikm.tinkar.composer.template.USDialect;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ComponentWithNid;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -21,6 +30,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
+import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,21 +39,25 @@ import java.util.UUID;
 import java.util.*;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.CURRENT_STAMP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.FORM_TITLE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.IS_STAMP_VALUES_THE_SAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.MODULES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.PATHS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.STATUSES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.TIME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.CURRENT_STAMP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.FORM_TITLE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.IS_STAMP_VALUES_THE_SAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.MODULES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.PATHS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STAMP_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUSES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampType.PATTERN;
 
-public class StampViewModel2 extends FormViewModel {
-    public static final String INITIAL_FORM_TITLE = "Latest Concept Version";
+import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
+
+public class StampFormViewModel extends FormViewModel {
     /**
      * Provide the standard Confirm Clear dialog title for use in other classes
      */
@@ -68,6 +82,8 @@ public class StampViewModel2 extends FormViewModel {
         PATH,                           // User selected Path
         TIME,                           // Time of the Stamp
 
+        STAMP_TYPE,
+
         IS_STAMP_VALUES_THE_SAME,       // Are the Stamp values in the properties the same as of the current Stamp
 
         STATUSES,
@@ -78,7 +94,21 @@ public class StampViewModel2 extends FormViewModel {
         TIME_TEXT
     }
 
-    public StampViewModel2() {
+    public enum StampType {
+        CONCEPT("Concept"),
+        PATTERN("Pattern"),
+        SEMANTIC("Semantic");
+
+        private final String textDescription;
+
+        StampType(String textDescription) {
+            this.textDescription = textDescription;
+        }
+
+        public String getTextDescription() { return textDescription; }
+    }
+
+    public StampFormViewModel() {
         // Add Properties
         addProperty(CURRENT_STAMP, (Stamp) null);
         addProperty(STATUS, State.ACTIVE);
@@ -86,6 +116,7 @@ public class StampViewModel2 extends FormViewModel {
         addProperty(MODULE, (ComponentWithNid) null);
         addProperty(PATH, (ComponentWithNid) null);
         addProperty(TIME, 0L);
+        addProperty(STAMP_TYPE, (StampType) null);
 
         addProperty(IS_STAMP_VALUES_THE_SAME, true);
         addValidator(IS_STAMP_VALUES_THE_SAME, "Validator Property", (ValidationResult vr, ViewModel vm) -> {
@@ -100,7 +131,7 @@ public class StampViewModel2 extends FormViewModel {
         addProperty(PATHS, Collections.emptyList(), true);
         addProperty(STATUSES, Collections.emptyList(), true);
 
-        addProperty(FORM_TITLE, INITIAL_FORM_TITLE);
+        addProperty(FORM_TITLE, "");
         addProperty(TIME_TEXT, "");
 
         // run validators when the following properties change.
@@ -168,10 +199,10 @@ public class StampViewModel2 extends FormViewModel {
         ConceptEntity path = paths.stream().filter( m -> m.nid() == stampEntity.pathNid()).findFirst().orElse(null);
 
         setPropertyValue(STATUS, stampEntity.state());
+        setPropertyValue(TIME, stampEntity.time());
         setPropertyValue(AUTHOR, stampEntity.author());
         setPropertyValue(MODULE, module);
         setPropertyValue(PATH, path);
-        setPropertyValue(TIME, stampEntity.time());
     }
 
     private boolean updateIsStampValuesChanged() {
@@ -183,12 +214,17 @@ public class StampViewModel2 extends FormViewModel {
 
         setPropertyValue(IS_STAMP_VALUES_THE_SAME, same);
 
+        StampType stampType = getPropertyValue(STAMP_TYPE);
+
         if (same) {
-            setPropertyValue(FORM_TITLE, INITIAL_FORM_TITLE);
+            setPropertyValue(FORM_TITLE, "Latest " + stampType.getTextDescription() + " Version");
             setPropertyValue(TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
+            setPropertyValue(AUTHOR, stampEntity.author());
         } else {
-            setPropertyValue(FORM_TITLE, "New Concept Version");
+            setPropertyValue(FORM_TITLE, "New " + stampType.getTextDescription() + " Version");
             setPropertyValue(TIME_TEXT, "Uncommitted");
+            ConceptFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
+            setPropertyValue(AUTHOR, authorConcept);
         }
 
         return same;
@@ -210,7 +246,7 @@ public class StampViewModel2 extends FormViewModel {
     }
 
     @Override
-    public StampViewModel2 save() {
+    public StampFormViewModel save() {
         super.save();
 
         if (invalidProperty().get()) {
@@ -222,44 +258,64 @@ public class StampViewModel2 extends FormViewModel {
         State status = getValue(STATUS);
         EntityFacade module = getValue(MODULE);
         EntityFacade path = getValue(PATH);
+        EntityFacade author = getValue(AUTHOR);
 
 
         // -----------  Save stamp on the Database --------------
+        Composer composer = new Composer("Save new STAMP in Component");
 
+        Session session = composer.open(status, author.toProxy(), module.toProxy(), path.toProxy());
 
-        // ------ ObservableStamp version
+        switch (getPropertyValue(STAMP_TYPE)) {
+            case CONCEPT -> {
+                session.compose((ConceptAssembler conceptAssembler) -> {
+                    conceptAssembler.concept(entityFacade.toProxy());
+                });
+            }
+            case PATTERN -> {
+                Latest<EntityVersion> latestEntityVersion = viewProperties.calculator().latest(entityFacade);
+                EntityVersion entityVersion = latestEntityVersion.get();
 
-//        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get(); // Concept Version
-//        StampEntity stampEntity = latestVersion.stamp();  // Stamp for ConceptVersion.
-//
-//        ObservableStamp observableStamp = ObservableEntity.get(stampEntity.nid()); //ObservableStamp for ConceptVersion.
-//        ObservableStampVersion observableStampVersion = observableStamp.lastVersion(); // Concept STAMP
-//
-//        Transaction transaction = Transaction.make();
-//
-//        StampEntity stampEntity2 = transaction.getStamp(status, stampEntity.authorNid(), module.nid(), path.nid()); // create an uncomitted stamp for records in transaction
-//
-//        observableStampVersion.stateProperty().set(status);
-//        observableStampVersion.timeProperty().set(stampEntity2.time());
-//        observableStampVersion.authorProperty().set(stampEntity.author());
-//        observableStampVersion.moduleProperty().set((ConceptFacade) module);
-//        observableStampVersion.pathProperty().set((ConceptFacade) path);
-//
-//        transaction.commit();
+                Entity purposeEntity = ((PatternVersionRecord) entityVersion).semanticPurpose();
+                Entity meaningEntity = ((PatternVersionRecord) entityVersion).semanticMeaning();
 
+                // FQN
+                SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().languageCalculator()
+                        .getFullyQualifiedDescription(entityFacade).getWithContradictions().getFirstOptional().get();
+                ConceptFacade fqnLanguage = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(0);
+                String fqnString = (String) fqnSemanticEntityVersion.fieldValues().get(1);
+                ConceptFacade fqnCaseSignificance = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(2);
+                // ConceptFacade fqnDescriptionType = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(3);
 
-        // ------- Composer version
+                session.compose((PatternAssemblerConsumer) patternAssembler -> {
+                    patternAssembler
+                            .pattern(entityFacade.toProxy())
+                            .meaning(meaningEntity.toProxy())
+                            .purpose(purposeEntity.toProxy())
+                            .attach((FullyQualifiedNameConsumer) fqn -> fqn
+                                    .semantic(fqnSemanticEntityVersion.entity().toProxy())
+                                    .language(fqnLanguage.toProxy())
+                                    .text(fqnString)
+                                    .caseSignificance(fqnCaseSignificance.toProxy())
+                                    .attach(new USDialect().acceptability(ACCEPTABLE))
+                            );
 
-        Composer composer = new Composer("Save new STAMP in Concept");
+                    // Add the field definitions
+                    ImmutableList<FieldDefinitionRecord> fieldDefinitions = ((PatternVersionRecord) entityVersion).fieldDefinitions();
+                    for (int i = 0; i < fieldDefinitions.size(); i++) {
+                        FieldDefinitionRecord fieldDefinitionRecord = fieldDefinitions.get(i);
 
-        Session session = composer.open(status, TinkarTerm.USER, module.toProxy(), path.toProxy());
-
-        session.compose((ConceptAssembler conceptAssembler) -> {
-            conceptAssembler.concept(entityFacade.toProxy());
-        });
+                        ConceptEntity fieldMeaning = fieldDefinitionRecord.meaning();
+                        ConceptEntity fieldPurpose = fieldDefinitionRecord.purpose();
+                        ConceptEntity fieldDataType = fieldDefinitionRecord.dataType();
+                        patternAssembler.fieldDefinition(fieldMeaning.toProxy(), fieldPurpose.toProxy(), fieldDataType.toProxy(), i);
+                    }
+                });
+            }
+            default -> throw new RuntimeException("Stamp Type " + getPropertyValue(STAMP_TYPE) + " not supported");
+        }
 
         composer.commitSession(session);
-
 
         // Load the new STAMP and store the new initial values
         loadStamp();

@@ -1,6 +1,6 @@
-package dev.ikm.komet.kview.mvvm.view.properties;
+package dev.ikm.komet.kview.mvvm.view.common;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel2.StampProperties.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.*;
 import dev.ikm.komet.framework.view.*;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.mvvm.viewmodel.*;
@@ -12,13 +12,10 @@ import javafx.fxml.*;
 import javafx.scene.control.*;
 import org.carlfx.cognitive.loader.*;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-
 
 public class StampAddController {
+
+    public static final String ADD_STAMP_FXML_FILE = "stamp-add.fxml";
 
     @FXML
     private Label formTitle;
@@ -48,7 +45,7 @@ public class StampAddController {
     private ComboBox<ComponentWithNid> pathComboBox;
 
     @InjectViewModel
-    private StampViewModel2 stampViewModel;
+    private StampFormViewModel stampViewModel;
 
     @FXML
     public void initialize() {
@@ -81,7 +78,12 @@ public class StampAddController {
 
             @Override
             protected String computeValue() {
-                return "Author";
+                if (getViewProperties() != null) {
+                    ConceptFacade authorConcept = stampViewModel.getPropertyValue(AUTHOR);
+                    return getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(authorConcept.nid());
+                } else {
+                    return "Author Not selected";
+                }
             }
         };
         authorTextField.textProperty().bind(authorTextBinding);
@@ -114,7 +116,7 @@ public class StampAddController {
     }
 
 
-    public StampViewModel2 getStampViewModel() { return stampViewModel; }
+    public StampFormViewModel getStampViewModel() { return stampViewModel; }
 
     @FXML
     public void cancelForm(ActionEvent actionEvent) {

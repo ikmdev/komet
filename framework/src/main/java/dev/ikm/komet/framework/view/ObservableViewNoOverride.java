@@ -97,13 +97,21 @@ public class ObservableViewNoOverride extends ObservableViewBase {
         return getValue();
     }
 
+    /// Set the value of the language coordinates to the updatedCoordinate value
+    private void setLanguageCoordinates(ViewCoordinateRecord updatedCoordinate) {
+        for (int i = 0; i < languageCoordinates.size(); i++) {
+            languageCoordinates.get(i).setValue(
+                    updatedCoordinate.languageCoordinates().get(i).toLanguageCoordinateRecord());
+        }
+    }
 
     @Override
     protected ViewCoordinateRecord baseCoordinateChangedListenersRemoved(ObservableValue<? extends ViewCoordinateRecord> observable,
                                                                          ViewCoordinateRecord oldValue, ViewCoordinateRecord newValue) {
         this.stampCoordinateObservable.setValue(newValue.stampCoordinate());
-        this.languageCoordinates.setAll(newValue.languageCoordinates().stream()
-                .map(languageCoordinate -> new ObservableLanguageCoordinateNoOverride(languageCoordinate)).toList());
+
+        setLanguageCoordinates(newValue);
+
         this.navigationCoordinateObservable.setValue(newValue.navigationCoordinate());
         this.logicCoordinateObservable.setValue(newValue.logicCoordinate());
         return newValue;

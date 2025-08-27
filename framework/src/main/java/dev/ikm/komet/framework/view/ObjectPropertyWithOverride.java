@@ -100,7 +100,7 @@ public class ObjectPropertyWithOverride<T> extends SimpleEqualityBasedObjectProp
             super.set(null);
         } else {
             // values not equal
-             super.set(newValue);
+            super.set(newValue);
             this.overridden = true;
             invalidated();
             fireValueChangedEvent();

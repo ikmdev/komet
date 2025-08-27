@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
 import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
+import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent.OPEN_PATTERN;
 import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
@@ -65,6 +66,8 @@ import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.StampViewControl;
+import dev.ikm.komet.kview.events.AddStampEvent;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -294,6 +297,8 @@ public class PatternDetailsController {
 
     private Subscriber<PatternFieldsPanelEvent> patternFieldsPanelEventSubscriber;
 
+    private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
+
     public PatternDetailsController() {}
 
     @FXML
@@ -410,7 +415,7 @@ public class PatternDetailsController {
 
         // -- author
         stampViewModel.getProperty(AUTHOR).subscribe(newAuthor -> {
-            String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid((ConceptEntity)newAuthor, getViewProperties());
+            String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid((EntityFacade)newAuthor, getViewProperties());
             stampViewControl.setAuthor(authorDescription);
         });
 
@@ -420,13 +425,23 @@ public class PatternDetailsController {
 
         // -- module
         stampViewModel.getProperty(MODULE).subscribe(newModule -> {
-            String moduleDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity)newModule).nid());
-            stampViewControl.setModule(moduleDescr);
+            String newModuleDescription;
+            if (newModule == null) {
+                newModuleDescription = "";
+            } else {
+                newModuleDescription = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity)newModule).nid());
+            }
+            stampViewControl.setModule(newModuleDescription);
         });
 
         // -- path
         stampViewModel.getProperty(PATH).subscribe(newPath -> {
-            String pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity) newPath).nid());
+            String pathDescr;
+            if (newPath == null) {
+                pathDescr = "";
+            } else {
+                pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity) newPath).nid());
+            }
             stampViewControl.setPath(pathDescr);
         });
 
@@ -439,11 +454,15 @@ public class PatternDetailsController {
         // set the identicon
         ObjectProperty<EntityFacade> patternProperty = patternViewModel.getProperty(PATTERN);
 
-        // dynamically update the identicon image.
         patternProperty.subscribe(entityFacade -> {
             if (entityFacade != null) {
+                // dynamically update the identicon image.
                 Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
                 identiconImageView.setImage(identicon);
+            }
+
+            if (propertiesController != null) {
+                propertiesController.updateModel(entityFacade);
             }
         });
 
@@ -538,6 +557,11 @@ public class PatternDetailsController {
             }
         });
 
+        // if the user clicks the Close Properties Button from the Edit Descriptions panel
+        // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
+        closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
+        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+
         // Setup Properties
         setupProperties();
         setupFilterCoordinatesMenu();
@@ -552,7 +576,14 @@ public class PatternDetailsController {
     }
 
     private void onStampSelectionChanged() {
-
+        if (stampViewControl.isSelected()) {
+            if (!propertiesToggleButton.isSelected()) {
+                propertiesToggleButton.fire();
+            }
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new AddStampEvent(stampViewControl, AddStampEvent.ANY));
+        } else {
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
+        }
     }
 
     /// Show the public ID
@@ -854,6 +885,8 @@ public class PatternDetailsController {
         this.propertiesBorderPane = propsFXMLLoader.node();
         this.propertiesController = propsFXMLLoader.controller();
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
+
+        propertiesController.updateModel(patternViewModel.getPropertyValue(PATTERN));
 
         //FIXME this doesn't work properly, should leave for a future effort...
         // open the panel, allow the state machine to determine which panel to show
