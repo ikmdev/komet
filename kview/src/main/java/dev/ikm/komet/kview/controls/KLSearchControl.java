@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.skin.KLSearchControlSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -241,6 +242,18 @@ public class KLSearchControl extends Control {
     }
     public final void setNavigator(Navigator value) {
         navigatorProperty.set(value);
+    }
+
+    // viewPropertiesObjectProperty
+    private final ObjectProperty<ViewProperties> ViewPropertiesProperty = new SimpleObjectProperty<>(this, "ViewProperties");
+    public final ObjectProperty<ViewProperties> ViewPropertiesProperty() {
+        return ViewPropertiesProperty;
+    }
+    public final ViewProperties getViewProperties() {
+        return ViewPropertiesProperty.get();
+    }
+    public final void setViewProperties(ViewProperties value) {
+        ViewPropertiesProperty.set(value);
     }
 
     /**

@@ -234,8 +234,10 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         if (containsDate(option.selectedOptions())) {
             try {
-                LocalDate date = LocalDate.parse(option.selectedOptions().getFirst(), DateTimeFormatter.ofPattern(DEFAULT_DATE_PATTERN));
-                calendarControl.setDate(date);
+                if (!option.selectedOptions().getFirst().equals("Latest")) {
+                    LocalDate date = LocalDate.parse(option.selectedOptions().getFirst(), DateTimeFormatter.ofPattern(DEFAULT_DATE_PATTERN));
+                    calendarControl.setDate(date);
+                }
             } catch (DateTimeParseException e) {
                 e.printStackTrace();
             }
