@@ -54,7 +54,7 @@ public class LoginAuthorController {
     @FXML
     public void initialize() {
         ViewProperties viewProperties = getViewProperties();
-        // Create new instance of ViewCalculator to have stated navigation along with inffered.
+        // Create new instance of ViewCalculator to have stated navigation along with inferred.
         ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
         Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
 
