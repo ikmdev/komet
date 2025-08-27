@@ -15,20 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.model;
 
-import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
-
-import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.tinkar.common.id.IntIdList;
@@ -43,19 +29,10 @@ import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
-import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.RecordListBuilder;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
@@ -65,15 +42,12 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 /**
  * utitity class for accessing and modifying common data operations
@@ -155,7 +129,7 @@ public class DataModelHelper {
      * @return A set of ConceptEntity objects representing available description types.
      *         The set may contain fewer elements than expected if some concept entities
      *         could not be retrieved from the database.
-     */            
+     */
     public static Set<ConceptEntity> fetchDescriptionTypes() {
         return Stream.of(
                         FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid(),
@@ -178,8 +152,22 @@ public class DataModelHelper {
     public static Set<ConceptEntity> fetchDescendentsOfConcept(ViewProperties viewProperties, PublicId publicId) {
         Objects.requireNonNull(viewProperties, "View properties cannot be null");
         Objects.requireNonNull(publicId, "Public ID cannot be null");
+        return fetchDescendentsOfConcept(viewProperties.calculator(), publicId);
+    }
 
-        IntIdSet descendants = viewProperties.calculator().descendentsOf(EntityService.get().nidForPublicId(publicId));
+    /**
+     * Retrieves a set of ConceptEntity objects representing the descendants of a specified concept.
+     *
+     * @param viewCalculator The view calculator to determine descendants
+     * @param publicId The public identifier of the concept whose descendants are to be retrieved
+     * @return A set of ConceptEntity objects representing the descendants of the specified concept.
+     *         The set may contain fewer elements than expected if some concept entities
+     *         could not be retrieved from the database.
+     */
+    public static Set<ConceptEntity> fetchDescendentsOfConcept(ViewCalculator viewCalculator, PublicId publicId) {
+        Objects.requireNonNull(viewCalculator, "View calculator cannot be null");
+        Objects.requireNonNull(publicId, "Public ID cannot be null");
+        IntIdSet descendants = viewCalculator.descendentsOf(EntityService.get().nidForPublicId(publicId));
         return descendants.intStream()
                 .mapToObj(DataModelHelper::getConceptEntitySafely)
                 .filter(Objects::nonNull)
