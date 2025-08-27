@@ -1,7 +1,9 @@
 package dev.ikm.komet.kview.mvvm.model;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -54,6 +56,22 @@ public class ViewCoordinateHelper {
         ViewCoordinateRecord latestViewCoordinate = existingViewCalculator.viewCoordinateRecord().withStampCoordinate(latestStampCoordinate);
         return new ViewCalculatorWithCache(latestViewCoordinate);
     }
+
+
+    /**
+     * Create a new View Calculator with stated navigation with an updated view coordinate & view calculator.
+     * @param viewProperties A given view property
+     * @return newViewCalculatorWithCache
+     */
+    public static ViewCalculatorWithCache createNavigationCalculatorWithPatternNidsLatest(ViewProperties viewProperties, int... patternNids) {
+        ViewCalculator existingViewCalculator = viewProperties.calculator();
+        IntIdSet intIdSet = existingViewCalculator.navigationCoordinate().navigationPatternNids().with(patternNids);
+        NavigationCoordinateRecord latestNavigationCoordinate = existingViewCalculator.navigationCoordinate().withNavigationPatternNids(intIdSet);
+        ViewCoordinateRecord latestViewCoordinate = existingViewCalculator.viewCoordinateRecord().withNavigationCoordinate(latestNavigationCoordinate);
+        return new ViewCalculatorWithCache(latestViewCoordinate);
+    }
+
+
 
     /**
      * TODO: Experimental - Returns an updated view calculator cache based on the latest committed stamp version.
