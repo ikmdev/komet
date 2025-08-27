@@ -231,11 +231,6 @@
                 <artifactId>entity</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
-<!--            <dependency>-->
-<!--                <groupId>${tinkar-core.groupId}</groupId>-->
-<!--                <artifactId>coordinate</artifactId>-->
-<!--                <version>${tinkar-core.version}</version>-->
-<!--            </dependency>-->
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>entity-provider</artifactId>
