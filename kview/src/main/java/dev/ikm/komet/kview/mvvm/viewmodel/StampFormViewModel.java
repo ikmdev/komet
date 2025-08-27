@@ -258,8 +258,7 @@ public class StampFormViewModel extends FormViewModel {
         State status = getValue(STATUS);
         EntityFacade module = getValue(MODULE);
         EntityFacade path = getValue(PATH);
-        EntityFacade author = getValue(AUTHOR);
-
+        EntityFacade author = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
 
         // -----------  Save stamp on the Database --------------
         Composer composer = new Composer("Save new STAMP in Component");

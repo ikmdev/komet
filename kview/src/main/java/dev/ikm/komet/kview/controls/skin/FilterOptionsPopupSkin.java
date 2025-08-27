@@ -248,7 +248,11 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         }
         int rootNid = navigator.getRootNids()[0];
 
-        FilterOptions.Option option = control.getInheritedFilterOptions().getType();
+        FilterOptions.Option option = control.getInheritedFilterOptions().getNavigator();
+        FilterTitledPane navigatorFilterTitledPane = setupTitledPane(option);
+        setDefaultOptions(option);
+
+        option = control.getInheritedFilterOptions().getType();
         FilterTitledPane typeFilterTitledPane = setupTitledPane(option);
         if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.SEARCH) {
             setInheritedOptions(option);
@@ -313,6 +317,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
         if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.NAVIGATOR) {
             accordion.getPanes().setAll(
+                    navigatorFilterTitledPane,
                     headerFilterTitledPane,
                     statusFilterTitledPane,
                     moduleFilterTitledPane,
