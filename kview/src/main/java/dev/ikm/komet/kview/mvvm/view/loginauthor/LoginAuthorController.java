@@ -1,6 +1,10 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
@@ -15,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
@@ -49,7 +54,17 @@ public class LoginAuthorController {
     @FXML
     public void initialize() {
         ViewProperties viewProperties = getViewProperties();
-        loginAuthorViewModel.getObservableList(AUTHORS).addAll(fetchDescendentsOfConcept(viewProperties, TinkarTerm.USER.publicId()));
+        // Create new instance of ViewCalculator to have stated navigation along with inferred.
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
+
+        //If there are no authors mentioned in the stated or inferred then we use the default tinkar term user.
+        if (conceptEntitySet.isEmpty()) {
+            //TODO further refactoring should be done to be more abstract and UI should only use light entity facade to be more abstract.
+            conceptEntitySet.add(EntityService.get().getEntityFast(TinkarTerm.USER));
+        }
+
+        loginAuthorViewModel.getObservableList(AUTHORS).addAll(conceptEntitySet);
         userChooser.setPromptText("Select a user");
         userChooser.setItems(loginAuthorViewModel.getObservableList(AUTHORS));
         userChooser.getItems().sort(Comparator.comparing(this::getUserName));
