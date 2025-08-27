@@ -250,7 +250,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
         FilterOptions.Option option = control.getInheritedFilterOptions().getNavigator();
         FilterTitledPane navigatorFilterTitledPane = setupTitledPane(option);
-        setDefaultOptions(option);
+        setInheritedOptions(option);
 
         option = control.getInheritedFilterOptions().getType();
         FilterTitledPane typeFilterTitledPane = setupTitledPane(option);
