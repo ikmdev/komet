@@ -63,7 +63,7 @@ public class ViewCoordinateHelper {
      * @param viewProperties A given view property
      * @return newViewCalculatorWithCache
      */
-    public static ViewCalculatorWithCache createNavigationCalculatorWithPatternNidsLatest(ViewProperties viewProperties,  int... patternNids) {
+    public static ViewCalculatorWithCache createNavigationCalculatorWithPatternNidsLatest(ViewProperties viewProperties, int... patternNids) {
         ViewCalculator existingViewCalculator = viewProperties.calculator();
         IntIdSet intIdSet = existingViewCalculator.navigationCoordinate().navigationPatternNids().with(patternNids);
         NavigationCoordinateRecord latestNavigationCoordinate = existingViewCalculator.navigationCoordinate().withNavigationPatternNids(intIdSet);
