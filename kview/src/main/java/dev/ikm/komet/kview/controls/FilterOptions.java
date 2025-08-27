@@ -19,6 +19,7 @@ public class FilterOptions implements Serializable {
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
 
     public enum OPTION_ITEM {
+        NAVIGATOR("navigator", ""),
         TYPE("type", ""),
         HEADER("header", ""),
         STATUS("status", "Status"),
@@ -195,6 +196,16 @@ public class FilterOptions implements Serializable {
     private final EnumSet<Option.BUTTON> allExcludingSet = EnumSet.of(Option.BUTTON.ALL, Option.BUTTON.EXCLUDING);
     private final EnumSet<Option.BUTTON> allAnyExcludingSet = EnumSet.of(Option.BUTTON.ALL, Option.BUTTON.ANY, Option.BUTTON.EXCLUDING);
 
+    private Option navigator;
+    {
+        List<String> navigatorOptions = Stream.of(
+                        "navigator.option.stated", "navigator.option.inferred")
+                .map(resources::getString)
+                .toList();
+        navigator = new Option(OPTION_ITEM.NAVIGATOR, "navigator.title", new ArrayList<>(),
+                navigatorOptions, new ArrayList<>(), null, false, false, noneSet);
+    }
+
     private Option type;
     {
         List<String> typeOptions = Stream.of(
@@ -280,8 +291,12 @@ public class FilterOptions implements Serializable {
 
     public FilterOptions() {
         options = new ArrayList<>(List.of(
-                type, header, status, module, path, language,
+                navigator, type, header, status, module, path, language,
                 descriptionType, kindOf, membership, sortBy, date));
+    }
+
+    public Option getNavigator() {
+        return navigator;
     }
 
     public Option getType() {
@@ -341,6 +356,7 @@ public class FilterOptions implements Serializable {
 
     public void setOptionForItem(OPTION_ITEM item, Option option) {
         switch (item) {
+            case NAVIGATOR -> navigator = option;
             case TYPE -> type = option;
             case HEADER -> header = option;
             case STATUS -> status = option;
@@ -355,7 +371,7 @@ public class FilterOptions implements Serializable {
         }
         options.clear();
         options.addAll(List.of(
-                type, header, status, module, path, language,
+                navigator, type, header, status, module, path, language,
                 descriptionType, kindOf, membership, sortBy, date));
     }
 
@@ -364,7 +380,8 @@ public class FilterOptions implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FilterOptions that = (FilterOptions) o;
-        return Objects.equals(type, that.type) &&
+        return Objects.equals(navigator, that.navigator) &&
+                Objects.equals(type, that.type) &&
                 Objects.equals(header, that.header) &&
                 Objects.equals(status, that.status) &&
                 Objects.equals(module, that.module) &&
@@ -381,7 +398,7 @@ public class FilterOptions implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(
-                type, header, status, module, path, language,
+                navigator, type, header, status, module, path, language,
                 descriptionType, kindOf, membership, sortBy, date,
                 options);
     }
