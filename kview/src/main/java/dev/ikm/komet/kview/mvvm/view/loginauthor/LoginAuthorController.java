@@ -60,6 +60,7 @@ public class LoginAuthorController {
 
         //If there are no authors mentioned in the stated or inferred then we use the default tinkar term user.
         if (conceptEntitySet.isEmpty()) {
+            //TODO further refactoring should be done to be more abstract and UI should only use light entity facade to be more abstract.
             conceptEntitySet.add(EntityService.get().getEntityFast(TinkarTerm.USER));
         }
 
