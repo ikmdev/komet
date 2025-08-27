@@ -408,7 +408,6 @@ public class PatternViewModel extends FormViewModel {
                 }
             });
         } else {
-
             // only write when there is change in Semantic meaning or Semantic purpose
             if ((conceptEntityMeaning.nid() != TinkarTerm.MEANING.nid()) ||
                     (conceptEntityPurpose.nid() != TinkarTerm.PURPOSE.nid())) {
@@ -418,7 +417,6 @@ public class PatternViewModel extends FormViewModel {
                             .meaning(conceptEntityMeaning)
                             .purpose(conceptEntityPurpose);
                 });
-
             }
 
             /*
