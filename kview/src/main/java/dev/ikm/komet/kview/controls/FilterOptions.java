@@ -201,29 +201,31 @@ public class FilterOptions implements Serializable {
                 "type.option.concepts", "type.option.semantics")
                 .map(resources::getString)
                 .toList();
-        type = new Option(OPTION_ITEM.TYPE, "type.title", new ArrayList<>(Arrays.asList("All")),
+        type = new Option(OPTION_ITEM.TYPE, "type.title", new ArrayList<>(),
             typeOptions, new ArrayList<>(), null, true, false, allSet);
     }
 
     private Option header = new Option(OPTION_ITEM.HEADER, "header.title", new ArrayList<>(),
             new ArrayList<>(), new ArrayList<>(), null, false, false, allSet);
 
-    // can we pass a lambda to default options here?
     private Option status = new Option(OPTION_ITEM.STATUS, "status.title", new ArrayList<>(),
             new ArrayList<>(), new ArrayList<>(), null, true, false, allSet);
 
-    private Option module = new Option(OPTION_ITEM.MODULE, "module.title", new ArrayList<>(Arrays.asList("All")),
+    private Option module = new Option(OPTION_ITEM.MODULE, "module.title", new ArrayList<>(Arrays.asList("Any")),
             new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, false, allAnyExcludingSet);
 
     private Option path = new Option(OPTION_ITEM.PATH, "path.title", new ArrayList<>(),
             new ArrayList<>(), new ArrayList<>(), null, false, false, noneSet);
 
-    private Option language = new Option(OPTION_ITEM.LANGUAGE, "language.title", new ArrayList<>(Arrays.asList("All")),
-            new ArrayList<>(), new ArrayList<>(), null, true, false, allSet);
+    private Option language = new Option(OPTION_ITEM.LANGUAGE, "language.title", new ArrayList<>(),
+            new ArrayList<>(), new ArrayList<>(), null, false, false, allSet);
 
     private Option descriptionType;
     {
         List<String> descriptionTypeOptions = Stream.of(
+                        //FIXME, the parent/classic menu uses FxGET::allowedDescriptionTypeOrder and hard codes FQN
+                        // and Regular Name as options... as new designs for Language+Dialect get implemented
+                        // we will additionally need to address this setting as well
                 "description.option.fqn", "description.option.preferred", "description.option.regular",
                 "description.option.preferredfqn", "description.option.regularfqn")
                 .map(resources::getString)

@@ -269,7 +269,9 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                     identicon.setImage(Identicon.generateIdenticonImage(semanticEntityVersion.publicId()));
                     currentNid = semanticEntityVersion.nid();
                 });
-                updateTextFlow(textFlow, item.highlightedString());
+                if (item.highlightedString() != null) {
+                    updateTextFlow(textFlow, item.highlightedString());
+                }
 
                 setGraphic(cellContainer);
             }
