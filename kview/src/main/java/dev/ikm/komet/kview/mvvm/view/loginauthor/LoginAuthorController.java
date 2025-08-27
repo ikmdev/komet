@@ -61,6 +61,8 @@ public class LoginAuthorController {
         if (conceptEntitySet.isEmpty()) {
             conceptEntitySet.add(EntityService.get().getEntityFast(TinkarTerm.USER));
         }
+        // Remove the added stated navigation pattern.
+        viewProperties.nodeView().navigationCoordinate().navigationPatternsProperty().remove(TinkarTerm.STATED_NAVIGATION_PATTERN);
         loginAuthorViewModel.getObservableList(AUTHORS).addAll(conceptEntitySet);
         userChooser.setPromptText("Select a user");
         userChooser.setItems(loginAuthorViewModel.getObservableList(AUTHORS));
