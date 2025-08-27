@@ -262,7 +262,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         setAvailableOptions(option, headerList);
         FilterTitledPane headerFilterTitledPane = setupTitledPane(option);
         if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.NAVIGATOR) {
-            setDefaultOptions(option);
+            setInheritedOptions(option);
         }
 
         // status: all descendants of Status
@@ -373,24 +373,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             }
         }
         inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
-    }
-
-    private void setDefaultOptions(FilterOptions.Option option) {
-        inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().clear();
-        if (option.isMultiSelectionAllowed()) {
-            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().addAll(option.availableOptions());
-        } else {
-            inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().add(option.availableOptions().getFirst());
-        }
-        inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().clear();
-        if (inheritedFilterOptions.getOptionForItem(option.item()).selectedOptions().containsAll(
-                inheritedFilterOptions.getOptionForItem(option.item()).availableOptions())) {
-            //FIXME this is a temporary work around, the custom control should be refactored to not use a text property
-            // for the default options but to instead inherit from the parent coordinate menu
-            inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(List.of("All"));
-        } else {
-            inheritedFilterOptions.getOptionForItem(option.item()).defaultOptions().addAll(option.selectedOptions());
-        }
     }
 
     private void applyFilter(String i) {
