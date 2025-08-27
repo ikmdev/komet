@@ -1,7 +1,9 @@
 package dev.ikm.komet.kview.mvvm.model;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -9,6 +11,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.StampVersionRecord;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +55,20 @@ public class ViewCoordinateHelper {
         ViewCalculator existingViewCalculator = viewProperties.calculator();
         StampCoordinateRecord latestStampCoordinate = existingViewCalculator.stampCoordinate().withStampPositionTime(time).toStampCoordinateRecord();
         ViewCoordinateRecord latestViewCoordinate = existingViewCalculator.viewCoordinateRecord().withStampCoordinate(latestStampCoordinate);
+        return new ViewCalculatorWithCache(latestViewCoordinate);
+    }
+
+
+    /**
+     * Create a new View Calculator with stated navigation with an updated view coordinate & view calculator.
+     * @param viewProperties A given view property
+     * @return newViewCalculatorWithCache
+     */
+    public static ViewCalculatorWithCache createNavigationCalculatorLatest(ViewProperties viewProperties) {
+        ViewCalculator existingViewCalculator = viewProperties.calculator();
+        IntIdSet intIdSet = existingViewCalculator.navigationCoordinate().navigationPatternNids().with(TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        NavigationCoordinateRecord latestNavigationCoordinate = existingViewCalculator.navigationCoordinate().withNavigationPatternNids(intIdSet);
+        ViewCoordinateRecord latestViewCoordinate = existingViewCalculator.viewCoordinateRecord().withNavigationCoordinate(latestNavigationCoordinate);
         return new ViewCalculatorWithCache(latestViewCoordinate);
     }
 

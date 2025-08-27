@@ -1,6 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ComponentWithNid;
@@ -52,10 +54,9 @@ public class LoginAuthorController {
     @FXML
     public void initialize() {
         ViewProperties viewProperties = getViewProperties();
-        // The Coordinates.DefaultView does not have Stated Navigation Pattern, it is set to inferred navigation pattern.
-        // Hence, adding stated navigation to unreasoned dataset.
-        viewProperties.nodeView().navigationCoordinate().navigationPatternsProperty().add(TinkarTerm.STATED_NAVIGATION_PATTERN);
-        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewProperties, TinkarTerm.USER.publicId());
+        // Create new instance of ViewCalculator to have stated navigation along with inffered.
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorLatest(viewProperties);
+        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
 
         //If there are no authors mentioned in the stated or inferred then we use the default tinkar term user.
         if (conceptEntitySet.isEmpty()) {
