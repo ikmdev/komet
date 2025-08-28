@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 
 
 public class PatternDefinitionViewModel extends FormViewModel {
@@ -38,14 +39,20 @@ public class PatternDefinitionViewModel extends FormViewModel {
             addProperty(VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                 .addValidator(PURPOSE_ENTITY, "Purpose Entity", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
-                    if (prop.isNull().get()) {
+                    Object value = prop.get();
+                    if (value == null) {
                         validationResult.error("${%s} is required".formatted(PURPOSE_ENTITY));
+                    } else if (value.equals(BLANK_CONCEPT)) {
+                        validationResult.error("Purpose Entity cannot be blank");
                     }
                 })
                 .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                 .addValidator(MEANING_ENTITY, "Meaning Entity", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
-                    if (prop.isNull().get()) {
+                    Object value = prop.get();
+                    if (value == null) {
                         validationResult.error("${%s} is required".formatted(MEANING_ENTITY));
+                    } else if (value.equals(BLANK_CONCEPT)) {
+                        validationResult.error("Meaning Entity cannot be blank");
                     }
                 })
                 .addProperty(IS_INVALID, true);

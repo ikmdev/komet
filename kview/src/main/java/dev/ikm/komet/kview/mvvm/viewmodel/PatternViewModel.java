@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
@@ -63,6 +64,7 @@ import javafx.collections.ObservableList;
 import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.validator.ValidationResult;
+import org.carlfx.cognitive.viewmodel.Validatable;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
@@ -409,35 +411,30 @@ public class PatternViewModel extends FormViewModel {
             });
         } else {
             // only write when there is change in Semantic meaning or Semantic purpose
-            if ((conceptEntityMeaning.nid() != TinkarTerm.MEANING.nid()) ||
-                    (conceptEntityPurpose.nid() != TinkarTerm.PURPOSE.nid())) {
-                session.compose((PatternAssemblerConsumer) patternAssembler -> {
-                    patternAssembler
-                            .pattern(pattern)
-                            .meaning(conceptEntityMeaning)
-                            .purpose(conceptEntityPurpose);
-                });
-            }
-
-            /*
-            only write a fqn version IF there is a change to
-                - FQN language,
-                - FQN case significance,
-                - FQN text (description),
-                - FQN status
-                - path
-                - module
-             */
-            if (generateFqnHash() != changeHash) {
-
-                session.compose(new FullyQualifiedName()
-                                .semantic(fqnProp.get())
-                                .language(((EntityFacade) getPropertyValue(FQN_LANGUAGE)).toProxy())
-                                .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
-                                .caseSignificance(((EntityFacade) getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy()),
-                        pattern
-                );
-            }
+            session.compose((PatternAssemblerConsumer) patternAssembler -> {
+                patternAssembler
+                        .pattern(pattern)
+                        .meaning(conceptEntityMeaning)
+                        .purpose(conceptEntityPurpose);
+                     /*
+                        only write a fqn version IF there is a change to
+                            - FQN language,
+                            - FQN case significance,
+                            - FQN text (description),
+                            - FQN status
+                            - path
+                            - module
+                     */
+                    if (generateFqnHash() != changeHash) {
+                        patternAssembler.attach((FullyQualifiedName fqn) -> fqn
+                                        .semantic(fqnProp.get())
+                                        .language(((EntityFacade) getPropertyValue(FQN_LANGUAGE)).toProxy())
+                                        .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
+                                        .caseSignificance(((EntityFacade) getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy())
+                                .attach(new USDialect().acceptability(ACCEPTABLE))
+                        );
+                    }
+            });
         }
 
 
