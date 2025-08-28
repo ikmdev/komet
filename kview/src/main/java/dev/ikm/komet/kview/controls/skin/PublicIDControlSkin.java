@@ -61,6 +61,9 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         publicIdTextField.setEditable(false);
         publicIdTextField.getStyleClass().addAll("public-id-textfield", "copyable-label");
 
+        // using setHgrow causes the TextField to grow to the full width of the HBox, which is not desirable
+//        HBox.setHgrow(publicIdTextField, Priority.ALWAYS);
+
         // the SVG graphic for the copy to clipboard icon
         var svgPath = new SVGPath();
         svgPath.setContent(SVGConstants.COPY_TO_CLIPBOARD_SVG_PATH);
@@ -72,6 +75,9 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         Tooltip.install(copyToClipboardButton, new Tooltip("Copy to Clipboard"));
 
         publicIdHBox.getStyleClass().add("public-id-box");
+
+        // using setHgrow causes the TextField to grow to the full width of the HBox, which is not desirable
+//        HBox.setHgrow(publicIdHBox, Priority.SOMETIMES);
 
         // the publicIdHBox contains the publicIdLabel and the copyToClipboardButton.
         // Both controls need to be in a single HBox to be able to show and hide the
