@@ -181,9 +181,11 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
         if (!overridden) {
             overridden = true;
             this.unbind();
+            // create a new empty set
             super.set(FXCollections.observableSet(new HashSet<>()));
+        } else {
+            super.clear();
         }
-        super.clear();
     }
 
     @Override
