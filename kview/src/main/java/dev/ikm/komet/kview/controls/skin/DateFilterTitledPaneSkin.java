@@ -11,7 +11,6 @@ import dev.ikm.komet.kview.controls.TruncatedTextFlow;
 import javafx.collections.FXCollections;
 import javafx.css.PseudoClass;
 import javafx.scene.Parent;
-import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -62,7 +61,6 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         selectedOption = new TruncatedTextFlow();
         selectedOption.setMaxContentHeight(44); // 2 lines
-        selectedOption.setMaxWidth(240);
         selectedOption.getStyleClass().add("option");
 
         comboBox = new ComboBox<>();
@@ -92,14 +90,12 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
             }
         });
 
-        if (control.getParent() instanceof Accordion accordion) {
-            Parent parent = accordion.getParent();
-            while (!(parent instanceof ScrollPane)) {
-                parent = parent.getParent();
-            }
-
-            scrollPane = (ScrollPane) parent;
+        Parent parent = control.getParent();
+        while (!(parent instanceof ScrollPane)) {
+            parent = parent.getParent();
         }
+
+        scrollPane = (ScrollPane) parent;
 
         setupTitledPane();
     }
@@ -126,10 +122,10 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
             if (defaultOptions.isEmpty()) {
                 defaultOptions.add(currentOption.availableOptions().getFirst());
             }
-            pseudoClassStateChanged(MODIFIED_TITLED_PANE, !text.isEmpty() && !text.equals(String.join(", ", defaultOptions)));
+            pseudoClassStateChanged(MODIFIED_TITLED_PANE, !Objects.equals(currentOption, control.getDefaultOption()));
         }));
 
-        if (control.getParent() instanceof Accordion accordion) {
+        if (control.getParent() instanceof FilterOptionsPopupSkin.AccordionBox accordion) {
             subscription = subscription.and(accordion.expandedPaneProperty().subscribe(pane -> {
                 if (!(pane instanceof DateFilterTitledPane)) {
                     control.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, false);
@@ -139,7 +135,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         subscription = subscription.and(control.heightProperty().subscribe(_ -> {
             if (control.isExpanded()) {
-                scrollPane.setVvalue(scrollPane.getVmax());
+                scrollPane.setVvalue(scrollPane.getVmin());
             }
         }));
 
@@ -153,7 +149,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         subscription = subscription.and(comboBox.getSelectionModel().selectedIndexProperty().subscribe((_, value) -> {
             if (comboBox.isShowing()) {
                 // reset
-                currentOption = new FilterOptions().getDate();
+                currentOption = new FilterOptions().getMainCoordinates().getTime();
             }
 
             if (value.intValue() == 0) {
@@ -201,12 +197,13 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         List<String> selectedOptions = control.getOption().selectedOptions();
         List<String> excludedOptions = control.getOption().excludedOptions();
-        if (containsDateRange(selectedOptions) || containsDateRange(excludedOptions)) {
+        if (selectedOptions.isEmpty() || (selectedOptions.size() == 1 &&
+                resources.getString("time.item1").equals(selectedOptions.getFirst()))) {
+            control.setMode(DateFilterTitledPane.MODE.LATEST);
+        } else if (containsDateRange(selectedOptions) || containsDateRange(excludedOptions)) {
             control.setMode(DateFilterTitledPane.MODE.DATE_RANGE_LIST);
         } else if (containsDate(selectedOptions) && (excludedOptions == null || excludedOptions.isEmpty())) {
             control.setMode(DateFilterTitledPane.MODE.SINGLE_DATE);
-        } else {
-            control.setMode(DateFilterTitledPane.MODE.LATEST);
         }
 
         subscription = subscription.and(control.modeProperty().subscribe(mode ->
@@ -234,12 +231,10 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         if (containsDate(option.selectedOptions())) {
             try {
-                if (!option.selectedOptions().getFirst().equals("Latest")) {
-                    LocalDate date = LocalDate.parse(option.selectedOptions().getFirst(), DateTimeFormatter.ofPattern(DEFAULT_DATE_PATTERN));
-                    calendarControl.setDate(date);
-                }
+                LocalDate date = LocalDate.parse(option.selectedOptions().getFirst(), DateTimeFormatter.ofPattern(DEFAULT_DATE_PATTERN));
+                calendarControl.setDate(date);
             } catch (DateTimeParseException e) {
-                e.printStackTrace();
+                // ignore
             }
         }
         control.setMode(DateFilterTitledPane.MODE.SINGLE_DATE);
@@ -251,11 +246,11 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         calendarControl = new RangeCalendarControl();
         calendarControl.setMode(RangeCalendarControl.MODE.RANGE);
-        Button additionButton = new Button(resources.getString("date.range.additional.button"));
+        Button additionButton = new Button(resources.getString("time.range.additional.button"));
         additionButton.getStyleClass().add("additional");
         additionButton.setOnAction(_ -> calendarControl.addRange(false));
 
-        Button excludeButton = new Button(resources.getString("date.range.exclude.button"));
+        Button excludeButton = new Button(resources.getString("time.range.exclude.button"));
         excludeButton.getStyleClass().add("exclude");
         excludeButton.setOnAction(_ -> calendarControl.addRange(true));
 
@@ -290,21 +285,21 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
             return null;
         }
         if (calendarControl != null && calendarControl.getDate() != null) {
-            return MessageFormat.format(resources.getString("date.option.specific"),
+            return MessageFormat.format(resources.getString("time.option.specific"),
                     DATE_FORMATTER.format(calendarControl.getDate()));
         } else if (calendarControl != null && !calendarControl.dateRangeList().isEmpty()) {
             String including = calendarControl.dateRangeList().stream()
                     .filter(r -> !r.exclude())
-                    .map(dr -> MessageFormat.format(resources.getString("date.range.text"), dr.startDate(), dr.endDate()))
+                    .map(dr -> MessageFormat.format(resources.getString("time.range.text"), dr.startDate(), dr.endDate()))
                     .collect(Collectors.joining(", "));
             String excluding = calendarControl.dateRangeList().stream()
                     .filter(DateRange::exclude)
-                    .map(dr -> MessageFormat.format(resources.getString("date.range.text"), dr.startDate(), dr.endDate()))
+                    .map(dr -> MessageFormat.format(resources.getString("time.range.text"), dr.startDate(), dr.endDate()))
                     .collect(Collectors.joining(", "));
             if (excluding.isEmpty()) {
-                return MessageFormat.format(resources.getString("date.option.range"), including);
+                return MessageFormat.format(resources.getString("time.option.range"), including);
             } else {
-                return MessageFormat.format(resources.getString("date.option.range.excluding"), including, excluding);
+                return MessageFormat.format(resources.getString("time.option.range.excluding"), including, excluding);
             }
         } else {
             return String.join(", ", option.defaultOptions());
