@@ -59,14 +59,6 @@ public class PropertiesController implements Serializable {
 
     protected static final String EDIT_DESCRIPTIONS_FXML_FILE = "edit-descriptions.fxml";
 
-    protected static final String ADD_OTHER_NAME_FXML_FILE = "add-other-name.fxml";
-
-    protected static final String EDIT_OTHER_NAME_FXML_FILE = "edit-other-name-form.fxml";
-
-    protected static final String EDIT_FQN_FXML_FILE = "edit-fully-qualified-name.fxml";
-
-    protected static final String ADD_FQN_FXML_FILE = "add-fully-qualified-name.fxml";
-
     // used in conjunction with all child's of DescriptionBaseController
     protected static final String DESCRIPTION_FORM_FXML_FILE = "description-form.fxml";
 
