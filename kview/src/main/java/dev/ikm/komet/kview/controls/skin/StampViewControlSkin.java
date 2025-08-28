@@ -96,6 +96,9 @@ public class StampViewControlSkin extends SkinBase<StampViewControl> {
     private void onMouseFilterPressedOnScene(MouseEvent mouseEvent) {
         StampViewControl control = getSkinnable();
         Node stampContainer = control.getParentContainer();
+        if (stampContainer == null) {
+            return;
+        }
 
         Point2D localMousePos = stampContainer.sceneToLocal(mouseEvent.getSceneX(), mouseEvent.getSceneY());
         if (!stampContainer.contains(localMousePos)) {

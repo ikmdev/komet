@@ -174,16 +174,16 @@ public class StampFormViewModel extends FormViewModel {
     private void loadStamp() {
         ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
         ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
-        Latest<ObservableVersion> latestVersion = observableEntitySnapshot.getLatestVersion();
-        latestVersion.ifPresent(version -> {
+        Latest<ObservableVersion> obsLatestVersion = observableEntitySnapshot.getLatestVersion();
+        obsLatestVersion.ifPresent(version -> {
             EntityVersion entityVersion = version.getEntityVersion();
             StampEntity stampEntity = entityVersion.stamp();
             setPropertyValue(CURRENT_STAMP, stampEntity);
         });
-//        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
-//        StampEntity stampEntity = latestVersion.stamp();
-//
-//        setPropertyValue(CURRENT_STAMP, stampEntity);
+        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
+        StampEntity stampEntity = latestVersion.stamp();
+
+        setPropertyValue(CURRENT_STAMP, stampEntity);
     }
 
     private void loadStampValuesFromDB(Set<ConceptEntity> modules, Set<ConceptEntity> paths) {
@@ -256,81 +256,17 @@ public class StampFormViewModel extends FormViewModel {
         EntityFacade author = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
 
         // -----------  Save stamp on the Database --------------
-//        Composer composer = new Composer("Save new STAMP in Component");
-//
-//        Session session = composer.open(status, author.toProxy(), module.toProxy(), path.toProxy());
-//
-//        switch (getPropertyValue(STAMP_TYPE)) {
-//            case CONCEPT -> {
-//                session.compose((ConceptAssembler conceptAssembler) -> {
-//                    conceptAssembler.concept(entityFacade.toProxy());
-//                });
-//            }
-//            case PATTERN -> {
-//                Latest<EntityVersion> latestEntityVersion = viewProperties.calculator().latest(entityFacade);
-//                EntityVersion entityVersion = latestEntityVersion.get();
-//
-//                Entity purposeEntity = ((PatternVersionRecord) entityVersion).semanticPurpose();
-//                Entity meaningEntity = ((PatternVersionRecord) entityVersion).semanticMeaning();
-//
-//                // FQN
-//                SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().languageCalculator()
-//                        .getFullyQualifiedDescription(entityFacade).getWithContradictions().getFirstOptional().get();
-//                ConceptFacade fqnLanguage = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(0);
-//                String fqnString = (String) fqnSemanticEntityVersion.fieldValues().get(1);
-//                ConceptFacade fqnCaseSignificance = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(2);
-//                // ConceptFacade fqnDescriptionType = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(3);
-//
-//                session.compose((PatternAssemblerConsumer) patternAssembler -> {
-//                    patternAssembler
-//                            .pattern(entityFacade.toProxy())
-//                            .meaning(meaningEntity.toProxy())
-//                            .purpose(purposeEntity.toProxy())
-//                            .attach((FullyQualifiedNameConsumer) fqn -> fqn
-//                                    .semantic(fqnSemanticEntityVersion.entity().toProxy())
-//                                    .language(fqnLanguage.toProxy())
-//                                    .text(fqnString)
-//                                    .caseSignificance(fqnCaseSignificance.toProxy())
-//                                    .attach(new USDialect().acceptability(ACCEPTABLE))
-//                            );
-//
-//                    // Add the field definitions
-//                    ImmutableList<FieldDefinitionRecord> fieldDefinitions = ((PatternVersionRecord) entityVersion).fieldDefinitions();
-//                    for (int i = 0; i < fieldDefinitions.size(); i++) {
-//                        FieldDefinitionRecord fieldDefinitionRecord = fieldDefinitions.get(i);
-//
-//                        ConceptEntity fieldMeaning = fieldDefinitionRecord.meaning();
-//                        ConceptEntity fieldPurpose = fieldDefinitionRecord.purpose();
-//                        ConceptEntity fieldDataType = fieldDefinitionRecord.dataType();
-//                        patternAssembler.fieldDefinition(fieldMeaning.toProxy(), fieldPurpose.toProxy(), fieldDataType.toProxy(), i);
-//                    }
-//                });
-//            }
-//            default -> throw new RuntimeException("Stamp Type " + getPropertyValue(STAMP_TYPE) + " not supported");
-//        }
-//
-//        composer.commitSession(session);
-
+        Transaction transaction = Transaction.make();
+        StampEntity stampEntity = transaction.getStampForEntities(status, author.nid(), module.nid(), path.nid(), entityFacade);
 
         ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
         ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
         observableEntitySnapshot.getLatestVersion().ifPresent(latestVersion -> {
-            if (latestVersion instanceof ObservableVersion<?> observableVersion) {
-                observableVersion.stateProperty().set(status);
-                observableVersion.authorProperty().set((ConceptFacade) author);
-                observableVersion.moduleProperty().set((ConceptFacade) module);
-                observableVersion.pathProperty().set((ConceptFacade) path);
-
-                Transaction.forVersion(observableVersion).ifPresentOrElse(
-                        Transaction::commit,
-                        () ->{
-                            throw new RuntimeException("Unable to commit transaction");
-                        }
-                );
+            if (latestVersion instanceof ObservableVersion observableVersion) {
+                observableVersion.versionProperty().set(observableVersion.updateStampNid(stampEntity.nid()));
             }
-
-
         });
+        transaction.commit();
 
         // Load the new STAMP and store the new initial values
         loadStamp();

@@ -15,11 +15,9 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.State;
@@ -30,8 +28,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import org.eclipse.collections.api.map.ImmutableMap;
 
 import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 
 public abstract sealed class ObservableVersion<V extends EntityVersion>
         implements EntityVersion, ObservableComponent
@@ -62,19 +58,15 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
 
     protected void addListeners() {
         stateProperty.addListener((observable, oldValue, newValue) -> {
-            if(newValue != null){
-                if (version().uncommitted()) {
-                    Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                        transaction.forEachStampInTransaction(stampUuid -> {
-                            StampEntity newStamp = updateUncommitedTransactionStampValue(stampUuid, newValue, version().author(), version().module(), version().path());
-                            versionProperty.set(withStampNid(newStamp.nid()));
-                        });
-                    }, () -> {
-                        createNewTransaction(newValue, version().author(), version().module(), version().path());
-                    });
-                } else {
-                    createNewTransaction(newValue, version().author(), version().module(), version().path());
-                }
+            if (version().uncommitted()) {
+                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
+                    StampEntity newStamp = transaction.getStamp(newValue, version().time(), version().authorNid(), version().moduleNid(), version().pathNid());
+                    versionProperty.set(withStampNid(newStamp.nid()));
+                }, () -> {
+                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
+                });
+            } else {
+                throw new IllegalStateException("Version is already committed, cannot change value.");
             }
         });
 
@@ -88,81 +80,49 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
                     throw new IllegalStateException("No transaction for uncommitted version: " + version());
                 });
             } else {
-                //Are we allowed to change the time and have it autosave ?
                 throw new IllegalStateException("Version is already committed, cannot change value.");
             }
         });
 
         authorProperty.addListener((observable, oldValue, newValue) -> {
-            if (newValue !=null ){
-                if (version().uncommitted()) {
-                    Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                        transaction.forEachStampInTransaction(stampUuid -> {
-                            StampEntity newStamp = updateUncommitedTransactionStampValue(stampUuid, version().state(), newValue, version().module(), version().path());
-                            versionProperty.set(withStampNid(newStamp.nid()));
-                        });
-                    }, () -> {
-                        createNewTransaction(version().state(), newValue, version().module(), version().path());
-                    });
-                } else {
-                    createNewTransaction(version().state(), newValue, version().module(), version().path());
-                }
+            if (version().uncommitted()) {
+                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
+                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(), newValue.nid(), version().moduleNid(), version().pathNid());
+                    versionProperty.set(withStampNid(newStamp.nid()));
+                }, () -> {
+                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
+                });
+            } else {
+                throw new IllegalStateException("Version is already committed, cannot change value.");
             }
-
         });
 
         moduleProperty.addListener((observable, oldValue, newValue) -> {
-            if( newValue != null){
-                if (version().uncommitted()) {
-                    Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                        transaction.forEachStampInTransaction(stampUuid -> {
-                            StampEntity newStamp = updateUncommitedTransactionStampValue(stampUuid, version().state(), version().author(), newValue, version().path());
-                            versionProperty.set(withStampNid(newStamp.nid()));
-                        });
-                    }, () -> {
-                        createNewTransaction(version().state(), version().author(), newValue, version().path());
-                    });
-                } else {
-                    createNewTransaction(version().state(), version().author(), newValue, version().path());
-                }
+            if (version().uncommitted()) {
+                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
+                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(), version().authorNid(), newValue.nid(), version().pathNid());
+                    versionProperty.set(withStampNid(newStamp.nid()));
+                }, () -> {
+                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
+                });
+            } else {
+                throw new IllegalStateException("Version is already committed, cannot change value.");
             }
-
         });
 
         pathProperty.addListener((observable, oldValue, newValue) -> {
-            if( newValue != null){
-                if (version().uncommitted()) {
-                    Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                        transaction.forEachStampInTransaction(stampUuid -> {
-                           StampEntity newStamp = updateUncommitedTransactionStampValue(stampUuid, version().state(), version().author(), version().module(), newValue);
-                           versionProperty.set(withStampNid(newStamp.nid()));
-                        });
-                    }, () -> {
-                        createNewTransaction(version().state(), version().author(), version().module(), newValue);
-                    });
-                } else {
-                    createNewTransaction(version().state(), version().author(), version().module(), newValue);
-                }
+            if (version().uncommitted()) {
+                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
+                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(), version().authorNid(), version().moduleNid(), newValue.nid());
+                    versionProperty.set(withStampNid(newStamp.nid()));
+                }, () -> {
+                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
+                });
+            } else {
+                throw new IllegalStateException("Version is already committed, cannot change value.");
             }
         });
-    }
 
-    private StampEntity updateUncommitedTransactionStampValue(UUID stampUuid, State state, ConceptFacade author, ConceptFacade module, ConceptFacade path) {
-        Optional<StampEntity> optionalStamp = Entity.get(PrimitiveData.nid(stampUuid));
-        if (optionalStamp.isEmpty()) {
-            StampEntity stamp = StampRecord.make(stampUuid, state, version().time(), author.publicId(), module.publicId(), path.publicId());
-            Entity.provider().putEntity(stamp);
-            return stamp;
-        }
-        return optionalStamp.get();
-    }
-
-    private void createNewTransaction(State state, ConceptFacade author, ConceptFacade module, ConceptFacade path) {
-        Transaction t = Transaction.make();
-        // newStamp already written to the entity store.
-        StampEntity<?> newStamp = t.getStampForEntities(state, author.nid(), module.nid(), path.nid(), entity());
-        // Create new version...
-        versionProperty.set(withStampNid(newStamp.nid()));
     }
 
     public V version() {
@@ -174,6 +134,10 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
     }
 
     protected abstract V withStampNid(int stampNid);
+
+    public V updateStampNid(int stampNid) {
+        return withStampNid(stampNid);
+    }
 
     public ObjectProperty<V> versionProperty() {
         return versionProperty;
