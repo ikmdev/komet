@@ -62,12 +62,17 @@ public abstract class DescriptionBaseController<T> extends AbstractBasicControll
     @FXML
     protected ComboBox<T> languageComboBox;
 
+
+    @FXML
+    protected RowConstraints dialectCommentsRowConstraints; // shared constrain in edit/add mode
+
+    @FXML
+    protected Label commentsLabel; // label shown in add mode only
+
+
     // Dialects (only visible in edit mode)
     @FXML
     protected VBox dialectsContainer;
-
-    @FXML
-    protected RowConstraints dialectRowConstraints; // Add fx:id to the row constraints
 
     @FXML
     protected Label dialect1;
@@ -110,15 +115,9 @@ public abstract class DescriptionBaseController<T> extends AbstractBasicControll
         eventBus = EvtBusFactory.getDefaultEvtBus();
         clearView();
 
-
-        // Configure the form based on type
-        //configureForm();
-
         // Let subclasses do their specific initialization
         initializeData();
 
-        // Post-initialization hook for subclasses
-        //postInitialize();
     }
 
     protected abstract void initializeData();
@@ -159,10 +158,6 @@ public abstract class DescriptionBaseController<T> extends AbstractBasicControll
 
     @FXML
     protected void handleSubmit() {
-        // Common validation logic
-        //if (!validateForm()) {
-        //    return;
-        //}
         onSubmit();
     }
 
@@ -302,27 +297,31 @@ public abstract class DescriptionBaseController<T> extends AbstractBasicControll
 
     protected void configureDialectVisibility(boolean showDialects) {
 
+
+        if (commentsLabel != null) {
+            commentsLabel.setVisible(!showDialects);
+            commentsLabel.setManaged(!showDialects);
+        }
+
         if (dialectsContainer != null) {
             dialectsContainer.setVisible(showDialects);
             dialectsContainer.setManaged(showDialects);
 
-            // Adjust BorderPane minimum height based on dialect visibility
-            BorderPane rootPane = (BorderPane) dialectsContainer.getParent().getParent(); // Adjust path as needed
-            if (showDialects) { // Height with dialects
-                rootPane.setMinHeight(670.0);
-                rootPane.setPrefWidth(670.0);
-            } else { // Height without dialects
-                rootPane.setMinHeight(450.0);
-                rootPane.setPrefWidth(450.0);
-            }
-        }
-        // Also hide the row constraints for dialects
-        if (dialectRowConstraints != null) {
-            dialectRowConstraints.setMaxHeight(showDialects ? Region.USE_COMPUTED_SIZE : 0);
-            dialectRowConstraints.setMinHeight(showDialects ? Region.USE_COMPUTED_SIZE : 0);
-            dialectRowConstraints.setPrefHeight(showDialects ? Region.USE_COMPUTED_SIZE : 0);
         }
 
+        // Sets the correct minHeight constraint depending on add/edit mode
+        if (dialectCommentsRowConstraints != null) {
+            // a alternative solution would be to introduce a duplicated description-form.fxml for add / edit mode
+            if (showDialects) {
+                dialectCommentsRowConstraints.setMaxHeight(200.0);
+                dialectCommentsRowConstraints.setMinHeight(200.0);
+                dialectCommentsRowConstraints.setPrefHeight(200.0);
+            } else {
+                dialectCommentsRowConstraints.setMaxHeight(40.0);
+                dialectCommentsRowConstraints.setMinHeight(40.0);
+                dialectCommentsRowConstraints.setPrefHeight(40.0);
+            }
+        }
 
     }
 

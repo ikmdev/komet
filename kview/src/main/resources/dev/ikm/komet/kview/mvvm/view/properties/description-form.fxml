@@ -16,14 +16,14 @@
 
 <BorderPane minWidth="100.0" prefWidth="487.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1">
     <top>
-        <HBox alignment="TOP_CENTER" prefHeight="0.0" prefWidth="0.0" styleClass="edit-concept-label-container" BorderPane.alignment="TOP_CENTER">
+        <HBox alignment="TOP_CENTER" minHeight="40.0" prefHeight="40.0" prefWidth="0.0" styleClass="edit-concept-label-container" BorderPane.alignment="TOP_CENTER">
             <children>
                 <Label fx:id="titleLabel" alignment="TOP_CENTER" styleClass="edit-concept-title" text="Description Form" textAlignment="CENTER" />
             </children>
         </HBox>
     </top>
     <bottom>
-        <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER">
+        <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER" minHeight="80.0" prefHeight="80.0">
             <children>
                 <HBox alignment="BOTTOM_RIGHT" styleClass="add-description-bottom-label">
                     <children>
@@ -62,15 +62,13 @@
                 <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="1.7976931348623157E308" vgrow="NEVER" />
-                <!-- Dialects section - will be hidden for non-edit modes -->
-                <RowConstraints fx:id="dialectRowConstraints" maxHeight="1.7976931348623157E308" vgrow="ALWAYS" />
+                <!-- Dialects section / Comments label : depending on edit mode will set all Height parameters programatically -->
+                <RowConstraints fx:id="dialectCommentsRowConstraints"  minHeight="40.0" prefHeight="40.0" maxHeight="40" vgrow="SOMETIMES" />
                 <!-- Comments section -->
-                <RowConstraints vgrow="SOMETIMES" />
+                <RowConstraints vgrow="SOMETIMES" minHeight="80.0"/>
             </rowConstraints>
             <children>
-                <Label styleClass="add-description-label" text="Name" />
+                <Label styleClass="add-description-label" text="Name" GridPane.rowIndex="0"  />
                 <Label styleClass="add-description-label" text="Type" GridPane.rowIndex="1" />
                 <Label prefWidth="100.0" styleClass="add-description-label" text="Case Significance" wrapText="true" GridPane.rowIndex="2" />
                 <Label styleClass="add-description-label" text="Status" GridPane.rowIndex="3" />
@@ -79,7 +77,7 @@
                 <Label fx:id="commentsLabel" styleClass="add-description-label" text="Comments" GridPane.rowIndex="6" />
 
                 <!-- Name field -->
-                <TextField fx:id="nameTextField" styleClass="komet-text-field" prefHeight="25.0" promptText="Enter Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
+                <TextField fx:id="nameTextField" styleClass="komet-text-field" prefHeight="25.0" promptText="Enter Name" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS">
                     <GridPane.margin>
                         <Insets right="15.0" />
                     </GridPane.margin>
@@ -121,7 +119,7 @@
                 </SortedComboBox>
 
                 <!-- Dialects section (hidden by default for add modes) -->
-                <VBox fx:id="dialectsContainer" GridPane.columnSpan="2" GridPane.rowIndex="8">
+                <VBox fx:id="dialectsContainer" GridPane.columnSpan="2" GridPane.rowIndex="6">
                     <children>
                         <HBox depthTest="ENABLE" styleClass="dialect-container">
                             <children>
@@ -196,7 +194,7 @@
                 </VBox>
 
                 <!-- Comments -->
-                <TextArea fx:id="commentsTextArea" styleClass="komet-text-area" maxHeight="80.0" maxWidth="1.7976931348623157E308" text="Add comment here..." GridPane.columnSpan="2" GridPane.rowIndex="9">
+                <TextArea fx:id="commentsTextArea" styleClass="komet-text-area" maxHeight="80.0" maxWidth="1.7976931348623157E308" text="Add comment here..." GridPane.columnSpan="2" GridPane.rowIndex="7" GridPane.valignment="TOP">
                     <GridPane.margin>
                         <Insets left="15.0" right="15.0" />
                     </GridPane.margin>
