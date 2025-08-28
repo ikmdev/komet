@@ -170,6 +170,7 @@ public class EditDescriptionFormController implements BasicController {
         statusComboBox.valueProperty().addListener(invalidationListener);
         languageComboBox.valueProperty().addListener(invalidationListener);
         validateForm();
+
     }
 
     @FXML
@@ -187,6 +188,7 @@ public class EditDescriptionFormController implements BasicController {
     }
 
     private void validateForm() {
+        LOG.info("old validate form? EditDescriptionFormController");
         boolean isOtherNameTextFieldEmpty = otherNameTextField.getText().trim().isEmpty();
         boolean isModuleComboBoxSelected = moduleComboBox.getValue() != null;
         boolean isCaseSignificanceComboBoxSelected = caseSignificanceComboBox.getValue() != null;
@@ -199,7 +201,9 @@ public class EditDescriptionFormController implements BasicController {
                 || !isStatusComboBoxComboBoxSelected);
     }
 
-    private void populateDialectComboBoxes() {
+    private void  populateDialectComboBoxes() {
+
+        LOG.info("populateDialectComboBoxes? EditDescriptionFormController");
         // currently no UNACCEPTABLE in TinkarTerm
         Entity<? extends EntityVersion> acceptable = EntityService.get().getEntityFast(TinkarTerm.ACCEPTABLE);
         Entity<? extends EntityVersion> preferred = EntityService.get().getEntityFast(TinkarTerm.PREFERRED);
@@ -214,16 +218,18 @@ public class EditDescriptionFormController implements BasicController {
     }
 
     public void setEditDescriptionTitleLabel(String addAxiomTitleLabelText) {
+        LOG.info("setEditDescriptionTitleLabel? EditDescriptionFormController");
         this.editDescriptionTitleLabel.setText(addAxiomTitleLabelText);
     }
 
     @Override
     public void updateView() {
-
+        LOG.info("updateView? EditDescriptionFormController");
     }
 
     @Override
     public void clearView() {
+        LOG.info("clearView? EditDescriptionFormController");
         caseSignificanceComboBox.getItems().clear();
         statusComboBox.getItems().clear();
         moduleComboBox.getItems().clear();
@@ -232,10 +238,11 @@ public class EditDescriptionFormController implements BasicController {
 
     @Override
     public void cleanup() {
-
+        LOG.info("cleanup? EditDescriptionFormController");
     }
 
     public void updateModel(final ViewProperties viewProperties, EntityFacade entityFacade) {
+        LOG.info("updateModel? EditDescriptionFormController");
         this.viewProperties = viewProperties;
         this.entityFacade = entityFacade;
     }
@@ -245,6 +252,7 @@ public class EditDescriptionFormController implements BasicController {
     }
 
     private String getDisplayText(ConceptEntity conceptEntity) {
+        LOG.info("getDisplayText? EditDescriptionFormController");
         if (conceptEntity != null) {
             Optional<String> stringOptional = getViewProperties().calculator().getRegularDescriptionText(conceptEntity.nid());
             return stringOptional.orElse("");
@@ -254,6 +262,7 @@ public class EditDescriptionFormController implements BasicController {
     }
 
     private void setupComboBox(ComboBox comboBox, Collection<ConceptEntity> conceptEntities) {
+        LOG.info("setupComboBox? EditDescriptionFormController");
         comboBox.getItems().clear();
         comboBox.setConverter(new StringConverter<ConceptEntity>() {
 
