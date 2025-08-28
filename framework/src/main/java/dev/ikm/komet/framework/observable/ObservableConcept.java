@@ -19,6 +19,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.InvalidationListener;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
@@ -33,8 +34,9 @@ public final class ObservableConcept
     @Override
     protected ObservableConceptVersion wrap(ConceptVersionRecord version) {
         ObservableConceptVersion observableConceptVersion = new ObservableConceptVersion(version);
-        observableConceptVersion.versionProperty.addListener((observable, oldValue, newValue) -> {
-            updateEntity(newValue, oldValue);
+        observableConceptVersion.versionProperty.addListener((InvalidationListener) (observable) -> {
+            updateEntity(observableConceptVersion.versionProperty.get(), observableConceptVersion.getVersionRecord());
+//            updateEntity(newValue, oldValue);
         });
         return observableConceptVersion;
     }

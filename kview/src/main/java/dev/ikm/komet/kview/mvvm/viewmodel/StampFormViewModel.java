@@ -1,5 +1,19 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.CURRENT_STAMP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.FORM_TITLE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.IS_STAMP_VALUES_THE_SAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.MODULES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.PATHS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STAMP_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUSES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME_TEXT;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
@@ -8,13 +22,18 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
 import dev.ikm.tinkar.component.Stamp;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.tinkar.terms.ComponentWithNid;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import org.carlfx.cognitive.validator.ValidationResult;
@@ -24,9 +43,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.*;
 
 public class StampFormViewModel extends FormViewModel {
     /**
@@ -156,18 +172,18 @@ public class StampFormViewModel extends FormViewModel {
     }
 
     private void loadStamp() {
-//        ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
-//        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
-//        Latest<ObservableVersion> latestVersion = observableEntitySnapshot.getLatestVersion();
-//        latestVersion.ifPresent(version -> {
-//            EntityVersion entityVersion = version.getEntityVersion();
-//            StampEntity stampEntity = entityVersion.stamp();
-//            setPropertyValue(CURRENT_STAMP, stampEntity);
-//        });
-        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
-        StampEntity stampEntity = latestVersion.stamp();
-
-        setPropertyValue(CURRENT_STAMP, stampEntity);
+        ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
+        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+        Latest<ObservableVersion> latestVersion = observableEntitySnapshot.getLatestVersion();
+        latestVersion.ifPresent(version -> {
+            EntityVersion entityVersion = version.getEntityVersion();
+            StampEntity stampEntity = entityVersion.stamp();
+            setPropertyValue(CURRENT_STAMP, stampEntity);
+        });
+//        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
+//        StampEntity stampEntity = latestVersion.stamp();
+//
+//        setPropertyValue(CURRENT_STAMP, stampEntity);
     }
 
     private void loadStampValuesFromDB(Set<ConceptEntity> modules, Set<ConceptEntity> paths) {
