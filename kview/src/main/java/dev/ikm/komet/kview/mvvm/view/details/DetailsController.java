@@ -953,28 +953,6 @@ public class DetailsController  {
         stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
     }
 
-    private void setupStampValues(StampEntity stamp) {
-        // Status
-        String statusText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.state(), conceptViewModel.getViewProperties());
-        stampViewControl.setStatus(statusText);
-
-        // Module
-        String moduleText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.module(), conceptViewModel.getViewProperties());
-        stampViewControl.setModule(moduleText);
-
-        // Author
-        String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.author(), conceptViewModel.getViewProperties());
-        stampViewControl.setAuthor(authorDescription);
-
-        // Path
-        String pathText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.path(), conceptViewModel.getViewProperties());
-        stampViewControl.setPath(pathText);
-
-        // Latest update time
-        long stampTime = stamp.time();
-        stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
-    }
-
     /// Show the public ID
     private void setupDisplayUUID(EntityFacade entityFacade, ViewCalculator viewCalculator) {
         List<String> idList = entityFacade.publicId().asUuidList().stream()
