@@ -39,19 +39,18 @@ public class PatternDefinitionViewModel extends FormViewModel {
             addProperty(VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                 .addValidator(PURPOSE_ENTITY, "Purpose Entity", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
-                    Object value = prop.get();
-                    if (value == null) {
+                    if (prop.isNull().get()) {
                         validationResult.error("${%s} is required".formatted(PURPOSE_ENTITY));
-                    } else if (value.equals(BLANK_CONCEPT)) {
+                    } else if (prop.isNotNull().get() && prop.get().equals(BLANK_CONCEPT)) {
                         validationResult.error("Purpose Entity cannot be blank");
                     }
                 })
                 .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                 .addValidator(MEANING_ENTITY, "Meaning Entity", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     Object value = prop.get();
-                    if (value == null) {
+                    if (prop.isNull().get()) {
                         validationResult.error("${%s} is required".formatted(MEANING_ENTITY));
-                    } else if (value.equals(BLANK_CONCEPT)) {
+                    } else if (prop.isNotNull().get() && prop.get().equals(BLANK_CONCEPT)) {
                         validationResult.error("Meaning Entity cannot be blank");
                     }
                 })
