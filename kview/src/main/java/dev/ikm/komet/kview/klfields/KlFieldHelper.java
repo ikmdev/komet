@@ -25,11 +25,11 @@ import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.UUID_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
 import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
 import dev.ikm.komet.framework.observable.ObservablePatternVersion;
-import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
@@ -48,11 +48,16 @@ import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -63,7 +68,11 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class KlFieldHelper {
@@ -280,24 +289,50 @@ public class KlFieldHelper {
      *
      * @return entityVersionLatest
      * */
-    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(ObservableSemanticSnapshot observableSemanticSnapshot) {
-        if(observableSemanticSnapshot == null){
+//    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(ObservableSemanticSnapshot observableSemanticSnapshot) {
+//        if(observableSemanticSnapshot == null){
+//            return new Latest<>();
+//        }
+//        AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
+//        SemanticEntityVersion semanticEntityVersion = (SemanticEntityVersion) observableSemanticSnapshot.getLatestVersion().get().getEntityVersion();
+//        if(semanticEntityVersion.committed()){
+//            return new Latest<>(semanticEntityVersion);
+//        }
+//        //Get list of previously committed data sorted in latest at the top.
+//        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+//        // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
+//        Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
+//        observableSemanticVersionOptional.ifPresentOrElse((p) -> {
+//            entityVersionLatest.set(new Latest<>(p));
+//        }, () -> {entityVersionLatest.set(new Latest<>());});
+//        return entityVersionLatest.get();
+//    }
+
+    /**
+     * This method will return the latest commited version.
+     *
+     * @return entityVersionLatest
+     * */
+    public static Latest<EntityVersion> retrieveCommittedLatestVersion(ObservableEntitySnapshot observableEntitySnapshot) {
+        if(observableEntitySnapshot == null){
             return new Latest<>();
         }
-        AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
-        SemanticEntityVersion semanticEntityVersion = (SemanticEntityVersion) observableSemanticSnapshot.getLatestVersion().get().getEntityVersion();
-        if(semanticEntityVersion.committed()){
-            return new Latest<>(semanticEntityVersion);
+        AtomicReference<Latest<EntityVersion>> entityVersionLatest = new AtomicReference<>();
+        ObservableVersion observableVersion = (ObservableVersion) observableEntitySnapshot.getLatestVersion().get();
+        EntityVersion entityVersion = observableVersion.getEntityVersion();
+        if(entityVersion.committed()){
+            return new Latest<>(entityVersion);
         }
         //Get list of previously committed data sorted in latest at the top.
-        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+        ImmutableList<ObservableVersion> historicVersions = observableEntitySnapshot.getHistoricVersions();
         // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
-        Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
-        observableSemanticVersionOptional.ifPresentOrElse((p) -> {
+        Optional<ObservableVersion> optionalObservableVersion = historicVersions.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
+        optionalObservableVersion.ifPresentOrElse((p) -> {
             entityVersionLatest.set(new Latest<>(p));
         }, () -> {entityVersionLatest.set(new Latest<>());});
         return entityVersionLatest.get();
     }
+
 
     /**
      * This method just concatenates all observableFiled values and generates a hashCode to return.

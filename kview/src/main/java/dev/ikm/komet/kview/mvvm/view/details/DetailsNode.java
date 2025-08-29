@@ -182,9 +182,9 @@ public class DetailsNode extends ExplorationNodeAbstract {
                 toolTipTextProperty.set(viewProperties.calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(newEntityFacade));
 
                 // Also publish(dispatch) to any subscribers of this view.
-                if (PUBLISH.keyForOption().equals(super.optionForActivityStreamKeyProperty.get()) ||
-                        SYNCHRONIZE.keyForOption().equals(super.optionForActivityStreamKeyProperty.get())) {
-                    getActivityStream().dispatch(newEntityFacade);
+                if (getActivityStream() != null && (PUBLISH.keyForOption().equals(super.optionForActivityStreamKeyProperty.get()) ||
+                        SYNCHRONIZE.keyForOption().equals(super.optionForActivityStreamKeyProperty.get()))) {
+                        getActivityStream().dispatch(newEntityFacade);
                 }
 
                 // Populate Detail View
