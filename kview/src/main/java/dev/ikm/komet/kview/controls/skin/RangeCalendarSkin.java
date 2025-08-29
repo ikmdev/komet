@@ -51,6 +51,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
     private static final PseudoClass START_RANGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("start");
     private static final PseudoClass IN_RANGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("intermediate");
     private static final PseudoClass END_RANGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("end");
+    private static final PseudoClass STAMP_PSEUDO_CLASS = PseudoClass.getPseudoClass("stamp");
 
     private final DatePicker datePicker;
     private final RangeCalendarControl control;
@@ -85,6 +86,15 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
         datePicker.setDayCellFactory(_ -> new DateCell() {
 
             @Override
+            public void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null && !empty) {
+                    pseudoClassStateChanged(STAMP_PSEUDO_CLASS,
+                            control.getStampDates().stream().anyMatch(s -> s.toLocalDate().equals(item)));
+                }
+            }
+
+            @Override
             protected Skin<?> createDefaultSkin() {
                 return new CalendarCellSkin(this);
             }
@@ -92,6 +102,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
             private static class CalendarCellSkin extends DateCellSkin {
 
                 private final Region circle;
+                private final Region stamp;
 
                 public CalendarCellSkin(DateCell cell) {
                     super(cell);
@@ -99,12 +110,22 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                     circle = new Region();
                     circle.getStyleClass().add("calendar-cell-circle");
 
+                    stamp = new Region();
+                    stamp.getStyleClass().add("calendar-cell-stamp");
+
+                    getChildren().addFirst(stamp);
                     getChildren().addFirst(circle);
                 }
 
                 @Override
                 protected void layoutChildren(double x, double y, double w, double h) {
                     super.layoutChildren(x, y, w, h);
+                    if (!getChildren().contains(stamp)) {
+                        getChildren().addFirst(stamp);
+                    }
+                    stamp.resizeRelocate(x + w - stamp.prefWidth(h) + 1, y + 1,
+                            stamp.prefWidth(h), stamp.prefHeight(w));
+
                     if (!getChildren().contains(circle)) {
                         getChildren().addFirst(circle);
                     }
