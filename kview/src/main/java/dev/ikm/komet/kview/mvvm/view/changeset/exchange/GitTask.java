@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.changeset.exchange;
 
-import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferences;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
@@ -28,6 +27,7 @@ import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.entity.ChangeSetWriterService;
 import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.reasoner.service.ClassifierResults;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -77,8 +77,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
-import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
+import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 
 /**
  * A unified task for Git operations involving medical terminology data.
@@ -653,7 +653,7 @@ public class GitTask extends TrackingCallable<Boolean> {
         updateMessage("Starting %s process.".formatted(pushChanges ? "synchronization" : "pulling"));
 
         // Pull phase - now returns a list of added files
-        ImmutableList<String> addedFiles = pull(validationPhase.getEnd(), pullPhase.getEnd());
+        ImmutableList<String> addedFiles = pull(validationPhase.getEnd(), pullPhase.getEnd(), new GitSyncFileSorter());
 
         // Load changesets phase - pass the list of added files
         loadChangesets(pullPhase.getEnd(), loadPhase.getEnd(), addedFiles);
@@ -673,7 +673,7 @@ public class GitTask extends TrackingCallable<Boolean> {
     }
 
     /**
-     * Pulls the latest changes from the remote Git repository and returns a list of added files.
+     * Pulls the latest changes from the remote Git repository and returns a list of added files with default sorting.
      *
      * @param startPercentage the progress percentage at the start of this phase
      * @param endPercentage   the progress percentage at the end of this phase
@@ -682,6 +682,22 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @throws IOException     if an I/O error occurs
      */
     private ImmutableList<String> pull(double startPercentage, double endPercentage) throws GitAPIException, IOException {
+        Comparator<String> defaultSorter = String::compareTo;
+        return pull(startPercentage, endPercentage, defaultSorter);
+    }
+
+    /**
+     * Pulls the latest changes from the remote Git repository and returns a list of added files with specified sorting.
+     *
+     * @param startPercentage the progress percentage at the start of this phase
+     * @param endPercentage   the progress percentage at the end of this phase
+     * @param fileSorter      the method to determine sorting of file paths
+     * @return a list of relative paths to files that were added during the pull operation
+     * @throws GitAPIException if a Git API error occurs
+     * @throws IOException     if an I/O error occurs
+     */
+    private ImmutableList<String> pull(double startPercentage, double endPercentage,
+                                       Comparator<String> fileSorter) throws GitAPIException, IOException {
         if (isCancelled()) {
             updateMessage("Operation cancelled by user.");
             return Lists.immutable.empty();
@@ -739,7 +755,7 @@ public class GitTask extends TrackingCallable<Boolean> {
                     }
 
                     // Sort the files to ensure consistent loading order
-                    newFiles.sort(String::compareTo);
+                    newFiles.sort(fileSorter);
                     addedFiles = newFiles.toImmutable();
 
                     updateMessage("Pull completed. " + addedFiles.size() + " new changeset files found.");
