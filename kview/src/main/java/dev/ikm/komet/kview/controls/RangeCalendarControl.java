@@ -12,7 +12,9 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * <p>A control implementation that shows a calendar to the user,
@@ -92,6 +94,18 @@ public class RangeCalendarControl extends Control {
         if (rangeCalendarSkin != null) {
             rangeCalendarSkin.createDateRangeFields(isExcluding);
         }
+    }
+
+    // stampDatesProperty
+    private final ObjectProperty<List<LocalDateTime>> stampDatesProperty = new SimpleObjectProperty<>(this, "stampDates");
+    public final ObjectProperty<List<LocalDateTime>> stampDatesProperty() {
+       return stampDatesProperty;
+    }
+    public final List<LocalDateTime> getStampDates() {
+       return stampDatesProperty.get();
+    }
+    public final void setStampDates(List<LocalDateTime> value) {
+        stampDatesProperty.set(value);
     }
 
     /** {@inheritDoc} */

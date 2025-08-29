@@ -5,16 +5,21 @@ import dev.ikm.komet.framework.view.ObservableCoordinate;
 import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
 import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import org.eclipse.collections.api.list.primitive.ImmutableLongList;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -227,6 +232,15 @@ public class FilterOptionsUtils {
         } else {
             return Long.MAX_VALUE;
         }
+    }
+
+    public static List<LocalDateTime> getTimesInUse() {
+        ImmutableLongList times = StampService.get().getTimesInUse().toReversed();
+        return Arrays.stream(times.toArray())
+                .filter(time -> time != PREMUNDANE_TIME)
+                .boxed()
+                .map(time -> DateTimeUtil.epochToZonedDateTime(time).toLocalDateTime())
+                .toList();
     }
 
     private static int findNidForDescription(Navigator navigator, int nid, String description) {
