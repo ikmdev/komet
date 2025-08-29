@@ -261,8 +261,15 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         currentFilterOptionsProperty.set(null);
         setupFilter(null);
         setupFilter(defaultFilterOptions);
+        // mark all as no override
+        markAllAsNoOverride(defaultFilterOptions);
         updating = false;
         updateCurrentFilterOptions();
+    }
+
+    private void markAllAsNoOverride(FilterOptions defaultFilterOptions) {
+        defaultFilterOptions.getMainCoordinates().getStatus().setInOverride(false);
+        //TODO mark other fields as no override
     }
 
     private void updateCurrentFilterOptions() {

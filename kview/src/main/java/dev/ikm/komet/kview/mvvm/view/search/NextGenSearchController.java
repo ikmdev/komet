@@ -182,7 +182,8 @@ public class NextGenSearchController {
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
 
         // initialize the filter options
-        filterOptionsPopup.setInheritedFilterOptionsProperty(FilterOptionsUtils.loadFilterOptions(getViewProperties().parentView(), getViewProperties().calculator()));
+        filterOptionsPopup.setInheritedFilterOptionsProperty(
+                FilterOptionsUtils.initializeFilterOptions(getViewProperties().parentView(), getViewProperties().calculator()));
         root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
         filterPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (filterOptionsPopup.getNavigator() == null) {
@@ -211,6 +212,10 @@ public class NextGenSearchController {
                                     s -> State.valueOf(s.toUpperCase())).toList());
                     // update the STATUS
                     getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
+
+                    // turn ON override
+                    filterOptionsPopup.getInheritedFilterOptions().getMainCoordinates().getStatus().setInOverride(true);
+                    //TODO mark other fields as no override
                 }
                 if (!newFilterOptions.getMainCoordinates().getPath().selectedOptions().isEmpty()) {
                     //NOTE: there is no known way to set multiple paths
@@ -250,7 +255,9 @@ public class NextGenSearchController {
         // listen to changes to the parent of the current overrideable view
         parentSubscription = getViewProperties().parentView().subscribe((oldValue, newValue) -> {
             filterOptionsPopup.filterOptionsProperty().removeListener(changeListener);
-            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(FilterOptionsUtils.loadFilterOptions(getViewProperties().parentView(), getViewProperties().calculator()));
+
+            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(
+                    FilterOptionsUtils.reloadFilterOptions(filterOptionsPopup.getInheritedFilterOptions().getMainCoordinates(), getViewProperties().parentView(), getViewProperties().calculator()));
             filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
             doSearch(new ActionEvent(null, null));
         });

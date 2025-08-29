@@ -23,7 +23,7 @@ public class FilterOptionsUtils {
 
     public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
 
-    public static FilterOptions loadFilterOptions(ObservableCoordinate<ViewCoordinateRecord> parentView, ViewCalculator calculator) {
+    public static FilterOptions initializeFilterOptions(ObservableCoordinate<ViewCoordinateRecord> parentView, ViewCalculator calculator) {
         FilterOptions filterOptions = new FilterOptions();
 
         // get parent menu settings
@@ -95,6 +95,100 @@ public class FilterOptionsUtils {
             }
         }
         return filterOptions;
+    }
+
+    public static FilterOptions reloadFilterOptions(FilterOptions.MainCoordinates childOptions, ObservableCoordinate<ViewCoordinateRecord> parentView, ViewCalculator calculator) {
+        FilterOptions filterOptions = new FilterOptions();
+
+        // get parent menu settings
+        for (ObservableCoordinate<?> observableCoordinate : parentView.getCompositeCoordinates()) {
+            if (observableCoordinate instanceof ObservableStampCoordinate observableStampCoordinate) {
+
+                // populate the TYPE; this isn't in the parent view coordinate
+                // it is all set in FilterOptions
+
+                // populate the STATUS
+                StateSet currentStates = observableStampCoordinate.allowedStatesProperty().getValue();
+                List<String> currentStatesStr = currentStates.toEnumSet().stream().map(Enum::name).toList();
+
+                FilterOptions.Option statusOption = filterOptions.getMainCoordinates().getStatus();
+                if (!childOptions.getStatus().isInOverride()) {
+                    // perform inheritance
+                    statusOption.selectedOptions().clear();
+                    statusOption.selectedOptions().addAll(currentStatesStr);
+
+                    statusOption.defaultOptions().clear();
+                    statusOption.defaultOptions().addAll(currentStatesStr);
+                } else {
+                    // don't override
+                    statusOption.selectedOptions().clear();
+                    statusOption.selectedOptions().addAll(childOptions.getStatus().selectedOptions());
+
+                    statusOption.defaultOptions().clear();
+                    statusOption.defaultOptions().addAll(childOptions.getStatus().defaultOptions());
+                }
+
+                // MODULE
+                if (!observableStampCoordinate.moduleNids().isEmpty()) {
+                    FilterOptions.Option moduleOption = filterOptions.getMainCoordinates().getModule();
+                    moduleOption.defaultOptions().clear();
+                    observableStampCoordinate.moduleNids().intStream().forEach(moduleNid -> {
+                        String moduleStr = calculator.getPreferredDescriptionStringOrNid(moduleNid);
+                        System.out.println("moduleStr = " + moduleStr);
+                        moduleOption.defaultOptions().add(moduleStr);
+                    });
+                }
+
+                // populate the PATH
+                ConceptFacade currentPath = observableStampCoordinate.pathConceptProperty().getValue();
+                String currentPathStr = currentPath.description();
+
+                List<String> defaultSelectedPaths = new ArrayList<>(List.of(currentPathStr));
+                FilterOptions.Option pathOption = filterOptions.getMainCoordinates().getPath();
+                pathOption.defaultOptions().clear();
+                pathOption.defaultOptions().addAll(defaultSelectedPaths);
+
+                pathOption.selectedOptions().clear();
+                pathOption.selectedOptions().addAll(defaultSelectedPaths);
+
+                // TIME
+                FilterOptions.Option timeOption = filterOptions.getMainCoordinates().getTime();
+
+                Long time = observableStampCoordinate.timeProperty().getValue();
+                if (!time.equals(Long.MAX_VALUE) && !time.equals(PREMUNDANE_TIME)) {
+                    //FIXME the custom control doesn't support premundane yet
+                    Date date = new Date(time);
+                    timeOption.defaultOptions().clear();
+                    timeOption.selectedOptions().clear();
+                    timeOption.selectedOptions().add(SIMPLE_DATE_FORMAT.format(date));
+                    timeOption.defaultOptions().addAll(timeOption.selectedOptions());
+                }
+            } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
+                // populate the LANGUAGE
+                FilterOptions.Option language = filterOptions.getLanguageCoordinates(0).getLanguage();
+                language.defaultOptions().clear();
+                String languageStr = calculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(
+                        observableLanguageCoordinate.languageConceptProperty().get().nid());
+                language.defaultOptions().add(languageStr);
+                language.selectedOptions().clear();
+                language.selectedOptions().addAll(language.defaultOptions());
+
+                //FIXME description choices don't yet align with parent/classic menu, more discussion needs to happen on
+                // how we want to fix this.
+                // all set in FilterOptions
+            }
+        }
+        return filterOptions;
+    }
+
+    private static boolean shouldInherit(FilterOptions.Option theOption, List<String> parentOptions) {
+        // the child will be in override mode when the selected and default are the same, and it differs from the parent
+        boolean isDefaultSameAsSelected = theOption.selectedOptions().containsAll(theOption.defaultOptions())
+                && theOption.defaultOptions().containsAll(theOption.selectedOptions());
+        boolean parentDiffersFromSelected = !theOption.selectedOptions().contains(parentOptions)
+                || !parentOptions.containsAll(theOption.selectedOptions());
+        boolean isOverride = isDefaultSameAsSelected && parentDiffersFromSelected;
+        return !isOverride;
     }
 
     public static long getMillis(FilterOptions filterOptions) {

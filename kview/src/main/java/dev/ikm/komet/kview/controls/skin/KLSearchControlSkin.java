@@ -166,7 +166,9 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.NAVIGATOR);
 
         // initialize the filter options
-        filterOptionsPopup.inheritedFilterOptionsProperty().setValue(FilterOptionsUtils.loadFilterOptions(control.getViewProperties().parentView(), control.getViewProperties().calculator()));
+        filterOptionsPopup.inheritedFilterOptionsProperty().setValue(
+                FilterOptionsUtils.initializeFilterOptions(control.getViewProperties().parentView(),
+                        control.getViewProperties().calculator()));
 
         filterOptionsPopup.navigatorProperty().bind(control.navigatorProperty());
         getSkinnable().parentProperty().subscribe(parent -> {
@@ -271,7 +273,8 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
                 }
                 if (!newFilterOptions.getMainCoordinates().getTime().selectedOptions().isEmpty() &&
                         oldFilterOptions != null &&
-                        !oldFilterOptions.getMainCoordinates().getTime().selectedOptions().equals(newFilterOptions.getMainCoordinates().getTime().selectedOptions())) {
+                        !oldFilterOptions.getMainCoordinates().getTime().selectedOptions().equals(
+                                newFilterOptions.getMainCoordinates().getTime().selectedOptions())) {
                     long millis = FilterOptionsUtils.getMillis(newFilterOptions);
                     // update the time
                     control.getViewProperties().nodeView().stampCoordinate().timeProperty().set(millis);
@@ -293,7 +296,9 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         // listen to changes to the parent of the current overrideable view
         parentSubscription = control.getViewProperties().parentView().subscribe((oldValue, newValue) -> {
             filterOptionsPopup.filterOptionsProperty().removeListener(changeListener);
-            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(FilterOptionsUtils.loadFilterOptions(control.getViewProperties().parentView(), control.getViewProperties().calculator()));
+            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(
+                    FilterOptionsUtils.initializeFilterOptions(control.getViewProperties().parentView(),
+                            control.getViewProperties().calculator()));
             filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
 
             // publish event to refresh the navigator
