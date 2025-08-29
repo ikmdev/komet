@@ -5,6 +5,7 @@ import static dev.ikm.komet.kview.controls.RangeCalendarControl.DEFAULT_DATE_PAT
 import dev.ikm.komet.kview.controls.DateFilterTitledPane;
 import dev.ikm.komet.kview.controls.DateRange;
 import dev.ikm.komet.kview.controls.FilterOptions;
+import dev.ikm.komet.kview.controls.FilterOptionsUtils;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.RangeCalendarControl;
 import dev.ikm.komet.kview.controls.TruncatedTextFlow;
@@ -105,6 +106,9 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
             subscription.unsubscribe();
         }
 
+        if (control.getOption() == null) {
+            return;
+        }
         currentOption = control.getOption().copy();
         selectedOption.setText(getOptionText(currentOption));
 
@@ -166,6 +170,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 } else {
                     createDateRangePane(currentOption);
                 }
+                calendarControl.setStampDates(FilterOptionsUtils.getTimesInUse());
                 if (comboBox.isShowing()) {
                     control.setExpanded(true);
                     control.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, true);
