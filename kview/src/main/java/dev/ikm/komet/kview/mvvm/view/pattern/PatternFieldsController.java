@@ -232,7 +232,7 @@ public class PatternFieldsController {
     private void clearView(ActionEvent actionEvent) {
         //Reset the field order selection to the last value
         IntegerProperty totalFields = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
-        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, (totalFields.get()+1));
+        patternFieldsViewModel.setPropertyValue(FIELD_ORDER, (totalFields.get()));
         patternFieldsViewModel.setPropertyValue(DATA_TYPE, null);
         patternFieldsViewModel.setPropertyValue(PREVIOUS_PATTERN_FIELD, null);
         patternFieldsViewModel.setPropertyValue(PURPOSE_ENTITY, null);
