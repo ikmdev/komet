@@ -250,7 +250,12 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         addIncludedModulesMenu.getItems().add(allModulesItem);
         allModulesItem.setOnAction(event -> {
             Platform.runLater(() -> {
-                observableCoordinate.moduleSpecificationsProperty().clear();
+                // ensure that the wildcard menu item is never deselected
+                if (allModulesItem.isSelected()) {
+                    observableCoordinate.moduleSpecificationsProperty().clear();
+                } else {
+                    allModulesItem.setSelected(true);
+                }
             });
             event.consume();
         });
@@ -301,7 +306,12 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         excludedModulesMenu.getItems().add(noExclusionsWildcard);
         noExclusionsWildcard.setOnAction(event -> {
             Platform.runLater(() -> {
-                observableCoordinate.excludedModuleSpecificationsProperty().clear();
+                // ensure that the wildcard menu item is never deselected
+                if (noExclusionsWildcard.isSelected()) {
+                    observableCoordinate.excludedModuleSpecificationsProperty().clear();
+                } else {
+                    noExclusionsWildcard.setSelected(true);
+                }
             });
             event.consume();
         });

@@ -69,7 +69,6 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
 
         selectedOption = new TruncatedTextFlow();
         selectedOption.setMaxContentHeight(44); // 2 lines
-        selectedOption.setMaxWidth(240);
         selectedOption.getStyleClass().add("option");
 
         buttonToggleGroup = new ToggleGroup();
@@ -109,14 +108,12 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
 
         control.setContent(contentBox);
 
-        if (control.getParent() instanceof Accordion accordion) {
-            Parent parent = accordion.getParent();
-            while (!(parent instanceof ScrollPane)) {
-                parent = parent.getParent();
-            }
-
-            scrollPane = (ScrollPane) parent;
+        Parent parent = control.getParent();
+        while (!(parent instanceof ScrollPane)) {
+            parent = parent.getParent();
         }
+
+        scrollPane = (ScrollPane) parent;
 
         setupTitledPane();
     }
@@ -127,15 +124,19 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             subscription = Subscription.EMPTY;
         }
 
-        boolean multiSelectionAllowed = control.getOption().isMultiSelectionAllowed();
+        FilterOptions.Option option = control.getOption();
+        if (option == null) {
+            return;
+        }
+        boolean multiSelectionAllowed = option.isMultiSelectionAllowed();
         control.pseudoClassStateChanged(SINGLE_SELECT_OPTION, !multiSelectionAllowed);
 
-        FilterOptions.Option currentOption = control.getOption().copy();
+        FilterOptions.Option currentOption = option.copy();
         selectedOption.setText(getOptionText(currentOption));
 
         // add toggles only once
         if (contentBox.getChildren().size() == 1) {
-            control.getOption().availableOptions().forEach(text ->
+            option.availableOptions().forEach(text ->
                     contentBox.getChildren().add(new OptionToggle(text)));
         }
         setupToggleBox(currentOption);
@@ -145,7 +146,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
 
         subscription = subscription.and(selectedOption.textProperty().subscribe(_ -> {
             pseudoClassStateChanged(MODIFIED_TITLED_PANE,
-                    !Objects.equals(currentOption.selectedOptions(), currentOption.defaultOptions()));
+                    !Objects.equals(currentOption, control.getDefaultOption()));
         }));
 
         if (control.getParent() instanceof Accordion accordion) {
