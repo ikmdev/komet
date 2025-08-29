@@ -20,6 +20,10 @@ import java.util.regex.Pattern;
 // TODO: Update to compare the package-dates from the MANIFEST file.
 public class GitSyncFileSorter implements Comparator<String> {
 
+    // Regex Pattern to find datetime in format yyyyMMdd'T'HHmmssZZZ (e.g., 20250725T153526EDT)
+    // Regex finds 8 digits, then the letter T, then 6 digits, then 3 capitol letters
+    static final String FILENAME_DATETIME_REGEX = "(\\d{8}T\\d{6}[A-Z]{3})";
+
     /**
      * Compares two file paths for sorting / ordering.
      *
@@ -29,10 +33,7 @@ public class GitSyncFileSorter implements Comparator<String> {
      */
     @Override
     public int compare(String s1, String s2) {
-        // Regex Pattern to find datetime in format yyyyMMdd'T'HHmmssZZZ (e.g., 20250725T153526EDT)
-        // Regex finds 8 digits, then the letter T, then 6 digits, then 3 capitol letters
-        String regex = "(\\d{8}T\\d{6}[A-Z]{3})";
-        Pattern pattern = Pattern.compile(regex);
+        Pattern pattern = Pattern.compile(FILENAME_DATETIME_REGEX);
 
         Matcher s1Matcher = pattern.matcher(s1);
         Matcher s2Matcher = pattern.matcher(s2);
