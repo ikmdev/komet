@@ -65,6 +65,7 @@ public class FilterOptions implements Serializable {
         private final boolean multiSelect;
         private boolean any;
         private final EnumSet<BUTTON> buttonType;
+        private boolean inOverride;
 
         public Option(OPTION_ITEM item, String title, List<String> defaultOptions, List<String> availableOptions,
                       List<String> selectedOptions, List<String> excludedOptions, boolean multiSelect, boolean any, EnumSet<BUTTON> buttonType) {
@@ -77,6 +78,7 @@ public class FilterOptions implements Serializable {
             this.multiSelect = multiSelect;
             this.any = any;
             this.buttonType = buttonType;
+            this.inOverride = false; // always initially false
         }
 
         public enum BUTTON {
@@ -133,6 +135,14 @@ public class FilterOptions implements Serializable {
 
         public boolean hasExclusions() {
             return hasExcluding() && excludedOptions() != null && !excludedOptions().isEmpty();
+        }
+
+        public boolean isInOverride() {
+            return inOverride;
+        }
+
+        public void setInOverride(boolean override) {
+            this.inOverride = override;
         }
 
         @Override

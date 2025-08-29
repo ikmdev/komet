@@ -146,7 +146,9 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
 
         subscription = subscription.and(selectedOption.textProperty().subscribe(_ -> {
             pseudoClassStateChanged(MODIFIED_TITLED_PANE,
-                    !Objects.equals(currentOption, control.getDefaultOption()));
+                    !Objects.equals(currentOption, control.getDefaultOption())
+                    //option.isInOverride() //THIS alternative approach doesn't work
+            );
         }));
 
         if (control.getParent() instanceof Accordion accordion) {

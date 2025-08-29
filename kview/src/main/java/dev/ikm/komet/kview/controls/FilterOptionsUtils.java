@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import dev.ikm.komet.framework.view.ObservableCoordinate;
 import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
 import dev.ikm.komet.framework.view.ObservableStampCoordinate;
@@ -22,13 +23,11 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-
 public class FilterOptionsUtils {
 
     public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
 
-    public static FilterOptions loadFilterOptions(ObservableCoordinate<ViewCoordinateRecord> parentView, ViewCalculator calculator) {
+    public static FilterOptions initializeFilterOptions(ObservableCoordinate<ViewCoordinateRecord> parentView, ViewCalculator calculator) {
         FilterOptions filterOptions = new FilterOptions();
 
         // get parent menu settings
@@ -102,19 +101,137 @@ public class FilterOptionsUtils {
         return filterOptions;
     }
 
+    public static FilterOptions reloadFilterOptions(FilterOptions.MainCoordinates childOptions, ObservableCoordinate<ViewCoordinateRecord> parentView, ViewCalculator calculator) {
+        FilterOptions filterOptions = new FilterOptions();
+
+        // get parent menu settings
+        for (ObservableCoordinate<?> observableCoordinate : parentView.getCompositeCoordinates()) {
+            if (observableCoordinate instanceof ObservableStampCoordinate observableStampCoordinate) {
+
+                // populate the TYPE; this isn't in the parent view coordinate
+                // it is all set in FilterOptions
+
+                // populate the STATUS
+                StateSet currentStates = observableStampCoordinate.allowedStatesProperty().getValue();
+                List<String> currentStatesStr = currentStates.toEnumSet().stream().map(Enum::name).toList();
+
+                FilterOptions.Option statusOption = filterOptions.getMainCoordinates().getStatus();
+                if (!childOptions.getStatus().isInOverride()) {
+                    // perform inheritance
+                    statusOption.selectedOptions().clear();
+                    statusOption.selectedOptions().addAll(currentStatesStr);
+
+                    statusOption.defaultOptions().clear();
+                    statusOption.defaultOptions().addAll(currentStatesStr);
+                } else {
+                    // don't override
+                    statusOption.selectedOptions().clear();
+                    statusOption.selectedOptions().addAll(childOptions.getStatus().selectedOptions());
+
+                    statusOption.defaultOptions().clear();
+                    statusOption.defaultOptions().addAll(childOptions.getStatus().defaultOptions());
+                }
+
+                // MODULE
+                if (!observableStampCoordinate.moduleNids().isEmpty()) {
+                    FilterOptions.Option moduleOption = filterOptions.getMainCoordinates().getModule();
+                    if (!childOptions.getModule().isInOverride()) {
+                        // perform inheritance
+                        moduleOption.defaultOptions().clear();
+                        observableStampCoordinate.moduleNids().intStream().forEach(moduleNid -> {
+                            String moduleStr = calculator.getPreferredDescriptionStringOrNid(moduleNid);
+                            System.out.println("moduleStr = " + moduleStr);
+                            moduleOption.defaultOptions().add(moduleStr);
+                        });
+                    } else {
+                        // don't override
+                        moduleOption.selectedOptions().clear();
+                        moduleOption.selectedOptions().addAll(childOptions.getModule().selectedOptions());
+
+                        moduleOption.defaultOptions().clear();
+                        moduleOption.defaultOptions().addAll(childOptions.getModule().defaultOptions());
+                    }
+                }
+
+                // populate the PATH
+                ConceptFacade currentPath = observableStampCoordinate.pathConceptProperty().getValue();
+                String currentPathStr = currentPath.description();
+
+                List<String> defaultSelectedPaths = new ArrayList<>(List.of(currentPathStr));
+                FilterOptions.Option pathOption = filterOptions.getMainCoordinates().getPath();
+                if (!childOptions.getPath().isInOverride()) {
+                    // perform inheritance
+                    pathOption.defaultOptions().clear();
+                    pathOption.defaultOptions().addAll(defaultSelectedPaths);
+
+                    pathOption.selectedOptions().clear();
+                    pathOption.selectedOptions().addAll(defaultSelectedPaths);
+                } else {
+                    // don't override
+                    pathOption.selectedOptions().clear();
+                    pathOption.selectedOptions().addAll(childOptions.getPath().selectedOptions());
+
+                    pathOption.defaultOptions().clear();
+                    pathOption.defaultOptions().addAll(childOptions.getPath().defaultOptions());
+                }
+
+                // TIME
+                FilterOptions.Option timeOption = filterOptions.getMainCoordinates().getTime();
+                if (!childOptions.getTime().isInOverride()) {
+                    // perform inheritance
+                    Long time = observableStampCoordinate.timeProperty().getValue();
+                    if (!time.equals(Long.MAX_VALUE) && !time.equals(PREMUNDANE_TIME)) {
+                        //FIXME the custom control doesn't support premundane yet
+                        Date date = new Date(time);
+                        timeOption.defaultOptions().clear();
+                        timeOption.selectedOptions().clear();
+                        timeOption.selectedOptions().add(SIMPLE_DATE_FORMAT.format(date));
+                        timeOption.defaultOptions().addAll(timeOption.selectedOptions());
+                    }
+                } else {
+                    // don't override
+                    timeOption.selectedOptions().clear();
+                    timeOption.selectedOptions().addAll(childOptions.getTime().selectedOptions());
+
+                    timeOption.defaultOptions().clear();
+                    timeOption.defaultOptions().addAll(childOptions.getTime().defaultOptions());
+                }
+            } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
+                // populate the LANGUAGE
+                FilterOptions.Option language = filterOptions.getLanguageCoordinates(0).getLanguage();
+                language.defaultOptions().clear();
+                String languageStr = calculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(
+                        observableLanguageCoordinate.languageConceptProperty().get().nid());
+                language.defaultOptions().add(languageStr);
+                language.selectedOptions().clear();
+                language.selectedOptions().addAll(language.defaultOptions());
+
+                //FIXME description choices don't yet align with parent/classic menu, more discussion needs to happen on
+                // how we want to fix this.
+                // all set in FilterOptions
+            }
+        }
+        return filterOptions;
+    }
+
+
     public static long getMillis(FilterOptions filterOptions) {
         FilterOptions.Option time = filterOptions.getMainCoordinates().getTime();
         if (time == null || time.selectedOptions().isEmpty()) {
             return -1;
         }
 
-        Date date;
-        try {
-            date = SIMPLE_DATE_FORMAT.parse(time.selectedOptions().getFirst());
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
+        if (!time.selectedOptions().getFirst().startsWith("Latest")) {
+            Date date;
+            try {
+                date = SIMPLE_DATE_FORMAT.parse(time.selectedOptions().getFirst());
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+            return date.getTime();
+        } else {
+            return Long.MAX_VALUE;
         }
-        return date.getTime();
     }
 
     public static List<LocalDateTime> getTimesInUse() {
