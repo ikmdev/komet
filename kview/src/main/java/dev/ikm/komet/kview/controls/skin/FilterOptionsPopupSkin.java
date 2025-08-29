@@ -269,6 +269,8 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
     private void markAllAsNoOverride(FilterOptions defaultFilterOptions) {
         defaultFilterOptions.getMainCoordinates().getStatus().setInOverride(false);
+        defaultFilterOptions.getMainCoordinates().getTime().setInOverride(false);
+        defaultFilterOptions.getMainCoordinates().getPath().setInOverride(false);
         //TODO mark other fields as no override
     }
 

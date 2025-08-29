@@ -10,6 +10,7 @@ import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 
 public class FilterOptionsUtils {
@@ -131,12 +133,22 @@ public class FilterOptionsUtils {
                 // MODULE
                 if (!observableStampCoordinate.moduleNids().isEmpty()) {
                     FilterOptions.Option moduleOption = filterOptions.getMainCoordinates().getModule();
-                    moduleOption.defaultOptions().clear();
-                    observableStampCoordinate.moduleNids().intStream().forEach(moduleNid -> {
-                        String moduleStr = calculator.getPreferredDescriptionStringOrNid(moduleNid);
-                        System.out.println("moduleStr = " + moduleStr);
-                        moduleOption.defaultOptions().add(moduleStr);
-                    });
+                    if (!childOptions.getModule().isInOverride()) {
+                        // perform inheritance
+                        moduleOption.defaultOptions().clear();
+                        observableStampCoordinate.moduleNids().intStream().forEach(moduleNid -> {
+                            String moduleStr = calculator.getPreferredDescriptionStringOrNid(moduleNid);
+                            System.out.println("moduleStr = " + moduleStr);
+                            moduleOption.defaultOptions().add(moduleStr);
+                        });
+                    } else {
+                        // don't override
+                        moduleOption.selectedOptions().clear();
+                        moduleOption.selectedOptions().addAll(childOptions.getModule().selectedOptions());
+
+                        moduleOption.defaultOptions().clear();
+                        moduleOption.defaultOptions().addAll(childOptions.getModule().defaultOptions());
+                    }
                 }
 
                 // populate the PATH
@@ -145,23 +157,42 @@ public class FilterOptionsUtils {
 
                 List<String> defaultSelectedPaths = new ArrayList<>(List.of(currentPathStr));
                 FilterOptions.Option pathOption = filterOptions.getMainCoordinates().getPath();
-                pathOption.defaultOptions().clear();
-                pathOption.defaultOptions().addAll(defaultSelectedPaths);
+                if (!childOptions.getPath().isInOverride()) {
+                    // perform inheritance
+                    pathOption.defaultOptions().clear();
+                    pathOption.defaultOptions().addAll(defaultSelectedPaths);
 
-                pathOption.selectedOptions().clear();
-                pathOption.selectedOptions().addAll(defaultSelectedPaths);
+                    pathOption.selectedOptions().clear();
+                    pathOption.selectedOptions().addAll(defaultSelectedPaths);
+                } else {
+                    // don't override
+                    pathOption.selectedOptions().clear();
+                    pathOption.selectedOptions().addAll(childOptions.getPath().selectedOptions());
+
+                    pathOption.defaultOptions().clear();
+                    pathOption.defaultOptions().addAll(childOptions.getPath().defaultOptions());
+                }
 
                 // TIME
                 FilterOptions.Option timeOption = filterOptions.getMainCoordinates().getTime();
-
-                Long time = observableStampCoordinate.timeProperty().getValue();
-                if (!time.equals(Long.MAX_VALUE) && !time.equals(PREMUNDANE_TIME)) {
-                    //FIXME the custom control doesn't support premundane yet
-                    Date date = new Date(time);
-                    timeOption.defaultOptions().clear();
+                if (!childOptions.getTime().isInOverride()) {
+                    // perform inheritance
+                    Long time = observableStampCoordinate.timeProperty().getValue();
+                    if (!time.equals(Long.MAX_VALUE) && !time.equals(PREMUNDANE_TIME)) {
+                        //FIXME the custom control doesn't support premundane yet
+                        Date date = new Date(time);
+                        timeOption.defaultOptions().clear();
+                        timeOption.selectedOptions().clear();
+                        timeOption.selectedOptions().add(SIMPLE_DATE_FORMAT.format(date));
+                        timeOption.defaultOptions().addAll(timeOption.selectedOptions());
+                    }
+                } else {
+                    // don't override
                     timeOption.selectedOptions().clear();
-                    timeOption.selectedOptions().add(SIMPLE_DATE_FORMAT.format(date));
-                    timeOption.defaultOptions().addAll(timeOption.selectedOptions());
+                    timeOption.selectedOptions().addAll(childOptions.getTime().selectedOptions());
+
+                    timeOption.defaultOptions().clear();
+                    timeOption.defaultOptions().addAll(childOptions.getTime().defaultOptions());
                 }
             } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
                 // populate the LANGUAGE
@@ -181,15 +212,6 @@ public class FilterOptionsUtils {
         return filterOptions;
     }
 
-    private static boolean shouldInherit(FilterOptions.Option theOption, List<String> parentOptions) {
-        // the child will be in override mode when the selected and default are the same, and it differs from the parent
-        boolean isDefaultSameAsSelected = theOption.selectedOptions().containsAll(theOption.defaultOptions())
-                && theOption.defaultOptions().containsAll(theOption.selectedOptions());
-        boolean parentDiffersFromSelected = !theOption.selectedOptions().contains(parentOptions)
-                || !parentOptions.containsAll(theOption.selectedOptions());
-        boolean isOverride = isDefaultSameAsSelected && parentDiffersFromSelected;
-        return !isOverride;
-    }
 
     public static long getMillis(FilterOptions filterOptions) {
         FilterOptions.Option time = filterOptions.getMainCoordinates().getTime();
@@ -197,13 +219,17 @@ public class FilterOptionsUtils {
             return -1;
         }
 
-        Date date;
-        try {
-            date = SIMPLE_DATE_FORMAT.parse(time.selectedOptions().getFirst());
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
+        if (!time.selectedOptions().getFirst().startsWith("Latest")) {
+            Date date;
+            try {
+                date = SIMPLE_DATE_FORMAT.parse(time.selectedOptions().getFirst());
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+            return date.getTime();
+        } else {
+            return Long.MAX_VALUE;
         }
-        return date.getTime();
     }
 
     private static int findNidForDescription(Navigator navigator, int nid, String description) {

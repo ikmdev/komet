@@ -40,6 +40,7 @@ import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
+import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
@@ -49,6 +50,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -149,6 +151,8 @@ public class NextGenSearchController {
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
 
+    private Map<String, ConceptFacade> mapOfStringToPath = new HashMap<>();
+
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
@@ -203,6 +207,12 @@ public class NextGenSearchController {
         filterOptionsPopup.showingProperty().subscribe(showing ->
                 filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
 
+        getViewProperties().calculator().descendentsOf(TinkarTerm.PATH.nid()).intStream().boxed().forEach(nid -> {
+            String pathStr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(nid);
+            ConceptFacade conceptFacadeForPath = EntityService.get().getEntityFast(nid);
+            mapOfStringToPath.put(pathStr, conceptFacadeForPath);
+        });
+
         // listen for changes to the filter options
         ChangeListener<FilterOptions> changeListener = ((obs, oldFilterOptions, newFilterOptions) -> {
             if (newFilterOptions != null) {
@@ -215,20 +225,19 @@ public class NextGenSearchController {
 
                     // turn ON override
                     filterOptionsPopup.getInheritedFilterOptions().getMainCoordinates().getStatus().setInOverride(true);
-                    //TODO mark other fields as no override
                 }
                 if (!newFilterOptions.getMainCoordinates().getPath().selectedOptions().isEmpty()) {
                     //NOTE: there is no known way to set multiple paths
                     String pathStr = newFilterOptions.getMainCoordinates().getPath().selectedOptions().stream().findFirst().get();
 
-                    ConceptFacade conceptPath = switch(pathStr) {
-                        case "Master path" -> TinkarTerm.MASTER_PATH;
-                        case "Primordial path" -> TinkarTerm.PRIMORDIAL_PATH;
-                        case "Sandbox path" -> TinkarTerm.SANDBOX_PATH;
-                        default -> TinkarTerm.DEVELOPMENT_PATH;
-                    };
+                    // look up the path by the string
+                    ConceptFacade conceptPath = mapOfStringToPath.get(pathStr);
+
                     // update the Path
                     getViewProperties().nodeView().stampCoordinate().pathConceptProperty().setValue(conceptPath);
+
+                    // turn ON override
+                    filterOptionsPopup.getInheritedFilterOptions().getMainCoordinates().getPath().setInOverride(true);
                 }
                 if (!newFilterOptions.getMainCoordinates().getTime().selectedOptions().isEmpty() &&
                         oldFilterOptions != null &&
@@ -236,6 +245,9 @@ public class NextGenSearchController {
                     long millis = FilterOptionsUtils.getMillis(newFilterOptions);
                     // update the time
                     getViewProperties().nodeView().stampCoordinate().timeProperty().set(millis);
+
+                    // turn ON override
+                    filterOptionsPopup.getInheritedFilterOptions().getMainCoordinates().getTime().setInOverride(true);
                 } else {
                     // revert to the Latest
                     Date latest = new Date();
