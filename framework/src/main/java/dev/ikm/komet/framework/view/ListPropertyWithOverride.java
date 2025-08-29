@@ -174,9 +174,11 @@ public class ListPropertyWithOverride<T> extends SimpleEqualityBasedListProperty
         if (!overridden) {
             this.unbind();
             overridden = true;
+            // create a new empty list
             super.set(FXCollections.observableArrayList(new ArrayList<>()));
+        } else {
+            super.clear();
         }
-        super.clear();
     }
 
     @Override

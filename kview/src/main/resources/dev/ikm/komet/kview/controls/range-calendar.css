@@ -68,7 +68,7 @@
     -fx-padding: 1 2 1 1;
     -fx-effect: null;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 14px;
     -fx-text-fill: #212430;
 }
 
@@ -90,8 +90,8 @@
     -fx-background-insets: 0;
     -fx-color: #212430;
     -fx-background-radius: 0;
-    -fx-pref-width: 16;
-    -fx-pref-height: 16;
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .button:focused {
@@ -157,22 +157,24 @@
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .label.month-year-label {
     -fx-alignment: center;
-    -fx-min-width: 140;
-    -fx-pref-width: 140;
-    -fx-max-width: 140;
-    -fx-min-height: 23;
-    -fx-pref-height: 23;
+    -fx-min-width: 184;
+    -fx-pref-width: 184;
+    -fx-max-width: 184;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-color: #212430;
     -fx-background-radius: 0;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 14px;
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid {
     -fx-background-color: transparent;
-    -fx-padding: 0;
+    -fx-min-width: 280; /* 7 x 40 square cells */
+    -fx-pref-width: 280;
+    -fx-max-width: 280;
     -fx-hgap: 0;
     -fx-vgap: 1;
 }
@@ -183,23 +185,23 @@
     -fx-padding: 0;
     -fx-alignment: BASELINE_CENTER;
     -fx-opacity: 1.0;
-    -fx-min-width: 32;
-    -fx-pref-width: 32;
-    -fx-max-width: 32;
-    -fx-min-height: 32;
-    -fx-pref-height: 32;
-    -fx-max-height: 32;
+    -fx-min-width: 40;
+    -fx-pref-width: 40;
+    -fx-max-width: 40;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-name-cell {
-    -fx-font-size: 10;
+    -fx-font-size: 14;
     -fx-text-fill: #111827;
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell {
     -fx-padding: 4 7 4 7;
     -fx-border-width: 0;
-    -fx-font-size: 11;
+    -fx-font-size: 14;
     -fx-background: transparent;
     -fx-background-color: transparent;
     -fx-border-color: null;
@@ -231,18 +233,35 @@
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell > .calendar-cell-circle {
-    -fx-background-radius: 16;
-    -fx-pref-width: 32;
-    -fx-pref-height: 32;
-    -fx-background-color: transparent;
+    -fx-background-radius: 20;
+    -fx-pref-width: 40;
+    -fx-pref-height: 40;
+    -fx-background-color: #5DCF16;
+    visibility: hidden;
+    -fx-managed: false;
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:selected > .calendar-cell-circle {
-    -fx-background-color: #5DCF16;
+    visibility: visible;
+    -fx-managed: true;
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:selected:excluded > .calendar-cell-circle {
     -fx-background-color: #5896F6;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell > .calendar-cell-stamp {
+    -fx-background-radius: 4;
+    -fx-pref-width: 4;
+    -fx-pref-height: 4;
+    -fx-background-color: #F3BE00;
+    visibility: hidden;
+    -fx-managed: false;
+}
+
+.range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell:stamp > .calendar-cell-stamp {
+    visibility: visible;
+    -fx-managed: true;
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .today {
