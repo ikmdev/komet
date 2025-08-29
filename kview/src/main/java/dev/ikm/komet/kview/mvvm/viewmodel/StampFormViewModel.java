@@ -14,6 +14,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampPropert
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUSES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME_TEXT;
+import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
@@ -27,6 +28,7 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.events.EntityVersionChangeEvent;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ComponentWithNid;
@@ -57,6 +59,7 @@ public class StampFormViewModel extends FormViewModel {
     private EntityFacade entityFacade;
     private ViewProperties viewProperties;
     private UUID topic;
+    private Subscriber<EntityVersionChangeEvent> entityVersionChangeEventSubscriber;
 
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
@@ -140,8 +143,6 @@ public class StampFormViewModel extends FormViewModel {
         closePropertiesPanelEventSubscriber = evt -> onPropertiesPanelClose();
         EvtBusFactory.getDefaultEvtBus().subscribe(topic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
 
-
-
         // initialize observable lists
         Set<ConceptEntity> modules = fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId());
         Set<ConceptEntity> paths = fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId());
@@ -164,6 +165,14 @@ public class StampFormViewModel extends FormViewModel {
 
         setPropertyValue(TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
 
+        entityVersionChangeEventSubscriber = evt -> {
+            EvtBusFactory.getDefaultEvtBus().unsubscribe(entityVersionChangeEventSubscriber);
+            init(entity, topic, viewProperties);
+        };
+
+        EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
+                EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
+
         save(true);
     }
 
@@ -180,10 +189,10 @@ public class StampFormViewModel extends FormViewModel {
             StampEntity stampEntity = entityVersion.stamp();
             setPropertyValue(CURRENT_STAMP, stampEntity);
         });
-        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
-        StampEntity stampEntity = latestVersion.stamp();
-
-        setPropertyValue(CURRENT_STAMP, stampEntity);
+//        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
+//        StampEntity stampEntity = latestVersion.stamp();
+//
+//        setPropertyValue(CURRENT_STAMP, stampEntity);
     }
 
     private void loadStampValuesFromDB(Set<ConceptEntity> modules, Set<ConceptEntity> paths) {
@@ -267,11 +276,12 @@ public class StampFormViewModel extends FormViewModel {
             }
         });
         transaction.commit();
-
-        // Load the new STAMP and store the new initial values
-        loadStamp();
-        save(true);
-        updateIsStampValuesChanged();
+/// //        System.out.println(" TOTAL STAMPS UPDATED " + stampCount);
+/// //
+/// //        // Load the new STAMP and store the new initial values
+/// ////        loadStamp();
+////        save(true);
+////        updateIsStampValuesChanged();
 
         return this;
     }

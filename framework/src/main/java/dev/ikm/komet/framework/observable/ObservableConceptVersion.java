@@ -153,4 +153,13 @@ public final class ObservableConceptVersion extends ObservableVersion<ConceptVer
         return fieldMap.toImmutable();
     }
 
+//    @Override
+//    public ConceptVersionRecord updateStampNid(int stampNid) {
+//        ConceptVersionRecord newConceptVersionRecord = null;
+//        ConceptVersionRecord conceptVersionRecord = version();
+//        newConceptVersionRecord = conceptVersionRecord.with().stampNid(stampNid).build();
+//
+//        return newConceptVersionRecord;
+//    }
+
 }
