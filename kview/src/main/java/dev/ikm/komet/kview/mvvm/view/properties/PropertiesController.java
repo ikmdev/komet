@@ -59,13 +59,8 @@ public class PropertiesController implements Serializable {
 
     protected static final String EDIT_DESCRIPTIONS_FXML_FILE = "edit-descriptions.fxml";
 
-    protected static final String ADD_OTHER_NAME_FXML_FILE = "add-other-name.fxml";
-
-    protected static final String EDIT_OTHER_NAME_FXML_FILE = "edit-other-name-form.fxml";
-
-    protected static final String EDIT_FQN_FXML_FILE = "edit-fully-qualified-name.fxml";
-
-    protected static final String ADD_FQN_FXML_FILE = "add-fully-qualified-name.fxml";
+    // used in conjunction with all child's of DescriptionBaseController
+    protected static final String DESCRIPTION_FORM_FXML_FILE = "description-form.fxml";
 
     @FXML
     private SVGPath commentsButton;
@@ -109,15 +104,16 @@ public class PropertiesController implements Serializable {
 
     private EditConceptController editConceptController;
 
-    private AddOtherNameController addOtherNameController;
-
-    private EditDescriptionFormController editDescriptionFormController;
-
     private EditDescriptionsController editDescriptionsController;
 
-    private EditFullyQualifiedNameController editFullyQualifiedNameController;
+    private DescriptionAddOtherController addOtherNameController;
 
-    private AddFullyQualifiedNameController addFullyQualifiedNameController;
+    private DescriptionEditOtherController editDescriptionFormController;
+
+    private DescriptionEditFqnController editFullyQualifiedNameController;
+
+    private DescriptionAddFqnController addFullyQualifiedNameController;
+
 
     private Pane commentsPane = new StackPane(genText("Comments Pane"));
     private ViewProperties viewProperties;
@@ -192,34 +188,38 @@ public class PropertiesController implements Serializable {
         editDescriptionsController = loaderEditDescriptions.getController();
 
         // NOTE: New way of using injected View Models inside of Controllers.
-        JFXNode<Pane, AddOtherNameController> addOtherNameControllerNode = FXMLMvvmLoader.make(
-                getClass().getResource(ADD_OTHER_NAME_FXML_FILE),
-                new AddOtherNameController(conceptTopic));
+        JFXNode<Pane, DescriptionAddOtherController> addOtherNameControllerNode = FXMLMvvmLoader.make(
+                getClass().getResource(DESCRIPTION_FORM_FXML_FILE),
+                new DescriptionAddOtherController(conceptTopic));
 
         addOtherNamePane = addOtherNameControllerNode.node();
         addOtherNameController = addOtherNameControllerNode.controller();
 
-        JFXNode<Pane, EditDescriptionFormController> editDescriptionFormControllerNode = FXMLMvvmLoader.make(
-                getClass().getResource(EDIT_OTHER_NAME_FXML_FILE),
-                new EditDescriptionFormController(conceptTopic));
+
+
+        JFXNode<Pane, DescriptionEditOtherController> editDescriptionFormControllerNode = FXMLMvvmLoader.make(
+                getClass().getResource(DESCRIPTION_FORM_FXML_FILE),
+                new DescriptionEditOtherController(conceptTopic));
         editOtherNamePane = editDescriptionFormControllerNode.node();
         editDescriptionFormController = editDescriptionFormControllerNode.controller();
 
         //TODO for future there will be an edit axiom form
 
-        JFXNode<Pane, EditFullyQualifiedNameController> editFqnControllerNode = FXMLMvvmLoader.make(
-                getClass().getResource(EDIT_FQN_FXML_FILE),
-                new EditFullyQualifiedNameController(conceptTopic)
+        JFXNode<Pane, DescriptionAddFqnController> addFqnControllerNode = FXMLMvvmLoader.make(
+                getClass().getResource(DESCRIPTION_FORM_FXML_FILE),
+                new DescriptionAddFqnController(conceptTopic));
+        addFqnPane = addFqnControllerNode.node();
+        addFullyQualifiedNameController = addFqnControllerNode.controller();
+
+
+
+        JFXNode<Pane, DescriptionEditFqnController> editFqnControllerNode = FXMLMvvmLoader.make(
+                getClass().getResource(DESCRIPTION_FORM_FXML_FILE),
+                new DescriptionEditFqnController(conceptTopic)
         );
         editFqnPane = editFqnControllerNode.node();
         editFullyQualifiedNameController = editFqnControllerNode.controller();
 
-        // NOTE: New way of using injected View Models inside of Controllers.
-        JFXNode<Pane, AddFullyQualifiedNameController> addFqnControllerNode = FXMLMvvmLoader.make(
-                getClass().getResource(ADD_FQN_FXML_FILE),
-                new AddFullyQualifiedNameController(conceptTopic));
-        addFqnPane = addFqnControllerNode.node();
-        addFullyQualifiedNameController = addFqnControllerNode.controller();
 
         // initially a default selected tab and view is shown
         updateDefaultSelectedViews();
@@ -300,7 +300,7 @@ public class PropertiesController implements Serializable {
             }
             // check if the center pane is already showing, we don't want duplicate entries in the dropdowns
             if (!contentBorderPane.getCenter().equals(editFqnPane)) {
-                editFullyQualifiedNameController.updateModel(getViewProperties(), null);
+                editFullyQualifiedNameController.updateModel(getViewProperties()); // TODO check if this change was correct
                 contentBorderPane.setCenter(editFqnPane);
                 editButton.setSelected(true);
                 editButton.setText("EDIT");
