@@ -14,7 +14,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampPropert
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUSES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME_TEXT;
-import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
@@ -23,9 +22,8 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
 import dev.ikm.tinkar.component.Stamp;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EntityVersionChangeEvent;
@@ -164,15 +162,6 @@ public class StampFormViewModel extends FormViewModel {
         loadStampValuesFromDB(modules, paths); // MODULE
 
         setPropertyValue(TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
-
-        entityVersionChangeEventSubscriber = evt -> {
-            EvtBusFactory.getDefaultEvtBus().unsubscribe(entityVersionChangeEventSubscriber);
-            init(entity, topic, viewProperties);
-        };
-
-        EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
-                EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
-
         save(true);
     }
 
@@ -181,23 +170,28 @@ public class StampFormViewModel extends FormViewModel {
     }
 
     private void loadStamp() {
-        ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
-        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
-        Latest<ObservableVersion> obsLatestVersion = observableEntitySnapshot.getLatestVersion();
-        obsLatestVersion.ifPresent(version -> {
-            EntityVersion entityVersion = version.getEntityVersion();
-            StampEntity stampEntity = entityVersion.stamp();
-            setPropertyValue(CURRENT_STAMP, stampEntity);
-        });
-//        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
-//        StampEntity stampEntity = latestVersion.stamp();
-//
-//        setPropertyValue(CURRENT_STAMP, stampEntity);
+        StampEntity stampEntity = EntityService.get().getEntityFast(entityFacade.nid()).versions().getLastOptional().get().stamp();
+        setPropertyValue(CURRENT_STAMP, stampEntity);
     }
 
     private void loadStampValuesFromDB(Set<ConceptEntity> modules, Set<ConceptEntity> paths) {
         StampEntity stampEntity = getPropertyValue(StampProperties.CURRENT_STAMP);
-
+//        ObservableEntity stampObservableEntity = ObservableEntity.get(stampEntity.nid());
+//        if(stampObservableEntity instanceof ObservableStamp observableStamp){
+//            ObservableStampVersion observableStampVersion = observableStamp.lastVersion();
+//            State state = observableStampVersion.state();
+//            long time = observableStampVersion.time();
+//            ConceptFacade author = observableStampVersion.author();
+//            ConceptFacade module = observableStampVersion.module();
+//            ConceptFacade path = observableStampVersion.path();
+//            setPropertyValue(STATUS, state);
+//            setPropertyValue(TIME, time);
+//            setPropertyValue(AUTHOR, author);
+//            setPropertyValue(MODULE, module);
+//            setPropertyValue(PATH, path);
+//            modules.stream().filter( m -> m.nid() == module.nid()).findFirst().orElse(null);
+//            paths.stream().filter( m -> m.nid() == path.nid()).findFirst().orElse(null);
+//        }
         // Choose one item from the Sets as the module and path. Items will use .equals(). STATUS property value is an Enum.
         ConceptEntity module = modules.stream().filter( m -> m.nid() == stampEntity.moduleNid()).findFirst().orElse(null);
         ConceptEntity path = paths.stream().filter( m -> m.nid() == stampEntity.pathNid()).findFirst().orElse(null);
@@ -275,13 +269,13 @@ public class StampFormViewModel extends FormViewModel {
                 observableVersion.versionProperty().set(observableVersion.updateStampNid(stampEntity.nid()));
             }
         });
-        transaction.commit();
-/// //        System.out.println(" TOTAL STAMPS UPDATED " + stampCount);
-/// //
-/// //        // Load the new STAMP and store the new initial values
-/// ////        loadStamp();
-////        save(true);
-////        updateIsStampValuesChanged();
+        int stampCount = transaction.commit();
+        System.out.println(" TOTAL STAMPS UPDATED " + stampCount);
+
+       // Load the new STAMP and store the new initial values
+        loadStamp();
+        save(true);
+        updateIsStampValuesChanged();
 
         return this;
     }
