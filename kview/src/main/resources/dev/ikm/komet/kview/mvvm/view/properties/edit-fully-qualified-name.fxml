@@ -16,14 +16,14 @@
 
 <BorderPane minWidth="100.0" prefWidth="487.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1">
     <top>
-        <HBox alignment="TOP_CENTER" styleClass="edit-concept-label-container" BorderPane.alignment="TOP_CENTER">
+        <HBox alignment="TOP_CENTER" minHeight="40.0" prefHeight="40.0" prefWidth="0.0" styleClass="edit-concept-label-container" BorderPane.alignment="TOP_CENTER">
             <children>
                 <Label fx:id="editFullyQualifiedNameTitleLabel" alignment="TOP_CENTER" styleClass="edit-concept-title" text="Edit Description: Fully Qualified Name" textAlignment="CENTER" />
             </children>
         </HBox>
     </top>
     <bottom>
-        <VBox alignment="BOTTOM_CENTER" prefWidth="100.0" BorderPane.alignment="CENTER">
+        <VBox alignment="TOP_CENTER" BorderPane.alignment="CENTER" minHeight="80.0" prefHeight="80.0">
             <children>
                 <HBox alignment="BOTTOM_RIGHT" styleClass="add-description-bottom-label">
                     <children>
@@ -47,16 +47,13 @@
                     </VBox.margin>
                 </HBox>
             </children>
-         <opaqueInsets>
-            <Insets top="30.0" />
-         </opaqueInsets>
         </VBox>
     </bottom>
     <center>
         <GridPane prefWidth="487.0" BorderPane.alignment="CENTER">
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" prefWidth="310.0" />
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" prefWidth="400.0" />
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
@@ -65,61 +62,72 @@
                 <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="1.7976931348623157E308" vgrow="ALWAYS" />
-                <RowConstraints vgrow="ALWAYS" />
-                <RowConstraints maxHeight="1.7976931348623157E308" vgrow="ALWAYS" />
+                <!-- Dialects section  -->
+                <RowConstraints fx:id="dialectCommentsRowConstraints"  minHeight="200.0" prefHeight="200.0" maxHeight="200.0" vgrow="SOMETIMES" />
+                <!-- Comments section -->
+                <RowConstraints vgrow="SOMETIMES" minHeight="80.0"/>
             </rowConstraints>
             <children>
-                <Label styleClass="add-description-label" text="Name" />
+                <Label styleClass="add-description-label" text="Name" GridPane.rowIndex="0"  />
                 <Label styleClass="add-description-label" text="Type" GridPane.rowIndex="1" />
                 <Label prefWidth="100.0" styleClass="add-description-label" text="Case Significance" wrapText="true" GridPane.rowIndex="2" />
-                <Label styleClass="add-description-label" text="Language" GridPane.rowIndex="5" />
                 <Label styleClass="add-description-label" text="Status" GridPane.rowIndex="3" />
                 <Label styleClass="add-description-label" text="Module" GridPane.rowIndex="4" />
-                <TextField fx:id="fqnText" prefHeight="25.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
-                    <GridPane.margin>
-                        <Insets right="15.0" />
-                    </GridPane.margin></TextField>
-                <SortedComboBox disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Fully Qualified Name" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
-                    <GridPane.margin>
-                        <Insets right="15.0" />
-                    </GridPane.margin>
-                </SortedComboBox>
-                <SortedComboBox fx:id="caseSignificanceComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+                <Label styleClass="add-description-label" text="Language" GridPane.rowIndex="5" />
+
+                <!-- Name field -->
+                <TextField fx:id="fqnText" styleClass="komet-text-field" prefHeight="25.0" promptText="Enter Name" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS">
                     <GridPane.margin>
                         <Insets right="15.0" />
                     </GridPane.margin>
-                </SortedComboBox>
-                <SortedComboBox fx:id="languageComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
+                </TextField>
+
+                <!-- Type display (disabled combo box used as label) -->
+                <SortedComboBox fx:id="typeDisplayComboBox" styleClass="blue-arrow-combo-box" disable="true" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Type" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets right="15.0" />
                     </GridPane.margin>
                 </SortedComboBox>
-                <SortedComboBox fx:id="statusComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
+
+                <!-- Case Significance -->
+                <SortedComboBox fx:id="caseSignificanceComboBox" styleClass="blue-arrow-combo-box" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select case sensitivity" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
                     <GridPane.margin>
                         <Insets right="15.0" />
                     </GridPane.margin>
                 </SortedComboBox>
-                <SortedComboBox fx:id="moduleComboBox" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="310.0" promptText="Select" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
+
+                <!-- Status -->
+                <SortedComboBox fx:id="statusComboBox" styleClass="blue-arrow-combo-box" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Status" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
                     <GridPane.margin>
                         <Insets right="15.0" />
                     </GridPane.margin>
                 </SortedComboBox>
-                <TextArea prefHeight="74.0" prefWidth="200.0" promptText="This is an accurate semantic" text="Add comments here....." GridPane.columnSpan="2" GridPane.rowIndex="8">
+
+                <!-- Module -->
+                <SortedComboBox fx:id="moduleComboBox" styleClass="blue-arrow-combo-box" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Module" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
                     <GridPane.margin>
-                        <Insets left="15.0" right="15.0" top="15.0" />
+                        <Insets right="15.0" />
                     </GridPane.margin>
-                </TextArea>
-                <VBox GridPane.columnSpan="2" GridPane.rowIndex="6">
+                </SortedComboBox>
+
+                <!-- Language -->
+                <SortedComboBox fx:id="languageComboBox" styleClass="blue-arrow-combo-box" maxWidth="1.7976931348623157E308" prefHeight="25.0" promptText="Select Language" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
+                    <GridPane.margin>
+                        <Insets right="15.0" />
+                    </GridPane.margin>
+                </SortedComboBox>
+
+                <!-- Dialects section (hidden by default for add modes) -->
+                <VBox fx:id="dialectsContainer" GridPane.columnSpan="2" GridPane.rowIndex="6">
                     <children>
                         <HBox depthTest="ENABLE" styleClass="dialect-container">
                             <children>
-                                <Label fx:id="dialect1" prefHeight="24.0" prefWidth="280.0" styleClass="dialect-label" text="Dialect #1">
+                                <Label fx:id="dialect1Label" prefHeight="24.0" prefWidth="280.0" styleClass="dialect-label" text="Dialect #1">
                                     <opaqueInsets>
                                         <Insets />
                                     </opaqueInsets>
                                 </Label>
-                                <SortedComboBox fx:id="dialectComboBox1" disable="true" prefHeight="28.0" prefWidth="173.0">
+                                <SortedComboBox fx:id="dialectComboBox1" styleClass="blue-arrow-combo-box" disable="true" prefHeight="28.0" prefWidth="173.0">
                                     <HBox.margin>
                                         <Insets bottom="8.0" />
                                     </HBox.margin>
@@ -137,12 +145,12 @@
                         </HBox>
                         <HBox depthTest="ENABLE" layoutX="25.0" layoutY="10.0" styleClass="dialect-container">
                             <children>
-                                <Label fx:id="dialect2" prefHeight="24.0" prefWidth="280.0" styleClass="dialect-label" text="Dialect #2">
+                                <Label fx:id="dialect2Label" prefHeight="24.0" prefWidth="280.0" styleClass="dialect-label" text="Dialect #2">
                                     <opaqueInsets>
                                         <Insets />
                                     </opaqueInsets>
                                 </Label>
-                                <SortedComboBox fx:id="dialectComboBox2" disable="true" prefHeight="28.0" prefWidth="173.0">
+                                <SortedComboBox fx:id="dialectComboBox2" styleClass="blue-arrow-combo-box" disable="true" prefHeight="28.0" prefWidth="173.0">
                                     <HBox.margin>
                                         <Insets bottom="8.0" />
                                     </HBox.margin>
@@ -160,12 +168,12 @@
                         </HBox>
                         <HBox depthTest="ENABLE" layoutX="25.0" layoutY="55.0" styleClass="dialect-container">
                             <children>
-                                <Label fx:id="dialect3" styleClass="dialect-label" text="Dialect #3">
+                                <Label fx:id="dialect3Label" styleClass="dialect-label" text="Dialect #3">
                                     <opaqueInsets>
                                         <Insets />
                                     </opaqueInsets>
                                 </Label>
-                                <SortedComboBox fx:id="dialectComboBox3" disable="true" prefHeight="28.0" prefWidth="173.0">
+                                <SortedComboBox fx:id="dialectComboBox3" styleClass="blue-arrow-combo-box" disable="true" prefHeight="28.0" prefWidth="173.0">
                                     <HBox.margin>
                                         <Insets bottom="8.0" />
                                     </HBox.margin>
@@ -183,6 +191,13 @@
                         </HBox>
                     </children>
                 </VBox>
+
+                <!-- Comments -->
+                <TextArea fx:id="commentsTextArea" styleClass="komet-text-area" maxHeight="80.0" maxWidth="1.7976931348623157E308" text="Add comment here..." GridPane.columnSpan="2" GridPane.rowIndex="7" GridPane.valignment="TOP">
+                    <GridPane.margin>
+                        <Insets left="15.0" right="15.0" />
+                    </GridPane.margin>
+                </TextArea>
             </children>
         </GridPane>
     </center>
