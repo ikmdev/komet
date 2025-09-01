@@ -14,7 +14,7 @@ import javafx.scene.control.*;
 
 public class StampAddController {
 
-    public static final String ADD_STAMP_FXML_FILE = "stamp-add.fxml";
+    public static final String ADD_STAMP_FXML_FILE = "stamp-form.fxml";
 
     @FXML
     private Label formTitle;
