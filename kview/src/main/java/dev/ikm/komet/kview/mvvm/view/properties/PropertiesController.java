@@ -20,13 +20,13 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_LANGUAGE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STAMP_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampType.CONCEPT;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.mvvm.view.common.StampAddController;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampType;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampAddFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampCreateFormViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.events.*;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -141,6 +141,8 @@ public class PropertiesController implements Serializable {
 
     private Subscriber<AddStampEvent> addStampSubscriber;
 
+    private Subscriber<CreateStampEvent> createStampSubscriber;
+
     private Subscriber<OpenPropertiesPanelEvent> propsPanelOpen;
 
 
@@ -148,12 +150,19 @@ public class PropertiesController implements Serializable {
 
     private boolean hasOtherNames = false;
 
+    private StampAddFormViewModel stampAddFormViewModel;
+
+    private StampCreateFormViewModel stampCreateFormViewModel;
+
+    private boolean editMode;
 
     public PropertiesController() {
     }
 
     public PropertiesController(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
+        this.stampAddFormViewModel = new StampAddFormViewModel(CONCEPT);
+        this.stampCreateFormViewModel = new StampCreateFormViewModel(CONCEPT);
     }
 
     /**
@@ -346,17 +355,27 @@ public class PropertiesController implements Serializable {
         };
         eventBus.subscribe(conceptTopic, OpenPropertiesPanelEvent.class, propsPanelOpen);
 
-        // Stamp
-        this.stampJFXNode.updateViewModel("stampViewModel", (StampFormViewModel viewModel) -> {
-            viewModel.setPropertyValue(STAMP_TYPE, StampType.CONCEPT);
-        });
-
+        // -- add stamp
         addStampSubscriber = evt -> {
+            stampJFXNode.controller().init(stampAddFormViewModel);
+            this.stampAddFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+
             contentBorderPane.setCenter(stampJFXNode.node());
             editButton.setSelected(true);
         };
 
         eventBus.subscribe(conceptTopic, AddStampEvent.class, addStampSubscriber);
+
+        // -- create stamp
+        createStampSubscriber = evt -> {
+            stampJFXNode.controller().init(stampCreateFormViewModel);
+            this.stampCreateFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+
+            contentBorderPane.setCenter(stampJFXNode.node());
+            editButton.setSelected(true);
+        };
+
+        eventBus.subscribe(conceptTopic, CreateStampEvent.class, createStampSubscriber);
     }
 
     public ViewProperties getViewProperties() {
@@ -398,9 +417,11 @@ public class PropertiesController implements Serializable {
         // Create a new DescrNameViewModel for the addfqncontroller.
         this.addFullyQualifiedNameController.updateModel(viewProperties);
 
-        this.stampJFXNode.updateViewModel("stampViewModel", (StampFormViewModel viewModel) -> {
-            viewModel.init(entityFacade, conceptTopic, viewProperties);
-        });
+        if (editMode && stampAddFormViewModel != null) {
+            this.stampAddFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+        } else if (!editMode && stampCreateFormViewModel != null) {
+            this.stampCreateFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+        }
     }
 
     public void updateView() {
@@ -456,5 +477,9 @@ public class PropertiesController implements Serializable {
 
     public void setHasOtherName(boolean value) {
         hasOtherNames = value;
+    }
+
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
     }
 }

@@ -39,25 +39,11 @@ import java.util.UUID;
 import java.util.*;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.CURRENT_STAMP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.FORM_TITLE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.IS_STAMP_VALUES_THE_SAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.MODULES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.PATHS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STAMP_TYPE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.STATUSES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.TIME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampType.CONCEPT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampType.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.*;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
 
-public class StampFormViewModel extends FormViewModel {
+public class StampAddFormViewModel extends StampFormViewModelBase {
     /**
      * Provide the standard Confirm Clear dialog title for use in other classes
      */
@@ -68,47 +54,13 @@ public class StampFormViewModel extends FormViewModel {
     public static final String CONFIRM_RESET_MESSAGE =  "Are you sure you want to reset the form? All entered data will be lost.";
 
     private EntityFacade entityFacade;
-    private ViewProperties viewProperties;
     private UUID topic;
 
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
-    public enum StampProperties {
-        CURRENT_STAMP,                  // The current stamp
+    public StampAddFormViewModel(StampType stampType) {
+        super(stampType);
 
-        STATUS,                         // User selected Status
-        AUTHOR,                         // Author of the Stamp
-        MODULE,                         // User selected Module
-        PATH,                           // User selected Path
-        TIME,                           // Time of the Stamp
-
-        STAMP_TYPE,
-
-        IS_STAMP_VALUES_THE_SAME,       // Are the Stamp values in the properties the same as of the current Stamp
-
-        STATUSES,
-        MODULES,
-        PATHS,
-
-        FORM_TITLE,
-        TIME_TEXT
-    }
-
-    public enum StampType {
-        CONCEPT("Concept"),
-        PATTERN("Pattern"),
-        SEMANTIC("Semantic");
-
-        private final String textDescription;
-
-        StampType(String textDescription) {
-            this.textDescription = textDescription;
-        }
-
-        public String getTextDescription() { return textDescription; }
-    }
-
-    public StampFormViewModel() {
         // Add Properties
         addProperty(CURRENT_STAMP, (Stamp) null);
         addProperty(STATUS, State.ACTIVE);
@@ -116,10 +68,9 @@ public class StampFormViewModel extends FormViewModel {
         addProperty(MODULE, (ComponentWithNid) null);
         addProperty(PATH, (ComponentWithNid) null);
         addProperty(TIME, 0L);
-        addProperty(STAMP_TYPE, (StampType) null);
 
-        addProperty(IS_STAMP_VALUES_THE_SAME, true);
-        addValidator(IS_STAMP_VALUES_THE_SAME, "Validator Property", (ValidationResult vr, ViewModel vm) -> {
+        addProperty(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, true);
+        addValidator(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, "Validator Property", (ValidationResult vr, ViewModel vm) -> {
             boolean same = updateIsStampValuesChanged();
             if (same) {
                 // if UI’s stamp is the same as the previous stamp than it is invalid.
@@ -133,6 +84,9 @@ public class StampFormViewModel extends FormViewModel {
 
         addProperty(FORM_TITLE, "");
         addProperty(TIME_TEXT, "");
+
+        addProperty(CLEAR_RESET_BUTTON_TEXT, "RESET");
+        addProperty(SUBMIT_BUTTON_TEXT, "SUBMIT");
 
         // run validators when the following properties change.
         doOnChange(this::validate, STATUS, MODULE, PATH);
@@ -212,9 +166,7 @@ public class StampFormViewModel extends FormViewModel {
                 && stampEntity.path() == getPropertyValue(PATH)
                 && stampEntity.module() == getPropertyValue(MODULE);
 
-        setPropertyValue(IS_STAMP_VALUES_THE_SAME, same);
-
-        StampType stampType = getPropertyValue(STAMP_TYPE);
+        setPropertyValue(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, same);
 
         if (same) {
             setPropertyValue(FORM_TITLE, "Latest " + stampType.getTextDescription() + " Version");
@@ -236,7 +188,7 @@ public class StampFormViewModel extends FormViewModel {
         reset();
     }
 
-    public void resetForm(ActionEvent actionEvent) {
+    public void resetOrClearForm(ActionEvent actionEvent) {
         ConfirmationDialogController.showConfirmationDialog((Node) actionEvent.getSource(), CONFIRM_RESET_TITLE, CONFIRM_RESET_MESSAGE)
             .thenAccept(confirmed -> {
                 if (confirmed) {
@@ -246,7 +198,12 @@ public class StampFormViewModel extends FormViewModel {
     }
 
     @Override
-    public StampFormViewModel save() {
+    public void submitOrConfirm() {
+        save();
+    }
+
+    @Override
+    public StampAddFormViewModel save() {
         super.save();
 
         if (invalidProperty().get()) {
@@ -265,7 +222,7 @@ public class StampFormViewModel extends FormViewModel {
 
         Session session = composer.open(status, author.toProxy(), module.toProxy(), path.toProxy());
 
-        switch (getPropertyValue(STAMP_TYPE)) {
+        switch (stampType) {
             case CONCEPT -> {
                 session.compose((ConceptAssembler conceptAssembler) -> {
                     conceptAssembler.concept(entityFacade.toProxy());
@@ -311,7 +268,7 @@ public class StampFormViewModel extends FormViewModel {
                     }
                 });
             }
-            default -> throw new RuntimeException("Stamp Type " + getPropertyValue(STAMP_TYPE) + " not supported");
+            default -> throw new RuntimeException("Stamp Type " + stampType + " not supported");
         }
 
         composer.commitSession(session);

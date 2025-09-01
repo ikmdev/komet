@@ -69,15 +69,7 @@ import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
 import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
-import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
-import dev.ikm.komet.kview.events.AddOtherNameToConceptEvent;
-import dev.ikm.komet.kview.events.AddStampEvent;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.events.CreateConceptEvent;
-import dev.ikm.komet.kview.events.EditConceptEvent;
-import dev.ikm.komet.kview.events.EditConceptFullyQualifiedNameEvent;
-import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
-import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
+import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
@@ -586,6 +578,10 @@ public class DetailsController  {
                 LOG.info("refresh concept window when view coordinate has changed." + newViewCoord);
                 updateView();
             }
+        });
+
+        conceptViewModel.getProperty(MODE).subscribe(() -> {
+            propertiesController.setEditMode(conceptViewModel.getPropertyValue(MODE).equals(EDIT));
         });
     }
 
@@ -1448,7 +1444,12 @@ public class DetailsController  {
 
     private void onStampSelectionChanged() {
         if (stampViewControl.isSelected()) {
-            eventBus.publish(conceptTopic, new AddStampEvent(stampViewControl, AddStampEvent.ANY));
+            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+                eventBus.publish(conceptTopic, new CreateStampEvent(stampViewControl, CreateStampEvent.ANY));
+            } else {
+                eventBus.publish(conceptTopic, new AddStampEvent(stampViewControl, AddStampEvent.ANY));
+            }
+
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
@@ -1467,7 +1468,7 @@ public class DetailsController  {
 
             updateDraggableNodesForPropertiesPanel(true);
 
-            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE)) && !stampViewControl.isSelected()) {
                 // show the Add FQN
                 eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(propertyToggle,
                         AddFullyQualifiedNameEvent.ADD_FQN, conceptViewModel.getViewProperties()));

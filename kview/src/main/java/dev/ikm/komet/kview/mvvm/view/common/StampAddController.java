@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.common;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModel.StampProperties.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.*;
 import dev.ikm.komet.framework.view.*;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.mvvm.viewmodel.*;
@@ -10,7 +10,6 @@ import javafx.beans.property.*;
 import javafx.event.*;
 import javafx.fxml.*;
 import javafx.scene.control.*;
-import org.carlfx.cognitive.loader.*;
 
 
 public class StampAddController {
@@ -33,7 +32,7 @@ public class StampAddController {
     private Button submitButton;
 
     @FXML
-    private Button resetButton;
+    private Button resetOrClearButton;
 
     @FXML
     private ComboBox<ComponentWithNid> statusComboBox;
@@ -44,12 +43,17 @@ public class StampAddController {
     @FXML
     private ComboBox<ComponentWithNid> pathComboBox;
 
-    @InjectViewModel
-    private StampFormViewModel stampViewModel;
+    private StampFormViewModelBase stampFormViewModel;
 
     @FXML
     public void initialize() {
+    }
+
+    public void init(StampFormViewModelBase stampFormViewModel) {
+        this.stampFormViewModel = stampFormViewModel;
+
         initFormTitle();
+        initBottomButtons();
 
         initLastUpdatedField();
         initAuthorField();
@@ -57,29 +61,34 @@ public class StampAddController {
         initPathComboBox();
         initStatusComboBox();
 
-        BooleanProperty isStampValuesTheSame = stampViewModel.getProperty(IS_STAMP_VALUES_THE_SAME);
-        submitButton.disableProperty().bind(isStampValuesTheSame);
-        resetButton.disableProperty().bind(isStampValuesTheSame);
+        BooleanProperty isStampValuesTheSameOrEmpty = this.stampFormViewModel.getProperty(IS_STAMP_VALUES_THE_SAME_OR_EMPTY);
+        submitButton.disableProperty().bind(isStampValuesTheSameOrEmpty);
+        resetOrClearButton.disableProperty().bind(isStampValuesTheSameOrEmpty);
     }
 
     private void initFormTitle() {
-        formTitle.textProperty().bind(stampViewModel.getProperty(FORM_TITLE));
+        formTitle.textProperty().bind(stampFormViewModel.getProperty(FORM_TITLE));
+    }
+
+    private void initBottomButtons() {
+        resetOrClearButton.textProperty().bind(stampFormViewModel.getProperty(CLEAR_RESET_BUTTON_TEXT));
+        submitButton.textProperty().bind(stampFormViewModel.getProperty(SUBMIT_BUTTON_TEXT));
     }
 
     private ViewProperties getViewProperties() {
-        return stampViewModel.getViewProperties();
+        return stampFormViewModel.getViewProperties();
     }
 
     private void initAuthorField() {
         StringBinding authorTextBinding = new StringBinding() {
             {
-                super.bind(stampViewModel.getProperty(AUTHOR));
+                super.bind(stampFormViewModel.getProperty(AUTHOR));
             }
 
             @Override
             protected String computeValue() {
                 if (getViewProperties() != null) {
-                    ConceptFacade authorConcept = stampViewModel.getPropertyValue(AUTHOR);
+                    ConceptFacade authorConcept = stampFormViewModel.getPropertyValue(AUTHOR);
                     return getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(authorConcept.nid());
                 } else {
                     return "Author Not selected";
@@ -94,37 +103,36 @@ public class StampAddController {
         lastUpdatedLabel.setText("Last\nUpdated");
 
         // TextField
-        lastUpdatedTextField.textProperty().bind(stampViewModel.getProperty(TIME_TEXT));
+        lastUpdatedTextField.textProperty().bind(stampFormViewModel.getProperty(TIME_TEXT));
     }
 
     private void initStatusComboBox() {
-        ViewCalculatorUtils.initComboBox(statusComboBox, stampViewModel.getObservableList(STATUSES), this::getViewProperties);
+        ViewCalculatorUtils.initComboBox(statusComboBox, stampFormViewModel.getObservableList(STATUSES), this::getViewProperties);
 
-        statusComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(STATUS));
+        statusComboBox.valueProperty().bindBidirectional(stampFormViewModel.getProperty(STATUS));
     }
 
     private void initPathComboBox() {
-        ViewCalculatorUtils.initComboBox(pathComboBox, stampViewModel.getObservableList(PATHS), this::getViewProperties);
+        ViewCalculatorUtils.initComboBox(pathComboBox, stampFormViewModel.getObservableList(PATHS), this::getViewProperties);
 
-        pathComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(PATH));
+        pathComboBox.valueProperty().bindBidirectional(stampFormViewModel.getProperty(PATH));
     }
 
     private void initModuleComboBox() {
-        ViewCalculatorUtils.initComboBox(moduleComboBox, stampViewModel.getObservableList(MODULES), this::getViewProperties);
+        ViewCalculatorUtils.initComboBox(moduleComboBox, stampFormViewModel.getObservableList(MODULES), this::getViewProperties);
 
-        moduleComboBox.valueProperty().bindBidirectional(stampViewModel.getProperty(MODULE));
+        moduleComboBox.valueProperty().bindBidirectional(stampFormViewModel.getProperty(MODULE));
     }
 
-
-    public StampFormViewModel getStampViewModel() { return stampViewModel; }
+    public StampFormViewModelBase getStampFormViewModel() { return stampFormViewModel; }
 
     @FXML
     public void cancelForm(ActionEvent actionEvent) {
-        stampViewModel.cancel();
+        stampFormViewModel.cancel();
     }
 
     @FXML
-    public void resetForm(ActionEvent actionEvent) { stampViewModel.resetForm(actionEvent); }
+    public void resetOrClear(ActionEvent actionEvent) { stampFormViewModel.resetOrClearForm(actionEvent); }
 
-    public void submit(ActionEvent actionEvent) { stampViewModel.save(); }
+    public void submit(ActionEvent actionEvent) { stampFormViewModel.submitOrConfirm(); }
 }
