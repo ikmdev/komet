@@ -27,6 +27,7 @@ import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.mvvm.view.common.StampAddController;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampAddFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampCreateFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.events.*;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -481,5 +482,13 @@ public class PropertiesController implements Serializable {
 
     public void setEditMode(boolean editMode) {
         this.editMode = editMode;
+    }
+
+    public StampFormViewModelBase getStampFormViewModel() {
+        if (editMode) {
+            return stampAddFormViewModel;
+        } else {
+            return stampCreateFormViewModel;
+        }
     }
 }

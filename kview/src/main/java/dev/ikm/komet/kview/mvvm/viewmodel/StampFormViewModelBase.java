@@ -20,6 +20,8 @@ public abstract class StampFormViewModelBase extends FormViewModel {
         IS_STAMP_VALUES_THE_SAME_OR_EMPTY,       // Are the Stamp values in the properties the same as of the current Stamp.
                                                  // Cn also indicate if the current stamp values are empty.
 
+        IS_CONFIRMED,                   // Signals whether the user has pressed confirmed on the form with valid stamp values
+
         STATUSES,
         MODULES,
         PATHS,

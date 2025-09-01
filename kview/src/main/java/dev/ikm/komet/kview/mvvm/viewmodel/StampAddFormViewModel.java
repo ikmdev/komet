@@ -63,11 +63,12 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
 
         // Add Properties
         addProperty(CURRENT_STAMP, (Stamp) null);
+
         addProperty(STATUS, State.ACTIVE);
+        addProperty(TIME, 0L);
         addProperty(AUTHOR, (ComponentWithNid) null);
         addProperty(MODULE, (ComponentWithNid) null);
         addProperty(PATH, (ComponentWithNid) null);
-        addProperty(TIME, 0L);
 
         addProperty(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, true);
         addValidator(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, "Validator Property", (ValidationResult vr, ViewModel vm) -> {

@@ -41,10 +41,10 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
         super(stampType);
         // Add Properties
         addProperty(STATUS, (State) null);
+        addProperty(TIME, 0L);
         addProperty(AUTHOR, (ComponentWithNid) null);
         addProperty(MODULE, (ComponentWithNid) null);
         addProperty(PATH, (ComponentWithNid) null);
-        addProperty(TIME, 0L);
 
         addProperty(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, true);
         addValidator(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, "Validator Property", (ValidationResult vr, ViewModel vm) -> {
@@ -54,6 +54,8 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
                 vr.error("Cannot submit stamp because the data is the same.");
             }
         });
+
+        addProperty(IS_CONFIRMED, false);
 
         addProperty(MODULES, Collections.emptyList(), true);
         addProperty(PATHS, Collections.emptyList(), true);
@@ -134,6 +136,7 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
     @Override
     public void submitOrConfirm() {
         save();
+        setPropertyValue(IS_CONFIRMED, true);
         EvtBusFactory.getDefaultEvtBus().publish(topic, new ClosePropertiesPanelEvent("Stamp From View Model cancel()",
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
