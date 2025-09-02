@@ -77,7 +77,7 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         publicIdHBox.getStyleClass().add("public-id-box");
 
         // using setHgrow causes the TextField to grow to the full width of the HBox, which is not desirable
-//        HBox.setHgrow(publicIdHBox, Priority.SOMETIMES);
+//        HBox.setHgrow(publicIdHBox, Priority.ALWAYS);
 
         // the publicIdHBox contains the publicIdLabel and the copyToClipboardButton.
         // Both controls need to be in a single HBox to be able to show and hide the
