@@ -3,16 +3,9 @@
     -fx-spacing: 8;
 }
 
-.range-calendar > .calendar-box {
-    -fx-background-color: white;
-    -fx-background-radius: 4;
-    -fx-border-radius: 4;
-    -fx-border-width: 1;
-    -fx-border-color: white;
-    -fx-pref-width: 233;
-    -fx-pref-height: 238;
-    -fx-padding: 0 2 0 2;
-}
+/*
+ RangeCalendar - DateBox
+*/
 
 .range-calendar > .date-box {
     -fx-spacing: 8;
@@ -30,6 +23,10 @@
 .range-calendar > .date-box > .date-label.range {
     -fx-font-size: 11px;
 }
+
+/*
+ RangeCalendar - DateBox - DateField
+*/
 
 .range-calendar > .date-box > .date-field {
     -fx-background-color: #C3CDDC, #FBFBFC;
@@ -57,6 +54,165 @@
 
 .range-calendar > .date-box.excluding > .date-field:selected {
     -fx-background-color: #4A7AD2, #FBFBFC;
+}
+
+/*
+ RangeCalendar - DateBox - DateComboField
+*/
+
+.range-calendar > .date-box > .date-combo-field {
+    -fx-font-size: 14;
+    -fx-text-base-color: #2E3240;
+    -fx-text-fill: #2E3240;
+    -fx-pref-width: 269;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+    -fx-font-family: "Noto Sans";
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-background-color: #C3CDDC, #FBFBFC;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4px, 4px;
+    -fx-padding: 0;
+}
+
+.range-calendar > .date-box > .date-combo-field:editable > .text-field {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 4 8 4 8;
+    -fx-border-width: 0;
+    -fx-border-color: null;
+}
+
+.range-calendar > .date-box > .date-combo-field > .arrow-button,
+.range-calendar > .date-box > .date-combo-field:editable > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 4 8 4 8;
+    -fx-text-fill: transparent;
+    -fx-alignment: CENTER;
+    -fx-content-display: LEFT;
+    -fx-rotate: -90;
+    transition-property: -fx-rotate;
+    transition-duration: 0.5s;
+}
+
+.range-calendar > .date-box > .date-combo-field:showing > .arrow-button {
+    -fx-rotate: 0;
+}
+
+.range-calendar > .date-box > .date-combo-field > .arrow-button > .arrow {
+    -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+    -fx-background-color: #4277D8;
+}
+
+.range-calendar > .date-box > .date-combo-field > .arrow-button:disabled > .arrow {
+    -fx-background-color: #9CAABF;
+}
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup > .list-view {
+    -fx-background: #2E3240;
+    -fx-background-color: #2E3240;
+    -fx-background-insets: 0;
+    -fx-background-radius: 8;
+    -fx-border-color: null;
+    -fx-border-width: 0;
+    -fx-translate-y: 5;
+    -fx-padding: 8 0 8 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.0, 0, 4);
+}
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-padding: 4 8 4 8;
+    -fx-background: #2E3240;
+    -fx-background-color: #2E3240;
+    -fx-background-insets: 0;
+    -fx-pref-height: 28;
+    -fx-font-size: 13;
+    -fx-text-fill: white;
+    -fx-font-family: "Noto Sans";
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell > .box {
+    -fx-alignment: center-left;
+}
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell > .box > .label {
+    -fx-font-size: 13;
+    -fx-text-fill: white;
+    -fx-font-family: "Noto Sans";
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell > .box > .region {
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    visibility: hidden;
+    -fx-managed: false;
+}
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:selected > .box > .region {
+    visibility: visible;
+    -fx-managed: true;
+}
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell > .box > .region > .icon.check {
+    -fx-background-color: #5DCF16;
+    -fx-shape: "M5.49989 9.47487L2.02489 5.99987L0.841553 7.17487L5.49989 11.8332L15.4999 1.8332L14.3249 0.658203L5.49989 9.47487Z";
+    -fx-scale-shape: false;
+}
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
+    -fx-background: #545D72;
+    -fx-background-color: #545D72;
+}
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.range-calendar > .date-box > .date-combo-field .combo-box-popup  > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
+    -fx-text-fill: #9DC4FF;
+    -fx-background: #44495E;
+    -fx-background-color: #44495E;
+}
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup  > .list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 0 0 0;
+}
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup  > .list-view .scroll-bar:vertical .increment-button,
+.range-calendar > .date-box > .date-combo-field .combo-box-popup  > .list-view .scroll-bar:vertical .decrement-button,
+.range-calendar > .date-box > .date-combo-field .combo-box-popup  > .list-view .scroll-bar:vertical .increment-arrow,
+.range-calendar > .date-box > .date-combo-field .combo-box-popup  > .list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 2 0 2;
+}
+
+.range-calendar > .date-box > .date-combo-field .combo-box-popup  > .list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #a9aeb8;
+    -fx-background-insets: 3px 5px 3px 1px;
+    -fx-background-radius: 16px;
+}
+
+/*
+ RangeCalendar - CalendarBox
+*/
+
+.range-calendar > .calendar-box {
+    -fx-background-color: white;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-border-color: white;
+    -fx-pref-width: 233;
+    -fx-pref-height: 238;
+    -fx-padding: 0 2 0 2;
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup {

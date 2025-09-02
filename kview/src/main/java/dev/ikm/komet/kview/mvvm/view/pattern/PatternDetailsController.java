@@ -66,7 +66,7 @@ import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.StampViewControl;
-import dev.ikm.komet.kview.events.AddStampEvent;
+import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
@@ -580,7 +580,7 @@ public class PatternDetailsController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
-            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new AddStampEvent(stampViewControl, AddStampEvent.ANY));
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
         } else {
             EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
         }
