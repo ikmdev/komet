@@ -434,6 +434,14 @@ public class PatternViewModel extends FormViewModel {
                                 .attach(new USDialect().acceptability(ACCEPTABLE))
                         );
                     }
+                    // add the field definitions
+                    for (int i = 0; i < fieldsProperty.size(); i++) {
+                        PatternField patternField = fieldsProperty.get(i);
+                        EntityProxy.Concept conceptEntityFieldMeaning = EntityProxy.Concept.make(patternField.meaning().nid());
+                        EntityProxy.Concept conceptEntityFieldPurpose = EntityProxy.Concept.make(patternField.purpose().nid());
+                        EntityProxy.Concept conceptEntityFieldDatatype = EntityProxy.Concept.make(patternField.dataType().nid());
+                        patternAssembler.fieldDefinition(conceptEntityFieldMeaning, conceptEntityFieldPurpose, conceptEntityFieldDatatype, i);
+                    }
             });
         }
 
