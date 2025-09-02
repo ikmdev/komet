@@ -7,6 +7,7 @@ import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
+import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -27,11 +28,11 @@ public class FilterOptionsUtils {
 
     public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
 
-    public static FilterOptions initializeFilterOptions(ObservableCoordinate<ViewCoordinateRecord> parentView, ViewCalculator calculator) {
+    public static FilterOptions initializeFilterOptions(ObservableCoordinate<ViewCoordinateRecord> currentView, ViewCalculator calculator) {
         FilterOptions filterOptions = new FilterOptions();
 
         // get parent menu settings
-        for (ObservableCoordinate<?> observableCoordinate : parentView.getCompositeCoordinates()) {
+        for (ObservableCoordinate<?> observableCoordinate : currentView.getCompositeCoordinates()) {
             if (observableCoordinate instanceof ObservableStampCoordinate observableStampCoordinate) {
 
                 // populate the TYPE; this isn't in the parent view coordinate
@@ -101,12 +102,15 @@ public class FilterOptionsUtils {
         return filterOptions;
     }
 
-    public static FilterOptions reloadFilterOptions(FilterOptions.MainCoordinates childOptions, ObservableCoordinate<ViewCoordinateRecord> parentView, ViewCalculator calculator) {
+    public static FilterOptions reloadFilterOptions(FilterOptions.MainCoordinates childOptions,
+                                                    ObservableCoordinate<ViewCoordinateRecord> childView, ViewCalculator calculator) {
         FilterOptions filterOptions = new FilterOptions();
 
         // get parent menu settings
-        for (ObservableCoordinate<?> observableCoordinate : parentView.getCompositeCoordinates()) {
-            if (observableCoordinate instanceof ObservableStampCoordinate observableStampCoordinate) {
+        for (ObservableCoordinate<?> observableCoordinate : childView.getCompositeCoordinates()) {
+
+            if (observableCoordinate instanceof ObservableStampCoordinate observableStampCoordinate
+                && observableStampCoordinate.hasOverrides()) {
 
                 // populate the TYPE; this isn't in the parent view coordinate
                 // it is all set in FilterOptions
@@ -117,12 +121,13 @@ public class FilterOptionsUtils {
 
                 FilterOptions.Option statusOption = filterOptions.getMainCoordinates().getStatus();
                 if (!childOptions.getStatus().isInOverride()) {
-                    // perform inheritance
+                    // override
                     statusOption.selectedOptions().clear();
                     statusOption.selectedOptions().addAll(currentStatesStr);
 
                     statusOption.defaultOptions().clear();
                     statusOption.defaultOptions().addAll(currentStatesStr);
+                    childOptions.getStatus().setInOverride(true);
                 } else {
                     // don't override
                     statusOption.selectedOptions().clear();
@@ -130,13 +135,14 @@ public class FilterOptionsUtils {
 
                     statusOption.defaultOptions().clear();
                     statusOption.defaultOptions().addAll(childOptions.getStatus().defaultOptions());
+                    childOptions.getStatus().setInOverride(false);
                 }
 
                 // MODULE
                 if (!observableStampCoordinate.moduleNids().isEmpty()) {
                     FilterOptions.Option moduleOption = filterOptions.getMainCoordinates().getModule();
                     if (!childOptions.getModule().isInOverride()) {
-                        // perform inheritance
+                        // override
                         moduleOption.defaultOptions().clear();
                         observableStampCoordinate.moduleNids().intStream().forEach(moduleNid -> {
                             String moduleStr = calculator.getPreferredDescriptionStringOrNid(moduleNid);
@@ -150,6 +156,7 @@ public class FilterOptionsUtils {
 
                         moduleOption.defaultOptions().clear();
                         moduleOption.defaultOptions().addAll(childOptions.getModule().defaultOptions());
+                        moduleOption.setInOverride(true);
                     }
                 }
 
@@ -160,7 +167,7 @@ public class FilterOptionsUtils {
                 List<String> defaultSelectedPaths = new ArrayList<>(List.of(currentPathStr));
                 FilterOptions.Option pathOption = filterOptions.getMainCoordinates().getPath();
                 if (!childOptions.getPath().isInOverride()) {
-                    // perform inheritance
+                    // override
                     pathOption.defaultOptions().clear();
                     pathOption.defaultOptions().addAll(defaultSelectedPaths);
 
@@ -173,21 +180,22 @@ public class FilterOptionsUtils {
 
                     pathOption.defaultOptions().clear();
                     pathOption.defaultOptions().addAll(childOptions.getPath().defaultOptions());
+                    pathOption.setInOverride(true);
                 }
 
                 // TIME
                 FilterOptions.Option timeOption = filterOptions.getMainCoordinates().getTime();
                 if (!childOptions.getTime().isInOverride()) {
-                    // perform inheritance
+                    // override
                     Long time = observableStampCoordinate.timeProperty().getValue();
                     if (!time.equals(Long.MAX_VALUE) && !time.equals(PREMUNDANE_TIME)) {
-                        //FIXME the custom control doesn't support premundane yet
                         Date date = new Date(time);
                         timeOption.defaultOptions().clear();
                         timeOption.selectedOptions().clear();
                         timeOption.selectedOptions().add(SIMPLE_DATE_FORMAT.format(date));
                         timeOption.defaultOptions().addAll(timeOption.selectedOptions());
                     }
+                    timeOption.setInOverride(true);
                 } else {
                     // don't override
                     timeOption.selectedOptions().clear();
@@ -195,8 +203,10 @@ public class FilterOptionsUtils {
 
                     timeOption.defaultOptions().clear();
                     timeOption.defaultOptions().addAll(childOptions.getTime().defaultOptions());
+                    timeOption.setInOverride(false);
                 }
-            } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
+            } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate
+                && observableLanguageCoordinate.hasOverrides()) {
                 // populate the LANGUAGE
                 FilterOptions.Option language = filterOptions.getLanguageCoordinates(0).getLanguage();
                 language.defaultOptions().clear();
@@ -205,6 +215,7 @@ public class FilterOptionsUtils {
                 language.defaultOptions().add(languageStr);
                 language.selectedOptions().clear();
                 language.selectedOptions().addAll(language.defaultOptions());
+                language.setInOverride(true);
 
                 //FIXME description choices don't yet align with parent/classic menu, more discussion needs to happen on
                 // how we want to fix this.

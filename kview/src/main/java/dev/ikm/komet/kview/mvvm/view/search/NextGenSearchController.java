@@ -29,6 +29,7 @@ import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.view.ObservableCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.FilterOptions;
@@ -54,6 +55,7 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.events.Evt;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
@@ -145,7 +147,9 @@ public class NextGenSearchController {
 
     private SearchResultType currentSearchResultType;
 
-    private Subscription parentSubscription;
+    private Subscription childSubscription;
+
+    private Subscriber removeOverrideSubscriber;
 
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
@@ -183,6 +187,14 @@ public class NextGenSearchController {
         initSearchResultType();
 
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
+
+        removeOverrideSubscriber = (evt) -> {
+            // remove all overrides
+            for (ObservableCoordinate<?> observableCoordinate : getViewProperties().nodeView().getCompositeCoordinates()) {
+                observableCoordinate.removeOverrides();
+            }
+        };
+        eventBus.subscribe(filterOptionsPopup.toString(), Evt.class, removeOverrideSubscriber);
 
         // initialize the filter options
         filterOptionsPopup.setInheritedFilterOptionsProperty(
@@ -258,20 +270,20 @@ public class NextGenSearchController {
             doSearch(new ActionEvent(null, null));
         });
 
-
-
         // listen for changes to the filter options
         filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
 
-        // listen to changes to the parent of the current overrideable view
-        parentSubscription = getViewProperties().parentView().subscribe((oldValue, newValue) -> {
+        childSubscription = getViewProperties().nodeView().subscribe(((oldViewCoord, newViewCoord) -> {
             filterOptionsPopup.filterOptionsProperty().removeListener(changeListener);
 
+            // viewProp.child -> filter options
             filterOptionsPopup.inheritedFilterOptionsProperty().setValue(
-                    FilterOptionsUtils.reloadFilterOptions(filterOptionsPopup.getInheritedFilterOptions().getMainCoordinates(), getViewProperties().parentView(), getViewProperties().calculator()));
+                    FilterOptionsUtils.reloadFilterOptions(filterOptionsPopup.inheritedFilterOptionsProperty().getValue().getMainCoordinates(),
+                            getViewProperties().nodeView(), getViewProperties().calculator()));
+
             filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
             doSearch(new ActionEvent(null, null));
-        });
+        }));
     }
 
     private void initSearchResultType() {
@@ -558,8 +570,8 @@ public class NextGenSearchController {
     }
 
     public void cleanup() {
-        if (parentSubscription != null) {
-            parentSubscription.unsubscribe();
+        if (childSubscription != null) {
+            childSubscription.unsubscribe();
         }
     }
 
