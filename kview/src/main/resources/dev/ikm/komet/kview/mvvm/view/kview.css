@@ -4165,7 +4165,7 @@ Styling a context menu for kview ui/ux controls
 .card-info-container .validation-counts {
     -fx-text-fill: -Accent-color-red;
     -fx-font-family: Noto Sans;
-    -fx-font-size: 32px;
+    -fx-font-size: 25px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }

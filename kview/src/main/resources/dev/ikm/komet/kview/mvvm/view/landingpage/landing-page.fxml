@@ -230,7 +230,7 @@
                                  <Label styleClass="title"
                                         text="Tetralogy of Fallot with extra text max ..." wrapText="true"/>
                               </HBox>
-                              <Label styleClass="validation-counts" text="25 errors"/>
+                              <Label styleClass="validation-counts" text="No New Messages"/>
                               <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0"
                                      styleClass="validation-message"
                                      text="Your Myocardial infarction edit has been retired" wrapText="true"/>
@@ -268,7 +268,7 @@
                                  <Label styleClass="title"
                                        text="Tetralogy of Fallot with extra text max ..." wrapText="true"/>
                               </HBox>
-                              <Label styleClass="validation-counts" text="25 errors"/>
+                              <Label styleClass="validation-counts" text="No New Messages"/>
                               <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0"
                                      styleClass="validation-message"
                                      text="Your Myocardial infarction edit has been retired"
@@ -307,7 +307,7 @@
                                  <Label styleClass="title" text="Tetralogy of Fallot with extra text max ..."
                                        wrapText="true"/>
                               </HBox>
-                              <Label styleClass="validation-counts" text="25 errors"/>
+                              <Label styleClass="validation-counts" text="No New Messages"/>
                               <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0"
                                      styleClass="validation-message"
                                      text="Your Myocardial infarction edit has been retired"
@@ -348,7 +348,7 @@
                                                 wrapText="true"/>
                                        </children>
                                     </HBox>
-                                    <Label styleClass="validation-counts" text="25 errors"/>
+                                    <Label styleClass="validation-counts" text="No New Messages"/>
                                     <Label alignment="TOP_LEFT" prefHeight="46.0" prefWidth="219.0"
                                            styleClass="validation-message"
                                            text="Your Myocardial infarction edit has been retired"
