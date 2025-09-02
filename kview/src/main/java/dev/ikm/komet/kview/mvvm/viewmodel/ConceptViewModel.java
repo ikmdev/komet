@@ -15,6 +15,12 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.STATUS;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.builder.ConceptEntityBuilder;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -57,11 +63,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 
 public class ConceptViewModel extends FormViewModel {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptViewModel.class);
@@ -127,10 +128,9 @@ public class ConceptViewModel extends FormViewModel {
      * Validates the view model and if there are no errors, save to the database.
      * Is called everytime user is adding data to ConceptViewModel.
      *
-     * @param editCoordinate
      * @return
      */
-    public boolean createConcept(EditCoordinateRecord editCoordinate) {
+    public boolean createConcept(StampFormViewModelBase stampFormViewModel) {
         save(); // View Model xfer values. does not save to the database but validates data and then copies data from properties to model values.
 
         // Validation errors will not create record.
@@ -138,14 +138,8 @@ public class ConceptViewModel extends FormViewModel {
             return false;
         }
 
-        // stamp exists and is populated?
-        StampViewModel stampViewModel = getValue(CONCEPT_STAMP_VIEW_MODEL);
-        if (stampViewModel != null) {
-            stampViewModel.save(); // View Model xfer values
-            if (!stampViewModel.getValidationMessages().isEmpty()) {
-                return false;
-            }
-        } else {
+        // stamp is populated?
+        if (!(Boolean)stampFormViewModel.getPropertyValue(IS_CONFIRMED)) {
             return false;
         }
 
@@ -153,11 +147,19 @@ public class ConceptViewModel extends FormViewModel {
         DescrName fqnDescrName = getPropertyValue(FULLY_QUALIFIED_NAME);
         Transaction transaction = Transaction.make("New concept for: " + fqnDescrName.getNameText());
 
-        // Copy STAMP info
-        ConceptEntity module = stampViewModel.getValue(MODULE);
-        ConceptEntity path = stampViewModel.getValue(PATH);
 
-        StampEntity stampEntity = transaction.getStamp(State.ACTIVE, editCoordinate.getAuthorNidForChanges(),
+        // Copy STAMP info
+        // - status
+        State status = stampFormViewModel.getValue(STATUS);
+        // - getAuthor from editCoordinate
+        ViewProperties viewProperties = getViewProperties();
+        EntityFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
+        // - module
+        ConceptEntity module = stampFormViewModel.getValue(MODULE);
+        // - path
+        ConceptEntity path = stampFormViewModel.getValue(PATH);
+
+        StampEntity stampEntity = transaction.getStamp(status, authorConcept.nid(),
                 module.nid(), path.nid());
 
         ConceptEntityBuilder newConceptBuilder = ConceptEntityBuilder.builder(stampEntity);
