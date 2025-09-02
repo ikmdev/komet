@@ -962,19 +962,6 @@ public class DetailsController  {
         identifierControl.setPublicId(idStr);
     }
 
-    private void updateStampViewModel(String mode, StampEntity stamp) {
-        ValidationViewModel stampViewModel = conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL);
-        if (conceptViewModel.getPropertyValue(CONCEPT_STAMP_VIEW_MODEL) != null) {
-            stampViewModel.setPropertyValue(MODE, mode)
-                    .setPropertyValue(STATUS, stamp.state())
-                    .setPropertyValue(AUTHOR, stamp.authorNid())
-                    .setPropertyValue(MODULE, stamp.moduleNid())
-                    .setPropertyValue(PATH, stamp.pathNid())
-                    .setPropertyValue(TIME, stamp.time())
-                    .save(true);
-        }
-    }
-
     public void updateFQNConceptDescription(DescrName fqnDescrName) {
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
         // Latest FQN

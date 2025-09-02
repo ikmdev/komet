@@ -79,10 +79,6 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
         this.viewProperties = viewProperties;
         this.topic = topic;
 
-        // listen to events that the properties panel is going to be closed
-        closePropertiesPanelEventSubscriber = evt -> onPropertiesPanelClose();
-        EvtBusFactory.getDefaultEvtBus().subscribe(topic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
-
         // initialize observable lists
         Set<ConceptEntity> modules = fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId());
         Set<ConceptEntity> paths = fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId());
@@ -103,10 +99,6 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
         setPropertyValue(AUTHOR, authorConcept);
 
         save(true);
-    }
-
-    protected void onPropertiesPanelClose() {
-        reset();
     }
 
     private boolean updateIsStampValuesChanged() {
