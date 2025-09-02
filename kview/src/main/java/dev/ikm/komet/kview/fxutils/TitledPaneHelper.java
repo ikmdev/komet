@@ -28,7 +28,6 @@ import one.jpro.platform.utils.TreeShowing;
 public class TitledPaneHelper {
     private static final int DEFAULT_BUTTON_SPACING = 34; // pixels to offset the right arrow dropdown
 
-
     /**
      * pass in the title and arrow css selectors since the behavior will apply to nested TitledPanes
      * if you don't specific the selector more specifically
