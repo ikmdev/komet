@@ -265,7 +265,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         setupFilter(null);
         setupFilter(defaultFilterOptions);
         // mark all as no override
-        markAllAsNoOverride(defaultFilterOptions);
+        //markAllAsNoOverride(defaultFilterOptions);
         updating = false;
         updateCurrentFilterOptions();
     }
@@ -428,6 +428,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         titledPane.setTitle(option.title());
         titledPane.setOption(option);
         titledPane.setExpanded(false);
+
         return titledPane;
     }
 

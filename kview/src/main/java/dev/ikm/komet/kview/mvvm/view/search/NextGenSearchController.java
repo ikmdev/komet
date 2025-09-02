@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
+import static dev.ikm.komet.kview.controls.FilterOptionsUtils.copyFilterOptions;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_COMPONENT_ALPHA;
 import static dev.ikm.komet.kview.events.SearchSortOptionEvent.SORT_BY_SEMANTIC;
@@ -86,6 +87,7 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.controlsfx.control.PopOver;
+import org.controlsfx.control.tableview2.filter.filtereditor.SouthFilter;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
@@ -188,6 +190,7 @@ public class NextGenSearchController {
 
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
 
+        // on revert, remove overrides
         removeOverrideSubscriber = (evt) -> {
             // remove all overrides
             for (ObservableCoordinate<?> observableCoordinate : getViewProperties().nodeView().getCompositeCoordinates()) {
@@ -199,6 +202,7 @@ public class NextGenSearchController {
         // initialize the filter options
         filterOptionsPopup.setInheritedFilterOptionsProperty(
                 FilterOptionsUtils.initializeFilterOptions(getViewProperties().parentView(), getViewProperties().calculator()));
+
         root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
         filterPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (filterOptionsPopup.getNavigator() == null) {
@@ -234,8 +238,20 @@ public class NextGenSearchController {
                     // update the STATUS
                     getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
 
-                    // turn ON override
-                    filterOptionsPopup.getInheritedFilterOptions().getMainCoordinates().getStatus().setInOverride(true);
+                    boolean doesChildMatchParent =
+                            getViewProperties().nodeView().stampCoordinate().allowedStatesProperty()
+                                    .equals(
+                                            getViewProperties().parentView().stampCoordinate().allowedStatesProperty()
+                                    );
+                    // turn ON override when the user makes a change to the child and the child does not match the parent
+                    // else turn it off
+                    System.out.println("******* does child match parent? " + doesChildMatchParent);
+                    FilterOptions filterOptions = FilterOptionsUtils.copyFilterOptions(filterOptionsPopup.getInheritedFilterOptions());
+                    filterOptions.getMainCoordinates().getStatus().setInOverride(!doesChildMatchParent);
+                    filterOptionsPopup.setInheritedFilterOptionsProperty(filterOptions);
+                    System.out.println("*** is in override??? " + filterOptionsPopup.getInheritedFilterOptions().getMainCoordinates().getStatus().isInOverride());
+                    //FIXME do I need logic here to turn override off?  if I don't hit revert but just 'undo' the child changes
+                    // manually in the UI, then it should remove the override
                 }
                 if (!newFilterOptions.getMainCoordinates().getPath().selectedOptions().isEmpty()) {
                     //NOTE: there is no known way to set multiple paths
@@ -273,16 +289,30 @@ public class NextGenSearchController {
         // listen for changes to the filter options
         filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
 
+        // this is a listener on the child view but since the child has a subscription to the parent,
+        // it will update the child and perform the propagation (aka inheritance)
         childSubscription = getViewProperties().nodeView().subscribe(((oldViewCoord, newViewCoord) -> {
             filterOptionsPopup.filterOptionsProperty().removeListener(changeListener);
 
-            // viewProp.child -> filter options
-            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(
-                    FilterOptionsUtils.reloadFilterOptions(filterOptionsPopup.inheritedFilterOptionsProperty().getValue().getMainCoordinates(),
-                            getViewProperties().nodeView(), getViewProperties().calculator()));
+            // this only works if we copy and reassign
+            FilterOptions filterOptions = FilterOptionsUtils.copyFilterOptions(filterOptionsPopup.inheritedFilterOptionsProperty().getValue());
+
+            if (!Objects.equals(newViewCoord.stampCoordinate().allowedStates(), oldViewCoord.stampCoordinate().allowedStates())) {
+                // inherit status
+                FilterOptions.Option status = filterOptions.getOptionForItem(FilterOptions.OPTION_ITEM.STATUS);
+                if (!status.isInOverride()) {
+                    status.defaultOptions().clear();
+                    status.selectedOptions().clear();
+                    List<String> statuses = FilterOptionsUtils.stateSetToList(newViewCoord.stampCoordinate().allowedStates());
+                    status.defaultOptions().addAll(statuses);
+                    status.selectedOptions().addAll(statuses);
+                    filterOptionsPopup.setInheritedFilterOptionsProperty(filterOptions);
+                }
+                //TODO do this for other options
+            }
 
             filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
-            doSearch(new ActionEvent(null, null));
+            doSearch(new ActionEvent("inherit", null));
         }));
     }
 

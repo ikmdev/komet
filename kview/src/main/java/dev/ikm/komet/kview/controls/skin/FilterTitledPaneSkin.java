@@ -144,10 +144,16 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         subscription = selectedOption.boundsInParentProperty().subscribe(b ->
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
 
-        subscription = subscription.and(selectedOption.textProperty().subscribe(_ -> {
+        subscription = subscription.and(selectedOption.textProperty().subscribe(str -> {
+            System.out.println(selectedOption + " " + str + " " + !Objects.equals(currentOption.selectedOptions(), currentOption.defaultOptions())
+                    + "\nselected: " + currentOption.selectedOptions() + ", default: " + currentOption.defaultOptions()
+                    + "\ncurrent option is in override?: " + control.getOption().isInOverride()
+
+            );
             pseudoClassStateChanged(MODIFIED_TITLED_PANE,
-                    !Objects.equals(currentOption, control.getDefaultOption())
-                    //option.isInOverride() //THIS alternative approach doesn't work
+                    //!Objects.equals(currentOption, control.getDefaultOption())
+                    !Objects.equals(currentOption.selectedOptions(), currentOption.defaultOptions())
+                    //currentOption.isInOverride() //THIS alternative approach doesn't work
             );
         }));
 

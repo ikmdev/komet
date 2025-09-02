@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -102,6 +103,15 @@ public class FilterOptionsUtils {
         return filterOptions;
     }
 
+    public static FilterOptions copyFilterOptions(FilterOptions filterOptions) {
+        FilterOptions copyOfFilterOptions = new FilterOptions();
+        filterOptions.getMainCoordinates().getOptions().forEach(option -> {
+            copyOfFilterOptions.setOptionForItem(option.item(), option.copy());
+        });
+        return copyOfFilterOptions;
+    }
+
+
     public static FilterOptions reloadFilterOptions(FilterOptions.MainCoordinates childOptions,
                                                     ObservableCoordinate<ViewCoordinateRecord> childView, ViewCalculator calculator) {
         FilterOptions filterOptions = new FilterOptions();
@@ -109,8 +119,7 @@ public class FilterOptionsUtils {
         // get parent menu settings
         for (ObservableCoordinate<?> observableCoordinate : childView.getCompositeCoordinates()) {
 
-            if (observableCoordinate instanceof ObservableStampCoordinate observableStampCoordinate
-                && observableStampCoordinate.hasOverrides()) {
+            if (observableCoordinate instanceof ObservableStampCoordinate observableStampCoordinate) {
 
                 // populate the TYPE; this isn't in the parent view coordinate
                 // it is all set in FilterOptions
@@ -139,73 +148,71 @@ public class FilterOptionsUtils {
                 }
 
                 // MODULE
-                if (!observableStampCoordinate.moduleNids().isEmpty()) {
-                    FilterOptions.Option moduleOption = filterOptions.getMainCoordinates().getModule();
-                    if (!childOptions.getModule().isInOverride()) {
-                        // override
-                        moduleOption.defaultOptions().clear();
-                        observableStampCoordinate.moduleNids().intStream().forEach(moduleNid -> {
-                            String moduleStr = calculator.getPreferredDescriptionStringOrNid(moduleNid);
-                            System.out.println("moduleStr = " + moduleStr);
-                            moduleOption.defaultOptions().add(moduleStr);
-                        });
-                    } else {
-                        // don't override
-                        moduleOption.selectedOptions().clear();
-                        moduleOption.selectedOptions().addAll(childOptions.getModule().selectedOptions());
-
-                        moduleOption.defaultOptions().clear();
-                        moduleOption.defaultOptions().addAll(childOptions.getModule().defaultOptions());
-                        moduleOption.setInOverride(true);
-                    }
-                }
+//                if (!observableStampCoordinate.moduleNids().isEmpty()) {
+//                    FilterOptions.Option moduleOption = filterOptions.getMainCoordinates().getModule();
+//                    if (!childOptions.getModule().isInOverride()) {
+//                        // override
+//                        moduleOption.defaultOptions().clear();
+//                        observableStampCoordinate.moduleNids().intStream().forEach(moduleNid -> {
+//                            String moduleStr = calculator.getPreferredDescriptionStringOrNid(moduleNid);
+//                            System.out.println("moduleStr = " + moduleStr);
+//                            moduleOption.defaultOptions().add(moduleStr);
+//                        });
+//                    } else {
+//                        // don't override
+//                        moduleOption.selectedOptions().clear();
+//                        moduleOption.selectedOptions().addAll(childOptions.getModule().selectedOptions());
+//
+//                        moduleOption.defaultOptions().clear();
+//                        moduleOption.defaultOptions().addAll(childOptions.getModule().defaultOptions());
+//                    }
+//                }
 
                 // populate the PATH
-                ConceptFacade currentPath = observableStampCoordinate.pathConceptProperty().getValue();
-                String currentPathStr = currentPath.description();
-
-                List<String> defaultSelectedPaths = new ArrayList<>(List.of(currentPathStr));
-                FilterOptions.Option pathOption = filterOptions.getMainCoordinates().getPath();
-                if (!childOptions.getPath().isInOverride()) {
-                    // override
-                    pathOption.defaultOptions().clear();
-                    pathOption.defaultOptions().addAll(defaultSelectedPaths);
-
-                    pathOption.selectedOptions().clear();
-                    pathOption.selectedOptions().addAll(defaultSelectedPaths);
-                } else {
-                    // don't override
-                    pathOption.selectedOptions().clear();
-                    pathOption.selectedOptions().addAll(childOptions.getPath().selectedOptions());
-
-                    pathOption.defaultOptions().clear();
-                    pathOption.defaultOptions().addAll(childOptions.getPath().defaultOptions());
-                    pathOption.setInOverride(true);
-                }
+//                ConceptFacade currentPath = observableStampCoordinate.pathConceptProperty().getValue();
+//                String currentPathStr = currentPath.description();
+//
+//                List<String> defaultSelectedPaths = new ArrayList<>(List.of(currentPathStr));
+//                FilterOptions.Option pathOption = filterOptions.getMainCoordinates().getPath();
+//                if (!childOptions.getPath().isInOverride()) {
+//                    // override
+//                    pathOption.defaultOptions().clear();
+//                    pathOption.defaultOptions().addAll(defaultSelectedPaths);
+//
+//                    pathOption.selectedOptions().clear();
+//                    pathOption.selectedOptions().addAll(defaultSelectedPaths);
+//                } else {
+//                    // don't override
+//                    pathOption.selectedOptions().clear();
+//                    pathOption.selectedOptions().addAll(childOptions.getPath().selectedOptions());
+//
+//                    pathOption.defaultOptions().clear();
+//                    pathOption.defaultOptions().addAll(childOptions.getPath().defaultOptions());
+//                }
 
                 // TIME
-                FilterOptions.Option timeOption = filterOptions.getMainCoordinates().getTime();
-                if (!childOptions.getTime().isInOverride()) {
-                    // override
-                    Long time = observableStampCoordinate.timeProperty().getValue();
-                    if (!time.equals(Long.MAX_VALUE) && !time.equals(PREMUNDANE_TIME)) {
-                        Date date = new Date(time);
-                        timeOption.defaultOptions().clear();
-                        timeOption.selectedOptions().clear();
-                        timeOption.selectedOptions().add(SIMPLE_DATE_FORMAT.format(date));
-                        timeOption.defaultOptions().addAll(timeOption.selectedOptions());
-                    }
-                    timeOption.setInOverride(true);
-                } else {
-                    // don't override
-                    timeOption.selectedOptions().clear();
-                    timeOption.selectedOptions().addAll(childOptions.getTime().selectedOptions());
-
-                    timeOption.defaultOptions().clear();
-                    timeOption.defaultOptions().addAll(childOptions.getTime().defaultOptions());
-                    timeOption.setInOverride(false);
-                }
-            } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate
+//                FilterOptions.Option timeOption = filterOptions.getMainCoordinates().getTime();
+//                if (!childOptions.getTime().isInOverride()) {
+//                    // override
+//                    Long time = observableStampCoordinate.timeProperty().getValue();
+//                    if (!time.equals(Long.MAX_VALUE) && !time.equals(PREMUNDANE_TIME)) {
+//                        Date date = new Date(time);
+//                        timeOption.defaultOptions().clear();
+//                        timeOption.selectedOptions().clear();
+//                        timeOption.selectedOptions().add(SIMPLE_DATE_FORMAT.format(date));
+//                        timeOption.defaultOptions().addAll(timeOption.selectedOptions());
+//                    }
+//                    timeOption.setInOverride(true);
+//                } else {
+//                    // don't override
+//                    timeOption.selectedOptions().clear();
+//                    timeOption.selectedOptions().addAll(childOptions.getTime().selectedOptions());
+//
+//                    timeOption.defaultOptions().clear();
+//                    timeOption.defaultOptions().addAll(childOptions.getTime().defaultOptions());
+//                    timeOption.setInOverride(false);
+//                }
+            } /*else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate
                 && observableLanguageCoordinate.hasOverrides()) {
                 // populate the LANGUAGE
                 FilterOptions.Option language = filterOptions.getLanguageCoordinates(0).getLanguage();
@@ -220,7 +227,7 @@ public class FilterOptionsUtils {
                 //FIXME description choices don't yet align with parent/classic menu, more discussion needs to happen on
                 // how we want to fix this.
                 // all set in FilterOptions
-            }
+            }*/
         }
         return filterOptions;
     }
@@ -271,5 +278,9 @@ public class FilterOptionsUtils {
                 .map(i -> Entity.getFast(i).description())
                 .sorted()
                 .toList();
+    }
+
+    public static List<String> stateSetToList(StateSet states) {
+        return states.toEnumSet().stream().map(Enum::name).toList();
     }
 }
