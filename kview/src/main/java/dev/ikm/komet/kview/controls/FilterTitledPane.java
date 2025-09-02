@@ -11,7 +11,7 @@ import javafx.scene.control.TitledPane;
 public class FilterTitledPane extends TitledPane {
 
     public FilterTitledPane() {
-
+        getStyleClass().add("filter-titled-pane");
     }
 
     // titleProperty
@@ -24,6 +24,18 @@ public class FilterTitledPane extends TitledPane {
     }
     public final void setTitle(String value) {
         titleProperty.set(value);
+    }
+
+    // defaultOptionProperty
+    private final ObjectProperty<FilterOptions.Option> defaultOptionProperty = new SimpleObjectProperty<>(this, "defaultOption");
+    public final ObjectProperty<FilterOptions.Option> defaultOptionProperty() {
+       return defaultOptionProperty;
+    }
+    public final FilterOptions.Option getDefaultOption() {
+       return defaultOptionProperty.get();
+    }
+    public final void setDefaultOption(FilterOptions.Option value) {
+        defaultOptionProperty.set(value);
     }
 
     // optionProperty
