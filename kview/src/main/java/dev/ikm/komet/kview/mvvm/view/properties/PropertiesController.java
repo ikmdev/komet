@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
+import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
+import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
 import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_CASE_SIGNIFICANCE;
@@ -140,9 +142,9 @@ public class PropertiesController implements Serializable {
 
     private Subscriber<ShowEditDescriptionPanelEvent> editDescriptionPaneSubscriber;
 
-    private Subscriber<AddStampEvent> addStampSubscriber;
+    private Subscriber<StampEvent> addStampSubscriber;
 
-    private Subscriber<CreateStampEvent> createStampSubscriber;
+    private Subscriber<StampEvent> createStampSubscriber;
 
     private Subscriber<OpenPropertiesPanelEvent> propsPanelOpen;
 
@@ -358,25 +360,29 @@ public class PropertiesController implements Serializable {
 
         // -- add stamp
         addStampSubscriber = evt -> {
-            stampJFXNode.controller().init(stampAddFormViewModel);
-            this.stampAddFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+            if (evt.getEventType() == ADD_STAMP) {
+                stampJFXNode.controller().init(stampAddFormViewModel);
+                this.stampAddFormViewModel.init(entityFacade, conceptTopic, viewProperties);
 
-            contentBorderPane.setCenter(stampJFXNode.node());
-            editButton.setSelected(true);
+                contentBorderPane.setCenter(stampJFXNode.node());
+                editButton.setSelected(true);
+            }
         };
 
-        eventBus.subscribe(conceptTopic, AddStampEvent.class, addStampSubscriber);
+        eventBus.subscribe(conceptTopic, StampEvent.class, addStampSubscriber);
 
         // -- create stamp
         createStampSubscriber = evt -> {
-            stampJFXNode.controller().init(stampCreateFormViewModel);
-            this.stampCreateFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+            if (evt.getEventType() == CREATE_STAMP) {
+                stampJFXNode.controller().init(stampCreateFormViewModel);
+                this.stampCreateFormViewModel.init(entityFacade, conceptTopic, viewProperties);
 
-            contentBorderPane.setCenter(stampJFXNode.node());
-            editButton.setSelected(true);
+                contentBorderPane.setCenter(stampJFXNode.node());
+                editButton.setSelected(true);
+            }
         };
 
-        eventBus.subscribe(conceptTopic, CreateStampEvent.class, createStampSubscriber);
+        eventBus.subscribe(conceptTopic, StampEvent.class, createStampSubscriber);
     }
 
     public ViewProperties getViewProperties() {

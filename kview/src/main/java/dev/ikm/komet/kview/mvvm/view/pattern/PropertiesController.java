@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import dev.ikm.komet.kview.events.AddStampEvent;
+import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.mvvm.view.common.StampAddController;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
@@ -154,7 +154,7 @@ public class PropertiesController {
 
     private Subscriber<PatternDescriptionEvent> patternDescriptionEventSubscriber;
 
-    private Subscriber<AddStampEvent> addStampSubscriber;
+    private Subscriber<StampEvent> addStampSubscriber;
 
     private StampAddFormViewModel stampAddFormViewModel;
 
@@ -357,10 +357,12 @@ public class PropertiesController {
 
         // Stamp
         addStampSubscriber = evt -> {
-            stampJFXNode.controller().init(stampAddFormViewModel);
-            contentBorderPane.setCenter(stampJFXNode.node());
+            if (evt.getEventType() == StampEvent.ADD_STAMP) {
+                stampJFXNode.controller().init(stampAddFormViewModel);
+                contentBorderPane.setCenter(stampJFXNode.node());
+            }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), AddStampEvent.class, addStampSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), StampEvent.class, addStampSubscriber);
 
 
         this.addEditButton.setSelected(true);

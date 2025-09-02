@@ -31,7 +31,6 @@ import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatter
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.AXIOM;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CONCEPT_STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -1434,9 +1433,9 @@ public class DetailsController  {
     private void onStampSelectionChanged() {
         if (stampViewControl.isSelected()) {
             if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
-                eventBus.publish(conceptTopic, new CreateStampEvent(stampViewControl, CreateStampEvent.ANY));
+                eventBus.publish(conceptTopic, new StampEvent(stampViewControl, StampEvent.CREATE_STAMP));
             } else {
-                eventBus.publish(conceptTopic, new AddStampEvent(stampViewControl, AddStampEvent.ANY));
+                eventBus.publish(conceptTopic, new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
             }
 
             if (!propertiesToggleButton.isSelected()) {
