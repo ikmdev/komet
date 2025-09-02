@@ -47,7 +47,6 @@ public class PatternDefinitionViewModel extends FormViewModel {
                 })
                 .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                 .addValidator(MEANING_ENTITY, "Meaning Entity", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
-                    Object value = prop.get();
                     if (prop.isNull().get()) {
                         validationResult.error("${%s} is required".formatted(MEANING_ENTITY));
                     } else if (prop.isNotNull().get() && prop.get().equals(BLANK_CONCEPT)) {
