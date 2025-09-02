@@ -53,9 +53,6 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
      */
     public static final String CONFIRM_RESET_MESSAGE =  "Are you sure you want to reset the form? All entered data will be lost.";
 
-    private EntityFacade entityFacade;
-    private UUID topic;
-
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
     public StampAddFormViewModel(StampType stampType) {
@@ -64,33 +61,8 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
         // Add Properties
         addProperty(CURRENT_STAMP, (Stamp) null);
 
-        addProperty(STATUS, State.ACTIVE);
-        addProperty(TIME, 0L);
-        addProperty(AUTHOR, (ComponentWithNid) null);
-        addProperty(MODULE, (ComponentWithNid) null);
-        addProperty(PATH, (ComponentWithNid) null);
-
-        addProperty(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, true);
-        addValidator(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, "Validator Property", (ValidationResult vr, ViewModel vm) -> {
-            boolean same = updateIsStampValuesChanged();
-            if (same) {
-                // if UI’s stamp is the same as the previous stamp than it is invalid.
-                vr.error("Cannot submit stamp because the data is the same.");
-            }
-        });
-
-        addProperty(MODULES, Collections.emptyList(), true);
-        addProperty(PATHS, Collections.emptyList(), true);
-        addProperty(STATUSES, Collections.emptyList(), true);
-
-        addProperty(FORM_TITLE, "");
-        addProperty(TIME_TEXT, "");
-
         addProperty(CLEAR_RESET_BUTTON_TEXT, "RESET");
         addProperty(SUBMIT_BUTTON_TEXT, "SUBMIT");
-
-        // run validators when the following properties change.
-        doOnChange(this::validate, STATUS, MODULE, PATH);
     }
 
     public void init(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
@@ -107,8 +79,6 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
         // listen to events that the properties panel is going to be closed
         closePropertiesPanelEventSubscriber = evt -> onPropertiesPanelClose();
         EvtBusFactory.getDefaultEvtBus().subscribe(topic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
-
-
 
         // initialize observable lists
         Set<ConceptEntity> modules = fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId());
@@ -160,7 +130,8 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
         setPropertyValue(PATH, path);
     }
 
-    private boolean updateIsStampValuesChanged() {
+    @Override
+    protected boolean updateIsStampValuesChanged() {
         StampEntity stampEntity = getPropertyValue(CURRENT_STAMP);
 
         boolean same = stampEntity.state() == getPropertyValue(STATUS)

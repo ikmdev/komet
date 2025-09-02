@@ -32,47 +32,13 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
      */
     public static final String CONFIRM_RESET_MESSAGE =  "Are you sure you want to clear the form? All entered data will be lost.";
 
-    private EntityFacade entityFacade;
-    private UUID topic;
-
-    private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
-
     public StampCreateFormViewModel(StampType stampType) {
         super(stampType);
-        // Add Properties
-        addProperty(STATUS, (State) null);
-        addProperty(TIME, 0L);
-        addProperty(AUTHOR, (ComponentWithNid) null);
-        addProperty(MODULE, (ComponentWithNid) null);
-        addProperty(PATH, (ComponentWithNid) null);
-
-        addProperty(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, true);
-        addValidator(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, "Validator Property", (ValidationResult vr, ViewModel vm) -> {
-            boolean same = updateIsStampValuesChanged();
-            if (same) {
-                // if UI’s stamp is the same as the previous stamp than it is invalid.
-                vr.error("Cannot submit stamp because the data is the same.");
-            }
-        });
 
         addProperty(IS_CONFIRMED, false);
 
-        addProperty(MODULES, Collections.emptyList(), true);
-        addProperty(PATHS, Collections.emptyList(), true);
-        addProperty(STATUSES, Collections.emptyList(), true);
-
-        addProperty(FORM_TITLE, "");
-        addProperty(TIME_TEXT, "");
-
         addProperty(CLEAR_RESET_BUTTON_TEXT, "CLEAR");
         addProperty(SUBMIT_BUTTON_TEXT, "CONFIRM");
-
-        // run validators when the following properties change.
-        doOnChange(this::validate, STATUS, MODULE, PATH);
-
-        // Initialize
-        setPropertyValue(FORM_TITLE, "");
-        setPropertyValue(TIME_TEXT, "");
     }
 
     public void init(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
@@ -101,7 +67,8 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
         save(true);
     }
 
-    private boolean updateIsStampValuesChanged() {
+    @Override
+    protected boolean updateIsStampValuesChanged() {
         boolean empty = null == getPropertyValue(STATUS)
                         || null == getPropertyValue(PATH)
                         || null == getPropertyValue(MODULE);
@@ -143,6 +110,9 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
         }
 
         save(true);
+
+        // We're not going to create a stamp here. Just saving the stamp properties to the view model
+        // so that they can be used later to create a new Concept.
 
         return this;
     }
