@@ -1,9 +1,11 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.RangeCalendarSkin;
+import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -12,7 +14,7 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -75,6 +77,18 @@ public class RangeCalendarControl extends Control {
         dateProperty.set(value);
     }
 
+    // timestampProperty
+    private final LongProperty timestampProperty = new SimpleLongProperty(this, "timestamp", -1L);
+    public final LongProperty timestampProperty() {
+       return timestampProperty;
+    }
+    public final long getTimestamp() {
+       return timestampProperty.get();
+    }
+    public final void setTimestamp(long value) {
+        timestampProperty.set(value);
+    }
+
     // dateRangeListProperty
     private final ObservableList<DateRange> dateRangeList = FXCollections.observableArrayList();
     public final ObservableList<DateRange> dateRangeList() {
@@ -97,14 +111,14 @@ public class RangeCalendarControl extends Control {
     }
 
     // stampDatesProperty
-    private final ObjectProperty<List<LocalDateTime>> stampDatesProperty = new SimpleObjectProperty<>(this, "stampDates");
-    public final ObjectProperty<List<LocalDateTime>> stampDatesProperty() {
+    private final ObjectProperty<List<ZonedDateTime>> stampDatesProperty = new SimpleObjectProperty<>(this, "stampDates");
+    public final ObjectProperty<List<ZonedDateTime>> stampDatesProperty() {
        return stampDatesProperty;
     }
-    public final List<LocalDateTime> getStampDates() {
+    public final List<ZonedDateTime> getStampDates() {
        return stampDatesProperty.get();
     }
-    public final void setStampDates(List<LocalDateTime> value) {
+    public final void setStampDates(List<ZonedDateTime> value) {
         stampDatesProperty.set(value);
     }
 

@@ -15,15 +15,18 @@
  */
 package dev.ikm.komet.kview.fxutils;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
+import one.jpro.platform.utils.TreeShowing;
 
 public class TitledPaneHelper {
     private static final int DEFAULT_BUTTON_SPACING = 34; // pixels to offset the right arrow dropdown
-
 
     /**
      * pass in the title and arrow css selectors since the behavior will apply to nested TitledPanes
@@ -32,7 +35,22 @@ public class TitledPaneHelper {
      * https://stackoverflow.com/a/55085777
      * @param pane
      */
-    public static void putArrowOnRight(TitledPane pane, double buttonSpacing, String titleSelector, String arrowSelector) {
+    public static void putArrowOnRight(TitledPane pane, double buttonSpacing, String titleSelector, String arrowSelector){
+    var showingProp = TreeShowing.treeShowing(pane);
+    ChangeListener<Boolean> listener = new ChangeListener<Boolean>() {
+        @Override
+        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+            if (newValue) {
+                putArrowOnRightImpl(pane, buttonSpacing, titleSelector, arrowSelector);
+                showingProp.removeListener(this);
+            }
+        }
+    };
+    showingProp.addListener(listener);
+}
+
+    private static void putArrowOnRightImpl(TitledPane pane, double buttonSpacing, String titleSelector, String arrowSelector) {
+
         pane.layout();
         pane.applyCss();
         Region title = (Region) pane.lookup(titleSelector);
@@ -76,7 +94,9 @@ public class TitledPaneHelper {
      * default params wrapper method for putArrowOnRight
      * @param pane
      */
+
+
     public static void putArrowOnRight(TitledPane pane) {
-        putArrowOnRight(pane, DEFAULT_BUTTON_SPACING, ".title", ".arrow-button");
-    }
+Platform.runLater(() ->{putArrowOnRight(pane, DEFAULT_BUTTON_SPACING, ".title", ".arrow-button");});
+         }
 }
