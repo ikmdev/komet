@@ -4,24 +4,25 @@ import dev.ikm.komet.framework.view.ObservableCoordinate;
 import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
 import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import org.eclipse.collections.api.list.primitive.ImmutableLongList;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 
 public class FilterOptionsUtils {
-
-    public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
 
     public static FilterOptions loadFilterOptions(ObservableCoordinate<ViewCoordinateRecord> parentView, ViewCalculator calculator) {
         FilterOptions filterOptions = new FilterOptions();
@@ -76,7 +77,7 @@ public class FilterOptionsUtils {
                     Date date = new Date(time);
                     timeOption.defaultOptions().clear();
                     timeOption.selectedOptions().clear();
-                    timeOption.selectedOptions().add(SIMPLE_DATE_FORMAT.format(date));
+                    timeOption.selectedOptions().add(String.valueOf(time));
                     timeOption.defaultOptions().addAll(timeOption.selectedOptions());
                 }
             } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
@@ -100,16 +101,23 @@ public class FilterOptionsUtils {
     public static long getMillis(FilterOptions filterOptions) {
         FilterOptions.Option time = filterOptions.getMainCoordinates().getTime();
         if (time == null || time.selectedOptions().isEmpty()) {
-            return -1;
+            return -1L;
         }
 
-        Date date;
         try {
-            date = SIMPLE_DATE_FORMAT.parse(time.selectedOptions().getFirst());
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
+            return Long.parseLong(time.selectedOptions().getFirst());
+        } catch (NumberFormatException e) {
+            return -1L;
         }
-        return date.getTime();
+    }
+
+    public static List<ZonedDateTime> getTimesInUse() {
+        ImmutableLongList times = StampService.get().getTimesInUse().toReversed();
+        return Arrays.stream(times.toArray())
+                .filter(time -> time != PREMUNDANE_TIME)
+                .boxed()
+                .map(DateTimeUtil::epochToZonedDateTime)
+                .toList();
     }
 
     private static int findNidForDescription(Navigator navigator, int nid, String description) {

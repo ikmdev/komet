@@ -1,13 +1,14 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
 import dev.ikm.komet.kview.controls.DateFilterTitledPane;
 import dev.ikm.komet.kview.controls.DateRange;
 import dev.ikm.komet.kview.controls.FilterOptions;
+import dev.ikm.komet.kview.controls.FilterOptionsUtils;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.RangeCalendarControl;
 import dev.ikm.komet.kview.controls.TruncatedTextFlow;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import javafx.collections.FXCollections;
 import javafx.css.PseudoClass;
 import javafx.scene.Parent;
@@ -23,8 +24,7 @@ import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
 
 import java.text.MessageFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,6 +105,9 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
             subscription.unsubscribe();
         }
 
+        if (control.getOption() == null) {
+            return;
+        }
         currentOption = control.getOption().copy();
         selectedOption.setText(getOptionText(currentOption));
 
@@ -166,6 +169,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 } else {
                     createDateRangePane(currentOption);
                 }
+                calendarControl.setStampDates(FilterOptionsUtils.getTimesInUse());
                 if (comboBox.isShowing()) {
                     control.setExpanded(true);
                     control.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, true);
@@ -180,7 +184,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 currentOption.selectedOptions().clear();
                 currentOption.excludedOptions().clear();
                 if (calendarControl != null && calendarControl.getDate() != null) {
-                    currentOption.selectedOptions().add(DATE_FORMATTER.format(calendarControl.getDate()));
+                    currentOption.selectedOptions().add(String.valueOf(calendarControl.getTimestamp()));
                 } else if (calendarControl != null && !calendarControl.dateRangeList().isEmpty()) {
                     calendarControl.dateRangeList().stream()
                             .filter(r -> !r.exclude())
@@ -230,11 +234,15 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         contentBox.getChildren().setAll(separatorRegion, calendarControl);
 
         if (containsDate(option.selectedOptions())) {
+            String value = option.selectedOptions().getFirst();
             try {
-                LocalDate date = LocalDate.parse(option.selectedOptions().getFirst(), DateTimeFormatter.ofPattern(DEFAULT_DATE_PATTERN));
-                calendarControl.setDate(date);
-            } catch (DateTimeParseException e) {
-                // ignore
+                long timestamp = Long.parseLong(value);
+                calendarControl.setTimestamp(timestamp);
+                ZonedDateTime zonedDateTime = DateTimeUtil.epochToZonedDateTime(timestamp);
+                calendarControl.setDate(zonedDateTime.toLocalDate());
+            } catch (NumberFormatException e) {
+                calendarControl.setTimestamp(-1L);
+                calendarControl.setDate(null);
             }
         }
         control.setMode(DateFilterTitledPane.MODE.SINGLE_DATE);

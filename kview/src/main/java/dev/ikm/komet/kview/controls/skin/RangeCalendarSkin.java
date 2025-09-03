@@ -1,36 +1,52 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.DateRange;
+import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.RangeCalendarControl;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.control.skin.DateCellSkin;
 import javafx.scene.control.skin.DatePickerSkin;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 import javafx.util.Subscription;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
 import static dev.ikm.komet.kview.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
@@ -44,13 +60,16 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
 
     private static final List<String> DATE_PATTERN_LIST = List.of(DEFAULT_DATE_PATTERN, "M/d/yyyy", "MMddyyyy",
             "MM.dd.yyyy", "M.d.yyyy", "MM-dd-yyyy", "M-d-yyyy");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm:ss.SSS a zzz");
     private static final String CAN_ADD_NEW_RANGE_KEY = "CAN_ADD_NEW_RANGE";
+    private static final int MAX_VISIBLE_STAMPS = 4;
 
     private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private static final PseudoClass EXCLUDED_PSEUDO_CLASS = PseudoClass.getPseudoClass("excluded");
     private static final PseudoClass START_RANGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("start");
     private static final PseudoClass IN_RANGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("intermediate");
     private static final PseudoClass END_RANGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("end");
+    private static final PseudoClass STAMP_PSEUDO_CLASS = PseudoClass.getPseudoClass("stamp");
 
     private final DatePicker datePicker;
     private final RangeCalendarControl control;
@@ -85,6 +104,15 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
         datePicker.setDayCellFactory(_ -> new DateCell() {
 
             @Override
+            public void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null && !empty) {
+                    pseudoClassStateChanged(STAMP_PSEUDO_CLASS,
+                            control.getStampDates().stream().anyMatch(s -> s.toLocalDate().equals(item)));
+                }
+            }
+
+            @Override
             protected Skin<?> createDefaultSkin() {
                 return new CalendarCellSkin(this);
             }
@@ -92,6 +120,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
             private static class CalendarCellSkin extends DateCellSkin {
 
                 private final Region circle;
+                private final Region stamp;
 
                 public CalendarCellSkin(DateCell cell) {
                     super(cell);
@@ -99,12 +128,22 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                     circle = new Region();
                     circle.getStyleClass().add("calendar-cell-circle");
 
+                    stamp = new Region();
+                    stamp.getStyleClass().add("calendar-cell-stamp");
+
+                    getChildren().addFirst(stamp);
                     getChildren().addFirst(circle);
                 }
 
                 @Override
                 protected void layoutChildren(double x, double y, double w, double h) {
                     super.layoutChildren(x, y, w, h);
+                    if (!getChildren().contains(stamp)) {
+                        getChildren().addFirst(stamp);
+                    }
+                    stamp.resizeRelocate(x + w - stamp.prefWidth(h) + 1, y + 1,
+                            stamp.prefWidth(h), stamp.prefHeight(w));
+
                     if (!getChildren().contains(circle)) {
                         getChildren().addFirst(circle);
                     }
@@ -235,15 +274,18 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
         currentExcluding = false;
         Label dateLabel = new Label(resources.getString("date.label"));
         dateLabel.getStyleClass().add("date-label");
+        DateComboBox dateTimeComboBox = new DateComboBox();
+        HBox.setHgrow(dateTimeComboBox, Priority.ALWAYS);
+
         DateTextField dateField = new DateTextField(false);
         HBox.setHgrow(dateField, Priority.ALWAYS);
-        HBox dateBox = new HBox(dateLabel, dateField);
+        HBox dateBox = new HBox(dateLabel, dateTimeComboBox);
         dateBox.getStyleClass().add("date-box");
         if (control.getDate() != null) {
             dateField.setDate(control.getDate());
             datePicker.setValue(control.getDate());
         }
-        control.dateProperty().bindBidirectional(dateField.dateProperty());
+        control.dateProperty().bindBidirectional(dateTimeComboBox.dateProperty());
         root.getChildren().addFirst(dateBox);
     }
 
@@ -365,6 +407,208 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                     d.pseudoClassStateChanged(EXCLUDED_PSEUDO_CLASS, dateRange.exclude());
                 }
             });
+        }
+    }
+
+    record DateTime(LocalDate date, ZonedDateTime zonedDateTime) {
+
+        public DateTime(LocalDate date) {
+            this(date, date.atStartOfDay().atZone(ZoneOffset.UTC));
+        }
+
+        @Override
+        public String toString() {
+            if (date != null) {
+                return DATE_FORMATTER.format(date);
+            }
+            return "";
+        }
+
+        public boolean isInRange(LocalDate date) {
+            ZonedDateTime startDate = date.atStartOfDay().atZone(ZoneOffset.UTC).minusNanos(1);
+            ZonedDateTime endDate = date.atStartOfDay().plusDays(1).atZone(ZoneOffset.UTC);
+            return zonedDateTime != null && zonedDateTime.isAfter(startDate) && zonedDateTime.isBefore(endDate);
+        }
+
+        public long getStamp() {
+            return zonedDateTime.toInstant().toEpochMilli();
+        }
+    }
+
+    private class DateComboBox extends ComboBox<DateTime> {
+
+        private final List<DateTime> timesInUse;
+        private ListView<DateTime> listView;
+        private EventHandler<Event> eventEventHandler;
+        private boolean updating;
+
+        public DateComboBox() {
+            timesInUse = new ArrayList<>();
+            setEditable(true);
+            setConverter(new StringConverter<>() {
+
+                // From ListView selection -> render localDate in TextField
+                @Override
+                public String toString(DateTime dateTime) {
+                    if (dateTime == null) {
+                        return null;
+                    }
+                    return dateTime.toString();
+                }
+
+                // When user types in the TextField, parse and set value, or restore previous valid value
+                @Override
+                public DateTime fromString(String date) {
+                    return parseDate(date).map(v -> {
+                        DateTime dateTime = getDateTimeFromDate(v);
+                        setDate(v);
+                        control.setTimestamp(dateTime.getStamp());
+                        swapping = true;
+                        datePicker.setValue(v);
+                        swapping = false;
+                        return dateTime;
+                    }).orElseGet(() -> {
+                        LocalDate v = getDate();
+                        if (v != null) {
+                            DateTime dateTime = getDateTimeFromDate(v);
+                            getEditor().setText(getConverter().toString(dateTime));
+                            return dateTime;
+                        }
+                        getEditor().setText("");
+                        return null;
+                    });
+                }
+            });
+            setVisibleRowCount(MAX_VISIBLE_STAMPS);
+            setPromptText(resources.getString("date.prompt"));
+            setCellFactory(_ -> new ListCell<>() {
+                private final Label label;
+                private final HBox box;
+                {
+                    label = new Label();
+                    Region spacer = new Region();
+                    HBox.setHgrow(spacer, Priority.ALWAYS);
+                    StackPane region = new StackPane(new IconRegion("icon", "check"));
+                    region.getStyleClass().add("region");
+                    box = new HBox(label, spacer, region);
+                    box.getStyleClass().add("box");
+                    setText(null);
+                }
+
+                @Override
+                protected void updateItem(DateTime item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (item != null && !empty) {
+                        String date = item.date.getDayOfMonth() + DateTimeUtil.getDayOfMonthSuffix(item.date.getDayOfMonth());
+                        label.setText(date + " " + DATE_TIME_FORMATTER.format(item.zonedDateTime));
+                        setGraphic(box);
+                    } else {
+                        setGraphic(null);
+                    }
+                }
+            });
+            getStyleClass().add("date-combo-field");
+
+            addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+                if (getItems() == null || getItems().isEmpty()) {
+                    e.consume();
+                }
+            });
+            control.stampDatesProperty().subscribe(list -> {
+                timesInUse.clear();
+                timesInUse.addAll(list.stream()
+                        .map(z -> new DateTime(z.toLocalDate(), z))
+                        .toList());
+            });
+            valueProperty().subscribe(value -> {
+                if (updating) {
+                    return;
+                }
+                control.setTimestamp(value != null ? value.getStamp() : -1L);
+            });
+
+            itemsProperty().subscribe((_, n) -> {
+                if (n != null && !n.isEmpty()) {
+                    if (eventEventHandler == null) {
+                        eventEventHandler =  _ -> listView.scrollTo(getSelectionModel().getSelectedIndex());
+                    }
+                    addEventFilter(ON_SHOWN, eventEventHandler);
+                    addEventFilter(ON_HIDDEN, _ -> removeEventFilter(ON_SHOWN, eventEventHandler));
+                    show();
+                }
+            });
+        }
+
+        @Override
+        protected Skin<?> createDefaultSkin() {
+            ComboBoxListViewSkin<DateTime> defaultSkin = (ComboBoxListViewSkin<DateTime>) super.createDefaultSkin();
+            lookup(".arrow-button").setDisable(true);
+            listView = (ListView<DateTime>) defaultSkin.getPopupContent();
+            return defaultSkin;
+        }
+
+        // dateProperty
+        private final ObjectProperty<LocalDate> dateProperty = new SimpleObjectProperty<>(this, "date") {
+            @Override
+            protected void invalidated() {
+                DateTime dateTime = getDateTimeFromDate(get(), list -> {
+                    if (list != null) {
+                        ObservableList<DateTime> dateTimes = FXCollections.observableArrayList(list);
+                        updating = true;
+                        setItems(dateTimes);
+                        updating = false;
+                    } else {
+                        setItems(null);
+                    }
+                });
+                DateComboBox.this.setValue(dateTime);
+                lookup(".arrow-button").setDisable(getItems() == null || getItems().isEmpty());
+            }
+        };
+        public final ObjectProperty<LocalDate> dateProperty() {
+           return dateProperty;
+        }
+        public final LocalDate getDate() {
+           return dateProperty.get();
+        }
+        public final void setDate(LocalDate value) {
+            dateProperty.set(value);
+        }
+
+        private Optional<LocalDate> parseDate(String date) {
+            if (date != null && !date.isEmpty()) {
+                for (String pattern : DATE_PATTERN_LIST) {
+                    try {
+                        return Optional.of(LocalDate.parse(date, DateTimeFormatter.ofPattern(pattern)));
+                    } catch (DateTimeParseException dtpe) {
+                        // Ignore
+                    }
+                }
+            }
+            return Optional.empty();
+        }
+
+        private DateTime getDateTimeFromDate(LocalDate date) {
+            return getDateTimeFromDate(date, null);
+        }
+
+        private DateTime getDateTimeFromDate(LocalDate date, Consumer<List<DateTime>> consumer) {
+            if (timesInUse.stream().anyMatch(dt -> dt.isInRange(date))) {
+                List<DateTime> list = timesInUse.stream()
+                        .filter(dt -> dt.isInRange(date))
+                        .toList();
+                if (consumer != null) {
+                    consumer.accept(list);
+                }
+                return list.stream()
+                        .filter(dt -> dt.getStamp() == control.getTimestamp())
+                        .findFirst()
+                        .orElse(list.getLast());
+            }
+            if (consumer != null) {
+                consumer.accept(null);
+            }
+            return new DateTime(date);
         }
     }
 
