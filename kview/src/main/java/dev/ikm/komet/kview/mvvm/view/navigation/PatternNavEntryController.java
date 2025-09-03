@@ -7,6 +7,7 @@ import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -181,7 +182,13 @@ public class PatternNavEntryController {
 
         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
 
-        Function<Integer, String> fetchDescription = (nid -> viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid));
+        // generate the display name in the format of "Reference Component in Pattern"
+        Function<Integer, String> fetchDescription = (semanticNid -> {
+            SemanticEntity semanticEntity = (SemanticEntity) EntityService.get().getEntity(semanticNid).get();
+            EntityFacade refComponent = EntityService.get().getEntity(semanticEntity.referencedComponentNid()).get();
+            String refComponentName = viewProperties.calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(refComponent.nid());
+            return refComponentName + " in " + retriveDisplayName(instancesViewModel.getPropertyValue(PATTERN_FACADE));
+        });
 
         // set the cell factory for each pattern's instance list
         patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescription, viewProperties));
