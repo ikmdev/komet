@@ -88,16 +88,16 @@ public class EditDescriptionFormController implements BasicController {
     private TextField otherNameTextField;
 
     @FXML
-    private ComboBox<ConceptEntity> comboBox;
+    private ComboBox<ConceptEntity> typeDisplayComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> moduleComboBox;
+    private ComboBox<ConceptEntity> caseSignificanceComboBox;
 
     @FXML
     private ComboBox<ConceptEntity> statusComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> caseSignificanceComboBox;
+    private ComboBox<ConceptEntity> moduleComboBox;
 
     @FXML
     private ComboBox<ConceptEntity> languageComboBox;
@@ -106,13 +106,13 @@ public class EditDescriptionFormController implements BasicController {
     private Label editDescriptionTitleLabel;
 
     @FXML
-    private Label dialect1;
+    private Label dialect1Label;
 
     @FXML
-    private Label dialect2;
+    private Label dialect2Label;
 
     @FXML
-    private Label dialect3;
+    private Label dialect3Label;
 
     @FXML
     private ComboBox dialectComboBox1;
