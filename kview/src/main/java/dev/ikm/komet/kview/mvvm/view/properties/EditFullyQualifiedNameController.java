@@ -69,6 +69,9 @@ public class EditFullyQualifiedNameController implements BasicController {
     private TextField fqnText;
 
     @FXML
+    private ComboBox<ConceptEntity> typeDisplayComboBox;
+
+    @FXML
     private ComboBox<ConceptEntity> moduleComboBox;
 
     @FXML
@@ -81,13 +84,13 @@ public class EditFullyQualifiedNameController implements BasicController {
     private ComboBox<ConceptEntity> languageComboBox;
 
     @FXML
-    private Label dialect1;
+    private Label dialect1Label;
 
     @FXML
-    private Label dialect2;
+    private Label dialect2Label;
 
     @FXML
-    private Label dialect3;
+    private Label dialect3Label;
 
     @FXML
     private ComboBox dialectComboBox1;
