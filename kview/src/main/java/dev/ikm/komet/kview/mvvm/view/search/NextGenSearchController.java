@@ -26,7 +26,6 @@ import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
-import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.search.SearchPanelController;
@@ -34,17 +33,15 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.kview.controls.FilterOptionsUtils;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
-import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
-import dev.ikm.komet.kview.tasks.FilterMenuTask;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
@@ -64,6 +61,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.value.ChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -80,6 +78,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import javafx.util.Subscription;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -91,8 +90,6 @@ import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -104,7 +101,6 @@ import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.UUID;
-
 
 
 public class NextGenSearchController {
@@ -124,7 +120,6 @@ public class NextGenSearchController {
     public static final int MAX_RESULT_SIZE = 1000;
 
     private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
-
 
     @FXML
     private Pane root;
@@ -148,6 +143,8 @@ public class NextGenSearchController {
     private FilterOptionsPopup filterOptionsPopup;
 
     private SearchResultType currentSearchResultType;
+
+    private Subscription parentSubscription;
 
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
@@ -184,12 +181,8 @@ public class NextGenSearchController {
 
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
 
-        TinkExecutor.threadPool().execute(TaskWrapper.make(new FilterMenuTask(getViewProperties()),
-                (FilterOptions filterOptions) ->
-                        FXUtils.runOnFxThread(() ->
-                            filterOptionsPopup.initialFilterOptionsProperty().setValue(filterOptions))
-        ));
-
+        // initialize the filter options
+        filterOptionsPopup.setInheritedFilterOptionsProperty(FilterOptionsUtils.loadFilterOptions(getViewProperties().parentView(), getViewProperties().calculator()));
         root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
         filterPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (filterOptionsPopup.getNavigator() == null) {
@@ -210,18 +203,18 @@ public class NextGenSearchController {
                 filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
 
         // listen for changes to the filter options
-        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, newFilterOptions) -> {
+        ChangeListener<FilterOptions> changeListener = ((obs, oldFilterOptions, newFilterOptions) -> {
             if (newFilterOptions != null) {
-                if (!newFilterOptions.getStatus().selectedOptions().isEmpty()) {
+                if (!newFilterOptions.getMainCoordinates().getStatus().selectedOptions().isEmpty()) {
                     StateSet stateSet = StateSet.make(
-                            newFilterOptions.getStatus().selectedOptions().stream().map(
+                            newFilterOptions.getMainCoordinates().getStatus().selectedOptions().stream().map(
                                     s -> State.valueOf(s.toUpperCase())).toList());
                     // update the STATUS
                     getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
                 }
-                if (!newFilterOptions.getPath().selectedOptions().isEmpty()) {
+                if (!newFilterOptions.getMainCoordinates().getPath().selectedOptions().isEmpty()) {
                     //NOTE: there is no known way to set multiple paths
-                    String pathStr = newFilterOptions.getPath().selectedOptions().stream().findFirst().get();
+                    String pathStr = newFilterOptions.getMainCoordinates().getPath().selectedOptions().stream().findFirst().get();
 
                     ConceptFacade conceptPath = switch(pathStr) {
                         case "Master path" -> TinkarTerm.MASTER_PATH;
@@ -232,9 +225,10 @@ public class NextGenSearchController {
                     // update the Path
                     getViewProperties().nodeView().stampCoordinate().pathConceptProperty().setValue(conceptPath);
                 }
-                if (!newFilterOptions.getDate().selectedOptions().isEmpty() &&
-                        !oldFilterOptions.getDate().selectedOptions().equals(newFilterOptions.getDate().selectedOptions())) {
-                    long millis = getMillis(newFilterOptions);
+                if (!newFilterOptions.getMainCoordinates().getTime().selectedOptions().isEmpty() &&
+                        oldFilterOptions != null &&
+                        !oldFilterOptions.getMainCoordinates().getTime().selectedOptions().equals(newFilterOptions.getMainCoordinates().getTime().selectedOptions())) {
+                    long millis = FilterOptionsUtils.getMillis(newFilterOptions);
                     // update the time
                     getViewProperties().nodeView().stampCoordinate().timeProperty().set(millis);
                 } else {
@@ -242,32 +236,24 @@ public class NextGenSearchController {
                     Date latest = new Date();
                     getViewProperties().nodeView().stampCoordinate().timeProperty().set(latest.getTime());
                 }
+
                 //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
             }
-        });
-
-        getViewProperties().nodeView().addListener((obs, oldVC, newVC) -> {
-                    doSearch(new ActionEvent(null, null));
-        });
-        getViewProperties().nodeView().stampCoordinate().pathConceptProperty().addListener((obs, oldVC, newVC) -> {
             doSearch(new ActionEvent(null, null));
         });
 
-    }
 
-    private long getMillis(FilterOptions newFilterOptions) {
-        int lastElementIndex = newFilterOptions.getDate().selectedOptions().size() - 1;
-        String newDate = newFilterOptions.getDate().selectedOptions().get(lastElementIndex);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-        Date date;
-        try {
-            date = sdf.parse(newDate);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-        long millis = date.getTime();
-        return millis;
+        // listen for changes to the filter options
+        filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
+
+        // listen to changes to the parent of the current overrideable view
+        parentSubscription = getViewProperties().parentView().subscribe((oldValue, newValue) -> {
+            filterOptionsPopup.filterOptionsProperty().removeListener(changeListener);
+            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(FilterOptionsUtils.loadFilterOptions(getViewProperties().parentView(), getViewProperties().calculator()));
+            filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
+            doSearch(new ActionEvent(null, null));
+        });
     }
 
     private void initSearchResultType() {
@@ -554,7 +540,9 @@ public class NextGenSearchController {
     }
 
     public void cleanup() {
-
+        if (parentSubscription != null) {
+            parentSubscription.unsubscribe();
+        }
     }
 
 

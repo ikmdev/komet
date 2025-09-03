@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
 import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
+import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent.OPEN_PATTERN;
 import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
@@ -45,7 +46,6 @@ import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfC
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.view.common.SVGConstants.DUPLICATE_SVG_PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
@@ -55,13 +55,19 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
+import dev.ikm.komet.kview.controls.StampViewControl;
+import dev.ikm.komet.kview.events.AddStampEvent;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -98,6 +104,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
+import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -136,8 +143,6 @@ import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -192,16 +197,7 @@ public class PatternDetailsController {
     private TextFlow latestFqnTextFlow;
 
     @FXML
-    private Text lastUpdatedText;
-
-    @FXML
-    private Text moduleText;
-
-    @FXML
-    private Text pathText;
-
-    @FXML
-    private Text statusText;
+    StampViewControl stampViewControl;
 
     @FXML
     private TitledPane patternDefinitionTitledPane;
@@ -301,6 +297,8 @@ public class PatternDetailsController {
 
     private Subscriber<PatternFieldsPanelEvent> patternFieldsPanelEventSubscriber;
 
+    private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
+
     public PatternDetailsController() {}
 
     @FXML
@@ -311,6 +309,9 @@ public class PatternDetailsController {
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
         otherNamesVBox.getChildren().clear();
+
+        stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
+        stampViewControl.setParentContainer(detailsOuterBorderPane);
 
         //DragNDrop feature for Semantic Purpose and Semantic Meaning
         setUpDraggable(purposeText, patternViewModel.getProperty(PURPOSE_ENTITY));
@@ -410,29 +411,58 @@ public class PatternDetailsController {
         }
 
         // bind stamp
-        lastUpdatedText.textProperty().bind(getStampViewModel().getProperty(TIME).map(t -> {
-            if (!t.equals(PREMUNDANE_TIME) && patternViewModel.getPropertyValue(MODE).equals(EDIT)) {
-                DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MMM-dd HH:mm:ss");
-                Instant stampInstance = Instant.ofEpochSecond((long) t / 1000);
-                ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
-                return DATE_TIME_FORMATTER.format(stampTime);
-            } else {
-                return patternViewModel.getPropertyValue(MODE).equals("CREATE")? "" : PREMUNDANE;
-            }
-        }));
+        StampViewModel stampViewModel = getStampViewModel();
 
-        moduleText.textProperty().bind(getStampViewModel().getProperty(MODULE).map(m -> ((ConceptEntity) m).description()));
-        pathText.textProperty().bind(getStampViewModel().getProperty(PATH).map(p -> ((ConceptEntity) p).description()));
-        statusText.textProperty().bind(getStampViewModel().getProperty(STATUS).map(s -> s.toString()));
+        // -- author
+        stampViewModel.getProperty(AUTHOR).subscribe(newAuthor -> {
+            String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid((EntityFacade)newAuthor, getViewProperties());
+            stampViewControl.setAuthor(authorDescription);
+        });
+
+        stampViewModel.getProperty(TIME).subscribe(newTime -> {
+            stampViewControl.setLastUpdated(TimeUtils.toDateString((long)newTime));
+        });
+
+        // -- module
+        stampViewModel.getProperty(MODULE).subscribe(newModule -> {
+            String newModuleDescription;
+            if (newModule == null) {
+                newModuleDescription = "";
+            } else {
+                newModuleDescription = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity)newModule).nid());
+            }
+            stampViewControl.setModule(newModuleDescription);
+        });
+
+        // -- path
+        stampViewModel.getProperty(PATH).subscribe(newPath -> {
+            String pathDescr;
+            if (newPath == null) {
+                pathDescr = "";
+            } else {
+                pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity) newPath).nid());
+            }
+            stampViewControl.setPath(pathDescr);
+        });
+
+        // -- status
+        stampViewModel.getProperty(STATUS).subscribe(newStatus -> {
+            String statusMsg = newStatus == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((State)newStatus).nid());
+            stampViewControl.setStatus(statusMsg);
+        });
 
         // set the identicon
         ObjectProperty<EntityFacade> patternProperty = patternViewModel.getProperty(PATTERN);
 
-        // dynamically update the identicon image.
         patternProperty.subscribe(entityFacade -> {
             if (entityFacade != null) {
+                // dynamically update the identicon image.
                 Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
                 identiconImageView.setImage(identicon);
+            }
+
+            if (propertiesController != null) {
+                propertiesController.updateModel(entityFacade);
             }
         });
 
@@ -527,6 +557,11 @@ public class PatternDetailsController {
             }
         });
 
+        // if the user clicks the Close Properties Button from the Edit Descriptions panel
+        // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
+        closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
+        EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+
         // Setup Properties
         setupProperties();
         setupFilterCoordinatesMenu();
@@ -537,6 +572,17 @@ public class PatternDetailsController {
         // Check if the properties panel is initially open and add draggable nodes if needed
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
             updateDraggableNodesForPropertiesPanel(true);
+        }
+    }
+
+    private void onStampSelectionChanged() {
+        if (stampViewControl.isSelected()) {
+            if (!propertiesToggleButton.isSelected()) {
+                propertiesToggleButton.fire();
+            }
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new AddStampEvent(stampViewControl, AddStampEvent.ANY));
+        } else {
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
         }
     }
 
@@ -839,6 +885,8 @@ public class PatternDetailsController {
         this.propertiesBorderPane = propsFXMLLoader.node();
         this.propertiesController = propsFXMLLoader.controller();
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
+
+        propertiesController.updateModel(patternViewModel.getPropertyValue(PATTERN));
 
         //FIXME this doesn't work properly, should leave for a future effort...
         // open the panel, allow the state machine to determine which panel to show

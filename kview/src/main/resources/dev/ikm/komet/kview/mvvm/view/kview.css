@@ -134,21 +134,6 @@
     -fx-max-height: -fx-height;
 }
 
-.stamp-container {
-    -fx-border-width: 2px;
-    -fx-border-color: transparent;
-    -fx-border-radius: 3px;
-
-    -fx-padding: 5px;
-}
-
-.stamp-container:selected {
-    -fx-background-color: #f2faee;
-    -fx-background-radius: 3px;
-
-    -fx-border-color: #9ae281;
-}
-
 .stamp-text {
     -fx-font-family: "Noto Sans Bold";
     -fx-font-size: 11px;
@@ -4180,7 +4165,7 @@ Styling a context menu for kview ui/ux controls
 .card-info-container .validation-counts {
     -fx-text-fill: -Accent-color-red;
     -fx-font-family: Noto Sans;
-    -fx-font-size: 32px;
+    -fx-font-size: 25px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }

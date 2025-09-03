@@ -3,7 +3,6 @@ package dev.ikm.komet.kview.controls;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -19,17 +18,22 @@ public class FilterOptions implements Serializable {
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
 
     public enum OPTION_ITEM {
+        // Main Coordinates
+        NAVIGATOR("navigator", ""),
         TYPE("type", ""),
         HEADER("header", ""),
         STATUS("status", "Status"),
+        TIME("time", ""),
         MODULE("module", "Module"),
         PATH("path", "Path"),
-        LANGUAGE("language", "Model concept, Tinkar Model concept, Language"),
-        DESCRIPTION_TYPE("description", ""),
         KIND_OF("kindof", ""),
         MEMBERSHIP("membership", ""),
         SORT_BY("sortby", ""),
-        DATE("date", "");
+        // Language Coordinates
+        LANGUAGE("language", "Model concept, Tinkar Model concept, Language"),
+        DIALECT("dialect", ""),
+        PATTERN("pattern", ""),
+        DESCRIPTION_TYPE("description", "");
 
         private final String name;
         private final String path;
@@ -51,6 +55,7 @@ public class FilterOptions implements Serializable {
     public static final class Option implements Serializable {
         @Serial
         private static final long serialVersionUID = 0L;
+
         private final OPTION_ITEM item;
         private final String title;
         private final List<String> defaultOptions;
@@ -101,8 +106,9 @@ public class FilterOptions implements Serializable {
 
         @Override
         public String toString() {
-            return item + ": " + (any ? "Any of: " : "All of: ") + selectedOptions +
-                    (excludedOptions == null || excludedOptions.isEmpty() ? "" : " - " + excludedOptions);
+            return "> " + item + ": " + (any ? "Any of: " : (multiSelect ? "All of: " : "")) + selectedOptions +
+                    (excludedOptions == null || excludedOptions.isEmpty() ? "" : " - " + excludedOptions) +
+                    " from av: " + availableOptions + " def: " + defaultOptions;
         }
 
         public boolean isMultiSelectionAllowed() {
@@ -137,14 +143,19 @@ public class FilterOptions implements Serializable {
             if (!Objects.equals(item, option.item)) return false;
             if (!Objects.equals(title, option.title)) return false;
             if (any != option.any) return false;
-            if (!compareLists(selectedOptions, option.selectedOptions)) return false;
-            if (!compareLists(excludedOptions, option.excludedOptions)) return false;
+            if (option.item == OPTION_ITEM.DIALECT || option.item == OPTION_ITEM.DESCRIPTION_TYPE) {
+                if (!compareSortedLists(selectedOptions, option.selectedOptions)) return false;
+                if (!compareSortedLists(excludedOptions, option.excludedOptions)) return false;
+            } else {
+                if (!compareLists(selectedOptions, option.selectedOptions)) return false;
+                if (!compareLists(excludedOptions, option.excludedOptions)) return false;
+            }
             return true;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(item, title, selectedOptions, excludedOptions);
+            return Objects.hash(item, title, any, selectedOptions, excludedOptions);
         }
 
         public Option copy() {
@@ -187,7 +198,6 @@ public class FilterOptions implements Serializable {
         public EnumSet<BUTTON> buttonType() {
             return buttonType;
         }
-
     }
 
     private final EnumSet<Option.BUTTON> noneSet = EnumSet.of(Option.BUTTON.NONE);
@@ -195,143 +205,355 @@ public class FilterOptions implements Serializable {
     private final EnumSet<Option.BUTTON> allExcludingSet = EnumSet.of(Option.BUTTON.ALL, Option.BUTTON.EXCLUDING);
     private final EnumSet<Option.BUTTON> allAnyExcludingSet = EnumSet.of(Option.BUTTON.ALL, Option.BUTTON.ANY, Option.BUTTON.EXCLUDING);
 
-    private Option type;
-    {
-        List<String> typeOptions = Stream.of(
-                "type.option.concepts", "type.option.semantics")
-                .map(resources::getString)
-                .toList();
-        type = new Option(OPTION_ITEM.TYPE, "type.title", new ArrayList<>(Arrays.asList("All")),
-            typeOptions, new ArrayList<>(), null, true, false, allSet);
+    public interface Coordinates {}
+
+    public class MainCoordinates implements Coordinates {
+
+        // MainCoordinates
+
+        private Option navigator;
+
+        {
+            List<String> navigatorOptions = Stream.of(
+                            "navigator.option.stated", "navigator.option.inferred")
+                    .map(resources::getString)
+                    .toList();
+            navigator = new Option(OPTION_ITEM.NAVIGATOR, "navigator.title", new ArrayList<>(List.of(navigatorOptions.getFirst())),
+                    new ArrayList<>(navigatorOptions), new ArrayList<>(List.of(navigatorOptions.getFirst())), null, false, false, noneSet);
+        }
+
+        private Option type;
+        {
+            List<String> typeOptions = Stream.of(
+                            "type.option.concepts", "type.option.semantics")
+                    .map(resources::getString)
+                    .toList();
+            type = new Option(OPTION_ITEM.TYPE, "type.title", new ArrayList<>(typeOptions),
+                    new ArrayList<>(typeOptions), new ArrayList<>(typeOptions), null, true, false, allSet);
+        }
+
+        private Option header = new Option(OPTION_ITEM.HEADER, "header.title", new ArrayList<>(),
+                new ArrayList<>(), new ArrayList<>(), null, false, false, allSet);
+
+        private Option status = new Option(OPTION_ITEM.STATUS, "status.title", new ArrayList<>(),
+                new ArrayList<>(), new ArrayList<>(), null, true, false, allSet);
+
+        private Option time;
+        {
+            List<String> dateOptions = Stream.of("time.item1", "time.item2", "time.item3")
+                    .map(resources::getString)
+                    .toList();
+            time = new Option(OPTION_ITEM.TIME, "time.title", new ArrayList<>(List.of(dateOptions.getFirst())),
+                    new ArrayList<>(dateOptions), new ArrayList<>(List.of(dateOptions.getFirst())), new ArrayList<>(), false, false, noneSet);
+        }
+
+        private Option module = new Option(OPTION_ITEM.MODULE, "module.title", new ArrayList<>(),
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, false, allAnyExcludingSet);
+
+        private Option path = new Option(OPTION_ITEM.PATH, "path.title", new ArrayList<>(),
+                new ArrayList<>(), new ArrayList<>(), null, false, false, noneSet);
+
+        private Option kindOf;
+        {
+            List<String> kindOfOptions = Stream.of(
+                            "kindof.option.item1", "kindof.option.item2", "kindof.option.item3", "kindof.option.item4",
+                            "kindof.option.item5", "kindof.option.item6", "kindof.option.item7", "kindof.option.item8",
+                            "kindof.option.item9", "kindof.option.item10", "kindof.option.item11")
+                    .map(resources::getString)
+                    .toList();
+            kindOf = new Option(OPTION_ITEM.KIND_OF, "kindof.title", new ArrayList<>(kindOfOptions),
+                    new ArrayList<>(kindOfOptions), new ArrayList<>(kindOfOptions), new ArrayList<>(), true, false, allExcludingSet);
+        }
+
+        private Option membership;
+        {
+            List<String> membershipOptions = Stream.of(
+                            "membership.option.member1", "membership.option.member2", "membership.option.member3",
+                            "membership.option.member4", "membership.option.member5")
+                    .map(resources::getString)
+                    .toList();
+            membership = new Option(OPTION_ITEM.MEMBERSHIP, "membership.title", new ArrayList<>(membershipOptions),
+                    new ArrayList<>(membershipOptions), new ArrayList<>(membershipOptions), null, true, false, allSet);
+        }
+
+        private Option sortBy;
+        {
+            List<String> sortByOptions = Stream.of(
+                            "sortby.option.relevant", "sortby.option.alphabetical", "sortby.option.groupedby")
+                    .map(resources::getString)
+                    .toList();
+            sortBy = new Option(OPTION_ITEM.SORT_BY, "sortby.title", new ArrayList<>(List.of(sortByOptions.getFirst())),
+                    new ArrayList<>(sortByOptions), new ArrayList<>(List.of(sortByOptions.getFirst())), null, false, false, allSet);
+        }
+
+        private final List<Option> options;
+
+        MainCoordinates() {
+            options = new ArrayList<>(List.of(
+                    navigator, type, header, status, time, module, path, kindOf, membership, sortBy
+            ));
+        }
+
+        public Option getNavigator() {
+            return navigator;
+        }
+
+        public Option getType() {
+            return type;
+        }
+
+        public Option getHeader() {
+            return header;
+        }
+
+        public Option getStatus() {
+            return status;
+        }
+
+        public Option getTime() {
+            return time;
+        }
+
+        public Option getModule() {
+            return module;
+        }
+
+        public Option getPath() {
+            return path;
+        }
+
+        public Option getKindOf() {
+            return kindOf;
+        }
+
+        public Option getMembership() {
+            return membership;
+        }
+
+        public Option getSortBy() {
+            return sortBy;
+        }
+
+        public List<Option> getOptions() {
+            return options;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            MainCoordinates that = (MainCoordinates) o;
+            return Objects.equals(navigator, that.navigator) &&
+                    Objects.equals(type, that.type) &&
+                    Objects.equals(header, that.header) &&
+                    Objects.equals(status, that.status) &&
+                    Objects.equals(time, that.time) &&
+                    Objects.equals(module, that.module) &&
+                    Objects.equals(path, that.path) &&
+                    Objects.equals(kindOf, that.kindOf) &&
+                    Objects.equals(membership, that.membership) &&
+                    Objects.equals(sortBy, that.sortBy) &&
+                    Objects.equals(options, that.options);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(
+                    navigator, type, header, status, time, module, path, kindOf, membership, sortBy,
+                    options);
+        }
+
+        @Override
+        public String toString() {
+            return "MainOptions{\n" +
+                    options.stream()
+                            .map(Object::toString)
+                            .collect(Collectors.joining("\n")) +
+                    "\n}";
+        }
     }
 
-    private Option header = new Option(OPTION_ITEM.HEADER, "header.title", new ArrayList<>(),
-            new ArrayList<>(), new ArrayList<>(), null, false, false, allSet);
+    public class LanguageCoordinates implements Coordinates, Comparable {
 
-    // can we pass a lambda to default options here?
-    private Option status = new Option(OPTION_ITEM.STATUS, "status.title", new ArrayList<>(),
-            new ArrayList<>(), new ArrayList<>(), null, true, false, allSet);
+        // Language Coordinates
+        private Option language = new Option(OPTION_ITEM.LANGUAGE, "language.option.title", new ArrayList<>(),
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), false, false, noneSet);
 
-    private Option module = new Option(OPTION_ITEM.MODULE, "module.title", new ArrayList<>(Arrays.asList("All")),
-            new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, false, allAnyExcludingSet);
+        private Option dialect;
+        {
+            List<String> dialectOptions = Stream.of(
+                            "dialect.option.item1", "dialect.option.item2",
+                            "dialect.option.item3", "dialect.option.item4", "dialect.option.item5")
+                    .map(resources::getString)
+                    .toList();
+            dialect = new Option(OPTION_ITEM.DIALECT, "dialect.option.title", new ArrayList<>(dialectOptions),
+                    new ArrayList<>(dialectOptions), new ArrayList<>(dialectOptions), null, true, false, noneSet);
+        }
 
-    private Option path = new Option(OPTION_ITEM.PATH, "path.title", new ArrayList<>(),
-            new ArrayList<>(), new ArrayList<>(), null, false, false, noneSet);
+        private Option pattern;
+        {
+            List<String> patternOptions = Stream.of(
+                            "pattern.option.item1", "pattern.option.item2",
+                            "pattern.option.item3", "pattern.option.item4")
+                    .map(resources::getString)
+                    .toList();
+            pattern = new Option(OPTION_ITEM.PATTERN, "pattern.option.title", new ArrayList<>(List.of(patternOptions.getFirst())),
+                    new ArrayList<>(patternOptions), new ArrayList<>(List.of(patternOptions.getFirst())), null, false, false, noneSet);
+        }
 
-    private Option language = new Option(OPTION_ITEM.LANGUAGE, "language.title", new ArrayList<>(Arrays.asList("All")),
-            new ArrayList<>(), new ArrayList<>(), null, true, false, allSet);
+        private Option descriptionType;
+        {
+            List<String> descriptionTypeOptions = Stream.of(
+                            //FIXME, the parent/classic menu uses FxGET::allowedDescriptionTypeOrder and hard codes FQN
+                            // and Regular Name as options... as new designs for Language+Dialect get implemented
+                            // we will additionally need to address this setting as well
+                            "description.option.fqn", "description.option.preferred", "description.option.regular",
+                            "description.option.preferredfqn", "description.option.regularfqn")
+                    .map(resources::getString)
+                    .toList();
+            descriptionType = new Option(OPTION_ITEM.DESCRIPTION_TYPE, "description.option.title", new ArrayList<>(descriptionTypeOptions),
+                    new ArrayList<>(descriptionTypeOptions), new ArrayList<>(descriptionTypeOptions), null, true, false, noneSet);
+        }
 
-    private Option descriptionType;
-    {
-        List<String> descriptionTypeOptions = Stream.of(
-                "description.option.fqn", "description.option.preferred", "description.option.regular",
-                "description.option.preferredfqn", "description.option.regularfqn")
-                .map(resources::getString)
-                .toList();
-        descriptionType = new Option(OPTION_ITEM.DESCRIPTION_TYPE, "description.title", new ArrayList<>(Arrays.asList("All")),
-                descriptionTypeOptions, new ArrayList<>(), null, true, false, allSet);
+        private final List<Option> options;
+        private final int ordinal;
+
+        LanguageCoordinates(int ordinal) {
+            this.ordinal = ordinal;
+            options = new ArrayList<>(List.of(
+                    language, dialect, pattern, descriptionType
+            ));
+        }
+
+        public Option getLanguage() {
+            return language;
+        }
+
+        public Option getDialect() {
+            return dialect;
+        }
+
+        public Option getPattern() {
+            return pattern;
+        }
+
+        public Option getDescriptionType() {
+            return descriptionType;
+        }
+
+        public List<Option> getOptions() {
+            return options;
+        }
+
+        public int getOrdinal() {
+            return ordinal;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            LanguageCoordinates that = (LanguageCoordinates) o;
+            if (ordinal != that.ordinal) {
+                return false;
+            }
+            if (!Objects.equals(language, that.language)) {
+                return false;
+            }
+            if (!Objects.equals(dialect, that.dialect)) {
+                return false;
+            }
+            if (!Objects.equals(pattern, that.pattern)) {
+                return false;
+            }
+            if (!Objects.equals(descriptionType, that.descriptionType)) {
+                return false;
+            }
+            if (!Objects.equals(options, that.options)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(
+                    language, dialect, pattern, descriptionType, ordinal,
+                    options);
+        }
+
+        @Override
+        public String toString() {
+            return "LangOptions[" + ordinal + "] {\n" +
+                    options.stream()
+                            .map(option -> "> " + option.toString())
+                            .collect(Collectors.joining("\n")) +
+                    "\n}";
+        }
+
+        public LanguageCoordinates copy() {
+            LanguageCoordinates languageCoordinates = new LanguageCoordinates(ordinal);
+            languageCoordinates.language = language.copy();
+            languageCoordinates.dialect = dialect.copy();
+            languageCoordinates.pattern = pattern.copy();
+            languageCoordinates.descriptionType = descriptionType.copy();
+            languageCoordinates.options.clear();
+            languageCoordinates.options.addAll(List.of(
+                    languageCoordinates.language, languageCoordinates.dialect,
+                    languageCoordinates.pattern, languageCoordinates.descriptionType
+            ));
+            return languageCoordinates;
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            if (o instanceof LanguageCoordinates lang) {
+                return this.ordinal - lang.ordinal;
+            }
+            return 1;
+        }
     }
 
-    private Option kindOf;
-    {
-        List<String> kindOfOptions = Stream.of(
-                "kindof.option.item1", "kindof.option.item2", "kindof.option.item3", "kindof.option.item4",
-                        "kindof.option.item5", "kindof.option.item6", "kindof.option.item7", "kindof.option.item8",
-                        "kindof.option.item9", "kindof.option.item10", "kindof.option.item11")
-                .map(resources::getString)
-                .toList();
-        kindOf = new Option(OPTION_ITEM.KIND_OF, "kindof.title", new ArrayList<>(Arrays.asList("All")),
-                kindOfOptions, new ArrayList<>(), new ArrayList<>(), true, false, allExcludingSet);
-    }
-
-    private Option membership;
-    {
-        List<String> membershipOptions = Stream.of(
-                "membership.option.member1", "membership.option.member2", "membership.option.member3",
-                        "membership.option.member4", "membership.option.member5")
-                .map(resources::getString)
-                .toList();
-        membership = new Option(OPTION_ITEM.MEMBERSHIP, "membership.title", new ArrayList<>(Arrays.asList("All")),
-                membershipOptions, new ArrayList<>(), null, true, false, allSet);
-    }
-
-    private Option sortBy;
-    {
-        List<String> typeOptions = Stream.of(
-                        "sortby.option.relevant", "sortby.option.alphabetical", "sortby.option.groupedby")
-                .map(resources::getString)
-                .toList();
-        sortBy = new Option(OPTION_ITEM.SORT_BY, "sortby.title", new ArrayList<>(),
-                typeOptions, new ArrayList<>(), null, false, false, allSet);
-    }
-
-    private Option date;
-    {
-        List<String> dateOptions = Stream.of("date.item1", "date.item2", "date.item3")
-                .map(resources::getString)
-                .toList();
-        date = new Option(OPTION_ITEM.DATE, "date.title", new ArrayList<>(Arrays.asList("Latest")),
-                dateOptions, new ArrayList<>(), new ArrayList<>(), true, false, noneSet);
-    }
-
-    private final List<Option> options;
+    private final MainCoordinates mainCoordinates;
+    private final List<LanguageCoordinates> languageCoordinatesList;
 
     public FilterOptions() {
-        options = new ArrayList<>(List.of(
-                type, header, status, module, path, language,
-                descriptionType, kindOf, membership, sortBy, date));
+        mainCoordinates = new MainCoordinates();
+
+        languageCoordinatesList = new ArrayList<>(); // at least one
+        languageCoordinatesList.add(new LanguageCoordinates(0));
     }
 
-    public Option getType() {
-        return type;
+    public MainCoordinates getMainCoordinates() {
+        return mainCoordinates;
     }
 
-    public Option getHeader() {
-        return header;
+    public List<LanguageCoordinates> getLanguageCoordinatesList() {
+        return languageCoordinatesList;
     }
 
-    public Option getStatus() {
-        return status;
+    public LanguageCoordinates getLanguageCoordinates(int ordinal) {
+        if (ordinal < 0 || ordinal >= languageCoordinatesList.size()) {
+            Thread.dumpStack();
+        }
+        return getLanguageCoordinatesList().get(ordinal);
     }
 
-    public Option getModule() {
-        return module;
-    }
-
-    public Option getPath() {
-        return path;
-    }
-
-    public Option getLanguage() {
-        return language;
-    }
-
-    public Option getDescription() {
-        return descriptionType;
-    }
-
-    public Option getKindOf() {
-        return kindOf;
-    }
-
-    public Option getMembership() {
-        return membership;
-    }
-
-    public Option getSortBy() {
-        return sortBy;
-    }
-
-    public Option getDate() {
-        return date;
-    }
-
-    public List<Option> getOptions() {
-        return options;
+    public LanguageCoordinates addLanguageCoordinates() {
+        LanguageCoordinates languageCoordinates = new LanguageCoordinates(languageCoordinatesList.size());
+        languageCoordinatesList.add(languageCoordinates);
+        return languageCoordinates;
     }
 
     public Option getOptionForItem(OPTION_ITEM item) {
-        return options.stream()
+        return mainCoordinates.options.stream()
+                .filter(o -> o.item() == item)
+                .findFirst()
+                .orElseThrow();
+    }
+
+    public Option getLangOptionForItem(int ordinal, OPTION_ITEM item) {
+        return languageCoordinatesList.get(ordinal).options.stream()
                 .filter(o -> o.item() == item)
                 .findFirst()
                 .orElseThrow();
@@ -339,22 +561,34 @@ public class FilterOptions implements Serializable {
 
     public void setOptionForItem(OPTION_ITEM item, Option option) {
         switch (item) {
-            case TYPE -> type = option;
-            case HEADER -> header = option;
-            case STATUS -> status = option;
-            case MODULE -> module = option;
-            case PATH -> path = option;
-            case LANGUAGE -> language = option;
-            case DESCRIPTION_TYPE -> descriptionType = option;
-            case KIND_OF -> kindOf = option;
-            case MEMBERSHIP -> membership = option;
-            case SORT_BY -> sortBy = option;
-            case DATE -> date = option;
+            case NAVIGATOR -> mainCoordinates.navigator = option;
+            case TYPE -> mainCoordinates.type = option;
+            case HEADER -> mainCoordinates.header = option;
+            case STATUS -> mainCoordinates.status = option;
+            case TIME -> mainCoordinates.time = option;
+            case MODULE -> mainCoordinates.module = option;
+            case PATH -> mainCoordinates.path = option;
+            case KIND_OF -> mainCoordinates.kindOf = option;
+            case MEMBERSHIP -> mainCoordinates.membership = option;
+            case SORT_BY -> mainCoordinates.sortBy = option;
         }
-        options.clear();
-        options.addAll(List.of(
-                type, header, status, module, path, language,
-                descriptionType, kindOf, membership, sortBy, date));
+        mainCoordinates.options.clear();
+        mainCoordinates.options.addAll(List.of(mainCoordinates.navigator, mainCoordinates.type,
+                mainCoordinates.header, mainCoordinates.status,
+                mainCoordinates.time, mainCoordinates.module,
+                mainCoordinates.path, mainCoordinates.kindOf,
+                mainCoordinates.membership, mainCoordinates.sortBy));
+    }
+
+    public void setLangCoordinates(int ordinal, LanguageCoordinates value) {
+        LanguageCoordinates languageCoordinates = languageCoordinatesList.get(ordinal);
+        languageCoordinates.language = value.language;
+        languageCoordinates.dialect = value.dialect;
+        languageCoordinates.pattern = value.pattern;
+        languageCoordinates.descriptionType = value.descriptionType;
+        languageCoordinates.options.clear();
+        languageCoordinates.options.addAll(List.of(languageCoordinates.language, languageCoordinates.dialect,
+                        languageCoordinates.pattern, languageCoordinates.descriptionType));
     }
 
     @Override
@@ -362,43 +596,43 @@ public class FilterOptions implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FilterOptions that = (FilterOptions) o;
-        return Objects.equals(type, that.type) &&
-                Objects.equals(header, that.header) &&
-                Objects.equals(status, that.status) &&
-                Objects.equals(module, that.module) &&
-                Objects.equals(path, that.path) &&
-                Objects.equals(language, that.language) &&
-                Objects.equals(descriptionType, that.descriptionType) &&
-                Objects.equals(kindOf, that.kindOf) &&
-                Objects.equals(membership, that.membership) &&
-                Objects.equals(sortBy, that.sortBy) &&
-                Objects.equals(date, that.date) &&
-                Objects.equals(options, that.options);
+        if (!Objects.equals(mainCoordinates, that.mainCoordinates)) {
+            return false;
+        }
+        if (!compareLists(languageCoordinatesList, that.languageCoordinatesList)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                type, header, status, module, path, language,
-                descriptionType, kindOf, membership, sortBy, date,
-                options);
+        return Objects.hash(mainCoordinates, languageCoordinatesList);
     }
 
     @Override
     public String toString() {
-        return "FilterOptions{" +
-                options.stream()
+        return "FilterOptions{ " +
+                mainCoordinates + "\n" + languageCoordinatesList.stream()
                         .map(Object::toString)
-                        .collect(Collectors.joining(", ")) +
+                        .collect(Collectors.joining(",\n")) +
                 "}";
     }
 
-    static boolean compareLists(List<String> list1, List<String> list2) {
+    static boolean compareLists(List<?> list1, List<?> list2) {
         if (list1 == null && list2 != null) return false;
         if (list1 != null && list2 == null) return false;
         if (list1 != null && list1.size() != list2.size()) return false;
         return list1 == null ||
                 list1.stream().sorted().toList().equals(list2.stream().sorted().toList());
+    }
+
+    static boolean compareSortedLists(List<?> list1, List<?> list2) {
+        if (list1 == null && list2 != null) return false;
+        if (list1 != null && list2 == null) return false;
+        if (list1 != null && list1.size() != list2.size()) return false;
+        return list1 == null ||
+                list1.stream().toList().equals(list2.stream().toList());
     }
 
 }

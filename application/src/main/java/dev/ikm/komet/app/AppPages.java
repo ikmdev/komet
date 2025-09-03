@@ -2,6 +2,7 @@ package dev.ikm.komet.app;
 
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.preferences.PrefX;
+import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
@@ -15,13 +16,13 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.search.SearchNodeFactory;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import one.jpro.platform.auth.core.authentication.User;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -48,7 +49,7 @@ import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
 
 public class AppPages {
-    private static final Logger LOG = LoggerFactory.getLogger(AppGithub.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AppPages.class);
 
     private final App app;
 
@@ -109,21 +110,20 @@ public class AppPages {
 
         loginAuthorController.onLogin().thenAccept(loginAuthorViewModel -> {
             ConceptEntity userConceptEntity = loginAuthorViewModel.getPropertyValue(SELECTED_AUTHOR);
-            String username = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(userConceptEntity.nid());
-            User user = new User(username);
-            App.userProperty.set(user);
+            ConceptFacade loggedInUser = ConceptFacade.make(userConceptEntity.nid());
+            App.userProperty.set(loggedInUser);
             App.state.set(AppState.RUNNING);
         });
     }
 
-    public void launchLandingPage(Stage stage, User user) {
+    public void launchLandingPage(Stage stage, ConceptFacade loggedInUser) {
         try {
             app.rootPane.getChildren().clear(); // Clear the root pane before adding new content
 
             KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
             KometPreferences windowPreferences = appPreferences.node("main-komet-window");
-            WindowSettings windowSettings = new WindowSettings(windowPreferences);
 
+            WindowSettings windowSettings = new WindowSettings(windowPreferences);
             FXMLLoader landingPageLoader = LandingPageViewFactory.createFXMLLoader();
             BorderPane landingPageBorderPane = landingPageLoader.load();
 
@@ -131,8 +131,9 @@ public class AppPages {
                 app.appMenu.createMenuOptions(landingPageBorderPane);
             }
 
+            String username = windowSettings.getView().calculator().getPreferredDescriptionTextWithFallbackOrNid(loggedInUser.nid());
             app.landingPageController = landingPageLoader.getController();
-            app.landingPageController.getWelcomeTitleLabel().setText("Welcome " + user.getName());
+            app.landingPageController.getWelcomeTitleLabel().setText("Welcome " + username);
             app.landingPageController.setSelectedDatasetTitle(PrimitiveData.get().name());
             app.landingPageController.getGithubStatusHyperlink().setOnAction(_ -> app.appGithub.connectToGithub());
 
@@ -160,13 +161,16 @@ public class AppPages {
      *
      * @param journalWindowSettings if present will give the size and positioning of the journal window
      */
-    void launchJournalViewPage(PrefX journalWindowSettings) {
+    void launchJournalViewPage(PrefX journalWindowSettings, ConceptFacade loggedInUser) {
         Objects.requireNonNull(journalWindowSettings, "journalWindowSettings cannot be null");
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         final WindowSettings windowSettings = new WindowSettings(windowPreferences);
         final UUID journalTopic = journalWindowSettings.getValue(JOURNAL_TOPIC);
         Objects.requireNonNull(journalTopic, "journalTopic cannot be null");
+
+        ObservableEditCoordinate editCoordinate = windowSettings.getView().editCoordinate();
+        editCoordinate.authorForChangesProperty().setValue(loggedInUser);
 
         Config journalConfig = new Config(JournalController.class.getResource("journal.fxml"))
                 .updateViewModel("journalViewModel", journalViewModel -> {

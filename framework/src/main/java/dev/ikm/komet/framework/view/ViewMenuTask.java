@@ -250,7 +250,12 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         addIncludedModulesMenu.getItems().add(allModulesItem);
         allModulesItem.setOnAction(event -> {
             Platform.runLater(() -> {
-                observableCoordinate.moduleSpecificationsProperty().clear();
+                // ensure that the wildcard menu item is never deselected
+                if (allModulesItem.isSelected()) {
+                    observableCoordinate.moduleSpecificationsProperty().clear();
+                } else {
+                    allModulesItem.setSelected(true);
+                }
             });
             event.consume();
         });
@@ -301,7 +306,12 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         excludedModulesMenu.getItems().add(noExclusionsWildcard);
         noExclusionsWildcard.setOnAction(event -> {
             Platform.runLater(() -> {
-                observableCoordinate.excludedModuleSpecificationsProperty().clear();
+                // ensure that the wildcard menu item is never deselected
+                if (noExclusionsWildcard.isSelected()) {
+                    observableCoordinate.excludedModuleSpecificationsProperty().clear();
+                } else {
+                    noExclusionsWildcard.setSelected(true);
+                }
             });
             event.consume();
         });
@@ -461,11 +471,15 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         Menu changeLanguageMenu = new Menu("Change language");
         menuItems.add(changeLanguageMenu);
         for (ConceptFacade language : FxGet.allowedLanguages()) {
-            CheckMenuItem languageItem = new CheckMenuItem(viewCalculator.getPreferredDescriptionStringOrNid(language));
+            var prefDesc = viewCalculator.getPreferredDescriptionStringOrNid(language);
+            CheckMenuItem languageItem = new CheckMenuItem(prefDesc);
             changeLanguageMenu.getItems().add(languageItem);
             languageItem.setSelected(language.nid() == observableCoordinate.languageConceptProperty().get().nid());
             languageItem.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.languageConceptProperty().setValue(language));
+                Platform.runLater(() -> {
+                        LOG.debug("language menu item selected on menu {}", whichMenu);
+                        observableCoordinate.languageConceptProperty().setValue(language);
+                    });
                 event.consume();
             });
         }
@@ -687,12 +701,17 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
     @Override
     protected List<MenuItem> compute() throws Exception {
         List<MenuItem> menuItems = new ArrayList<>();
-        makeCoordinateDisplayMenu(viewCalculator,
-                menuItems,
-                observableCoordinate);
-        updateTitle("Updated View Menu");
-        updateMessage("In " + durationString());
-        LOG.info("Updated View Menu in " + durationString());
+        try {
+            makeCoordinateDisplayMenu(viewCalculator,
+                    menuItems,
+                    observableCoordinate);
+            updateTitle("Updated View Menu");
+            updateMessage("In " + durationString());
+            LOG.info("Updated View Menu in " + durationString());
+        } catch (Exception e) {
+            LOG.error("Exception building view menu", e);
+            throw e;
+        }
         return menuItems;
     }
 
