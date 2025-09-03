@@ -272,6 +272,7 @@ public class ExportController {
         } else {
             AlertStreams.dispatchToRoot(new UnsupportedOperationException("Export Type not supported"));
         }
+        closeDialog();
     }
 
     /**
