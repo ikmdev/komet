@@ -117,6 +117,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.Side;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -537,19 +538,19 @@ public class PatternDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(patternViewModel.getPropertyValue(PATTERN_TOPIC), PatternFieldsPanelEvent.class, patternFieldsPanelEventSubscriber);
 
-        patternFieldList.addListener((ListChangeListener<? super PatternField>) changeListner -> {
-            while (changeListner.next()) {
+        patternFieldList.addListener((ListChangeListener<? super PatternField>) changeListener -> {
+            while (changeListener.next()) {
                 // when the collection is cleared, the removed size will equal the tile pane size, so clear the tile pane
                 // since the changeListner.wasRemoved() will not account for clearing all of them if the collection is cleared
-                if (changeListner.getRemovedSize() > 0 && changeListner.getRemovedSize() == fieldsTilePaneList.size()) {
+                if (changeListener.getRemovedSize() > 0 && changeListener.getRemovedSize() == fieldsTilePaneList.size()) {
                     fieldsTilePaneList.clear();
                 } else {
-                    if (changeListner.wasAdded()) {
-                        int fieldPosition = changeListner.getTo() - 1;
+                    if (changeListener.wasAdded()) {
+                        int fieldPosition = changeListener.getTo() - 1;
                         // update the display.
-                        fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(changeListner.getAddedSubList().getFirst(), changeListner.getTo()));
-                    } else if (changeListner.wasRemoved()) {
-                        fieldsTilePaneList.remove(changeListner.getTo());
+                        fieldsTilePane.getChildren().add(fieldPosition, createFieldEntry(changeListener.getAddedSubList().getFirst(), changeListener.getTo()));
+                    } else if (changeListener.wasRemoved()) {
+                        fieldsTilePaneList.remove(changeListener.getTo());
 
                     }
                     patternViewModel.save();
@@ -817,10 +818,13 @@ public class PatternDetailsController {
         ObservableList<Node> fieldVBoxes = fieldsTilePane.getChildren();
         for (int i=0 ; i < fieldVBoxes.size(); i++) {
             Node node = fieldVBoxes.get(i);
-            Node labelNode = node.lookup(".pattern-field");
-            if (labelNode instanceof Label label) {
-                label.setText("FIELD " + (i+1) + ":");
-                label.getStyleClass().add("grey8-12pt-bold");
+            if (node instanceof Parent parent) {
+                for (Node child : parent.getChildrenUnmodifiable()) {
+                    if (child instanceof Label label && label.getStyleClass().contains("grey8-12pt-bold")) {
+                        label.setText("FIELD " + (i + 1) + ":");
+                        break;
+                    }
+                }
             }
         }
     }
