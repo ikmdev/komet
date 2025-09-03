@@ -191,11 +191,6 @@
                         <PublicIDControl fx:id="identifierControl" GridPane.columnSpan="2" GridPane.rowIndex="2" />
                         <StackPane prefWidth="208.0" styleClass="stamp-container" GridPane.columnIndex="2" GridPane.rowSpan="3">
                            <StampViewControl fx:id="stampViewControl" prefWidth="208" />
-                           <Button contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#popupStampEdit" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0" StackPane.alignment="TOP_RIGHT">
-                              <graphic>
-                                 <Region styleClass="hamburger" />
-                              </graphic>
-                           </Button>
                         </StackPane>
                      </GridPane>
                   </AnchorPane>

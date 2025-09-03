@@ -16,9 +16,7 @@ import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import org.eclipse.collections.api.list.primitive.ImmutableLongList;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,10 +25,10 @@ import java.util.List;
 
 public class FilterOptionsUtils {
 
-    public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
 
     public static FilterOptions initializeFilterOptions(ObservableCoordinate<ViewCoordinateRecord> currentView, ViewCalculator calculator) {
-        FilterOptions filterOptions = new FilterOptions();
+
+      FilterOptions filterOptions = new FilterOptions();
 
         // get parent menu settings
         for (ObservableCoordinate<?> observableCoordinate : currentView.getCompositeCoordinates()) {
@@ -82,7 +80,7 @@ public class FilterOptionsUtils {
                     Date date = new Date(time);
                     timeOption.defaultOptions().clear();
                     timeOption.selectedOptions().clear();
-                    timeOption.selectedOptions().add(SIMPLE_DATE_FORMAT.format(date));
+                    timeOption.selectedOptions().add(String.valueOf(time));
                     timeOption.defaultOptions().addAll(timeOption.selectedOptions());
                 }
             } else if (observableCoordinate instanceof ObservableLanguageCoordinate observableLanguageCoordinate) {
@@ -236,28 +234,22 @@ public class FilterOptionsUtils {
     public static long getMillis(FilterOptions filterOptions) {
         FilterOptions.Option time = filterOptions.getMainCoordinates().getTime();
         if (time == null || time.selectedOptions().isEmpty()) {
-            return -1;
+            return -1L;
         }
 
-        if (!time.selectedOptions().getFirst().startsWith("Latest")) {
-            Date date;
-            try {
-                date = SIMPLE_DATE_FORMAT.parse(time.selectedOptions().getFirst());
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
-            return date.getTime();
-        } else {
-            return Long.MAX_VALUE;
+        try {
+            return Long.parseLong(time.selectedOptions().getFirst());
+        } catch (NumberFormatException e) {
+            return -1L;
         }
     }
 
-    public static List<LocalDateTime> getTimesInUse() {
+    public static List<ZonedDateTime> getTimesInUse() {
         ImmutableLongList times = StampService.get().getTimesInUse().toReversed();
         return Arrays.stream(times.toArray())
                 .filter(time -> time != PREMUNDANE_TIME)
                 .boxed()
-                .map(time -> DateTimeUtil.epochToZonedDateTime(time).toLocalDateTime())
+                .map(DateTimeUtil::epochToZonedDateTime)
                 .toList();
     }
 
