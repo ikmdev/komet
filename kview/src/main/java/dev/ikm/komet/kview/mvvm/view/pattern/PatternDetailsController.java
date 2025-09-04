@@ -1037,58 +1037,6 @@ public class PatternDetailsController {
 //        reasonerResultsControllerConsumer.accept(reasonerToggle);
     }
 
-//    @FXML
-//    public void popupStampEdit(ActionEvent event) {
-//        if (stampEdit != null && stampEditController != null) {
-//            // refresh modules
-//            getStampViewModel().getObservableList(MODULES_PROPERTY).clear();
-//            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
-//
-//            // refresh path
-//            getStampViewModel().getObservableList(PATHS_PROPERTY).clear();
-//            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()));
-//
-//            stampEdit.show((Node) event.getSource());
-//            stampEditController.selectActiveStatusToggle();
-//            return;
-//        }
-//
-//        // The stampViewModel is already created for the PatternDetailsController when instantiated
-//        // inside the JournalController
-//        // Inject Stamp view model into form.
-//        Config stampConfig = new Config(StampEditController.class.getResource(EDIT_STAMP_OPTIONS_FXML))
-//                .addNamedViewModel(new NamedVm("stampViewModel", getStampViewModel()));
-//        JFXNode<Pane, StampEditController> stampJFXNode = FXMLMvvmLoader.make(stampConfig);
-//
-//        // for now, we are in create mode, but in the future we will check to see if we are in EDIT mode
-//
-//        Pane editStampPane = stampJFXNode.node();
-//        PopOver popOver = new PopOver(editStampPane);
-//        popOver.getStyleClass().add("filter-menu-popup");
-//        StampEditController stampEditController = stampJFXNode.controller();
-//
-//        stampEditController.updateModel(getViewProperties());
-//
-//        // default the status=Active, disable inactive
-//        stampEditController.selectActiveStatusToggle();
-//
-//        popOver.setOnHidden(windowEvent -> {
-//            // set Stamp info into Details form
-//            getStampViewModel().save();
-//            patternViewModel.save();
-//        });
-//
-//        popOver.show((Node) event.getSource());
-//
-//        // store and use later.
-//        stampEdit = popOver;
-//        this.stampEditController = stampEditController;
-//    }
-
-//    public StampViewModel getStampViewModel() {
-//        return patternViewModel.getPropertyValue(STAMP_VIEW_MODEL);
-//    }
-
     @FXML
     private void openTimelinePanel(ActionEvent event) {
         LOG.info("not implemented yet");

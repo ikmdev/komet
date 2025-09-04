@@ -52,28 +52,12 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
                            ViewProperties viewProperties, KometPreferences preferences) {
         super(journalTopic, entityFacade, viewProperties, preferences);
 
-        // Initialize stampsViewModel with basic data.
-//        StampViewModel stampViewModel = new StampViewModel();
-//        stampViewModel.setPropertyValue(PATHS_PROPERTY, fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()), true)
-//                .setPropertyValue(MODULES_PROPERTY, fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()), true);
-
         String mode;
         if (entityFacade != null) {
             mode = EDIT;
-            Entity patternEntity = EntityService.get().getEntity(entityFacade.nid()).get();
-            // Populate STAMP values
-//            Latest<EntityVersion> patternStamp = viewProperties.calculator().stampCalculator().latest(patternEntity);
-//            stampViewModel.setPropertyValue(STATUS, patternStamp.get().stamp().state())
-//                    .setPropertyValue(AUTHOR, patternStamp.get().author())
-//                    .setPropertyValue(TIME, patternStamp.get().stamp().time())
-//                    .setPropertyValue(MODULE, patternStamp.get().stamp().module())
-//                    .setPropertyValue(PATH, patternStamp.get().stamp().path())
-            ;
         } else {
             mode = CREATE;
         }
-
-//        stampViewModel.setPropertyValue(MODE, mode);
 
         // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
         StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
@@ -81,7 +65,6 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
                 .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) ->
                         patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
                                 .setPropertyValue(MODE, mode)
-//                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
                                 .setPropertyValue(PATTERN_TOPIC, getWindowTopic())
                                 .setPropertyValue(STATE_MACHINE, patternSM)
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)

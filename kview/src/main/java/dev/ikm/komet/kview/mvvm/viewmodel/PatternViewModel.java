@@ -521,21 +521,4 @@ public class PatternViewModel extends FormViewModel {
     public ViewProperties getViewProperties() {
         return getPropertyValue(VIEW_PROPERTIES);
     }
-
-//    public void updateStamp() {
-//        EntityFacade patternFacade = getPropertyValue(PATTERN);
-//        StampCalculator stampCalculator = getViewProperties().calculator().stampCalculator();
-//
-////        StampViewModel stampViewModel = getPropertyValue(STAMP_VIEW_MODEL);
-////
-////        Stamp stamp = stampCalculator.latest(patternFacade).get().stamp();
-////        stampViewModel.setPropertyValue(STATUS, stamp.state());
-////        stampViewModel.setPropertyValue(TIME, stamp.time());
-////        stampViewModel.setPropertyValue(AUTHOR, stamp.author());
-////        stampViewModel.setPropertyValue(MODULE, stamp.module());
-////        stampViewModel.setPropertyValue(PATH, stamp.path());
-//    }
-
-
-
 }
