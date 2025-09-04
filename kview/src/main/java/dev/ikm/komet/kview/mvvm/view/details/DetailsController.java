@@ -974,7 +974,6 @@ public class DetailsController  {
         // Latest FQN
         String fullyQualifiedName = fqnDescrName.getNameText();
         latestFqnText.setText(fullyQualifiedName);
-        System.out.println(" updateFQNConceptDescription: " + fullyQualifiedName);
 
         fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
                 new EditConceptFullyQualifiedNameEvent(latestFqnText,
@@ -1020,8 +1019,6 @@ public class DetailsController  {
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
         Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
         otherNamesNodeListControl.getItems().clear();
-
-
 
         //Obtain the index field of DESCRIPTION_TYPE
         PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(DESCRIPTION_PATTERN.nid()).get();
@@ -1356,8 +1353,8 @@ public class DetailsController  {
      * @return a list of fields with their values (FieldRecord) based on the latest pattern (field definitions).
      */
     private static ImmutableList<ObservableField> fields(SemanticEntityVersion semanticEntityVersion, PatternEntityVersion patternVersion, ViewCalculator viewCalculator) {
-        ObservableSemantic observableSemantic = (ObservableSemantic) ObservableEntity.get(semanticEntityVersion.entity());
 
+        ObservableSemantic observableSemantic = (ObservableSemantic) ObservableEntity.get(semanticEntityVersion.entity());
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
         Latest<ObservableSemanticVersion> latest = observableSemanticSnapshot.getLatestVersion();
         if(latest.isPresent()){
@@ -1365,8 +1362,6 @@ public class DetailsController  {
         } else {
             return Lists.immutable.of(new ObservableField[semanticEntityVersion.fieldValues().size()]);
         }
-
-
     }
 
     /**
