@@ -65,6 +65,7 @@ import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
@@ -155,6 +156,9 @@ public class PatternDetailsController {
     public static final URL PATTERN_PROPERTIES_VIEW_FXML_URL = PatternDetailsController.class.getResource("pattern-properties.fxml");
 
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
+
+    @InjectViewModel
+    private PatternFieldsViewModel patternFieldsViewModel = new PatternFieldsViewModel();
 
     @FXML
     private BorderPane detailsOuterBorderPane;
@@ -977,6 +981,11 @@ public class PatternDetailsController {
     private void showEditFieldsPanel(ActionEvent actionEvent, PatternField selectedPatternField) {
         LOG.info("Todo show bump out and display Edit Fields panel \n" + actionEvent);
         actionEvent.consume();
+        if (patternFieldsViewModel.isPatternHasBeenPublished()) {
+            patternFieldsViewModel.setDisableFieldOrderAndDataType(true);
+        } else {
+            patternFieldsViewModel.setDisableFieldOrderAndDataType(false);
+        }
         StateMachine patternSM = patternViewModel.getPropertyValue(STATE_MACHINE);
         patternSM.t("editField");
         patternViewModel.setPropertyValue(SELECTED_PATTERN_FIELD, selectedPatternField );
@@ -1078,6 +1087,8 @@ public class PatternDetailsController {
         LOG.info(isValidSave ? "success" : "failed");
         if(isValidSave){
             patternViewModel.setPropertyValue(MODE, EDIT);
+            patternFieldsViewModel.setPatternHasBeenPublished(true);
+            patternFieldsViewModel.setDisableFieldOrderAndDataType(true);
             EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternSavedEvent(actionEvent.getSource(), PatternSavedEvent.PATTERN_UPDATE_EVENT));
 
             EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
