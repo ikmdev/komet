@@ -6,6 +6,7 @@ import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
+import dev.ikm.komet.kview.mvvm.model.*;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
@@ -14,14 +15,15 @@ import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.search.SearchNodeFactory;
+import dev.ikm.tinkar.common.id.*;
 import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.coordinate.view.calculator.*;
+import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -30,8 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static dev.ikm.komet.app.App.IS_BROWSER;
 import static dev.ikm.komet.app.App.IS_MAC;
@@ -41,17 +42,26 @@ import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.LoginProperties.SELECTED_AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static javafx.scene.layout.Region.USE_COMPUTED_SIZE;
 
 public class AppPages {
     private static final Logger LOG = LoggerFactory.getLogger(AppPages.class);
 
     private final App app;
+
+    /**
+     * Property dev_author is a property passed into the system to bypass the user login screen.
+     * -Ddev_author=Gretel
+     * -Ddev_author=1c0023ed-559e-3311-9e55-bd4bd9e5628f
+     */
+    private final static String DEV_AUTHOR = "dev_author";
 
     public AppPages(App app) {
         this.app = app;
@@ -92,6 +102,54 @@ public class AppPages {
         final WindowSettings windowSettings = new WindowSettings(windowPreferences);
         ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties("login-author");
 
+        // Check for developer bypass using a known user.
+        String devAuthorPropStr = System.getProperty(DEV_AUTHOR);
+        if (devAuthorPropStr != null) {
+            // Create new instance of ViewCalculator to have stated navigation along with inferred.
+            ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+            Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
+            if (conceptEntitySet.isEmpty()) {
+                // add default user into set of available users
+                conceptEntitySet.add(EntityService.get().getEntityFast(TinkarTerm.USER));
+            }
+
+            // check for name or public id
+            Optional<ConceptEntity> conceptEntityOpt = conceptEntitySet.stream().filter(conceptEntity -> {
+                // if found bypass
+                Optional<String> devAuthor = viewCalculator.getDescriptionText(conceptEntity.nid());
+                // LOG.info("author name = {}, and idstring = {}", devAuthor.orElse("no name"), conceptEntity.publicId().idString());
+                UUID uuid = null;
+                try {
+                    uuid = UUID.fromString(devAuthorPropStr);
+                } catch (IllegalArgumentException ex) {
+                    // ignore
+                }
+
+                // check if developer passed in uuid or a name description.
+                return uuid != null
+                        && conceptEntity.publicId().contains(UUID.fromString(devAuthorPropStr))
+                        || devAuthor.isPresent()
+                        && devAuthor.get().equals(devAuthorPropStr);
+            }).findFirst();
+
+            // if a match is found go and by pass
+            conceptEntityOpt.ifPresentOrElse(conceptEntity -> {
+                // bypass login screen
+                LOG.info("Developer By Pass {} = {}, name = {}", DEV_AUTHOR, devAuthorPropStr, viewCalculator.getDescriptionTextOrNid(conceptEntity.nid()));
+                App.userProperty.set(conceptEntity.toProxy());
+                App.state.set(AppState.RUNNING);
+            }, ()->
+                    // Developer entered a non existing user
+                    LOG.warn("No concept entity found for user id {}. Will be showing login screen.", devAuthorPropStr)
+            );
+
+            // if found then avoid loading login screen.
+            if (conceptEntityOpt.isPresent()) {
+                return;
+            }
+        }
+
+
         Config loginConfig = new Config(LoginAuthorController.class.getResource("LoginAuthor.fxml"))
                 .updateViewModel("loginAuthorViewModel", loginAuthorViewModel -> {
                     loginAuthorViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties);
@@ -102,8 +160,8 @@ public class AppPages {
         StackPane authorLoginBorderPane = journalJFXNode.node();
         stage.getIcons().setAll(app.appIcon);
         stage.setTitle("KOMET Author selection");
-        stage.setWidth(authorLoginBorderPane.prefWidth(-1));
-        stage.setHeight(authorLoginBorderPane.prefHeight(-1));
+        stage.setWidth(authorLoginBorderPane.prefWidth(USE_COMPUTED_SIZE));
+        stage.setHeight(authorLoginBorderPane.prefHeight(USE_COMPUTED_SIZE));
         app.rootPane.getChildren().setAll(authorLoginBorderPane);
 
         LoginAuthorController loginAuthorController = journalJFXNode.controller();
