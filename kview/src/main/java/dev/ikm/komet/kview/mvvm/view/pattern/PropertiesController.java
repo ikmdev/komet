@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
 
+import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.*;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.*;
 import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_PANE_FXML_URL;
@@ -156,10 +157,16 @@ public class PropertiesController {
 
     private Subscriber<StampEvent> addStampSubscriber;
 
+    private Subscriber<StampEvent> createStampSubscriber;
+
     private StampAddFormViewModel stampAddFormViewModel;
+    private StampCreateFormViewModel stampCreateFormViewModel;
+
+    private EntityFacade patternFacade;
 
     public PropertiesController() {
         this.stampAddFormViewModel = new StampAddFormViewModel(PATTERN);
+        this.stampCreateFormViewModel = new StampCreateFormViewModel(PATTERN);
     }
 
     @FXML
@@ -355,7 +362,7 @@ public class PropertiesController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), PatternDescriptionEvent.class, patternDescriptionEventSubscriber);
 
-        // Stamp
+        // -- add stamp
         addStampSubscriber = evt -> {
             if (evt.getEventType() == StampEvent.ADD_STAMP) {
                 stampJFXNode.controller().init(stampAddFormViewModel);
@@ -364,12 +371,26 @@ public class PropertiesController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), StampEvent.class, addStampSubscriber);
 
+        // -- create stamp
+        createStampSubscriber = evt -> {
+            if (evt.getEventType() == CREATE_STAMP) {
+                stampJFXNode.controller().init(stampCreateFormViewModel);
+                contentBorderPane.setCenter(stampJFXNode.node());
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(getPatternTopic(), StampEvent.class, createStampSubscriber);
 
         this.addEditButton.setSelected(true);
     }
 
     public void updateModel(EntityFacade newPattern) {
-        stampAddFormViewModel.init(newPattern, getPatternTopic(), getViewProperties());
+        this.patternFacade = newPattern;
+
+        if (newPattern != null && stampAddFormViewModel != null) {
+            stampAddFormViewModel.init(newPattern, getPatternTopic(), getViewProperties());
+        } else if (newPattern == null && stampCreateFormViewModel != null) {
+            stampCreateFormViewModel.init(newPattern, getPatternTopic(), getViewProperties());
+        }
     }
 
     private StateMachine getStateMachine() {
@@ -485,5 +506,13 @@ public class PropertiesController {
      */
     public FlowPane getPropertiesTabsPane() {
         return propertiesTabsPane;
+    }
+
+    public StampFormViewModelBase getStampCreateFormViewModel() {
+        if (patternFacade == null) {
+            return stampCreateFormViewModel;
+        } else {
+            return stampAddFormViewModel;
+        }
     }
 }

@@ -37,7 +37,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
@@ -584,7 +584,7 @@ public class DetailsController  {
 
             if (conceptViewModel.getPropertyValue(MODE).equals(CREATE)) {
                 StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
-                stampFormViewModel.getProperty(IS_CONFIRMED).subscribe(this::onConfirmStampFormWhenCreating);
+                stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(this::onConfirmStampFormWhenCreating);
             }
         });
     }
