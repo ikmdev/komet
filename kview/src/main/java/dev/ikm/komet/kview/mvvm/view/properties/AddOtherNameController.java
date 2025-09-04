@@ -56,16 +56,19 @@ public class AddOtherNameController extends AbstractBasicController {
     private Label addOtherNameTitleLabel;
 
     @FXML
-    private ComboBox<EntityFacade> moduleComboBox;
+    private TextField otherNameTextField;
 
     @FXML
-    private TextField otherNameTextField;
+    private ComboBox<EntityFacade> typeDisplayComboBox;
+
+    @FXML
+    private ComboBox<EntityFacade> caseSignificanceComboBox;
 
     @FXML
     private ComboBox<EntityFacade> statusComboBox;
 
     @FXML
-    private ComboBox<EntityFacade> caseSignificanceComboBox;
+    private ComboBox<EntityFacade> moduleComboBox;
 
     @FXML
     private ComboBox<EntityFacade> languageComboBox;
@@ -263,7 +266,7 @@ public class AddOtherNameController extends AbstractBasicController {
     }
 
     @FXML
-    public void cancel() {
+    public void handleCancelButtonEvent() {
         close();
     }
 
