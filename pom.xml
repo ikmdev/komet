@@ -288,11 +288,6 @@
             </dependency>
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
-                <artifactId>reasoner-elk-owl</artifactId>
-                <version>${tinkar-core.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>reasoner-elk-snomed</artifactId>
                 <version>${tinkar-core.version}</version>
             </dependency>
