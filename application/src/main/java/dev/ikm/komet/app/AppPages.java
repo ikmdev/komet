@@ -102,6 +102,40 @@ public class AppPages {
         final WindowSettings windowSettings = new WindowSettings(windowPreferences);
         ViewProperties viewProperties = windowSettings.getView().makeOverridableViewProperties("login-author");
 
+        // Bypass the login screen if developer has specified -Ddev_author=<username or uuid string>
+        if (bypassLogin(viewProperties)) {
+            return;
+        }
+
+        Config loginConfig = new Config(LoginAuthorController.class.getResource("LoginAuthor.fxml"))
+                .updateViewModel("loginAuthorViewModel", loginAuthorViewModel -> {
+                    loginAuthorViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties);
+                });
+
+
+        JFXNode<StackPane, LoginAuthorController> journalJFXNode = FXMLMvvmLoader.make(loginConfig);
+        StackPane authorLoginBorderPane = journalJFXNode.node();
+        stage.getIcons().setAll(app.appIcon);
+        stage.setTitle("KOMET Author selection");
+        stage.setWidth(authorLoginBorderPane.prefWidth(USE_COMPUTED_SIZE));
+        stage.setHeight(authorLoginBorderPane.prefHeight(USE_COMPUTED_SIZE));
+        app.rootPane.getChildren().setAll(authorLoginBorderPane);
+
+        LoginAuthorController loginAuthorController = journalJFXNode.controller();
+
+        loginAuthorController.onLogin().thenAccept(loginAuthorViewModel -> {
+            ConceptEntity userConceptEntity = loginAuthorViewModel.getPropertyValue(SELECTED_AUTHOR);
+            ConceptFacade loggedInUser = ConceptFacade.make(userConceptEntity.nid());
+            App.userProperty.set(loggedInUser);
+            App.state.set(AppState.RUNNING);
+        });
+    }
+
+    /**
+     * Returns true if developer specifies a valid user or uuid of concept (decendents of user) otherwise false.
+     * @return Returns true if developer specifies a valid user or uuid of concept (decendents of user) otherwise false.
+     */
+    private boolean bypassLogin(ViewProperties viewProperties) {
         // Check for developer bypass using a known user.
         String devAuthorPropStr = System.getProperty(DEV_AUTHOR);
         if (devAuthorPropStr != null) {
@@ -134,44 +168,21 @@ public class AppPages {
 
             // if a match is found go and by pass
             conceptEntityOpt.ifPresentOrElse(conceptEntity -> {
-                // bypass login screen
-                LOG.info("Developer By Pass {} = {}, name = {}", DEV_AUTHOR, devAuthorPropStr, viewCalculator.getDescriptionTextOrNid(conceptEntity.nid()));
-                App.userProperty.set(conceptEntity.toProxy());
-                App.state.set(AppState.RUNNING);
-            }, ()->
-                    // Developer entered a non existing user
-                    LOG.warn("No concept entity found for user id {}. Will be showing login screen.", devAuthorPropStr)
+                        // bypass login screen
+                        LOG.info("Developer By Pass {} = {}, name = {}", DEV_AUTHOR, devAuthorPropStr, viewCalculator.getDescriptionTextOrNid(conceptEntity.nid()));
+                        App.userProperty.set(conceptEntity.toProxy());
+                        App.state.set(AppState.RUNNING);
+                    }, ()->
+                            // Developer entered a non existing user
+                            LOG.warn("No concept entity found for user id {}. Will be showing login screen.", devAuthorPropStr)
             );
 
             // if found then avoid loading login screen.
             if (conceptEntityOpt.isPresent()) {
-                return;
+                return true;
             }
         }
-
-
-        Config loginConfig = new Config(LoginAuthorController.class.getResource("LoginAuthor.fxml"))
-                .updateViewModel("loginAuthorViewModel", loginAuthorViewModel -> {
-                    loginAuthorViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties);
-                });
-
-
-        JFXNode<StackPane, LoginAuthorController> journalJFXNode = FXMLMvvmLoader.make(loginConfig);
-        StackPane authorLoginBorderPane = journalJFXNode.node();
-        stage.getIcons().setAll(app.appIcon);
-        stage.setTitle("KOMET Author selection");
-        stage.setWidth(authorLoginBorderPane.prefWidth(USE_COMPUTED_SIZE));
-        stage.setHeight(authorLoginBorderPane.prefHeight(USE_COMPUTED_SIZE));
-        app.rootPane.getChildren().setAll(authorLoginBorderPane);
-
-        LoginAuthorController loginAuthorController = journalJFXNode.controller();
-
-        loginAuthorController.onLogin().thenAccept(loginAuthorViewModel -> {
-            ConceptEntity userConceptEntity = loginAuthorViewModel.getPropertyValue(SELECTED_AUTHOR);
-            ConceptFacade loggedInUser = ConceptFacade.make(userConceptEntity.nid());
-            App.userProperty.set(loggedInUser);
-            App.state.set(AppState.RUNNING);
-        });
+        return false;
     }
 
     public void launchLandingPage(Stage stage, ConceptFacade loggedInUser) {
