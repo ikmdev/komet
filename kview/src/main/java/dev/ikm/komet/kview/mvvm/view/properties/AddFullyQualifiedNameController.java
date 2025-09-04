@@ -55,16 +55,19 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     private Label addFqnTitleLabel;
 
     @FXML
-    private ComboBox<EntityFacade> moduleComboBox;
+    private TextField fullyQualifiedNameTextField;
 
     @FXML
-    private TextField fullyQualifiedNameTextField;
+    private ComboBox<ConceptEntity> typeDisplayComboBox;
+
+    @FXML
+    private ComboBox<EntityFacade> caseSignificanceComboBox;
 
     @FXML
     private ComboBox<EntityFacade> statusComboBox;
 
     @FXML
-    private ComboBox<EntityFacade> caseSignificanceComboBox;
+    private ComboBox<EntityFacade> moduleComboBox;
 
     @FXML
     private ComboBox<EntityFacade> languageComboBox;
@@ -253,7 +256,7 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     }
 
     @FXML
-    public void cancel() {
+    public void handleCancelButtonEvent() {
         close();
     }
 
