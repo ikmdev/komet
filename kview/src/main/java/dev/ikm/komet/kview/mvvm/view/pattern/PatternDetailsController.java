@@ -42,7 +42,6 @@ import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.view.common.SVGConstants.DUPLICATE_SVG_PATH;
@@ -154,8 +153,6 @@ public class PatternDetailsController {
     private static final Logger LOG = LoggerFactory.getLogger(PatternDetailsController.class);
 
     public static final URL PATTERN_PROPERTIES_VIEW_FXML_URL = PatternDetailsController.class.getResource("pattern-properties.fxml");
-
-    private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
 
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
 
@@ -274,13 +271,6 @@ public class PatternDetailsController {
 
     @FXML
     private HBox conceptHeaderControlToolBarHbox;
-
-    /**
-     * Stamp Edit
-     */
-    private PopOver stampEdit;
-
-    private StampEditController stampEditController;
 
     @InjectViewModel
     private PatternViewModel patternViewModel;
