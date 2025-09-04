@@ -51,23 +51,22 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.TIME_TEXT;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -94,7 +93,6 @@ import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -105,7 +103,6 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -411,55 +408,18 @@ public class PatternDetailsController {
             patternTitleText.textProperty().bind(patternViewModel.getProperty(PATTERN_TITLE_TEXT));
         }
 
-        // bind stamp
-        StampViewModel stampViewModel = getStampViewModel();
-
-        // -- author
-        stampViewModel.getProperty(AUTHOR).subscribe(newAuthor -> {
-            String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid((EntityFacade)newAuthor, getViewProperties());
-            stampViewControl.setAuthor(authorDescription);
-        });
-
-        stampViewModel.getProperty(TIME).subscribe(newTime -> {
-            stampViewControl.setLastUpdated(TimeUtils.toDateString((long)newTime));
-        });
-
-        // -- module
-        stampViewModel.getProperty(MODULE).subscribe(newModule -> {
-            String newModuleDescription;
-            if (newModule == null) {
-                newModuleDescription = "";
-            } else {
-                newModuleDescription = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity)newModule).nid());
-            }
-            stampViewControl.setModule(newModuleDescription);
-        });
-
-        // -- path
-        stampViewModel.getProperty(PATH).subscribe(newPath -> {
-            String pathDescr;
-            if (newPath == null) {
-                pathDescr = "";
-            } else {
-                pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((ConceptEntity) newPath).nid());
-            }
-            stampViewControl.setPath(pathDescr);
-        });
-
-        // -- status
-        stampViewModel.getProperty(STATUS).subscribe(newStatus -> {
-            String statusMsg = newStatus == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((State)newStatus).nid());
-            stampViewControl.setStatus(statusMsg);
-        });
-
         // set the identicon
         ObjectProperty<EntityFacade> patternProperty = patternViewModel.getProperty(PATTERN);
 
         patternProperty.subscribe(entityFacade -> {
             if (entityFacade != null) {
+                patternViewModel.setPropertyValue(MODE, EDIT);
+
                 // dynamically update the identicon image.
                 Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
                 identiconImageView.setImage(identicon);
+            } else {
+                patternViewModel.setPropertyValue(MODE, CREATE);
             }
 
             if (propertiesController != null) {
@@ -581,7 +541,11 @@ public class PatternDetailsController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
-            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
+            if (CREATE.equals(patternViewModel.getPropertyValue(MODE))) {
+                EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.CREATE_STAMP));
+            } else {
+                EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
+            }
         } else {
             EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
         }
@@ -890,11 +854,70 @@ public class PatternDetailsController {
         this.propertiesController = propsFXMLLoader.controller();
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
 
+        // Stamp
+        StampFormViewModelBase stampFormViewModel = propertiesController.getStampCreateFormViewModel();
+        patternViewModel.setPropertyValue(STAMP_VIEW_MODEL, stampFormViewModel);
+
         propertiesController.updateModel(patternViewModel.getPropertyValue(PATTERN));
+
+        patternViewModel.getProperty(MODE).subscribe(newMode -> {
+            if (newMode.equals(EDIT)) {
+                updateStampControlFromViewModel();
+                stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isSubmitted -> {
+                    if ((Boolean) isSubmitted) {
+                        updateStampControlFromViewModel();
+                    }
+                });
+            } else if(newMode.equals(CREATE)) {
+                stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isConfirmed -> {
+                    if ((Boolean) isConfirmed) {
+                        updateStampControlFromViewModel();
+                    }
+                });
+            }
+        });
 
         //FIXME this doesn't work properly, should leave for a future effort...
         // open the panel, allow the state machine to determine which panel to show
         //EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertiesToggleButton, OPEN_PANEL));
+    }
+
+    private void updateStampControlFromViewModel() {
+        StampFormViewModelBase stampFormViewModel = propertiesController.getStampCreateFormViewModel();
+
+        // -- status
+        State newStatus = stampFormViewModel.getPropertyValue(STATUS);
+        String statusMsg = newStatus == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((State) newStatus).nid());
+        stampViewControl.setStatus(statusMsg);
+
+        // -- time
+        String newTime = stampFormViewModel.getPropertyValue(TIME_TEXT);
+        stampViewControl.setLastUpdated(newTime);
+
+        // -- author
+        EntityFacade newAuthor = stampFormViewModel.getPropertyValue(AUTHOR);
+        String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(newAuthor, getViewProperties());
+        stampViewControl.setAuthor(authorDescription);
+
+        // -- module
+        ConceptFacade newModule = stampFormViewModel.getPropertyValue(MODULE);
+        String newModuleDescription;
+        if (newModule == null) {
+            newModuleDescription = "";
+        } else {
+            newModuleDescription = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((newModule).nid());
+        }
+        stampViewControl.setModule(newModuleDescription);
+
+        // -- path
+        ConceptFacade newPath = stampFormViewModel.getPropertyValue(PATH);
+        String pathDescr;
+        if (newPath == null) {
+            pathDescr = "";
+        } else {
+            pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((newPath).nid());
+        }
+        stampViewControl.setPath(pathDescr);
     }
 
     public ViewProperties getViewProperties() {
@@ -1014,57 +1037,57 @@ public class PatternDetailsController {
 //        reasonerResultsControllerConsumer.accept(reasonerToggle);
     }
 
-    @FXML
-    public void popupStampEdit(ActionEvent event) {
-        if (stampEdit != null && stampEditController != null) {
-            // refresh modules
-            getStampViewModel().getObservableList(MODULES_PROPERTY).clear();
-            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
+//    @FXML
+//    public void popupStampEdit(ActionEvent event) {
+//        if (stampEdit != null && stampEditController != null) {
+//            // refresh modules
+//            getStampViewModel().getObservableList(MODULES_PROPERTY).clear();
+//            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
+//
+//            // refresh path
+//            getStampViewModel().getObservableList(PATHS_PROPERTY).clear();
+//            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()));
+//
+//            stampEdit.show((Node) event.getSource());
+//            stampEditController.selectActiveStatusToggle();
+//            return;
+//        }
+//
+//        // The stampViewModel is already created for the PatternDetailsController when instantiated
+//        // inside the JournalController
+//        // Inject Stamp view model into form.
+//        Config stampConfig = new Config(StampEditController.class.getResource(EDIT_STAMP_OPTIONS_FXML))
+//                .addNamedViewModel(new NamedVm("stampViewModel", getStampViewModel()));
+//        JFXNode<Pane, StampEditController> stampJFXNode = FXMLMvvmLoader.make(stampConfig);
+//
+//        // for now, we are in create mode, but in the future we will check to see if we are in EDIT mode
+//
+//        Pane editStampPane = stampJFXNode.node();
+//        PopOver popOver = new PopOver(editStampPane);
+//        popOver.getStyleClass().add("filter-menu-popup");
+//        StampEditController stampEditController = stampJFXNode.controller();
+//
+//        stampEditController.updateModel(getViewProperties());
+//
+//        // default the status=Active, disable inactive
+//        stampEditController.selectActiveStatusToggle();
+//
+//        popOver.setOnHidden(windowEvent -> {
+//            // set Stamp info into Details form
+//            getStampViewModel().save();
+//            patternViewModel.save();
+//        });
+//
+//        popOver.show((Node) event.getSource());
+//
+//        // store and use later.
+//        stampEdit = popOver;
+//        this.stampEditController = stampEditController;
+//    }
 
-            // refresh path
-            getStampViewModel().getObservableList(PATHS_PROPERTY).clear();
-            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()));
-
-            stampEdit.show((Node) event.getSource());
-            stampEditController.selectActiveStatusToggle();
-            return;
-        }
-
-        // The stampViewModel is already created for the PatternDetailsController when instantiated
-        // inside the JournalController
-        // Inject Stamp view model into form.
-        Config stampConfig = new Config(StampEditController.class.getResource(EDIT_STAMP_OPTIONS_FXML))
-                .addNamedViewModel(new NamedVm("stampViewModel", getStampViewModel()));
-        JFXNode<Pane, StampEditController> stampJFXNode = FXMLMvvmLoader.make(stampConfig);
-
-        // for now, we are in create mode, but in the future we will check to see if we are in EDIT mode
-
-        Pane editStampPane = stampJFXNode.node();
-        PopOver popOver = new PopOver(editStampPane);
-        popOver.getStyleClass().add("filter-menu-popup");
-        StampEditController stampEditController = stampJFXNode.controller();
-
-        stampEditController.updateModel(getViewProperties());
-
-        // default the status=Active, disable inactive
-        stampEditController.selectActiveStatusToggle();
-
-        popOver.setOnHidden(windowEvent -> {
-            // set Stamp info into Details form
-            getStampViewModel().save();
-            patternViewModel.save();
-        });
-
-        popOver.show((Node) event.getSource());
-
-        // store and use later.
-        stampEdit = popOver;
-        this.stampEditController = stampEditController;
-    }
-
-    public StampViewModel getStampViewModel() {
-        return patternViewModel.getPropertyValue(STAMP_VIEW_MODEL);
-    }
+//    public StampViewModel getStampViewModel() {
+//        return patternViewModel.getPropertyValue(STAMP_VIEW_MODEL);
+//    }
 
     @FXML
     private void openTimelinePanel(ActionEvent event) {
@@ -1117,7 +1140,6 @@ public class PatternDetailsController {
         LOG.info(isValidSave ? "success" : "failed");
         if(isValidSave){
             patternViewModel.setPropertyValue(MODE, EDIT);
-            patternViewModel.updateStamp();
             EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternSavedEvent(actionEvent.getSource(), PatternSavedEvent.PATTERN_UPDATE_EVENT));
 
             EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,

@@ -17,7 +17,7 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
@@ -139,7 +139,7 @@ public class ConceptViewModel extends FormViewModel {
         }
 
         // stamp is populated?
-        if (!(Boolean)stampFormViewModel.getPropertyValue(IS_CONFIRMED)) {
+        if (!(Boolean)stampFormViewModel.getPropertyValue(IS_CONFIRMED_OR_SUBMITTED)) {
             return false;
         }
 

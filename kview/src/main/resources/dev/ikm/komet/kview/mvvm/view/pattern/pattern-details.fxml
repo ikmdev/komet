@@ -572,7 +572,7 @@
                               <Insets top="5" bottom="5" right="5"/>
                            </BorderPane.margin>
                            <StampViewControl fx:id="stampViewControl" prefWidth="210.0" />
-                           <Button contentDisplay="GRAPHIC_ONLY" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#popupStampEdit" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" text="Button" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0" StackPane.alignment="TOP_RIGHT">
+                           <Button contentDisplay="GRAPHIC_ONLY" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="11.0" prefWidth="30.0" styleClass="mini-options-button" text="Button" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="4.0" StackPane.alignment="TOP_RIGHT">
                               <graphic>
                                  <Region styleClass="hamburger" />
                               </graphic>
