@@ -237,6 +237,8 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         });
     }
 
+    private static final String DEFAULT_DESCRIPTION_STRING = Integer.toString(Integer.MAX_VALUE);
+    
     /**
      * This method is deprecated because the viewCalculator method that it calls is deprecated.
      * @param viewCalculator
@@ -251,7 +253,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             descStringOrNid = viewCalculator.getPreferredDescriptionStringOrNid(entityFacade);
         } catch (Exception e) {
             LOG.error("Exception occurred", e);
-            descStringOrNid = Integer.toString(Integer.MAX_VALUE);
+            descStringOrNid = DEFAULT_DESCRIPTION_STRING;
         }
 
         return descStringOrNid;
@@ -271,7 +273,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             descStringOrNid = viewCalculator.getPreferredDescriptionStringOrNid(nid);
         } catch (Exception e) {
             LOG.error("Exception occurred", e);
-            descStringOrNid = Integer.toString(Integer.MAX_VALUE);
+            descStringOrNid = DEFAULT_DESCRIPTION_STRING;
         }
 
         return descStringOrNid;
@@ -284,7 +286,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             entityStringOrNid = viewCalculator.toEntityStringOrPublicIdAndNid(entityFacade);
         } catch (Exception e) {
             LOG.error("Exception occurred", e);
-            entityStringOrNid = Integer.toString(Integer.MAX_VALUE);
+            entityStringOrNid = DEFAULT_DESCRIPTION_STRING;
         }
 
         return entityStringOrNid;
