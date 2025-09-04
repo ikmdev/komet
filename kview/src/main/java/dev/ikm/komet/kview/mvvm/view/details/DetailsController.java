@@ -1026,22 +1026,6 @@ public class DetailsController  {
         //Obtain the index field of DESCRIPTION_TYPE
         PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(DESCRIPTION_PATTERN.nid()).get();
         int descriptionTypeIndex = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE.nid());
-//        Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(entityFacade.nid());
-//        latestEntityVersion.ifPresent( version ->  {
-//            List<String> descrFields = new ArrayList<>();
-//
-////            Object caseSigConcept =version.fieldValues().get(indexCaseSig);
-////            Object langConcept = version.fieldValues().get(indexLang);
-//
-////            // e.g. FQN - English | Case Sensitive
-////            String casSigText = viewCalculator.languageCalculator().getDescriptionTextOrNid(((EntityFacade) caseSigConcept).nid());
-////            String langText = viewCalculator.languageCalculator().getDescriptionTextOrNid(((EntityFacade) langConcept).nid());
-//
-////            descrFields.add(casSigText);
-////            descrFields.add(langText);
-//            updateFQNSemantics(version, descrFields);
-//
-//        });
 
         descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
             EntityFacade fieldTypeValue = (EntityFacade) semanticEntityVersion.fieldValues().get(descriptionTypeIndex);
@@ -1382,15 +1366,7 @@ public class DetailsController  {
             return Lists.immutable.of(new ObservableField[semanticEntityVersion.fieldValues().size()]);
         }
 
-    /*    ObservableField[] fieldArray = new ObservableField[semanticEntityVersion.fieldValues().size()];
-        for (int indexInPattern = 0; indexInPattern < fieldArray.length; indexInPattern++) {
-            Object value = semanticEntityVersion.fieldValues().get(indexInPattern);
-            FieldDefinitionForEntity fieldDef = patternVersion.fieldDefinitions().get(indexInPattern);
-            FieldDefinitionRecord fieldDefinitionRecord = new FieldDefinitionRecord(fieldDef.dataTypeNid(),
-                    fieldDef.purposeNid(), fieldDef.meaningNid(), patternVersion.stampNid(), patternVersion.nid(), indexInPattern);
-            fieldArray[indexInPattern] = new ObservableField(new FieldRecord(value, semanticEntityVersion.nid(), semanticEntityVersion.stampNid(), fieldDefinitionRecord));
-        }
-        return Lists.immutable.of(fieldArray);*/
+
     }
 
     /**
