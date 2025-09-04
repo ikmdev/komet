@@ -26,7 +26,6 @@ import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
@@ -62,11 +61,18 @@ import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
 import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
-import dev.ikm.komet.kview.events.*;
+import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
+import dev.ikm.komet.kview.events.AddOtherNameToConceptEvent;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.events.CreateConceptEvent;
+import dev.ikm.komet.kview.events.EditConceptEvent;
+import dev.ikm.komet.kview.events.EditConceptFullyQualifiedNameEvent;
+import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
+import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
+import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
@@ -585,25 +591,26 @@ public class DetailsController  {
     private void onConfirmStampFormWhenCreating() {
         // Update StampViewControl
         StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
+        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
 
         // - Status
         State status = stampFormViewModel.getPropertyValue(STATUS);
-        String statusText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(status, conceptViewModel.getViewProperties());
+        String statusText = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(status.nid());
         stampViewControl.setStatus(statusText);
 
         // - Module
         EntityFacade module = stampFormViewModel.getPropertyValue(MODULE);
-        String moduleText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(module, conceptViewModel.getViewProperties());
+        String moduleText = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(module.nid());
         stampViewControl.setModule(moduleText);
 
         // - Author
         EntityFacade author = stampFormViewModel.getPropertyValue(AUTHOR);
-        String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(author, conceptViewModel.getViewProperties());
+        String authorDescription = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(author.nid());
         stampViewControl.setAuthor(authorDescription);
 
         // - Path
         EntityFacade path = stampFormViewModel.getPropertyValue(PATH);
-        String pathText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(path, conceptViewModel.getViewProperties());
+        String pathText = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(path.nid());
         stampViewControl.setPath(pathText);
 
         // Latest update time
@@ -910,12 +917,12 @@ public class DetailsController  {
         // TODO do a null check on the entityFacade
         // Title (FQN of concept)
         final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-        String conceptNameStr = viewCalculator.languageCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
+        String conceptNameStr = viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(entityFacade.nid());
         fqnTitleText.setText(conceptNameStr);
         conceptNameTooltip.setText(conceptNameStr);
 
         // Definition description text
-        definitionTextField.setText(viewCalculator.languageCalculator().getDefinitionDescriptionText(entityFacade.nid()).orElse(""));
+        definitionTextField.setText(viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(entityFacade.nid()));
 
         setupDisplayUUID(entityFacade, viewCalculator);
 
@@ -930,19 +937,19 @@ public class DetailsController  {
         StampEntity stamp = entiyVersionOptional.isPresent()? entiyVersionOptional.get().stamp() : latestVersion.stamp();
 
         // Status
-        String statusText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.state(), conceptViewModel.getViewProperties());
+        String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
         stampViewControl.setStatus(statusText);
 
         // Module
-        String moduleText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.module(), conceptViewModel.getViewProperties());
+        String moduleText = viewCalculator.getDescriptionTextOrNid(stamp.moduleNid());
         stampViewControl.setModule(moduleText);
 
         // Author
-        String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.author(), conceptViewModel.getViewProperties());
+        String authorDescription = viewCalculator.getDescriptionTextOrNid(stamp.authorNid());
         stampViewControl.setAuthor(authorDescription);
 
         // Path
-        String pathText = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(stamp.path(), conceptViewModel.getViewProperties());
+        String pathText = viewCalculator.getDescriptionTextOrNid(stamp.pathNid());
         stampViewControl.setPath(pathText);
 
         // Latest update time
@@ -966,6 +973,7 @@ public class DetailsController  {
         // Latest FQN
         String fullyQualifiedName = fqnDescrName.getNameText();
         latestFqnText.setText(fullyQualifiedName);
+        System.out.println(" updateFQNConceptDescription: " + fullyQualifiedName);
 
         fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
                 new EditConceptFullyQualifiedNameEvent(latestFqnText,
@@ -1012,9 +1020,27 @@ public class DetailsController  {
         Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
         otherNamesNodeListControl.getItems().clear();
 
+
+
         //Obtain the index field of DESCRIPTION_TYPE
         PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(DESCRIPTION_PATTERN.nid()).get();
         int descriptionTypeIndex = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE.nid());
+//        Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(entityFacade.nid());
+//        latestEntityVersion.ifPresent( version ->  {
+//            List<String> descrFields = new ArrayList<>();
+//
+////            Object caseSigConcept =version.fieldValues().get(indexCaseSig);
+////            Object langConcept = version.fieldValues().get(indexLang);
+//
+////            // e.g. FQN - English | Case Sensitive
+////            String casSigText = viewCalculator.languageCalculator().getDescriptionTextOrNid(((EntityFacade) caseSigConcept).nid());
+////            String langText = viewCalculator.languageCalculator().getDescriptionTextOrNid(((EntityFacade) langConcept).nid());
+//
+////            descrFields.add(casSigText);
+////            descrFields.add(langText);
+//            updateFQNSemantics(version, descrFields);
+//
+//        });
 
         descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
             EntityFacade fieldTypeValue = (EntityFacade) semanticEntityVersion.fieldValues().get(descriptionTypeIndex);
@@ -1117,10 +1143,10 @@ public class DetailsController  {
         VBox textFlowsBox = new VBox();
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         ConceptEntity caseSigConcept = otherName.getCaseSignificance();
-        String casSigText = viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(caseSigConcept.nid());
+        String casSigText = viewCalculator.languageCalculator().getDescriptionTextOrNid(caseSigConcept.nid());
         ConceptEntity langConcept = otherName.getLanguage();
 
-        String langText = viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(langConcept.nid());
+        String langText = viewCalculator.languageCalculator().getDescriptionTextOrNid(langConcept.nid());
 
         String descrSemanticStr = "%s, %s".formatted(casSigText, langText);
 
@@ -1196,9 +1222,10 @@ public class DetailsController  {
     private void updateFQNSemantics(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
         DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-        String fqnTextDescr = viewCalculator.languageCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(semanticEntityVersion.entity());
+        String fqnTextDescr = viewCalculator.languageCalculator().getDescriptionTextOrNid(semanticEntityVersion.entity());
         // obtain the fqn description
         latestFqnText.setText(fqnTextDescr);
+        System.out.println(" Inside FQN Semantics: " + fqnTextDescr);
 
         this.fqnPublicId = semanticEntityVersion.publicId();
         fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
@@ -1327,8 +1354,8 @@ public class DetailsController  {
                     Object langConcept = semanticEntityVersionLatest.get().fieldValues().get(indexLang);
 
                     // e.g. FQN - English | Case Sensitive
-                    String casSigText = viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(((EntityFacade) caseSigConcept).nid());
-                    String langText = viewCalculator.languageCalculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(((EntityFacade) langConcept).nid());
+                    String casSigText = viewCalculator.languageCalculator().getDescriptionTextOrNid(((EntityFacade) caseSigConcept).nid());
+                    String langText = viewCalculator.languageCalculator().getDescriptionTextOrNid(((EntityFacade) langConcept).nid());
 
                     descrFields.add(casSigText);
                     descrFields.add(langText);
