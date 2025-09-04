@@ -35,10 +35,6 @@
         </dependency>
         <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
-            <artifactId>reasoner-elk-owl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>reasoner-elk-snomed</artifactId>
         </dependency>
         <dependency>
