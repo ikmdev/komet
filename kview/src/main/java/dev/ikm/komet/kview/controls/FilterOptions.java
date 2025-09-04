@@ -65,9 +65,10 @@ public class FilterOptions implements Serializable {
         private final boolean multiSelect;
         private boolean any;
         private final EnumSet<BUTTON> buttonType;
+        private boolean inOverride;
 
         public Option(OPTION_ITEM item, String title, List<String> defaultOptions, List<String> availableOptions,
-                      List<String> selectedOptions, List<String> excludedOptions, boolean multiSelect, boolean any, EnumSet<BUTTON> buttonType) {
+                      List<String> selectedOptions, List<String> excludedOptions, boolean multiSelect, boolean any, EnumSet<BUTTON> buttonType, boolean inOverride) {
             this.item = item;
             this.title = title;
             this.defaultOptions = defaultOptions;
@@ -77,6 +78,7 @@ public class FilterOptions implements Serializable {
             this.multiSelect = multiSelect;
             this.any = any;
             this.buttonType = buttonType;
+            this.inOverride = inOverride;
         }
 
         public enum BUTTON {
@@ -108,7 +110,7 @@ public class FilterOptions implements Serializable {
         public String toString() {
             return "> " + item + ": " + (any ? "Any of: " : (multiSelect ? "All of: " : "")) + selectedOptions +
                     (excludedOptions == null || excludedOptions.isEmpty() ? "" : " - " + excludedOptions) +
-                    " from av: " + availableOptions + " def: " + defaultOptions;
+                    " from av: " + availableOptions + " def: " + defaultOptions + (inOverride ? " *OV*" : "");
         }
 
         public boolean isMultiSelectionAllowed() {
@@ -135,6 +137,14 @@ public class FilterOptions implements Serializable {
             return hasExcluding() && excludedOptions() != null && !excludedOptions().isEmpty();
         }
 
+        public boolean isInOverride() {
+            return inOverride;
+        }
+
+        public void setInOverride(boolean override) {
+            this.inOverride = override;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -143,6 +153,7 @@ public class FilterOptions implements Serializable {
             if (!Objects.equals(item, option.item)) return false;
             if (!Objects.equals(title, option.title)) return false;
             if (any != option.any) return false;
+            if (inOverride != option.inOverride) return false;
             if (option.item == OPTION_ITEM.DIALECT || option.item == OPTION_ITEM.DESCRIPTION_TYPE) {
                 if (!compareSortedLists(selectedOptions, option.selectedOptions)) return false;
                 if (!compareSortedLists(excludedOptions, option.excludedOptions)) return false;
@@ -155,7 +166,7 @@ public class FilterOptions implements Serializable {
 
         @Override
         public int hashCode() {
-            return Objects.hash(item, title, any, selectedOptions, excludedOptions);
+            return Objects.hash(item, title, any, selectedOptions, excludedOptions, inOverride);
         }
 
         public Option copy() {
@@ -164,7 +175,7 @@ public class FilterOptions implements Serializable {
                     new ArrayList<>(availableOptions.stream().toList()),
                     new ArrayList<>(selectedOptions.stream().toList()),
                     excludedOptions != null ? new ArrayList<>(excludedOptions.stream().toList()) : null,
-                    multiSelect, any, buttonType);
+                    multiSelect, any, buttonType, inOverride);
         }
 
         public OPTION_ITEM item() {
@@ -219,7 +230,7 @@ public class FilterOptions implements Serializable {
                     .map(resources::getString)
                     .toList();
             navigator = new Option(OPTION_ITEM.NAVIGATOR, "navigator.title", new ArrayList<>(List.of(navigatorOptions.getFirst())),
-                    new ArrayList<>(navigatorOptions), new ArrayList<>(List.of(navigatorOptions.getFirst())), null, false, false, noneSet);
+                    new ArrayList<>(navigatorOptions), new ArrayList<>(List.of(navigatorOptions.getFirst())), null, false, false, noneSet, false);
         }
 
         private Option type;
@@ -229,14 +240,14 @@ public class FilterOptions implements Serializable {
                     .map(resources::getString)
                     .toList();
             type = new Option(OPTION_ITEM.TYPE, "type.title", new ArrayList<>(typeOptions),
-                    new ArrayList<>(typeOptions), new ArrayList<>(typeOptions), null, true, false, allSet);
+                    new ArrayList<>(typeOptions), new ArrayList<>(typeOptions), null, true, false, allSet, false);
         }
 
         private Option header = new Option(OPTION_ITEM.HEADER, "header.title", new ArrayList<>(),
-                new ArrayList<>(), new ArrayList<>(), null, false, false, allSet);
+                new ArrayList<>(), new ArrayList<>(), null, false, false, allSet, false);
 
         private Option status = new Option(OPTION_ITEM.STATUS, "status.title", new ArrayList<>(),
-                new ArrayList<>(), new ArrayList<>(), null, true, false, allSet);
+                new ArrayList<>(), new ArrayList<>(), null, true, false, allSet, false);
 
         private Option time;
         {
@@ -244,14 +255,14 @@ public class FilterOptions implements Serializable {
                     .map(resources::getString)
                     .toList();
             time = new Option(OPTION_ITEM.TIME, "time.title", new ArrayList<>(List.of(dateOptions.getFirst())),
-                    new ArrayList<>(dateOptions), new ArrayList<>(List.of(dateOptions.getFirst())), new ArrayList<>(), false, false, noneSet);
+                    new ArrayList<>(dateOptions), new ArrayList<>(List.of(dateOptions.getFirst())), new ArrayList<>(), false, false, noneSet, false);
         }
 
         private Option module = new Option(OPTION_ITEM.MODULE, "module.title", new ArrayList<>(),
-                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, false, allAnyExcludingSet);
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, false, allAnyExcludingSet, false);
 
         private Option path = new Option(OPTION_ITEM.PATH, "path.title", new ArrayList<>(),
-                new ArrayList<>(), new ArrayList<>(), null, false, false, noneSet);
+                new ArrayList<>(), new ArrayList<>(), null, false, false, noneSet, false);
 
         private Option kindOf;
         {
@@ -262,7 +273,7 @@ public class FilterOptions implements Serializable {
                     .map(resources::getString)
                     .toList();
             kindOf = new Option(OPTION_ITEM.KIND_OF, "kindof.title", new ArrayList<>(kindOfOptions),
-                    new ArrayList<>(kindOfOptions), new ArrayList<>(kindOfOptions), new ArrayList<>(), true, false, allExcludingSet);
+                    new ArrayList<>(kindOfOptions), new ArrayList<>(kindOfOptions), new ArrayList<>(), true, false, allExcludingSet, false);
         }
 
         private Option membership;
@@ -273,7 +284,7 @@ public class FilterOptions implements Serializable {
                     .map(resources::getString)
                     .toList();
             membership = new Option(OPTION_ITEM.MEMBERSHIP, "membership.title", new ArrayList<>(membershipOptions),
-                    new ArrayList<>(membershipOptions), new ArrayList<>(membershipOptions), null, true, false, allSet);
+                    new ArrayList<>(membershipOptions), new ArrayList<>(membershipOptions), null, true, false, allSet, false);
         }
 
         private Option sortBy;
@@ -283,7 +294,7 @@ public class FilterOptions implements Serializable {
                     .map(resources::getString)
                     .toList();
             sortBy = new Option(OPTION_ITEM.SORT_BY, "sortby.title", new ArrayList<>(List.of(sortByOptions.getFirst())),
-                    new ArrayList<>(sortByOptions), new ArrayList<>(List.of(sortByOptions.getFirst())), null, false, false, allSet);
+                    new ArrayList<>(sortByOptions), new ArrayList<>(List.of(sortByOptions.getFirst())), null, false, false, allSet, false);
         }
 
         private final List<Option> options;
@@ -377,7 +388,7 @@ public class FilterOptions implements Serializable {
 
         // Language Coordinates
         private Option language = new Option(OPTION_ITEM.LANGUAGE, "language.option.title", new ArrayList<>(),
-                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), false, false, noneSet);
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), false, false, noneSet, false);
 
         private Option dialect;
         {
@@ -387,7 +398,7 @@ public class FilterOptions implements Serializable {
                     .map(resources::getString)
                     .toList();
             dialect = new Option(OPTION_ITEM.DIALECT, "dialect.option.title", new ArrayList<>(dialectOptions),
-                    new ArrayList<>(dialectOptions), new ArrayList<>(dialectOptions), null, true, false, noneSet);
+                    new ArrayList<>(dialectOptions), new ArrayList<>(dialectOptions), null, true, false, noneSet, false);
         }
 
         private Option pattern;
@@ -398,7 +409,7 @@ public class FilterOptions implements Serializable {
                     .map(resources::getString)
                     .toList();
             pattern = new Option(OPTION_ITEM.PATTERN, "pattern.option.title", new ArrayList<>(List.of(patternOptions.getFirst())),
-                    new ArrayList<>(patternOptions), new ArrayList<>(List.of(patternOptions.getFirst())), null, false, false, noneSet);
+                    new ArrayList<>(patternOptions), new ArrayList<>(List.of(patternOptions.getFirst())), null, false, false, noneSet, false);
         }
 
         private Option descriptionType;
@@ -412,7 +423,7 @@ public class FilterOptions implements Serializable {
                     .map(resources::getString)
                     .toList();
             descriptionType = new Option(OPTION_ITEM.DESCRIPTION_TYPE, "description.option.title", new ArrayList<>(descriptionTypeOptions),
-                    new ArrayList<>(descriptionTypeOptions), new ArrayList<>(descriptionTypeOptions), null, true, false, noneSet);
+                    new ArrayList<>(descriptionTypeOptions), new ArrayList<>(descriptionTypeOptions), null, true, false, noneSet, false);
         }
 
         private final List<Option> options;
