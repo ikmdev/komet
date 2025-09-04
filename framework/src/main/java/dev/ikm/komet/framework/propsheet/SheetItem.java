@@ -15,18 +15,6 @@
  */
 package dev.ikm.komet.framework.propsheet;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
-import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.scene.control.Control;
-import javafx.scene.control.TextArea;
-import org.controlsfx.control.PropertySheet;
-import org.controlsfx.property.editor.AbstractPropertyEditor;
-import org.controlsfx.property.editor.PropertyEditor;
-import org.controlsfx.validation.ValidationSupport;
-import org.controlsfx.validation.Validator;
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.panel.axiom.AxiomView;
@@ -38,9 +26,17 @@ import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.control.Control;
+import org.controlsfx.control.PropertySheet;
+import org.controlsfx.property.editor.PropertyEditor;
+import org.controlsfx.validation.ValidationSupport;
+import org.controlsfx.validation.Validator;
 
 import java.util.Optional;
 

@@ -56,7 +56,11 @@ import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
+import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewMenuModel;
@@ -93,9 +97,6 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
-import dev.ikm.tinkar.entity.FieldDefinitionRecord;
-import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -1370,9 +1371,18 @@ public class DetailsController  {
      * @param patternVersion - the latest pattern version
      * @return a list of fields with their values (FieldRecord) based on the latest pattern (field definitions).
      */
-    private static ImmutableList<ObservableField> fields(SemanticEntityVersion semanticEntityVersion, PatternEntityVersion patternVersion) {
+    private static ImmutableList<ObservableField> fields(SemanticEntityVersion semanticEntityVersion, PatternEntityVersion patternVersion, ViewCalculator viewCalculator) {
+        ObservableSemantic observableSemantic = (ObservableSemantic) ObservableEntity.get(semanticEntityVersion.entity());
 
-        ObservableField[] fieldArray = new ObservableField[semanticEntityVersion.fieldValues().size()];
+        ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
+        Latest<ObservableSemanticVersion> latest = observableSemanticSnapshot.getLatestVersion();
+        if(latest.isPresent()){
+            return latest.get().fields(patternVersion, false);
+        } else {
+            return Lists.immutable.of(new ObservableField[semanticEntityVersion.fieldValues().size()]);
+        }
+
+    /*    ObservableField[] fieldArray = new ObservableField[semanticEntityVersion.fieldValues().size()];
         for (int indexInPattern = 0; indexInPattern < fieldArray.length; indexInPattern++) {
             Object value = semanticEntityVersion.fieldValues().get(indexInPattern);
             FieldDefinitionForEntity fieldDef = patternVersion.fieldDefinitions().get(indexInPattern);
@@ -1380,7 +1390,7 @@ public class DetailsController  {
                     fieldDef.purposeNid(), fieldDef.meaningNid(), patternVersion.stampNid(), patternVersion.nid(), indexInPattern);
             fieldArray[indexInPattern] = new ObservableField(new FieldRecord(value, semanticEntityVersion.nid(), semanticEntityVersion.stampNid(), fieldDefinitionRecord));
         }
-        return Lists.immutable.of(fieldArray);
+        return Lists.immutable.of(fieldArray);*/
     }
 
     /**
@@ -1423,7 +1433,7 @@ public class DetailsController  {
                                Latest<SemanticEntityVersion> semanticVersion) {
         semanticVersion.ifPresent(semanticEntityVersion -> {
             Latest<PatternEntityVersion> statedPatternVersion = conceptViewModel.getViewProperties().calculator().latestPatternEntityVersion(semanticEntityVersion.pattern());
-            ImmutableList<ObservableField> fields = fields(semanticEntityVersion, statedPatternVersion.get());
+            ImmutableList<ObservableField> fields = fields(semanticEntityVersion, statedPatternVersion.get(), conceptViewModel.getViewProperties().calculator());
             fields.forEach(field ->
                     // create a row as a label: editor. For Axioms we hide the left labels.
                     propertySheet.getItems().add(SheetItem.make(field, semanticEntityVersion, conceptViewModel.getViewProperties())));
