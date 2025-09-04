@@ -21,18 +21,14 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
-import org.carlfx.cognitive.validator.ValidationResult;
-import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.eclipse.collections.api.list.ImmutableList;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -172,6 +168,7 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
     @Override
     public void submitOrConfirm() {
         save();
+
     }
 
     @Override
@@ -243,7 +240,8 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
             default -> throw new RuntimeException("Stamp Type " + stampType + " not supported");
         }
 
-        composer.commitSession(session);
+        boolean wasSessionCommited = composer.commitSession(session);
+        setPropertyValue(IS_CONFIRMED_OR_SUBMITTED, wasSessionCommited);
 
         // Load the new STAMP and store the new initial values
         loadStamp();
