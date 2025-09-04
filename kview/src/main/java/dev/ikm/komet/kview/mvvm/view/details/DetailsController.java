@@ -973,7 +973,6 @@ public class DetailsController  {
         // Latest FQN
         String fullyQualifiedName = fqnDescrName.getNameText();
         latestFqnText.setText(fullyQualifiedName);
-        System.out.println(" updateFQNConceptDescription: " + fullyQualifiedName);
 
         fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
                 new EditConceptFullyQualifiedNameEvent(latestFqnText,
@@ -1020,27 +1019,9 @@ public class DetailsController  {
         Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
         otherNamesNodeListControl.getItems().clear();
 
-
-
         //Obtain the index field of DESCRIPTION_TYPE
         PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(DESCRIPTION_PATTERN.nid()).get();
         int descriptionTypeIndex = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE.nid());
-//        Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(entityFacade.nid());
-//        latestEntityVersion.ifPresent( version ->  {
-//            List<String> descrFields = new ArrayList<>();
-//
-////            Object caseSigConcept =version.fieldValues().get(indexCaseSig);
-////            Object langConcept = version.fieldValues().get(indexLang);
-//
-////            // e.g. FQN - English | Case Sensitive
-////            String casSigText = viewCalculator.languageCalculator().getDescriptionTextOrNid(((EntityFacade) caseSigConcept).nid());
-////            String langText = viewCalculator.languageCalculator().getDescriptionTextOrNid(((EntityFacade) langConcept).nid());
-//
-////            descrFields.add(casSigText);
-////            descrFields.add(langText);
-//            updateFQNSemantics(version, descrFields);
-//
-//        });
 
         descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
             EntityFacade fieldTypeValue = (EntityFacade) semanticEntityVersion.fieldValues().get(descriptionTypeIndex);
@@ -1225,7 +1206,6 @@ public class DetailsController  {
         String fqnTextDescr = viewCalculator.languageCalculator().getDescriptionTextOrNid(semanticEntityVersion.entity());
         // obtain the fqn description
         latestFqnText.setText(fqnTextDescr);
-        System.out.println(" Inside FQN Semantics: " + fqnTextDescr);
 
         this.fqnPublicId = semanticEntityVersion.publicId();
         fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
