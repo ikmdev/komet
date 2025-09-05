@@ -15,17 +15,9 @@
  */
 package dev.ikm.komet.framework.panel.axiom;
 
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
-import javafx.event.Event;
-import javafx.geometry.HPos;
-import javafx.geometry.VPos;
-import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import org.controlsfx.property.editor.PropertyEditor;
 import dev.ikm.komet.framework.PseudoClasses;
 import dev.ikm.komet.framework.graphics.Icon;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIds;
@@ -33,11 +25,26 @@ import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.event.Event;
+import javafx.geometry.HPos;
+import javafx.geometry.VPos;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.paint.Color;
+import org.controlsfx.property.editor.PropertyEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,7 +196,7 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
                     builder.append(prefix);
                     builder.append(": ");
                 }
-                builder.append(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(axiomTreeSemanticVersion.referencedComponentNid()));
+                builder.append(viewProperties.calculator().getDescriptionTextOrNid(axiomTreeSemanticVersion.referencedComponentNid()));
                 return builder.toString();
             } else if (prefix != null) {
                 return prefix + ": Concept being defined";
