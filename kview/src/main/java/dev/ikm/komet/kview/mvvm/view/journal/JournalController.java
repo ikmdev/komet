@@ -53,7 +53,7 @@ import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
-import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
+import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
@@ -159,7 +159,7 @@ import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
  * This makes the navigator (published data) able to update windows downstream such as the Concept Details Panel
  * This is associated with the FXML file journal.fxml.
  *
- * @see DetailsNode
+ * @see ConceptNode
  */
 public class JournalController {
     private static final Logger LOG = LoggerFactory.getLogger(JournalController.class);
@@ -1217,8 +1217,8 @@ public class JournalController {
             }
 
             // Getting the details node from the concept window
-            DetailsNode detailsNode = conceptKlWindow.getDetailsNode();
-            detailsNode.getDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+            ConceptNode conceptNode = conceptKlWindow.getDetailsNode();
+            conceptNode.getConceptDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
         }
     }
 
