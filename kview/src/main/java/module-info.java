@@ -41,8 +41,8 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
 
-    opens dev.ikm.komet.kview.mvvm.view.details to javafx.fxml, org.carlfx.cognitive;
-    exports dev.ikm.komet.kview.mvvm.view.details;
+    opens dev.ikm.komet.kview.mvvm.view.concept to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.concept;
 
     opens dev.ikm.komet.kview.mvvm.view.properties to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.properties;
@@ -156,7 +156,7 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.mvvm.view.loginauthor;
     opens dev.ikm.komet.kview.mvvm.view.loginauthor;
 
-    provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory, dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
+    provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.concept.ConceptNodeFactory;
 
     provides EntityKlWindowFactory with
             dev.ikm.komet.kview.klwindows.concept.ConceptKlWindowFactory,

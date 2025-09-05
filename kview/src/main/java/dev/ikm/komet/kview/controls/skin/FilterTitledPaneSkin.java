@@ -144,11 +144,6 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         subscription = selectedOption.boundsInParentProperty().subscribe(b ->
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
 
-        subscription = subscription.and(selectedOption.textProperty().subscribe(_ -> {
-            pseudoClassStateChanged(MODIFIED_TITLED_PANE,
-                    !Objects.equals(currentOption, control.getDefaultOption()));
-        }));
-
         if (control.getParent() instanceof Accordion accordion) {
             subscription = subscription.and(accordion.expandedPaneProperty().subscribe(pane -> {
                 if (pane == null) {
@@ -309,11 +304,20 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         subscription = subscription.and(control.optionProperty().subscribe((_, _) -> setupTitledPane()));
         subscription = subscription.and(control.expandedProperty().subscribe((_, expanded) -> {
             if (!expanded) {
+                updateModifiedState(currentOption);
                 control.setOption(currentOption.copy());
                 selectedOption.setText(getOptionText(currentOption));
             }
         }));
+        updateModifiedState(currentOption);
+    }
 
+    private void updateModifiedState(FilterOptions.Option currentOption) {
+        boolean modified = !Objects.equals(currentOption, control.getDefaultOption());
+        pseudoClassStateChanged(MODIFIED_TITLED_PANE, currentOption.isInOverride() || modified);
+        if (modified && !currentOption.isInOverride()) {
+            currentOption.setInOverride(true);
+        }
     }
 
     private void setupToggleBox(FilterOptions.Option currentOption) {

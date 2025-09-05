@@ -102,14 +102,17 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
     private void setupTitledPane() {
         if (subscription != null) {
+            // before unsubscribing, force reset of calendar
+            comboBox.getSelectionModel().select(0);
+
             subscription.unsubscribe();
+            subscription = Subscription.EMPTY;
         }
 
         if (control.getOption() == null) {
             return;
         }
         currentOption = control.getOption().copy();
-        selectedOption.setText(getOptionText(currentOption));
 
         // fill combobox only once
         if (comboBox.getItems().isEmpty()) {
@@ -120,12 +123,11 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         subscription = selectedOption.boundsInParentProperty().subscribe(b ->
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
 
-        subscription = subscription.and(selectedOption.textProperty().subscribe(text -> {
+        subscription = subscription.and(selectedOption.textProperty().subscribe(_ -> {
             List<String> defaultOptions = currentOption.defaultOptions();
             if (defaultOptions.isEmpty()) {
                 defaultOptions.add(currentOption.availableOptions().getFirst());
             }
-            pseudoClassStateChanged(MODIFIED_TITLED_PANE, !Objects.equals(currentOption, control.getDefaultOption()));
         }));
 
         if (control.getParent() instanceof FilterOptionsPopupSkin.AccordionBox accordion) {
@@ -192,7 +194,10 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                     calendarControl.dateRangeList().stream()
                             .filter(DateRange::exclude)
                             .forEach(dr -> currentOption.excludedOptions().add(dr.toString()));
+                } else {
+                    currentOption.selectedOptions().add(resources.getString("time.item1"));
                 }
+                updateModifiedState(currentOption);
                 control.setOption(currentOption.copy());
             }
         }));
@@ -212,6 +217,17 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         subscription = subscription.and(control.modeProperty().subscribe(mode ->
                 comboBox.getSelectionModel().select(mode.ordinal())));
+
+        selectedOption.setText(getOptionText(currentOption));
+        updateModifiedState(currentOption);
+    }
+
+    private void updateModifiedState(FilterOptions.Option currentOption) {
+        boolean modified = !Objects.equals(currentOption, control.getDefaultOption());
+        pseudoClassStateChanged(MODIFIED_TITLED_PANE, currentOption.isInOverride() || modified);
+        if (modified && !currentOption.isInOverride()) {
+            currentOption.setInOverride(true);
+        }
     }
 
     @Override

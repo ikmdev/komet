@@ -23,8 +23,8 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
-import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
-import dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
+import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
+import dev.ikm.komet.kview.mvvm.view.concept.ConceptNodeFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
@@ -42,13 +42,13 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 /**
  * A specialized Komet window for creating or editing concept entities.
  * <p>
- * This class extends {@link AbstractEntityChapterKlWindow} and incorporates a {@link DetailsNode}
+ * This class extends {@link AbstractEntityChapterKlWindow} and incorporates a {@link ConceptNode}
  * for viewing or modifying concept details. It leverages the activity stream framework
  * to broadcast and receive updates about concept changes.
  */
 public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
 
-    private final DetailsNode detailsNode;
+    private final ConceptNode conceptNode;
     private final PublicIdStringKey<ActivityStream> detailsActivityStreamKey;
 
     /**
@@ -75,8 +75,8 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
         ActivityStreams.create(detailsActivityStreamKey);
 
         // Initialize the DetailsNode with a factory.
-        KometNodeFactory detailsNodeFactory = new DetailsNodeFactory();
-        this.detailsNode = (DetailsNode) detailsNodeFactory.create(viewProperties.parentView(),
+        KometNodeFactory conceptDetailsNodeFactory = new ConceptNodeFactory();
+        this.conceptNode = (ConceptNode) conceptDetailsNodeFactory.create(viewProperties.parentView(),
                 detailsActivityStreamKey,
                 ActivityStreamOption.PUBLISH.keyForOption(),
                 AlertStreams.ROOT_ALERT_STREAM_KEY,
@@ -85,20 +85,20 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
 
         // Configure the details node if we are in create mode.
         if (isCreateMode) {
-            detailsNode.getDetailsViewController()
+            conceptNode.getConceptDetailsViewController()
                     .getConceptViewModel()
                     .setPropertyValue(MODE, CREATE);
-            detailsNode.getDetailsViewController().updateView();
+            conceptNode.getConceptDetailsViewController().updateView();
         }
 
         // This will refresh the Concept details, history, timeline
-        detailsNode.handleActivity(Lists.immutable.of(entityFacade));
+        conceptNode.handleActivity(Lists.immutable.of(entityFacade));
 
         // Getting the concept window pane
-        this.paneWindow = (Pane) detailsNode.getNode();
+        this.paneWindow = (Pane) conceptNode.getNode();
 
         // Set the onClose callback for the details window.
-        detailsNode.getDetailsViewController().setOnCloseConceptWindow(detailsController -> {
+        conceptNode.getConceptDetailsViewController().setOnCloseConceptWindow(detailsController -> {
             ActivityStreams.delete(detailsActivityStreamKey);
             getOnClose().ifPresent(Runnable::run);
             // TODO more clean up such as view models and listeners just in case (memory).
@@ -115,12 +115,12 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
     }
 
     /**
-     * Returns the {@link DetailsNode} associated with this window.
+     * Returns the {@link ConceptNode} associated with this window.
      *
-     * @return the {@link DetailsNode} used for concept viewing or editing
+     * @return the {@link ConceptNode} used for concept viewing or editing
      */
-    public DetailsNode getDetailsNode() {
-        return detailsNode;
+    public ConceptNode getDetailsNode() {
+        return conceptNode;
     }
 
     @Override
@@ -130,11 +130,11 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
 
     @Override
     protected boolean isPropertyPanelOpen() {
-        return detailsNode.getDetailsViewController().isPropertiesPanelOpen();
+        return conceptNode.getConceptDetailsViewController().isPropertiesPanelOpen();
     }
 
     @Override
     protected void setPropertyPanelOpen(boolean isOpen) {
-        detailsNode.getDetailsViewController().setPropertiesPanelOpen(isOpen);
+        conceptNode.getConceptDetailsViewController().setPropertiesPanelOpen(isOpen);
     }
 }
