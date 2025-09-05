@@ -49,6 +49,7 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
+import dev.ikm.tinkar.ext.lang.owl.IntervalUtil;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
@@ -142,6 +143,9 @@ public class ClauseView {
                     setupForRoleAll();
                 }
             }
+			case INTERVAL_ROLE -> {
+				setupForInterval();
+			}
             case NECESSARY_SET -> setupForNecessarySet();
             case SUFFICIENT_SET -> setupForSufficientSet();
             case INCLUSION_SET -> setupForInclusionSet();
@@ -495,6 +499,30 @@ public class ClauseView {
         }
 
     }
+    
+	private void setupForInterval() {
+		if (this.axiomView.premiseType == STATED) {
+			editable = true;
+		}
+		// TODO, when we move LogicalExpression to tinkar-core, then also add logical
+		// expression, and use the logical expression...
+		rootBorderPane.getStyleClass().add(StyleClasses.DEF_FEATURE.toString());
+		int column = 0;
+		openConceptButton.getStyleClass().setAll(StyleClasses.OPEN_CONCEPT_BUTTON.toString());
+		this.axiomView.addToGridPaneNoGrowTopAlign(rootGridPane, openConceptButton, column++);
+		openConceptButton.setOnMouseClicked(this::handleShowFeatureNodeClick);
+		Optional<ConceptFacade> optionalTypeConcept = this.axiomVertex.propertyAsConcept(TinkarTerm.INTERVAL_ROLE_TYPE);
+		if (optionalTypeConcept.isPresent()) {
+			titleLabel.setText("I " + IntervalUtil.getIntervalRoleString(calculator(), axiomVertex));
+		} else {
+			throw new IllegalStateException("Interval node does not contain type: " + this.axiomVertex);
+		}
+		this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
+		if (this.axiomView.premiseType == STATED) {
+			this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
+	}
+}
+    //
 
     private void setupForConcept() {
         if (axiomView.premiseType == STATED) {
