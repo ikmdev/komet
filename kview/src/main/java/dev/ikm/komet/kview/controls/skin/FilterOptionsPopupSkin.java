@@ -15,6 +15,9 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.events.DefaultEvtBus;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -261,8 +264,17 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         currentFilterOptionsProperty.set(null);
         setupFilter(null);
         setupFilter(defaultFilterOptions);
+        // mark all as no override
+        //markAllAsNoOverride(defaultFilterOptions);
         updating = false;
         updateCurrentFilterOptions();
+    }
+
+    private void markAllAsNoOverride(FilterOptions defaultFilterOptions) {
+        defaultFilterOptions.getMainCoordinates().getStatus().setInOverride(false);
+        defaultFilterOptions.getMainCoordinates().getTime().setInOverride(false);
+        defaultFilterOptions.getMainCoordinates().getPath().setInOverride(false);
+        //TODO mark other fields as no override
     }
 
     private void updateCurrentFilterOptions() {
@@ -416,6 +428,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         titledPane.setTitle(option.title());
         titledPane.setOption(option);
         titledPane.setExpanded(false);
+
         return titledPane;
     }
 

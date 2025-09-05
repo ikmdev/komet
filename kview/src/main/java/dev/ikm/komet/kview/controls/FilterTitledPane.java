@@ -1,7 +1,9 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.FilterTitledPaneSkin;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
