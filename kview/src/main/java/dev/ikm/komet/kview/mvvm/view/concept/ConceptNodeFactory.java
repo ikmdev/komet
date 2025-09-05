@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.details;
+package dev.ikm.komet.kview.mvvm.view.concept;
 
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
@@ -31,17 +31,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @KometNodeFactoryDisplay(journalView = false, dockFXView = false)
-public class DetailsNodeFactory implements KometNodeFactory {
-    private static final Logger LOG = LoggerFactory.getLogger(DetailsNodeFactory.class);
+public class ConceptNodeFactory implements KometNodeFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(ConceptNodeFactory.class);
 
-    protected static final String STYLE_ID = DetailsNode.STYLE_ID;
-    protected static final String TITLE = DetailsNode.TITLE;
+    protected static final String STYLE_ID = ConceptNode.STYLE_ID;
+    protected static final String TITLE = ConceptNode.TITLE;
     
-	public static DetailsNodeFactory provider() {
-		return new DetailsNodeFactory();
+	public static ConceptNodeFactory provider() {
+		return new ConceptNodeFactory();
 	}
 
-	public DetailsNodeFactory() {
+	public ConceptNodeFactory() {
 		super();
 	}
 
@@ -65,8 +65,8 @@ public class DetailsNodeFactory implements KometNodeFactory {
     }
 
     @Reconstructor
-    public static DetailsNode reconstructor(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
-        return new DetailsNode(windowView.makeOverridableViewProperties("DetailsNodeFactory.reconstructor"), nodePreferences);
+    public static ConceptNode reconstructor(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
+        return new ConceptNode(windowView.makeOverridableViewProperties("ConceptNodeFactory.reconstructor"), nodePreferences);
     }
     @Override
     public KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
@@ -75,7 +75,7 @@ public class DetailsNodeFactory implements KometNodeFactory {
 
     @Override
     public KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences, boolean displayOnJournalView) {
-        return new DetailsNode(windowView.makeOverridableViewProperties("DetailsNodeFactory.create"), nodePreferences, displayOnJournalView);
+        return new ConceptNode(windowView.makeOverridableViewProperties("ConceptNodeFactory.create"), nodePreferences, displayOnJournalView);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class DetailsNodeFactory implements KometNodeFactory {
 
     @Override
     public Class<? extends KometNode> kometNodeClass() {
-        return DetailsNode.class;
+        return ConceptNode.class;
     }
 }
 
