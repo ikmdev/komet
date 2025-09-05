@@ -217,9 +217,9 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 if (isDefault && control.getFilterOptions().getOptionForItem(pane.getOption().item()).isInOverride()) {
                     // when passing default filter options, if the option is inOverride mode,
                     // keep the one in the control, don't set the default one
-                    pane.setOption(control.getFilterOptions().getOptionForItem(pane.getOption().item()));
+                    pane.setOption(control.getFilterOptions().getOptionForItem(pane.getOption().item()).copy());
                 } else {
-                    pane.setOption(optionForItem);
+                    pane.setOption(optionForItem.copy());
                 }
             });
         accordionBox.updateLangPanes(pane -> {
