@@ -283,6 +283,7 @@ public class ExportController {
      */
     private void performChangeSetExport(final FileSavePicker fileSavePicker, final long fromDate, final long toDate) {
         fileSavePicker.setOnFileSelected(exportFile -> {
+            closeDialog();
             if (exportFile == null) {
                 LOG.warn("Export file is null");
                 AlertStreams.dispatchToRoot(new IllegalArgumentException("Export file cannot be null"));
