@@ -267,9 +267,8 @@ public class DescrNameViewModel extends FormViewModel {
         editDescrName.setSemanticPublicId(getValue(SEMANTIC_PUBLIC_ID));
     }
 
-    public void updateOtherName(PublicId publicId) {
+    public void updateOtherName(PublicId publicId, ViewProperties viewProperties) {
         Transaction transaction = Transaction.make();
-        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
         StampEntity stampEntity = transaction.getStamp(
                 State.fromConcept(getValue(STATUS)), // active, inactive, etc
                 System.currentTimeMillis(),

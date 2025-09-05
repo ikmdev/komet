@@ -25,13 +25,10 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import dev.ikm.tinkar.events.EvtBus;
-import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.tinkar.common.id.IntIdSet;
@@ -46,6 +43,8 @@ import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -393,7 +392,7 @@ public class EditDescriptionFormController implements BasicController {
         LOG.info("Ready to update to the concept view model: " + otherNameViewModel);
 
         if(this.publicId != null) { //This if blocked is called when editing the exiting concept.
-            otherNameViewModel.updateOtherName(this.publicId);
+            otherNameViewModel.updateOtherName(this.publicId, viewProperties);
         }else{  // This block is called when editing the while creating the concept.
             otherNameViewModel.updateData(editDescrName);
             eventBus.publish(conceptTopic, new CreateConceptEvent(this,
