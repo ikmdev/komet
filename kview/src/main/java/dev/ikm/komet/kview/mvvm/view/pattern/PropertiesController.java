@@ -31,7 +31,9 @@ import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
 import dev.ikm.komet.kview.mvvm.view.descriptionname.DescriptionNameController;
 import dev.ikm.komet.kview.mvvm.viewmodel.*;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Toggle;
@@ -387,10 +389,11 @@ public class PropertiesController {
         this.patternFacade = newPattern;
 
         if (newPattern != null && stampAddFormViewModel != null) {
-            stampAddFormViewModel.init(newPattern, getPatternTopic(), getViewProperties());
+            setStampFormViewModel(stampAddFormViewModel);
         } else if (newPattern == null && stampCreateFormViewModel != null) {
-            stampCreateFormViewModel.init(newPattern, getPatternTopic(), getViewProperties());
+            setStampFormViewModel(stampCreateFormViewModel);
         }
+        stampFormViewModel.get().init(newPattern, getPatternTopic(), getViewProperties());
     }
 
     private StateMachine getStateMachine() {
@@ -508,11 +511,15 @@ public class PropertiesController {
         return propertiesTabsPane;
     }
 
-    public StampFormViewModelBase getStampCreateFormViewModel() {
-        if (patternFacade == null) {
-            return stampCreateFormViewModel;
-        } else {
-            return stampAddFormViewModel;
-        }
-    }
+    /***************************************************************************
+     *                                                                         *
+     * Properties                                                              *
+     *                                                                         *
+     **************************************************************************/
+
+    // -- stamp form view model
+    private final ObjectProperty<StampFormViewModelBase> stampFormViewModel = new SimpleObjectProperty<>();
+    public StampFormViewModelBase getStampFormViewModel() { return stampFormViewModel.get(); }
+    public ObjectProperty<StampFormViewModelBase> stampFormViewModelProperty() { return stampFormViewModel; }
+    public void setStampFormViewModel(StampFormViewModelBase stampFormViewModel) { this.stampFormViewModel.set(stampFormViewModel); }
 }
