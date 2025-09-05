@@ -88,9 +88,6 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				List<ReasonerService> rss = PluggableService.load(ReasonerService.class).stream().map(Provider::get)
 						.sorted(Comparator.comparing(ReasonerService::getName)).toList();
 				for (ReasonerService rs : rss) {
-					// TODO Currently broken
-					if (rs.getName().equals("ElkOwlReasonerService"))
-						continue;
 					LOG.info("Reasoner service add: " + rs);
 					CheckMenuItem item = new CheckMenuItem("Use " + rs.getName());
 					item.setOnAction(_ -> {

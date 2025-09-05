@@ -16,6 +16,7 @@
 package dev.ikm.komet.framework.propsheet;
 
 
+import static dev.ikm.komet.framework.StyleClasses.PROP_SHEET_PROPERTY_NAME;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.panel.axiom.AxiomView;
 import dev.ikm.komet.framework.propsheet.editor.IntIdListEditor;
@@ -31,8 +32,18 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.SkinBase;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
 import org.controlsfx.control.PropertySheet;
 import org.controlsfx.control.SegmentedButton;
@@ -42,9 +53,11 @@ import org.controlsfx.control.textfield.TextFields;
 import org.controlsfx.property.editor.AbstractPropertyEditor;
 import org.controlsfx.property.editor.PropertyEditor;
 
-import java.util.*;
-
-import static dev.ikm.komet.framework.StyleClasses.PROP_SHEET_PROPERTY_NAME;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
 
 public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
 
@@ -257,7 +270,7 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
                 if (title.startsWith("<")) {
                     optionalProxy = ProxyFactory.fromXmlFragmentOptional(title);
                     if (optionalProxy.isPresent()) {
-                        title = viewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(optionalProxy.get());
+                        title = viewProperties().calculator().getDescriptionTextOrNid(optionalProxy.get());
                     }
 
                 }
@@ -277,7 +290,7 @@ public class KometPropertySheetSkin extends SkinBase<KometPropertySheet> {
                     if (description != null && !description.trim().isEmpty()) {
                         label.setTooltip(new Tooltip(description));
                     } else if (optionalProxy.isPresent()) {
-                        String fullyQualifiedName = viewProperties().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(optionalProxy.get());
+                        String fullyQualifiedName = viewProperties().calculator().getDescriptionTextOrNid(optionalProxy.get());
                         label.setTooltip(new Tooltip(fullyQualifiedName));
                     }
 
