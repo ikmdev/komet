@@ -15,6 +15,16 @@
  */
 package dev.ikm.komet.framework.panel.axiom;
 
+import static dev.ikm.komet.framework.PseudoClasses.INACTIVE_PSEUDO_CLASS;
+import static dev.ikm.komet.framework.panel.axiom.AxiomView.CHILD_BOX_BORDER;
+import static dev.ikm.komet.framework.panel.axiom.AxiomView.INNER_ROOT_BORDER;
+import static dev.ikm.komet.framework.panel.axiom.AxiomView.ROOT_BORDER;
+import static dev.ikm.komet.framework.panel.axiom.AxiomView.TOOL_BAR_BORDER;
+import static dev.ikm.komet.framework.panel.axiom.AxiomView.computeGraphic;
+import static dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex.CONCEPT;
+import static dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex.FEATURE;
+import static dev.ikm.tinkar.coordinate.logic.PremiseType.STATED;
+import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_REFERENCE;
 import dev.ikm.komet.framework.Dialogs;
 import dev.ikm.komet.framework.MenuItemWithText;
 import dev.ikm.komet.framework.StyleClasses;
@@ -38,7 +48,6 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
@@ -49,6 +58,7 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
+import dev.ikm.tinkar.ext.lang.owl.IntervalUtil;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
@@ -57,9 +67,28 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
-import javafx.scene.control.*;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.control.action.Action;
@@ -76,13 +105,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import static dev.ikm.komet.framework.PseudoClasses.INACTIVE_PSEUDO_CLASS;
-import static dev.ikm.komet.framework.panel.axiom.AxiomView.*;
-import static dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex.CONCEPT;
-import static dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex.FEATURE;
-import static dev.ikm.tinkar.coordinate.logic.PremiseType.STATED;
-import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_REFERENCE;
 
 /**
  * Each clause in an axiom is presented with the ClauseView.
@@ -142,6 +164,9 @@ public class ClauseView {
                     setupForRoleAll();
                 }
             }
+			case INTERVAL_ROLE -> {
+				setupForInterval();
+			}
             case NECESSARY_SET -> setupForNecessarySet();
             case SUFFICIENT_SET -> setupForSufficientSet();
             case INCLUSION_SET -> setupForInclusionSet();
@@ -317,7 +342,7 @@ public class ClauseView {
         rootBorderPane.getStyleClass()
                 .add(StyleClasses.DEF_INCLUSION_SET.toString());
         titleLabel.setText(axiomView.getEntityForAxiomsText(
-                calculator().getPreferredDescriptionTextWithFallbackOrNid(axiomVertex.getMeaningNid())));
+                calculator().getDescriptionTextOrNid(axiomVertex.getMeaningNid())));
         titleLabel.setGraphic(Icon.TAXONOMY_DEFINED_SINGLE_PARENT.makeIcon());
         int column = 0;
         this.axiomView.addToGridPaneNoGrow(rootGridPane, expandButton, column++);
@@ -331,7 +356,7 @@ public class ClauseView {
         rootBorderPane.getStyleClass()
                 .add(StyleClasses.DEF_SUFFICIENT_SET.toString());
         titleLabel.setText(axiomView.getEntityForAxiomsText(
-                calculator().getPreferredDescriptionTextWithFallbackOrNid(axiomVertex.getMeaningNid())));
+                calculator().getDescriptionTextOrNid(axiomVertex.getMeaningNid())));
         titleLabel.setGraphic(Icon.TAXONOMY_DEFINED_SINGLE_PARENT.makeIcon());
         int column = 0;
         this.axiomView.addToGridPaneNoGrow(rootGridPane, expandButton, column++);
@@ -345,7 +370,7 @@ public class ClauseView {
         rootBorderPane.getStyleClass()
                 .add(StyleClasses.DEF_NECESSARY_SET.toString());
         titleLabel.setText(axiomView.getEntityForAxiomsText(
-                calculator().getPreferredDescriptionTextWithFallbackOrNid(axiomVertex.getMeaningNid())
+                calculator().getDescriptionTextOrNid(axiomVertex.getMeaningNid())
         ));
         titleLabel.setGraphic(Icon.TAXONOMY_ROOT_ICON.makeIcon());
         int column = 0;
@@ -495,6 +520,30 @@ public class ClauseView {
         }
 
     }
+    
+	private void setupForInterval() {
+		if (this.axiomView.premiseType == STATED) {
+			editable = true;
+		}
+		// TODO, when we move LogicalExpression to tinkar-core, then also add logical
+		// expression, and use the logical expression...
+		rootBorderPane.getStyleClass().add(StyleClasses.DEF_FEATURE.toString());
+		int column = 0;
+		openConceptButton.getStyleClass().setAll(StyleClasses.OPEN_CONCEPT_BUTTON.toString());
+		this.axiomView.addToGridPaneNoGrowTopAlign(rootGridPane, openConceptButton, column++);
+		openConceptButton.setOnMouseClicked(this::handleShowFeatureNodeClick);
+		Optional<ConceptFacade> optionalTypeConcept = this.axiomVertex.propertyAsConcept(TinkarTerm.INTERVAL_ROLE_TYPE);
+		if (optionalTypeConcept.isPresent()) {
+			titleLabel.setText("I " + IntervalUtil.getIntervalRoleString(calculator(), axiomVertex));
+		} else {
+			throw new IllegalStateException("Interval node does not contain type: " + this.axiomVertex);
+		}
+		this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
+		if (this.axiomView.premiseType == STATED) {
+			this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
+	}
+}
+    //
 
     private void setupForConcept() {
         if (axiomView.premiseType == STATED) {

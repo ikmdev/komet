@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.FORM_TITLE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_STAMP_VALUES_THE_SAME_OR_EMPTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.MODULES;
@@ -48,6 +49,8 @@ public abstract class StampFormViewModelBase extends FormViewModel {
                 vr.error("Cannot submit stamp because the data is the same.");
             }
         });
+
+        addProperty(IS_CONFIRMED_OR_SUBMITTED, false);
 
         addProperty(MODULES, Collections.emptyList(), true);
         addProperty(PATHS, Collections.emptyList(), true);
@@ -90,7 +93,7 @@ public abstract class StampFormViewModelBase extends FormViewModel {
         IS_STAMP_VALUES_THE_SAME_OR_EMPTY,       // Are the Stamp values in the properties the same as of the current Stamp.
         // Cn also indicate if the current stamp values are empty.
 
-        IS_CONFIRMED,                   // Signals whether the user has pressed confirmed on the form with valid stamp values
+        IS_CONFIRMED_OR_SUBMITTED,                   // Signals whether the user has pressed confirmed on the form with valid stamp values
 
         STATUSES,
         MODULES,
