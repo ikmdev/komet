@@ -231,7 +231,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                         option.availableOptions().addAll(pane.getLangCoordinates().getOptions().get(i).availableOptions());
                     }
                 }
-                pane.setLangCoordinates(languageCoordinates);
+                pane.setLangCoordinates(languageCoordinates.copy());
             });
         skipUpdateFilterOptions = false;
         updateCurrentFilterOptions();
