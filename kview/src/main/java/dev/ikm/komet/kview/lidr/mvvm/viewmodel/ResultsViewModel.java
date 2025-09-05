@@ -15,11 +15,11 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.viewmodel;
 
-import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
-import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel;
+import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.QUALITATIVE_CONCEPT;
 import dev.ikm.komet.framework.builder.ConceptEntityBuilder;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
@@ -41,8 +41,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
-
-import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.QUALITATIVE_CONCEPT;
 
 public class ResultsViewModel extends FormViewModel {
 
@@ -125,12 +123,12 @@ public class ResultsViewModel extends FormViewModel {
         DescrName resultsName = getPropertyValue(RESULTS_NAME);
 
         Transaction transaction = Transaction.make("New concept for: " + resultsName.getNameText());
-
+        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
         //FIXME is there default stamp info for a Result entity?
         StampEntity stampEntity = transaction.getStamp(
                 State.fromConceptNid(TinkarTerm.ACTIVE_STATE.nid()), // default to active
                 System.currentTimeMillis(),
-                TinkarTerm.USER.nid(),
+                viewProperties.nodeView().editCoordinate().getAuthorForChanges().nid(),
                 -1, // have no idea what the NID would be here
                 TinkarTerm.DEVELOPMENT_PATH.nid()); // default to dev path???
 

@@ -533,7 +533,7 @@ public class LidrDetailsController {
                         .setPropertyValue(PATH, stamp.path());
             }
 
-            STAMPDetail stampDetail = toStampDetail(getStampViewModel());
+            STAMPDetail stampDetail = toStampDetail(getStampViewModel(), getViewProperties());
             eventBus.publish(conceptTopic, new StampModifiedEvent("no source", StampModifiedEvent.UPDATED, stampDetail));
 
             // TODO: Ability to change Concept record. but for now user can edit stamp but not affect Concept version.
@@ -782,7 +782,7 @@ public class LidrDetailsController {
             // set Stamp info into Details form
             getStampViewModel().save();
             updateUIStamp(getStampViewModel());
-            STAMPDetail stampDetail = toStampDetail(getStampViewModel());
+            STAMPDetail stampDetail = toStampDetail(getStampViewModel(), getViewProperties());
             eventBus.publish(conceptTopic, new StampModifiedEvent(popOver, StampModifiedEvent.UPDATED, stampDetail));
         });
         popOver.show((Node) event.getSource());

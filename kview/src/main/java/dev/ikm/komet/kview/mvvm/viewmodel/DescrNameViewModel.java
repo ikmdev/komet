@@ -15,12 +15,24 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.CASE_SIGNIFICANCE_OPTIONS;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.ConceptEntityVersion;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.RecordListBuilder;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.SemanticRecordBuilder;
+import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.State;
@@ -40,8 +52,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.CASE_SIGNIFICANCE_OPTIONS;
 
 public class DescrNameViewModel extends FormViewModel {
 
@@ -181,13 +191,13 @@ public class DescrNameViewModel extends FormViewModel {
         }
     }
 
-    public void updateFullyQualifiedName(PublicId publicId) {
+    public void updateFullyQualifiedName(PublicId publicId, ViewProperties viewProperties) {
         Transaction transaction = Transaction.make();
 
         StampEntity stampEntity = transaction.getStamp(
                 State.fromConcept(getValue(STATUS)), // active, inactive, etc
                 System.currentTimeMillis(),
-                TinkarTerm.USER.nid(),
+                viewProperties.nodeView().editCoordinate().getAuthorForChanges().nid(),
                 ((ConceptEntity)getValue(MODULE)).nid(), // SNOMED CT, LOINC, etc
                 TinkarTerm.DEVELOPMENT_PATH.nid()); //TODO should this path come from the parent concept's path?
 
@@ -259,11 +269,11 @@ public class DescrNameViewModel extends FormViewModel {
 
     public void updateOtherName(PublicId publicId) {
         Transaction transaction = Transaction.make();
-
+        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
         StampEntity stampEntity = transaction.getStamp(
                 State.fromConcept(getValue(STATUS)), // active, inactive, etc
                 System.currentTimeMillis(),
-                TinkarTerm.USER.nid(),
+                viewProperties.nodeView().editCoordinate().getAuthorForChanges().nid(),
                 ((ConceptEntity)getValue(MODULE)).nid(), // SNOMED CT, LOINC, etc
                 TinkarTerm.DEVELOPMENT_PATH.nid()); //TODO should this path come from the parent concept's path?
 

@@ -337,7 +337,7 @@ public class ConceptViewModel extends FormViewModel {
         StampEntity stampEntity = transaction.getStamp(
                 State.fromConcept(otherName.getStatus()), // active, inactive, etc
                 System.currentTimeMillis(),
-                TinkarTerm.USER.nid(),
+                getViewProperties().nodeView().editCoordinate().getAuthorForChanges().nid(),
                 otherName.getModule().nid(), // SNOMED CT, LOINC, etc
                 TinkarTerm.DEVELOPMENT_PATH.nid()); // Should this be defaulted???
 
