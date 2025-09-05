@@ -102,6 +102,9 @@ public class PatternFieldsController {
 
         addEditLabel.textProperty().bind(patternFieldsViewModel.getProperty(ADD_EDIT_LABEL));
 
+        // Set up bindings after ViewModel is assigned
+        fieldOrderComboBox.disableProperty().bind(patternFieldsViewModel.disableFieldOrderAndDataTypeProperty());
+        dataTypeComboBox.disableProperty().bind(patternFieldsViewModel.disableFieldOrderAndDataTypeProperty());
 
         IntegerProperty totalExistingfields = patternFieldsViewModel.getProperty(TOTAL_EXISTING_FIELDS);
         // This had to be changed to ObjectProperty<Integer>. Else give a runtime casting exception.

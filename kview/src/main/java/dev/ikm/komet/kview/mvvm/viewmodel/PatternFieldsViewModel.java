@@ -18,8 +18,10 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.slf4j.Logger;
@@ -51,6 +53,15 @@ public class PatternFieldsViewModel extends FormViewModel {
     public static String PREVIOUS_PATTERN_FIELD = "previousPatternField";
 
     public static final String IS_INVALID = "isInvalid";
+
+    public enum EditMode {
+        EDIT,
+        CREATE
+    }
+
+    private final BooleanProperty disableFieldOrderAndDataType = new SimpleBooleanProperty(false);
+
+    private final BooleanProperty patternHasBeenPublished = new SimpleBooleanProperty(false);
 
     public PatternFieldsViewModel() {
         super();
@@ -86,5 +97,29 @@ public class PatternFieldsViewModel extends FormViewModel {
 
     public ViewProperties getViewProperties() {
         return getPropertyValue(VIEW_PROPERTIES);
+    }
+
+    public BooleanProperty disableFieldOrderAndDataTypeProperty() {
+        return disableFieldOrderAndDataType;
+    }
+
+    public boolean isDisableFieldOrderAndDataType() {
+        return disableFieldOrderAndDataType.get();
+    }
+
+    public void setDisableFieldOrderAndDataType(boolean value) {
+        disableFieldOrderAndDataType.set(value);
+    }
+
+    public BooleanProperty patternHasBeenPublishedProperty() {
+        return patternHasBeenPublished;
+    }
+
+    public boolean isPatternHasBeenPublished() {
+        return patternHasBeenPublished.get();
+    }
+
+    public void setPatternHasBeenPublished(boolean value) {
+        patternHasBeenPublished.set(value);
     }
 }
