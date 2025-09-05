@@ -19,6 +19,7 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.StampViewControl;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -297,24 +298,35 @@ public class GenEditingDetailsController {
     private void setupDisplayUUID() {
         EntityFacade semanticComponent = genEditingViewModel.getPropertyValue(SEMANTIC);
         if (semanticComponent == null) {
-            return;
+            identifierControl.publicIdProperty().bind(genEditingViewModel.getProperty(PATTERN).map(pf ->
+                    String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
+        } else {
+            List<String> idList = semanticComponent.publicId().asUuidList().stream()
+                    .map(UUID::toString)
+                    .collect(Collectors.toList());
+            idList.addAll(DataModelHelper.getIdsToAppend(genEditingViewModel.getViewProperties().calculator(), semanticComponent.toProxy()));
+            String idString = String.join(", ", idList);
+            identifierControl.setPublicId(idString);
         }
-
-        List<String> idList = semanticComponent.publicId().asUuidList().stream()
-                .map(UUID::toString)
-                .collect(Collectors.toList());
-        idList.addAll(DataModelHelper.getIdsToAppend(genEditingViewModel.getViewProperties().calculator(), semanticComponent.toProxy()));
-        String idString = String.join(", ", idList);
-
-        identifierControl.setPublicId(idString);
     }
 
     private void setupIdenticon(ObjectProperty<EntityFacade> refComponent) {
         if (refComponent.isNotNull().get()) {
             EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-
             Image identicon = Identicon.generateIdenticonImage(semantic.publicId());
             identiconImageView.setImage(identicon);
+        } else {
+            ObjectProperty<EntityFacade> patternProperty = genEditingViewModel.getProperty(PatternViewModel.PATTERN);
+            patternProperty.subscribe(entityFacade -> {
+                if (entityFacade != null) {
+                    genEditingViewModel.setPropertyValue(MODE, EDIT);
+                   // dynamically update the identicon image.
+                    Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
+                    identiconImageView.setImage(identicon);
+                } else {
+                    genEditingViewModel.setPropertyValue(MODE, CREATE);
+                }
+            });
         }
     }
 
