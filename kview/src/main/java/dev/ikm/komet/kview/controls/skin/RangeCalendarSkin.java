@@ -277,16 +277,17 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
         DateComboBox dateTimeComboBox = new DateComboBox();
         HBox.setHgrow(dateTimeComboBox, Priority.ALWAYS);
 
-        DateTextField dateField = new DateTextField(false);
-        HBox.setHgrow(dateField, Priority.ALWAYS);
         HBox dateBox = new HBox(dateLabel, dateTimeComboBox);
         dateBox.getStyleClass().add("date-box");
-        if (control.getDate() != null) {
-            dateField.setDate(control.getDate());
-            datePicker.setValue(control.getDate());
-        }
+
+        LocalDate initialDate = control.getDate();
         control.dateProperty().bindBidirectional(dateTimeComboBox.dateProperty());
         root.getChildren().addFirst(dateBox);
+
+        if (initialDate != null) {
+            datePicker.setValue(initialDate);
+            dateTimeComboBox.setDate(initialDate);
+        }
     }
 
     public void createDateRangeFields(boolean excluding) {
@@ -530,11 +531,17 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
             itemsProperty().subscribe((_, n) -> {
                 if (n != null && !n.isEmpty()) {
                     if (eventEventHandler == null) {
-                        eventEventHandler =  _ -> listView.scrollTo(getSelectionModel().getSelectedIndex());
+                        eventEventHandler =  _ -> {
+                            if (listView != null) {
+                                listView.scrollTo(getSelectionModel().getSelectedIndex());
+                            }
+                        };
                     }
                     addEventFilter(ON_SHOWN, eventEventHandler);
                     addEventFilter(ON_HIDDEN, _ -> removeEventFilter(ON_SHOWN, eventEventHandler));
-                    show();
+                    if (getScene() != null) {
+                        show();
+                    }
                 }
             });
         }
@@ -542,7 +549,8 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
         @Override
         protected Skin<?> createDefaultSkin() {
             ComboBoxListViewSkin<DateTime> defaultSkin = (ComboBoxListViewSkin<DateTime>) super.createDefaultSkin();
-            lookup(".arrow-button").setDisable(true);
+            lookup(".arrow-button").disableProperty().bind(Bindings.createBooleanBinding(() ->
+                    getItems() == null || getItems().isEmpty(), itemsProperty()));
             listView = (ListView<DateTime>) defaultSkin.getPopupContent();
             return defaultSkin;
         }
@@ -562,7 +570,6 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                     }
                 });
                 DateComboBox.this.setValue(dateTime);
-                lookup(".arrow-button").setDisable(getItems() == null || getItems().isEmpty());
             }
         };
         public final ObjectProperty<LocalDate> dateProperty() {
@@ -588,7 +595,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
             return Optional.empty();
         }
 
-        private DateTime getDateTimeFromDate(LocalDate date) {
+        DateTime getDateTimeFromDate(LocalDate date) {
             return getDateTimeFromDate(date, null);
         }
 
