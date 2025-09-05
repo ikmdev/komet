@@ -3,18 +3,12 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
-import dev.ikm.tinkar.composer.Composer;
-import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.*;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
-import org.carlfx.cognitive.validator.ValidationResult;
-import org.carlfx.cognitive.viewmodel.ViewModel;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -34,8 +28,6 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
 
     public StampCreateFormViewModel(StampType stampType) {
         super(stampType);
-
-        addProperty(IS_CONFIRMED, false);
 
         addProperty(CLEAR_RESET_BUTTON_TEXT, "CLEAR");
         addProperty(SUBMIT_BUTTON_TEXT, "CONFIRM");
@@ -95,7 +87,7 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
     @Override
     public void submitOrConfirm() {
         save();
-        setPropertyValue(IS_CONFIRMED, true);
+
         EvtBusFactory.getDefaultEvtBus().publish(topic, new ClosePropertiesPanelEvent("Stamp From View Model cancel()",
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
@@ -111,6 +103,7 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
 
         save(true);
 
+        setPropertyValue(IS_CONFIRMED_OR_SUBMITTED, true);
         // We're not going to create a stamp here. Just saving the stamp properties to the view model
         // so that they can be used later to create a new Concept.
 
