@@ -76,6 +76,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import javafx.util.Subscription;
@@ -119,6 +120,7 @@ public class NextGenSearchController {
 
     public static final int MAX_RESULT_SIZE = 1000;
 
+    private static final PseudoClass FILTER_SET = PseudoClass.getPseudoClass("filter-set");
     private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
 
     @FXML
@@ -131,7 +133,7 @@ public class NextGenSearchController {
     private Button sortByButton;
 
     @FXML
-    private Button filterPane;
+    private StackPane filterPane;
 
     @FXML
     private AutoCompleteTextField<EntityFacade> searchField;
@@ -201,6 +203,9 @@ public class NextGenSearchController {
         });
         filterOptionsPopup.showingProperty().subscribe(showing ->
                 filterPane.pseudoClassStateChanged(FILTER_SHOWING, showing));
+
+        filterOptionsPopup.defaultOptionsSetProperty().subscribe(isDefault ->
+                filterPane.pseudoClassStateChanged(FILTER_SET, !isDefault));
 
         // listen for changes to the filter options
         ChangeListener<FilterOptions> changeListener = ((obs, oldFilterOptions, newFilterOptions) -> {

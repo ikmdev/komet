@@ -89,7 +89,7 @@
 
 .search-control > .filter-region > .icon.dot {
     /* 13.33, 0.83 5.833x5.833 */
-    -fx-background-color: #00BC62;
+    -fx-background-color: #F3BE00;
     -fx-shape: "M19.1667 3.74992C19.1667 5.33325 17.8333 6.66658 16.25 6.66658C14.6667 6.66658 13.3333 5.33325 13.3333 3.74992C13.3333 2.16659 14.6667 0.833252 16.25 0.833252C17.8333 0.833252 19.1667 2.16659 19.1667 3.74992Z";
     -fx-managed: false;
     visibility: hidden;

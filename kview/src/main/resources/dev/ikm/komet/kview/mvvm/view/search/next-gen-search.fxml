@@ -17,27 +17,19 @@
             <children>
                 <VBox prefHeight="61.0" prefWidth="350.0">
                     <children>
-                        <HBox prefHeight="100.0" prefWidth="200.0">
+                        <HBox prefHeight="100.0" prefWidth="200.0" styleClass="search-box">
                             <children>
                                 <AutoCompleteTextField fx:id="searchField" onAction="#doSearch" prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
                                    <cursor>
                                       <Cursor fx:constant="TEXT" />
                                    </cursor>
                                 </AutoCompleteTextField>
-                                <Button fx:id="filterPane" mnemonicParsing="false" styleClass="search-button, filter-button">
-                                    <graphic>
-                                        <Region focusTraversable="true">
-                                            <styleClass>
-                                                <String fx:value="icon" />
-                                                <String fx:value="search-button-region" />
-                                            </styleClass>
-                                        </Region>
-                                    </graphic>
-                                </Button>
+                                <StackPane fx:id="filterPane" styleClass="filter-region">
+                                    <Region styleClass="icon, filter"/>
+                                    <Region styleClass="icon, filter-dot"/>
+                                    <Region styleClass="icon, dot"/>
+                                </StackPane>
                             </children>
-                            <padding>
-                                <Insets bottom="12.0" />
-                            </padding>
                         </HBox>
                         <Button fx:id="sortByButton" mnemonicParsing="false" onAction="#showSearchOptions" prefHeight="25.0" prefWidth="345.0" styleClass="search-sort-button" />
                     </children>
