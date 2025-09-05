@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
@@ -9,6 +10,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
+import javafx.scene.text.Text;
 import javafx.util.Subscription;
 
 /// Provides the Skin for the PublicIDControl.
@@ -61,6 +63,9 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         publicIdTextField.setEditable(false);
         publicIdTextField.getStyleClass().addAll("public-id-textfield", "copyable-label");
 
+        // using setHgrow causes the TextField to grow to the full width of the HBox, which is not desirable
+//        HBox.setHgrow(publicIdTextField, Priority.ALWAYS);
+
         // the SVG graphic for the copy to clipboard icon
         var svgPath = new SVGPath();
         svgPath.setContent(SVGConstants.COPY_TO_CLIPBOARD_SVG_PATH);
@@ -72,6 +77,9 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         Tooltip.install(copyToClipboardButton, new Tooltip("Copy to Clipboard"));
 
         publicIdHBox.getStyleClass().add("public-id-box");
+
+        // using setHgrow causes the TextField to grow to the full width of the HBox, which is not desirable
+//        HBox.setHgrow(publicIdHBox, Priority.ALWAYS);
 
         // the publicIdHBox contains the publicIdLabel and the copyToClipboardButton.
         // Both controls need to be in a single HBox to be able to show and hide the
@@ -107,8 +115,19 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         // subscribe to changes to the publicIdProperty in the PublicIDControl
         subscription = control.publicIdProperty().subscribe(publicId -> {
             identifier = publicId;
-            publicIdTextField.setText(publicId);
-            publicIdTooltip.setText(publicId);
+            publicIdTooltip.setText(identifier);
+            publicIdTextField.setText(identifier);
+
+            Platform.runLater(() -> {
+                // set the preferredWidth of the TextField to completely show the identifier text
+
+                Text text = new Text(identifier); // Create a temporary Text node with the new text
+                text.setFont(publicIdTextField.getFont()); // Set the same font as the TextField
+                double width = text.getLayoutBounds().getWidth() +
+                        publicIdTextField.getPadding().getLeft() +
+                        publicIdTextField.getPadding().getRight() + 2d; // Add padding and a small buffer
+                publicIdTextField.setPrefWidth(width);
+            });
         });
     }
 
