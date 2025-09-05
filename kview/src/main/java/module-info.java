@@ -156,7 +156,7 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.mvvm.view.loginauthor;
     opens dev.ikm.komet.kview.mvvm.view.loginauthor;
 
-    provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory, dev.ikm.komet.kview.mvvm.view.properties.PropertiesNodeFactory;
+    provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.details.DetailsNodeFactory;
 
     provides EntityKlWindowFactory with
             dev.ikm.komet.kview.klwindows.concept.ConceptKlWindowFactory,

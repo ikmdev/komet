@@ -119,18 +119,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ScrollEvent;
@@ -191,11 +180,8 @@ public class DetailsController  {
     @FXML
     private BorderPane detailsOuterBorderPane;
 
-    /**
-     * The inner border pane contains all content.
-     */
     @FXML
-    private BorderPane detailsCenterBorderPane;
+    private BorderPane detailsInnerBorderPane;
 
     @FXML
     private Button addDescriptionButton;
@@ -211,7 +197,7 @@ public class DetailsController  {
     private Tooltip conceptNameTooltip;
 
     @FXML
-    private TextField definitionTextField;
+    private Label definitionTextField;
 
     @FXML
     private PublicIDControl identifierControl;
@@ -1413,7 +1399,7 @@ public class DetailsController  {
     }
 
     public void clearView() {
-        definitionTextField.clear();
+        definitionTextField.setText("");
         identifierControl.setPublicId("");
         fqnAddDateLabel.setText("");
 
