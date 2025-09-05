@@ -53,6 +53,7 @@ import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.komet.kview.mvvm.model.JournalCounter;
 import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
@@ -187,6 +188,9 @@ public class JournalController {
 
     @FXML
     private VBox sidebarVBox;
+
+    @FXML
+    private ComboBox<String> journalComboBox;
 
     @FXML
     private ToggleGroup sidebarToggleGroup;
@@ -342,6 +346,7 @@ public class JournalController {
             slideOut(newValue);
         });
 
+        journalComboBox.setPromptText("Project Journal #" + JournalCounter.getInstance().get());
         journalWindows.addListener((ListChangeListener<ChapterKlWindow<Pane>>) change -> {
             while (change.next()) {
                 PrefX journalWindowPref = PrefX.create();

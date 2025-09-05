@@ -61,7 +61,7 @@
                      </contextMenu>
                   </Button>
                   <Rectangle fill="DODGERBLUE" height="32.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
-                  <ComboBox prefWidth="150.0" promptText="Project Journal #1" styleClass="combo-box-drop">
+                  <ComboBox fx:id="journalComboBox" prefWidth="150.0" promptText="Project Journal #1" styleClass="combo-box-drop">
                      <opaqueInsets>
                         <Insets />
                      </opaqueInsets>
