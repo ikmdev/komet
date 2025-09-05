@@ -15,15 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
-import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
-import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_CASE_SIGNIFICANCE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_LANGUAGE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampType.CONCEPT;
-
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.mvvm.view.common.StampAddController;
@@ -31,22 +22,38 @@ import dev.ikm.komet.kview.mvvm.viewmodel.StampAddFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampCreateFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.events.*;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.SVGPath;
-import org.carlfx.cognitive.loader.*;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
+
+import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
+import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
+import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampType.CONCEPT;
 
 /**
  * The properties window providing tabs of Edit, Hierarchy, History, and Comments.
@@ -314,13 +321,13 @@ public class PropertiesController implements Serializable {
             if (!contentBorderPane.getCenter().equals(editFqnPane)) {
                 editFullyQualifiedNameController.updateModel(getViewProperties(), null);
                 contentBorderPane.setCenter(editFqnPane);
-                editButton.setSelected(true);
-                editButton.setText("EDIT");
-                if (evt.getPublicId() != null) {
-                    editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getPublicId());
-                }else {
-                    editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getDescrName());
-                }
+            }
+            editButton.setSelected(true);
+            editButton.setText("EDIT");
+            if (evt.getPublicId() != null) {
+                editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getPublicId());
+            }else {
+                editFullyQualifiedNameController.setConceptAndPopulateForm(evt.getDescrName());
             }
         };
         eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);
