@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.details;
+package dev.ikm.komet.kview.mvvm.view.concept;
 
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
@@ -119,18 +119,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ScrollEvent;
@@ -166,11 +155,11 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class DetailsController  {
+public class ConceptController {
 
     private static final PseudoClass STAMP_SELECTED = PseudoClass.getPseudoClass("selected");
 
-    private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConceptController.class);
 
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
 
@@ -191,11 +180,8 @@ public class DetailsController  {
     @FXML
     private BorderPane detailsOuterBorderPane;
 
-    /**
-     * The inner border pane contains all content.
-     */
     @FXML
-    private BorderPane detailsCenterBorderPane;
+    private BorderPane detailsInnerBorderPane;
 
     @FXML
     private Button addDescriptionButton;
@@ -211,7 +197,7 @@ public class DetailsController  {
     private Tooltip conceptNameTooltip;
 
     @FXML
-    private TextField definitionTextField;
+    private Label definitionTextField;
 
     @FXML
     private PublicIDControl identifierControl;
@@ -354,10 +340,10 @@ public class DetailsController  {
      */
     private ViewCalculatorWithCache viewCalculatorWithCache;
 
-    public DetailsController() {
+    public ConceptController() {
     }
 
-    public DetailsController(UUID conceptTopic) {
+    public ConceptController(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
     }
 
@@ -846,8 +832,8 @@ public class DetailsController  {
         slideoutTrayPane.setMaxWidth(0);
     }
 
-    private Consumer<DetailsController> onCloseConceptWindow;
-    public void setOnCloseConceptWindow(Consumer<DetailsController> onClose) {
+    private Consumer<ConceptController> onCloseConceptWindow;
+    public void setOnCloseConceptWindow(Consumer<ConceptController> onClose) {
         this.onCloseConceptWindow = onClose;
     }
 
@@ -1413,7 +1399,7 @@ public class DetailsController  {
     }
 
     public void clearView() {
-        definitionTextField.clear();
+        definitionTextField.setText("");
         identifierControl.setPublicId("");
         fqnAddDateLabel.setText("");
 

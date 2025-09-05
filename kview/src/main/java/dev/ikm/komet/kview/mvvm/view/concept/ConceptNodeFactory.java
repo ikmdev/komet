@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.properties;
+package dev.ikm.komet.kview.mvvm.view.concept;
 
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
@@ -30,18 +30,18 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@KometNodeFactoryDisplay(dockFXView = false, journalView = false)
-public class PropertiesNodeFactory implements KometNodeFactory {
-    private static final Logger LOG = LoggerFactory.getLogger(PropertiesNodeFactory.class);
+@KometNodeFactoryDisplay(journalView = false, dockFXView = false)
+public class ConceptNodeFactory implements KometNodeFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(ConceptNodeFactory.class);
 
-    protected static final String STYLE_ID = PropertiesNode.STYLE_ID;
-    protected static final String TITLE = PropertiesNode.TITLE;
+    protected static final String STYLE_ID = ConceptNode.STYLE_ID;
+    protected static final String TITLE = ConceptNode.TITLE;
     
-    public static PropertiesNodeFactory provider() {
-		return new PropertiesNodeFactory();
+	public static ConceptNodeFactory provider() {
+		return new ConceptNodeFactory();
 	}
 
-	private PropertiesNodeFactory() {
+	public ConceptNodeFactory() {
 		super();
 	}
 
@@ -52,7 +52,8 @@ public class PropertiesNodeFactory implements KometNodeFactory {
 
     @Override
     public ImmutableList<PublicIdStringKey<ActivityStream>> defaultActivityStreamChoices() {
-        return Lists.immutable.of(ActivityStreams.SEARCH, ActivityStreams.NAVIGATION, ActivityStreams.UNLINKED);
+        return Lists.immutable.of(ActivityStreams.SEARCH, ActivityStreams.NAVIGATION,
+                ActivityStreams.UNLINKED, ActivityStreams.BUILDER);
     }
 
     @Override
@@ -64,12 +65,17 @@ public class PropertiesNodeFactory implements KometNodeFactory {
     }
 
     @Reconstructor
-    public static PropertiesNode reconstructor(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
-        return new PropertiesNode(windowView.makeOverridableViewProperties("PropertiesNodeFactory.reconstructor"), nodePreferences);
+    public static ConceptNode reconstructor(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
+        return new ConceptNode(windowView.makeOverridableViewProperties("ConceptNodeFactory.reconstructor"), nodePreferences);
     }
     @Override
     public KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences) {
         return reconstructor(windowView, nodePreferences);
+    }
+
+    @Override
+    public KometNode create(ObservableViewNoOverride windowView, KometPreferences nodePreferences, boolean displayOnJournalView) {
+        return new ConceptNode(windowView.makeOverridableViewProperties("ConceptNodeFactory.create"), nodePreferences, displayOnJournalView);
     }
 
     @Override
@@ -84,7 +90,7 @@ public class PropertiesNodeFactory implements KometNodeFactory {
 
     @Override
     public Class<? extends KometNode> kometNodeClass() {
-        return PropertiesNode.class;
+        return ConceptNode.class;
     }
 }
 

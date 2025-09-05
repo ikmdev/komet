@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.details;
+package dev.ikm.komet.kview.mvvm.view.concept;
 
 import static dev.ikm.komet.framework.activity.ActivityStreamOption.PUBLISH;
 import static dev.ikm.komet.framework.activity.ActivityStreamOption.SYNCHRONIZE;
@@ -49,8 +49,8 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
-public class DetailsNode extends ExplorationNodeAbstract {
-    private static final Logger LOG = LoggerFactory.getLogger(DetailsNode.class);
+public class ConceptNode extends ExplorationNodeAbstract {
+    private static final Logger LOG = LoggerFactory.getLogger(ConceptNode.class);
 
     protected final SimpleObjectProperty<EntityFacade> entityFocusProperty = new SimpleObjectProperty<>();
     protected FlowSubscriber<Integer> invalidationSubscriber;
@@ -59,8 +59,8 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
     protected static final String STYLE_ID = "kview-details-node";
     protected static final String TITLE = "Concept Details";
-    private BorderPane detailsViewBorderPane;
-    private DetailsController detailsViewController;
+    private BorderPane conceptDetailsViewBorderPane;
+    private ConceptController conceptDetailsViewController;
 
     /////// Properties slide out //////////////////////////////
     protected static final String CONCEPT_PROPERTIES_VIEW_FXML_FILE = "properties.fxml";
@@ -73,10 +73,10 @@ public class DetailsNode extends ExplorationNodeAbstract {
     private TimelineController timelineViewController;
 
 
-    public DetailsNode(ViewProperties viewProperties, KometPreferences nodePreferences) {
+    public ConceptNode(ViewProperties viewProperties, KometPreferences nodePreferences) {
         this(viewProperties, nodePreferences, false);
     }
-    public DetailsNode(ViewProperties viewProperties, KometPreferences nodePreferences, boolean displayOnJournalView) {
+    public ConceptNode(ViewProperties viewProperties, KometPreferences nodePreferences, boolean displayOnJournalView) {
         super(viewProperties, nodePreferences);
         init(displayOnJournalView);
         registerListeners(viewProperties);
@@ -100,19 +100,19 @@ public class DetailsNode extends ExplorationNodeAbstract {
             // 2) not in fxml view class    - apply(file, view, ...view models)
             // 3) not in fxml view instance - apply(file, view instance, ...view models)
             Config config = new Config(getClass().getResource(CONCEPT_DETAILS_VIEW_FXML_FILE))
-                    .controller(new DetailsController(conceptTopic))
+                    .controller(new ConceptController(conceptTopic))
                     .updateViewModel("conceptViewModel", viewModel ->
                             viewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalWindowTopic));
-            JFXNode<BorderPane, DetailsController> jfxNode = FXMLMvvmLoader.make(config);
+            JFXNode<BorderPane, ConceptController> jfxNode = FXMLMvvmLoader.make(config);
 
-            this.detailsViewBorderPane = jfxNode.node();
-            this.detailsViewController = jfxNode.controller();
+            this.conceptDetailsViewBorderPane = jfxNode.node();
+            this.conceptDetailsViewController = jfxNode.controller();
 
             // Programmatically change CSS Theme
-            this.detailsViewBorderPane.getStylesheets().clear();
+            this.conceptDetailsViewBorderPane.getStylesheets().clear();
             String styleSheet = defaultStyleSheet();
-            this.detailsViewBorderPane.getStylesheets().add(styleSheet);
+            this.conceptDetailsViewBorderPane.getStylesheets().add(styleSheet);
 
             if (!displayOnJournalView) {
 
@@ -123,7 +123,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
                         activityStreamKeyProperty,
                         optionForActivityStreamKeyProperty,
                         false);
-                this.detailsViewBorderPane.setTop(topPanel);
+                this.conceptDetailsViewBorderPane.setTop(topPanel);
             }
 
             // Load Concept Properties View Panel (FXML & Controller)
@@ -135,8 +135,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
             this.propertiesViewBorderPane.getStylesheets().add(styleSheet);
             this.propertiesViewController.updateModel(viewProperties, null);
 
-            // setup view and view into details view
-            detailsViewController.attachPropertiesViewSlideoutTray(this.propertiesViewBorderPane, this.propertiesViewController);
+            conceptDetailsViewController.attachPropertiesViewSlideoutTray(this.propertiesViewBorderPane, this.propertiesViewController);
 
             // Load Timeline View Panel (FXML & Controller)
             FXMLLoader timelineFXMLLoader = new FXMLLoader(TimelineController.class.getResource(CONCEPT_TIMELINE_VIEW_FXML_FILE));
@@ -162,7 +161,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
             this.timelineViewBorderPane.getStylesheets().add(styleSheet);
 
             // setup view and view into details view
-            detailsViewController.attachTimelineViewSlideoutTray(this.timelineViewBorderPane);
+            conceptDetailsViewController.attachTimelineViewSlideoutTray(this.timelineViewBorderPane);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -188,11 +187,11 @@ public class DetailsNode extends ExplorationNodeAbstract {
                 }
 
                 // Populate Detail View
-                if (getDetailsViewController() != null) {
-                    getDetailsViewController()
+                if (getConceptDetailsViewController() != null) {
+                    getConceptDetailsViewController()
                             .getConceptViewModel()
                             .setPropertyValue(CURRENT_ENTITY, newEntityFacade);
-                    getDetailsViewController().updateView();
+                    getConceptDetailsViewController().updateView();
                 }
 
                 // Populate Properties View
@@ -212,7 +211,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
                 // Show a blank view (nothing selected)
                 titleProperty.set(EntityLabelWithDragAndDrop.EMPTY_TEXT);
                 toolTipTextProperty.set(EntityLabelWithDragAndDrop.EMPTY_TEXT);
-                getDetailsViewController().clearView();
+                getConceptDetailsViewController().clearView();
                 getPropertiesViewController().clearView();
                 getPropertiesViewController().updateModel(viewProperties, newEntityFacade);
             }
@@ -243,8 +242,8 @@ public class DetailsNode extends ExplorationNodeAbstract {
      * Returns the associated view to update the UI.
      * @return DetailsController The attached view to the Details view (fxml)
      */
-    public DetailsController getDetailsViewController() {
-        return detailsViewController;
+    public ConceptController getConceptDetailsViewController() {
+        return conceptDetailsViewController;
     }
 
     public PropertiesController getPropertiesViewController() {
@@ -306,7 +305,7 @@ public class DetailsNode extends ExplorationNodeAbstract {
 
     @Override
     public Node getNode() {
-        return this.detailsViewBorderPane;
+        return this.conceptDetailsViewBorderPane;
     }
 
     @Override
@@ -324,8 +323,8 @@ public class DetailsNode extends ExplorationNodeAbstract {
     }
 
     @Override
-    public Class<DetailsNodeFactory> factoryClass() {
-        return DetailsNodeFactory.class;
+    public Class<ConceptNodeFactory> factoryClass() {
+        return ConceptNodeFactory.class;
     }
     public enum DetailNodeKey {
         ENTITY_FOCUS,

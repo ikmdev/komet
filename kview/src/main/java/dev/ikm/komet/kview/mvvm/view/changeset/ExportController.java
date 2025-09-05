@@ -71,7 +71,9 @@ public class ExportController {
 
     private static final String CURRRENT_DATE = "Current Date";
 
-
+      @FXML
+    private BorderPane borderPane;
+    @FXML
     private static final String CURRENT_DATE_TIME_RANGE_FROM = "01/01/2022, 12:00 AM";
 
     @InjectViewModel
@@ -272,7 +274,7 @@ public class ExportController {
         } else {
             AlertStreams.dispatchToRoot(new UnsupportedOperationException("Export Type not supported"));
         }
-    }
+            }
 
     /**
      * Performs the export of a change set within the specified date range.
@@ -283,6 +285,7 @@ public class ExportController {
      */
     private void performChangeSetExport(final FileSavePicker fileSavePicker, final long fromDate, final long toDate) {
         fileSavePicker.setOnFileSelected(exportFile -> {
+            closeDialog();
             if (exportFile == null) {
                 LOG.warn("Export file is null");
                 AlertStreams.dispatchToRoot(new IllegalArgumentException("Export file cannot be null"));
@@ -308,11 +311,13 @@ public class ExportController {
                     LOG.info("Exported     Patterns : {}", exportResult.patternsCount());
                     LOG.info("Exported     Semantics: {}", exportResult.semanticsCount());
                     LOG.info("Exported        Stamps: {}", exportResult.stampsCount());
-                }
+                                    }
             });
         });
+
+
     }
-    
+
     private long transformStringInLocalDateTimeToEpochMillis(String localDateTimeFormat) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy, hh:mm a", Locale.ENGLISH);
         LocalDateTime localDateTime = LocalDateTime.parse(localDateTimeFormat, formatter);
