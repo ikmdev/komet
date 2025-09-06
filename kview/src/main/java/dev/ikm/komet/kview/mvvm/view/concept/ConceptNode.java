@@ -25,7 +25,6 @@ import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
 import dev.ikm.komet.kview.mvvm.view.timeline.TimelineController;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.flow.FlowSubscriber;

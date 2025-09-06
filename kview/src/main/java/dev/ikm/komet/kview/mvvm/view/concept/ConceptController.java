@@ -84,7 +84,6 @@ import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
-import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
