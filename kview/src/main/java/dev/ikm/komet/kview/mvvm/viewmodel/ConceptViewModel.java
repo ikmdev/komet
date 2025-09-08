@@ -71,7 +71,7 @@ public class ConceptViewModel extends FormViewModel {
     // Known properties
     // --------------------------------------------
     public static String CURRENT_ENTITY = "entityFacade";
-    public static String FULLY_QUALIFIED_NAME = "fqn";
+    public static String FULLY_QUALIFIED_NAMES = "fullyQualifiedNames";
     public static String CONCEPT_STAMP_VIEW_MODEL = "stampViewModel";
     public static String OTHER_NAMES = "otherNames";
 
@@ -84,7 +84,7 @@ public class ConceptViewModel extends FormViewModel {
     public ConceptViewModel() {
         super(); // addProperty(MODE, VIEW); By default
         addProperty(CURRENT_ENTITY, (EntityFacade) null)
-                .addProperty(FULLY_QUALIFIED_NAME, (Object) null)
+                .addProperty(FULLY_QUALIFIED_NAMES,  (Collection) new ArrayList<>())
                 .addProperty(OTHER_NAMES, (Collection) new ArrayList<>())
                 .addProperty(CONCEPT_STAMP_VIEW_MODEL, (ViewModel) null)
                 .addProperty(AXIOM, (String) null);
@@ -92,15 +92,31 @@ public class ConceptViewModel extends FormViewModel {
         //FIXME add a STAMP validator
 
         // In Create Mode the fqn is required.
-        addValidator(FULLY_QUALIFIED_NAME, "Fully Qualified Name",(ReadOnlyObjectProperty prop, ViewModel vm) -> {
-            if (prop.isNull().get()
-                    || prop.get() instanceof DescrNameViewModel fqnViewModel
+        addValidator(FULLY_QUALIFIED_NAMES, "Fully Qualified Names",(ReadOnlyObjectProperty prop, ViewModel vm) -> {
+            if ((prop.isNull().get()
+                    || prop.get() instanceof List list
+                    && list.isEmpty())
+                || (prop.isNull().get()
+                    || prop.get() instanceof List list
+                    && !list.isEmpty()
+                    && list.get(0) instanceof DescrNameViewModel fqnViewModel
                     && fqnViewModel.getPropertyValue(NAME_TYPE) != TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE
                     && fqnViewModel.getPropertyValue(NAME_TEXT) != null
-                    && fqnViewModel.getPropertyValue(NAME_TEXT).toString().isBlank()) {
-
-                return new ValidationMessage(FULLY_QUALIFIED_NAME, MessageType.ERROR, "${%s} is required".formatted(FULLY_QUALIFIED_NAME));
+                    && fqnViewModel.getPropertyValue(NAME_TEXT).toString().isBlank()
+            )){
+                return new ValidationMessage(FULLY_QUALIFIED_NAMES, MessageType.ERROR, "${%s} is required".formatted(FULLY_QUALIFIED_NAMES));
             }
+//            if (prop.isNull().get()
+//                    || prop.get() instanceof List list
+//                    && !list.isEmpty()
+//                    && list.get(0) instanceof DescrNameViewModel fqnViewModel
+//                    && fqnViewModel.getPropertyValue(NAME_TYPE) != TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE
+//                    && fqnViewModel.getPropertyValue(NAME_TEXT) != null
+//                    && fqnViewModel.getPropertyValue(NAME_TEXT).toString().isBlank()
+//                    ) {
+//
+//                return new ValidationMessage(FULLY_QUALIFIED_NAMES, MessageType.ERROR, "${%s} is required".formatted(FULLY_QUALIFIED_NAMES));
+//            }
             return VALID;
         });
 
@@ -144,7 +160,8 @@ public class ConceptViewModel extends FormViewModel {
         }
 
         // Create concept
-        DescrName fqnDescrName = getPropertyValue(FULLY_QUALIFIED_NAME);
+        List<DescrName> fqnList = getPropertyValue(FULLY_QUALIFIED_NAMES);
+        DescrName fqnDescrName = fqnList.get(0);
         Transaction transaction = Transaction.make("New concept for: " + fqnDescrName.getNameText());
 
 
@@ -171,7 +188,7 @@ public class ConceptViewModel extends FormViewModel {
         ConceptFacade conceptFacade = EntityProxy.Concept.make(conceptRecord.publicId()) ;
 
         // add the Fully Qualified Name to the new concept
-        saveFQNwithinCreateConcept(transaction, stampEntity, getValue(FULLY_QUALIFIED_NAME), conceptFacade);
+        saveFQNwithinCreateConcept(transaction, stampEntity, fqnDescrName, conceptFacade);
 
 
         AxiomBuilderRecord ab = newConceptBuilder.axiomBuilder();

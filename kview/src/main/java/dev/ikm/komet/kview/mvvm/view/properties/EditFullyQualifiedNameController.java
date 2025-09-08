@@ -24,6 +24,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
@@ -154,6 +155,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         caseSignificanceComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(CASE_SIGNIFICANCE));
         statusComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(STATUS));
         languageComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(LANGUAGE));
+        typeDisplayComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(NAME_TYPE));
 
         InvalidationListener invalidationListener = obs -> validateForm();
 
@@ -162,6 +164,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         caseSignificanceComboBox.valueProperty().addListener(invalidationListener);
         statusComboBox.valueProperty().addListener(invalidationListener);
         languageComboBox.valueProperty().addListener(invalidationListener);
+        typeDisplayComboBox.valueProperty().addListener(invalidationListener);
 
         validateForm();
         submitButton.setOnAction(this::updateFQN);
@@ -275,8 +278,8 @@ public class EditFullyQualifiedNameController implements BasicController {
         Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(nid);
         latestEntityVersion.ifPresent(semanticEntityVersion -> {
             StampEntity stampEntity = latestEntityVersion.get().stamp();
-            String otherName = viewCalculator.getDescriptionText(nid).get();
-            this.fqnText.setText(otherName);
+            String fullyQualifiedName = viewCalculator.getDescriptionText(nid).get();
+            this.fqnText.setText(fullyQualifiedName);
 
             // get all descendant modules
             IntIdSet moduleDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.MODULE.nid());
@@ -331,6 +334,20 @@ public class EditFullyQualifiedNameController implements BasicController {
 
             findByNid(languageComboBox.getItems(), langConceptFacade.nid())
                     .ifPresent(concept -> fqnViewModel.setPropertyValue(LANGUAGE, concept));
+
+
+            // get all descendant types
+            IntIdSet descriptionTypeDecendants = viewProperties.parentView().calculator().descendentsOf(DESCRIPTION_TYPE.nid());
+            Set<ConceptEntity> allDescritionTypes =
+                    descriptionTypeDecendants.intStream()
+                            .mapToObj(typeNid -> (ConceptEntity) Entity.getFast(typeNid))
+                            .collect(Collectors.toSet());
+            setupComboBox(typeDisplayComboBox, allDescritionTypes);
+            //Set selected value for DESCRIPTION TYPE
+            int indexType = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE);
+            ConceptFacade typeConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexType);
+            findByNid(typeDisplayComboBox.getItems(), typeConceptFacade.nid())
+                    .ifPresent(concept -> fqnViewModel.setPropertyValue(NAME_TYPE, concept));
 
             //initial state of edit screen, the submit button should be disabled
             submitButton.setDisable(true);
@@ -408,10 +425,12 @@ public class EditFullyQualifiedNameController implements BasicController {
         setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
         setupComboBox(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
         setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+        setupComboBox(typeDisplayComboBox, fetchDescendentsOfConcept(getViewProperties(), DESCRIPTION_TYPE.publicId()));
         fqnViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
                 .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
                 .setPropertyValue(STATUS, descrName.getStatus())
                 .setPropertyValue(MODULE, descrName.getModule())
-                .setPropertyValue(LANGUAGE, descrName.getLanguage());
+                .setPropertyValue(LANGUAGE, descrName.getLanguage())
+                .setPropertyValue(NAME_TYPE, descrName.getNameType());
     }
 }
