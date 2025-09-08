@@ -15,7 +15,6 @@ import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.search.SearchNodeFactory;
-import dev.ikm.tinkar.common.id.*;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.view.calculator.*;
 import dev.ikm.tinkar.entity.*;
@@ -260,7 +259,7 @@ public class AppPages {
         journalStage.setScene(sourceScene);
 
         if (!IS_MAC) {
-            app.appMenu.generateMsWindowsMenu(journalBorderPane, journalStage);
+            app.appMenu.generateMsWindowsMenu(journalBorderPane, journalStage, null);
         }
 
         // load journal specific window settings

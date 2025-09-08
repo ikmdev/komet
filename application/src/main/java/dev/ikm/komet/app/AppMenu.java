@@ -63,7 +63,7 @@ public class AppMenu {
         this.app = app;
     }
 
-    void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
+    void generateMsWindowsMenu(BorderPane kometRoot, Stage stage, VBox topBarVBox) {
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");
 
@@ -109,8 +109,13 @@ public class AppMenu {
         menuBar.getMenus().add(fileMenu);
         menuBar.getMenus().add(editMenu);
         menuBar.getMenus().add(windowMenu);
-        //hBox.getChildren().add(menuBar);
-        Platform.runLater(() -> kometRoot.setTop(menuBar));
+        if (topBarVBox != null) {
+            // add MS Windows menu to the classic komet menu
+            Platform.runLater(() -> topBarVBox.getChildren().addFirst(menuBar));
+        } else {
+            // add MS Windows menu to the journal window
+            Platform.runLater(() -> kometRoot.setTop(menuBar));
+        }
     }
 
     Menu createExchangeMenu() {
