@@ -82,6 +82,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             if (filterOptions != null) {
                 if (!updating) {
                     control.setFilterOptions(filterOptions);
+                    control.getProperties().put(DEFAULT_OPTIONS_KEY, defaultFilterOptions.equals(filterOptions));
                 }
                 // Keep button always enabled, though it won't do anything, since filterOptions are already passed to the control
 //                applyButton.setDisable(control.getFilterOptions().equals(filterOptions));
@@ -235,7 +236,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             });
         skipUpdateFilterOptions = false;
         updateCurrentFilterOptions();
-        control.getProperties().put(DEFAULT_OPTIONS_KEY, defaultFilterOptions.equals(control.getFilterOptions()));
         updating = false;
     }
 
