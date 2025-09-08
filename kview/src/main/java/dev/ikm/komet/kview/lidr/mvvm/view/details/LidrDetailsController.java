@@ -513,12 +513,12 @@ public class LidrDetailsController {
 
             getLidrViewModel().setPropertyValue(MODE, EDIT);
             if (getStampViewModel() == null) {
-                Concept author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+
                 // add a new stamp view model to the concept view model
                 StampViewModel stampViewModel = new StampViewModel();
                 stampViewModel.setPropertyValue(MODE, EDIT)
                         .setPropertyValue(STATUS, stamp.state())
-                        .setPropertyValue(AUTHOR, author)
+                        .setPropertyValue(AUTHOR, stamp.author())
                         .setPropertyValue(MODULE, stamp.module())
                         .setPropertyValue(PATH, stamp.path())
                         .setPropertyValues(MODULES_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()), true)
@@ -780,8 +780,6 @@ public class LidrDetailsController {
 
         popOver.setOnHidden(windowEvent -> {
             // set Stamp info into Details form
-            EntityFacade authorConcept = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
-            getStampViewModel().setValue(AUTHOR, authorConcept);
             getStampViewModel().save();
             updateUIStamp(getStampViewModel());
             STAMPDetail stampDetail = toStampDetail(getStampViewModel());
@@ -800,6 +798,7 @@ public class LidrDetailsController {
         Instant stampInstance = Instant.ofEpochSecond(time/1000);
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
+
         lastUpdatedText.setText(lastUpdated);
         ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {

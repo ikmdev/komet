@@ -15,16 +15,11 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.viewmodel;
 
-import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.RecordListBuilder;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticRecordBuilder;
-import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -96,11 +91,11 @@ public class AnalyteGroupViewModel extends FormViewModel {
 
         // TODO LIDR_RECORD is not a semantic record, it is a LidrRecord object.
         SemanticRecord lidrRecord = getPropertyValue(LIDR_RECORD);
-        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
+
         StampEntity stampEntity = transaction.getStamp(
                 State.fromConcept(TinkarTerm.ACTIVE_STATE), // default to active
                 System.currentTimeMillis(),
-                viewProperties.nodeView().editCoordinate().getAuthorForChanges().nid(),
+                TinkarTerm.USER.nid(),
                 lidrRecord.nid(), // is this correct?
                 TinkarTerm.DEVELOPMENT_PATH.nid()); // default to dev path???
 

@@ -15,27 +15,13 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.viewmodel;
 
-import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.ALLOWED_RESULTS_PATTERN;
-import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.FQN_DESCR_CONCEPT;
-import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.RESULT_CONFORMANCE_CONCEPT;
-import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.UUID_CONCEPT;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ResultsViewModel.ALLOWABLE_RESULTS;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ResultsViewModel.DATA_RESULTS_TYPE;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ResultsViewModel.RESULTS_NAME;
-import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ResultsViewModel.SCALE_TYPE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
-import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.data.schema.STAMPDetail;
+import dev.ikm.komet.kview.data.schema.SemanticDetail;
 import dev.ikm.komet.kview.data.persistence.ConceptWriter;
 import dev.ikm.komet.kview.data.persistence.STAMPWriter;
 import dev.ikm.komet.kview.data.persistence.SemanticWriter;
-import dev.ikm.komet.kview.data.schema.STAMPDetail;
-import dev.ikm.komet.kview.data.schema.SemanticDetail;
-import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.lidr.mvvm.model.LidrRecord;
+import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -56,15 +42,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.*;
+import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ResultsViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 
 public class ViewModelHelper {
@@ -106,8 +93,6 @@ public class ViewModelHelper {
         if (device == null || lidrRecord == null || stampViewModel == null) {
             throw new RuntimeException("Error Unable to create a LIDR record to the database. lidr record = " + lidrRecord);
         }
-        ViewProperties viewProperties = stampViewModel.getPropertyValue(VIEW_PROPERTIES);
-        stampViewModel.setPropertyValue(AUTHOR, viewProperties.nodeView().editCoordinate().getAuthorForChanges());
         // Generate a new Stamp / with a new time.
         STAMPDetail stampDetail = toStampDetail(stampViewModel).with(System.currentTimeMillis());
 
@@ -138,7 +123,7 @@ public class ViewModelHelper {
         State state = stampViewModel.getValue(STATUS);
         PublicId statusPublicId = state != null ? state.publicId() : TinkarTerm.ACTIVE_STATE.publicId();
         Concept author = stampViewModel.getValue(AUTHOR);
-        PublicId authorPublicId = author.publicId();
+        PublicId authorPublicId = author != null ? author.publicId() : TinkarTerm.USER.publicId();
         Long time = stampViewModel.getValue(TIME);
         long epochMillis = time == null ? System.currentTimeMillis() : time; // This may change due to when the actual record is written.
         Concept module = stampViewModel.getValue(MODULE);

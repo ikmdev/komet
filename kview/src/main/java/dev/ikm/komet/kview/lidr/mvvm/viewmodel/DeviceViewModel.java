@@ -93,11 +93,11 @@ public class DeviceViewModel extends FormViewModel {
         Transaction transaction = Transaction.make();
 
         SemanticRecord lidrRecord = getPropertyValue(LIDR_RECORD);
-        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
+
         StampEntity stampEntity = transaction.getStamp(
                 State.fromConceptNid(TinkarTerm.ACTIVE_STATE.nid()), // default to active
                 System.currentTimeMillis(),
-                viewProperties.nodeView().editCoordinate().getAuthorForChanges().nid(),
+                TinkarTerm.USER.nid(),
                 lidrRecord.nid(), // is this correct?
                 TinkarTerm.DEVELOPMENT_PATH.nid()); // default to dev path???
 
