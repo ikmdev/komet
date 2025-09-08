@@ -106,8 +106,10 @@ public class ViewModelHelper {
         if (device == null || lidrRecord == null || stampViewModel == null) {
             throw new RuntimeException("Error Unable to create a LIDR record to the database. lidr record = " + lidrRecord);
         }
+        ViewProperties viewProperties = stampViewModel.getPropertyValue(VIEW_PROPERTIES);
+        stampViewModel.setPropertyValue(AUTHOR, viewProperties.nodeView().editCoordinate().getAuthorForChanges());
         // Generate a new Stamp / with a new time.
-        STAMPDetail stampDetail = toStampDetail(stampViewModel, stampViewModel.getPropertyValue(VIEW_PROPERTIES)).with(System.currentTimeMillis());
+        STAMPDetail stampDetail = toStampDetail(stampViewModel).with(System.currentTimeMillis());
 
         // Create a stamp into the database.
         PublicId newStampPublicId = PublicIds.newRandom();
@@ -124,7 +126,7 @@ public class ViewModelHelper {
      * @param stampViewModel Lidr viewer and Concept windows has StampViewModels to accept input from the user.
      * @return STAMPDetail object containing a long for time (epoch millis) and public ids of Status, Author, Module, Path.
      */
-    public static STAMPDetail toStampDetail(ValidationViewModel stampViewModel, ViewProperties viewProperties) {
+    public static STAMPDetail toStampDetail(ValidationViewModel stampViewModel) {
         stampViewModel.save();
         if (stampViewModel.hasErrorMsgs()) {
             StringBuilder sb = new StringBuilder();
@@ -136,7 +138,7 @@ public class ViewModelHelper {
         State state = stampViewModel.getValue(STATUS);
         PublicId statusPublicId = state != null ? state.publicId() : TinkarTerm.ACTIVE_STATE.publicId();
         Concept author = stampViewModel.getValue(AUTHOR);
-        PublicId authorPublicId = author != null ? author.publicId() : viewProperties.nodeView().editCoordinate().getAuthorForChanges().publicId();
+        PublicId authorPublicId = author.publicId();//: viewProperties.nodeView().editCoordinate().getAuthorForChanges().publicId();
         Long time = stampViewModel.getValue(TIME);
         long epochMillis = time == null ? System.currentTimeMillis() : time; // This may change due to when the actual record is written.
         Concept module = stampViewModel.getValue(MODULE);

@@ -512,13 +512,14 @@ public class LidrDetailsController {
             StampEntity stamp = latestVersion.stamp();
 
             getLidrViewModel().setPropertyValue(MODE, EDIT);
+            Concept author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
             if (getStampViewModel() == null) {
 
                 // add a new stamp view model to the concept view model
                 StampViewModel stampViewModel = new StampViewModel();
                 stampViewModel.setPropertyValue(MODE, EDIT)
                         .setPropertyValue(STATUS, stamp.state())
-                        .setPropertyValue(AUTHOR, stamp.author())
+                        .setPropertyValue(AUTHOR, author)
                         .setPropertyValue(MODULE, stamp.module())
                         .setPropertyValue(PATH, stamp.path())
                         .setPropertyValues(MODULES_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()), true)
@@ -528,12 +529,12 @@ public class LidrDetailsController {
             } else {
                 getStampViewModel()
                         .setPropertyValue(STATUS, stamp.state())
-                        .setPropertyValue(AUTHOR, stamp.author())
+                        .setPropertyValue(AUTHOR, author)
                         .setPropertyValue(MODULE, stamp.module())
                         .setPropertyValue(PATH, stamp.path());
             }
 
-            STAMPDetail stampDetail = toStampDetail(getStampViewModel(), getViewProperties());
+            STAMPDetail stampDetail = toStampDetail(getStampViewModel());
             eventBus.publish(conceptTopic, new StampModifiedEvent("no source", StampModifiedEvent.UPDATED, stampDetail));
 
             // TODO: Ability to change Concept record. but for now user can edit stamp but not affect Concept version.
@@ -780,9 +781,11 @@ public class LidrDetailsController {
 
         popOver.setOnHidden(windowEvent -> {
             // set Stamp info into Details form
+            EntityFacade authorConcept = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+            getStampViewModel().setValue(AUTHOR, authorConcept);
             getStampViewModel().save();
             updateUIStamp(getStampViewModel());
-            STAMPDetail stampDetail = toStampDetail(getStampViewModel(), getViewProperties());
+            STAMPDetail stampDetail = toStampDetail(getStampViewModel());
             eventBus.publish(conceptTopic, new StampModifiedEvent(popOver, StampModifiedEvent.UPDATED, stampDetail));
         });
         popOver.show((Node) event.getSource());
@@ -798,7 +801,8 @@ public class LidrDetailsController {
         Instant stampInstance = Instant.ofEpochSecond(time/1000);
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
-
+        EntityFacade authorConcept = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+        stampViewModel.setValue(AUTHOR, authorConcept);
         lastUpdatedText.setText(lastUpdated);
         ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
