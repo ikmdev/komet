@@ -138,7 +138,7 @@ public class ViewModelHelper {
         State state = stampViewModel.getValue(STATUS);
         PublicId statusPublicId = state != null ? state.publicId() : TinkarTerm.ACTIVE_STATE.publicId();
         Concept author = stampViewModel.getValue(AUTHOR);
-        PublicId authorPublicId = author.publicId();//: viewProperties.nodeView().editCoordinate().getAuthorForChanges().publicId();
+        PublicId authorPublicId = author.publicId();
         Long time = stampViewModel.getValue(TIME);
         long epochMillis = time == null ? System.currentTimeMillis() : time; // This may change due to when the actual record is written.
         Concept module = stampViewModel.getValue(MODULE);

@@ -512,9 +512,8 @@ public class LidrDetailsController {
             StampEntity stamp = latestVersion.stamp();
 
             getLidrViewModel().setPropertyValue(MODE, EDIT);
-            Concept author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
             if (getStampViewModel() == null) {
-
+                Concept author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
                 // add a new stamp view model to the concept view model
                 StampViewModel stampViewModel = new StampViewModel();
                 stampViewModel.setPropertyValue(MODE, EDIT)
@@ -529,7 +528,7 @@ public class LidrDetailsController {
             } else {
                 getStampViewModel()
                         .setPropertyValue(STATUS, stamp.state())
-                        .setPropertyValue(AUTHOR, author)
+                        .setPropertyValue(AUTHOR, stamp.author())
                         .setPropertyValue(MODULE, stamp.module())
                         .setPropertyValue(PATH, stamp.path());
             }
@@ -801,8 +800,6 @@ public class LidrDetailsController {
         Instant stampInstance = Instant.ofEpochSecond(time/1000);
         ZonedDateTime stampTime = ZonedDateTime.ofInstant(stampInstance, ZoneOffset.UTC);
         String lastUpdated = DATE_TIME_FORMATTER.format(stampTime);
-        EntityFacade authorConcept = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
-        stampViewModel.setValue(AUTHOR, authorConcept);
         lastUpdatedText.setText(lastUpdated);
         ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
         if (moduleEntity == null) {
