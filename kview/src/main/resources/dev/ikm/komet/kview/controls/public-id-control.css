@@ -27,7 +27,10 @@
 }
 
 .public-id > .public-id-box > .public-id-textfield {
-    -fx-pref-width: 136;
+    /* The preferred width, set to display the first public ID in the TextField.
+       This value will change based on the -fx-font-size setting above.
+       The value used must work on the Concept, Pattern, and Semantic windows. */
+    -fx-pref-width: 195;
     -fx-font-family: "Noto Sans";
     -fx-font-size: inherit;
     -fx-text-fill: -Grey-10;
