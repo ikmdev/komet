@@ -15,6 +15,11 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
+import dev.ikm.komet.kview.events.StampEvent;
+import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampAddFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampCreateFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
@@ -22,7 +27,10 @@ import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ToggleButton;
@@ -36,12 +44,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
+import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_PANE_FXML_URL;
 import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampType.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 
 public class PropertiesController {
@@ -68,6 +79,8 @@ public class PropertiesController {
     @FXML
     private FlowPane propertiesTabsPane;
 
+    private EntityFacade newSemantic;
+
     /////////// Private variables
     /**
      * Show the current edit window.
@@ -79,23 +92,73 @@ public class PropertiesController {
 
     private Pane closePropsPane;
 
+    private StampAddFormViewModel stampAddFormViewModel;
+
+    private StampCreateFormViewModel stampCreateFormViewModel;
+
+    private JFXNode<Pane, StampFormController> stampJFXNode;
+
     @InjectViewModel
     private GenEditingViewModel genEditingViewModel;
 
 
-    Subscriber<PropertyPanelEvent> showPanelSubscriber;
+    private Subscriber<PropertyPanelEvent> showPanelSubscriber;
 
-    Subscriber<GenEditingEvent> genEditingEventSubscriber;
+    private Subscriber<GenEditingEvent> genEditingEventSubscriber;
 
-    JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
+    private Subscriber<StampEvent> addStampSubscriber;
 
-    JFXNode<Pane, ReferenceComponentController> referenceComponentJfxNode;
+    private Subscriber<StampEvent> createStampSubscriber;
+
+    private JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
+
+    private JFXNode<Pane, ReferenceComponentController> referenceComponentJfxNode;
+
+    public PropertiesController() {
+        this.stampAddFormViewModel = new StampAddFormViewModel(SEMANTIC);
+        this.stampCreateFormViewModel = new StampCreateFormViewModel(SEMANTIC);
+    }
 
     @FXML
     private void initialize() {
         clearView();
+
+        setupShowingStampForm();
         setupShowingPanelHandlers();
         setupShowReferencePanelHandlers();
+    }
+
+    private void setupShowingStampForm() {
+        // Load Stamp add View Panel (FXML & Controller)
+        Config stampConfig = new Config(StampFormController.class.getResource(StampFormController.STAMP_FORM_FXML_FILE));
+        stampJFXNode = FXMLMvvmLoader.make(stampConfig);
+
+        // -- add stamp
+        addStampSubscriber = evt -> {
+            if (evt.getEventType() == ADD_STAMP) {
+                stampJFXNode.controller().init(stampAddFormViewModel);
+                this.stampAddFormViewModel.init(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
+                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+
+                contentBorderPane.setCenter(stampJFXNode.node());
+
+                addEditButton.setSelected(true);
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, addStampSubscriber);
+
+        // -- create stamp
+        createStampSubscriber = evt -> {
+            if (evt.getEventType() == CREATE_STAMP) {
+                stampJFXNode.controller().init(stampCreateFormViewModel);
+                this.stampCreateFormViewModel.init(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
+                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+
+                contentBorderPane.setCenter(stampJFXNode.node());
+                addEditButton.setSelected(true);
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, createStampSubscriber);
     }
 
     //Refers to Add Reference Component
@@ -202,4 +265,27 @@ public class PropertiesController {
     public FlowPane getPropertiesTabsPane() {
         return propertiesTabsPane;
     }
+
+    public void updateModel(EntityFacade newSemantic) {
+        this.newSemantic = newSemantic;
+
+        if (newSemantic != null && stampAddFormViewModel != null) {
+            setStampFormViewModel(stampAddFormViewModel);
+        } else if (newSemantic == null && stampCreateFormViewModel != null) {
+            setStampFormViewModel(stampCreateFormViewModel);
+        }
+        stampFormViewModel.get().init(newSemantic, genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+    }
+
+    /***************************************************************************
+     *                                                                         *
+     * Properties                                                              *
+     *                                                                         *
+     **************************************************************************/
+
+    // -- stamp form view model
+    private final ObjectProperty<StampFormViewModelBase> stampFormViewModel = new SimpleObjectProperty<>();
+    public StampFormViewModelBase getStampFormViewModel() { return stampFormViewModel.get(); }
+    public ObjectProperty<StampFormViewModelBase> stampFormViewModelProperty() { return stampFormViewModel; }
+    public void setStampFormViewModel(StampFormViewModelBase stampFormViewModel) { this.stampFormViewModel.set(stampFormViewModel); }
 }

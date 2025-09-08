@@ -16,7 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 import dev.ikm.komet.kview.events.StampEvent;
-import dev.ikm.komet.kview.mvvm.view.common.StampAddController;
+import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -135,7 +135,7 @@ public class PropertiesController {
 
     private InstancesController instancesController;
 
-    private JFXNode<Pane, StampAddController> stampJFXNode;
+    private JFXNode<Pane, StampFormController> stampJFXNode;
 
     private Pane historyPane;
 
@@ -178,7 +178,7 @@ public class PropertiesController {
         // +-----------------------------------------------------------------------
         // ! Add Stamp panel
         // +-----------------------------------------------------------------------
-        Config stampConfig = new Config(StampAddController.class.getResource(StampAddController.ADD_STAMP_FXML_FILE));
+        Config stampConfig = new Config(StampFormController.class.getResource(StampFormController.STAMP_FORM_FXML_FILE));
         stampJFXNode = FXMLMvvmLoader.make(stampConfig);
 
         // +-----------------------------------------------------------------------
