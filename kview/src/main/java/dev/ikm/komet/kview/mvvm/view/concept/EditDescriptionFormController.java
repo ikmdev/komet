@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.properties;
+package dev.ikm.komet.kview.mvvm.view.concept;
 
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
-import dev.ikm.komet.kview.events.EditConceptEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
@@ -28,60 +37,72 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
+public class EditDescriptionFormController implements BasicController {
 
-public class EditFullyQualifiedNameController implements BasicController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(EditFullyQualifiedNameController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EditDescriptionFormController.class);
 
     private UUID conceptTopic;
 
-    private ViewProperties viewProperties;
-
     private EntityFacade entityFacade;
 
-    private PublicId publicId;
+    private Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap;
+
+    private ViewProperties viewProperties;
 
     @FXML
-    private Label editFullyQualifiedNameTitleLabel;
-
-    @FXML
-    private TextField fqnText;
+    private TextField otherNameTextField;
 
     @FXML
     private ComboBox<ConceptEntity> typeDisplayComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> moduleComboBox;
+    private ComboBox<ConceptEntity> caseSignificanceComboBox;
 
     @FXML
     private ComboBox<ConceptEntity> statusComboBox;
 
     @FXML
-    private ComboBox<ConceptEntity> caseSignificanceComboBox;
+    private ComboBox<ConceptEntity> moduleComboBox;
 
     @FXML
     private ComboBox<ConceptEntity> languageComboBox;
+
+    @FXML
+    private Label editDescriptionTitleLabel;
 
     @FXML
     private Label dialect1Label;
@@ -107,44 +128,47 @@ public class EditFullyQualifiedNameController implements BasicController {
     @FXML
     private Button cancelButton;
 
+    private PublicId publicId;
+
     private EvtBus eventBus;
 
     @InjectViewModel
-    private DescrNameViewModel fqnViewModel;
+    private DescrNameViewModel otherNameViewModel;
 
-    public EditFullyQualifiedNameController() { }
+    public EditDescriptionFormController() { }
 
-    public EditFullyQualifiedNameController(UUID conceptTopic) {
+    public EditDescriptionFormController(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
     }
 
+    @Override
     @FXML
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
         clearView();
-        setEditFullyQualifiedNameTitleLabel("Edit Description: Fully Qualified Name");
+        setEditDescriptionTitleLabel("Edit Description: Other Name");
+
+        otherNameViewModel
+                .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
+                .setPropertyValue(STATUS, TinkarTerm.ACTIVE_STATE);
+
         populateDialectComboBoxes();
 
-        fqnViewModel.setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
-
         // bind with viewmodel.
-        fqnText.textProperty().bindBidirectional(fqnViewModel.getProperty(NAME_TEXT));
-        moduleComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(MODULE));
-        caseSignificanceComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(CASE_SIGNIFICANCE));
-        statusComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(STATUS));
-        languageComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(LANGUAGE));
+        otherNameTextField.textProperty().bindBidirectional(otherNameViewModel.getProperty(NAME_TEXT));
+        moduleComboBox.valueProperty().bindBidirectional(otherNameViewModel.getProperty(MODULE));
+        caseSignificanceComboBox.valueProperty().bindBidirectional(otherNameViewModel.getProperty(CASE_SIGNIFICANCE));
+        statusComboBox.valueProperty().bindBidirectional(otherNameViewModel.getProperty(STATUS));
+        languageComboBox.valueProperty().bindBidirectional(otherNameViewModel.getProperty(LANGUAGE));
 
         InvalidationListener invalidationListener = obs -> validateForm();
 
-        fqnText.textProperty().addListener(invalidationListener);
+        otherNameTextField.textProperty().addListener(invalidationListener);
         moduleComboBox.valueProperty().addListener(invalidationListener);
         caseSignificanceComboBox.valueProperty().addListener(invalidationListener);
         statusComboBox.valueProperty().addListener(invalidationListener);
         languageComboBox.valueProperty().addListener(invalidationListener);
-
         validateForm();
-        submitButton.setOnAction(this::updateFQN);
-
     }
 
     @FXML
@@ -153,17 +177,25 @@ public class EditFullyQualifiedNameController implements BasicController {
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
 
+    private boolean isFormPopulated() {
+        return (otherNameTextField.getText() != null && !otherNameTextField.getText().toString().isEmpty())
+                && (moduleComboBox.getSelectionModel().getSelectedItem() != null)
+                && (statusComboBox.getSelectionModel().getSelectedItem() != null)
+                && (caseSignificanceComboBox.getSelectionModel().getSelectedItem() != null)
+                && (languageComboBox.getSelectionModel().getSelectedItem() != null);
+    }
+
     private void validateForm() {
-        boolean isFqnTextEmpty = fqnText.getText().trim().isEmpty();
+        boolean isOtherNameTextFieldEmpty = otherNameTextField.getText().trim().isEmpty();
         boolean isModuleComboBoxSelected = moduleComboBox.getValue() != null;
         boolean isCaseSignificanceComboBoxSelected = caseSignificanceComboBox.getValue() != null;
         boolean isStatusComboBoxComboBoxSelected = statusComboBox.getValue() != null;
         boolean isLanguageComboBoxComboBoxSelected = languageComboBox.getValue() != null;
 
         submitButton.setDisable(
-                isFqnTextEmpty || !isModuleComboBoxSelected
-                        || !isCaseSignificanceComboBoxSelected || !isLanguageComboBoxComboBoxSelected
-                        || !isStatusComboBoxComboBoxSelected);
+                isOtherNameTextFieldEmpty || !isModuleComboBoxSelected
+                || !isCaseSignificanceComboBoxSelected || !isLanguageComboBoxComboBoxSelected
+                || !isStatusComboBoxComboBoxSelected);
     }
 
     private void populateDialectComboBoxes() {
@@ -180,8 +212,26 @@ public class EditFullyQualifiedNameController implements BasicController {
         dialectComboBox3.getSelectionModel().select(Entity.getFast(preferred.nid()));
     }
 
-    public void setEditFullyQualifiedNameTitleLabel(String editFullyQualifiedNameTitleLabel) {
-        this.editFullyQualifiedNameTitleLabel.setText(editFullyQualifiedNameTitleLabel);
+    public void setEditDescriptionTitleLabel(String addAxiomTitleLabelText) {
+        this.editDescriptionTitleLabel.setText(addAxiomTitleLabelText);
+    }
+
+    @Override
+    public void updateView() {
+
+    }
+
+    @Override
+    public void clearView() {
+        caseSignificanceComboBox.getItems().clear();
+        statusComboBox.getItems().clear();
+        moduleComboBox.getItems().clear();
+        languageComboBox.getItems().clear();
+    }
+
+    @Override
+    public void cleanup() {
+
     }
 
     public void updateModel(final ViewProperties viewProperties, EntityFacade entityFacade) {
@@ -195,7 +245,7 @@ public class EditFullyQualifiedNameController implements BasicController {
 
     private String getDisplayText(ConceptEntity conceptEntity) {
         if (conceptEntity != null) {
-            Optional<String> stringOptional = getViewProperties().calculator().languageCalculator().getRegularDescriptionText(conceptEntity.nid());
+            Optional<String> stringOptional = getViewProperties().calculator().getRegularDescriptionText(conceptEntity.nid());
             return stringOptional.orElse("");
         } else {
             return "";
@@ -243,22 +293,33 @@ public class EditFullyQualifiedNameController implements BasicController {
         comboBox.getItems().addAll(conceptEntities);
     }
 
+    private Optional<ConceptEntity> findByNid(List<ConceptEntity> items, int nid) {
+
+        Optional<ConceptEntity> conceptOption = items.stream().parallel()
+                .filter(item -> (item.nid() == nid)).findAny();
+
+        return conceptOption;
+    }
+
     public void setConceptAndPopulateForm(PublicId publicId) {
+        editDescrName = null;
         this.publicId = publicId;
-
         ViewCalculator viewCalculator = viewProperties.calculator();
-
         int nid = EntityService.get().nidForPublicId(publicId);
 
         // this is the Other Name
         Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(nid);
         latestEntityVersion.ifPresent(semanticEntityVersion -> {
             StampEntity stampEntity = latestEntityVersion.get().stamp();
+
+            // populate the other name text field (e.g. 'Chronic lung disease')
             String otherName = viewCalculator.getDescriptionText(nid).get();
-            this.fqnText.setText(otherName);
+            this.otherNameTextField.setText(otherName);
+
+            Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
+            IntIdSet moduleDescendents = viewProperties.parentView().calculator().descendentsOf(moduleEntity.nid());
 
             // get all descendant modules
-            IntIdSet moduleDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.MODULE.nid());
             Set<ConceptEntity> allModules =
                     moduleDescendents.intStream()
                             .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
@@ -267,7 +328,7 @@ public class EditFullyQualifiedNameController implements BasicController {
 
             // populate the current module and select it (e.g. 'SNOMED CT core module')
             findByNid(moduleComboBox.getItems(), stampEntity.moduleNid())
-                    .ifPresent(concept -> fqnViewModel.setPropertyValue(MODULE, concept));
+                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(MODULE, concept));
 
             // get all statuses
             IntIdSet statusDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.STATUS_VALUE.nid());
@@ -278,11 +339,10 @@ public class EditFullyQualifiedNameController implements BasicController {
 
             // populate the current status (ACTIVE | INACTIVE) and select it
             findByNid(statusComboBox.getItems(), stampEntity.stateNid())
-                    .ifPresent(concept -> fqnViewModel.setPropertyValue(STATUS, concept));
-
+                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(STATUS, concept));
 
             // populate all case significance choices
-            IntIdSet caseSenseDescendents = viewProperties.parentView().calculator().descendentsOf(DESCRIPTION_CASE_SIGNIFICANCE.nid());
+            IntIdSet caseSenseDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
             Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
                     .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
                     .collect(Collectors.toSet());
@@ -292,10 +352,9 @@ public class EditFullyQualifiedNameController implements BasicController {
             PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
             PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
             int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
-            ConceptFacade caseSigConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexCaseSig);
+            EntityFacade caseSigConceptFacade = (EntityFacade) latestEntityVersion.get().fieldValues().get(indexCaseSig);
             findByNid(caseSignificanceComboBox.getItems(), caseSigConceptFacade.nid())
-                    .ifPresent(concept -> fqnViewModel.setPropertyValue(CASE_SIGNIFICANCE, concept));
-
+                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, concept));
 
             // get all available languages
             IntIdSet languageDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
@@ -307,90 +366,59 @@ public class EditFullyQualifiedNameController implements BasicController {
             // get the language (e.g. 'English language')
             int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
             ConceptFacade langConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexLang);
-
             findByNid(languageComboBox.getItems(), langConceptFacade.nid())
-                    .ifPresent(concept -> fqnViewModel.setPropertyValue(LANGUAGE, concept));
+                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(LANGUAGE, concept));
 
             //initial state of edit screen, the submit button should be disabled
             submitButton.setDisable(true);
 
             LOG.info(publicId.toString());
-
         });
     }
 
     @FXML
-    private void updateFQN(ActionEvent actionEvent) {
+    private void updateOtherName(ActionEvent actionEvent) {
         actionEvent.consume();
+        otherNameViewModel.save();
 
-        fqnViewModel.save();
-        // validate
-        if (fqnViewModel.hasErrorMsgs()) {
-            fqnViewModel.getValidationMessages().stream().forEach(msg -> LOG.error("Validation error " + msg));
+        if (!otherNameViewModel.hasNoErrorMsgs()) {
+            otherNameViewModel.getValidationMessages().stream().forEach(msg -> LOG.error("Validation error " + msg));
             return;
         }
-        fqnViewModel.setPropertyValue(IS_SUBMITTED, true);
 
-        DescrName fqnDescrName = fqnViewModel.create();
+        otherNameViewModel.setPropertyValue(IS_SUBMITTED, true);
 
 
-        if(this.publicId != null) {
-            // delegate the transaction logic to the view model
-            fqnViewModel.updateFullyQualifiedName(this.publicId);
-        }else{
-            // Concept is edited before the transaction is saved. Hence the pubicId would not be generated.
-            eventBus.publish(conceptTopic, new CreateConceptEvent(this, CreateConceptEvent.ADD_FQN, fqnDescrName));
+        LOG.info("Ready to update to the concept view model: " + otherNameViewModel);
+
+        if(this.publicId != null) { //This if blocked is called when editing the exiting concept.
+            otherNameViewModel.updateOtherName(this.publicId);
+        }else{  // This block is called when editing the while creating the concept.
+            otherNameViewModel.updateData(editDescrName);
+            eventBus.publish(conceptTopic, new CreateConceptEvent(this,
+                    CreateConceptEvent.EDIT_OTHER_NAME, editDescrName));
         }
-
-        LOG.info("transaction complete");
-        clearView();
-
-        // publish the event of the updated FQN
-        eventBus.publish(conceptTopic, new EditConceptEvent(submitButton,
-                EditConceptEvent.EDIT_FQN, fqnDescrName));
-
-        // close the property bump out panel
         eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(submitButton,
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
     }
 
-
-    @Override
-    public void updateView() { }
-
-    @Override
-    public void clearView() {
-        fqnText.setText("");
-        caseSignificanceComboBox.getSelectionModel().clearSelection();
-        statusComboBox.getSelectionModel().clearSelection();
-        moduleComboBox.getSelectionModel().clearSelection();
-        languageComboBox.getSelectionModel().clearSelection();
-    }
-
-    @Override
-    public void cleanup() { }
-
-    private Optional<ConceptEntity> findByNid(List<ConceptEntity> items, int nid) {
-
-        Optional<ConceptEntity> conceptOption = items.stream().parallel()
-                .filter(item -> (item.nid() == nid)).findAny();
-
-        return conceptOption;
-    }
+    private DescrName editDescrName;
 
     /**
      * This method prepopulates and sets up the form in edit mode.
      * @param descrName model values that need to be prepopulated.
      */
     public void setConceptAndPopulateForm(DescrName descrName) {
+        editDescrName = descrName;
         setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
         setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
-        setupComboBox(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
+        setupComboBox(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
         setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
-        fqnViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
+        otherNameViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
                 .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
                 .setPropertyValue(STATUS, descrName.getStatus())
                 .setPropertyValue(MODULE, descrName.getModule())
                 .setPropertyValue(LANGUAGE, descrName.getLanguage());
     }
+
 }

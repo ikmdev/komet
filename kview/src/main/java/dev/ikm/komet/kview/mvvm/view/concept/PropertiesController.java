@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.properties;
+package dev.ikm.komet.kview.mvvm.view.concept;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.mvvm.view.common.StampAddController;
+import dev.ikm.komet.kview.mvvm.view.properties.*;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampAddFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampCreateFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
