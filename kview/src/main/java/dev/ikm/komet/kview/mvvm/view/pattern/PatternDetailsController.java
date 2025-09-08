@@ -845,22 +845,23 @@ public class PatternDetailsController {
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
 
         // Stamp
-        StampFormViewModelBase stampFormViewModel = propertiesController.getStampCreateFormViewModel();
-        patternViewModel.setPropertyValue(STAMP_VIEW_MODEL, stampFormViewModel);
+        patternViewModel.getProperty(STAMP_VIEW_MODEL).bind(propertiesController.stampFormViewModelProperty());
 
         propertiesController.updateModel(patternViewModel.getPropertyValue(PATTERN));
 
         patternViewModel.getProperty(MODE).subscribe(newMode -> {
+            StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
+
             if (newMode.equals(EDIT)) {
                 updateStampControlFromViewModel();
-                stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isSubmitted -> {
-                    if ((Boolean) isSubmitted) {
+                stampFormViewModel.getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isSubmitted -> {
+                    if (isSubmitted) {
                         updateStampControlFromViewModel();
                     }
                 });
             } else if(newMode.equals(CREATE)) {
-                stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isConfirmed -> {
-                    if ((Boolean) isConfirmed) {
+                stampFormViewModel.getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isConfirmed -> {
+                    if (isConfirmed) {
                         updateStampControlFromViewModel();
                     }
                 });
@@ -873,7 +874,11 @@ public class PatternDetailsController {
     }
 
     private void updateStampControlFromViewModel() {
-        StampFormViewModelBase stampFormViewModel = propertiesController.getStampCreateFormViewModel();
+        StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
+
+        if (stampFormViewModel == null) {
+            return;
+        }
 
         // -- status
         State newStatus = stampFormViewModel.getPropertyValue(STATUS);
