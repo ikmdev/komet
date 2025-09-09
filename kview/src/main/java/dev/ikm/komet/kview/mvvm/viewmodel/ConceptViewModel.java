@@ -15,8 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
@@ -47,8 +45,8 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.collections.ObservableList;
 import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.viewmodel.ViewModel;
@@ -92,36 +90,15 @@ public class ConceptViewModel extends FormViewModel {
         //FIXME add a STAMP validator
 
         // In Create Mode the fqn is required.
-        addValidator(FULLY_QUALIFIED_NAMES, "Fully Qualified Names",(ReadOnlyObjectProperty prop, ViewModel vm) -> {
-            if ((prop.isNull().get()
-                    || prop.get() instanceof List list
-                    && list.isEmpty())
-                || (prop.isNull().get()
-                    || prop.get() instanceof List list
-                    && !list.isEmpty()
-                    && list.get(0) instanceof DescrNameViewModel fqnViewModel
-                    && fqnViewModel.getPropertyValue(NAME_TYPE) != TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE
-                    && fqnViewModel.getPropertyValue(NAME_TEXT) != null
-                    && fqnViewModel.getPropertyValue(NAME_TEXT).toString().isBlank()
-            )){
+        addValidator(FULLY_QUALIFIED_NAMES, "Fully Qualified Names",(ObservableList<?> observableList, ViewModel _ ) -> {
+            if (observableList.isEmpty()){
                 return new ValidationMessage(FULLY_QUALIFIED_NAMES, MessageType.ERROR, "${%s} is required".formatted(FULLY_QUALIFIED_NAMES));
             }
-//            if (prop.isNull().get()
-//                    || prop.get() instanceof List list
-//                    && !list.isEmpty()
-//                    && list.get(0) instanceof DescrNameViewModel fqnViewModel
-//                    && fqnViewModel.getPropertyValue(NAME_TYPE) != TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE
-//                    && fqnViewModel.getPropertyValue(NAME_TEXT) != null
-//                    && fqnViewModel.getPropertyValue(NAME_TEXT).toString().isBlank()
-//                    ) {
-//
-//                return new ValidationMessage(FULLY_QUALIFIED_NAMES, MessageType.ERROR, "${%s} is required".formatted(FULLY_QUALIFIED_NAMES));
-//            }
             return VALID;
         });
 
         // Axiom should be selected
-        addValidator(AXIOM, "Axiom",(ReadOnlyStringProperty prop, ViewModel vm) -> {
+        addValidator(AXIOM, "Axiom",(ReadOnlyStringProperty prop, ViewModel _ ) -> {
             if (prop.isNull().get()
                     || (prop.get() instanceof String axiom
                     && !(SUFFICIENT_SET.equals(axiom) || NECESSARY_SET.equals(axiom)))) {
@@ -129,15 +106,6 @@ public class ConceptViewModel extends FormViewModel {
             }
             return VALID;
         });
-
-//        addValidator("isReadyToCreate", (vm) ->
-//                vm.getPropertyValue("mode").equals(CREATE)
-//                        && vm.getPropertyValue("axiom").isEmpty()
-//                        && vm.getPropertyValue("fqn").isEmpty()
-//                        ? new ValidationMessage(ERROR, "Must have a ${fqn} & ${axiom} to create")
-//                        : VALID);
-
-
     }
 
     /**
@@ -160,7 +128,7 @@ public class ConceptViewModel extends FormViewModel {
         }
 
         // Create concept
-        List<DescrName> fqnList = getPropertyValue(FULLY_QUALIFIED_NAMES);
+        List<DescrName> fqnList = getObservableList(FULLY_QUALIFIED_NAMES);
         DescrName fqnDescrName = fqnList.get(0);
         Transaction transaction = Transaction.make("New concept for: " + fqnDescrName.getNameText());
 

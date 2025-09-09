@@ -214,23 +214,9 @@ public class ConceptController {
     @FXML
     private Button editConceptButton;
 
-//    @FXML
-//    private TextFlow fqnContainer;
-
-//    @FXML
-//    private Text latestFqnText;
-
-//    @FXML
-//    private Text fqnDescriptionSemanticText;
-
-//    @FXML
-//    private TextFlow fqnDateAddedTextFlow;
-
-//    @FXML
-//    private Label fqnAddDateLabel;
-
     @FXML
     private Text fullyQualifiedNameHeaderText;
+
     /**
      * Responsible for holding rows of other names (regular) description semantics.
      */
@@ -451,8 +437,7 @@ public class ConceptController {
                 updateConceptBanner();
             }
             updateFullyQualifiedNamesDescription(fullyQualifiedNames);
-//            updateConceptBanner();
-//            updateFQNConceptDescription(fqnDescrName);
+
         });
         ObservableList<DescrName> otherNames = getConceptViewModel().getObservableList(OTHER_NAMES);
         otherNames.addListener((InvalidationListener) obs -> {
@@ -474,11 +459,14 @@ public class ConceptController {
 
             if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
                 if (evt.getEventType() == CreateConceptEvent.ADD_FQN) {
-                    getConceptViewModel().setPropertyValue(FULLY_QUALIFIED_NAMES, descrName);
+                    fullyQualifiedNames.clear();
+                    fullyQualifiedNames.add(descrName);
                 } else if (evt.getEventType() == CreateConceptEvent.ADD_OTHER_NAME) {
                     otherNames.add(descrName);
-                }else if (evt.getEventType() == CreateConceptEvent.EDIT_OTHER_NAME){ // Since we are
+                }else if (evt.getEventType() == CreateConceptEvent.EDIT_OTHER_NAME) { // Since we are
                     updateOtherNamesDescription(otherNames);
+                }else { // Since we are
+                    updateFullyQualifiedNamesDescription(fullyQualifiedNames);
                 }
                 // Attempts to write data
                 boolean isWritten = conceptViewModel.createConcept(propertiesController.getStampFormViewModel());
@@ -509,7 +497,7 @@ public class ConceptController {
             if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))) {
                 if (evt.getEventType() == EditConceptEvent.EDIT_FQN) {
                     // the listener will fire on the FQN when we update this
-                    getConceptViewModel().setPropertyValue(FULLY_QUALIFIED_NAMES, descrName);
+                    fullyQualifiedNames.add(descrName);
                 }
             }
         };
@@ -687,7 +675,7 @@ public class ConceptController {
 
     private void onAddDescriptionButtonPressed(ActionEvent actionEvent) {
         if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
-                (getConceptViewModel().getPropertyValue(FULLY_QUALIFIED_NAMES) == null)) {
+                getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES).isEmpty()) {
             // Show the context menu with 'Add Fully Qualified' option when it is a new concept in create mode and
             // there is no fully qualified name.
             fireContextMenuEvent(actionEvent, Side.RIGHT, 2, 0);
@@ -736,7 +724,7 @@ public class ConceptController {
         Object[][] menuItems;
         // show the 'Add Fully Qualified' option when it is a new concept in create mode and there is no fully qualified name
         if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
-                (getConceptViewModel().getPropertyValue(FULLY_QUALIFIED_NAMES) == null)) {
+                getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES).isEmpty()) {
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
@@ -994,7 +982,7 @@ public class ConceptController {
             VBox fullyQualifiedNameVBox = generateDescriptionSemanticRow(fullyQualifedName);
             TextFlow firstRow = (TextFlow) fullyQualifiedNameVBox.getChildren().getFirst();
             firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-                    new EditOtherNameConceptEvent(fullyQualifiedNameVBox,
+                    new EditConceptFullyQualifiedNameEvent(fullyQualifiedNameVBox,
                             EditConceptFullyQualifiedNameEvent.EDIT_FQN, fullyQualifedName)));
             fullyQualifiedNameNodeListControl.getItems().add(fullyQualifiedNameVBox);
         });
