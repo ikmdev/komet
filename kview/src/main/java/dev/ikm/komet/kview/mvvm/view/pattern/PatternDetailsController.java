@@ -297,7 +297,6 @@ public class PatternDetailsController {
         otherNamesVBox.getChildren().clear();
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
-        stampViewControl.setParentContainer(detailsOuterBorderPane);
 
         //DragNDrop feature for Semantic Purpose and Semantic Meaning
         setUpDraggable(purposeText, patternViewModel.getProperty(PURPOSE_ENTITY));

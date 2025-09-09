@@ -350,7 +350,6 @@ public class ConceptController {
     @FXML
     public void initialize() {
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
-        stampViewControl.setParentContainer(detailsOuterBorderPane);
 
         identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
             // query all available memberships (semantics having the purpose as 'membership', and no fields)
