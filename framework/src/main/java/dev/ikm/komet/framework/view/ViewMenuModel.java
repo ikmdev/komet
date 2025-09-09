@@ -36,6 +36,7 @@ import java.util.List;
 
 public class ViewMenuModel {
     private final ViewProperties viewProperties;
+    private final ViewCalculatorWithCache viewCalculator;
     private final Control baseControlToShowOverride;
     private final Shape baseControlGraphic;
     private final Menu coordinateMenu;
@@ -55,7 +56,7 @@ public class ViewMenuModel {
         this.coordinateMenu = coordinateMenu;
         this.coordinateMenuButton = null;
         this.viewProperties.nodeView().addListener(this.viewChangedListener);
-        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
+        this.viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
         FxGet.pathCoordinates(viewCalculator).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change -> updateCoordinateMenu());
 
         this.baseControlToShowOverride = baseControlToShowOverride;
@@ -84,7 +85,7 @@ public class ViewMenuModel {
         this.coordinateMenu = null;
         this.coordinateMenuButton = coordinateMenuButton;
         this.viewProperties.nodeView().addListener(this.viewChangedListener);
-        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
+        viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
         FxGet.pathCoordinates(viewCalculator).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change ->
                 updateCoordinateMenu()
         );
@@ -139,7 +140,6 @@ public class ViewMenuModel {
             }
 
             if (menuItems != null) {
-                ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(viewProperties.nodeView().getValue());
                 var viewMenuTask = new ViewMenuTask(viewCalculator, viewProperties.nodeView(), whichMenu);
 
                 final List<MenuItem> finalMenuItems = menuItems;
