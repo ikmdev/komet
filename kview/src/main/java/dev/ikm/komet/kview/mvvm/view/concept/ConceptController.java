@@ -436,8 +436,8 @@ public class ConceptController {
                 updateConceptBanner();
             }
             updateFullyQualifiedNamesDescription(fullyQualifiedNames);
-
         });
+
         ObservableList<DescrName> otherNames = getConceptViewModel().getObservableList(OTHER_NAMES);
         otherNames.addListener((InvalidationListener) obs -> {
             if (!otherNames.isEmpty()) {
@@ -752,7 +752,6 @@ public class ConceptController {
                     default -> null;
                 };
 
-
                 // Create a menu item. Todo: if/when you have sub menus
                 MenuItem menuItem = menuHelper.createMenuOption(
                         String.valueOf(menuItemObj[NAME]),                           /* name */
@@ -951,28 +950,6 @@ public class ConceptController {
 
         identifierControl.setPublicId(idStr);
     }
-
-//    public void updateFQNConceptDescription(DescrName fqnDescrName) {
-//        // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
-//        // Latest FQN
-//        String fullyQualifiedName = fqnDescrName.getNameText();
-//        latestFqnText.setText(fullyQualifiedName);
-//
-//        fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-//                new EditConceptFullyQualifiedNameEvent(latestFqnText,
-//                        EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnDescrName)));
-//        // these should never be null, if the drop-downs are populated then the
-//        // submit button will not be enabled on the Add FQN form
-//        if (fqnDescrName.getCaseSignificance() != null && fqnDescrName.getLanguage() != null) {
-//            fqnDescriptionSemanticText.setText(" (" + fqnDescrName.getCaseSignificance().description()
-//                    + ", " + fqnDescrName.getLanguage().description() + ")");
-//        } else {
-//            LOG.error("missing case sensitivity and language when adding a fully qualified name");
-//            fqnDescriptionSemanticText.setText("");
-//        }
-//
-//        fqnContainer.getChildren().setAll(latestFqnText, fqnDescriptionSemanticText);
-//    }
 
     public void updateFullyQualifiedNamesDescription(List<DescrName> descrNameViewModels) {
         fullyQualifiedNameNodeListControl.getItems().clear();
@@ -1208,52 +1185,6 @@ public class ConceptController {
         textFlowsBox.getChildren().addAll(row1, row2);
         return textFlowsBox;
     }
-
-//    private void updateFQNSemantics(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
-//        DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
-//        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-//        String fqnTextDescr = viewCalculator.languageCalculator().getDescriptionTextOrNid(semanticEntityVersion.entity());
-//        // obtain the fqn description
-//        latestFqnText.setText(fqnTextDescr);
-//        System.out.println(" Inside FQN Semantics: " + fqnTextDescr);
-//
-//        this.fqnPublicId = semanticEntityVersion.publicId();
-//        fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-//                new EditConceptFullyQualifiedNameEvent(latestFqnText,
-//                        EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId)));
-//
-//        String descrSemanticStr = String.join(", ", fieldDescriptions);
-//        if (!fieldDescriptions.isEmpty()) {
-//            fqnDescriptionSemanticText.setText(" (%s)".formatted(descrSemanticStr));
-//        } else {
-//            fqnDescriptionSemanticText.setText("");
-//        }
-//
-//        fqnContainer.getChildren().setAll(latestFqnText, fqnDescriptionSemanticText);
-//
-//        // update date
-//        String dateAddedStr = "";
-//        if (semanticEntityVersion.stamp() == null) {
-//            dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-//        } else {
-//            Long fieldMilis = semanticEntityVersion.stamp().time();
-//            if (fieldMilis.equals(PREMUNDANE_TIME)) {
-//                dateAddedStr = PREMUNDANE;
-//            } else {
-//                LocalDate localDate = Instant.ofEpochMilli(fieldMilis).atZone(ZoneId.systemDefault()).toLocalDate();
-//                dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-//            }
-//        }
-//        fqnAddDateLabel.setText("Date Added: " + dateAddedStr);
-//
-//        Region spacer = new Region();
-//        spacer.setMinWidth(10);
-//
-//        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
-//        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
-//
-//        fqnDateAddedTextFlow.getChildren().setAll(fqnAddDateLabel, spacer, attachmentHyperlink, commentsHyperlink);
-//    }
 
     /**
      * Creates a hyperlink with the provided SVG icon.
