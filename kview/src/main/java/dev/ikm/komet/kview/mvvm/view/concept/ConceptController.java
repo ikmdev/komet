@@ -905,7 +905,7 @@ public class ConceptController {
         conceptNameTooltip.setText(conceptNameStr);
 
         // Definition description text
-        definitionTextField.setText(viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid()));
+        definitionTextField.setText(viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(entityFacade.nid()));
 
         setupDisplayUUID(entityFacade, viewCalculator);
 
