@@ -63,6 +63,22 @@ public class AppMenu {
         this.app = app;
     }
 
+    /**
+     * create the menu for windows used on a journal window (ie no vbox at the top of a border pane)
+     * @param borderPane border pane for the journal
+     * @param stage stage for the journal window
+     */
+    void generateMsWindowsMenu(BorderPane borderPane, Stage stage) {
+        this.generateMsWindowsMenu(borderPane, stage, null);
+    }
+
+    /**
+     * create the menu for windows for classic komet
+     * @param kometRoot border pane for classic komet
+     * @param stage stage for classic komet
+     * @param topBarVBox contains the top of the border pane with the parent coordinate menu as well as the
+     *                   menu we will add to it
+     */
     void generateMsWindowsMenu(BorderPane kometRoot, Stage stage, VBox topBarVBox) {
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");

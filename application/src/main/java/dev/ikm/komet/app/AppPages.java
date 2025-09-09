@@ -259,7 +259,7 @@ public class AppPages {
         journalStage.setScene(sourceScene);
 
         if (!IS_MAC) {
-            app.appMenu.generateMsWindowsMenu(journalBorderPane, journalStage, null);
+            app.appMenu.generateMsWindowsMenu(journalBorderPane, journalStage);
         }
 
         // load journal specific window settings
