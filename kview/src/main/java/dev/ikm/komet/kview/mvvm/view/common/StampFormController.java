@@ -12,9 +12,9 @@ import javafx.fxml.*;
 import javafx.scene.control.*;
 
 
-public class StampAddController {
+public class StampFormController {
 
-    public static final String ADD_STAMP_FXML_FILE = "stamp-form.fxml";
+    public static final String STAMP_FORM_FXML_FILE = "stamp-form.fxml";
 
     @FXML
     private Label formTitle;
@@ -103,7 +103,7 @@ public class StampAddController {
         lastUpdatedLabel.setText("Last\nUpdated");
 
         // TextField
-        lastUpdatedTextField.textProperty().bind(stampFormViewModel.getProperty(TIME_TEXT));
+        lastUpdatedTextField.textProperty().bind(stampFormViewModel.getProperty(FORM_TIME_TEXT));
     }
 
     private void initStatusComboBox() {
