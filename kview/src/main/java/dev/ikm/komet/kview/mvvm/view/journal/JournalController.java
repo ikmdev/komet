@@ -54,7 +54,6 @@ import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.JournalCounter;
-import dev.ikm.komet.kview.mvvm.view.details.DetailsNode;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
