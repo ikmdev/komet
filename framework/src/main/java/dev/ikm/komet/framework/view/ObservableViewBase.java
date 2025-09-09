@@ -50,6 +50,9 @@ public abstract class ObservableViewBase
     protected final ObservableLogicCoordinateBase logicCoordinateObservable;
 
     protected final ObservableEditCoordinateBase editCoordinateObservable;
+
+    public static final String DEFAULT_VIEW_NAME = "View";
+
     /**
      * Note that if you don't declare a listener as final in this way, and just use method references, or
      * a direct lambda expression, you will not be able to remove the listener, since each method reference will create
@@ -80,7 +83,7 @@ public abstract class ObservableViewBase
 
     //~--- constructors --------------------------------------------------------
     public ObservableViewBase(ViewCoordinate viewRecord, String name) {
-        super(viewRecord.toViewCoordinateRecord(), name != null ? name: "View");
+        super(viewRecord.toViewCoordinateRecord(), name != null ? name : DEFAULT_VIEW_NAME);
         this.stampCoordinateObservable = makeStampCoordinateObservable(viewRecord);
         this.navigationCoordinateObservable = makeNavigationCoordinateObservable(viewRecord);
         this.languageCoordinates = makeLanguageCoordinateListProperty(viewRecord);

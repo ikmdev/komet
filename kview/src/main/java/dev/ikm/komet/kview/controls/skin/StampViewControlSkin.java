@@ -20,12 +20,8 @@ public class StampViewControlSkin extends SkinBase<StampViewControl> {
     private final Label moduleLabel;
     private final Label pathLabel;
 
-    private final EventHandler<? super MouseEvent> mouseFilterPressedOnScene = this::onMouseFilterPressedOnScene;
-
     public StampViewControlSkin(StampViewControl control) {
         super(control);
-
-        control.getScene().addEventFilter(MouseEvent.MOUSE_PRESSED, mouseFilterPressedOnScene);
 
         root = new VBox(2.0);
         root.setPrefWidth(208);
@@ -91,18 +87,5 @@ public class StampViewControlSkin extends SkinBase<StampViewControl> {
 
     private void onMousePressedOnStamp(MouseEvent mouseEvent) {
         getSkinnable().setSelected(!getSkinnable().isSelected());
-    }
-
-    private void onMouseFilterPressedOnScene(MouseEvent mouseEvent) {
-        StampViewControl control = getSkinnable();
-        Node stampContainer = control.getParentContainer();
-        if (stampContainer == null) {
-            return;
-        }
-
-        Point2D localMousePos = stampContainer.sceneToLocal(mouseEvent.getSceneX(), mouseEvent.getSceneY());
-        if (!stampContainer.contains(localMousePos)) {
-            control.setSelected(false);
-        }
     }
 }
