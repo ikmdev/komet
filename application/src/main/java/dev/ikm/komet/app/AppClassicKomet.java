@@ -101,7 +101,7 @@ public class AppClassicKomet {
 
         // if NOT on macOS
         if (!IS_MAC) {
-            app.appMenu.generateMsWindowsMenu(kometRoot, classicKometStage);
+            app.appMenu.generateMsWindowsMenu(kometRoot, classicKometStage, controller.getTopBarVBox());
         }
 
         classicKometStage.setScene(kometScene);
