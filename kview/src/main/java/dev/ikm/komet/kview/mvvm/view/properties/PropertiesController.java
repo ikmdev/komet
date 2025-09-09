@@ -17,7 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.properties;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.*;
-import dev.ikm.komet.kview.mvvm.view.common.StampAddController;
+import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampAddFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampCreateFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
@@ -98,7 +98,7 @@ public class PropertiesController implements Serializable {
     @FXML
     private FlowPane propertiesTabsPane;
 
-    private JFXNode<Pane, StampAddController> stampJFXNode;
+    private JFXNode<Pane, StampFormController> stampJFXNode;
     private Pane historyTabsBorderPane;
     private HistoryChangeController historyChangeController;
 
@@ -185,7 +185,7 @@ public class PropertiesController implements Serializable {
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
         // Load Stamp add View Panel (FXML & Controller)
-        Config stampConfig = new Config(StampAddController.class.getResource(StampAddController.ADD_STAMP_FXML_FILE));
+        Config stampConfig = new Config(StampFormController.class.getResource(StampFormController.STAMP_FORM_FXML_FILE));
         stampJFXNode = FXMLMvvmLoader.make(stampConfig);
 
         // Load History tabs View Panel (FXML & Controller)
