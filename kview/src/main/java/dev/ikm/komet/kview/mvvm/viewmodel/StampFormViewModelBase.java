@@ -22,7 +22,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampPro
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.STATUSES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.TIME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.FORM_TIME_TEXT;
 
 public abstract class StampFormViewModelBase extends FormViewModel {
     protected EntityFacade entityFacade;
@@ -57,7 +57,7 @@ public abstract class StampFormViewModelBase extends FormViewModel {
         addProperty(STATUSES, Collections.emptyList(), true);
 
         addProperty(FORM_TITLE, "");
-        addProperty(TIME_TEXT, "");
+        addProperty(FORM_TIME_TEXT, "");
 
         // run validators when the following properties change.
         doOnChange(this::validate, STATUS, MODULE, PATH);
@@ -100,7 +100,7 @@ public abstract class StampFormViewModelBase extends FormViewModel {
         PATHS,
 
         FORM_TITLE,
-        TIME_TEXT,
+        FORM_TIME_TEXT,
 
         CLEAR_RESET_BUTTON_TEXT,
         SUBMIT_BUTTON_TEXT
