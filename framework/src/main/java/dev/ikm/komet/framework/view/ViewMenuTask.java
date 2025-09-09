@@ -739,13 +739,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         } else if (value instanceof StateSet) {
             sb.append(((StateSet) value).toUserString());
         } else {
-            try {
-                viewCalculator.toEntityString(value, entityFacade -> getPreferredDescriptionStringOrNid(viewCalculator, entityFacade), sb);
-            } catch (Exception e) {
-                LOG.error("Exception calling getPreferredDescriptionStringOrNid", e);
-
-                sb.append(Integer.MAX_VALUE);
-            }
+            viewCalculator.toEntityString(value, entityFacade -> getPreferredDescriptionStringOrNid(viewCalculator, entityFacade), sb);
         }
         return sb.toString();
     }
@@ -762,8 +756,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         List<MenuItem> menuItems = new ArrayList<>();
         try {
             makeCoordinateDisplayMenu(viewCalculator,
-                    menuItems,
-                    observableCoordinate);
+                    menuItems, observableCoordinate, whichMenu);
             updateTitle("Updated View Menu");
             updateMessage("In " + durationString());
             LOG.info("Updated View Menu in " + durationString());
@@ -782,13 +775,17 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
      */
     private void makeCoordinateDisplayMenu(ViewCalculator viewCalculator,
                                            List<MenuItem> menuItems,
-                                           ObservableCoordinate observableCoordinate) {
+                                           ObservableCoordinate observableCoordinate,
+                                           String whichMenu) {
 
         makeRecursiveOverrideMenu(viewCalculator, menuItems,
                 observableCoordinate);
 
         for (Property<?> baseProperty : observableCoordinate.getBaseProperties()) {
-            menuItems.add(new MenuItem(getNameAndValueString(viewCalculator, baseProperty)));
+            // variables added for simpler debugging
+            var basePropStr = baseProperty.toString();
+            var nameValStr = getNameAndValueString(viewCalculator, baseProperty);
+            menuItems.add(new MenuItem(nameValStr));
         }
 
         updateMessage("Making composite coordinate menu");
@@ -796,7 +793,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             String propertyName = getPropertyNameWithOverride(viewCalculator, compositeCoordinate);
             Menu compositeMenu = new Menu(propertyName);
             menuItems.add(compositeMenu);
-            makeCoordinateDisplayMenu(viewCalculator, compositeMenu.getItems(), compositeCoordinate);
+            makeCoordinateDisplayMenu(viewCalculator, compositeMenu.getItems(), compositeCoordinate, whichMenu);
         }
 
         if (observableCoordinate instanceof ObservableView observableView) {
