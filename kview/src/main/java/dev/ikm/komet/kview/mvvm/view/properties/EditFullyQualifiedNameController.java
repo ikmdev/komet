@@ -153,7 +153,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         caseSignificanceComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(CASE_SIGNIFICANCE));
         statusComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(STATUS));
         languageComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(LANGUAGE));
-        typeDisplayComboBox.valueProperty().bind(fqnViewModel.getProperty(NAME_TYPE));
+        typeDisplayComboBox.valueProperty().bindBidirectional(fqnViewModel.getProperty(NAME_TYPE));
 
         InvalidationListener invalidationListener = obs -> validateForm();
 
