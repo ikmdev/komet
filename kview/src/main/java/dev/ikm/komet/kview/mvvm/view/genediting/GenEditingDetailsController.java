@@ -245,7 +245,6 @@ public class GenEditingDetailsController {
 
     @FXML
     private void initialize() {
-        stampViewControl.setParentContainer(detailsOuterBorderPane);
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
         ObjectProperty<EntityFacade> refComponent = genEditingViewModel.getObjectProperty(REF_COMPONENT);
