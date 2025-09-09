@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.mvvm.view.details;
+package dev.ikm.komet.kview.mvvm.view.concept;
 
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
@@ -155,11 +155,11 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class DetailsController  {
+public class ConceptController {
 
     private static final PseudoClass STAMP_SELECTED = PseudoClass.getPseudoClass("selected");
 
-    private static final Logger LOG = LoggerFactory.getLogger(DetailsController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConceptController.class);
 
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
 
@@ -340,10 +340,10 @@ public class DetailsController  {
      */
     private ViewCalculatorWithCache viewCalculatorWithCache;
 
-    public DetailsController() {
+    public ConceptController() {
     }
 
-    public DetailsController(UUID conceptTopic) {
+    public ConceptController(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
     }
 
@@ -832,8 +832,8 @@ public class DetailsController  {
         slideoutTrayPane.setMaxWidth(0);
     }
 
-    private Consumer<DetailsController> onCloseConceptWindow;
-    public void setOnCloseConceptWindow(Consumer<DetailsController> onClose) {
+    private Consumer<ConceptController> onCloseConceptWindow;
+    public void setOnCloseConceptWindow(Consumer<ConceptController> onClose) {
         this.onCloseConceptWindow = onClose;
     }
 

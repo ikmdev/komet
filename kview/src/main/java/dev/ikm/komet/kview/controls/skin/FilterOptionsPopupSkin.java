@@ -74,7 +74,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
     private static final List<String> ALL_STATES = StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN.toEnumSet().stream().map(s -> s.name()).toList();
 
-    private FilterOptions defaultFilterOptions = new FilterOptions();
+    private FilterOptions defaultFilterOptions;
     private final ObjectProperty<FilterOptions> currentFilterOptionsProperty = new SimpleObjectProperty<>() {
         @Override
         protected void invalidated() {
@@ -82,6 +82,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             if (filterOptions != null) {
                 if (!updating) {
                     control.setFilterOptions(filterOptions);
+                    control.getProperties().put(DEFAULT_OPTIONS_KEY, defaultFilterOptions.equals(filterOptions));
                 }
                 // Keep button always enabled, though it won't do anything, since filterOptions are already passed to the control
 //                applyButton.setDisable(control.getFilterOptions().equals(filterOptions));
@@ -169,7 +170,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 filterPane.setSelected(false);
             }
         }));
-        //experimental... trying to listen to changes when the inherited options change to change what is selected
         subscription = subscription.and(control.inheritedFilterOptionsProperty().subscribe((_, _) -> {
             if (control.getNavigator() != null) {
                 setupDefaultFilterOptions(control.getNavigator());
@@ -195,6 +195,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         if (filterOptions == null) {
             return;
         }
+        boolean isDefault = control.getFilterOptions() != null && filterOptions.equals(defaultFilterOptions);
 
         updating = true;
         filterSubscription = Subscription.EMPTY;
@@ -214,7 +215,13 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 if (optionForItem.availableOptions().isEmpty()) {
                     optionForItem.availableOptions().addAll(pane.getOption().availableOptions());
                 }
-                pane.setOption(optionForItem);
+                if (isDefault && control.getFilterOptions().getOptionForItem(pane.getOption().item()).isInOverride()) {
+                    // when passing default filter options, if the option is inOverride mode,
+                    // keep the one in the control, don't set the default one
+                    pane.setOption(control.getFilterOptions().getOptionForItem(pane.getOption().item()).copy());
+                } else {
+                    pane.setOption(optionForItem.copy());
+                }
             });
         accordionBox.updateLangPanes(pane -> {
                 int ordinal = pane.getOrdinal();
@@ -225,11 +232,10 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                         option.availableOptions().addAll(pane.getLangCoordinates().getOptions().get(i).availableOptions());
                     }
                 }
-                pane.setLangCoordinates(languageCoordinates);
+                pane.setLangCoordinates(languageCoordinates.copy());
             });
         skipUpdateFilterOptions = false;
         updateCurrentFilterOptions();
-        control.getProperties().put(DEFAULT_OPTIONS_KEY, defaultFilterOptions.equals(control.getFilterOptions()));
         updating = false;
     }
 
@@ -260,6 +266,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         updating = true;
         currentFilterOptionsProperty.set(null);
         setupFilter(null);
+        control.setFilterOptions(null);
         setupFilter(defaultFilterOptions);
         updating = false;
         updateCurrentFilterOptions();
@@ -353,10 +360,12 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     }
 
     private void setupDefaultFilterOptions(Navigator navigator) {
-        // reset default filter options
-        defaultFilterOptions = new FilterOptions();
-        // once we have navigator, update pending options with av/def/sel default options
-        setAvailableOptionsFromNavigator(defaultFilterOptions, navigator);
+        if (defaultFilterOptions == null) {
+            // create default filter options
+            defaultFilterOptions = new FilterOptions();
+            // once we have navigator, update pending options with av/def/sel default options
+            setAvailableOptionsFromNavigator(defaultFilterOptions, navigator);
+        }
         // then pass the inherited options, to override av/def/sel default options where set
         setDefaultOptions(control.getInheritedFilterOptions());
         // pass default options to panes
