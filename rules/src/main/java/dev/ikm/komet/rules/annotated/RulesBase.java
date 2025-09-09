@@ -187,6 +187,20 @@ public abstract class RulesBase {
                 &&
                 !axiomSubject.vertexPropertyEquals(TinkarTerm.ROLE_TYPE, TinkarTerm.ROLE_GROUP);
     }
+    
+    /**
+     * Condition method on {@link ObservationRecord} that returns true if
+     * the given observation's subject is a {@link AxiomSubjectRecord} and an interval role.
+     *
+     * @param observation the observation record
+     * @return true if the observation's subject is an interval role
+     */
+    @RuleElement
+    public boolean isAxiomIntervalRole(ObservationRecord observation) {
+        return observation.subject() instanceof AxiomSubjectRecord axiomSubject
+                &&
+                axiomSubject.axiomMeaningNid() == TinkarTerm.INTERVAL_ROLE.nid();
+    }
 
     /**
      * Condition method on {@link ObservationRecord} that returns true if
