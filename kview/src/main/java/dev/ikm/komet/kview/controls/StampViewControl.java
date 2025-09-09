@@ -42,12 +42,6 @@ public class StampViewControl extends Control {
      *                                                                         *
      **************************************************************************/
 
-    // -- parent container
-    private final ObjectProperty<Node> parentContainer = new SimpleObjectProperty<>();
-    public Node getParentContainer() { return parentContainer.get(); }
-    public void setParentContainer(Node parent) { parentContainer.set(parent); }
-    public ObjectProperty<Node> parentContainerProperty() { return parentContainer; }
-
     // -- status
     private final StringProperty status = new SimpleStringProperty(this, "status", "");
     public StringProperty statusProperty() { return status; }

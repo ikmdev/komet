@@ -104,6 +104,7 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
         save(true);
 
         setPropertyValue(IS_CONFIRMED_OR_SUBMITTED, true);
+
         // We're not going to create a stamp here. Just saving the stamp properties to the view model
         // so that they can be used later to create a new Concept.
 
