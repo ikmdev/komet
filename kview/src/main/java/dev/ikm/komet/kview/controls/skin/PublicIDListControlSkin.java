@@ -29,10 +29,10 @@ public class PublicIDListControlSkin extends SkinBase<PublicIDListControl> {
     public PublicIDListControlSkin(PublicIDListControl control) {
         super(control);
 
-        // never show the horizontal scroll bar
-        rootScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        rootScrollPane.setContent(identifierVBox);
         rootScrollPane.getStyleClass().add("public-id-list");
+        identifierVBox.getStyleClass().add("identifier-vbox");
+
+        rootScrollPane.setContent(identifierVBox);
 
         // subscribe to changes to the publicIdProperty in the PublicIDControl
         subscription = control.publicIdListProperty().subscribe(publicIdList -> {
