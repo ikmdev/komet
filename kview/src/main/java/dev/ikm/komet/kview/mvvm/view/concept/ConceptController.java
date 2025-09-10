@@ -34,7 +34,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
@@ -111,7 +111,6 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
-import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -216,19 +215,13 @@ public class ConceptController {
     private Button editConceptButton;
 
     @FXML
-    private TextFlow fqnContainer;
+    private Text fullyQualifiedNameHeaderText;
 
+    /**
+     * Responsible for holding rows of other names (regular) description semantics.
+     */
     @FXML
-    private Text latestFqnText;
-
-    @FXML
-    private Text fqnDescriptionSemanticText;
-
-    @FXML
-    private TextFlow fqnDateAddedTextFlow;
-
-    @FXML
-    private Label fqnAddDateLabel;
+    private KLExpandableNodeListControl fullyQualifiedNameNodeListControl;
 
     @FXML
     private Text otherNamesHeaderText;
@@ -436,13 +429,15 @@ public class ConceptController {
         eventBus.subscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
 
         // Listener when user enters a new fqn
-        ObjectProperty<DescrName> fqnProp = getConceptViewModel().getProperty(FULLY_QUALIFIED_NAME);
-        fqnProp.addListener(observable -> {
-            // not null, populate banner area.
-            DescrName fqnDescrName = fqnProp.get();
-            updateConceptBanner();
-            updateFQNConceptDescription(fqnDescrName);
+        ObservableList<DescrName> fullyQualifiedNames = getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES);
+        fullyQualifiedNames.addListener((InvalidationListener) observable -> {
+            if(!fullyQualifiedNames.isEmpty()){
+                DescrName fqnDescrName = fullyQualifiedNames.get(0);
+                updateConceptBanner();
+            }
+            updateFullyQualifiedNamesDescription(fullyQualifiedNames);
         });
+
         ObservableList<DescrName> otherNames = getConceptViewModel().getObservableList(OTHER_NAMES);
         otherNames.addListener((InvalidationListener) obs -> {
             if (!otherNames.isEmpty()) {
@@ -463,11 +458,14 @@ public class ConceptController {
 
             if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
                 if (evt.getEventType() == CreateConceptEvent.ADD_FQN) {
-                    getConceptViewModel().setPropertyValue(FULLY_QUALIFIED_NAME, descrName);
+                    fullyQualifiedNames.clear();
+                    fullyQualifiedNames.add(descrName);
                 } else if (evt.getEventType() == CreateConceptEvent.ADD_OTHER_NAME) {
                     otherNames.add(descrName);
-                }else if (evt.getEventType() == CreateConceptEvent.EDIT_OTHER_NAME){ // Since we are
+                }else if (evt.getEventType() == CreateConceptEvent.EDIT_OTHER_NAME) { // Since we are
                     updateOtherNamesDescription(otherNames);
+                }else { // Since we are
+                    updateFullyQualifiedNamesDescription(fullyQualifiedNames);
                 }
                 // Attempts to write data
                 boolean isWritten = conceptViewModel.createConcept(propertiesController.getStampFormViewModel());
@@ -498,7 +496,7 @@ public class ConceptController {
             if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))) {
                 if (evt.getEventType() == EditConceptEvent.EDIT_FQN) {
                     // the listener will fire on the FQN when we update this
-                    getConceptViewModel().setPropertyValue(FULLY_QUALIFIED_NAME, descrName);
+                    fullyQualifiedNames.add(descrName);
                 }
             }
         };
@@ -676,7 +674,7 @@ public class ConceptController {
 
     private void onAddDescriptionButtonPressed(ActionEvent actionEvent) {
         if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
-                (getConceptViewModel().getPropertyValue(FULLY_QUALIFIED_NAME) == null)) {
+                getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES).isEmpty()) {
             // Show the context menu with 'Add Fully Qualified' option when it is a new concept in create mode and
             // there is no fully qualified name.
             fireContextMenuEvent(actionEvent, Side.RIGHT, 2, 0);
@@ -725,7 +723,7 @@ public class ConceptController {
         Object[][] menuItems;
         // show the 'Add Fully Qualified' option when it is a new concept in create mode and there is no fully qualified name
         if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
-                (getConceptViewModel().getPropertyValue(FULLY_QUALIFIED_NAME) == null)) {
+                getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES).isEmpty()) {
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
@@ -753,7 +751,6 @@ public class ConceptController {
                     case EventHandler  eventHandler -> eventHandler;
                     default -> null;
                 };
-
 
                 // Create a menu item. Todo: if/when you have sub menus
                 MenuItem menuItem = menuHelper.createMenuOption(
@@ -903,7 +900,7 @@ public class ConceptController {
         // TODO do a null check on the entityFacade
         // Title (FQN of concept)
         final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-        String conceptNameStr = viewCalculator.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(entityFacade.nid());
+        String conceptNameStr = viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid());
         fqnTitleText.setText(conceptNameStr);
         conceptNameTooltip.setText(conceptNameStr);
 
@@ -954,33 +951,24 @@ public class ConceptController {
         identifierControl.setPublicId(idStr);
     }
 
-    public void updateFQNConceptDescription(DescrName fqnDescrName) {
-        // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
-        // Latest FQN
-        String fullyQualifiedName = fqnDescrName.getNameText();
-        latestFqnText.setText(fullyQualifiedName);
-
-        fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-                new EditConceptFullyQualifiedNameEvent(latestFqnText,
-                        EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnDescrName)));
-        // these should never be null, if the drop-downs are populated then the
-        // submit button will not be enabled on the Add FQN form
-        if (fqnDescrName.getCaseSignificance() != null && fqnDescrName.getLanguage() != null) {
-            fqnDescriptionSemanticText.setText(" (" + fqnDescrName.getCaseSignificance().description()
-                    + ", " + fqnDescrName.getLanguage().description() + ")");
-        } else {
-            LOG.error("missing case sensitivity and language when adding a fully qualified name");
-            fqnDescriptionSemanticText.setText("");
-        }
-
-        fqnContainer.getChildren().setAll(latestFqnText, fqnDescriptionSemanticText);
+    public void updateFullyQualifiedNamesDescription(List<DescrName> descrNameViewModels) {
+        fullyQualifiedNameNodeListControl.getItems().clear();
+        descrNameViewModels.forEach(fullyQualifedName -> {
+            // start adding a row
+            VBox fullyQualifiedNameVBox = generateDescriptionSemanticRow(fullyQualifedName);
+            TextFlow firstRow = (TextFlow) fullyQualifiedNameVBox.getChildren().getFirst();
+            firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
+                    new EditConceptFullyQualifiedNameEvent(fullyQualifiedNameVBox,
+                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fullyQualifedName)));
+            fullyQualifiedNameNodeListControl.getItems().add(fullyQualifiedNameVBox);
+        });
     }
 
     public void updateOtherNamesDescription(List<DescrName> descrNameViewModels) {
         otherNamesNodeListControl.getItems().clear();
         descrNameViewModels.forEach(otherName -> {
                     // start adding a row
-                    VBox otherNameBox = generateOtherNameRow(otherName);
+                    VBox otherNameBox = generateDescriptionSemanticRow(otherName);
                     TextFlow firstRow = (TextFlow) otherNameBox.getChildren().getFirst();
                     firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
                             new EditOtherNameConceptEvent(otherNameBox,
@@ -1004,6 +992,7 @@ public class ConceptController {
         // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
         Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
         otherNamesNodeListControl.getItems().clear();
+        fullyQualifiedNameNodeListControl.getItems().clear();
 
         //Obtain the index field of DESCRIPTION_TYPE
         PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(DESCRIPTION_PATTERN.nid()).get();
@@ -1016,11 +1005,18 @@ public class ConceptController {
 
             if (isFQN) {
                 // Latest FQN
-                updateFQNSemantics(semanticEntityVersion, fieldDescriptions);
+             //   updateFQNSemantics(semanticEntityVersion, fieldDescriptions);
+                VBox fullyQualifiedNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
+                PublicId fullyQuallifiedNamePublicId = (PublicId) fullyQualifiedNameBox.getChildren().getFirst().getUserData();
+                TextFlow row = (TextFlow) fullyQualifiedNameBox.getChildren().getFirst();
+                row.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
+                        new EditConceptFullyQualifiedNameEvent(fullyQualifiedNameBox,
+                                EditConceptFullyQualifiedNameEvent.EDIT_FQN, fullyQuallifiedNamePublicId)));
+                fullyQualifiedNameNodeListControl.getItems().add(fullyQualifiedNameBox);
                 LOG.debug("FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
             } else if (isOtherName) {
                 // start adding a row
-                VBox otherNameBox = generateOtherNameRow(semanticEntityVersion, fieldDescriptions);
+                VBox otherNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
                 PublicId otherNamePublicId = (PublicId) otherNameBox.getChildren().getFirst().getUserData();
                 TextFlow firstRow = (TextFlow) otherNameBox.getChildren().getFirst();
                 firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
@@ -1031,6 +1027,10 @@ public class ConceptController {
                 LOG.debug("Other Names = " + semanticEntityVersion + " " + fieldDescriptions);
             }
         });
+
+        final int fullyQualifiedNameCount = fullyQualifiedNameNodeListControl.getItems().size();
+        fullyQualifiedNameHeaderText.setText(fullyQualifiedNameCount > 0 ?
+                String.format("FULLY QUALIFIED NAMES (%d):", fullyQualifiedNameCount) : "FULLY QUALIFIED NAMES:");
 
         final int otherNamesCount = otherNamesNodeListControl.getItems().size();
         otherNamesHeaderText.setText(otherNamesCount > 0 ?
@@ -1044,7 +1044,7 @@ public class ConceptController {
      * @param fieldDescriptions
      * @return
      */
-    private VBox generateOtherNameRow(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
+    private VBox generateDescriptionSemanticRow(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
         VBox textFlowsBox = new VBox();
         String descrSemanticStr = String.join(", ", fieldDescriptions);
 
@@ -1106,7 +1106,7 @@ public class ConceptController {
         return textFlowsBox;
     }
 
-    private VBox generateOtherNameRow(DescrName otherName) {
+    private VBox generateDescriptionSemanticRow(DescrName otherName) {
         VBox textFlowsBox = new VBox();
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         ConceptEntity caseSigConcept = otherName.getCaseSignificance();
@@ -1184,52 +1184,6 @@ public class ConceptController {
         }
         textFlowsBox.getChildren().addAll(row1, row2);
         return textFlowsBox;
-    }
-
-    private void updateFQNSemantics(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
-        DateTimeFormatter DATE_TIME_FORMATTER = dateFormatter("MMM dd, yyyy");
-        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-        String fqnTextDescr = viewCalculator.languageCalculator().getDescriptionTextOrNid(semanticEntityVersion.entity());
-        // obtain the fqn description
-        latestFqnText.setText(fqnTextDescr);
-        System.out.println(" Inside FQN Semantics: " + fqnTextDescr);
-
-        this.fqnPublicId = semanticEntityVersion.publicId();
-        fqnContainer.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-                new EditConceptFullyQualifiedNameEvent(latestFqnText,
-                        EditConceptFullyQualifiedNameEvent.EDIT_FQN, fqnPublicId)));
-
-        String descrSemanticStr = String.join(", ", fieldDescriptions);
-        if (!fieldDescriptions.isEmpty()) {
-            fqnDescriptionSemanticText.setText(" (%s)".formatted(descrSemanticStr));
-        } else {
-            fqnDescriptionSemanticText.setText("");
-        }
-
-        fqnContainer.getChildren().setAll(latestFqnText, fqnDescriptionSemanticText);
-
-        // update date
-        String dateAddedStr = "";
-        if (semanticEntityVersion.stamp() == null) {
-            dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-        } else {
-            Long fieldMilis = semanticEntityVersion.stamp().time();
-            if (fieldMilis.equals(PREMUNDANE_TIME)) {
-                dateAddedStr = PREMUNDANE;
-            } else {
-                LocalDate localDate = Instant.ofEpochMilli(fieldMilis).atZone(ZoneId.systemDefault()).toLocalDate();
-                dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-            }
-        }
-        fqnAddDateLabel.setText("Date Added: " + dateAddedStr);
-
-        Region spacer = new Region();
-        spacer.setMinWidth(10);
-
-        Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
-        Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
-
-        fqnDateAddedTextFlow.getChildren().setAll(fqnAddDateLabel, spacer, attachmentHyperlink, commentsHyperlink);
     }
 
     /**
@@ -1400,14 +1354,12 @@ public class ConceptController {
     public void clearView() {
         definitionTextField.setText("");
         identifierControl.setPublicId("");
-        fqnAddDateLabel.setText("");
 
         stampViewControl.clear();
 
         notAvailInferredAxiomLabel.setVisible(true);
         notAvailStatedAxiomLabel.setVisible(true);
-        fqnContainer.getChildren().clear();
-        fqnDateAddedTextFlow.getChildren().clear();
+        fullyQualifiedNameNodeListControl.getItems().clear();
         otherNamesNodeListControl.getItems().clear();
     }
     @FXML
@@ -1518,37 +1470,6 @@ public class ConceptController {
     private void popupAddContextMenu(ActionEvent actionEvent) {
         MenuHelper.fireContextMenuEvent(actionEvent, Side.BOTTOM, 0, 0);
     }
-
-    // TODO: I don't think this is needed but keeping it for a while because I've wrongly seen intellij flag something as not used
-//    private void updateUIStamp(ViewModel stampViewModel) {
-//        long time = stampViewModel.getValue(TIME);
-//        stampViewControl.setLastUpdated(TimeUtils.toDateString(time));
-//        ViewProperties viewProperties = stampViewModel.getValue(VIEW_PROPERTIES);
-//        if(viewProperties == null){
-//            viewProperties = conceptViewModel.getViewProperties();
-//        }
-//        EntityFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
-//        stampViewModel.setValue(AUTHOR, authorConcept);
-//
-//        if (authorConcept == null) {
-//            LOG.warn("Stamp should have an Author and doesn't");
-//            return;
-//        }
-//        stampViewControl.setAuthor(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(authorConcept, conceptViewModel.getViewProperties()));
-//
-//        ConceptEntity moduleEntity = stampViewModel.getValue(MODULE);
-//        if (moduleEntity == null) {
-//            LOG.warn("Must select a valid module for Stamp.");
-//            return;
-//        }
-//        stampViewControl.setModule(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(moduleEntity, conceptViewModel.getViewProperties()));
-//
-//        ConceptEntity pathEntity = stampViewModel.getValue(PATH);
-//        stampViewControl.setPath(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(pathEntity, conceptViewModel.getViewProperties()));
-//
-//        State status = stampViewModel.getValue(STATUS);
-//        stampViewControl.setStatus(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(status, conceptViewModel.getViewProperties()));
-//    }
 
     public void compactSizeWindow() {
         descriptionsTitledPane.setExpanded(false);

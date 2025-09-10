@@ -15,9 +15,30 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
+import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
+import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
+import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PARENT_PUBLIC_ID;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.DESCRIPTION_LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampType.CONCEPT;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
+import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
+import dev.ikm.komet.kview.events.AddOtherNameToConceptEvent;
+import dev.ikm.komet.kview.events.EditConceptFullyQualifiedNameEvent;
+import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
+import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
+import dev.ikm.komet.kview.events.ShowEditDescriptionPanelEvent;
+import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampAddFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampCreateFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
@@ -47,13 +68,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
-
-import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
-import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
-import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampType.CONCEPT;
 
 /**
  * The properties window providing tabs of Edit, Hierarchy, History, and Comments.
@@ -270,8 +284,8 @@ public class PropertiesController implements Serializable {
                             .setValue(STATUS, TinkarTerm.ACTIVE_STATE)
                             .setValue(IS_SUBMITTED, false)
 
-                            .setValue(FQN_CASE_SIGNIFICANCE, addFullyQualifiedNameController.getViewModel().getValue(CASE_SIGNIFICANCE))
-                            .setValue(FQN_LANGUAGE, addFullyQualifiedNameController.getViewModel().getValue(LANGUAGE))
+                            .setValue(DESCRIPTION_CASE_SIGNIFICANCE, addFullyQualifiedNameController.getViewModel().getValue(CASE_SIGNIFICANCE))
+                            .setValue(DESCRIPTION_LANGUAGE, addFullyQualifiedNameController.getViewModel().getValue(LANGUAGE))
 
                             .setValue(HAS_OTHER_NAME, hasOtherNames);
 
