@@ -21,8 +21,10 @@ import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
+import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -36,6 +38,8 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Set;
@@ -163,7 +167,29 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
     @Override
     public void submitOrConfirm() {
         save();
+        showSucessToast();
         setPropertyValue(IS_CONFIRMED_OR_SUBMITTED, true);
+        EvtBusFactory.getDefaultEvtBus().publish(topic, new ClosePropertiesPanelEvent("StampViewModel2 cancel()",
+                ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
+    }
+
+    private void showSucessToast() {
+        State status = getValue(STATUS);
+        EntityFacade module = getValue(MODULE);
+        EntityFacade path = getValue(PATH);
+
+        String statusString = getViewProperties().calculator().getDescriptionTextOrNid(status.nid());
+        String moduleString = getViewProperties().calculator().getDescriptionTextOrNid(module.nid());
+        String pathString = getViewProperties().calculator().getDescriptionTextOrNid(path.nid());
+
+        String submitMessage = "New " + stampType.getTextDescription() + " version created (" + statusString +
+                ", " + moduleString + ", " + pathString + ")";
+
+        JournalController.toast()
+                .show(
+                        Toast.Status.SUCCESS,
+                        submitMessage
+                );
     }
 
     @Override

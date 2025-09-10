@@ -238,6 +238,8 @@ public class GenEditingDetailsController {
 
     private ObservableSemanticSnapshot observableSemanticSnapshot;
 
+    private boolean isUpdatingStampSelection = false;
+
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
     public GenEditingDetailsController() {
@@ -310,6 +312,10 @@ public class GenEditingDetailsController {
     }
 
     private void onStampSelectionChanged() {
+        if (isUpdatingStampSelection) {
+            return;
+        }
+
         if (stampViewControl.isSelected()) {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
@@ -841,6 +847,10 @@ public class GenEditingDetailsController {
         EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
 
         updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
+
+        isUpdatingStampSelection = true;
+        stampViewControl.setSelected(propertyToggle.isSelected());
+        isUpdatingStampSelection = false;
 
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
