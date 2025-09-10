@@ -248,7 +248,7 @@
                            GridPane.rowIndex="3" GridPane.columnIndex="2" GridPane.valignment="TOP"/>
                     
                     
-                    <PublicIDControl fx:id="identifierControl" GridPane.columnSpan="3"
+                    <PublicIDControl fx:id="identifierControl" GridPane.columnSpan="4"
                                      GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.valignment="BOTTOM"
                                      GridPane.halignment="LEFT"/>
                     
