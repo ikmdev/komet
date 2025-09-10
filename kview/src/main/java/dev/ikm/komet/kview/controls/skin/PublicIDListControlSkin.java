@@ -9,8 +9,12 @@ import javafx.util.Subscription;
 
 import java.util.List;
 
-public class PublicIDListControlSkin  extends SkinBase<PublicIDListControl> {
+/// Provides the Skin for the PublicIDListControl.
+/// This control is a composite control that contains a VBox of PublicIDControls.
+/// The PublicIDControls that are created have the label turned off and the publicId value set.
+public class PublicIDListControlSkin extends SkinBase<PublicIDListControl> {
 
+    /// The VBox is placed within a ScrollPane, which is the root control of this custom control
     private final ScrollPane rootScrollPane = new ScrollPane();
 
     /// The root Node for the Skin

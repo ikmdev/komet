@@ -10,9 +10,11 @@ import javafx.scene.control.Skin;
 import java.util.ArrayList;
 import java.util.List;
 
+/// Control for the Public ID UUID list.
+/// This control only has a single property, which is rendered in the default skin PublicIDListControlSkin.
 public class PublicIDListControl extends Control {
 
-    /// The public ID (UUID)
+    /// A list of public IDs (UUID)
     private SimpleListProperty<String> publicIdList = new SimpleListProperty<>(this, "publicIdList");
 
     public SimpleListProperty<String> publicIdListProperty() {
@@ -23,6 +25,7 @@ public class PublicIDListControl extends Control {
         return publicIdListProperty().get();
     }
 
+    /// Sets the publicIdList property.  If the publicIdList provided is null an empty observable list will be created.
     public void setPublicIdList(List<String> publicIdList) {
         ObservableList<String> obsList = publicIdList != null ? FXCollections.observableList(publicIdList) : FXCollections.observableList(new ArrayList<>());
 

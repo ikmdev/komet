@@ -896,7 +896,7 @@ public class ConceptController {
         stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
     }
 
-    /// Show the public ID
+    /// Show the public IDs
     private void setupDisplayUUID(EntityFacade entityFacade, ViewCalculator viewCalculator) {
         List<String> idList = entityFacade.publicId().asUuidList().stream()
                 .map(UUID::toString)

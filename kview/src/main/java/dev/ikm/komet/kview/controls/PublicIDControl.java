@@ -7,11 +7,12 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
 /// Control for the Public ID UUID.
-/// This control only has a single property, which is rendered in the default skin PublicIDSkin.
+/// This control only has a single property, which is rendered in the default skin PublicIDControlSkin.
 public class PublicIDControl extends Control {
 
-     /// The public ID (UUID)
+     /// The public ID (UUID) property
     private SimpleStringProperty publicId = new SimpleStringProperty(this, "publicId");
+    /// The showLabel property which controls if the ID label is displayed
     private SimpleBooleanProperty showLabel = new SimpleBooleanProperty(this, "showLabel", true);
 
     public PublicIDControl() {
