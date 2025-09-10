@@ -15,8 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
@@ -47,8 +45,8 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.collections.ObservableList;
 import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.viewmodel.ViewModel;
@@ -71,7 +69,7 @@ public class ConceptViewModel extends FormViewModel {
     // Known properties
     // --------------------------------------------
     public static String CURRENT_ENTITY = "entityFacade";
-    public static String FULLY_QUALIFIED_NAME = "fqn";
+    public static String FULLY_QUALIFIED_NAMES = "fullyQualifiedNames";
     public static String CONCEPT_STAMP_VIEW_MODEL = "stampViewModel";
     public static String OTHER_NAMES = "otherNames";
 
@@ -84,7 +82,7 @@ public class ConceptViewModel extends FormViewModel {
     public ConceptViewModel() {
         super(); // addProperty(MODE, VIEW); By default
         addProperty(CURRENT_ENTITY, (EntityFacade) null)
-                .addProperty(FULLY_QUALIFIED_NAME, (Object) null)
+                .addProperty(FULLY_QUALIFIED_NAMES,  (Collection) new ArrayList<>())
                 .addProperty(OTHER_NAMES, (Collection) new ArrayList<>())
                 .addProperty(CONCEPT_STAMP_VIEW_MODEL, (ViewModel) null)
                 .addProperty(AXIOM, (String) null);
@@ -92,20 +90,15 @@ public class ConceptViewModel extends FormViewModel {
         //FIXME add a STAMP validator
 
         // In Create Mode the fqn is required.
-        addValidator(FULLY_QUALIFIED_NAME, "Fully Qualified Name",(ReadOnlyObjectProperty prop, ViewModel vm) -> {
-            if (prop.isNull().get()
-                    || prop.get() instanceof DescrNameViewModel fqnViewModel
-                    && fqnViewModel.getPropertyValue(NAME_TYPE) != TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE
-                    && fqnViewModel.getPropertyValue(NAME_TEXT) != null
-                    && fqnViewModel.getPropertyValue(NAME_TEXT).toString().isBlank()) {
-
-                return new ValidationMessage(FULLY_QUALIFIED_NAME, MessageType.ERROR, "${%s} is required".formatted(FULLY_QUALIFIED_NAME));
+        addValidator(FULLY_QUALIFIED_NAMES, "Fully Qualified Names",(ObservableList<?> observableList, ViewModel _ ) -> {
+            if (observableList.isEmpty()){
+                return new ValidationMessage(FULLY_QUALIFIED_NAMES, MessageType.ERROR, "${%s} is required".formatted(FULLY_QUALIFIED_NAMES));
             }
             return VALID;
         });
 
         // Axiom should be selected
-        addValidator(AXIOM, "Axiom",(ReadOnlyStringProperty prop, ViewModel vm) -> {
+        addValidator(AXIOM, "Axiom",(ReadOnlyStringProperty prop, ViewModel _ ) -> {
             if (prop.isNull().get()
                     || (prop.get() instanceof String axiom
                     && !(SUFFICIENT_SET.equals(axiom) || NECESSARY_SET.equals(axiom)))) {
@@ -113,15 +106,6 @@ public class ConceptViewModel extends FormViewModel {
             }
             return VALID;
         });
-
-//        addValidator("isReadyToCreate", (vm) ->
-//                vm.getPropertyValue("mode").equals(CREATE)
-//                        && vm.getPropertyValue("axiom").isEmpty()
-//                        && vm.getPropertyValue("fqn").isEmpty()
-//                        ? new ValidationMessage(ERROR, "Must have a ${fqn} & ${axiom} to create")
-//                        : VALID);
-
-
     }
 
     /**
@@ -144,7 +128,8 @@ public class ConceptViewModel extends FormViewModel {
         }
 
         // Create concept
-        DescrName fqnDescrName = getPropertyValue(FULLY_QUALIFIED_NAME);
+        List<DescrName> fqnList = getObservableList(FULLY_QUALIFIED_NAMES);
+        DescrName fqnDescrName = fqnList.get(0);
         Transaction transaction = Transaction.make("New concept for: " + fqnDescrName.getNameText());
 
 
@@ -171,7 +156,7 @@ public class ConceptViewModel extends FormViewModel {
         ConceptFacade conceptFacade = EntityProxy.Concept.make(conceptRecord.publicId()) ;
 
         // add the Fully Qualified Name to the new concept
-        saveFQNwithinCreateConcept(transaction, stampEntity, getValue(FULLY_QUALIFIED_NAME), conceptFacade);
+        saveFQNwithinCreateConcept(transaction, stampEntity, fqnDescrName, conceptFacade);
 
 
         AxiomBuilderRecord ab = newConceptBuilder.axiomBuilder();

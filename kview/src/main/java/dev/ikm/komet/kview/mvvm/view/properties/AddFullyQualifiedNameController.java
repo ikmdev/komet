@@ -15,24 +15,37 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
-import dev.ikm.tinkar.events.EvtBus;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -42,8 +55,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 
 public class AddFullyQualifiedNameController extends AbstractBasicController {
 
@@ -58,7 +69,7 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     private TextField fullyQualifiedNameTextField;
 
     @FXML
-    private ComboBox<ConceptEntity> typeDisplayComboBox;
+    private ComboBox<EntityFacade> typeDisplayComboBox;
 
     @FXML
     private ComboBox<EntityFacade> caseSignificanceComboBox;
@@ -114,6 +125,7 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
         setupComboBox(statusComboBox, formValid);
         setupComboBox(caseSignificanceComboBox, formValid);
         setupComboBox(languageComboBox, formValid);
+        setupComboBox(typeDisplayComboBox, formValid);
     }
 
     /**
@@ -139,16 +151,19 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     public void updateView() {
 
         // populate form combo fields module, status, case significance, lang.
-        populate(moduleComboBox, fqnViewModel.findAllModules(getViewProperties()));
-        populate(statusComboBox, fqnViewModel.findAllStatuses(getViewProperties()));
+        populate(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
+        populate(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
         populate(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
-        populate(languageComboBox, fqnViewModel.findAllLanguages(getViewProperties()));
+        populate(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+        populate(typeDisplayComboBox, fetchDescendentsOfConcept(getViewProperties(), DESCRIPTION_TYPE.publicId()));
 
         // Set UI to default values
         caseSignificanceComboBox.setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
         statusComboBox.setValue(Entity.getFast(State.ACTIVE.nid()));
         moduleComboBox.setValue(TinkarTerm.DEVELOPMENT_MODULE);
         languageComboBox.setValue(TinkarTerm.ENGLISH_LANGUAGE);
+        typeDisplayComboBox.setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+
     }
 
     @Override
@@ -158,10 +173,6 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
         statusComboBox.setValue(null);
         caseSignificanceComboBox.setValue(null);
         languageComboBox.setValue(null);
-//        if (fqnViewModel != null) {
-//            copyUIToViewModelProperties();
-//            fqnViewModel.save(true); // make UI properties as model values
-//        }
         moduleComboBox.getItems().clear();
         statusComboBox.getItems().clear();
         caseSignificanceComboBox.getItems().clear();
