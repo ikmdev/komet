@@ -32,6 +32,7 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -55,6 +56,8 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
+import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.getDragAndDropType;
+import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.setUpDraggable;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
@@ -268,11 +271,11 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                 item.latestVersion().ifPresent(semanticEntityVersion -> {
                     identicon.setImage(Identicon.generateIdenticonImage(semanticEntityVersion.publicId()));
                     currentNid = semanticEntityVersion.nid();
+                    setUpDraggable(cellContainer, semanticEntityVersion.entity(), getDragAndDropType(semanticEntityVersion.entity()));
                 });
                 if (item.highlightedString() != null) {
                     updateTextFlow(textFlow, item.highlightedString());
                 }
-
                 setGraphic(cellContainer);
             }
         }
