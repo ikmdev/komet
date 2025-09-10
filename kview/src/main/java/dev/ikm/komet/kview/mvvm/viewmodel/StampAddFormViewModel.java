@@ -170,9 +170,9 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
         EntityFacade module = getValue(MODULE);
         EntityFacade path = getValue(PATH);
 
-        String statusString = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
-        String moduleString = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(module.nid());
-        String pathString = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(path.nid());
+        String statusString = getViewProperties().calculator().getDescriptionTextOrNid(status.nid());
+        String moduleString = getViewProperties().calculator().getDescriptionTextOrNid(module.nid());
+        String pathString = getViewProperties().calculator().getDescriptionTextOrNid(path.nid());
 
         String submitMessage = "New " + stampType.getTextDescription() + " version created (" + statusString +
                 ", " + moduleString + ", " + pathString + ")";
