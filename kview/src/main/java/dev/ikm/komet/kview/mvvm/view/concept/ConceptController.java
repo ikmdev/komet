@@ -330,15 +330,11 @@ public class ConceptController {
     private static final PseudoClass V_SCROLLBAR_NEEDED = PseudoClass.getPseudoClass("vertical-scroll-needed");
 
     /**
-     * Stamp Edit
-     */
-    private PopOver stampEdit;
-    private StampEditController stampEditController;
-
-    /**
      *  TODO: View Calculator will need to be refreshed.
      */
     private ViewCalculatorWithCache viewCalculatorWithCache;
+
+    private boolean isUpdatingStampSelection = false;
 
     public ConceptController() {
     }
@@ -1424,6 +1420,10 @@ public class ConceptController {
     }
 
     private void onStampSelectionChanged() {
+        if (isUpdatingStampSelection) {
+            return;
+        }
+
         if (stampViewControl.isSelected()) {
             if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
                 eventBus.publish(conceptTopic, new StampEvent(stampViewControl, StampEvent.CREATE_STAMP));
@@ -1464,6 +1464,10 @@ public class ConceptController {
 
             updateDraggableNodesForPropertiesPanel(false);
         }
+
+        isUpdatingStampSelection = true;
+        stampViewControl.setSelected(propertyToggle.isSelected());
+        isUpdatingStampSelection = false;
     }
 
     /**

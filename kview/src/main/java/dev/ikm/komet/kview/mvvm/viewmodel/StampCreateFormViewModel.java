@@ -1,8 +1,10 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
+import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.*;
@@ -87,9 +89,29 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
     @Override
     public void submitOrConfirm() {
         save();
-
+        showSucessToast();
+        setPropertyValue(IS_CONFIRMED_OR_SUBMITTED, true);
         EvtBusFactory.getDefaultEvtBus().publish(topic, new ClosePropertiesPanelEvent("Stamp From View Model cancel()",
                 ClosePropertiesPanelEvent.CLOSE_PROPERTIES));
+    }
+
+    private void showSucessToast() {
+        State status = getValue(STATUS);
+        EntityFacade module = getValue(MODULE);
+        EntityFacade path = getValue(PATH);
+
+        String statusString = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(status.nid());
+        String moduleString = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(module.nid());
+        String pathString = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(path.nid());
+
+        String submitMessage = "Stamp definition stored for later use (" + statusString +
+                ", " + moduleString + ", " + pathString + ")";
+
+        JournalController.toast()
+                .show(
+                        Toast.Status.SUCCESS,
+                        submitMessage
+                );
     }
 
     @Override
@@ -102,8 +124,6 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
         }
 
         save(true);
-
-        setPropertyValue(IS_CONFIRMED_OR_SUBMITTED, true);
 
         // We're not going to create a stamp here. Just saving the stamp properties to the view model
         // so that they can be used later to create a new Concept.
