@@ -401,6 +401,10 @@ public class PatternDetailsController {
         ObjectProperty<EntityFacade> patternProperty = patternViewModel.getProperty(PATTERN);
 
         patternProperty.subscribe(entityFacade -> {
+            if (propertiesController != null) {
+                propertiesController.updateModel(entityFacade);
+            }
+
             if (entityFacade != null) {
                 patternViewModel.setPropertyValue(MODE, EDIT);
 
@@ -409,10 +413,6 @@ public class PatternDetailsController {
                 identiconImageView.setImage(identicon);
             } else {
                 patternViewModel.setPropertyValue(MODE, CREATE);
-            }
-
-            if (propertiesController != null) {
-                propertiesController.updateModel(entityFacade);
             }
         });
 
