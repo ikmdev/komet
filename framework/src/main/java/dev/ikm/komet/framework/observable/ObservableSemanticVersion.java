@@ -287,4 +287,12 @@ public final class ObservableSemanticVersion
         return fieldMap.toImmutable();
     }
 
+    @Override
+    public SemanticVersionRecord updateStampNid(int stampNid) {
+        SemanticVersionRecord currentSemanticVersionRecord = version();
+        SemanticVersionRecord newSemanticVersionRecord = currentSemanticVersionRecord.with().stampNid(stampNid).build();
+
+        return newSemanticVersionRecord;
+    }
+
 }
