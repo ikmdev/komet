@@ -18,17 +18,13 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.CASE_SIGNIFICANCE_OPTIONS;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.RecordListBuilder;
 import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticRecordBuilder;
 import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
@@ -39,8 +35,6 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
-import org.carlfx.cognitive.validator.MessageType;
-import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.eclipse.collections.api.factory.Lists;
@@ -48,10 +42,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class DescrNameViewModel extends FormViewModel {
 
@@ -128,67 +119,9 @@ public class DescrNameViewModel extends FormViewModel {
             ;
     }
 
-    public Set<ConceptEntity> findAllLanguages(ViewProperties viewProperties) {
-        IntIdSet languageDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
-        Set<ConceptEntity> allLangs = languageDescendents.intStream()
-                .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
-                .collect(Collectors.toSet());
-        return allLangs;
-    }
-
-    public Set<ConceptEntity> findAllStatuses(ViewProperties viewProperties) {
-        Entity<? extends EntityVersion> statusEntity = EntityService.get().getEntityFast(TinkarTerm.STATUS_VALUE);
-        IntIdSet statusDescendents = viewProperties.calculator().descendentsOf(statusEntity.nid());
-        Set<ConceptEntity> allStatuses = statusDescendents.intStream()
-                .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
-                .collect(Collectors.toSet());
-        return allStatuses;
-    }
-
     public Set<ConceptEntity> findAllCaseSignificants(ViewProperties viewProperties) {
-
-
-        //FIXME after connect-a-thon put this query back
-//        IntIdSet caseSenseDescendents = viewProperties.calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
-//        Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
-//                .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
-//                .collect(Collectors.toSet());
-
+        //FIXME after connect-a-thon put this query back or call fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.publicId())
         return CASE_SIGNIFICANCE_OPTIONS;
-    }
-    public List<ConceptEntity> findAllModules(ViewProperties viewProperties) {
-        try {
-            Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
-            IntIdSet moduleDescendents = viewProperties.calculator().descendentsOf(moduleEntity.nid());
-
-            // get all descendant modules
-            List<ConceptEntity> allModules =
-                    moduleDescendents.intStream()
-                            .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
-                            .toList();
-            return allModules;
-        } catch (Throwable th) {
-            addValidator(MODULES_PROPERTY, "Module Entities", (Void prop, ViewModel vm) -> new ValidationMessage(MessageType.ERROR, "PrimitiveData services are not up. Attempting to retrieve ${%s}. Must call start().".formatted(MODULES_PROPERTY), th));
-            return List.of();
-        }
-    }
-    public List<ConceptEntity<ConceptEntityVersion>> findAllPaths(ViewProperties viewProperties) {
-        try {
-            //List of Concepts that represent available Paths in the data
-            List<ConceptEntity<ConceptEntityVersion>> paths = new ArrayList<>();
-            //Get all Path semantics from the Paths Pattern
-            int[] pathSemanticNids = EntityService.get().semanticNidsOfPattern(TinkarTerm.PATHS_PATTERN.nid());
-            //For each Path semantic get the concept that the semantic is referencing
-            for (int pathSemanticNid : pathSemanticNids) {
-                SemanticEntity<SemanticEntityVersion> semanticEntity = Entity.getFast(pathSemanticNid);
-                int pathConceptNid = semanticEntity.referencedComponentNid();
-                paths.add(EntityService.get().getEntityFast(pathConceptNid));
-            }
-            return paths;
-        } catch (Throwable th) {
-            addValidator(PATHS_PROPERTY, "Path Entities", (Void prop, ViewModel vm) -> new ValidationMessage(MessageType.ERROR, "PrimitiveData services are not up. Attempting to retrieve ${%s}. Must call start().".formatted(PATHS_PROPERTY), th));
-            return List.of();
-        }
     }
 
     public void updateFullyQualifiedName(PublicId publicId, ViewProperties viewProperties) {

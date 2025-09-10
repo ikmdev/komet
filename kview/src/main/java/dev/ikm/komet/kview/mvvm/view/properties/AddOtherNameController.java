@@ -15,22 +15,38 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.DESCRIPTION_LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
+import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TextField;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -40,11 +56,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_CASE_SIGNIFICANCE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.FQN_LANGUAGE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
 
 public class AddOtherNameController extends AbstractBasicController {
 
@@ -116,6 +127,7 @@ public class AddOtherNameController extends AbstractBasicController {
         setupComboBox(statusComboBox, formValid);
         setupComboBox(caseSignificanceComboBox, formValid);
         setupComboBox(languageComboBox, formValid);
+        setupComboBox(typeDisplayComboBox, formValid);
     }
 
     /**
@@ -230,22 +242,25 @@ public class AddOtherNameController extends AbstractBasicController {
     @Override
     public void updateView() {
         // populate form combo fields module, status, case significance, lang.
-        populate(moduleComboBox, otherNameViewModel.findAllModules(getViewProperties()));
-        populate(statusComboBox, otherNameViewModel.findAllStatuses(getViewProperties()));
+        populate(typeDisplayComboBox, fetchDescendentsOfConcept(getViewProperties(), DESCRIPTION_TYPE.publicId()));
+        populate(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
+        populate(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
         populate(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
-        populate(languageComboBox, otherNameViewModel.findAllLanguages(getViewProperties()));
+        populate(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+
+        typeDisplayComboBox.setValue(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
 
         boolean hasOtherName = getViewModel().getValue(HAS_OTHER_NAME);
 
         if (hasOtherName) {
-            caseSignificanceComboBox.setValue(getViewModel().getValue(FQN_CASE_SIGNIFICANCE));
+            caseSignificanceComboBox.setValue(getViewModel().getValue(DESCRIPTION_CASE_SIGNIFICANCE));
         } else {
             caseSignificanceComboBox.setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
         }
         statusComboBox.setValue(Entity.getFast(State.ACTIVE.nid()));
         moduleComboBox.setValue(TinkarTerm.DEVELOPMENT_MODULE);
         if (hasOtherName) {
-            languageComboBox.setValue(getViewModel().getValue(FQN_LANGUAGE));
+            languageComboBox.setValue(getViewModel().getValue(DESCRIPTION_LANGUAGE));
         } else {
             languageComboBox.setValue(TinkarTerm.ENGLISH_LANGUAGE);
         }
