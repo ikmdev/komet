@@ -52,7 +52,7 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
         }
 
         setPropertyValue(FORM_TITLE, "New " + stampType.getTextDescription() + " Version");
-        setPropertyValue(TIME_TEXT, "Uncommitted");
+        setPropertyValue(FORM_TIME_TEXT, "Uncommitted");
         ConceptFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
         setPropertyValue(AUTHOR, authorConcept);
 
@@ -104,6 +104,7 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
         save(true);
 
         setPropertyValue(IS_CONFIRMED_OR_SUBMITTED, true);
+
         // We're not going to create a stamp here. Just saving the stamp properties to the view model
         // so that they can be used later to create a new Concept.
 

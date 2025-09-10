@@ -63,7 +63,23 @@ public class AppMenu {
         this.app = app;
     }
 
-    void generateMsWindowsMenu(BorderPane kometRoot, Stage stage) {
+    /**
+     * create the menu for windows used on a journal window (ie no vbox at the top of a border pane)
+     * @param borderPane border pane for the journal
+     * @param stage stage for the journal window
+     */
+    void generateMsWindowsMenu(BorderPane borderPane, Stage stage) {
+        this.generateMsWindowsMenu(borderPane, stage, null);
+    }
+
+    /**
+     * create the menu for windows for classic komet
+     * @param kometRoot border pane for classic komet
+     * @param stage stage for classic komet
+     * @param topBarVBox contains the top of the border pane with the parent coordinate menu as well as the
+     *                   menu we will add to it
+     */
+    void generateMsWindowsMenu(BorderPane kometRoot, Stage stage, VBox topBarVBox) {
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");
 
@@ -109,8 +125,13 @@ public class AppMenu {
         menuBar.getMenus().add(fileMenu);
         menuBar.getMenus().add(editMenu);
         menuBar.getMenus().add(windowMenu);
-        //hBox.getChildren().add(menuBar);
-        Platform.runLater(() -> kometRoot.setTop(menuBar));
+        if (topBarVBox != null) {
+            // add MS Windows menu to the classic komet menu
+            Platform.runLater(() -> topBarVBox.getChildren().addFirst(menuBar));
+        } else {
+            // add MS Windows menu to the journal window
+            Platform.runLater(() -> kometRoot.setTop(menuBar));
+        }
     }
 
     Menu createExchangeMenu() {
