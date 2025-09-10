@@ -31,9 +31,9 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.FIELD_OR
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.FIELD_ORDER_OPTIONS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PREVIOUS_PATTERN_FIELD;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.TOTAL_EXISTING_FIELDS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
+
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -49,9 +49,9 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -74,6 +74,10 @@ public class PatternFieldsController {
 
     @InjectViewModel
     private PatternFieldsViewModel patternFieldsViewModel;
+
+    @InjectViewModel
+    private PatternViewModel patternViewModel;
+
 
     @FXML
     private Label addEditLabel;
@@ -111,9 +115,9 @@ public class PatternFieldsController {
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
         ObjectProperty<EntityProxy> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
         ObjectProperty<EntityProxy> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
+        ObjectProperty<PatternField> previousPatternFieldProperty = patternFieldsViewModel.getProperty(PREVIOUS_PATTERN_FIELD);
 
-        // the display name is derived from the meaning's description text and is not user editable
-        displayNameTextField.setEditable(false);
+
         patternFieldsViewModel.getProperty(MEANING_ENTITY).subscribe(meaningObject -> {
             if (meaningObject != null) {
                 ConceptEntity conceptEntity = Entity.getFast((EntityFacade) meaningObject);
@@ -122,6 +126,28 @@ public class PatternFieldsController {
                 displayNameTextField.setText("");
             }
         });
+
+        ObjectProperty<String> mode =  patternViewModel.getProperty(MODE);
+
+        // Users should not be able to edit Field Order / DisplayName as this are derived values
+        // state check a) Either a Pattern was ever commited or is a complete new one
+        // state check b) either we add a field or edit one.
+        //                      field order | display name | data type
+        //   newPattern + add ->    enabeld    disabled      enabled
+        //     commited + add ->    disabled   disabled      enabled
+        //   newPattern + edit->    enabled    disabled      disabled
+        //     commited + edit->    disabled   disabled      disabled
+
+        // Create boolean bindings
+
+        BooleanBinding isEdit = Bindings.isNotNull(previousPatternFieldProperty);
+        BooleanBinding alwaysTrue = Bindings.createBooleanBinding(() -> true);
+        BooleanBinding patternIsInCreateMode = Bindings.equal(mode, CREATE);
+
+        // Bind the disable properties
+        fieldOrderComboBox.disableProperty().bind(patternIsInCreateMode.not());
+        displayNameTextField.disableProperty().bind(alwaysTrue);
+        dataTypeComboBox.disableProperty().bind(isEdit);
 
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
         fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder
