@@ -235,7 +235,7 @@
                     
                     
                     <Label styleClass="semantic-banner-label" text="Meaning:" GridPane.rowIndex="2"
-                           GridPane.columnIndex="1" minWidth="50.0" GridPane.valignment="TOP"/>
+                           GridPane.columnIndex="1" minWidth="60.0" GridPane.valignment="TOP"/>
                     
                     <Label fx:id="semanticMeaningText" styleClass="semantic-banner-value" text="[]" wrapText="true"
                            GridPane.rowIndex="2" GridPane.columnIndex="2" GridPane.valignment="TOP"/>
