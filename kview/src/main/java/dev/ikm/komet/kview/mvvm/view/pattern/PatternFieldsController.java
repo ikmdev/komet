@@ -129,11 +129,11 @@ public class PatternFieldsController {
 
         ObjectProperty<String> mode =  patternViewModel.getProperty(MODE);
 
-        // Users should not be able to edit Field Order / DisplayName as this are derived values
-        // state check a) Either a Pattern was ever commited or is a complete new one
+        // Users should not be able to edit Field Order / DisplayName in all circumstances
+        // state check a) Either a Pattern was never commited or is a complete new one
         // state check b) either we add a field or edit one.
         //                      field order | display name | data type
-        //   newPattern + add ->    enabeld    disabled      enabled
+        //   newPattern + add ->    enabled    disabled      enabled
         //     commited + add ->    disabled   disabled      enabled
         //   newPattern + edit->    enabled    disabled      disabled
         //     commited + edit->    disabled   disabled      disabled
