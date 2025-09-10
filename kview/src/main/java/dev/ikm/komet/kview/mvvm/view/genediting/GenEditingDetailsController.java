@@ -284,6 +284,12 @@ public class GenEditingDetailsController {
         genEditingViewModel.getProperty(SEMANTIC).subscribe(newSemantic -> {
             propertiesController.updateModel((EntityFacade) newSemantic);
             updateUIStamp(propertiesController.getStampFormViewModel());
+
+            // update the identicon
+            setupIdenticon(refComponent);
+
+            // update the display UUID
+            setupDisplayUUID();
         });
 
         genEditingViewModel.getProperty(MODE).subscribe(newMode -> {
