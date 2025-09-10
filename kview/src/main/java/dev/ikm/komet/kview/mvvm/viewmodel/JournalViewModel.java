@@ -23,6 +23,7 @@ import dev.ikm.komet.framework.window.WindowSettings;
 public class JournalViewModel extends FormViewModel {
 
     public static String WINDOW_SETTINGS = "windowSettings";
+    public static String JOURNAL_NAME = "journalName";
 
     /**
      * Initializes a new JournalViewModel with default form configuration.
@@ -31,6 +32,7 @@ public class JournalViewModel extends FormViewModel {
         super();
 
         addProperty(WINDOW_SETTINGS, (WindowSettings) null);
+        addProperty(JOURNAL_NAME, "");
     }
 
     // Add journal-specific properties and commands as needed
