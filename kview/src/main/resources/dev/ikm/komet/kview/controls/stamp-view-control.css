@@ -4,11 +4,27 @@
     -fx-border-radius: 3px;
 
     -fx-padding: 5px;
+
+    highlight-color: #f2faee;
+    highlight-border-color: #9ae281;
 }
 
-.stamp-view-control:selected .stamp-container{
-    -fx-background-color: #f2faee;
+.stamp-view-control:selected .stamp-container {
+    -fx-background-color: highlight-color;
     -fx-background-radius: 3px;
 
-    -fx-border-color: #9ae281;
+    -fx-border-color: highlight-border-color;
+}
+
+.stamp-view-control:hover .stamp-container {
+    -fx-background-color: #f8f8f8;
+    -fx-background-radius: 3px;
+
+    -fx-border-color: #ededed;
+}
+
+.stamp-view-control:selected:hover .stamp-container {
+    -fx-background-color: derive(highlight-color, -1.5%);
+
+    -fx-border-color: derive(highlight-border-color, -5%);
 }
