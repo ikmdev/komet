@@ -111,17 +111,6 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
             identifier = publicId;
             publicIdTooltip.setText(identifier);
             publicIdTextField.setText(identifier);
-
-            Platform.runLater(() -> {
-                // set the preferredWidth of the TextField to completely show the identifier text
-
-                Text text = new Text(identifier); // Create a temporary Text node with the new text
-                text.setFont(publicIdTextField.getFont()); // Set the same font as the TextField
-                double width = text.getLayoutBounds().getWidth() +
-                        publicIdTextField.getPadding().getLeft() +
-                        publicIdTextField.getPadding().getRight() + 2d; // Add padding and a small buffer
-                publicIdTextField.setPrefWidth(width);
-            });
         });
     }
 
