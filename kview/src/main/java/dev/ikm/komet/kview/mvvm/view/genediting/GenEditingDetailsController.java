@@ -191,10 +191,10 @@ public class GenEditingDetailsController {
     private BorderPane propertiesBorderPane;
 
     @FXML
-    private Text semanticMeaningText;
+    private Label semanticMeaningText;
 
     @FXML
-    private Text semanticPurposeText;
+    private Label semanticPurposeText;
 
     @FXML
     private Button addReferenceButton;
