@@ -49,7 +49,6 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.component.graph.DiTree;
-import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -689,7 +688,7 @@ public class ClauseView {
                 RuleService.get().execute("Knowledge base name",
                         Lists.immutable.of(observation),
                         axiomView.viewProperties,
-                        Coordinates.Edit.Default());
+                        axiomView.viewProperties.nodeView().editCoordinate());
 
 
         if (consequences.notEmpty()) {
