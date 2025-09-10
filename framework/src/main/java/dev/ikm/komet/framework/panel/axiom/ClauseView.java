@@ -224,7 +224,7 @@ public class ClauseView {
         Optional<IntIdList> optionalPropertyPattern = this.axiomVertex.property(TinkarTerm.PROPERTY_SEQUENCE);
         optionalPropertyPattern.ifPresent(propertyPattern -> {
             for (int propertyPatternNid : propertyPattern.intStream().toArray()) {
-                builder.append("[" + calculator().getPreferredDescriptionTextWithFallbackOrNid(propertyPatternNid) + "] ");
+                builder.append("[" + calculator().getDescriptionTextOrNid(propertyPatternNid) + "] ");
             }
         });
         builder.append("⇒ ");
@@ -236,7 +236,7 @@ public class ClauseView {
         }
 
         optionalImplication.ifPresent(implication -> {
-            builder.append("[" + calculator().getPreferredDescriptionTextWithFallbackOrNid(implication.nid()) + "] ");
+            builder.append("[" + calculator().getDescriptionTextOrNid(implication.nid()) + "] ");
         });
         titleLabel.setText(builder.toString());
         this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
@@ -484,7 +484,7 @@ public class ClauseView {
         if (optionalTypeConcept.isPresent()  && optionalConcreteDomainOperator.isPresent()) {
             ConceptFacade typeConcept = optionalTypeConcept.get();
             ConceptFacade concreteDomainOperatorConcept = optionalConcreteDomainOperator.get();
-            builder.append(calculator().getPreferredDescriptionTextWithFallbackOrNid(typeConcept));
+            builder.append(calculator().getDescriptionTextOrNid(typeConcept));
             ConcreteDomainOperators operator = ConcreteDomainOperators.fromConcept(concreteDomainOperatorConcept);
             switch (operator) {
                 case EQUALS:
@@ -551,7 +551,7 @@ public class ClauseView {
         rootBorderPane.getStyleClass()
                 .add(StyleClasses.DEF_CONCEPT.toString());
         ConceptFacade conceptForVertex = CONCEPT.getPropertyFast(axiomVertex);
-        titleLabel.setText(calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptForVertex));
+        titleLabel.setText(calculator().getDescriptionTextOrNid(conceptForVertex));
 
         Latest<EntityVersion> latest = calculator().latest(conceptForVertex);
         if (latest.isPresent()) {
