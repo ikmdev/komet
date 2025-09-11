@@ -180,12 +180,6 @@ public class ConceptNode extends ExplorationNodeAbstract {
                 titleProperty.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(newEntityFacade));
                 toolTipTextProperty.set(viewProperties.calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(newEntityFacade));
 
-                // Also publish(dispatch) to any subscribers of this view.
-                if (getActivityStream() !=null && (PUBLISH.keyForOption().equals(super.optionForActivityStreamKeyProperty.get()) ||
-                        SYNCHRONIZE.keyForOption().equals(super.optionForActivityStreamKeyProperty.get()))) {
-                    getActivityStream().dispatch(newEntityFacade);
-                }
-
                 // Populate Detail View
                 if (getConceptDetailsViewController() != null) {
                     getConceptDetailsViewController()
