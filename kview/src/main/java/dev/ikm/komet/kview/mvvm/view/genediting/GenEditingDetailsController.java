@@ -276,8 +276,8 @@ public class GenEditingDetailsController {
             updateDraggableNodesForPropertiesPanel(true);
         }
 
-        setupIdenticon(refComponent);
-        setupDisplayUUID();
+        updateIdenticon(refComponent);
+        updateDisplayUUID();
 
         genEditingViewModel.getProperty(STAMP_VIEW_MODEL).bind(propertiesController.stampFormViewModelProperty());
 
@@ -286,10 +286,10 @@ public class GenEditingDetailsController {
             updateUIStamp(propertiesController.getStampFormViewModel());
 
             // update the identicon
-            setupIdenticon(refComponent);
+            updateIdenticon(refComponent);
 
             // update the display UUID
-            setupDisplayUUID();
+            updateDisplayUUID();
         });
 
         genEditingViewModel.getProperty(MODE).subscribe(newMode -> {
@@ -337,7 +337,7 @@ public class GenEditingDetailsController {
         }
     }
 
-    private void setupDisplayUUID() {
+    private void updateDisplayUUID() {
         EntityFacade semanticComponent = genEditingViewModel.getPropertyValue(SEMANTIC);
         if (semanticComponent == null) {
             return;
@@ -352,7 +352,7 @@ public class GenEditingDetailsController {
         identifierControl.setPublicId(idString);
     }
 
-    private void setupIdenticon(ObjectProperty<EntityFacade> refComponent) {
+    private void updateIdenticon(ObjectProperty<EntityFacade> refComponent) {
         if (refComponent.isNotNull().get()) {
             EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
 
