@@ -17,12 +17,10 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampPro
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.SUBMIT_BUTTON_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.TIME;
 import dev.ikm.komet.framework.controls.TimeUtils;
-import dev.ikm.komet.framework.observable.ObservableEntity;
-import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
-import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.tinkar.component.Stamp;
@@ -40,6 +38,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Node;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -206,17 +205,21 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
         EntityFacade path = getValue(PATH);
 
         // -----------  Save stamp on the Database --------------
-        Transaction transaction = Transaction.make();
-        StampEntity stampEntity = transaction.getStampForEntities(status, author.nid(), module.nid(), path.nid(), entityFacade);
+//        Transaction transaction = Transaction.make();
+//        StampEntity stampEntity = transaction.getStampForEntities(status, author.nid(), module.nid(), path.nid(), entityFacade);
+//
+//        ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
+//        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+//        observableEntitySnapshot.getLatestVersion().ifPresent(latestVersion -> {
+//            if (latestVersion instanceof ObservableVersion observableVersion) {
+//                observableVersion.versionProperty().set(observableVersion.updateStampNid(stampEntity.nid()));
+//            }
+//        });
+//        transaction.commit();
 
-        ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
-        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
-        observableEntitySnapshot.getLatestVersion().ifPresent(latestVersion -> {
-            if (latestVersion instanceof ObservableVersion observableVersion) {
-                observableVersion.versionProperty().set(observableVersion.updateStampNid(stampEntity.nid()));
-            }
-        });
-        transaction.commit();
+        //Alternate approach to save transaction.
+        Optional<Transaction> transactionOptional = DataModelHelper.createTranscationForEntity(viewProperties.calculator().latest(entityFacade.nid()), viewProperties);
+        transactionOptional.ifPresent(transaction -> transaction.commit());
 
         // Load the new STAMP and store the new initial values
         loadStamp();

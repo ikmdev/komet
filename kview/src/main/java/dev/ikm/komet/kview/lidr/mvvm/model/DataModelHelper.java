@@ -16,6 +16,9 @@
 package dev.ikm.komet.kview.lidr.mvvm.model;
 
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
+import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
+import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -38,11 +41,22 @@ import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
 import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculatorWithCache;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.RelativePosition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.ConceptRecord;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.StampEntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -516,5 +530,33 @@ public class DataModelHelper {
             axiomTreeBuilder.addEdge(childVertex, parentVertex);
             recursiveAddChildren(axiomTreeBuilder, childVertex, child);
         }
+    }
+
+    /***
+     * This method will create stamp for any entity (Semantic, Concept, Pattern or Stamp)
+     * in uncommited state and return optional transaction object which can be committed.
+     * This will give developer the flexibility to not handle STAMPs for each entity separately.
+     * @param entityVersionLatest
+     * @param viewProperties
+     * @return
+     */
+    public static Optional<Transaction> createTranscationForEntity(Latest<EntityVersion> entityVersionLatest, ViewProperties viewProperties){
+        if(entityVersionLatest.isPresent()){
+            EntityVersion entityVersion = entityVersionLatest.get();
+            ConceptFacade author = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
+            Entity entity = entityVersion.entity();
+            StampEntity currentStamp = entityVersion.stamp();
+            Transaction transaction = Transaction.make();
+            StampEntity stampEntity = transaction.getStampForEntities(currentStamp.state(), author.nid(), currentStamp.moduleNid(), currentStamp.pathNid(), entity);
+            ObservableEntity observableEntity = ObservableEntity.get(entity.nid());
+            ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+            observableEntitySnapshot.getLatestVersion().ifPresent(latestVersion -> {
+                if (latestVersion instanceof ObservableVersion observableVersion) {
+                    observableVersion.versionProperty().set(observableVersion.updateStampNid(stampEntity.nid()));
+                }
+            });
+            return Optional.of(transaction);
+        }
+            return Optional.empty();
     }
 }
