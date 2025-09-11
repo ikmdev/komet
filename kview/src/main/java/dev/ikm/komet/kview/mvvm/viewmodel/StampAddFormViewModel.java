@@ -38,8 +38,6 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Set;
@@ -208,54 +206,6 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
         EntityFacade path = getValue(PATH);
 
         // -----------  Save stamp on the Database --------------
-//        Composer composer = new Composer("Save new STAMP in Component");
-//
-//        Session session = composer.open(status, author.toProxy(), module.toProxy(), path.toProxy());
-//
-//        switch (stampType) {
-//            case CONCEPT -> {
-//                session.compose((ConceptAssembler conceptAssembler) -> {
-//                    conceptAssembler.concept(entityFacade.toProxy());
-//                });
-//            }
-//            // TODO: implement better handing of empty latestEntityVersion
-//            case PATTERN -> {
-//                Latest<EntityVersion> latestEntityVersion = viewProperties.calculator().latest(entityFacade);
-//                EntityVersion entityVersion = latestEntityVersion.get();
-//                PatternVersionRecord patternVersionRecord = (PatternVersionRecord) entityVersion;
-//
-//                session.compose((PatternAssemblerConsumer) patternAssembler -> { patternAssembler
-//                    .pattern(entityFacade.toProxy())
-//                    .meaning(patternVersionRecord.semanticMeaning().toProxy())
-//                    .purpose(patternVersionRecord.semanticPurpose().toProxy());
-//
-//                    // Add the field definitions
-//                    ((PatternVersionRecord) entityVersion).fieldDefinitions().forEach(fieldDefinitionRecord -> {
-//                        ConceptEntity fieldMeaning = fieldDefinitionRecord.meaning();
-//                        ConceptEntity fieldPurpose = fieldDefinitionRecord.purpose();
-//                        ConceptEntity fieldDataType = fieldDefinitionRecord.dataType();
-//                        patternAssembler.fieldDefinition(fieldMeaning.toProxy(), fieldPurpose.toProxy(), fieldDataType.toProxy());
-//                    });
-//                });
-//            }
-//            case SEMANTIC -> {
-//                Latest<EntityVersion> latestEntityVersion = viewProperties.calculator().latest(entityFacade);
-//                EntityVersion entityVersion = latestEntityVersion.get();
-//                SemanticVersionRecord semanticVersionRecord = (SemanticVersionRecord) entityVersion;
-//
-//                session.compose((SemanticAssemblerConsumer)  semanticAssembler -> semanticAssembler
-//                        .semantic(entityFacade.toProxy())
-//                        .pattern(semanticVersionRecord.pattern().toProxy())
-//                        .reference(semanticVersionRecord.referencedComponent().toProxy())
-//                        .fieldValues(vals -> vals.withAll(semanticVersionRecord.fieldValues()))
-//                );
-//            }
-//            default -> throw new RuntimeException("Stamp Type " + stampType + " not supported");
-//        }
-//
-//        composer.commitSession(session);
-
-
         Transaction transaction = Transaction.make();
         StampEntity stampEntity = transaction.getStampForEntities(status, author.nid(), module.nid(), path.nid(), entityFacade);
 
