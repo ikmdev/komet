@@ -2,7 +2,7 @@
 
 <?import dev.ikm.komet.kview.controls.KLExpandableNodeListControl?>
 <?import dev.ikm.komet.kview.controls.PublicIDListControl?>
-<?import dev.ikm.komet.kview.controls.ResponsiveTextFlow?>
+<?import dev.ikm.komet.kview.controls.StampViewControl?>
 <?import dev.ikm.komet.kview.controls.StampViewControl?>
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
@@ -221,23 +221,31 @@
 
                                     <!-- LEFT COLUMN: Fully Qualified Name area -->
                                     <VBox maxHeight="Infinity" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.fillWidth="true">
-                                       <Text styleClass="grey8-12pt-bold" text="FULLY QUALIFIED NAME:">
+                                       <Text fx:id="fullyQualifiedNameHeaderText" styleClass="grey8-12pt-bold" text="FULLY QUALIFIED NAMES:">
                                           <font>
                                              <Font name="Noto Sans SemiBold" size="12.0" />
                                           </font>
                                        </Text>
-
-                                       <ResponsiveTextFlow fx:id="fqnContainer" styleClass="fqn-container">
-                                          <Text fx:id="latestFqnText" styleClass="descr-concept-name" />
-                                          <Text fx:id="fqnDescriptionSemanticText" styleClass="descr-concept-name" />
-                                       </ResponsiveTextFlow>
-
-                                       <ResponsiveTextFlow fx:id="fqnDateAddedTextFlow">
-                                          <Label styleClass="descr-semantic" />
-                                          <Label fx:id="fqnAddDateLabel" styleClass="grey8-12pt-bold" text="May 10, 2023" />
-                                          <Hyperlink text="Attachment" />
-                                          <Hyperlink text="Comment" />
-                                       </ResponsiveTextFlow>
+                                 <KLExpandableNodeListControl fx:id="fullyQualifiedNameNodeListControl" maxHeight="Infinity">
+                                    <items>
+                                       <TextFlow>
+                                          <children>
+                                             <Label text="Date Added:" />
+                                             <Label text="May 10, 2023" />
+                                             <Hyperlink text="Attachment" />
+                                             <Hyperlink text="Comment" />
+                                          </children>
+                                       </TextFlow>
+                                       <TextFlow>
+                                          <children>
+                                             <Label text="Date Added:" />
+                                             <Label text="May 10, 2023" />
+                                             <Hyperlink text="Attachment" />
+                                             <Hyperlink text="Comment" />
+                                          </children>
+                                       </TextFlow>
+                                    </items>
+                                 </KLExpandableNodeListControl>
                                     </VBox>
 
                                     <!-- RIGHT COLUMN: Other Names area -->

@@ -273,6 +273,8 @@ public class PatternDetailsController {
     @InjectViewModel
     private PatternViewModel patternViewModel;
 
+    private boolean isUpdatingStampSelection = false;
+
     private final Tooltip publishTooltip = new Tooltip();
 
     private Subscriber<PropertyPanelEvent> patternPropertiesEventSubscriber;
@@ -399,6 +401,10 @@ public class PatternDetailsController {
         ObjectProperty<EntityFacade> patternProperty = patternViewModel.getProperty(PATTERN);
 
         patternProperty.subscribe(entityFacade -> {
+            if (propertiesController != null) {
+                propertiesController.updateModel(entityFacade);
+            }
+
             if (entityFacade != null) {
                 patternViewModel.setPropertyValue(MODE, EDIT);
 
@@ -407,10 +413,6 @@ public class PatternDetailsController {
                 identiconImageView.setImage(identicon);
             } else {
                 patternViewModel.setPropertyValue(MODE, CREATE);
-            }
-
-            if (propertiesController != null) {
-                propertiesController.updateModel(entityFacade);
             }
         });
 
@@ -524,6 +526,10 @@ public class PatternDetailsController {
     }
 
     private void onStampSelectionChanged() {
+        if (isUpdatingStampSelection) {
+            return;
+        }
+
         if (stampViewControl.isSelected()) {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
@@ -1049,6 +1055,10 @@ public class PatternDetailsController {
         EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
 
         updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
+
+        isUpdatingStampSelection = true;
+        stampViewControl.setSelected(propertyToggle.isSelected());
+        isUpdatingStampSelection = false;
 
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
