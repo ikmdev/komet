@@ -127,26 +127,26 @@ public class PatternFieldsController {
             }
         });
 
-        ObjectProperty<String> mode =  patternViewModel.getProperty(MODE);
+        SimpleStringProperty mode =  patternViewModel.getProperty(MODE);
 
         // Users should not be able to edit Field Order / DisplayName in all circumstances
         // state check a) Either a Pattern was never commited or is a complete new one
         // state check b) either we add a field or edit one.
         //                      field order | display name | data type
-        //   newPattern + add ->    enabled    disabled      enabled
+        //   newPattern + add ->    enabled    non-edit      enabled
         //     commited + add ->    disabled   disabled      enabled
-        //   newPattern + edit->    enabled    disabled      disabled
+        //   newPattern + edit->    enabled    non-edit      disabled
         //     commited + edit->    disabled   disabled      disabled
 
         // Create boolean bindings
 
         BooleanBinding isEdit = Bindings.isNotNull(previousPatternFieldProperty);
-        BooleanBinding alwaysTrue = Bindings.createBooleanBinding(() -> true);
         BooleanBinding patternIsInCreateMode = Bindings.equal(mode, CREATE);
 
-        // Bind the disable properties
+        // Bind the disable/editable properties
         fieldOrderComboBox.disableProperty().bind(patternIsInCreateMode.not());
-        displayNameTextField.disableProperty().bind(alwaysTrue);
+        displayNameTextField.editableProperty().bind(Bindings.when(patternIsInCreateMode).then(false).otherwise(true));
+        displayNameTextField.disableProperty().bind(patternIsInCreateMode.not());
         dataTypeComboBox.disableProperty().bind(isEdit);
 
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
