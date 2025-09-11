@@ -925,8 +925,7 @@ public class ConceptController {
         // Obtain STAMP info
         EntityVersion latestVersion = viewCalculator.latest(entityFacade).get();
 
-        Optional<EntityVersion> entiyVersionOptional = EntityService.get().getEntityFast(entityFacade.nid()).versions().getLastOptional();
-        StampEntity stamp = entiyVersionOptional.isPresent()? entiyVersionOptional.get().stamp() : latestVersion.stamp();
+        StampEntity stamp = latestVersion.stamp();
 
         // Status
         String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
