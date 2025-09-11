@@ -15,17 +15,35 @@
  */
 package dev.ikm.komet.rules.annotated;
 
-import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
-import dev.ikm.komet.framework.performance.impl.ObservationRecord;
-import dev.ikm.komet.framework.rulebase.Consequence;
-import dev.ikm.komet.rules.actions.axiom.*;
-import dev.ikm.tinkar.common.sets.ConcurrentHashSet;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.evrete.api.RhsContext;
 import org.evrete.dsl.annotation.MethodPredicate;
 import org.evrete.dsl.annotation.Rule;
 import org.evrete.dsl.annotation.RuleSet;
 import org.evrete.dsl.annotation.Where;
+
+import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
+import dev.ikm.komet.framework.performance.impl.ObservationRecord;
+import dev.ikm.komet.rules.actions.axiom.AddFeature;
+import dev.ikm.komet.rules.actions.axiom.AddIntervalRole;
+import dev.ikm.komet.rules.actions.axiom.AddIsA;
+import dev.ikm.komet.rules.actions.axiom.AddNecessarySet;
+import dev.ikm.komet.rules.actions.axiom.AddRoleGroup;
+import dev.ikm.komet.rules.actions.axiom.AddSomeRole;
+import dev.ikm.komet.rules.actions.axiom.AddSufficientSet;
+import dev.ikm.komet.rules.actions.axiom.ChangeConcept;
+import dev.ikm.komet.rules.actions.axiom.ChangeFeatureOperator;
+import dev.ikm.komet.rules.actions.axiom.ChangeFeatureType;
+import dev.ikm.komet.rules.actions.axiom.ChangeIntervalRoleType;
+import dev.ikm.komet.rules.actions.axiom.ChangeIntervalRoleUnitOfMeasure;
+import dev.ikm.komet.rules.actions.axiom.ChangeIntervalValuesMenu;
+import dev.ikm.komet.rules.actions.axiom.ChangeRoleRestriction;
+import dev.ikm.komet.rules.actions.axiom.ChangeRoleType;
+import dev.ikm.komet.rules.actions.axiom.ChangeSetType;
+import dev.ikm.komet.rules.actions.axiom.ChooseConceptMenu;
+import dev.ikm.komet.rules.actions.axiom.ChooseConcreteOperatorMenu;
+import dev.ikm.komet.rules.actions.axiom.RemoveAxiomAction;
+import dev.ikm.komet.rules.actions.axiom.SetValueMenu;
+import dev.ikm.tinkar.terms.TinkarTerm;
 
 /**
  * Rules related to axiom-related observations.
@@ -93,16 +111,14 @@ public class AxiomFocusedRules extends RulesBase {
                 addGeneratedActions(changeToNecessarySet);
             }
 
-            AddIsA addIsA = new AddIsA("Add is-a", axiomSubject, calculator(), editCoordinate());
-            AddSomeRole addSomeRole = new AddSomeRole("Add role", axiomSubject, calculator(), editCoordinate());
-            AddRoleGroup addRoleGroup = new AddRoleGroup("Add role group", axiomSubject, calculator(), editCoordinate());
-            AddFeature addFeature = new AddFeature("Add feature", axiomSubject, calculator(), editCoordinate());
-            addGeneratedActions(
-                    addIsA,
-                    addSomeRole,
-                    addRoleGroup,
-                    addFeature
-            );
+			AddIsA addIsA = new AddIsA("Add is-a", axiomSubject, calculator(), editCoordinate());
+			AddSomeRole addSomeRole = new AddSomeRole("Add role", axiomSubject, calculator(), editCoordinate());
+			AddIntervalRole addIntervalRole = new AddIntervalRole("Add interval role", axiomSubject, calculator(),
+					editCoordinate());
+			AddRoleGroup addRoleGroup = new AddRoleGroup("Add role group", axiomSubject, calculator(),
+					editCoordinate());
+			AddFeature addFeature = new AddFeature("Add feature", axiomSubject, calculator(), editCoordinate());
+			addGeneratedActions(addIsA, addSomeRole, addIntervalRole, addRoleGroup, addFeature);
         }
     }
 
@@ -174,6 +190,36 @@ public class AxiomFocusedRules extends RulesBase {
             );
         }
     }
+    
+    /**
+     * @see RulesBase#isAxiomFocused(ObservationRecord)
+     * @see RulesBase#isAxiomIntervalRole(ObservationRecord)
+     */
+	@Rule("Axiom of interest is an interval role")
+	@Where(methods = { @MethodPredicate(method = "isAxiomFocused", args = { "$observation" }),
+			@MethodPredicate(method = "isAxiomIntervalRole", args = { "$observation" }) })
+	public void axiomIsIntervalRole(ObservationRecord $observation) {
+
+		if ($observation.subject() instanceof AxiomSubjectRecord axiomSubjectRecord) {
+
+			addConsequenceMenu(new ChooseConceptMenu("Choose interval role type", calculator(),
+					axiomSubjectRecord.nodeForPopover(), viewProperties(), o -> {
+						ChangeIntervalRoleType changeRoleType = new ChangeIntervalRoleType("Change interval role type", o, axiomSubjectRecord,
+								calculator(), editCoordinate());
+						changeRoleType.doAction();
+					}),
+					
+                    new ChangeIntervalValuesMenu("Change interval values", calculator(), editCoordinate(), axiomSubjectRecord),
+
+					new ChooseConceptMenu("Choose unit of measure", calculator(), axiomSubjectRecord.nodeForPopover(),
+							viewProperties(), o -> {
+								ChangeIntervalRoleUnitOfMeasure changeUnitOfMeasure = new ChangeIntervalRoleUnitOfMeasure(
+										"Change unit of measure", o, axiomSubjectRecord, calculator(),
+										editCoordinate());
+								changeUnitOfMeasure.doAction();
+							}));
+		}
+	}
 
     /**
      * @see RulesBase#isAxiomFocused(ObservationRecord)

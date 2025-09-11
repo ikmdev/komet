@@ -15,7 +15,16 @@
  */
 package dev.ikm.komet.builder;
 
-import dev.ikm.komet.framework.rulebase.*;
+import dev.ikm.komet.framework.ExplorationNodeAbstract;
+import dev.ikm.komet.framework.performance.Topic;
+import dev.ikm.komet.framework.performance.impl.RequestRecord;
+import dev.ikm.komet.framework.rulebase.Consequence;
+import dev.ikm.komet.framework.rulebase.GeneratedActionImmediate;
+import dev.ikm.komet.framework.rulebase.GeneratedActionSuggested;
+import dev.ikm.komet.framework.rulebase.RuleService;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -26,13 +35,6 @@ import org.controlsfx.control.action.Action;
 import org.controlsfx.control.action.ActionUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import dev.ikm.komet.framework.ExplorationNodeAbstract;
-import dev.ikm.komet.framework.performance.Topic;
-import dev.ikm.komet.framework.performance.impl.RequestRecord;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.coordinate.Coordinates;
-import dev.ikm.tinkar.terms.EntityFacade;
 
 // TODO change to entity builder node...
 public class ConceptBuilderNode extends ExplorationNodeAbstract {
@@ -57,7 +59,7 @@ public class ConceptBuilderNode extends ExplorationNodeAbstract {
                 RuleService.get().execute("Knowledge Base Name",
                         Lists.immutable.of(request),
                         viewProperties,
-                        Coordinates.Edit.Default());
+                        viewProperties.nodeView().editCoordinate());
         for (Consequence consequence : consequences) {
             switch (consequence.get()) {
                 case Action action

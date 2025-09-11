@@ -24,7 +24,6 @@ import dev.ikm.komet.framework.rulebase.GeneratedActionSuggested;
 import dev.ikm.komet.framework.rulebase.RuleService;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
@@ -73,7 +72,7 @@ public class PatternBuilderNode extends ExplorationNodeAbstract {
                 RuleService.get().execute("Knowledge Base Name",
                         Lists.immutable.of(request),
                         viewProperties,
-                        Coordinates.Edit.Default());
+                        viewProperties.nodeView().editCoordinate());
         // display buttons in the UI to add the pattern request
         for (Consequence consequence : consequences) {
             switch (consequence.get()) {

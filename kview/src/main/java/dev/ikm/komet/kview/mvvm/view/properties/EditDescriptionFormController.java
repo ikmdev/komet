@@ -24,14 +24,12 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import dev.ikm.tinkar.events.EvtBus;
-import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.tinkar.common.id.IntIdSet;
@@ -46,6 +44,8 @@ import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -161,6 +161,7 @@ public class EditDescriptionFormController implements BasicController {
         caseSignificanceComboBox.valueProperty().bindBidirectional(otherNameViewModel.getProperty(CASE_SIGNIFICANCE));
         statusComboBox.valueProperty().bindBidirectional(otherNameViewModel.getProperty(STATUS));
         languageComboBox.valueProperty().bindBidirectional(otherNameViewModel.getProperty(LANGUAGE));
+        typeDisplayComboBox.valueProperty().bindBidirectional(otherNameViewModel.getProperty(NAME_TYPE));
 
         InvalidationListener invalidationListener = obs -> validateForm();
 
@@ -169,6 +170,7 @@ public class EditDescriptionFormController implements BasicController {
         caseSignificanceComboBox.valueProperty().addListener(invalidationListener);
         statusComboBox.valueProperty().addListener(invalidationListener);
         languageComboBox.valueProperty().addListener(invalidationListener);
+        typeDisplayComboBox.valueProperty().addListener(invalidationListener);
         validateForm();
     }
 
@@ -370,6 +372,19 @@ public class EditDescriptionFormController implements BasicController {
             findByNid(languageComboBox.getItems(), langConceptFacade.nid())
                     .ifPresent(concept -> otherNameViewModel.setPropertyValue(LANGUAGE, concept));
 
+            // get all descendant types
+            IntIdSet descriptionTypeDecendants = viewProperties.parentView().calculator().descendentsOf(DESCRIPTION_TYPE.nid());
+            Set<ConceptEntity> allDescritionTypes =
+                    descriptionTypeDecendants.intStream()
+                            .mapToObj(typeNid -> (ConceptEntity) Entity.getFast(typeNid))
+                            .collect(Collectors.toSet());
+            setupComboBox(typeDisplayComboBox, allDescritionTypes);
+            //Set selected value for DESCRIPTION TYPE
+            int indexType = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE);
+            ConceptFacade typeConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexType);
+            findByNid(typeDisplayComboBox.getItems(), typeConceptFacade.nid())
+                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(NAME_TYPE, concept));
+
             //initial state of edit screen, the submit button should be disabled
             submitButton.setDisable(true);
 
@@ -393,7 +408,7 @@ public class EditDescriptionFormController implements BasicController {
         LOG.info("Ready to update to the concept view model: " + otherNameViewModel);
 
         if(this.publicId != null) { //This if blocked is called when editing the exiting concept.
-            otherNameViewModel.updateOtherName(this.publicId);
+            otherNameViewModel.updateOtherName(this.publicId, viewProperties);
         }else{  // This block is called when editing the while creating the concept.
             otherNameViewModel.updateData(editDescrName);
             eventBus.publish(conceptTopic, new CreateConceptEvent(this,
@@ -415,6 +430,7 @@ public class EditDescriptionFormController implements BasicController {
         setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
         setupComboBox(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
         setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+        setupComboBox(typeDisplayComboBox, fetchDescendentsOfConcept(getViewProperties(), DESCRIPTION_TYPE.publicId()));
         otherNameViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
                 .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
                 .setPropertyValue(STATUS, descrName.getStatus())

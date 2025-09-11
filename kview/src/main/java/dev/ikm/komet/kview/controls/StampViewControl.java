@@ -1,14 +1,13 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.StampViewControlSkin;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.css.PseudoClass;
-import javafx.scene.Node;
 import javafx.scene.control.Control;
 
 public class StampViewControl extends Control {
@@ -16,6 +15,15 @@ public class StampViewControl extends Control {
 
     public StampViewControl() {
         getStyleClass().add("stamp-view-control");
+        sceneProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                if (getScene() != null) {
+                    getScene().getStylesheets().add(getUserAgentStylesheet());
+                }
+                sceneProperty().removeListener(this);
+            }
+        });
     }
 
     @Override
@@ -41,12 +49,6 @@ public class StampViewControl extends Control {
      * Properties                                                              *
      *                                                                         *
      **************************************************************************/
-
-    // -- parent container
-    private final ObjectProperty<Node> parentContainer = new SimpleObjectProperty<>();
-    public Node getParentContainer() { return parentContainer.get(); }
-    public void setParentContainer(Node parent) { parentContainer.set(parent); }
-    public ObjectProperty<Node> parentContainerProperty() { return parentContainer; }
 
     // -- status
     private final StringProperty status = new SimpleStringProperty(this, "status", "");

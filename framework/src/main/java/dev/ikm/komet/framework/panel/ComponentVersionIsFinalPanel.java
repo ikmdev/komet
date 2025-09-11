@@ -15,10 +15,17 @@
  */
 package dev.ikm.komet.framework.panel;
 
-import dev.ikm.komet.framework.EditedConceptTracker;
+import static dev.ikm.komet.framework.StyleClasses.COMPONENT_VERSION_BORDER_PANEL;
+import static dev.ikm.komet.framework.StyleClasses.COMPONENT_VERSION_PANEL;
+import static dev.ikm.komet.framework.StyleClasses.EDIT_COMPONENT_BUTTON;
+import static dev.ikm.komet.framework.StyleClasses.STAMP_LABEL;
 import dev.ikm.komet.framework.PseudoClasses;
 import dev.ikm.komet.framework.graphics.Icon;
-import dev.ikm.komet.framework.observable.*;
+import dev.ikm.komet.framework.observable.ObservableConceptVersion;
+import dev.ikm.komet.framework.observable.ObservablePatternVersion;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.komet.framework.observable.ObservableStampVersion;
+import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.framework.performance.Measures;
 import dev.ikm.komet.framework.performance.Topic;
 import dev.ikm.komet.framework.performance.impl.ObservationRecord;
@@ -29,17 +36,18 @@ import dev.ikm.komet.framework.rulebase.RuleService;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.transaction.*;
+import dev.ikm.tinkar.entity.transaction.CancelTransactionTask;
+import dev.ikm.tinkar.entity.transaction.CancelVersionTask;
+import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
+import dev.ikm.tinkar.entity.transaction.CommitVersionTask;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -58,8 +66,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.concurrent.Future;
-
-import static dev.ikm.komet.framework.StyleClasses.*;
 
 public abstract class ComponentVersionIsFinalPanel<OV extends ObservableVersion> {
 	private static final Logger LOG = LoggerFactory.getLogger(ComponentVersionIsFinalPanel.class);
@@ -102,7 +108,7 @@ public abstract class ComponentVersionIsFinalPanel<OV extends ObservableVersion>
 			ObservationRecord observation = new ObservationRecord(Topic.COMPONENT_FOCUSED,
 					observableVersion.getVersionRecord(), Measures.present());
 			ImmutableList<Consequence<?>> consequences = RuleService.get().execute("Knowledge base name",
-					Lists.immutable.of(observation), viewProperties, Coordinates.Edit.Default());
+					Lists.immutable.of(observation), viewProperties, viewProperties.nodeView().editCoordinate());
 			if (consequences.notEmpty()) {
 				Platform.runLater(() -> {
 					MenuButton menuButton = new MenuButton("", Icon.EDIT_PENCIL.makeIcon());

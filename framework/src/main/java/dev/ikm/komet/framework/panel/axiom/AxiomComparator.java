@@ -91,6 +91,12 @@ public class AxiomComparator implements Comparator<ClauseView> {
             if (vertex2.getMeaningNid() == TinkarTerm.ROLE.nid()) {
                 return 1;
             }
+            if (vertex1.getMeaningNid() == TinkarTerm.INTERVAL_ROLE.nid()) {
+                return -1;
+            }
+            if (vertex2.getMeaningNid() == TinkarTerm.INTERVAL_ROLE.nid()) {
+                return 1;
+            }
             if (vertex1.getMeaningNid() == TinkarTerm.FEATURE.nid()) {
                 return -1;
             }
@@ -109,7 +115,9 @@ public class AxiomComparator implements Comparator<ClauseView> {
                     vertex1.getMeaningNid() == TinkarTerm.NECESSARY_SET.nid() ||
                     vertex1.getMeaningNid() == TinkarTerm.INCLUSION_SET.nid() ||
                     vertex1.getMeaningNid() == TinkarTerm.PROPERTY_SET.nid() ||
-                    vertex1.getMeaningNid() == TinkarTerm.FEATURE.nid()) {
+                    vertex1.getMeaningNid() == TinkarTerm.FEATURE.nid() ||
+                    // TODO compare similar to role
+                    vertex1.getMeaningNid() == TinkarTerm.INTERVAL_ROLE.nid()) {
                 if (children1.isEmpty()) {
                     if (children2.isEmpty()) {
                         return 0;

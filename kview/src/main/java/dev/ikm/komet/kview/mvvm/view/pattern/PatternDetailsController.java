@@ -55,7 +55,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampPro
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.FORM_TIME_TEXT;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 import dev.ikm.komet.framework.Identicon;
@@ -90,7 +90,6 @@ import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
-import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -132,7 +131,6 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
-import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -275,6 +273,8 @@ public class PatternDetailsController {
     @InjectViewModel
     private PatternViewModel patternViewModel;
 
+    private boolean isUpdatingStampSelection = false;
+
     private final Tooltip publishTooltip = new Tooltip();
 
     private Subscriber<PropertyPanelEvent> patternPropertiesEventSubscriber;
@@ -299,7 +299,6 @@ public class PatternDetailsController {
         otherNamesVBox.getChildren().clear();
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
-        stampViewControl.setParentContainer(detailsOuterBorderPane);
 
         //DragNDrop feature for Semantic Purpose and Semantic Meaning
         setUpDraggable(purposeText, patternViewModel.getProperty(PURPOSE_ENTITY));
@@ -402,6 +401,10 @@ public class PatternDetailsController {
         ObjectProperty<EntityFacade> patternProperty = patternViewModel.getProperty(PATTERN);
 
         patternProperty.subscribe(entityFacade -> {
+            if (propertiesController != null) {
+                propertiesController.updateModel(entityFacade);
+            }
+
             if (entityFacade != null) {
                 patternViewModel.setPropertyValue(MODE, EDIT);
 
@@ -410,10 +413,6 @@ public class PatternDetailsController {
                 identiconImageView.setImage(identicon);
             } else {
                 patternViewModel.setPropertyValue(MODE, CREATE);
-            }
-
-            if (propertiesController != null) {
-                propertiesController.updateModel(entityFacade);
             }
         });
 
@@ -527,6 +526,10 @@ public class PatternDetailsController {
     }
 
     private void onStampSelectionChanged() {
+        if (isUpdatingStampSelection) {
+            return;
+        }
+
         if (stampViewControl.isSelected()) {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
@@ -845,22 +848,23 @@ public class PatternDetailsController {
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
 
         // Stamp
-        StampFormViewModelBase stampFormViewModel = propertiesController.getStampCreateFormViewModel();
-        patternViewModel.setPropertyValue(STAMP_VIEW_MODEL, stampFormViewModel);
+        patternViewModel.getProperty(STAMP_VIEW_MODEL).bind(propertiesController.stampFormViewModelProperty());
 
         propertiesController.updateModel(patternViewModel.getPropertyValue(PATTERN));
 
         patternViewModel.getProperty(MODE).subscribe(newMode -> {
+            StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
+
             if (newMode.equals(EDIT)) {
                 updateStampControlFromViewModel();
-                stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isSubmitted -> {
-                    if ((Boolean) isSubmitted) {
+                stampFormViewModel.getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isSubmitted -> {
+                    if (isSubmitted) {
                         updateStampControlFromViewModel();
                     }
                 });
             } else if(newMode.equals(CREATE)) {
-                stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isConfirmed -> {
-                    if ((Boolean) isConfirmed) {
+                stampFormViewModel.getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isConfirmed -> {
+                    if (isConfirmed) {
                         updateStampControlFromViewModel();
                     }
                 });
@@ -873,7 +877,11 @@ public class PatternDetailsController {
     }
 
     private void updateStampControlFromViewModel() {
-        StampFormViewModelBase stampFormViewModel = propertiesController.getStampCreateFormViewModel();
+        StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
+
+        if (stampFormViewModel == null) {
+            return;
+        }
 
         // -- status
         State newStatus = stampFormViewModel.getPropertyValue(STATUS);
@@ -881,7 +889,7 @@ public class PatternDetailsController {
         stampViewControl.setStatus(statusMsg);
 
         // -- time
-        String newTime = stampFormViewModel.getPropertyValue(TIME_TEXT);
+        String newTime = stampFormViewModel.getPropertyValue(FORM_TIME_TEXT);
         stampViewControl.setLastUpdated(newTime);
 
         // -- author
@@ -1047,6 +1055,10 @@ public class PatternDetailsController {
         EvtType<PropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? OPEN_PANEL : CLOSE_PANEL;
 
         updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
+
+        isUpdatingStampSelection = true;
+        stampViewControl.setSelected(propertyToggle.isSelected());
+        isUpdatingStampSelection = false;
 
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
