@@ -5667,7 +5667,7 @@ Styling a context menu for kview ui/ux controls
     -fx-font-family: "Noto Sans";
     -fx-text-fill: white;
     -fx-font-size: 16px;
-    -fx-max-height: 300px;
+    -fx-max-height: 100px;
     -fx-padding: 15 15 10 15;
     -fx-text-alignment: left;
 }
@@ -5743,7 +5743,7 @@ Styling a context menu for kview ui/ux controls
 /* Separator */
 .semantic-tooltip .values-container .grid > .separator .line {
     -fx-border-color: #545D72 transparent transparent transparent,
-                      transparent transparent transparent transparent;
+                       transparent transparent transparent;
 }
 
 /*******************************************************************************
