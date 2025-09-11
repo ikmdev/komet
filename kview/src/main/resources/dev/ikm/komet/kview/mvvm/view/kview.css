@@ -5653,8 +5653,9 @@ Styling a context menu for kview ui/ux controls
 
 .semantic-tooltip {
     -fx-padding: 10 0 0 0;
-
-    -fx-background-color: rgba(30,30,30,0.9);
+    -fx-border-color: #2E3240;
+    -fx-border-radius: 2px;
+    -fx-background-color: #44495E;
 }
 
 .semantic-tooltip .main-container {
@@ -5666,9 +5667,9 @@ Styling a context menu for kview ui/ux controls
     -fx-font-family: "Noto Sans";
     -fx-text-fill: white;
     -fx-font-size: 16px;
-
-    -fx-max-height: 300px;
+    -fx-max-height: 100px;
     -fx-padding: 15 15 10 15;
+    -fx-text-alignment: left;
 }
 
 .semantic-tooltip .values-container .grid {
@@ -5677,32 +5678,32 @@ Styling a context menu for kview ui/ux controls
 }
 
 .semantic-tooltip .values-container > .separator .line {
-    -fx-border-color: #111 transparent transparent transparent,
-                      rgba(255,255,255,0.04) transparent transparent transparent;
+    -fx-border-color: #545D72 transparent transparent transparent,
+                         transparent transparent transparent transparent;
 }
 
 .semantic-tooltip .values-container .grid .field-title.label {
     -fx-font-family: "Noto Sans";
-    -fx-text-fill: #bbb;
-
+    -fx-text-fill: white;
     -fx-font-size: 12px;
-
+    -fx-text-alignment: left;
     -fx-padding: 10px 0 13px 0;
 }
 
 /* Simple fields (String, Integer, Float, Boolean) */
 .semantic-tooltip .values-container .grid .field-value.label {
     -fx-font-family: "Noto Sans";
-    -fx-text-fill: #f0f0f0;
-
+    -fx-text-fill: white;
+    -fx-text-alignment: left;
     -fx-font-size: 12px;
-
     -fx-padding: 10 0 25 0;
+    -fx-alignment: center-left;
 }
 
 /* Image fields */
 .semantic-tooltip .values-container .grid .image-container {
     -fx-padding: 10 5 15 0;
+    -fx-alignment: center-left;
 }
 
 /* Component fields (Component, CList, CSet) */
@@ -5713,12 +5714,12 @@ Styling a context menu for kview ui/ux controls
 
 .semantic-tooltip .values-container .grid .component-item > .container > .label {
     -fx-font-family: "Noto Sans";
-
+    -fx-text-fill: white;
+    -fx-alignment: center_left;
+    -fx-text-alignment: center-left;
     -fx-font-size: 13px;
-
     -fx-border-width: 1px;
     -fx-border-color: transparent;
-
     -fx-padding: 0 0 0 1px;
 }
 
@@ -5726,22 +5727,23 @@ Styling a context menu for kview ui/ux controls
 
 .semantic-tooltip .values-container .grid .component-item.single-component {
     -fx-padding: 8 0 25px 0;
+    -fx-text-alignment: left;
+    -fx-alignment: center-left;
 }
 
 /* CListC, CSet fields */
 
 .semantic-tooltip .values-container .grid .components-container {
-    -fx-alignment: top-right;
+    -fx-alignment: center_left;
     -fx-hgap: 5px;
     -fx-vgap: 5px;
-
     -fx-padding: 10 0 25 0;
 }
 
 /* Separator */
 .semantic-tooltip .values-container .grid > .separator .line {
-    -fx-border-color: rgba(230,230,230, 0.1) transparent transparent transparent,
-                      transparent transparent transparent transparent;
+    -fx-border-color: #545D72 transparent transparent transparent,
+                       transparent transparent transparent;
 }
 
 /*******************************************************************************
