@@ -45,7 +45,9 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     private final Button copyToClipboardButton = new Button();
 
     /// The subscription to the PublicIDControl publicIdProperty, which receives property change events
-    private Subscription subscription;
+    private Subscription publicIdSubscription;
+
+    private Subscription showLabelSubscription;
 
     /// The current public id property value, as received in the subscription listener
     private String identifier;
@@ -107,10 +109,36 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         getChildren().add(rootHBox);
 
         // subscribe to changes to the publicIdProperty in the PublicIDControl
-        subscription = control.publicIdProperty().subscribe(publicId -> {
+        publicIdSubscription = control.publicIdProperty().subscribe(publicId -> {
             identifier = publicId;
             publicIdTooltip.setText(identifier);
             publicIdTextField.setText(identifier);
+
+            Platform.runLater(() -> {
+                // set the preferredWidth of the TextField to completely show the identifier text
+
+                Text text = new Text(identifier); // Create a temporary Text node with the new text
+                text.setFont(publicIdTextField.getFont()); // Set the same font as the TextField
+                double width = text.getLayoutBounds().getWidth() +
+                        publicIdTextField.getPadding().getLeft() +
+                        publicIdTextField.getPadding().getRight() + 2d; // Add padding and a small buffer
+                publicIdTextField.setPrefWidth(width);
+            });
+        });
+
+        // subscribe to changes to the showLabelProperty in the PublicIDControl
+        showLabelSubscription = control.showLabelProperty().subscribe(showLabel -> {
+            var children = rootHBox.getChildren();
+
+            if (!showLabel) {
+                children.remove(titleLabel);
+            } else {
+                // check to make sure that the titleLabel isn't alrady in the HBox, because it has
+                // been added in the constructor when creating the control skin
+                if (!children.contains(publicIdHBox)) {
+                    children.addFirst(titleLabel);
+                }
+            }
         });
     }
 
@@ -130,8 +158,8 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     /// Unsubscribes from the subscription to stop receiving the publicIdProperty change events
     @Override
     public void dispose() {
-        if (subscription != null) {
-            subscription.unsubscribe();
+        if (publicIdSubscription != null) {
+            publicIdSubscription.unsubscribe();
         }
     }
 

@@ -15,68 +15,18 @@
  */
 package dev.ikm.komet.kview.mvvm.view.concept;
 
-import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
-import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
-import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
-import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.AXIOM;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAMES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.FORM_TIME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
-import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
-import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_PATTERN;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
-import dev.ikm.komet.framework.observable.ObservableEntity;
-import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
-import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
-import dev.ikm.komet.kview.controls.PublicIDControl;
+import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
-import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
-import dev.ikm.komet.kview.events.AddOtherNameToConceptEvent;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.events.CreateConceptEvent;
-import dev.ikm.komet.kview.events.EditConceptEvent;
-import dev.ikm.komet.kview.events.EditConceptFullyQualifiedNameEvent;
-import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
-import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
-import dev.ikm.komet.kview.events.StampEvent;
+import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
@@ -92,14 +42,7 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.AxiomChangeEvent;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -117,25 +60,11 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -151,16 +80,31 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
+import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.FORM_TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
+import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class ConceptController {
 
@@ -207,7 +151,7 @@ public class ConceptController {
     private Label definitionTextField;
 
     @FXML
-    private PublicIDControl identifierControl;
+    private PublicIDListControl identifierControl;
 
     @FXML
     private StampViewControl stampViewControl;
@@ -848,7 +792,7 @@ public class ConceptController {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
-        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierControl.getPublicId(), fqnTitleText.getText()));
+        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierControl.getPublicIdList(), fqnTitleText.getText()));
         // unsubscribe listeners
         eventBus.unsubscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);
         eventBus.unsubscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFullyQualifiedNameEventSubscriber);
@@ -947,15 +891,23 @@ public class ConceptController {
         stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
     }
 
-    /// Show the public ID
+    /// Show the public IDs
     private void setupDisplayUUID(EntityFacade entityFacade, ViewCalculator viewCalculator) {
         List<String> idList = entityFacade.publicId().asUuidList().stream()
                 .map(UUID::toString)
                 .collect(Collectors.toList());
         idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
-        String idStr = String.join(", ", idList);
 
-        identifierControl.setPublicId(idStr);
+        // this assumes that the first ID is always the Komet ID
+        if (!idList.isEmpty()) {
+            var firstID = "Komet ID: " + idList.getFirst();
+            idList.set(0, firstID);
+        }
+
+        // to test the vertical scroll bar, uncomment the following line
+//        idList.addAll(Arrays.asList("test line 1", "test line 2", "test vertical scroll bar"));
+
+        identifierControl.setPublicIdList(idList);
     }
 
     public void updateFullyQualifiedNamesDescription(List<DescrName> descrNameViewModels) {
@@ -1360,7 +1312,7 @@ public class ConceptController {
 
     public void clearView() {
         definitionTextField.setText("");
-        identifierControl.setPublicId("");
+        identifierControl.setPublicIdList(null);
 
         stampViewControl.clear();
 
