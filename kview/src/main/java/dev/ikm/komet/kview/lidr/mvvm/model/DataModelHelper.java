@@ -60,6 +60,7 @@ import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -540,13 +541,14 @@ public class DataModelHelper {
      * @param viewProperties
      * @return
      */
-    public static Optional<Transaction> createTranscationForEntity(Latest<EntityVersion> entityVersionLatest, ViewProperties viewProperties){
-        if(entityVersionLatest.isPresent()){
+    public static Optional<Transaction> createTranscationForEntity(StampEntity currentStamp, Latest<EntityVersion> entityVersionLatest, ViewProperties viewProperties){
+        Transaction transaction = Transaction.make();
+        ConceptFacade author = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
+        if (entityVersionLatest.isPresent()) {
             EntityVersion entityVersion = entityVersionLatest.get();
-            ConceptFacade author = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
+
             Entity entity = entityVersion.entity();
-            StampEntity currentStamp = entityVersion.stamp();
-            Transaction transaction = Transaction.make();
+//            StampEntity currentStamp = entityVersion.stamp();
             StampEntity stampEntity = transaction.getStampForEntities(currentStamp.state(), author.nid(), currentStamp.moduleNid(), currentStamp.pathNid(), entity);
             ObservableEntity observableEntity = ObservableEntity.get(entity.nid());
             ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
@@ -558,5 +560,25 @@ public class DataModelHelper {
             return Optional.of(transaction);
         }
             return Optional.empty();
+    }
+
+    public static Optional<StampEntity> createStampEntity(State state, ConceptFacade author, ConceptFacade module, ConceptFacade path){
+        Transaction transaction = Transaction.make(); //create transaction
+        StampEntity stampEntity = transaction.getStamp(state, author, module, path); //Create Stamp using transaction.
+        return Optional.of(stampEntity);
+    }
+
+    public static void commitTransaction(Transaction transaction, Latest<EntityVersion> entityVersionLatest, ViewProperties viewProperties, int stampNid){
+        entityVersionLatest.ifPresent(entityVersion -> {
+            Entity entity = entityVersion.entity();
+            transaction.addComponent(entity.nid());
+            ObservableEntity observableEntity = ObservableEntity.get(entity.nid());
+            ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+            observableEntitySnapshot.getLatestVersion().ifPresent(latestVersion -> {
+                if (latestVersion instanceof ObservableVersion observableVersion) {
+                    observableVersion.versionProperty().set(observableVersion.updateStampNid(stampNid));
+                }
+            });
+        });
     }
 }

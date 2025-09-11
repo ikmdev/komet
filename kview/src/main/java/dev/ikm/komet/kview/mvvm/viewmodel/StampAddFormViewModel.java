@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.commitTransaction;
+import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.createStampEntity;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.CLEAR_RESET_BUTTON_TEXT;
@@ -20,7 +22,6 @@ import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.tinkar.component.Stamp;
@@ -218,8 +219,15 @@ public class StampAddFormViewModel extends StampFormViewModelBase {
 //        transaction.commit();
 
         //Alternate approach to save transaction.
-        Optional<Transaction> transactionOptional = DataModelHelper.createTranscationForEntity(viewProperties.calculator().latest(entityFacade.nid()), viewProperties);
-        transactionOptional.ifPresent(transaction -> transaction.commit());
+        Optional<StampEntity> optionalStampEntity = createStampEntity(status, (ConceptFacade) author, (ConceptFacade) module, (ConceptFacade) path);
+
+        optionalStampEntity.ifPresent(stampEntity -> {
+            Optional<Transaction> optionalTransaction = Transaction.forStamp(stampEntity.publicId());
+            optionalTransaction.ifPresent(transaction -> commitTransaction(transaction, viewProperties.calculator().latest(entityFacade.nid()), viewProperties, stampEntity.nid()));
+        });
+
+//        Optional<Transaction> transactionOptional = DataModelHelper.createTranscationForEntity(viewProperties.calculator().latest(entityFacade.nid()), viewProperties);
+//        transactionOptional.ifPresent(transaction -> transaction.commit());
 
         // Load the new STAMP and store the new initial values
         loadStamp();
