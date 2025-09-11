@@ -284,32 +284,6 @@ public class KlFieldHelper {
 
     /**
      * This method will return the latest commited version.
-     * //TODO this method can be generalized to return latest<EntityVersion> As of now it is just returning SemanticEntityVersion.
-     * // TODO need to implement logic for create Semantic.
-     *
-     * @return entityVersionLatest
-     * */
-//    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(ObservableSemanticSnapshot observableSemanticSnapshot) {
-//        if(observableSemanticSnapshot == null){
-//            return new Latest<>();
-//        }
-//        AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
-//        SemanticEntityVersion semanticEntityVersion = (SemanticEntityVersion) observableSemanticSnapshot.getLatestVersion().get().getEntityVersion();
-//        if(semanticEntityVersion.committed()){
-//            return new Latest<>(semanticEntityVersion);
-//        }
-//        //Get list of previously committed data sorted in latest at the top.
-//        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
-//        // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
-//        Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
-//        observableSemanticVersionOptional.ifPresentOrElse((p) -> {
-//            entityVersionLatest.set(new Latest<>(p));
-//        }, () -> {entityVersionLatest.set(new Latest<>());});
-//        return entityVersionLatest.get();
-//    }
-
-    /**
-     * This method will return the latest commited version.
      *
      * @return entityVersionLatest
      * */
