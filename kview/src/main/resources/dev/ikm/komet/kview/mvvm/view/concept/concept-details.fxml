@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import dev.ikm.komet.kview.controls.KLExpandableNodeListControl?>
-<?import dev.ikm.komet.kview.controls.PublicIDControl?>
+<?import dev.ikm.komet.kview.controls.PublicIDListControl?>
+<?import dev.ikm.komet.kview.controls.StampViewControl?>
 <?import dev.ikm.komet.kview.controls.StampViewControl?>
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
@@ -163,9 +164,9 @@
                            </columnConstraints>
                            <rowConstraints>
                                <RowConstraints maxHeight="5.0" minHeight="5.0" prefHeight="5.0" vgrow="NEVER" />
-                               <RowConstraints fillHeight="false" minHeight="56.0" prefHeight="56.0" valignment="TOP" vgrow="NEVER" />
-                               <RowConstraints fillHeight="false" valignment="CENTER" vgrow="SOMETIMES" />
-                               <RowConstraints fillHeight="false" valignment="CENTER" vgrow="SOMETIMES" />
+                               <RowConstraints fillHeight="false" maxHeight="51.0" minHeight="47.0" prefHeight="47.0" valignment="TOP" vgrow="NEVER" />
+                               <RowConstraints fillHeight="false" maxHeight="35.0" minHeight="28.0" prefHeight="29.0" valignment="CENTER" vgrow="SOMETIMES" />
+                               <RowConstraints fillHeight="false" maxHeight="32.0" minHeight="30.0" prefHeight="31.0" valignment="CENTER" vgrow="SOMETIMES" />
                                <RowConstraints maxHeight="5.0" minHeight="5.0" prefHeight="5.0" vgrow="NEVER" />
                            </rowConstraints>
 
@@ -179,23 +180,7 @@
                                </tooltip>
                            </Label>
 
-                           <!-- Definition section - only spans the first two columns -->
-                           <VBox GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2">
-                               <HBox spacing="4.0">
-                                   <Text styleClass="concept-definition-title" text="Definition: ">
-                                       <font>
-                                           <Font name="Noto Sans Medium" size="12.0" />
-                                       </font>
-                                   </Text>
-                                   <Label fx:id="definitionTextField" style="-fx-text-fill: -Grey-11; -fx-background-color: transparent; -fx-border-color: transparent; -fx-control-inner-background: transparent; -fx-padding: 0 0 0 0;" styleClass="copyable-label" wrapText="true" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
-                                       <font>
-                                           <Font name="Noto Sans Medium" size="12.0" />
-                                       </font>
-                                   </Label>
-                               </HBox>
-                           </VBox>
-
-                           <PublicIDControl fx:id="identifierControl" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" />
+                           <PublicIDListControl fx:id="identifierControl" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.rowSpan="2" />
 
                            <!-- StackPane in its own column -->
                            <StackPane styleClass="stamp-container" GridPane.columnIndex="3" GridPane.rowIndex="1" GridPane.rowSpan="3">
@@ -211,7 +196,21 @@
                         <AnchorPane styleClass="concept-section">
                            <TitledPane fx:id="descriptionsTitledPane" contentDisplay="BOTTOM" maxHeight="Infinity" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" text="DESCRIPTIONS" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                               <AnchorPane>
-                                 <GridPane hgap="12.0" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="8.0">
+                           <VBox prefHeight="40.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="8.0">
+                              <children>
+                                               <Text styleClass="concept-definition-title" text="DEFINITION:">
+                                                   <font>
+                                                       <Font name="Noto Sans Medium" size="12.0" />
+                                                   </font>
+                                               </Text>
+                                               <Label fx:id="definitionTextField" style="-fx-text-fill: -Grey-11; -fx-background-color: transparent; -fx-border-color: transparent; -fx-control-inner-background: transparent; -fx-padding: 0 0 0 0;" styleClass="copyable-label" wrapText="true" VBox.vgrow="ALWAYS">
+                                                   <font>
+                                                       <Font name="Noto Sans Medium" size="12.0" />
+                                                   </font>
+                                               </Label>
+                              </children>
+                           </VBox>
+                                 <GridPane hgap="12.0" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="50.0">
                                     <rowConstraints>
                                        <RowConstraints percentHeight="100.0" vgrow="ALWAYS" />
                                     </rowConstraints>
