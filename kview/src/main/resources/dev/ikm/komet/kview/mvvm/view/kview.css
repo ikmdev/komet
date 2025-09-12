@@ -5726,7 +5726,7 @@ Styling a context menu for kview ui/ux controls
 /* Component field */
 
 .semantic-tooltip .values-container .grid .component-item.single-component {
-    -fx-padding: 8 0 25px 0;
+    -fx-padding: 8 0 8px 0;
     -fx-text-alignment: left;
     -fx-alignment: center-left;
 }
@@ -5735,9 +5735,7 @@ Styling a context menu for kview ui/ux controls
 
 .semantic-tooltip .values-container .grid .components-container {
     -fx-alignment: center_left;
-    -fx-hgap: 5px;
-    -fx-vgap: 5px;
-    -fx-padding: 10 0 25 0;
+    -fx-padding: 10 0 8 0;
 }
 
 /* Separator */
