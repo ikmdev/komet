@@ -6,15 +6,9 @@ import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.kview.state.pattern.PatternDetailsPattern;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import org.carlfx.axonic.StateMachine;
@@ -28,9 +22,6 @@ import java.util.UUID;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 /**
  * The General Editing Chapter window showing semantic details on the Journal Window's surface as a JavaFX Pane
@@ -80,7 +71,7 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
         paneWindow = jfxNode.node();
 
         // Calls the remove method to remove and concepts that were closed by the user.
-        jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
+        jfxNode.controller().setOnClosePatternWindow(windowEvent -> {
             getOnClose().ifPresent(Runnable::run);
             // TODO more clean up such as view models and listeners just in case (memory).
         });

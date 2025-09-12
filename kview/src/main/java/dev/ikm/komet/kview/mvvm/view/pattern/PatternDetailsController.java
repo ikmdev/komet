@@ -268,7 +268,7 @@ public class PatternDetailsController {
     private HBox tabHeader;
 
     @FXML
-    private HBox conceptHeaderControlToolBarHbox;
+    private HBox patternHeaderControlToolBarHbox;
 
     @InjectViewModel
     private PatternViewModel patternViewModel;
@@ -517,7 +517,7 @@ public class PatternDetailsController {
         setupFilterCoordinatesMenu();
 
         // Setup window support with explicit draggable nodes
-        addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
+        addDraggableNodes(detailsOuterBorderPane, tabHeader, patternHeaderControlToolBarHbox);
 
         // Check if the properties panel is initially open and add draggable nodes if needed
         if (propertiesToggleButton.isSelected() || isOpen(propertiesSlideoutTrayPane)) {
@@ -926,10 +926,10 @@ public class PatternDetailsController {
         return patternViewModel;
     }
 
-    private Consumer<PatternDetailsController> onCloseConceptWindow;
+    private Consumer<PatternDetailsController> onClosePatternWindow;
 
-    public void setOnCloseConceptWindow(Consumer<PatternDetailsController> onClose) {
-        this.onCloseConceptWindow = onClose;
+    public void setOnClosePatternWindow(Consumer<PatternDetailsController> onClose) {
+        this.onClosePatternWindow = onClose;
     }
 
     public void onReasonerSlideoutTray(Consumer<ToggleButton> reasonerResultsControllerConsumer) {
@@ -937,17 +937,17 @@ public class PatternDetailsController {
     }
 
     @FXML
-    void closeConceptWindow(ActionEvent event) {
+    void closePatternWindow(ActionEvent event) {
         LOG.info("Cleanup occurring: Closing Window with pattern: " + patternTitleText.getText());
 
         // Clean up the draggable nodes
         removeDraggableNodes(detailsOuterBorderPane,
                 tabHeader,
-                conceptHeaderControlToolBarHbox,
+                patternHeaderControlToolBarHbox,
                 propertiesController != null ? propertiesController.getPropertiesTabsPane() : null);
 
-        if (this.onCloseConceptWindow != null) {
-            onCloseConceptWindow.accept(this);
+        if (this.onClosePatternWindow != null) {
+            onClosePatternWindow.accept(this);
         }
     }
 
@@ -1091,8 +1091,8 @@ public class PatternDetailsController {
         if(isValidSave){
             patternViewModel.setPropertyValue(MODE, EDIT);
             EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternSavedEvent(actionEvent.getSource(), PatternSavedEvent.PATTERN_UPDATE_EVENT));
-
-            EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
+            closePatternWindow(actionEvent);
+            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                     new MakePatternWindowEvent(actionEvent.getSource(), OPEN_PATTERN, patternViewModel.getPropertyValue(PATTERN), patternViewModel.getViewProperties()));
 
             patternViewModel.setPropertyValue(PUBLISH_PENDING, false);
