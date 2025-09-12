@@ -5696,7 +5696,7 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: white;
     -fx-text-alignment: left;
     -fx-font-size: 12px;
-    -fx-padding: 10 0 5 0;
+    -fx-padding: 10 0 25 0;
     -fx-alignment: center-left;
 }
 
