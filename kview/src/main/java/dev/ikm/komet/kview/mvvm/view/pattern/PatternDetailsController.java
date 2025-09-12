@@ -516,7 +516,9 @@ public class PatternDetailsController {
     private void setupDisplayUUID(ViewCalculator viewCalculator) {
         PatternFacade patternFacade = (PatternFacade) patternViewModel.getProperty(PATTERN).getValue();
 
-        identifierControl.createPublicIdList(viewCalculator, patternFacade);
+        if (patternFacade != null) {
+            identifierControl.createPublicIdList(viewCalculator, patternFacade);
+        }
     }
 
     private DragAndDropType getDragAndDropType(EntityFacade entityFacade) {
