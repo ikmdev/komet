@@ -15,14 +15,15 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.builder.ConceptEntityBuilder;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
