@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import static dev.ikm.komet.kview.common.ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.ADD_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
@@ -31,6 +32,11 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.FIELD_OR
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.FIELD_ORDER_OPTIONS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PREVIOUS_PATTERN_FIELD;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.TOTAL_EXISTING_FIELDS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
+
+import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
@@ -121,8 +127,9 @@ public class PatternFieldsController {
         patternFieldsViewModel.getProperty(MEANING_ENTITY).subscribe(meaningObject -> {
             if (meaningObject != null) {
                 ConceptEntity conceptEntity = Entity.getFast((EntityFacade) meaningObject);
-                if (conceptEntity != null) {
-                    displayNameTextField.setText(conceptEntity.description());
+                if (conceptEntity != null && viewProperties != null) {
+                    LanguageCalculator languageCalculator = viewProperties.calculator().languageCalculator();
+                    displayNameTextField.setText(languageCalculator.getDescriptionTextOrNid(conceptEntity.nid()));
                 } else {
                     displayNameTextField.setText("");
                     LOG.warn("conceptEntity is null.");
