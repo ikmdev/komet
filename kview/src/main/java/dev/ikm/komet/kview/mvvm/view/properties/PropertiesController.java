@@ -28,9 +28,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.DESCRIPTION_LANGUAGE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampType.CONCEPT;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
 import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
 import dev.ikm.komet.kview.events.AddOtherNameToConceptEvent;
@@ -39,9 +38,9 @@ import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
 import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
 import dev.ikm.komet.kview.events.ShowEditDescriptionPanelEvent;
 import dev.ikm.komet.kview.events.StampEvent;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampAddFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampCreateFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampAddSubmitFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampCreateFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -174,7 +173,7 @@ public class PropertiesController implements Serializable {
 
     private boolean hasOtherNames = false;
 
-    private StampAddFormViewModel stampAddFormViewModel;
+    private StampAddSubmitFormViewModel stampAddSubmitFormViewModel;
 
     private StampCreateFormViewModel stampCreateFormViewModel;
 
@@ -185,7 +184,7 @@ public class PropertiesController implements Serializable {
 
     public PropertiesController(UUID conceptTopic) {
         this.conceptTopic = conceptTopic;
-        this.stampAddFormViewModel = new StampAddFormViewModel(CONCEPT);
+        this.stampAddSubmitFormViewModel = new StampAddSubmitFormViewModel(CONCEPT);
         this.stampCreateFormViewModel = new StampCreateFormViewModel(CONCEPT);
     }
 
@@ -382,8 +381,8 @@ public class PropertiesController implements Serializable {
         // -- add stamp
         addStampSubscriber = evt -> {
             if (evt.getEventType() == ADD_STAMP) {
-                stampJFXNode.controller().init(stampAddFormViewModel);
-                this.stampAddFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+                stampJFXNode.controller().init(stampAddSubmitFormViewModel);
+                this.stampAddSubmitFormViewModel.init(entityFacade, conceptTopic, viewProperties);
 
                 contentBorderPane.setCenter(stampJFXNode.node());
                 editButton.setSelected(true);
@@ -445,8 +444,8 @@ public class PropertiesController implements Serializable {
         // Create a new DescrNameViewModel for the addfqncontroller.
         this.addFullyQualifiedNameController.updateModel(viewProperties);
 
-        if (editMode && stampAddFormViewModel != null) {
-            this.stampAddFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+        if (editMode && stampAddSubmitFormViewModel != null) {
+            this.stampAddSubmitFormViewModel.init(entityFacade, conceptTopic, viewProperties);
         } else if (!editMode && stampCreateFormViewModel != null) {
             this.stampCreateFormViewModel.init(entityFacade, conceptTopic, viewProperties);
         }
@@ -513,7 +512,7 @@ public class PropertiesController implements Serializable {
 
     public StampFormViewModelBase getStampFormViewModel() {
         if (editMode) {
-            return stampAddFormViewModel;
+            return stampAddSubmitFormViewModel;
         } else {
             return stampCreateFormViewModel;
         }
