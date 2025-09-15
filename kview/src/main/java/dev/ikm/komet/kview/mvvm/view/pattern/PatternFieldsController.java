@@ -34,6 +34,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.TOTAL_EX
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
+
+import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -117,8 +119,9 @@ public class PatternFieldsController {
         patternFieldsViewModel.getProperty(MEANING_ENTITY).subscribe(meaningObject -> {
             if (meaningObject != null) {
                 ConceptEntity conceptEntity = Entity.getFast((EntityFacade) meaningObject);
-                if (conceptEntity != null) {
-                    displayNameTextField.setText(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptEntity.nid()));
+                if (conceptEntity != null && viewProperties != null) {
+                    LanguageCalculator languageCalculator = viewProperties.calculator().languageCalculator();
+                    displayNameTextField.setText(languageCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(conceptEntity.nid()));
                 } else {
                     displayNameTextField.setText("");
                     LOG.warn("conceptEntity is null.");
