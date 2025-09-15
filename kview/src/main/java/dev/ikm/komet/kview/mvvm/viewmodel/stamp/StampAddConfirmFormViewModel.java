@@ -5,15 +5,15 @@ import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.SUBMIT_BUTTON_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.SUBMIT_BUTTON_TEXT;
 
 public class StampAddConfirmFormViewModel extends StampAddFormViewModelBase {
 
-    public StampAddConfirmFormViewModel(StampFormViewModelBase.StampType stampType) {
-        super(stampType);
+    public StampAddConfirmFormViewModel(Type type) {
+        super(type);
 
         addProperty(SUBMIT_BUTTON_TEXT, "CONFIRM");
     }

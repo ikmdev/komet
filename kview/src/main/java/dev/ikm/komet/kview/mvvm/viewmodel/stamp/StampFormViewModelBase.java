@@ -21,28 +21,28 @@ import java.util.Set;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.FORM_TITLE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.IS_STAMP_VALUES_THE_SAME_OR_EMPTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.MODULES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.PATHS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.STATUSES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.TIME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.FORM_TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TITLE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_STAMP_VALUES_THE_SAME_OR_EMPTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATHS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUSES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.TIME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
 
 public abstract class StampFormViewModelBase extends FormViewModel {
     protected EntityFacade entityFacade;
     protected UUID topic;
     protected ViewProperties viewProperties;
 
-    protected StampType stampType;
+    protected Type type;
 
-    public StampFormViewModelBase(StampType stampType) {
-        this.stampType = stampType;
+    public StampFormViewModelBase(Type type) {
+        this.type = type;
 
         // Stamp Properties
         addProperty(STATUS, (State) null);
@@ -75,7 +75,7 @@ public abstract class StampFormViewModelBase extends FormViewModel {
 
     protected abstract boolean updateIsStampValuesChanged();
 
-    public final void init(EntityFacade entity, UUID topic, ViewProperties viewProperties){
+    public final void update(EntityFacade entity, UUID topic, ViewProperties viewProperties){
         this.viewProperties = viewProperties;
         this.topic = topic;
 
@@ -93,10 +93,10 @@ public abstract class StampFormViewModelBase extends FormViewModel {
             setPropertyValues(STATUSES, List.of(State.values()));
         }
 
-        doInit(entity, topic, viewProperties);
+        doUpdate(entity, topic, viewProperties);
     }
 
-    protected abstract void doInit(EntityFacade entity, UUID topic, ViewProperties viewProperties);
+    protected abstract void doUpdate(EntityFacade entity, UUID topic, ViewProperties viewProperties);
 
     public void resetOrClearForm(ActionEvent actionEvent) {
         ConfirmationDialogController.showConfirmationDialog(
@@ -147,7 +147,7 @@ public abstract class StampFormViewModelBase extends FormViewModel {
      *                                                                         *
      **************************************************************************/
 
-    public enum StampProperties {
+    public enum Properties {
         CURRENT_STAMP,                  // The current stamp
 
         STATUS,                         // User selected Status
@@ -172,14 +172,14 @@ public abstract class StampFormViewModelBase extends FormViewModel {
         SUBMIT_BUTTON_TEXT
     }
 
-    public enum StampType {
+    public enum Type {
         CONCEPT("Concept"),
         PATTERN("Pattern"),
         SEMANTIC("Semantic");
 
         private final String textDescription;
 
-        StampType(String textDescription) {
+        Type(String textDescription) {
             this.textDescription = textDescription;
         }
 

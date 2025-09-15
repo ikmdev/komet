@@ -10,21 +10,21 @@ import dev.ikm.tinkar.terms.EntityFacade;
 
 import java.util.UUID;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.CLEAR_RESET_BUTTON_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.CURRENT_STAMP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.FORM_TIME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.FORM_TITLE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.IS_STAMP_VALUES_THE_SAME_OR_EMPTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.TIME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.CLEAR_RESET_BUTTON_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.CURRENT_STAMP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TITLE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_STAMP_VALUES_THE_SAME_OR_EMPTY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.TIME;
 
 public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
 
-    public StampAddFormViewModelBase(StampFormViewModelBase.StampType stampType) {
-        super(stampType);
+    public StampAddFormViewModelBase(Type type) {
+        super(type);
 
         // Add Properties
         addProperty(CURRENT_STAMP, (Stamp) null);
@@ -43,7 +43,7 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
     }
 
     @Override
-    protected void doInit(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
+    protected void doUpdate(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
         // entityFocusProperty from DetailsNode often calls init with a null entity.
         if (entity == null || entity == this.entityFacade) {
             return; // null entity or the entity hasn't changed
@@ -67,7 +67,7 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
     }
 
     protected void loadStampValuesFromDB() {
-        StampEntity stampEntity = getPropertyValue(StampProperties.CURRENT_STAMP);
+        StampEntity stampEntity = getPropertyValue(Properties.CURRENT_STAMP);
 
         setPropertyValue(STATUS, stampEntity.state());
         setPropertyValue(TIME, stampEntity.time());
@@ -87,11 +87,11 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
         setPropertyValue(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, same);
 
         if (same) {
-            setPropertyValue(FORM_TITLE, "Latest " + stampType.getTextDescription() + " Version");
+            setPropertyValue(FORM_TITLE, "Latest " + type.getTextDescription() + " Version");
             setPropertyValue(FORM_TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
             setPropertyValue(AUTHOR, stampEntity.author());
         } else {
-            setPropertyValue(FORM_TITLE, "New " + stampType.getTextDescription() + " Version");
+            setPropertyValue(FORM_TITLE, "New " + type.getTextDescription() + " Version");
             setPropertyValue(FORM_TIME_TEXT, "Uncommitted");
             ConceptFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
             setPropertyValue(AUTHOR, authorConcept);

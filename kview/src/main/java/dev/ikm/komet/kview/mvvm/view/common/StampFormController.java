@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.common;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.*;
 import dev.ikm.komet.framework.view.*;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;

@@ -15,12 +15,12 @@ import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.*;
 
 public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
 
-    public StampAddSubmitFormViewModel(StampType stampType) {
-        super(stampType);
+    public StampAddSubmitFormViewModel(Type type) {
+        super(type);
 
         addProperty(SUBMIT_BUTTON_TEXT, "SUBMIT");
     }
@@ -34,7 +34,7 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
         String moduleString = getViewProperties().calculator().getDescriptionTextOrNid(module.nid());
         String pathString = getViewProperties().calculator().getDescriptionTextOrNid(path.nid());
 
-        String submitMessage = "New " + stampType.getTextDescription() + " version created (" + statusString +
+        String submitMessage = "New " + type.getTextDescription() + " version created (" + statusString +
                 ", " + moduleString + ", " + pathString + ")";
 
         JournalController.toast()
@@ -64,7 +64,7 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
 
         Session session = composer.open(status, author.toProxy(), module.toProxy(), path.toProxy());
 
-        switch (stampType) {
+        switch (type) {
             case CONCEPT -> {
                 session.compose((ConceptAssembler conceptAssembler) -> {
                     conceptAssembler.concept(entityFacade.toProxy());
@@ -102,7 +102,7 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
                         .fieldValues(vals -> vals.withAll(semanticVersionRecord.fieldValues()))
                 );
             }
-            default -> throw new RuntimeException("Stamp Type " + stampType + " not supported");
+            default -> throw new RuntimeException("Stamp Type " + type + " not supported");
         }
 
         composer.commitSession(session);
