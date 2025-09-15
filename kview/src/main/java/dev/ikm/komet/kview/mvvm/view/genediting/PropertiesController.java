@@ -52,7 +52,7 @@ import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneControl
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampType.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 
 public class PropertiesController {
@@ -137,7 +137,7 @@ public class PropertiesController {
         addStampSubscriber = evt -> {
             if (evt.getEventType() == ADD_STAMP) {
                 stampJFXNode.controller().init(stampAddSubmitFormViewModel);
-                this.stampAddSubmitFormViewModel.init(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
+                this.stampAddSubmitFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
                         genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
 
                 contentBorderPane.setCenter(stampJFXNode.node());
@@ -151,7 +151,7 @@ public class PropertiesController {
         createStampSubscriber = evt -> {
             if (evt.getEventType() == CREATE_STAMP) {
                 stampJFXNode.controller().init(stampCreateFormViewModel);
-                this.stampCreateFormViewModel.init(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
+                this.stampCreateFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
                         genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
 
                 contentBorderPane.setCenter(stampJFXNode.node());
@@ -274,7 +274,7 @@ public class PropertiesController {
         } else if (newSemantic == null && stampCreateFormViewModel != null) {
             setStampFormViewModel(stampCreateFormViewModel);
         }
-        stampFormViewModel.get().init(newSemantic, genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+        stampFormViewModel.get().update(newSemantic, genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
     }
 
     /***************************************************************************
