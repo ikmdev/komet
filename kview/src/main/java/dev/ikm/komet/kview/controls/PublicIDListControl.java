@@ -42,17 +42,17 @@ public class PublicIDListControl extends Control {
     }
 
     /// Creates a Public ID List from the provided viewCalculator and ConceptFacade.
-    public void createPublicIdList(ViewCalculator viewCalculator, ConceptFacade conceptFacade) {
-        createPublicIdList(viewCalculator, (EntityFacade) conceptFacade);
+    public void updatePublicIdList(ViewCalculator viewCalculator, ConceptFacade conceptFacade) {
+        updatePublicIdList(viewCalculator, (EntityFacade) conceptFacade);
     }
 
     /// Creates a Public ID List from the provided viewCalculator and PatternFacade.
-    public void createPublicIdList(ViewCalculator viewCalculator, PatternFacade patternFacade) {
-        createPublicIdList(viewCalculator, (EntityFacade) patternFacade);
+    public void updatePublicIdList(ViewCalculator viewCalculator, PatternFacade patternFacade) {
+        updatePublicIdList(viewCalculator, (EntityFacade) patternFacade);
     }
 
     /// Creates a Public ID List from the provided viewCalculator and EntityFacade.
-    private void createPublicIdList(ViewCalculator viewCalculator, EntityFacade entityFacade) {
+    private void updatePublicIdList(ViewCalculator viewCalculator, EntityFacade entityFacade) {
         if (viewCalculator != null && entityFacade != null) {
             List<String> idList = entityFacade.publicId().asUuidList().stream()
                     .map(UUID::toString)

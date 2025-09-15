@@ -386,7 +386,7 @@ public class PatternDetailsController {
 
         ViewCalculator viewCalculator = getViewProperties().calculator();
 
-        updateDisplayIndentifier(viewCalculator);
+        updateDisplayIdentifier(viewCalculator);
 
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
@@ -522,11 +522,11 @@ public class PatternDetailsController {
     }
 
     /// Show the public ID
-    private void updateDisplayIndentifier(ViewCalculator viewCalculator) {
+    private void updateDisplayIdentifier(ViewCalculator viewCalculator) {
         PatternFacade patternFacade = (PatternFacade) patternViewModel.getProperty(PATTERN).getValue();
 
         if (patternFacade != null) {
-            identifierControl.createPublicIdList(viewCalculator, patternFacade);
+            identifierControl.updatePublicIdList(viewCalculator, patternFacade);
         }
     }
 
