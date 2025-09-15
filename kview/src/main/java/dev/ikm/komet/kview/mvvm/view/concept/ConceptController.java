@@ -854,7 +854,7 @@ public class ConceptController {
                         definitionTextField.setText(definition),
                         () -> definitionTextField.setText(""));
 
-        setupDisplayUUID((ConceptFacade) entityFacade, viewCalculator);
+        updateDisplayIndentifier((ConceptFacade) entityFacade, viewCalculator);
 
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
@@ -887,7 +887,7 @@ public class ConceptController {
     }
 
     /// Show the public IDs
-    private void setupDisplayUUID(ConceptFacade conceptFacade, ViewCalculator viewCalculator) {
+    private void updateDisplayIndentifier(ConceptFacade conceptFacade, ViewCalculator viewCalculator) {
         identifierControl.createPublicIdList(viewCalculator, conceptFacade);
     }
 
