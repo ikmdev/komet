@@ -17,9 +17,9 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampAddFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampCreateFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampAddSubmitFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampCreateFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
@@ -53,7 +53,7 @@ import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneControl
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampType.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampType.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 
 public class PropertiesController {
@@ -95,7 +95,7 @@ public class PropertiesController {
 
     private Pane closePropsPane;
 
-    private StampAddFormViewModel stampAddFormViewModel;
+    private StampAddSubmitFormViewModel stampAddSubmitFormViewModel;
 
     private StampCreateFormViewModel stampCreateFormViewModel;
 
@@ -118,7 +118,7 @@ public class PropertiesController {
     private JFXNode<Pane, ReferenceComponentController> referenceComponentJfxNode;
 
     public PropertiesController() {
-        this.stampAddFormViewModel = new StampAddFormViewModel(SEMANTIC);
+        this.stampAddSubmitFormViewModel = new StampAddSubmitFormViewModel(SEMANTIC);
         this.stampCreateFormViewModel = new StampCreateFormViewModel(SEMANTIC);
     }
 
@@ -139,8 +139,8 @@ public class PropertiesController {
         // -- add stamp
         addStampSubscriber = evt -> {
             if (evt.getEventType() == ADD_STAMP) {
-                stampJFXNode.controller().init(stampAddFormViewModel);
-                this.stampAddFormViewModel.init(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
+                stampJFXNode.controller().init(stampAddSubmitFormViewModel);
+                this.stampAddSubmitFormViewModel.init(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
                         genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
 
                 contentBorderPane.setCenter(stampJFXNode.node());
@@ -316,8 +316,8 @@ public class PropertiesController {
     public void updateModel(EntityFacade newSemantic) {
         this.newSemantic = newSemantic;
 
-        if (newSemantic != null && stampAddFormViewModel != null) {
-            setStampFormViewModel(stampAddFormViewModel);
+        if (newSemantic != null && stampAddSubmitFormViewModel != null) {
+            setStampFormViewModel(stampAddSubmitFormViewModel);
         } else if (newSemantic == null && stampCreateFormViewModel != null) {
             setStampFormViewModel(stampCreateFormViewModel);
         }

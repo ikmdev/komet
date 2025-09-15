@@ -31,12 +31,11 @@ import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -47,10 +46,7 @@ import dev.ikm.tinkar.events.AxiomChangeEvent;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.collections.ObservableList;
@@ -82,7 +78,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
@@ -95,8 +90,8 @@ import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggabl
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.FORM_TIME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.FORM_TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
@@ -859,7 +854,7 @@ public class ConceptController {
                         definitionTextField.setText(definition),
                         () -> definitionTextField.setText(""));
 
-        setupDisplayUUID(entityFacade, viewCalculator);
+        updateDisplayIdentifier(viewCalculator, (ConceptFacade) entityFacade);
 
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
@@ -892,22 +887,8 @@ public class ConceptController {
     }
 
     /// Show the public IDs
-    private void setupDisplayUUID(EntityFacade entityFacade, ViewCalculator viewCalculator) {
-        List<String> idList = entityFacade.publicId().asUuidList().stream()
-                .map(UUID::toString)
-                .collect(Collectors.toList());
-        idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
-
-        // this assumes that the first ID is always the Komet ID
-        if (!idList.isEmpty()) {
-            var firstID = "Komet ID: " + idList.getFirst();
-            idList.set(0, firstID);
-        }
-
-        // to test the vertical scroll bar, uncomment the following line
-//        idList.addAll(Arrays.asList("test line 1", "test line 2", "test vertical scroll bar"));
-
-        identifierControl.setPublicIdList(idList);
+    private void updateDisplayIdentifier(ViewCalculator viewCalculator, ConceptFacade conceptFacade) {
+        identifierControl.updatePublicIdList(viewCalculator, conceptFacade);
     }
 
     public void updateFullyQualifiedNamesDescription(List<DescrName> descrNameViewModels) {
