@@ -249,6 +249,7 @@ public class PropertiesController {
         // ! Edit field(s) within a Pattern
         // +-----------------------------------
         Config fieldsConfig = new Config(PATTERN_FIELDS_FXML_URL)
+                .addNamedViewModel(new NamedVm("patternViewModel",patternViewModel))
                 .updateViewModel("patternFieldsViewModel", (patternFieldsViewModel) ->
                         patternFieldsViewModel
                                 .setPropertyValue(PATTERN_TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC))
