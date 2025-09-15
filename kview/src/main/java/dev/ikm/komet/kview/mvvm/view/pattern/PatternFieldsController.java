@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import static dev.ikm.komet.kview.common.ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.ADD_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
@@ -120,8 +121,7 @@ public class PatternFieldsController {
             if (meaningObject != null) {
                 ConceptEntity conceptEntity = Entity.getFast((EntityFacade) meaningObject);
                 if (conceptEntity != null && viewProperties != null) {
-                    LanguageCalculator languageCalculator = viewProperties.calculator().languageCalculator();
-                    displayNameTextField.setText(languageCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(conceptEntity.nid()));
+                    displayNameTextField.setText(getDescriptionTextWithFallbackOrNid(conceptEntity, viewProperties));
                 } else {
                     displayNameTextField.setText("");
                     LOG.warn("conceptEntity is null.");
