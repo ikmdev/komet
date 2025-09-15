@@ -102,8 +102,10 @@ import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -506,6 +508,13 @@ public class PatternDetailsController {
                 }
             }
         });
+
+        // if a pattern is already in the database ( e.g we are not in create mode)
+        // than the user should not be able to add editional fields. only edit existing once
+        SimpleStringProperty mode =  patternViewModel.getProperty(MODE);
+        BooleanBinding patternNotInCreateMode = Bindings.notEqual(mode, CREATE);
+
+        addFieldsButton.disableProperty().bind(patternNotInCreateMode);
 
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
