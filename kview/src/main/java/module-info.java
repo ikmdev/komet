@@ -37,6 +37,7 @@ module dev.ikm.komet.kview {
     requires dev.ikm.tinkar.reasoner.service;
     requires org.eclipse.collections.api;
     requires org.eclipse.collections.impl;
+    requires javafx.graphics;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
