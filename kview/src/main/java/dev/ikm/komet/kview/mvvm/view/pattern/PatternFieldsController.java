@@ -118,7 +118,7 @@ public class PatternFieldsController {
             if (meaningObject != null) {
                 ConceptEntity conceptEntity = Entity.getFast((EntityFacade) meaningObject);
                 if (conceptEntity != null) {
-                    displayNameTextField.setText(conceptEntity.description());
+                    displayNameTextField.setText(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptEntity.nid()));
                 } else {
                     displayNameTextField.setText("");
                     LOG.warn("conceptEntity is null.");
