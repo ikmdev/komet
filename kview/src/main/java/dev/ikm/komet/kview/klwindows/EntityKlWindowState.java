@@ -123,6 +123,11 @@ public class EntityKlWindowState {
      */
     public static final String PROPERTY_PANEL_OPEN = "PROPERTY_PANEL_OPEN";
 
+    /**
+     * Preference key for storing the selected property panel.
+     */
+    public static final String SELECTED_PROPERTY_PANEL = "SELECTED_PROPERTY_PANEL";
+
     // Core window properties
     private UUID windowId;
     private EntityKlWindowType windowType;
@@ -665,24 +670,57 @@ public class EntityKlWindowState {
      * Helper method to save additional custom properties to preferences.
      * <p>
      * This method iterates through all entries in the additionalProperties map
-     * and stores them in the preferences node with an appropriate type-specific method.
-     * Property keys are prefixed with "PROP_" to distinguish them from core properties.
+     * and stores them in the preferences node with an explicit type prefix in the key.
+     * Format: PROP_{TYPE}_{KEY}
      *
      * @param preferences the preferences node to save to
      */
     private void saveAdditionalProperties(KometPreferences preferences) {
         additionalProperties.forEach((key, value) -> {
-            final String propKey = "PROP_" + key;
+            if (value == null) {
+                return; // skip nulls
+            }
+
+            final String typeName;
+            final String propKey;
 
             switch (value) {
-                case Integer intValue -> preferences.putInt(propKey, intValue);
-                case Long longValue -> preferences.putLong(propKey, longValue);
-                case Double doubleValue -> preferences.putDouble(propKey, doubleValue);
-                case Boolean booleanValue -> preferences.putBoolean(propKey, booleanValue);
-                case UUID uuidValue -> preferences.put(propKey, uuidValue.toString());
-                case String strValue -> preferences.put(propKey, strValue);
-                case null -> { /* Skip null values */ }
-                default -> preferences.put(propKey, value.toString());
+                case Integer intValue -> {
+                    typeName = "INT";
+                    propKey = "PROP_" + typeName + "_" + key;
+                    preferences.putInt(propKey, intValue);
+                }
+                case Long longValue -> {
+                    typeName = "LONG";
+                    propKey = "PROP_" + typeName + "_" + key;
+                    preferences.putLong(propKey, longValue);
+                }
+                case Double doubleValue -> {
+                    typeName = "DOUBLE";
+                    propKey = "PROP_" + typeName + "_" + key;
+                    preferences.putDouble(propKey, doubleValue);
+                }
+                case Boolean booleanValue -> {
+                    typeName = "BOOLEAN";
+                    propKey = "PROP_" + typeName + "_" + key;
+                    preferences.putBoolean(propKey, booleanValue);
+                }
+                case UUID uuidValue -> {
+                    typeName = "UUID";
+                    propKey = "PROP_" + typeName + "_" + key;
+                    preferences.put(propKey, uuidValue.toString());
+                }
+                case String strValue -> {
+                    typeName = "STRING";
+                    propKey = "PROP_" + typeName + "_" + key;
+                    preferences.put(propKey, strValue);
+                }
+                default -> {
+                    // fallback: store as string with type OBJECT
+                    typeName = "OBJECT";
+                    propKey = "PROP_" + typeName + "_" + key;
+                    preferences.put(propKey, value.toString());
+                }
             }
         });
     }
@@ -757,30 +795,48 @@ public class EntityKlWindowState {
     /**
      * Helper method to load additional custom properties from preferences.
      * <p>
-     * This method looks for properties with keys prefixed with "PROP_" in the
-     * preferences node and adds them to the window state's additionalProperties map.
-     * It attempts to load each property with its appropriate type.
+     * This method looks for properties with keys prefixed with "PROP_{TYPE}_"
+     * and loads them with the correct type-specific parser.
      *
      * @param preferences the preferences node to load from
      * @param state       the window state instance to populate
      */
     private static void loadAdditionalProperties(KometPreferences preferences, EntityKlWindowState state)
             throws BackingStoreException {
-        Arrays.stream(preferences.keys())
-                .filter(key -> key.startsWith("PROP_"))
-                .forEach(key -> {
-                    final String propertyName = key.substring(5);
+        for (String key : preferences.keys()) {
+            if (!key.startsWith("PROP_")) {
+                continue;
+            }
 
-                    Stream.<Optional<?>>of(tryLoadBoolean(preferences, key),
-                                    tryLoadInteger(preferences, key),
-                                    tryLoadLong(preferences, key),
-                                    tryLoadDouble(preferences, key),
-                                    tryLoadString(preferences, key))
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .findFirst()
-                            .ifPresent(value -> state.additionalProperties.put(propertyName, value));
-                });
+            // Extract type and property name
+            String[] parts = key.split("_", 3);
+            if (parts.length < 3) {
+                continue; // malformed key
+            }
+
+            String type = parts[1]; // INT, STRING, etc.
+            String propertyName = parts[2];
+
+            try {
+                Object value = switch (type) {
+                    case "BOOLEAN" -> preferences.getBoolean(key).orElse(null);
+                    case "INT"     -> preferences.getInt(key).orElse(0);
+                    case "LONG"    -> preferences.getLong(key).orElse(0);
+                    case "DOUBLE"  -> preferences.getDouble(key).orElse(0);
+                    case "UUID"    -> preferences.get(key).map(UUID::fromString).orElse(null);
+                    case "STRING"  -> preferences.get(key).orElse(null);
+                    case "OBJECT"  -> preferences.get(key).orElse(null); // fallback
+                    default        -> null; // unknown type
+                };
+
+                if (value != null) {
+                    state.additionalProperties.put(propertyName, value);
+                }
+            } catch (Exception e) {
+                LOG.error("Failed to load preference '{}' of type '{}'. Value was '{}'. Skipping this entry.",
+                        key, type, preferences.get(key).orElse("null"), e);
+            }
+        }
     }
 
     /**

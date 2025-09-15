@@ -428,6 +428,43 @@ public class PropertiesController implements Serializable {
         }
     }
 
+    public String selectedView() {
+        Toggle tab = propertyToggleButtonGroup.getSelectedToggle();
+        if (editButton.equals(tab)) {
+            return "EDIT";
+        } else if (hierarchyButton.equals(tab)) {
+            return "HIERARCHY";
+        } else if (historyButton.equals(tab)) {
+            return "HISTORY";
+        } else if (commentsButton.equals(tab)) {
+            return "COMMENTS";
+        } else {
+            return "NONE";
+        }
+    };
+
+    public void restoreSelectedView(String selectedView) {
+        LOG.info("restore selected concept view with " + selectedView);
+        switch (selectedView) {
+            case "EDIT" -> {
+                editButton.setSelected(true);
+                contentBorderPane.setCenter(editBorderPane);
+            }
+            case "HIERARCHY" -> {
+                hierarchyButton.setSelected(true);
+                contentBorderPane.setCenter(hierarchyTabBorderPane);
+            }
+            case "HISTORY" -> {
+                historyButton.setSelected(true);
+                contentBorderPane.setCenter(historyTabsBorderPane);
+            }
+            case "COMMENTS" -> {
+                //commentsButton.setSelected(true); // TODO
+                contentBorderPane.setCenter(commentsPane);
+            }
+        }
+    }
+
     public void updateModel(final ViewProperties viewProperties, EntityFacade entityFacade){
         this.viewProperties = viewProperties;
         this.entityFacade = entityFacade;

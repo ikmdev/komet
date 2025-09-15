@@ -102,8 +102,7 @@ public class PropertiesController {
     @InjectViewModel
     private PatternViewModel patternViewModel;
 
-    @FXML
-    private SVGPath commentsButton;
+
 
     @FXML
     private ToggleButton addEditButton;
@@ -113,6 +112,9 @@ public class PropertiesController {
 
     @FXML
     private ToggleButton instancesButton;
+
+    @FXML
+    private ToggleButton commentsButton;
 
     @FXML
     private ToggleGroup propertyToggleButtonGroup;
@@ -501,6 +503,43 @@ public class PropertiesController {
         return patternPropertiesViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
     public void clearView() {
+    }
+
+    public String selectedView() {
+        Toggle tab = propertyToggleButtonGroup.getSelectedToggle();
+        if (addEditButton.equals(tab)) {
+            return "EDIT";
+        } else if (instancesButton.equals(tab)) {
+            return "INSTANCE";
+        } else if (historyButton.equals(tab)) {
+            return "HISTORY";
+        } else if (commentsButton.equals(tab)) {
+            return "COMMENTS";
+        } else {
+            return "NONE";
+        }
+    };
+
+    public void restoreSelectedView(String selectedView) {
+        LOG.info("restore selected Pattern view with " + selectedView);
+        switch (selectedView) {
+            case "EDIT" -> {
+                addEditButton.setSelected(true);
+                contentBorderPane.setCenter(currentEditPane);
+            }
+            case "INSTANCE" -> {
+                instancesButton.setSelected(true);
+                contentBorderPane.setCenter(instancesPane);
+            }
+            case "HISTORY" -> {
+                historyButton.setSelected(true);
+                contentBorderPane.setCenter(historyPane);
+            }
+            case "COMMENTS" -> {
+                commentsButton.setSelected(true);
+                // contentBorderPane.setCenter(commentsPane); // TODO has no comment Pane currently
+            }
+        }
     }
 
     /**

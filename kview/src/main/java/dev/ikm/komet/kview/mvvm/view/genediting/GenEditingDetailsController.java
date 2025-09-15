@@ -922,4 +922,8 @@ public class GenEditingDetailsController {
 
         updateDraggableNodesForPropertiesPanel(isOpen);
     }
+
+    public PropertiesController getPropertiesController() {
+        return propertiesController;
+    }
 }

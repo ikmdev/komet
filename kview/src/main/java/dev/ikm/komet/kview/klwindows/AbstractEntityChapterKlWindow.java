@@ -19,12 +19,15 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.layout.Pane;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.PROPERTY_PANEL_OPEN;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.SELECTED_PROPERTY_PANEL;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getWindowPreferences;
 
 /**
@@ -48,7 +51,7 @@ import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getWindowPr
  * @see EntityFacade
  */
 public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWindow<Pane> {
-
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractEntityChapterKlWindow.class);
     /**
      * The UUID uniquely identifying this window within the application.
      * This ID is used for tracking the window, persisting its state, and
@@ -176,6 +179,8 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
 
         // Restore properties panel state
         setPropertyPanelOpen(state.getBooleanProperty(PROPERTY_PANEL_OPEN, false));
+
+        setSelectedPropertyPanel(state.getStringProperty(SELECTED_PROPERTY_PANEL, "EDIT"));
     }
 
     @Override
