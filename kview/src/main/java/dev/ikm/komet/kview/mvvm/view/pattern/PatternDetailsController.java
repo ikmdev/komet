@@ -35,7 +35,7 @@ import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.mvvm.model.*;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -46,8 +46,10 @@ import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.*;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -108,7 +110,7 @@ import static dev.ikm.komet.kview.mvvm.view.common.SVGConstants.DUPLICATE_SVG_PA
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.*;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 
@@ -475,6 +477,13 @@ public class PatternDetailsController {
             }
         });
 
+        // if a pattern is already in the database ( e.g we are not in create mode)
+        // than the user should not be able to add editional fields. only edit existing once
+        SimpleStringProperty mode =  patternViewModel.getProperty(MODE);
+        BooleanBinding patternNotInCreateMode = Bindings.notEqual(mode, CREATE);
+
+        addFieldsButton.disableProperty().bind(patternNotInCreateMode);
+
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
         closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
@@ -830,6 +839,7 @@ public class PatternDetailsController {
                 stampFormViewModel.getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isSubmitted -> {
                     if (isSubmitted) {
                         updateStampControlFromViewModel();
+                        patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
                     }
                 });
             } else if(newMode.equals(CREATE)) {
@@ -1067,6 +1077,7 @@ public class PatternDetailsController {
 
             patternViewModel.setPropertyValue(PUBLISH_PENDING, false);
             patternViewModel.reLoadPatternValues();
+            updateStampControlFromViewModel();
         }
     }
 
