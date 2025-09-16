@@ -183,7 +183,9 @@ public class HistoryChangeController implements BasicController {
         if (isFilterSelected("All", "Concept")) {
             // Populate concept versions
             ChangeChronology conceptChronologyChange = viewCalculator.changeChronology(entityNid);
-            List<Pane> rows = generateRows(getViewProperties(), getEntityFacade().nid(), conceptChronologyChange);
+            // do the sort
+            List<VersionChangeRecord> sortedChronology = sortChangeChronology(conceptChronologyChange);
+            List<Pane> rows = generateRows(getViewProperties(), getEntityFacade().nid(), sortedChronology);
             this.changeChronologyPane.getChildren().addAll(rows);
         }
 
@@ -193,7 +195,9 @@ public class HistoryChangeController implements BasicController {
             // For each populate a row based on changes
             descrSemanticEntities.forEach(semanticEntity -> {
                 ChangeChronology changeChronology = viewCalculator.changeChronology(semanticEntity.nid());
-                List<Pane> rows = generateRows(viewProperties, semanticEntity.nid(), changeChronology);
+                // do the sort
+                List<VersionChangeRecord> sortedChronology = sortChangeChronology(changeChronology);
+                List<Pane> rows = generateRows(viewProperties, semanticEntity.nid(), sortedChronology);
                 this.changeChronologyPane.getChildren().addAll(rows);
             });
         }
@@ -204,7 +208,9 @@ public class HistoryChangeController implements BasicController {
             Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityNid);
             inferredSemanticVersion.ifPresent(semanticEntityVersion -> {
                 ChangeChronology axiomInferredChange = viewCalculator.changeChronology(semanticEntityVersion.nid());
-                List<Pane> rows = generateRows(viewProperties, semanticEntityVersion.nid(), axiomInferredChange);
+                // do the sort
+                List<VersionChangeRecord> sortedChronology = sortChangeChronology(axiomInferredChange);
+                List<Pane> rows = generateRows(viewProperties, semanticEntityVersion.nid(), sortedChronology);
                 this.changeChronologyPane.getChildren().addAll(rows);
             });
 
@@ -212,7 +218,9 @@ public class HistoryChangeController implements BasicController {
             Latest<SemanticEntityVersion> statedSemanticVersion = viewCalculator.getStatedAxiomSemanticForEntity(entityNid);
             statedSemanticVersion.ifPresent(semanticEntityVersion -> {
                 ChangeChronology axiomStatedChange = viewCalculator.changeChronology(semanticEntityVersion.nid());
-                List<Pane> rows2 = generateRows(viewProperties, semanticEntityVersion.nid(), axiomStatedChange);
+                // do the sort
+                List<VersionChangeRecord> sortedChronology = sortChangeChronology(axiomStatedChange);
+                List<Pane> rows2 = generateRows(viewProperties, semanticEntityVersion.nid(), sortedChronology);
                 this.changeChronologyPane.getChildren().addAll(rows2);
             });
         }
@@ -222,9 +230,21 @@ public class HistoryChangeController implements BasicController {
         cacheOfRows.addAll(this.changeChronologyPane.getChildren());
     }
 
-    public List<Pane> generateRows(final ViewProperties viewProperties, int entityNid, ChangeChronology changeChronology) {
+    private List<VersionChangeRecord> sortChangeChronology(ChangeChronology chronologyChange) {
+        List<VersionChangeRecord> sortedRecords = new ArrayList<>(chronologyChange.changeRecords().castToList());
+        sortedRecords.sort((changeRecord1, changeRecord2) -> {
+            StampEntity<? extends StampVersion> stamp1 = Entity.getStamp(changeRecord1.stampNid());
+            StampEntity<? extends StampVersion> stamp2 = Entity.getStamp(changeRecord2.stampNid());
+            Long time1 = stamp1.time();
+            Long time2 = stamp2.time();
+            return time2.compareTo(time1);
+        });
+        return sortedRecords;
+    }
+
+    public List<Pane> generateRows(final ViewProperties viewProperties, int entityNid, List<VersionChangeRecord> versionChangeRecords) {
         List<Pane> paneList = new ArrayList<>();
-        for (VersionChangeRecord changeRecord:changeChronology.changeRecords()) {
+        for (VersionChangeRecord changeRecord:versionChangeRecords) {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(DESCRIPTION_LIST_ITEM_FXML_FILE));
             Pane listItem = null;
             try {
