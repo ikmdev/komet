@@ -1255,4 +1255,8 @@ public class PatternDetailsController {
     private EventHandler<MouseEvent> hideTooltipHandler(Tooltip tooltip) {
         return event -> tooltip.hide();
     }
+
+    public PropertiesController getPropertiesController() {
+        return propertiesController;
+    }
 }

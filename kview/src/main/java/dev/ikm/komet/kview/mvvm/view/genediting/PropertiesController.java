@@ -33,6 +33,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
@@ -69,6 +70,8 @@ public class PropertiesController {
 
     @FXML
     private ToggleButton instancesButton;
+
+    public ToggleButton commentsButton;
 
     @FXML
     private ToggleGroup propertyToggleButtonGroup;
@@ -253,6 +256,50 @@ public class PropertiesController {
         LOG.info("Show Pattern History");
         this.historyButton.setSelected(true);
 //        contentBorderPane.setCenter(historyPane);
+    }
+
+    public String selectedView() {
+        Toggle tab = propertyToggleButtonGroup.getSelectedToggle();
+        if (addEditButton.equals(tab)) {
+            return "EDIT";
+        } else if (instancesButton.equals(tab)) {
+            return "INSTANCES";
+        } else if (historyButton.equals(tab)) {
+            return "HISTORY";
+        } else if (commentsButton.equals(tab)) {
+            return "COMMENTS";
+        } else {
+            return "NONE";
+        }
+    };
+
+    public void restoreSelectedView(String selectedView) {
+        LOG.info("restore selected Pattern view with " + selectedView);
+        switch (selectedView) {
+            case "EDIT" -> {
+                addEditButton.setSelected(true);
+                contentBorderPane.setCenter(currentEditPane);
+            }
+            case "INSTANCES" -> {
+                instancesButton.setSelected(true);
+                //contentBorderPane.setCenter(instancesPane); // TODO: hook up nodes once impelemted
+            }
+            case "HISTORY" -> {
+                historyButton.setSelected(true);
+                //contentBorderPane.setCenter(historyPane); // TODO: hook up nodes once impelemted
+            }
+            case "COMMENTS" -> {
+                commentsButton.setSelected(true);
+                // contentBorderPane.setCenter(commentsPane); // TODO hook up nodes once impelemted
+            }
+            default -> {
+                addEditButton.setSelected(false);
+                instancesButton.setSelected(false);
+                historyButton.setSelected(false);
+                commentsButton.setSelected(false);
+                contentBorderPane.setCenter(closePropsPane);
+            }
+        }
     }
 
     public void clearView() {
