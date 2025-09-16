@@ -73,6 +73,8 @@ public enum LogicalOperatorsForVertex {
     FEATURE(TinkarTerm.FEATURE),
 
     PROPERTY_SET(TinkarTerm.PROPERTY_SET),
+    DATA_PROPERTY_SET(TinkarTerm.DATA_PROPERTY_SET),
+    INTERVAL_PROPERTY_SET(TinkarTerm.INTERVAL_PROPERTY_SET),
 
     // TODO: Retire property pattern implication when starter set stable.
     PROPERTY_PATTERN_IMPLICATION(TinkarTerm.PROPERTY_PATTERN_IMPLICATION),

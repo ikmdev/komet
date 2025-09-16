@@ -172,6 +172,8 @@ public class ClauseView {
             case INCLUSION_SET -> setupForInclusionSet();
             case DEFINITION_ROOT -> setupForDefinitionRoot();
             case PROPERTY_SET -> setupForPropertySet();
+            case DATA_PROPERTY_SET -> setupForDataPropertySet();
+            case INTERVAL_PROPERTY_SET -> setupForIntervalPropertySet();
             // TODO: Retire property pattern implication when starter set stable.
             case PROPERTY_PATTERN_IMPLICATION -> setupForPropertyPatternImplication();
             case PROPERTY_SEQUENCE_IMPLICATION -> setupForPropertyPatternImplication();
@@ -252,6 +254,36 @@ public class ClauseView {
         rootBorderPane.getStyleClass()
                 .add(StyleClasses.DEF_SUFFICIENT_SET.toString());
         titleLabel.setText("Property axioms");
+        titleLabel.setGraphic(Icon.ALERT_WARN2.makeIcon());
+        int column = 0;
+        this.axiomView.addToGridPaneNoGrow(rootGridPane, expandButton, column++);
+        this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
+        if (this.axiomView.premiseType == STATED) {
+            this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
+        }
+    }
+    
+    private void setupForDataPropertySet() {
+        // TODO get CSS and related gui setup.
+        // TODO get style class for property set
+        rootBorderPane.getStyleClass()
+                .add(StyleClasses.DEF_SUFFICIENT_SET.toString());
+        titleLabel.setText("Data property axioms");
+        titleLabel.setGraphic(Icon.ALERT_WARN2.makeIcon());
+        int column = 0;
+        this.axiomView.addToGridPaneNoGrow(rootGridPane, expandButton, column++);
+        this.axiomView.addToGridPaneGrow(rootGridPane, titleLabel, column++);
+        if (this.axiomView.premiseType == STATED) {
+            this.axiomView.addToGridPaneNoGrow(rootGridPane, editButton, column++);
+        }
+    }
+    
+    private void setupForIntervalPropertySet() {
+        // TODO get CSS and related gui setup.
+        // TODO get style class for property set
+        rootBorderPane.getStyleClass()
+                .add(StyleClasses.DEF_SUFFICIENT_SET.toString());
+        titleLabel.setText("Interval property axioms");
         titleLabel.setGraphic(Icon.ALERT_WARN2.makeIcon());
         int column = 0;
         this.axiomView.addToGridPaneNoGrow(rootGridPane, expandButton, column++);
