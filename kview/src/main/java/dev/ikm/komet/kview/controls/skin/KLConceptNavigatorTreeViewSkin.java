@@ -63,8 +63,6 @@ import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Scale;
-import org.apache.commons.logging.Log;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
