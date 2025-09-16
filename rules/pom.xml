@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.56.0-IIA-2311-pattern-semantic-search-by-public-id-SNAPSHOT</version>
+        <version>1.56.0-SNAPSHOT</version>
     </parent>
     <artifactId>rules</artifactId>
     <dependencies>
