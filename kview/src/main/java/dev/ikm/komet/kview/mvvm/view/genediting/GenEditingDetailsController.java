@@ -241,6 +241,8 @@ public class GenEditingDetailsController {
 
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
+    private Subscriber<StampEvent> stampEventSubscriber;
+
     public GenEditingDetailsController() {
     }
 
@@ -291,29 +293,44 @@ public class GenEditingDetailsController {
             updateDisplayUUID();
         });
 
-        genEditingViewModel.getProperty(MODE).subscribe(newMode -> {
-            StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
-
-            if (newMode.equals(EDIT)) {
-                updateUIStamp(propertiesController.getStampFormViewModel());
-                stampFormViewModel.getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isSubmitted -> {
-                    if (isSubmitted) {
-                        updateUIStamp(propertiesController.getStampFormViewModel());
-                    }
-                });
-            } else if(newMode.equals(CREATE)) {
-                stampFormViewModel.getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isConfirmed -> {
-                    if (isConfirmed) {
-                        updateUIStamp(propertiesController.getStampFormViewModel());
-                    }
-                });
-            }
-        });
+        propertiesController.getStampFormViewModel().getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(
+                isConfirmed -> onConfirmOrSubmitted(isConfirmed));
 
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
         closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+
+        // Listening to Stamp events
+        // If someone triggers the stamp event from outside we need to update the stamp control and window accordingly
+        stampEventSubscriber = evt -> {
+            isUpdatingStampSelection = true;
+            stampViewControl.setSelected(true);
+            isUpdatingStampSelection = false;
+
+            openPropertiesPanel();
+        };
+
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, stampEventSubscriber);
+    }
+
+    private void onConfirmOrSubmitted(Boolean isConfirmedOrSubmitted) {
+        updateUIStamp(propertiesController.getStampFormViewModel());
+
+        if(genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
+            addReferenceButton.setDisable(!isConfirmedOrSubmitted);
+        }
+    }
+
+    private void openPropertiesPanel() {
+        LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
+
+        propertiesToggleButton.setSelected(true);
+        if (isClosed(propertiesSlideoutTrayPane)) {
+            slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
+        }
+
+        updateDraggableNodesForPropertiesPanel(true);
     }
 
     private void onStampSelectionChanged() {
@@ -719,13 +736,7 @@ public class GenEditingDetailsController {
                     klReadOnlyBaseControl.setEditMode(false);
                 }
             } else if (evt.getEventType() == OPEN_PANEL || evt.getEventType() == NO_SELECTION_MADE_PANEL) {
-                LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
-                propertiesToggleButton.setSelected(true);
-                if (isClosed(propertiesSlideoutTrayPane)) {
-                    slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
-                }
-
-                updateDraggableNodesForPropertiesPanel(true);
+                openPropertiesPanel();
             }
         };
         subscriberList.add(propertiesEventSubscriber);
