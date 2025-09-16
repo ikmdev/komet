@@ -498,11 +498,16 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
 
     private void addConceptNode(EntityProxy entity, Function<EntityProxy, String> componentNameLabelFunction) {
-        Image identicon = Identicon.generateIdenticonImage(entity.publicId());
+        Image identicon = null;
+        if (entity != null && entity.publicId() != null) {
+            identicon = Identicon.generateIdenticonImage(entity.publicId());
+        }
         ImageView imageView = new ImageView();
         imageView.setFitWidth(16);
         imageView.setFitHeight(16);
-        imageView.setImage(identicon);
+        if (identicon != null) {
+            imageView.setImage(identicon);
+        }
         imageView.setFocusTraversable(false);
         HBox imageViewWrapper = new HBox();
         imageViewWrapper.setAlignment(Pos.CENTER);

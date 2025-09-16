@@ -2,6 +2,9 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.tinkar.common.id.IntIdCollection;
+import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.util.uuid.UuidUtil;
 import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
@@ -101,13 +104,34 @@ public class KLComponentControlFactory {
         return newSearchText -> {
             TypeAheadSearch typeAheadSearch = TypeAheadSearch.get();
             List<EntityProxy> entityProxyResults = new ArrayList<>();
-
-            List<EntityFacade> typeAheadResults = typeAheadSearch.typeAheadSuggestions(
-                    navigationCalculator, /* nav calculator */
-                    newSearchText, /* text */
-                    10  /* max results returned */
-            );
-            typeAheadResults.forEach(entity -> entityProxyResults.add(entity.toProxy()));
+            // TODO:
+            // 1. SearchText determines if it is UUID:
+            //       if so call primitiveDate or entity.
+            //       if not in the Database continue to use TypeAhead search.
+            // 2. Find results and add to entityProxyResults
+            // 3. Skip the typeAheadSuggestions
+            if (UuidUtil.isUUID(newSearchText)) {
+                UuidUtil.getUUID(newSearchText).ifPresent(uuid -> {
+                    try {
+                        EntityFacade entityFacade = Entity.getFast(PrimitiveData.nid(PublicIds.of(uuid)));
+                        entityProxyResults.add(entityFacade.toProxy());
+                    } catch (Exception e) {
+                        // not found or not existing uuid (ignore)
+                        // b/c it could be a valid uuid just not in the database.
+                    }
+                });
+            }
+            // Did it find a valid entity? if not call typeahead (Lucene)
+            if (entityProxyResults.size() > 0) {
+                return entityProxyResults;
+            } else {
+                List<EntityFacade> typeAheadResults = typeAheadSearch.typeAheadSuggestions(
+                        navigationCalculator, /* nav calculator */
+                        newSearchText, /* text */
+                        10  /* max results returned */
+                );
+                typeAheadResults.forEach(entity -> entityProxyResults.add(entity.toProxy()));
+            }
             return entityProxyResults;
         };
     }
