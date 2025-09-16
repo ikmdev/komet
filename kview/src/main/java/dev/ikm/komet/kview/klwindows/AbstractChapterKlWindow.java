@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.PROPERTY_PANEL_OPEN;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.SELECTED_PROPERTY_PANEL;
 
 /**
  * Abstract base implementation of the {@link ChapterKlWindow} interface for Komet applications.
@@ -202,7 +203,8 @@ public abstract class AbstractChapterKlWindow<T extends Node> implements Chapter
         final EntityKlWindowState.Builder builder = EntityKlWindowState.builder()
                 .windowId(getWindowTopic())
                 .windowType(getWindowType())
-                .property(PROPERTY_PANEL_OPEN, isPropertyPanelOpen());
+                .property(PROPERTY_PANEL_OPEN, isPropertyPanelOpen())
+                .property(SELECTED_PROPERTY_PANEL, (String) selectedPropertyPanel());
 
         final T gadget = fxGadget();
         if (gadget != null) {
@@ -280,6 +282,27 @@ public abstract class AbstractChapterKlWindow<T extends Node> implements Chapter
      * @param isOpen true to open the property panel, false to close it
      */
     protected abstract void setPropertyPanelOpen(boolean isOpen);
+
+    /**
+     * Returns the last selected PropertyPanel.
+     * Subclasses should override this method to implement window-specific
+     * property panel state retrieval.
+     *
+     * @return a String representing the selected Panel
+     */
+    protected abstract String selectedPropertyPanel();
+
+    /**
+     * Sets the PropertyPanel to be opened.
+     * Subclasses should override this method to implement window-specific
+     * property panel state setting.
+     *
+     * @param propertyPanel provide the Value representing a specific PropertyPanel.
+     *                      These values are defined by teh subclass defining the
+     *                      window-specific behaviour.
+     */
+    protected abstract void setSelectedPropertyPanel(String propertyPanel);
+
 
     /**
      * Extension point for subclasses to capture additional window state beyond the
