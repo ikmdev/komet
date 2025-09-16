@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
@@ -53,16 +54,19 @@ public class ListPropertyWithOverride<T> extends SimpleEqualityBasedListProperty
         return this.overriddenProperty;
     }
 
+    /// set() is called when the child view coordinate menu item is selected
     @Override
     public void set(ObservableList<T> newValue) {
-        if (!overridden && newValue != null) {
-            overridden = true;
-            this.unbind();
-        }
-        if (newValue == null) {
-            overridden = false;
+        if (newValue == null || Objects.equals(newValue, this.overriddenProperty.get())) {
+            // values equal so not an override.
+            this.overridden = false;
             this.bind(overriddenProperty);
         } else {
+            // values not equal
+            if (!overridden) {
+                this.overridden = true;
+                this.unbind();
+            }
             super.set(newValue);
         }
     }
@@ -72,15 +76,23 @@ public class ListPropertyWithOverride<T> extends SimpleEqualityBasedListProperty
         return setAll(Arrays.asList(elements));
     }
 
+    /// setAll() is called when the parent view coordinate menu item is selected
     @Override
     public boolean setAll(Collection<? extends T> elements) {
-        if (!this.get().equals(elements)) {
+
+        List<T> newValue = elements instanceof ArrayList ? (List) elements : new ArrayList<>(elements);
+
+        if (!Objects.equals(this.get(), newValue)) {
             if (!overridden) {
                 overridden = true;
                 this.unbind();
             }
             return super.setAll(elements);
+        } else {
+            overridden = false;
+            this.bind(overriddenProperty);
         }
+
         return false;
     }
 
