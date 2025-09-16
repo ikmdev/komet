@@ -887,7 +887,7 @@ entityVersion -> {
             },
             // else no value present
             () -> {
-                String noValueText = "No value present";
+                String noValueText = "No version present";
                 stampViewControl.setStatus(noValueText);
                 stampViewControl.setModule(noValueText);
                 stampViewControl.setAuthor(noValueText);
