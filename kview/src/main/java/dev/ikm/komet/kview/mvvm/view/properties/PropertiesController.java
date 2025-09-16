@@ -28,7 +28,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.DESCRIPTION_LANGUAGE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.CONCEPT;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
 import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
@@ -382,7 +382,7 @@ public class PropertiesController implements Serializable {
         addStampSubscriber = evt -> {
             if (evt.getEventType() == ADD_STAMP) {
                 stampJFXNode.controller().init(stampAddSubmitFormViewModel);
-                this.stampAddSubmitFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+                this.stampAddSubmitFormViewModel.update(entityFacade, conceptTopic, viewProperties);
 
                 contentBorderPane.setCenter(stampJFXNode.node());
                 editButton.setSelected(true);
@@ -395,7 +395,7 @@ public class PropertiesController implements Serializable {
         createStampSubscriber = evt -> {
             if (evt.getEventType() == CREATE_STAMP) {
                 stampJFXNode.controller().init(stampCreateFormViewModel);
-                this.stampCreateFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+                this.stampCreateFormViewModel.update(entityFacade, conceptTopic, viewProperties);
 
                 contentBorderPane.setCenter(stampJFXNode.node());
                 editButton.setSelected(true);
@@ -482,9 +482,9 @@ public class PropertiesController implements Serializable {
         this.addFullyQualifiedNameController.updateModel(viewProperties);
 
         if (editMode && stampAddSubmitFormViewModel != null) {
-            this.stampAddSubmitFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+            this.stampAddSubmitFormViewModel.update(entityFacade, conceptTopic, viewProperties);
         } else if (!editMode && stampCreateFormViewModel != null) {
-            this.stampCreateFormViewModel.init(entityFacade, conceptTopic, viewProperties);
+            this.stampCreateFormViewModel.update(entityFacade, conceptTopic, viewProperties);
         }
     }
 

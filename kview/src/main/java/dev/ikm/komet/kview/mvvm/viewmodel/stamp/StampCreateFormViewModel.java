@@ -7,22 +7,22 @@ import dev.ikm.tinkar.terms.*;
 
 import java.util.UUID;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.StampProperties.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.*;
 
 public class StampCreateFormViewModel extends StampFormViewModelBase {
 
-    public StampCreateFormViewModel(StampType stampType) {
-        super(stampType);
+    public StampCreateFormViewModel(Type type) {
+        super(type);
 
         addProperty(CLEAR_RESET_BUTTON_TEXT, "CLEAR");
         addProperty(SUBMIT_BUTTON_TEXT, "CONFIRM");
 
-        setPropertyValue(FORM_TITLE, "New " + stampType.getTextDescription() + " Version");
+        setPropertyValue(FORM_TITLE, "New " + type.getTextDescription() + " Version");
         setPropertyValue(FORM_TIME_TEXT, "Uncommitted");
     }
 
     @Override
-    protected void doInit(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
+    protected void doUpdate(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
         ConceptFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
         setPropertyValue(AUTHOR, authorConcept);
 
