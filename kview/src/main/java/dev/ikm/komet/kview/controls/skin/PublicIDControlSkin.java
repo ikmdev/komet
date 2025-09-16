@@ -4,7 +4,11 @@ import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.SkinBase;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
@@ -49,8 +53,12 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
 
     private Subscription showLabelSubscription;
 
+    private Subscription trimIdentifierSubscription;
+
     /// The current public id property value, as received in the subscription listener
     private String identifier;
+
+    private boolean trimIdentifier = false;
 
     public PublicIDControlSkin(PublicIDControl control) {
         super(control);
@@ -140,13 +148,35 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
                 }
             }
         });
+
+        trimIdentifierSubscription = control.trimIdentifierProperty().subscribe(trimIdentifier -> {
+            this.trimIdentifier = trimIdentifier;
+        });
+    }
+
+    /// Trims the identifier to remove the prefix and colon if the trimIdentifier property has been set to true
+    private String trimTheIdentifier() {
+        String trimmedIdentifier = identifier;
+
+        if (trimIdentifier && identifier != null) {
+            int colonIndex = identifier.indexOf(':');
+            if (colonIndex >= 0) {
+                // trim the prefix
+                trimmedIdentifier = identifier.substring(colonIndex + 1);
+
+                // trim the whitespace
+                trimmedIdentifier = trimmedIdentifier.trim();
+            }
+        }
+
+        return trimmedIdentifier;
     }
 
     /// Copy the Public Identifier UUID String value to the System Clipboard
     private void copyToClipboard() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
-        content.putString(identifier);
+        content.putString(trimTheIdentifier());
         clipboard.setContent(content);
     }
 
@@ -160,6 +190,12 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     public void dispose() {
         if (publicIdSubscription != null) {
             publicIdSubscription.unsubscribe();
+        }
+        if (showLabelSubscription != null) {
+            showLabelSubscription.unsubscribe();
+        }
+        if (trimIdentifierSubscription != null) {
+            trimIdentifierSubscription.unsubscribe();
         }
     }
 

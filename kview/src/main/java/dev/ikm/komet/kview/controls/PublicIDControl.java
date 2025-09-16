@@ -14,15 +14,18 @@ public class PublicIDControl extends Control {
     private SimpleStringProperty publicId = new SimpleStringProperty(this, "publicId");
     /// The showLabel property which controls if the ID label is displayed
     private SimpleBooleanProperty showLabel = new SimpleBooleanProperty(this, "showLabel", true);
+    /// The trimIdentifier tells the PublicIDControlSkin to trim the identifier value from the colon in the prefix
+    private SimpleBooleanProperty trimIdentifier = new SimpleBooleanProperty(this, "trimIdentifier", false);
 
     public PublicIDControl() {
          super();
     }
 
-    public PublicIDControl(boolean showLabel, String publicId) {
+    public PublicIDControl(boolean showLabel, String publicId, boolean trimIdentifier) {
         super();
         setPublicId(publicId);
         setShowLabel(showLabel);
+        setTrimIdentifier(trimIdentifier);
     }
 
     public SimpleStringProperty publicIdProperty() {
@@ -31,6 +34,10 @@ public class PublicIDControl extends Control {
 
     public SimpleBooleanProperty showLabelProperty() {
         return showLabel;
+    }
+
+    public SimpleBooleanProperty trimIdentifierProperty() {
+        return trimIdentifier;
     }
 
     public String getPublicId() {
@@ -47,6 +54,14 @@ public class PublicIDControl extends Control {
 
     public void setShowLabel(boolean showLabel) {
         showLabelProperty().set(showLabel);
+    }
+
+    public boolean getTrimIdentifier() {
+        return trimIdentifierProperty().get();
+    }
+
+    public void setTrimIdentifier(boolean trimIdentifier) {
+        trimIdentifierProperty().set(trimIdentifier);
     }
 
     /** {@inheritDoc} */
