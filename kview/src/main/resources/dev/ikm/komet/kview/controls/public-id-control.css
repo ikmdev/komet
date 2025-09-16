@@ -11,9 +11,6 @@
 
     /* the spacing for the HBoxes in the control, is inherited in child nodes */
     -fx-spacing: 4;
-
-    /* setting font size here, to be inherited in child nodes */
-    -fx-font-size: 10;
 }
 
 .public-id > .public-id-box {
@@ -32,7 +29,7 @@
        The value used must work on the Concept, Pattern, and Semantic windows. */
     -fx-pref-width: 195;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: inherit;
+    -fx-font-size: 10;
     -fx-text-fill: -Grey-10;
 }
 
