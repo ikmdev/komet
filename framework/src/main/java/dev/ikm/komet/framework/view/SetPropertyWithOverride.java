@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Predicate;
 
 public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<T>
@@ -79,9 +78,7 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
 
     @Override
     public boolean setAll(Collection<? extends T> elements) {
-        Set<T> newValue = elements instanceof Set ? (Set) elements : new HashSet<>(elements);
-
-        if (!Objects.equals(this.get(), newValue)) {
+        if (!Objects.equals(this.get(), elements)) {
             if (!overridden) {
                 overridden = true;
                 this.unbind();

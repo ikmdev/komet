@@ -79,10 +79,7 @@ public class ListPropertyWithOverride<T> extends SimpleEqualityBasedListProperty
     /// setAll() is called when the parent view coordinate menu item is selected
     @Override
     public boolean setAll(Collection<? extends T> elements) {
-
-        List<T> newValue = elements instanceof ArrayList ? (List) elements : new ArrayList<>(elements);
-
-        if (!Objects.equals(this.get(), newValue)) {
+        if (!Objects.equals(this.get(), elements)) {
             if (!overridden) {
                 overridden = true;
                 this.unbind();
