@@ -1,8 +1,10 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.PublicIDControlSkin;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
@@ -11,11 +13,11 @@ import javafx.scene.control.Skin;
 public class PublicIDControl extends Control {
 
      /// The public ID (UUID) property
-    private SimpleStringProperty publicId = new SimpleStringProperty(this, "publicId");
+    private StringProperty publicId = new SimpleStringProperty(this, "publicId");
     /// The showLabel property which controls if the ID label is displayed
-    private SimpleBooleanProperty showLabel = new SimpleBooleanProperty(this, "showLabel", true);
+    private BooleanProperty showLabel = new SimpleBooleanProperty(this, "showLabel", true);
     /// The trimIdentifier tells the PublicIDControlSkin to trim the identifier value from the colon in the prefix
-    private SimpleBooleanProperty trimIdentifier = new SimpleBooleanProperty(this, "trimIdentifier", false);
+    private BooleanProperty trimIdentifier = new SimpleBooleanProperty(this, "trimIdentifier", false);
 
     public PublicIDControl() {
          super();
@@ -28,15 +30,15 @@ public class PublicIDControl extends Control {
         setTrimIdentifier(trimIdentifier);
     }
 
-    public SimpleStringProperty publicIdProperty() {
+    public StringProperty publicIdProperty() {
         return publicId;
     }
 
-    public SimpleBooleanProperty showLabelProperty() {
+    public BooleanProperty showLabelProperty() {
         return showLabel;
     }
 
-    public SimpleBooleanProperty trimIdentifierProperty() {
+    public BooleanProperty trimIdentifierProperty() {
         return trimIdentifier;
     }
 
