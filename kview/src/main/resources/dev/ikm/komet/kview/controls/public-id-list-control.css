@@ -1,0 +1,16 @@
+/* turn off the border and set the background color to transparent */
+
+.public-id-list  {
+    -fx-border-style: none;
+    -fx-background-color: transparent;
+    -fx-hbar-policy: never;
+}
+
+/* must set the viewport background color as well */
+.public-id-list > .viewport  {
+    -fx-background-color: transparent;
+}
+
+.identifier-vbox  {
+    -fx-spacing: 0;
+}

@@ -1,4 +1,4 @@
-FROM azul/zulu-openjdk-alpine:23-latest AS builder
+FROM azul/zulu-openjdk-alpine:24-latest AS builder
 
 COPY .. /komet/
 

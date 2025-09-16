@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import dev.ikm.komet.kview.controls.KLExpandableNodeListControl?>
-<?import dev.ikm.komet.kview.controls.PublicIDControl?>
-<?import dev.ikm.komet.kview.controls.ResponsiveTextFlow?>
+<?import dev.ikm.komet.kview.controls.PublicIDListControl?>
+<?import dev.ikm.komet.kview.controls.StampViewControl?>
+<?import dev.ikm.komet.kview.controls.StampViewControl?>
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
 <?import java.lang.String?>
@@ -18,7 +19,6 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.Tooltip?>
@@ -40,9 +40,8 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
-<?import dev.ikm.komet.kview.controls.StampViewControl?>
 
-<BorderPane fx:id="detailsOuterBorderPane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" >
+<BorderPane fx:id="detailsOuterBorderPane" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1">
 
          <top>
             <HBox fx:id="conceptHeaderControlToolBarHbox" BorderPane.alignment="CENTER">
@@ -153,22 +152,22 @@
             </HBox>
          </right>
          <center>
-            <BorderPane fx:id="detailsInnerBorderPane"  minWidth="460.0"  styleClass="main-center-container" BorderPane.alignment="CENTER">
+            <BorderPane fx:id="detailsInnerBorderPane" minWidth="460.0" styleClass="main-center-container" BorderPane.alignment="CENTER">
                 <top>
                        <GridPane>
                            <columnConstraints>
-                               <ColumnConstraints minWidth="5.0" prefWidth="5.0" maxWidth="5.0" hgrow="NEVER"/>
-                               <ColumnConstraints halignment="LEFT" hgrow="NEVER" minWidth="56.0"/>
+                               <ColumnConstraints hgrow="NEVER" maxWidth="5.0" minWidth="5.0" prefWidth="5.0" />
+                               <ColumnConstraints halignment="LEFT" hgrow="NEVER" minWidth="56.0" />
                                <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="100.0" />
-                               <ColumnConstraints halignment="LEFT" hgrow="NEVER" prefWidth="208.0" minWidth="208.0" />
-                               <ColumnConstraints minWidth="5.0" prefWidth="5.0" maxWidth="5.0" hgrow="NEVER"/>
+                               <ColumnConstraints halignment="LEFT" hgrow="NEVER" minWidth="208.0" prefWidth="208.0" />
+                               <ColumnConstraints hgrow="NEVER" maxWidth="5.0" minWidth="5.0" prefWidth="5.0" />
                            </columnConstraints>
                            <rowConstraints>
-                               <RowConstraints minHeight="5.0" prefHeight="5.0" maxHeight="5.0" vgrow="NEVER" />
-                               <RowConstraints fillHeight="false" minHeight="56.0" prefHeight="56.0" valignment="TOP" vgrow="NEVER" />
-                               <RowConstraints fillHeight="false" valignment="CENTER" vgrow="SOMETIMES" />
-                               <RowConstraints fillHeight="false" valignment="CENTER" vgrow="SOMETIMES" />
-                               <RowConstraints minHeight="5.0" prefHeight="5.0" maxHeight="5.0" vgrow="NEVER" />
+                               <RowConstraints maxHeight="5.0" minHeight="5.0" prefHeight="5.0" vgrow="NEVER" />
+                               <RowConstraints fillHeight="false" maxHeight="51.0" minHeight="47.0" prefHeight="47.0" valignment="TOP" vgrow="NEVER" />
+                               <RowConstraints fillHeight="false" maxHeight="35.0" minHeight="28.0" prefHeight="29.0" valignment="CENTER" vgrow="SOMETIMES" />
+                               <RowConstraints fillHeight="false" maxHeight="32.0" minHeight="30.0" prefHeight="31.0" valignment="CENTER" vgrow="SOMETIMES" />
+                               <RowConstraints maxHeight="5.0" minHeight="5.0" prefHeight="5.0" vgrow="NEVER" />
                            </rowConstraints>
 
                            <ImageView fx:id="identiconImageView" fitWidth="44.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
@@ -181,31 +180,10 @@
                                </tooltip>
                            </Label>
 
-                           <!-- Definition section - only spans the first two columns -->
-                           <VBox GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2">
-                               <HBox spacing="4.0">
-                                   <Text styleClass="concept-definition-title" text="Definition: ">
-                                       <font>
-                                           <Font name="Noto Sans Medium" size="12.0" />
-                                       </font>
-                                   </Text>
-                                   <Label fx:id="definitionTextField"
-                                             wrapText="true"
-                                             style="-fx-text-fill: -Grey-11; -fx-background-color: transparent; -fx-border-color: transparent; -fx-control-inner-background: transparent; -fx-padding: 0 0 0 0;"
-                                             styleClass="copyable-label"
-                                             HBox.hgrow="ALWAYS"
-                                             VBox.vgrow="ALWAYS">
-                                       <font>
-                                           <Font name="Noto Sans Medium" size="12.0" />
-                                       </font>
-                                   </Label>
-                               </HBox>
-                           </VBox>
-
-                           <PublicIDControl fx:id="identifierControl" GridPane.columnSpan="2" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+                           <PublicIDListControl fx:id="identifierControl" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.rowSpan="2" />
 
                            <!-- StackPane in its own column -->
-                           <StackPane styleClass="stamp-container" GridPane.columnIndex="3" GridPane.rowSpan="3" GridPane.rowIndex="1">
+                           <StackPane styleClass="stamp-container" GridPane.columnIndex="3" GridPane.rowIndex="1" GridPane.rowSpan="3">
                                <StampViewControl fx:id="stampViewControl" prefWidth="208" />
                            </StackPane>
                        </GridPane>
@@ -218,7 +196,21 @@
                         <AnchorPane styleClass="concept-section">
                            <TitledPane fx:id="descriptionsTitledPane" contentDisplay="BOTTOM" maxHeight="Infinity" maxWidth="Infinity" nodeOrientation="LEFT_TO_RIGHT" text="DESCRIPTIONS" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                               <AnchorPane>
-                                 <GridPane hgap="12.0" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="8.0">
+                           <VBox prefHeight="40.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="8.0">
+                              <children>
+                                               <Text styleClass="concept-definition-title" text="DEFINITION:">
+                                                   <font>
+                                                       <Font name="Noto Sans Medium" size="12.0" />
+                                                   </font>
+                                               </Text>
+                                               <Label fx:id="definitionTextField" style="-fx-text-fill: -Grey-11; -fx-background-color: transparent; -fx-border-color: transparent; -fx-control-inner-background: transparent; -fx-padding: 0 0 0 0;" styleClass="copyable-label" wrapText="true" VBox.vgrow="ALWAYS">
+                                                   <font>
+                                                       <Font name="Noto Sans Medium" size="12.0" />
+                                                   </font>
+                                               </Label>
+                              </children>
+                           </VBox>
+                                 <GridPane hgap="12.0" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="50.0">
                                     <rowConstraints>
                                        <RowConstraints percentHeight="100.0" vgrow="ALWAYS" />
                                     </rowConstraints>
@@ -229,23 +221,31 @@
 
                                     <!-- LEFT COLUMN: Fully Qualified Name area -->
                                     <VBox maxHeight="Infinity" maxWidth="Infinity" GridPane.columnIndex="0" GridPane.fillWidth="true">
-                                       <Text styleClass="grey8-12pt-bold" text="FULLY QUALIFIED NAME:">
+                                       <Text fx:id="fullyQualifiedNameHeaderText" styleClass="grey8-12pt-bold" text="FULLY QUALIFIED NAMES:">
                                           <font>
                                              <Font name="Noto Sans SemiBold" size="12.0" />
                                           </font>
                                        </Text>
-
-                                       <ResponsiveTextFlow fx:id="fqnContainer" styleClass="fqn-container">
-                                          <Text fx:id="latestFqnText" styleClass="descr-concept-name" />
-                                          <Text fx:id="fqnDescriptionSemanticText" styleClass="descr-concept-name" />
-                                       </ResponsiveTextFlow>
-
-                                       <ResponsiveTextFlow fx:id="fqnDateAddedTextFlow">
-                                          <Label styleClass="descr-semantic" />
-                                          <Label fx:id="fqnAddDateLabel" styleClass="grey8-12pt-bold" text="May 10, 2023" />
-                                          <Hyperlink text="Attachment" />
-                                          <Hyperlink text="Comment" />
-                                       </ResponsiveTextFlow>
+                                 <KLExpandableNodeListControl fx:id="fullyQualifiedNameNodeListControl" maxHeight="Infinity">
+                                    <items>
+                                       <TextFlow>
+                                          <children>
+                                             <Label text="Date Added:" />
+                                             <Label text="May 10, 2023" />
+                                             <Hyperlink text="Attachment" />
+                                             <Hyperlink text="Comment" />
+                                          </children>
+                                       </TextFlow>
+                                       <TextFlow>
+                                          <children>
+                                             <Label text="Date Added:" />
+                                             <Label text="May 10, 2023" />
+                                             <Hyperlink text="Attachment" />
+                                             <Hyperlink text="Comment" />
+                                          </children>
+                                       </TextFlow>
+                                    </items>
+                                 </KLExpandableNodeListControl>
                                     </VBox>
 
                                     <!-- RIGHT COLUMN: Other Names area -->

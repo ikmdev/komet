@@ -4,7 +4,11 @@ import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.SkinBase;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
@@ -45,10 +49,16 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     private final Button copyToClipboardButton = new Button();
 
     /// The subscription to the PublicIDControl publicIdProperty, which receives property change events
-    private Subscription subscription;
+    private Subscription publicIdSubscription;
+
+    private Subscription showLabelSubscription;
+
+    private Subscription trimIdentifierSubscription;
 
     /// The current public id property value, as received in the subscription listener
     private String identifier;
+
+    private boolean trimIdentifier = false;
 
     public PublicIDControlSkin(PublicIDControl control) {
         super(control);
@@ -107,7 +117,7 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         getChildren().add(rootHBox);
 
         // subscribe to changes to the publicIdProperty in the PublicIDControl
-        subscription = control.publicIdProperty().subscribe(publicId -> {
+        publicIdSubscription = control.publicIdProperty().subscribe(publicId -> {
             identifier = publicId;
             publicIdTooltip.setText(identifier);
             publicIdTextField.setText(identifier);
@@ -123,13 +133,50 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
                 publicIdTextField.setPrefWidth(width);
             });
         });
+
+        // subscribe to changes to the showLabelProperty in the PublicIDControl
+        showLabelSubscription = control.showLabelProperty().subscribe(showLabel -> {
+            var children = rootHBox.getChildren();
+
+            if (!showLabel) {
+                children.remove(titleLabel);
+            } else {
+                // check to make sure that the titleLabel isn't alrady in the HBox, because it has
+                // been added in the constructor when creating the control skin
+                if (!children.contains(publicIdHBox)) {
+                    children.addFirst(titleLabel);
+                }
+            }
+        });
+
+        trimIdentifierSubscription = control.trimIdentifierProperty().subscribe(trimIdentifier -> {
+            this.trimIdentifier = trimIdentifier;
+        });
+    }
+
+    /// Trims the identifier to remove the prefix and colon if the trimIdentifier property has been set to true
+    private String trimTheIdentifier() {
+        String trimmedIdentifier = identifier;
+
+        if (trimIdentifier && identifier != null) {
+            int colonIndex = identifier.indexOf(':');
+            if (colonIndex >= 0) {
+                // trim the prefix
+                trimmedIdentifier = identifier.substring(colonIndex + 1);
+
+                // trim the whitespace
+                trimmedIdentifier = trimmedIdentifier.trim();
+            }
+        }
+
+        return trimmedIdentifier;
     }
 
     /// Copy the Public Identifier UUID String value to the System Clipboard
     private void copyToClipboard() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
-        content.putString(identifier);
+        content.putString(trimTheIdentifier());
         clipboard.setContent(content);
     }
 
@@ -141,8 +188,14 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     /// Unsubscribes from the subscription to stop receiving the publicIdProperty change events
     @Override
     public void dispose() {
-        if (subscription != null) {
-            subscription.unsubscribe();
+        if (publicIdSubscription != null) {
+            publicIdSubscription.unsubscribe();
+        }
+        if (showLabelSubscription != null) {
+            showLabelSubscription.unsubscribe();
+        }
+        if (trimIdentifierSubscription != null) {
+            trimIdentifierSubscription.unsubscribe();
         }
     }
 

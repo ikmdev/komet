@@ -21,6 +21,7 @@ import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
@@ -33,6 +34,8 @@ import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.layout.Pane;
 import org.eclipse.collections.api.factory.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
@@ -47,6 +50,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
  * to broadcast and receive updates about concept changes.
  */
 public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
+    private static final Logger LOG = LoggerFactory.getLogger(ConceptKlWindow.class);
 
     private final ConceptNode conceptNode;
     private final PublicIdStringKey<ActivityStream> detailsActivityStreamKey;
@@ -137,4 +141,18 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
     protected void setPropertyPanelOpen(boolean isOpen) {
         conceptNode.getConceptDetailsViewController().setPropertiesPanelOpen(isOpen);
     }
+
+    @Override
+    protected String selectedPropertyPanel() {
+        String pane = conceptNode.getPropertiesViewController().selectedView();
+        LOG.info("saving with Concept " + pane);
+        return pane;
+    }
+
+    @Override
+    protected void setSelectedPropertyPanel(String selectedPanel) {
+        LOG.info("restoring pane with "+ selectedPanel);
+        conceptNode.getPropertiesViewController().restoreSelectedView(selectedPanel);
+    }
+
 }

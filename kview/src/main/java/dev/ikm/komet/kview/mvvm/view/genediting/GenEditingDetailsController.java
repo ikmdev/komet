@@ -21,7 +21,7 @@ import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.StampEvent;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -80,7 +80,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -127,12 +126,12 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONE
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.TIME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.TIME;
 
 public class GenEditingDetailsController {
 
@@ -191,10 +190,10 @@ public class GenEditingDetailsController {
     private BorderPane propertiesBorderPane;
 
     @FXML
-    private Text semanticMeaningText;
+    private Label semanticMeaningText;
 
     @FXML
-    private Text semanticPurposeText;
+    private Label semanticPurposeText;
 
     @FXML
     private Button addReferenceButton;
@@ -238,6 +237,8 @@ public class GenEditingDetailsController {
 
     private ObservableSemanticSnapshot observableSemanticSnapshot;
 
+    private boolean isUpdatingStampSelection = false;
+
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
     public GenEditingDetailsController() {
@@ -274,14 +275,20 @@ public class GenEditingDetailsController {
             updateDraggableNodesForPropertiesPanel(true);
         }
 
-        setupIdenticon(refComponent);
-        setupDisplayUUID();
+        updateIdenticon(refComponent);
+        updateDisplayUUID();
 
         genEditingViewModel.getProperty(STAMP_VIEW_MODEL).bind(propertiesController.stampFormViewModelProperty());
 
         genEditingViewModel.getProperty(SEMANTIC).subscribe(newSemantic -> {
             propertiesController.updateModel((EntityFacade) newSemantic);
             updateUIStamp(propertiesController.getStampFormViewModel());
+
+            // update the identicon
+            updateIdenticon(refComponent);
+
+            // update the display UUID
+            updateDisplayUUID();
         });
 
         genEditingViewModel.getProperty(MODE).subscribe(newMode -> {
@@ -310,6 +317,10 @@ public class GenEditingDetailsController {
     }
 
     private void onStampSelectionChanged() {
+        if (isUpdatingStampSelection) {
+            return;
+        }
+
         if (stampViewControl.isSelected()) {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
@@ -325,7 +336,7 @@ public class GenEditingDetailsController {
         }
     }
 
-    private void setupDisplayUUID() {
+    private void updateDisplayUUID() {
         EntityFacade semanticComponent = genEditingViewModel.getPropertyValue(SEMANTIC);
         if (semanticComponent == null) {
             return;
@@ -340,7 +351,7 @@ public class GenEditingDetailsController {
         identifierControl.setPublicId(idString);
     }
 
-    private void setupIdenticon(ObjectProperty<EntityFacade> refComponent) {
+    private void updateIdenticon(ObjectProperty<EntityFacade> refComponent) {
         if (refComponent.isNotNull().get()) {
             EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
 
@@ -415,6 +426,12 @@ public class GenEditingDetailsController {
                     populateSemanticDetails();
                     // change the mode from CREATE to EDIT
                     genEditingViewModel.setPropertyValue(MODE, EDIT);
+
+                    // Update STAMP control and STAMP form
+                    StampFormViewModelBase stampFormViewModelBase = propertiesController.getStampFormViewModel();
+                    stampFormViewModelBase.update(semanticEntityVersionLatest.get().entity(),
+                            genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+                    updateUIStamp(stampFormViewModelBase);
                 }
 
                 // Update read-only field values
@@ -842,6 +859,10 @@ public class GenEditingDetailsController {
 
         updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
 
+        isUpdatingStampSelection = true;
+        stampViewControl.setSelected(propertyToggle.isSelected());
+        isUpdatingStampSelection = false;
+
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
@@ -905,5 +926,9 @@ public class GenEditingDetailsController {
         }
 
         updateDraggableNodesForPropertiesPanel(isOpen);
+    }
+
+    public PropertiesController getPropertiesController() {
+        return propertiesController;
     }
 }

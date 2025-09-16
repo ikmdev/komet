@@ -16,6 +16,110 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
+import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.view.ViewMenuModel;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
+import dev.ikm.komet.kview.controls.KometIcon;
+import dev.ikm.komet.kview.controls.PublicIDListControl;
+import dev.ikm.komet.kview.controls.StampViewControl;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.events.StampEvent;
+import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
+import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
+import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
+import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
+import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
+import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
+import dev.ikm.komet.kview.fxutils.IconsHelper;
+import dev.ikm.komet.kview.fxutils.MenuHelper;
+import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
+import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
+import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
+import dev.ikm.komet.kview.mvvm.model.PatternField;
+import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtType;
+import dev.ikm.tinkar.events.Subscriber;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
+import dev.ikm.tinkar.terms.SemanticFacade;
+import dev.ikm.tinkar.terms.State;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
+import javafx.geometry.Side;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.FillRule;
+import javafx.scene.shape.SVGPath;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import org.carlfx.axonic.StateMachine;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.URL;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.function.Consumer;
+
 import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
@@ -49,102 +153,35 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_W
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.STATUS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.FORM_TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_CASE_SIGNIFICANCE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_LANGUAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_DATE_STR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TITLE_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PUBLISH_PENDING;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_DATE_STR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.SELECTED_PATTERN_FIELD;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
-import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.dnd.DragImageMaker;
-import dev.ikm.komet.framework.dnd.KometClipboard;
-import dev.ikm.komet.kview.common.ViewCalculatorUtils;
-import dev.ikm.komet.kview.controls.StampViewControl;
-import dev.ikm.komet.kview.events.StampEvent;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.EvtType;
-import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.komet.framework.view.ViewMenuModel;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.controls.KometIcon;
-import dev.ikm.komet.kview.controls.PublicIDControl;
-import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
-import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
-import dev.ikm.komet.kview.events.pattern.PatternDefinitionEvent;
-import dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent;
-import dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent;
-import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
-import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
-import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
-import dev.ikm.komet.kview.fxutils.IconsHelper;
-import dev.ikm.komet.kview.fxutils.MenuHelper;
-import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
-import dev.ikm.komet.kview.mvvm.model.DescrName;
-import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
-import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
-import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
-import dev.ikm.komet.kview.mvvm.model.PatternField;
-import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
-import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.PatternFacade;
-import dev.ikm.tinkar.terms.SemanticFacade;
-import dev.ikm.tinkar.terms.State;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.fxml.FXML;
-import javafx.geometry.Bounds;
-import javafx.geometry.Side;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.FillRule;
-import javafx.scene.shape.SVGPath;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
-import org.carlfx.axonic.StateMachine;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.loader.NamedVm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URL;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.function.Consumer;
 
 public class PatternDetailsController {
 
@@ -184,7 +221,7 @@ public class PatternDetailsController {
     private Label patternTitleText;
 
     @FXML
-    private PublicIDControl identifierControl;
+    private PublicIDListControl identifierControl;
 
     @FXML
     private TextFlow latestFqnTextFlow;
@@ -272,6 +309,8 @@ public class PatternDetailsController {
 
     @InjectViewModel
     private PatternViewModel patternViewModel;
+
+    private boolean isUpdatingStampSelection = false;
 
     private final Tooltip publishTooltip = new Tooltip();
 
@@ -399,6 +438,10 @@ public class PatternDetailsController {
         ObjectProperty<EntityFacade> patternProperty = patternViewModel.getProperty(PATTERN);
 
         patternProperty.subscribe(entityFacade -> {
+            if (propertiesController != null) {
+                propertiesController.updateModel(entityFacade);
+            }
+
             if (entityFacade != null) {
                 patternViewModel.setPropertyValue(MODE, EDIT);
 
@@ -408,13 +451,11 @@ public class PatternDetailsController {
             } else {
                 patternViewModel.setPropertyValue(MODE, CREATE);
             }
-
-            if (propertiesController != null) {
-                propertiesController.updateModel(entityFacade);
-            }
         });
 
-        setupDisplayUUID();
+        ViewCalculator viewCalculator = getViewProperties().calculator();
+
+        updateDisplayIdentifier(viewCalculator);
 
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
@@ -505,6 +546,13 @@ public class PatternDetailsController {
             }
         });
 
+        // if a pattern is already in the database ( e.g we are not in create mode)
+        // than the user should not be able to add editional fields. only edit existing once
+        SimpleStringProperty mode =  patternViewModel.getProperty(MODE);
+        BooleanBinding patternNotInCreateMode = Bindings.notEqual(mode, CREATE);
+
+        addFieldsButton.disableProperty().bind(patternNotInCreateMode);
+
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
         closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
@@ -524,6 +572,10 @@ public class PatternDetailsController {
     }
 
     private void onStampSelectionChanged() {
+        if (isUpdatingStampSelection) {
+            return;
+        }
+
         if (stampViewControl.isSelected()) {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
@@ -539,10 +591,12 @@ public class PatternDetailsController {
     }
 
     /// Show the public ID
-    private void setupDisplayUUID() {
-        identifierControl.publicIdProperty().bind(patternViewModel.getProperty(PATTERN).map(pf ->
-                String.valueOf(((EntityFacade) pf).toProxy().publicId().asUuidList().getLastOptional().get())));
+    private void updateDisplayIdentifier(ViewCalculator viewCalculator) {
+        PatternFacade patternFacade = (PatternFacade) patternViewModel.getProperty(PATTERN).getValue();
 
+        if (patternFacade != null) {
+            identifierControl.updatePublicIdList(viewCalculator, patternFacade);
+        }
     }
 
     private DragAndDropType getDragAndDropType(EntityFacade entityFacade) {
@@ -854,6 +908,7 @@ public class PatternDetailsController {
                 stampFormViewModel.getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isSubmitted -> {
                     if (isSubmitted) {
                         updateStampControlFromViewModel();
+                        patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
                     }
                 });
             } else if(newMode.equals(CREATE)) {
@@ -1050,6 +1105,10 @@ public class PatternDetailsController {
 
         updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
 
+        isUpdatingStampSelection = true;
+        stampViewControl.setSelected(propertyToggle.isSelected());
+        isUpdatingStampSelection = false;
+
         EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
@@ -1087,6 +1146,7 @@ public class PatternDetailsController {
 
             patternViewModel.setPropertyValue(PUBLISH_PENDING, false);
             patternViewModel.reLoadPatternValues();
+            updateStampControlFromViewModel();
         }
     }
 
@@ -1194,5 +1254,9 @@ public class PatternDetailsController {
 
     private EventHandler<MouseEvent> hideTooltipHandler(Tooltip tooltip) {
         return event -> tooltip.hide();
+    }
+
+    public PropertiesController getPropertiesController() {
+        return propertiesController;
     }
 }

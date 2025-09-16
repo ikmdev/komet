@@ -115,4 +115,14 @@ public class LidrKlWindow extends AbstractEntityChapterKlWindow {
     protected void setPropertyPanelOpen(boolean isOpen) {
         jfxNode.controller().setPropertiesPanelOpen(isOpen);
     }
+
+    @Override
+    protected String selectedPropertyPanel() {
+        return null;
+    }
+
+    @Override
+    protected void setSelectedPropertyPanel(String tabTypes) {
+
+    }
 }

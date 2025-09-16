@@ -145,6 +145,7 @@ import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalP
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.JOURNAL_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
@@ -346,7 +347,9 @@ public class JournalController {
             slideOut(newValue);
         });
 
-        journalComboBox.setPromptText("Project Journal #" + JournalCounter.getInstance().get());
+        // next to the menu, have the text be in the format "Project Journal #x" where x is the Journal number
+        // that matches the window title
+        journalComboBox.setPromptText(formatPromptText(journalViewModel.getPropertyValue(JOURNAL_NAME)));
         journalWindows.addListener((ListChangeListener<ChapterKlWindow<Pane>>) change -> {
             while (change.next()) {
                 PrefX journalWindowPref = PrefX.create();
@@ -424,6 +427,10 @@ public class JournalController {
         journalEventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
         toast = new Toast(workspace);
+    }
+
+    private String formatPromptText(String title) {
+        return title.replace("Journal ", "Project Journal #");
     }
 
     /**
