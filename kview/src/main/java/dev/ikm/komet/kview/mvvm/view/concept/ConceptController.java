@@ -895,8 +895,6 @@ entityVersion -> {
                 stampViewControl.setLastUpdated(noValueText);
             }
         );
-        //String noValue = "No value in this view";
-        //EntityVersion latestVersion = viewCalculator.latest(entityFacade).get();
     }
 
     /// Show the public IDs
