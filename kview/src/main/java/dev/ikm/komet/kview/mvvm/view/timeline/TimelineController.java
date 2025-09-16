@@ -19,6 +19,7 @@ import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.mvvm.model.ChangeCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.viewmodel.TimelineViewModel;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.change.ChangeChronology;
@@ -31,13 +32,12 @@ import dev.ikm.tinkar.entity.StampEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
@@ -50,11 +50,14 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -150,8 +153,7 @@ public class TimelineController implements BasicController {
 
 //    private Dialog<Pane>
     protected static final String FILTER_MENU_FXML_FILE = "filter-menu.fxml";
-    private Pane filterMenuPopupContent;
-    private FilterMenuController filterMenuController;
+    private JFXNode<Pane, FilterMenuController> filterJFXNode;
 
     private String configPath;
     private List<Integer> configModuleIds;
@@ -159,42 +161,47 @@ public class TimelineController implements BasicController {
     @FXML
     private Button filterMenuButton;
 
-    public FilterMenuController getFilterMenuController() {
-        return filterMenuController;
-    }
+    private PopOver filterMenuPopup;
 
     @FXML
     void toggleDisplayConfig(ActionEvent event) {
-        if (getViewProperties() != null && getMainConcept() != null) {
+        filterJFXNode.getViewModel("timelineViewModel").ifPresent((viewModel -> {
 
-            // Populate filter menu
-            Pane filterMenuPane = getFilterMenuPopupContent();
-            getFilterMenuController().updateModel(getViewProperties(), pathMap);
-            getFilterMenuController().updateView();
-            PopOver filterMenuPopup = new PopOver(filterMenuPane);
-            filterMenuPopup.getStyleClass().add("filter-menu-popup");
+                if (getViewProperties() != null && getMainConcept() != null) {
 
-            BiConsumer<String, List<Integer>> pathModuleIdsConsumer = (pathName, moduleIds) -> {
-                updateConfigPathAndModules(pathName, moduleIds);
-                updateModel(getViewProperties(), getMainConcept());
-                updateView();
-                filterMenuPopup.hide();
-            };
-            // apply a callback
-            filterMenuController.onSaveAction(pathModuleIdsConsumer);
-            // Build a default filter menu
-            //filterMenuPopup.getStyleClass().add("filterMenuPopup");
+                    LinkedHashMap<String, List<Integer>> pm =  pathMap.getPathModulesNidOnlyMap();
 
-            filterMenuPopup.setContentNode(filterMenuPane);
-            filterMenuPopup.setAutoHide(true);
-            filterMenuPopup.setAutoFix(true);
-            filterMenuPopup.setHideOnEscape(true);
-            filterMenuPopup.setDetachable(true);
-            filterMenuPopup.setDetached(false);
-            filterMenuPopup.setArrowLocation(PopOver.ArrowLocation.LEFT_TOP);
-            filterMenuPopup.show(filterMenuButton);
-        }
+                    viewModel.setPropertyValue(TimelineViewModel.TimelineProperties.VIEW_PROPERTIES, getViewProperties());
+                    viewModel.setPropertyValue(TimelineViewModel.TimelineProperties.AVAILABLE_PATH_MOULES_MAP, pm);
+                    SimpleBooleanProperty shouldShow = viewModel.getProperty(TimelineViewModel.TimelineProperties.FILTER_POP_UP_VISIBLE);
+
+                    LOG.info("provided map +  {}", pm);
+                    setupPopOver(shouldShow);
+
+                    shouldShow.setValue(true);
+                }
+
+        }));
         LOG.info("toggleDisplayConfig() called");
+    }
+
+    private void setupPopOver(SimpleBooleanProperty shouldShow) {
+        this.filterMenuPopup = new PopOver(filterJFXNode.node());
+        filterMenuPopup.getStyleClass().add("filter-menu-popup");
+        filterMenuPopup.setAutoHide(true);
+        filterMenuPopup.setAutoFix(true);
+        filterMenuPopup.setHideOnEscape(false);
+        filterMenuPopup.setDetachable(true);
+        filterMenuPopup.setDetached(false);
+        filterMenuPopup.setArrowLocation(PopOver.ArrowLocation.LEFT_TOP);
+
+        shouldShow.subscribe( showing -> {
+            if (showing) {
+                filterMenuPopup.show(filterMenuButton);
+            } else {
+                filterMenuPopup.hide();
+            }
+        });
     }
 
     /**
@@ -308,6 +315,32 @@ public class TimelineController implements BasicController {
     }
     @Override
     public void initialize() {
+
+        Config filterMenuConfig = new Config(this.getClass().getResource(FILTER_MENU_FXML_FILE));
+        this.filterJFXNode =  FXMLMvvmLoader.make(filterMenuConfig);
+
+        Optional<ViewModel> viewModel = filterJFXNode.getViewModel("timelineViewModel");
+        viewModel.ifPresent( (vm -> {
+            ObservableList<Integer> modules = vm.getObservableList(TimelineViewModel.TimelineProperties.CHECKED_MODULE_IDS);
+            SimpleStringProperty path = vm.getProperty(TimelineViewModel.TimelineProperties.SELECTED_PATH);
+
+            modules.subscribe( () -> {
+                List<Integer> snapshot = List.copyOf(modules);
+                LOG.info("current selected modules list: {}", snapshot);
+                updateConfigPathAndModules(this.configPath, snapshot);
+                updateModel(getViewProperties(), getMainConcept());
+                updateView();
+            });
+            path.subscribe(currentPath -> {
+                LOG.info("current path: {}", currentPath);
+                updateConfigPathAndModules(currentPath, this.configModuleIds);
+                updateModel(getViewProperties(), getMainConcept());
+                updateView();
+            });
+        }));
+
+
+
         // Clear out any prototype controls used in SceneBuilder
         hidePrototypeControls();
 
@@ -499,8 +532,12 @@ public class TimelineController implements BasicController {
     @Override
     public void cleanup() {
         pathMap.clear();
-        allCircleDatePointsSet.clear();
-        slideControlDatePointsInRangeSet.clear();
+        if (allCircleDatePointsSet != null) {
+            allCircleDatePointsSet.clear();
+        }
+        if (slideControlDatePointsInRangeSet != null) {
+            slideControlDatePointsInRangeSet.clear();
+        }
         datePointSelected.set(null);
     }
     public void updateConfigPathAndModules(String configPath, List<Integer> configModuleIds) {
@@ -511,13 +548,15 @@ public class TimelineController implements BasicController {
         this.viewProperties = viewProperties;
         this.mainConcept = mainConcept;
         clearView();
-        buildAllTimeLineMaps();
-        if (configPath == null || configModuleIds == null) {
-            resetConfigPathAndModules();
-            if (pathMap.keySet().size() > 0){
-                String configPath = pathMap.keySet().stream().findFirst().get();
-                List<Integer> configModuleIds = pathMap.getModuleNids(configPath);
-                updateConfigPathAndModules(configPath, configModuleIds);
+        if ( getMainConcept() != null) {
+            buildAllTimeLineMaps();
+            if (configPath == null || configModuleIds == null) {
+                resetConfigPathAndModules();
+                if (pathMap.keySet().size() > 0){
+                    String configPath = pathMap.keySet().stream().findFirst().get();
+                    List<Integer> configModuleIds = pathMap.getModuleNids(configPath);
+                    updateConfigPathAndModules(configPath, configModuleIds);
+                }
             }
         }
     }
@@ -526,19 +565,6 @@ public class TimelineController implements BasicController {
         configModuleIds = null;
     }
 
-    public Pane getFilterMenuPopupContent() {
-        // Build a default filter menu
-        if (filterMenuPopupContent == null) {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(FILTER_MENU_FXML_FILE));
-            try {
-                filterMenuPopupContent = loader.load();
-                filterMenuController = loader.getController();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return filterMenuPopupContent;
-    }
 
     /**
      * Refreshes view and populates controls with data.
