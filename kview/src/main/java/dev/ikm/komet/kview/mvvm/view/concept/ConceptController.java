@@ -861,29 +861,42 @@ public class ConceptController {
         identiconImageView.setImage(identicon);
 
         // Obtain STAMP info
-        EntityVersion latestVersion = viewCalculator.latest(entityFacade).get();
+        viewCalculator.latest(entityFacade).ifPresentOrElse(
+entityVersion -> {
+                StampEntity stamp = entityVersion.stamp();
 
-        StampEntity stamp = latestVersion.stamp();
+                // Status
+                String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
+                stampViewControl.setStatus(statusText);
 
-        // Status
-        String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
-        stampViewControl.setStatus(statusText);
+                // Module
+                String moduleText = viewCalculator.getDescriptionTextOrNid(stamp.moduleNid());
+                stampViewControl.setModule(moduleText);
 
-        // Module
-        String moduleText = viewCalculator.getDescriptionTextOrNid(stamp.moduleNid());
-        stampViewControl.setModule(moduleText);
+                // Author
+                String authorDescription = viewCalculator.getDescriptionTextOrNid(stamp.authorNid());
+                stampViewControl.setAuthor(authorDescription);
 
-        // Author
-        String authorDescription = viewCalculator.getDescriptionTextOrNid(stamp.authorNid());
-        stampViewControl.setAuthor(authorDescription);
+                // Path
+                String pathText = viewCalculator.getDescriptionTextOrNid(stamp.pathNid());
+                stampViewControl.setPath(pathText);
 
-        // Path
-        String pathText = viewCalculator.getDescriptionTextOrNid(stamp.pathNid());
-        stampViewControl.setPath(pathText);
-
-        // Latest update time
-        long stampTime = stamp.time();
-        stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
+                // Latest update time
+                long stampTime = stamp.time();
+                stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
+            },
+            // else no value present
+            () -> {
+                String noValueText = "No value present";
+                stampViewControl.setStatus(noValueText);
+                stampViewControl.setModule(noValueText);
+                stampViewControl.setAuthor(noValueText);
+                stampViewControl.setPath(noValueText);
+                stampViewControl.setLastUpdated(noValueText);
+            }
+        );
+        //String noValue = "No value in this view";
+        //EntityVersion latestVersion = viewCalculator.latest(entityFacade).get();
     }
 
     /// Show the public IDs
