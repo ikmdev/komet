@@ -91,7 +91,7 @@ public class PropertiesController implements Serializable {
     protected static final String ADD_FQN_FXML_FILE = "add-fully-qualified-name.fxml";
 
     @FXML
-    private SVGPath commentsButton;
+    private ToggleButton commentsButton;
 
     @FXML
     private ToggleButton editButton;
@@ -458,7 +458,7 @@ public class PropertiesController implements Serializable {
                 contentBorderPane.setCenter(historyTabsBorderPane);
             }
             case "COMMENTS" -> {
-                //commentsButton.setSelected(true); // TODO
+                commentsButton.setSelected(true);
                 contentBorderPane.setCenter(commentsPane);
             }
         }
