@@ -109,6 +109,8 @@ public class ConceptController {
 
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
 
+    private static final String NO_VERSION_PRESENT_TEXT = "No version present";
+
     @FXML
     private MenuButton coordinatesMenuButton;
 
@@ -839,62 +841,64 @@ public class ConceptController {
         }
 
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
-        // TODO do a null check on the entityFacade
-        // Title (FQN of concept)
+
         final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-        String conceptNameStr = viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid());
-        fqnTitleText.setText(conceptNameStr);
-        conceptNameTooltip.setText(conceptNameStr);
 
-        // Definition description text
-        viewCalculator
-                .languageCalculator()
-                .getDefinitionDescriptionText(entityFacade)
-                .ifPresentOrElse(definition ->
-                        definitionTextField.setText(definition),
-                        () -> definitionTextField.setText(""));
-
-        updateDisplayIdentifier(viewCalculator, (ConceptFacade) entityFacade);
-
-        // Identicon
-        Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
-        identiconImageView.setImage(identicon);
-
-        // Obtain STAMP info
+        // check to see if the latest version exists
         viewCalculator.latest(entityFacade).ifPresentOrElse(
-entityVersion -> {
-                StampEntity stamp = entityVersion.stamp();
+                entityVersion -> {
 
-                // Status
-                String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
-                stampViewControl.setStatus(statusText);
+                    // Title (FQN of concept)
+            String conceptNameStr = viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid());
+            fqnTitleText.setText(conceptNameStr);
+            conceptNameTooltip.setText(conceptNameStr);
 
-                // Module
-                String moduleText = viewCalculator.getDescriptionTextOrNid(stamp.moduleNid());
-                stampViewControl.setModule(moduleText);
+            // Definition description text
+            viewCalculator
+                    .languageCalculator()
+                    .getDefinitionDescriptionText(entityFacade)
+                    .ifPresentOrElse(definition ->
+                            definitionTextField.setText(definition),
+                            () -> definitionTextField.setText(""));
 
-                // Author
-                String authorDescription = viewCalculator.getDescriptionTextOrNid(stamp.authorNid());
-                stampViewControl.setAuthor(authorDescription);
+            updateDisplayIdentifier(viewCalculator, (ConceptFacade) entityFacade);
 
-                // Path
-                String pathText = viewCalculator.getDescriptionTextOrNid(stamp.pathNid());
-                stampViewControl.setPath(pathText);
+            // Identicon
+            Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
+            identiconImageView.setImage(identicon);
 
-                // Latest update time
-                long stampTime = stamp.time();
-                stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
-            },
-            // else no value present
-            () -> {
-                String noValueText = "No version present";
-                stampViewControl.setStatus(noValueText);
-                stampViewControl.setModule(noValueText);
-                stampViewControl.setAuthor(noValueText);
-                stampViewControl.setPath(noValueText);
-                stampViewControl.setLastUpdated(noValueText);
-            }
-        );
+            // Obtain STAMP info
+            StampEntity stamp = entityVersion.stamp();
+
+            // Status
+            String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
+            stampViewControl.setStatus(statusText);
+
+            // Module
+            String moduleText = viewCalculator.getDescriptionTextOrNid(stamp.moduleNid());
+            stampViewControl.setModule(moduleText);
+
+            // Author
+            String authorDescription = viewCalculator.getDescriptionTextOrNid(stamp.authorNid());
+            stampViewControl.setAuthor(authorDescription);
+
+            // Path
+            String pathText = viewCalculator.getDescriptionTextOrNid(stamp.pathNid());
+            stampViewControl.setPath(pathText);
+
+            // Latest update time
+            long stampTime = stamp.time();
+            stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
+        },
+        // else no value present
+        () -> {
+            stampViewControl.setStatus(NO_VERSION_PRESENT_TEXT);
+            stampViewControl.setModule(NO_VERSION_PRESENT_TEXT);
+            stampViewControl.setAuthor(NO_VERSION_PRESENT_TEXT);
+            stampViewControl.setPath(NO_VERSION_PRESENT_TEXT);
+            stampViewControl.setLastUpdated(NO_VERSION_PRESENT_TEXT);
+            fqnTitleText.setText(NO_VERSION_PRESENT_TEXT);
+        });
     }
 
     /// Show the public IDs
@@ -940,52 +944,62 @@ entityVersion -> {
         final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
 
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
-        // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
-        Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
-        otherNamesNodeListControl.getItems().clear();
-        fullyQualifiedNameNodeListControl.getItems().clear();
 
-        //Obtain the index field of DESCRIPTION_TYPE
-        PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(DESCRIPTION_PATTERN.nid()).get();
-        int descriptionTypeIndex = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE.nid());
+        viewCalculator.latest(entityFacade).ifPresentOrElse(
+            _ -> {
+            // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
+            Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
+            otherNamesNodeListControl.getItems().clear();
+            fullyQualifiedNameNodeListControl.getItems().clear();
 
-        descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
-            EntityFacade fieldTypeValue = (EntityFacade) semanticEntityVersion.fieldValues().get(descriptionTypeIndex);
-            boolean isFQN = FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
-            boolean isOtherName = REGULAR_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
+            //Obtain the index field of DESCRIPTION_TYPE
+            PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(DESCRIPTION_PATTERN.nid()).get();
+            int descriptionTypeIndex = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE.nid());
 
-            if (isFQN) {
-                // Latest FQN
-             //   updateFQNSemantics(semanticEntityVersion, fieldDescriptions);
-                VBox fullyQualifiedNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
-                PublicId fullyQuallifiedNamePublicId = (PublicId) fullyQualifiedNameBox.getChildren().getFirst().getUserData();
-                TextFlow row = (TextFlow) fullyQualifiedNameBox.getChildren().getFirst();
-                row.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-                        new EditConceptFullyQualifiedNameEvent(fullyQualifiedNameBox,
-                                EditConceptFullyQualifiedNameEvent.EDIT_FQN, fullyQuallifiedNamePublicId)));
-                fullyQualifiedNameNodeListControl.getItems().add(fullyQualifiedNameBox);
-                LOG.debug("FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
-            } else if (isOtherName) {
-                // start adding a row
-                VBox otherNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
-                PublicId otherNamePublicId = (PublicId) otherNameBox.getChildren().getFirst().getUserData();
-                TextFlow firstRow = (TextFlow) otherNameBox.getChildren().getFirst();
-                firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-                        new EditOtherNameConceptEvent(otherNameBox,
-                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId)));
-                otherNamesNodeListControl.getItems().add(otherNameBox);
+            descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
+                EntityFacade fieldTypeValue = (EntityFacade) semanticEntityVersion.fieldValues().get(descriptionTypeIndex);
+                boolean isFQN = FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
+                boolean isOtherName = REGULAR_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
 
-                LOG.debug("Other Names = " + semanticEntityVersion + " " + fieldDescriptions);
-            }
+                if (isFQN) {
+                    // Latest FQN
+                    //   updateFQNSemantics(semanticEntityVersion, fieldDescriptions);
+                    VBox fullyQualifiedNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
+                    PublicId fullyQuallifiedNamePublicId = (PublicId) fullyQualifiedNameBox.getChildren().getFirst().getUserData();
+                    TextFlow row = (TextFlow) fullyQualifiedNameBox.getChildren().getFirst();
+                    row.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
+                            new EditConceptFullyQualifiedNameEvent(fullyQualifiedNameBox,
+                                    EditConceptFullyQualifiedNameEvent.EDIT_FQN, fullyQuallifiedNamePublicId)));
+                    fullyQualifiedNameNodeListControl.getItems().add(fullyQualifiedNameBox);
+                    LOG.debug("FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
+                } else if (isOtherName) {
+                    // start adding a row
+                    VBox otherNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
+                    PublicId otherNamePublicId = (PublicId) otherNameBox.getChildren().getFirst().getUserData();
+                    TextFlow firstRow = (TextFlow) otherNameBox.getChildren().getFirst();
+                    firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
+                            new EditOtherNameConceptEvent(otherNameBox,
+                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId)));
+                    otherNamesNodeListControl.getItems().add(otherNameBox);
+
+                    LOG.debug("Other Names = " + semanticEntityVersion + " " + fieldDescriptions);
+                }
+            });
+
+            final int fullyQualifiedNameCount = fullyQualifiedNameNodeListControl.getItems().size();
+            fullyQualifiedNameHeaderText.setText(fullyQualifiedNameCount > 0 ?
+                    String.format("FULLY QUALIFIED NAMES (%d):", fullyQualifiedNameCount) : "FULLY QUALIFIED NAMES:");
+
+            final int otherNamesCount = otherNamesNodeListControl.getItems().size();
+            otherNamesHeaderText.setText(otherNamesCount > 0 ?
+                    String.format("OTHER NAMES (%d):", otherNamesCount) : "OTHER NAMES:");
+        },
+        // else no value present
+        () -> {
+            //FIXME
+            System.out.println("no fqn or ot value???");
         });
 
-        final int fullyQualifiedNameCount = fullyQualifiedNameNodeListControl.getItems().size();
-        fullyQualifiedNameHeaderText.setText(fullyQualifiedNameCount > 0 ?
-                String.format("FULLY QUALIFIED NAMES (%d):", fullyQualifiedNameCount) : "FULLY QUALIFIED NAMES:");
-
-        final int otherNamesCount = otherNamesNodeListControl.getItems().size();
-        otherNamesHeaderText.setText(otherNamesCount > 0 ?
-                String.format("OTHER NAMES (%d):", otherNamesCount) : "OTHER NAMES:");
     }
 
     /**
@@ -1268,25 +1282,36 @@ entityVersion -> {
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
 
-        // add axiom pencil
-        addAxiomButton.setVisible(entityFacade == null); // In view mode you can't add a sufficient/necc set
+        viewCalculator.latest(entityFacade).ifPresentOrElse(
+        entityVersion -> {
+            // add axiom pencil
+            addAxiomButton.setVisible(entityFacade == null); // In view mode you can't add a sufficient/necc set
 
-        // Create a SheetItem (AXIOM inferred semantic version)
-        // TODO Should this be reused instead of instanciating a new one everytime?
-        KometPropertySheet inferredPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
-        Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
-        makeSheetItem(conceptViewModel.getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
-        inferredAxiomPane.setCenter(inferredPropertySheet);
+            // Create a SheetItem (AXIOM inferred semantic version)
+            // TODO Should this be reused instead of instanciating a new one everytime?
+            KometPropertySheet inferredPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
+            Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
+            makeSheetItem(conceptViewModel.getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
+            inferredAxiomPane.setCenter(inferredPropertySheet);
 
 
-        // Create a SheetItem (AXIOM stated semantic version)
-        KometPropertySheet statedPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
-        Latest<SemanticEntityVersion> statedSemanticVersion    = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
-        makeSheetItem(conceptViewModel.getViewProperties(), statedPropertySheet, statedSemanticVersion);
-        statedAxiomPane.setCenter(statedPropertySheet);
+            // Create a SheetItem (AXIOM stated semantic version)
+            KometPropertySheet statedPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
+            Latest<SemanticEntityVersion> statedSemanticVersion = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
+            makeSheetItem(conceptViewModel.getViewProperties(), statedPropertySheet, statedSemanticVersion);
+            statedAxiomPane.setCenter(statedPropertySheet);
 
-        //TODO discuss the blue theme color related to AXIOMs
+            //TODO discuss the blue theme color related to AXIOMs
+        },
+        // no latest version present
+        () -> {
+            inferredAxiomPane.setCenter(showNoVersionPresentForAxiom());
+            statedAxiomPane.setCenter(showNoVersionPresentForAxiom());
+        });
+    }
 
+    private Node showNoVersionPresentForAxiom() {
+        return new Label(NO_VERSION_PRESENT_TEXT);
     }
 
     private void makeSheetItem(ViewProperties viewProperties,
