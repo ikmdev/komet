@@ -39,8 +39,8 @@ import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
-import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.FXUtils;
@@ -1148,8 +1148,9 @@ public class JournalController {
 
         // flag set by caller to open the properties bump-out on window creation
         if (openProperties) {
+            // When we open the properties panel for a Semantic we want the stamp form to be showing in Create mode
             EvtBusFactory.getDefaultEvtBus().publish(genEditingKlWindow.getWindowTopic(),
-                    new dev.ikm.komet.kview.events.genediting.PropertyPanelEvent(entityFacade, PropertyPanelEvent.NO_SELECTION_MADE_PANEL));
+                    new StampEvent(this, StampEvent.CREATE_STAMP));
         }
     }
 
