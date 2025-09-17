@@ -145,13 +145,13 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
     @Override
     protected String selectedPropertyPanel() {
         String pane = conceptNode.getPropertiesViewController().selectedView();
-        LOG.info("saving with Concept " + pane);
+        LOG.debug("saving with Concept " + pane);
         return pane;
     }
 
     @Override
     protected void setSelectedPropertyPanel(String selectedPanel) {
-        LOG.info("restoring pane with "+ selectedPanel);
+        LOG.debug("restoring pane with "+ selectedPanel);
         conceptNode.getPropertiesViewController().restoreSelectedView(selectedPanel);
     }
 
