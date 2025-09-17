@@ -343,6 +343,7 @@ public class ConceptController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
+            setStampSelectedSilently(false);
         };
         eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);
 
@@ -350,6 +351,7 @@ public class ConceptController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
+            setStampSelectedSilently(false);
         };
         eventBus.subscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFullyQualifiedNameEventSubscriber);
 
@@ -358,6 +360,7 @@ public class ConceptController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
+            setStampSelectedSilently(false);
         };
         eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameConceptEventSubscriber);
 
@@ -365,12 +368,16 @@ public class ConceptController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
+            setStampSelectedSilently(false);
         };
         eventBus.subscribe(conceptTopic, AddOtherNameToConceptEvent.class, addOtherNameToConceptEventSubscriber);
 
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
-        closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
+        closePropertiesPanelEventSubscriber = evt -> {
+            propertiesToggleButton.fire();
+            setStampSelectedSilently(false);
+        };
         eventBus.subscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
 
         // Listener when user enters a new fqn
@@ -1365,6 +1372,18 @@ public class ConceptController {
         return conceptHeaderControlToolBarHbox;
     }
 
+    /**
+     * Sets the Stamp View Control selection.
+     * This update won't trigger any events (hence the name "silently).
+     *
+     * @param selected whether to select or not select the Stamp View Control
+     */
+    private void setStampSelectedSilently(boolean selected) {
+        isUpdatingStampSelection = true;
+        stampViewControl.setSelected(selected);
+        isUpdatingStampSelection = false;
+    }
+
     private void onStampSelectionChanged() {
         if (isUpdatingStampSelection) {
             return;
@@ -1411,9 +1430,9 @@ public class ConceptController {
             updateDraggableNodesForPropertiesPanel(false);
         }
 
-        isUpdatingStampSelection = true;
-        stampViewControl.setSelected(propertyToggle.isSelected());
-        isUpdatingStampSelection = false;
+        if (!propertyToggle.isSelected()) {
+            setStampSelectedSilently(false);
+        }
     }
 
     /**
