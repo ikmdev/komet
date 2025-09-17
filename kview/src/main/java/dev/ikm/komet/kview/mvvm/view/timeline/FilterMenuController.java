@@ -93,8 +93,6 @@ public class FilterMenuController {
                 checkBoxSubscriptionsList.forEach(Subscription::unsubscribe);
                 checkBoxSubscriptionsList.clear();
 
-                // View -> ViewModel path update
-                pathName.setValue(radioButton.getText());
 
                 // get associated checkboxes
                 List<CheckBox> modulesCheckBoxList = checkBoxMap.get(radioButton);
@@ -112,6 +110,11 @@ public class FilterMenuController {
 
                 });
                 extensionSelectionVBox.getChildren().setAll(modulesCheckBoxList);
+
+                // On path trigger we need to make sure to also update the selectionBox to that path in the ViewModel at the same time
+                pathName.setValue(radioButton.getText());
+                List<Integer> selectedModules = getSelectedModules(extensionSelectionVBox);
+                moduleIDs.setAll(selectedModules);
 
             }
         });

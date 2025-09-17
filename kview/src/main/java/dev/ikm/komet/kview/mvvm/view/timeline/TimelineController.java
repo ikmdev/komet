@@ -324,16 +324,14 @@ public class TimelineController implements BasicController {
             ObservableList<Integer> modules = vm.getObservableList(TimelineViewModel.TimelineProperties.CHECKED_MODULE_IDS);
             SimpleStringProperty path = vm.getProperty(TimelineViewModel.TimelineProperties.SELECTED_PATH);
 
+
             modules.subscribe( () -> {
                 List<Integer> snapshot = List.copyOf(modules);
                 LOG.info("current selected modules list: {}", snapshot);
-                updateConfigPathAndModules(this.configPath, snapshot);
-                updateModel(getViewProperties(), getMainConcept());
-                updateView();
-            });
-            path.subscribe(currentPath -> {
-                LOG.info("current path: {}", currentPath);
-                updateConfigPathAndModules(currentPath, this.configModuleIds);
+
+                String selectedPath = path.getValue();
+
+                updateConfigPathAndModules(selectedPath, snapshot);
                 updateModel(getViewProperties(), getMainConcept());
                 updateView();
             });
