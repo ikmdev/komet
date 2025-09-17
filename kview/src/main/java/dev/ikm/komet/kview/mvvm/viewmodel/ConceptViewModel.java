@@ -201,11 +201,15 @@ public class ConceptViewModel extends FormViewModel {
             throw new RuntimeException(e);
         }
 
+        String pathText = getViewProperties().calculator().getDescriptionTextOrNid(path.nid());
+        String moduleText = getViewProperties().calculator().getDescriptionTextOrNid(module.nid());
+        String statusText = getViewProperties().calculator().getDescriptionTextOrNid(status.nid());
+
         // alert the user of the concept being created and were it exists
         JournalController.toast()
             .show(
                 Toast.Status.SUCCESS,
-                String.format("Concept created %s, %s, %s", path, module, status)
+                String.format("Concept created %s, %s, %s", pathText, moduleText, statusText)
             );
 
         // place inside as current Concept
