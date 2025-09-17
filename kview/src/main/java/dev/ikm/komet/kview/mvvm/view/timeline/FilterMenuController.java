@@ -1,3 +1,19 @@
+/*
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package dev.ikm.komet.kview.mvvm.view.timeline;
 
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -42,7 +58,7 @@ public class FilterMenuController {
         Map<RadioButton, List<CheckBox>> checkBoxMap = new HashMap<>();
 
 
-        SimpleObjectProperty<Map<String, List<Integer>>> test = timelineViewModel.getProperty(TimelineProperties.AVAILABLE_PATH_MOULES_MAP);
+        SimpleObjectProperty<Map<String, List<Integer>>> pathModulesMapProp = timelineViewModel.getProperty(TimelineProperties.AVAILABLE_PATH_MOULES_MAP);
         SimpleStringProperty pathName =  timelineViewModel.getProperty(TimelineProperties.SELECTED_PATH);
         ObservableList<Integer> moduleIDs = timelineViewModel.getObservableList(TimelineProperties.CHECKED_MODULE_IDS);
 
@@ -51,7 +67,7 @@ public class FilterMenuController {
         // programmatically creating all viable elements
 
         // ViewModel -> View
-        test.subscribe( map -> {
+        pathModulesMapProp.subscribe( map -> {
 
             final boolean[] first = {true};
 
@@ -93,7 +109,6 @@ public class FilterMenuController {
                 checkBoxSubscriptionsList.forEach(Subscription::unsubscribe);
                 checkBoxSubscriptionsList.clear();
 
-
                 // get associated checkboxes
                 List<CheckBox> modulesCheckBoxList = checkBoxMap.get(radioButton);
                 // set up a subscriber to any checkbox in the view
@@ -111,7 +126,7 @@ public class FilterMenuController {
                 });
                 extensionSelectionVBox.getChildren().setAll(modulesCheckBoxList);
 
-                // On path trigger we need to make sure to also update the selectionBox to that path in the ViewModel at the same time
+                // On path trigger we need to make sure to also update the selectionBox **once** to that path in the ViewModel
                 pathName.setValue(radioButton.getText());
                 List<Integer> selectedModules = getSelectedModules(extensionSelectionVBox);
                 moduleIDs.setAll(selectedModules);
