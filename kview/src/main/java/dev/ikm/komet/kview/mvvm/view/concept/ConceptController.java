@@ -109,7 +109,7 @@ public class ConceptController {
 
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
 
-    private static final String NO_VERSION_PRESENT_TEXT = "No version present";
+    private static final String NO_VERSION_FOR_VIEW_TEXT = "No version for view";
 
     @FXML
     private MenuButton coordinatesMenuButton;
@@ -376,7 +376,7 @@ public class ConceptController {
         // Listener when user enters a new fqn
         ObservableList<DescrName> fullyQualifiedNames = getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES);
         fullyQualifiedNames.addListener((InvalidationListener) observable -> {
-            if(!fullyQualifiedNames.isEmpty()){
+            if (!fullyQualifiedNames.isEmpty()) {
                 DescrName fqnDescrName = fullyQualifiedNames.get(0);
                 updateConceptBanner();
             }
@@ -513,6 +513,10 @@ public class ConceptController {
             if (conceptViewModel.getPropertyValue(MODE).equals(CREATE)) {
                 StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
                 stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(this::onConfirmStampFormWhenCreating);
+            } else {
+                // add axiom pencil is only for create mode
+                // In view mode you can't add a sufficient/necc set
+                addAxiomButton.setVisible(false);
             }
         });
     }
@@ -892,12 +896,13 @@ public class ConceptController {
         },
         // else no value present
         () -> {
-            stampViewControl.setStatus(NO_VERSION_PRESENT_TEXT);
-            stampViewControl.setModule(NO_VERSION_PRESENT_TEXT);
-            stampViewControl.setAuthor(NO_VERSION_PRESENT_TEXT);
-            stampViewControl.setPath(NO_VERSION_PRESENT_TEXT);
-            stampViewControl.setLastUpdated(NO_VERSION_PRESENT_TEXT);
-            fqnTitleText.setText(NO_VERSION_PRESENT_TEXT);
+            getConceptViewModel().setPropertyValue(MODE, VIEW);
+            stampViewControl.setStatus(NO_VERSION_FOR_VIEW_TEXT);
+            stampViewControl.setModule(NO_VERSION_FOR_VIEW_TEXT);
+            stampViewControl.setAuthor(NO_VERSION_FOR_VIEW_TEXT);
+            stampViewControl.setPath(NO_VERSION_FOR_VIEW_TEXT);
+            stampViewControl.setLastUpdated(NO_VERSION_FOR_VIEW_TEXT);
+            fqnTitleText.setText(NO_VERSION_FOR_VIEW_TEXT);
         });
     }
 
@@ -996,8 +1001,19 @@ public class ConceptController {
         },
         // else no value present
         () -> {
-            //FIXME
-            System.out.println("no fqn or ot value???");
+            getConceptViewModel().setPropertyValue(MODE, VIEW);
+            List<DescrName> fqns = getConceptViewModel().getValue(FULLY_QUALIFIED_NAMES);
+            if (fqns != null && !fqns.isEmpty()) {
+                VBox fqnVBox = new VBox(new Label(NO_VERSION_FOR_VIEW_TEXT));
+                fullyQualifiedNameNodeListControl.getItems().clear();
+                fullyQualifiedNameNodeListControl.getItems().add(fqnVBox);
+            }
+            List<DescrName> ots = getConceptViewModel().getValue(OTHER_NAMES);
+            if (ots != null && !ots.isEmpty()) {
+                VBox otherNameVBox = new VBox(new Label(NO_VERSION_FOR_VIEW_TEXT));
+                otherNamesNodeListControl.getItems().clear();
+                otherNamesNodeListControl.getItems().add(otherNameVBox);
+            }
         });
 
     }
@@ -1284,8 +1300,6 @@ public class ConceptController {
 
         viewCalculator.latest(entityFacade).ifPresentOrElse(
         entityVersion -> {
-            // add axiom pencil
-            addAxiomButton.setVisible(entityFacade == null); // In view mode you can't add a sufficient/necc set
 
             // Create a SheetItem (AXIOM inferred semantic version)
             // TODO Should this be reused instead of instanciating a new one everytime?
@@ -1311,7 +1325,7 @@ public class ConceptController {
     }
 
     private Node showNoVersionPresentForAxiom() {
-        return new Label(NO_VERSION_PRESENT_TEXT);
+        return new Label(NO_VERSION_FOR_VIEW_TEXT);
     }
 
     private void makeSheetItem(ViewProperties viewProperties,

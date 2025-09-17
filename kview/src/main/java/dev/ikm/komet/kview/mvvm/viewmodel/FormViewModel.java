@@ -26,10 +26,11 @@ public class FormViewModel extends ValidationViewModel {
     public static String VIEW_PROPERTIES = "viewProperties";
     public static String MODE = "mode";
 
-    // Create or Edit mode value
+    // Create, Edit, View
     public static String CREATE = "CREATE";
     public static String EDIT = "EDIT";
     public static String VIEW = "VIEW";
+
     public enum FormMode {
         CREATE,
         EDIT,
