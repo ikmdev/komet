@@ -13,16 +13,12 @@
 <VBox fx:id="filterMenuVbox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="314.0" prefWidth="214.0" styleClass="filter-menu-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.timeline.FilterMenuController">
    <children>
       <Label styleClass="filter-menu-title" text="PATH" />
-      <VBox fx:id="pathSelectionVBox" prefHeight="52.0" prefWidth="212.0" styleClass="filter-menu-options-container">
-         <children>
-            <RadioButton mnemonicParsing="false" text="Master">
-               <toggleGroup>
-                  <ToggleGroup fx:id="selectedPathToggleGroup" />
-               </toggleGroup>
-            </RadioButton>
-            <RadioButton mnemonicParsing="false" text="Development" toggleGroup="$selectedPathToggleGroup" />
-         </children>
-      </VBox>
+       <VBox fx:id="pathSelectionVBox" prefHeight="52.0" prefWidth="212.0" styleClass="filter-menu-options-container" >
+           <fx:define>
+               <ToggleGroup fx:id="selectedPathToggleGroup" />
+           </fx:define>
+       </VBox>
+
       <HBox alignment="CENTER">
          <children>
             <Line endX="190.0" styleClass="divider" />
@@ -30,10 +26,7 @@
       </HBox>
       <Label styleClass="filter-menu-title" text="EXTENSIONS" />
       <VBox fx:id="extensionSelectionVBox" prefHeight="52.0" prefWidth="212.0" styleClass="filter-menu-options-container">
-         <children>
-            <CheckBox mnemonicParsing="false" text="SNOMED CT International" />
-            <CheckBox mnemonicParsing="false" text="SNOMED CT US" />
-         </children>
+  
       </VBox>
       <HBox alignment="CENTER">
          <children>
@@ -42,7 +35,7 @@
       </HBox>
       <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
          <children>
-            <Button fx:id="saveFilterMenu" mnemonicParsing="false" onAction="#saveFilterMenu" text="SAVE" />
+            <Button fx:id="closeFilterMenu" mnemonicParsing="false" onAction="#onClose" text="CLOSE" />
          </children>
       </HBox>
    </children>
