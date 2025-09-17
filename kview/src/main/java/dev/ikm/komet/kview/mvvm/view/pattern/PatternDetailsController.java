@@ -453,9 +453,7 @@ public class PatternDetailsController {
             }
         });
 
-        ViewCalculator viewCalculator = getViewProperties().calculator();
-
-        updateDisplayIdentifier(viewCalculator);
+        updateDisplayIdentifier();
 
         // capture pattern definition information
         purposeText.textProperty().bind(patternViewModel.getProperty(PURPOSE_TEXT));
@@ -591,7 +589,8 @@ public class PatternDetailsController {
     }
 
     /// Show the public ID
-    private void updateDisplayIdentifier(ViewCalculator viewCalculator) {
+    private void updateDisplayIdentifier() {
+        ViewCalculator viewCalculator = getViewProperties().calculator();
         PatternFacade patternFacade = (PatternFacade) patternViewModel.getProperty(PATTERN).getValue();
 
         if (patternFacade != null) {
@@ -905,6 +904,10 @@ public class PatternDetailsController {
 
             if (newMode.equals(EDIT)) {
                 updateStampControlFromViewModel();
+
+                // now in EDIT mode, update the identifier
+                updateDisplayIdentifier();
+
                 stampFormViewModel.getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isSubmitted -> {
                     if (isSubmitted) {
                         updateStampControlFromViewModel();
