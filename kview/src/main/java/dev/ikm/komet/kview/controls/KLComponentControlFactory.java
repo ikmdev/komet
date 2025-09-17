@@ -104,12 +104,6 @@ public class KLComponentControlFactory {
         return newSearchText -> {
             TypeAheadSearch typeAheadSearch = TypeAheadSearch.get();
             List<EntityProxy> entityProxyResults = new ArrayList<>();
-            // TODO:
-            // 1. SearchText determines if it is UUID:
-            //       if so call primitiveDate or entity.
-            //       if not in the Database continue to use TypeAhead search.
-            // 2. Find results and add to entityProxyResults
-            // 3. Skip the typeAheadSuggestions
             if (UuidUtil.isUUID(newSearchText)) {
                 UuidUtil.getUUID(newSearchText).ifPresent(uuid -> {
                     try {
