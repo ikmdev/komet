@@ -31,6 +31,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.application.Platform;
@@ -193,13 +194,17 @@ public class SemanticFieldsController {
                 clearOrResetFormButton.setText("CLEAR FORM");
             }
         });
-
     }
 
     private void setupEditSemanticDetails() {
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         observableSemantic = ObservableEntity.get(semantic.nid());
         observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+
+        //Setting author to author for change. This value will be used during auto-save
+        ConceptFacade authorForChanges = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+        observableSemanticSnapshot.getLatestVersion().get().setAuthorForChanges(authorForChanges);
+
         processCommittedValues();
         loadUIData(); // And populates Nodes and Observable fields.
         entityVersionChangeEventSubscriber = evt -> {
@@ -317,7 +322,7 @@ public class SemanticFieldsController {
     }
 
     private void doTheClearOrResetForm() {
-        Latest<SemanticEntityVersion>  latestCommitted =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
+        Latest<EntityVersion> latestCommitted =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
         latestCommitted.ifPresentOrElse(this::resetFieldValues, this::clearField);
         clearOrResetFormButton.setDisable(true);
     }

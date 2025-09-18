@@ -189,4 +189,13 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
     }
 
     public abstract V getVersionRecord();
+
+    private ConceptFacade authorForChanges;
+
+    public void setAuthorForChanges(ConceptFacade authorForChanges){
+        this.authorForChanges = authorForChanges;
+    }
+    public ConceptFacade getAuthorForChanges(){
+        return this.authorForChanges;
+    }
 }
