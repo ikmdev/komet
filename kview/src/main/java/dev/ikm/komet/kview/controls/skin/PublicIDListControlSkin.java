@@ -42,7 +42,7 @@ public class PublicIDListControlSkin extends SkinBase<PublicIDListControl> {
 
             if (publicIdList != null && !publicIdList.isEmpty()) {
                 for (String identifier : publicIdList) {
-                    PublicIDControl publicIDControl = new PublicIDControl(false, identifier, true);
+                    PublicIDControl publicIDControl = new PublicIDControl(identifier);
 
                     identifierVBox.getChildren().add(publicIDControl);
                 }
@@ -55,6 +55,7 @@ public class PublicIDListControlSkin extends SkinBase<PublicIDListControl> {
     @Override
     protected void layoutChildren(double x, double y, double w, double h) {
         rootScrollPane.resizeRelocate(x, y, w, h);
+        identifierVBox.setPrefWidth(w);
     }
 
     /// Unsubscribes from the subscription to stop receiving the publicIdProperty change events

@@ -3,15 +3,13 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import javafx.application.Platform;
-import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
-import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
@@ -29,16 +27,10 @@ import javafx.util.Subscription;
 public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
 
     /// The root Node for the Skin
-    private final HBox rootHBox = new HBox();
-
-    /// The title label that precedes the public ID UUID label
-    private final Label titleLabel = new Label("IDENTIFIER:");
-
-    /// The HBox that contians the public ID label and copy to clipboard button
-    private final HBox publicIdHBox = new HBox();
+    private final BorderPane rootBorderPane = new BorderPane();
 
     /// The TextField that displays the public ID UUID value
-    private final TextField publicIdTextField = new TextField("");
+    private final Label publicIdLabel = new Label("");
 
     /// The tooltip for the publicIdLabel, which is needed because the text in the label
     /// could exceed the Label width
@@ -51,27 +43,17 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     /// The subscription to the PublicIDControl publicIdProperty, which receives property change events
     private Subscription publicIdSubscription;
 
-    private Subscription showLabelSubscription;
-
-    private Subscription trimIdentifierSubscription;
-
     /// The current public id property value, as received in the subscription listener
     private String identifier;
-
-    private boolean trimIdentifier = false;
 
     public PublicIDControlSkin(PublicIDControl control) {
         super(control);
 
-        Tooltip.install(publicIdTextField, publicIdTooltip);
+        Tooltip.install(publicIdLabel, publicIdTooltip);
 
-        rootHBox.getStyleClass().add("public-id");
+        rootBorderPane.getStyleClass().add("public-id");
 
-        rootHBox.setAlignment(Pos.CENTER_LEFT);
-
-        titleLabel.getStyleClass().add("title-label");
-        publicIdTextField.setEditable(false);
-        publicIdTextField.getStyleClass().addAll("public-id-textfield", "copyable-label");
+        publicIdLabel.getStyleClass().addAll("public-id-label", "copyable-label");
 
         // the SVG graphic for the copy to clipboard icon
         var svgPath = new SVGPath();
@@ -83,15 +65,8 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         copyToClipboardButton.getStyleClass().add("copy-to-clipboard-button");
         Tooltip.install(copyToClipboardButton, new Tooltip("Copy to Clipboard"));
 
-        publicIdHBox.getStyleClass().add("public-id-box");
-
-        // the publicIdHBox contains the publicIdLabel and the copyToClipboardButton.
-        // Both controls need to be in a single HBox to be able to show and hide the
-        // Button when the mouse enters and exits the HBox.
-        publicIdHBox.setAlignment(Pos.CENTER_LEFT);
-        publicIdHBox.getChildren().addAll(publicIdTextField, copyToClipboardButton);
-
-        rootHBox.getChildren().addAll(titleLabel, publicIdHBox);
+        rootBorderPane.setCenter(publicIdLabel);
+        rootBorderPane.setRight(copyToClipboardButton);
 
         // handle the button press action to copy the public id UUID value to the clipboard
         copyToClipboardButton.setOnAction(event -> {
@@ -101,56 +76,43 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
 
         // initially hide the button
         copyToClipboardButton.setVisible(false);
-        copyToClipboardButton.setManaged(false);
 
         // when the mouse enters, show the button
-        publicIdHBox.setOnMouseEntered(event -> {
+        rootBorderPane.setOnMouseEntered(event -> {
             copyToClipboardButton.setVisible(true);
-            copyToClipboardButton.setManaged(true);
         });
         // when the mouse exits, hide the button
-        publicIdHBox.setOnMouseExited(event -> {
+        rootBorderPane.setOnMouseExited(event -> {
             copyToClipboardButton.setVisible(false);
-            copyToClipboardButton.setManaged(false);
         });
 
-        getChildren().add(rootHBox);
+        getChildren().add(rootBorderPane);
 
         // subscribe to changes to the publicIdProperty in the PublicIDControl
         publicIdSubscription = control.publicIdProperty().subscribe(publicId -> {
             identifier = publicId;
             publicIdTooltip.setText(identifier);
-            publicIdTextField.setText(identifier);
+            publicIdLabel.setText(identifier);
 
             Platform.runLater(() -> {
                 // set the preferredWidth of the TextField to completely show the identifier text
 
                 Text text = new Text(identifier); // Create a temporary Text node with the new text
-                text.setFont(publicIdTextField.getFont()); // Set the same font as the TextField
-                double width = text.getLayoutBounds().getWidth() +
-                        publicIdTextField.getPadding().getLeft() +
-                        publicIdTextField.getPadding().getRight() + 2d; // Add padding and a small buffer
-                publicIdTextField.setPrefWidth(width);
+                text.setFont(publicIdLabel.getFont()); // Set the same font as the TextField
+                double labelWidth = text.getLayoutBounds().getWidth() +
+                        publicIdLabel.getLabelPadding().getLeft() +
+                        publicIdLabel.getLabelPadding().getRight() +
+                        publicIdLabel.getPadding().getLeft() +
+                        publicIdLabel.getPadding().getRight() + 2; // Add padding and a small buffer
+
+//                publicIdLabel.setPrefWidth(labelWidth);
+//                publicIdLabel.setMaxWidth(labelWidth);
+
+                double borderWidth = labelWidth + 10 + copyToClipboardButton.getPrefWidth();
+
+//                rootBorderPane.setPrefWidth(borderWidth);
+//                rootBorderPane.setMaxWidth(borderWidth);
             });
-        });
-
-        // subscribe to changes to the showLabelProperty in the PublicIDControl
-        showLabelSubscription = control.showLabelProperty().subscribe(showLabel -> {
-            var children = rootHBox.getChildren();
-
-            if (!showLabel) {
-                children.remove(titleLabel);
-            } else {
-                // check to make sure that the titleLabel isn't alrady in the HBox, because it has
-                // been added in the constructor when creating the control skin
-                if (!children.contains(publicIdHBox)) {
-                    children.addFirst(titleLabel);
-                }
-            }
-        });
-
-        trimIdentifierSubscription = control.trimIdentifierProperty().subscribe(trimIdentifier -> {
-            this.trimIdentifier = trimIdentifier;
         });
     }
 
@@ -158,7 +120,7 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     private String trimTheIdentifier() {
         String trimmedIdentifier = identifier;
 
-        if (trimIdentifier && identifier != null) {
+        if (identifier != null) {
             int colonIndex = identifier.indexOf(':');
             if (colonIndex >= 0) {
                 // trim the prefix
@@ -182,7 +144,7 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
 
     @Override
     protected void layoutChildren(double x, double y, double w, double h) {
-        rootHBox.resizeRelocate(x, y, w, h);
+        rootBorderPane.resizeRelocate(x, y, w, h);
     }
 
     /// Unsubscribes from the subscription to stop receiving the publicIdProperty change events
@@ -190,12 +152,6 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     public void dispose() {
         if (publicIdSubscription != null) {
             publicIdSubscription.unsubscribe();
-        }
-        if (showLabelSubscription != null) {
-            showLabelSubscription.unsubscribe();
-        }
-        if (trimIdentifierSubscription != null) {
-            trimIdentifierSubscription.unsubscribe();
         }
     }
 
