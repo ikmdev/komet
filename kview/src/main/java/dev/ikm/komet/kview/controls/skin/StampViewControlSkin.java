@@ -30,51 +30,51 @@ public class StampViewControlSkin extends SkinBase<StampViewControl> {
         root.setOnMousePressed(this::onMousePressedOnStamp);
 
         // --- Status ---
-        Text statusText = new Text("Status: ");
-        statusText.getStyleClass().add("stamp-text");
+        Label statusText = new Label("Status: ");
+        statusText.getStyleClass().add("stamp-label");
 
         statusLabel = new Label();
-        statusLabel.getStyleClass().add("stamp-label");
+        statusLabel.getStyleClass().add("stamp-text");
         statusLabel.textProperty().bind(control.statusProperty());
 
         HBox statusBox = new HBox(statusText, statusLabel);
 
         // --- Last Updated ---
-        Text lastUpdatedText = new Text("Last Updated: ");
-        lastUpdatedText.getStyleClass().add("stamp-text");
+        Label lastUpdatedText = new Label("Last Updated: ");
+        lastUpdatedText.getStyleClass().add("stamp-label");
 
         lastUpdatedLabel = new Label();
-        lastUpdatedLabel.getStyleClass().add("stamp-label");
+        lastUpdatedLabel.getStyleClass().add("stamp-text");
         lastUpdatedLabel.textProperty().bind(control.lastUpdatedProperty());
 
         HBox lastUpdatedBox = new HBox(lastUpdatedText, lastUpdatedLabel);
 
         // --- Author ---
-        Text authorText = new Text("Author: ");
-        authorText.getStyleClass().add("stamp-text");
+        Label authorText = new Label("Author: ");
+        authorText.getStyleClass().add("stamp-label");
 
         authorLabel = new Label();
-        authorLabel.getStyleClass().add("stamp-label");
+        authorLabel.getStyleClass().add("stamp-text");
         authorLabel.textProperty().bind(control.authorProperty());
 
         HBox authorBox = new HBox(authorText, authorLabel);
 
         // --- Module ---
-        Text moduleText = new Text("Module: ");
-        moduleText.getStyleClass().add("stamp-text");
+        Label moduleText = new Label("Module: ");
+        moduleText.getStyleClass().add("stamp-label");
 
         moduleLabel = new Label();
-        moduleLabel.getStyleClass().add("stamp-label");
+        moduleLabel.getStyleClass().add("stamp-text");
         moduleLabel.textProperty().bind(control.moduleProperty());
 
         HBox moduleBox = new HBox(moduleText, moduleLabel);
 
         // --- Path ---
-        Text pathText = new Text("Path: ");
-        pathText.getStyleClass().add("stamp-text");
+        Label pathText = new Label("Path: ");
+        pathText.getStyleClass().add("stamp-label");
 
         pathLabel = new Label();
-        pathLabel.getStyleClass().add("stamp-label");
+        pathLabel.getStyleClass().add("stamp-text");
         pathLabel.textProperty().bind(control.pathProperty());
 
         HBox pathBox = new HBox(pathText, pathLabel);

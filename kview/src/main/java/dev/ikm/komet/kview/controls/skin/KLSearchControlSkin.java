@@ -2,24 +2,18 @@ package dev.ikm.komet.kview.controls.skin;
 
 import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
-import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
-import dev.ikm.komet.kview.controls.FilterOptionsUtils;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.navigator.graph.Navigator;
-import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -45,7 +39,6 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 import javafx.util.Subscription;
 
-import java.util.Date;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -71,9 +64,6 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
     private final StackPane closePane;
     private final StackPane filterPane;
     private Subscription subscription;
-
-    // listen to parent view coordinate menu changes
-    private Subscription parentSubscription;
 
     private final ListView<KLSearchControl.SearchResult> resultsPane;
     private final FilterOptionsPopup filterOptionsPopup;
@@ -165,9 +155,6 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.NAVIGATOR);
 
-        // initialize the filter options
-        filterOptionsPopup.inheritedFilterOptionsProperty().setValue(FilterOptionsUtils.loadFilterOptions(control.getViewProperties().parentView(), control.getViewProperties().calculator()));
-
         filterOptionsPopup.navigatorProperty().bind(control.navigatorProperty());
         getSkinnable().parentProperty().subscribe(parent -> {
             if (parent instanceof Region region) {
@@ -246,64 +233,25 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
             }
         });
 
-        // listen for changes to the filter options
-        ChangeListener<FilterOptions> changeListener = ((obs, oldFilterOptions, newFilterOptions) -> {
-            if (newFilterOptions != null) {
-                if (!newFilterOptions.getMainCoordinates().getStatus().selectedOptions().isEmpty()) {
-                    StateSet stateSet = StateSet.make(
-                            newFilterOptions.getMainCoordinates().getStatus().selectedOptions().stream().map(
-                                    s -> State.valueOf(s.toUpperCase())).toList());
-                    // update the STATUS
-                    control.getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
-                }
-                if (!newFilterOptions.getMainCoordinates().getPath().selectedOptions().isEmpty()) {
-                    //NOTE: there is no known way to set multiple paths
-                    String pathStr = newFilterOptions.getMainCoordinates().getPath().selectedOptions().stream().findFirst().get();
+        subscription = subscription.and((control.viewPropertiesProperty().subscribe(view -> {
+            if (view != null) {
+                // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
+                // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
+                filterOptionsPopup.getFilterOptionsUtils().subscribeFilterOptionsToView(
+                        filterOptionsPopup.getInheritedFilterOptions(), view.nodeView());
+            }
+        })));
 
-                    ConceptFacade conceptPath = switch(pathStr) {
-                        case "Master path" -> TinkarTerm.MASTER_PATH;
-                        case "Primordial path" -> TinkarTerm.PRIMORDIAL_PATH;
-                        case "Sandbox path" -> TinkarTerm.SANDBOX_PATH;
-                        default -> TinkarTerm.DEVELOPMENT_PATH;
-                    };
-                    // update the Path
-                    control.getViewProperties().nodeView().stampCoordinate().pathConceptProperty().setValue(conceptPath);
-                }
-                if (!newFilterOptions.getMainCoordinates().getTime().selectedOptions().isEmpty() &&
-                        oldFilterOptions != null &&
-                        !oldFilterOptions.getMainCoordinates().getTime().selectedOptions().equals(newFilterOptions.getMainCoordinates().getTime().selectedOptions())) {
-                    long millis = FilterOptionsUtils.getMillis(newFilterOptions);
-                    // update the time
-                    control.getViewProperties().nodeView().stampCoordinate().timeProperty().set(millis);
-                } else {
-                    // revert to the Latest
-                    Date latest = new Date();
-                    control.getViewProperties().nodeView().stampCoordinate().timeProperty().set(latest.getTime());
-                }
-
-                //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
-                EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC,
-                        new RefreshCalculatorCacheEvent("child filter menu refresh next gen nav", RefreshCalculatorCacheEvent.GLOBAL_REFRESH));
+        // Subscribe nodeView to F.O., so changes from the F.O. popup are propagated to this nodeView
+        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, filterOptions) -> {
+            if (oldFilterOptions != null) {
+                filterOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
+            }
+            if (filterOptions != null) {
+                filterOptionsPopup.getFilterOptionsUtils().subscribeViewToFilterOptions(filterOptions, control.getViewProperties().nodeView());
             }
         });
-
-        // listen for changes to the filter options
-        filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
-
-        // listen to changes to the parent of the current overrideable view
-        parentSubscription = control.getViewProperties().parentView().subscribe((oldValue, newValue) -> {
-            filterOptionsPopup.filterOptionsProperty().removeListener(changeListener);
-            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(FilterOptionsUtils.loadFilterOptions(control.getViewProperties().parentView(), control.getViewProperties().calculator()));
-            filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
-
-            // publish event to refresh the navigator
-            EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC,
-                    new RefreshCalculatorCacheEvent("parent refresh next gen nav", RefreshCalculatorCacheEvent.GLOBAL_REFRESH));
-        });
     }
-
-
-
 
     /** {@inheritDoc} **/
     @Override
@@ -317,6 +265,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         closePane.visibleProperty().unbind();
         closePane.managedProperty().unbind();
         filterOptionsPopup.navigatorProperty().unbind();
+        filterOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
         super.dispose();
     }
 

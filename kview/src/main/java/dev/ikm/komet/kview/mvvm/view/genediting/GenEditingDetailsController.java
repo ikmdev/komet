@@ -318,6 +318,7 @@ public class GenEditingDetailsController {
 
         if(genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
             addReferenceButton.setDisable(!isConfirmedOrSubmitted);
+            stampViewControl.setDisable(isConfirmedOrSubmitted);
         }
     }
 
