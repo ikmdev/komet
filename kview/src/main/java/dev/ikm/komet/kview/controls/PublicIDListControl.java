@@ -3,9 +3,7 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.kview.controls.skin.PublicIDListControlSkin;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -41,26 +39,10 @@ public class PublicIDListControl extends Control {
         publicIdListProperty().set(obsList);
     }
 
-    // Convenience methods for creating the List<String> from the viewCalculator and facade
-
-    /// Creates a Public ID List from the provided viewCalculator and ConceptFacade.
-    /// @param viewCalculator the view calculator to use to determine identifiers
-    /// @param conceptFacade the concept facade to use to determine identifiers
-    public void updatePublicIdList(ViewCalculator viewCalculator, ConceptFacade conceptFacade) {
-        updatePublicIdList(viewCalculator, (EntityFacade) conceptFacade);
-    }
-
-    /// Creates a Public ID List from the provided viewCalculator and PatternFacade.
-    /// @param viewCalculator the view calculator to use to determine identifiers
-    /// @param patternFacade the pattern facade to use to determine identifiers
-    public void updatePublicIdList(ViewCalculator viewCalculator, PatternFacade patternFacade) {
-        updatePublicIdList(viewCalculator, (EntityFacade) patternFacade);
-    }
-
     /// Creates a Public ID List from the provided viewCalculator and EntityFacade.
     /// @param viewCalculator the view calculator to use to determine identifiers
     /// @param entityFacade the entity facade to use to determine identifiers
-    private void updatePublicIdList(ViewCalculator viewCalculator, EntityFacade entityFacade) {
+    public void updatePublicIdList(ViewCalculator viewCalculator, EntityFacade entityFacade) {
         if (viewCalculator != null && entityFacade != null) {
             List<String> idList = entityFacade.publicId().asUuidList().stream()
                     .map(UUID::toString)
