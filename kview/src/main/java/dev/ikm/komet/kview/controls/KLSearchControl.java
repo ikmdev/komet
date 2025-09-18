@@ -245,15 +245,15 @@ public class KLSearchControl extends Control {
     }
 
     // viewPropertiesObjectProperty
-    private final ObjectProperty<ViewProperties> ViewPropertiesProperty = new SimpleObjectProperty<>(this, "ViewProperties");
-    public final ObjectProperty<ViewProperties> ViewPropertiesProperty() {
-        return ViewPropertiesProperty;
+    private final ObjectProperty<ViewProperties> viewPropertiesProperty = new SimpleObjectProperty<>(this, "ViewProperties");
+    public final ObjectProperty<ViewProperties> viewPropertiesProperty() {
+        return viewPropertiesProperty;
     }
     public final ViewProperties getViewProperties() {
-        return ViewPropertiesProperty.get();
+        return viewPropertiesProperty.get();
     }
     public final void setViewProperties(ViewProperties value) {
-        ViewPropertiesProperty.set(value);
+        viewPropertiesProperty.set(value);
     }
 
     /**

@@ -555,6 +555,8 @@ public class ConceptController {
 
         // Latest update time
         stampViewControl.setLastUpdated(stampFormViewModel.getPropertyValue(FORM_TIME_TEXT));
+
+        stampViewControl.setDisable(true);
     }
 
     /**
