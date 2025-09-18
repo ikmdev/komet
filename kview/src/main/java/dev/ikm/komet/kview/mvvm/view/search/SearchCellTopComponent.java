@@ -73,7 +73,7 @@ public class SearchCellTopComponent extends ListCell {
                 Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> mapEntry = (Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>) item;
 
                 int topNid = mapEntry.getKey().nid();
-                String topText = viewProperties.nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(topNid); // top text I assume is the title text
+                String topText = viewProperties.nodeView().calculator().getDescriptionTextOrNid(topNid);
                 Latest<EntityVersion> latestTopVersion = viewProperties.nodeView().calculator().latest(topNid);
                 if (latestTopVersion.isPresent()) {
                     EntityVersion entityVersion = latestTopVersion.get();
