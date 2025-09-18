@@ -499,9 +499,18 @@ public class GenEditingDetailsController {
 
         ObjectProperty<EntityFacade> refComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
         if(refComponentProp != null){
+            refComponentProp.addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    String refComponentTitle = getViewProperties().calculator().languageCalculator()
+                            .getPreferredDescriptionTextWithFallbackOrNid(newVal.nid());
+                    Platform.runLater(() -> {
+                        semanticTitleText.setText(refComponentTitle + " in " + patternFQN);
+                    });
+                }
+            });
             EntityFacade refComponent = refComponentProp.get();
             if(refComponent != null) {
-                String refComponentTitle = getViewProperties().calculator().languageCalculator().getDescriptionText(refComponent.nid()).get();
+                String refComponentTitle = getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(refComponent.nid());
                 //TODO in the future we can internationalize the word "in" (and other labels and text) for the preferred language
                 semanticTitleText.setText(refComponentTitle + " in " + patternFQN);
             }
