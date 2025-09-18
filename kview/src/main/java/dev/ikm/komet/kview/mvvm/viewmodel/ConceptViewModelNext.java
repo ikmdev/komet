@@ -1,24 +1,5 @@
-/*
- * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.builder.ConceptEntityBuilder;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -29,30 +10,13 @@ import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.ConceptRecord;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.RecordListBuilder;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticRecordBuilder;
-import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.collections.ObservableList;
-import org.carlfx.cognitive.validator.MessageType;
-import org.carlfx.cognitive.validator.ValidationMessage;
-import org.carlfx.cognitive.viewmodel.ViewModel;
+import dev.ikm.tinkar.terms.*;
+import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -60,55 +24,124 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-public class ConceptViewModel extends FormViewModel {
-    private static final Logger LOG = LoggerFactory.getLogger(ConceptViewModel.class);
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 
-    // --------------------------------------------
-    // Known properties
-    // --------------------------------------------
-    public static String CURRENT_ENTITY = "entityFacade";
-    public static String FULLY_QUALIFIED_NAMES = "fullyQualifiedNames";
-    public static String CONCEPT_STAMP_VIEW_MODEL = "stampViewModel";
-    public static String OTHER_NAMES = "otherNames";
+public class ConceptViewModelNext extends SimpleViewModel {
+    private static final Logger LOG = LoggerFactory.getLogger(ConceptViewModelNext.class);
 
-    public static String AXIOM = "axiom";
-    // Axiom values
+    ///  ViewModel Property Keys
+    public enum ConceptPropertyKeys {
+        /// A newly added concept does not have a nid at the start.
+        ///
+        /// If new concept (true) we commit every associated created
+        /// semantics ( e.g fqn / otherNames) in one go with the "same" stamp that we commit the concept for. This
+        /// happens currently when the user adds a Axiom.
+        ///
+        /// Its also crucial that we first create a ValidStamp, because than we can create a initial stamp record and then
+        /// use the then created ConceptEntity facades nid to create an set of Semantic NameDescription. Without a Concept
+        /// Semantic descriptions would not know where to point to. E.g the problem would be that a new Semantic Description
+        /// would not know what type fields it should provide (language, case_significance, modules etc) for selection as this is depending on the Concept?
+        ///
+        /// If new concept (false) for every change to a associated description semantic we create a new semantic record
+        /// and directly commit it with in that moment generated stamp.
+        THIS_IS_A_NEW_CONCEPT,
+
+        THIS_CONCEPT_ENTITY_FACADE,
+        ///  On window creation we got a uuid from our parent identifying our window. Only related to this window instance
+        THIS_UNIQUE_CONCEPT_TOPIC,
+
+        ASOCIATED_FQN_DESCRIPTION_SEMANTICS,
+        ASOCIATED_OTHER_NAME_DESCRIPTION_SEMANTICS,
+
+        ///  Either point to ourselves, to other fqn semantics or otherName (regular Name) semantics.
+        ///
+        /// If this is null we know that we need to create a new semantic from scratch in nameForm
+        SELECTED_DESCRIPTION_SEMANTIC,
+
+        // stuff from god
+        VIEW_PROPERTIES,
+        ///  Each journal window has a unique topic. E.g a uuid identifying our journal parent
+        ASOCIATED_JOURNAL_WINDOW_TOPIC,
+
+        SELECTED_PROPERTY_WINDOW_KIND,
+        PROPERTY_WINDOW_OPEN,
+
+        UNCOMMITED_CHANGES,
+
+        HAS_VALID_STAMP,
+
+        AXIOM,
+
+    }
+
+    // --- Property ValuesTypes ---
+
+    ///  The current PaneType in Property View
+    public enum SelectedPropertyWindowKind{
+        STAMP,
+        MENU,
+        NAME_MENU,
+        NAME_FORM,
+        HISTORY,
+        HIERARCHY,
+        COMMENTS,
+        NONE
+    }
+
+    public sealed interface SelectedDescriptionSemantic
+            permits SemanticPublicId, UncommittedSemanticNameDescr {}
+
+    public record SemanticPublicId(PublicId value) implements SelectedDescriptionSemantic {}
+    public record UncommittedSemanticNameDescr(DescrName value) implements SelectedDescriptionSemantic {}
+
+
     public static String SUFFICIENT_SET = "Sufficient Set";
     public static String NECESSARY_SET = "Necessary Set";
 
+    public ConceptViewModelNext() {
+        addProperty(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT, true)
+                .addProperty(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE, (EntityFacade) null)
+                .addProperty(ConceptPropertyKeys.THIS_UNIQUE_CONCEPT_TOPIC, (UUID) null)
+                .addProperty(ConceptPropertyKeys.ASOCIATED_FQN_DESCRIPTION_SEMANTICS, new ArrayList<DescrName>())
+                .addProperty(ConceptPropertyKeys.ASOCIATED_OTHER_NAME_DESCRIPTION_SEMANTICS, new ArrayList<DescrName>())
+                .addProperty(ConceptPropertyKeys.SELECTED_DESCRIPTION_SEMANTIC, (SelectedDescriptionSemantic) null)
+                .addProperty(ConceptPropertyKeys.VIEW_PROPERTIES, (ViewProperties) null)
+                .addProperty(ConceptPropertyKeys.ASOCIATED_JOURNAL_WINDOW_TOPIC, (UUID) null)
+                .addProperty(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, (SelectedPropertyWindowKind) null)
+                .addProperty(ConceptPropertyKeys.PROPERTY_WINDOW_OPEN, false)
+                .addProperty(ConceptPropertyKeys.UNCOMMITED_CHANGES, false)
+                .addProperty(ConceptPropertyKeys.HAS_VALID_STAMP, false)
+                .addProperty(ConceptPropertyKeys.AXIOM, (String) null);
 
-    public ConceptViewModel() {
-        super(); // addProperty(MODE, VIEW); By default
-        addProperty(CURRENT_ENTITY, (EntityFacade) null)
-                .addProperty(FULLY_QUALIFIED_NAMES,  (Collection) new ArrayList<>())
-                .addProperty(OTHER_NAMES, (Collection) new ArrayList<>())
-                .addProperty(CONCEPT_STAMP_VIEW_MODEL, (ViewModel) null)
-                .addProperty(AXIOM, (String) null);
+    }
 
-        //FIXME add a STAMP validator
+    public ViewProperties getViewProperties() {
+        return getPropertyValue(ConceptPropertyKeys.VIEW_PROPERTIES);
+    }
 
-        // In Create Mode the fqn is required.
-        addValidator(FULLY_QUALIFIED_NAMES, "Fully Qualified Names",(ObservableList<?> observableList, ViewModel _ ) -> {
-            if (observableList.isEmpty()){
-                return new ValidationMessage(FULLY_QUALIFIED_NAMES, MessageType.ERROR, "${%s} is required".formatted(FULLY_QUALIFIED_NAMES));
-            }
-            return VALID;
-        });
+    public void updateModel() {
+        // TODO: entity facade && newConcept?
 
-        // Axiom should be selected
-        addValidator(AXIOM, "Axiom",(ReadOnlyStringProperty prop, ViewModel _ ) -> {
-            if (prop.isNull().get()
-                    || (prop.get() instanceof String axiom
-                    && !(SUFFICIENT_SET.equals(axiom) || NECESSARY_SET.equals(axiom)))) {
-                return new ValidationMessage(AXIOM, MessageType.ERROR, "${%s} is required and must be a %s or %s. Axiom = %s".formatted(AXIOM, SUFFICIENT_SET, NECESSARY_SET, prop.get()));
-            }
-            return VALID;
-        });
+        // <BANNER>
+        // identicon effected by, VIEW_PROPERTIES, THIS_CONCEPT_ENTITY_FACADE
+        // stamp effected by, THIS_IS_A_NEW_CONCEPT HAS_VALID_STAMP THIS_CONCEPT_ENTITY_FACADE
+
+        // <SEMANTIC DETAILS DESCRIPTION>
+        // addButton effected by, HAS_VALID_STAMP
+        // TODO: fqn displayed and otherName should be reactive to entityFacade changes
+        // fqn displayed effected by, ASOCIATED_FQN_CONCEPTS, HAS_VALID_STAMP
+        // otherName displayed effected by, ASOCIATED_OTHER_NAME_CONCEPTS, HAS_VALID_STAMP
+
+        // <AXIOMS>
+
+
     }
 
     /**
@@ -120,9 +153,10 @@ public class ConceptViewModel extends FormViewModel {
         save(); // View Model xfer values. does not save to the database but validates data and then copies data from properties to model values.
 
         // Validation errors will not create record.
-        if (!getValidationMessages().isEmpty()) {
-            return false;
-        }
+        // TODO: add new validator
+//        if (!getValidationMessages().isEmpty()) {
+//            return false;
+//        }
 
         // stamp is populated?
         if (!(Boolean)stampFormViewModel.getPropertyValue(IS_CONFIRMED_OR_SUBMITTED)) {
@@ -130,7 +164,7 @@ public class ConceptViewModel extends FormViewModel {
         }
 
         // Create concept
-        List<DescrName> fqnList = getObservableList(FULLY_QUALIFIED_NAMES);
+        List<DescrName> fqnList = getObservableList(ConceptPropertyKeys.ASOCIATED_FQN_DESCRIPTION_SEMANTICS); // TODO: this still assumes that on creation we can only have a FQN
         DescrName fqnDescrName = fqnList.get(0);
         Transaction transaction = Transaction.make("New concept for: " + fqnDescrName.getNameText());
 
@@ -164,7 +198,7 @@ public class ConceptViewModel extends FormViewModel {
         AxiomBuilderRecord ab = newConceptBuilder.axiomBuilder();
 
         // determine sufficient or necessary
-        if (NECESSARY_SET.equals(getValue(AXIOM))) {
+        if (NECESSARY_SET.equals(getValue(ConceptPropertyKeys.AXIOM))) {
             ab.withNecessarySet(
 //                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
 //                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
@@ -172,7 +206,7 @@ public class ConceptViewModel extends FormViewModel {
                             ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.ANONYMOUS_CONCEPT)
                             /*ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.LANGUAGE)*/)
             );
-        } else if (SUFFICIENT_SET.equals(getValue(AXIOM))) {
+        } else if (SUFFICIENT_SET.equals(getValue(ConceptPropertyKeys.AXIOM))) {
             ab.withSufficientSet(
 //                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
 //                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
@@ -184,7 +218,8 @@ public class ConceptViewModel extends FormViewModel {
         // add the axiom
         buildAxiom(ab, conceptRecord, stampEntity, transaction);
 
-        List<DescrName> otherNames = (List<DescrName>) getValueMap().get(OTHER_NAMES);
+        // TODO: clean up this type mess ...
+        List<DescrName> otherNames = (List<DescrName>) getValueMap().get(ConceptPropertyKeys.ASOCIATED_OTHER_NAME_DESCRIPTION_SEMANTICS);
         if (otherNames.size() > 0) {
             // if there are other names defined, then add them to the newly created concept
             saveOtherNameWithinCreateConcept(transaction, stampEntity, otherNames, conceptFacade);
@@ -206,42 +241,18 @@ public class ConceptViewModel extends FormViewModel {
 
         // alert the user of the concept being created and were it exists
         JournalController.toast()
-            .show(
-                Toast.Status.SUCCESS,
-                String.format("Concept created %s, %s, %s", pathText, moduleText, statusText)
-            );
+                .show(
+                        Toast.Status.SUCCESS,
+                        String.format("Concept created %s, %s, %s", pathText, moduleText, statusText)
+                );
 
         // place inside as current Concept
-        setValue(CURRENT_ENTITY, conceptFacade);
-        setPropertyValue(CURRENT_ENTITY, conceptFacade);
-        setValue(MODE, EDIT);
-        setPropertyValue(MODE, EDIT);
+        // TODO: ;(
+        setValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE, conceptFacade);
+        setPropertyValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE, conceptFacade);
+        setValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT, false);
+        setPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT, false);
         return true;
-    }
-
-    private void buildAxiom(AxiomBuilderRecord axiomBuilder, ConceptRecord conceptRecord, StampEntity stampEntity, Transaction transaction) {
-        DiTreeEntity.Builder axiomTreeEntityBuilder = DiTreeEntity.builder();
-        EntityVertex rootVertex = EntityVertex.make(axiomBuilder);
-        axiomTreeEntityBuilder.setRoot(rootVertex);
-        recursiveAddChildren(axiomTreeEntityBuilder, rootVertex, axiomBuilder);
-
-        ImmutableList<Object> axiomField = Lists.immutable.of(axiomTreeEntityBuilder.build());
-        SemanticRecord statedAxioms = SemanticRecord.build(UUID.randomUUID(),
-                TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
-                conceptRecord.nid(),
-                stampEntity.lastVersion(),
-                axiomField);
-        transaction.addComponent(statedAxioms);
-        Entity.provider().putEntity(statedAxioms);
-    }
-
-    private void recursiveAddChildren(DiTreeEntity.Builder axiomTreeBuilder, EntityVertex parentVertex, AxiomBuilderRecord parentAxiom) {
-        for (AxiomBuilderRecord child : parentAxiom.children()) {
-            EntityVertex childVertex = EntityVertex.make(child);
-            axiomTreeBuilder.addVertex(childVertex);
-            axiomTreeBuilder.addEdge(childVertex, parentVertex);
-            recursiveAddChildren(axiomTreeBuilder, childVertex, child);
-        }
     }
 
     private void saveFQNwithinCreateConcept(Transaction transaction, StampEntity stampEntity, DescrName fqnNameDescr, ConceptFacade conceptFacade) {
@@ -328,69 +339,30 @@ public class ConceptViewModel extends FormViewModel {
         });
     }
 
-    // TODO: since this is not called i assume thats why no new names can be added to existing concept
-    public void addOtherName(EditCoordinateRecord editCoordinateRecord, DescrName otherName) {
+    private void buildAxiom(AxiomBuilderRecord axiomBuilder, ConceptRecord conceptRecord, StampEntity stampEntity, Transaction transaction) {
+        DiTreeEntity.Builder axiomTreeEntityBuilder = DiTreeEntity.builder();
+        EntityVertex rootVertex = EntityVertex.make(axiomBuilder);
+        axiomTreeEntityBuilder.setRoot(rootVertex);
+        recursiveAddChildren(axiomTreeEntityBuilder, rootVertex, axiomBuilder);
 
-        Transaction transaction = Transaction.make();
-
-        StampEntity stampEntity = transaction.getStamp(
-                State.fromConcept(otherName.getStatus()), // active, inactive, etc
-                System.currentTimeMillis(),
-                getViewProperties().nodeView().editCoordinate().getAuthorForChanges().nid(),
-                otherName.getModule().nid(), // SNOMED CT, LOINC, etc
-                TinkarTerm.DEVELOPMENT_PATH.nid()); // Should this be defaulted???
-
-        // get the public id of the referenced concept
-        PublicId conceptRecordPublicId =  otherName.getParentConcept();
-
-        int conceptNid = EntityService.get().nidForPublicId(conceptRecordPublicId);
-
-        // the versions that we will first populate with the existing versions of the semantic
-        RecordListBuilder versions = RecordListBuilder.make();
-
-        // the new semantic will need a new public id
-        PublicId newOtherNamePublicId = PublicIds.newRandom();
-
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(newOtherNamePublicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
-                conceptNid, versions);
-
-        // we are grabbing the form data
-        // populating the field values for the new version we are writing
-        MutableList<Object> descriptionFields = Lists.mutable.empty();
-        descriptionFields.add(otherName.getLanguage());
-        descriptionFields.add(otherName.getNameText());
-        descriptionFields.add(otherName.getCaseSignificance());
-        descriptionFields.add(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
-
-        // iterating over the existing versions and adding them to a new record list builder
-        descriptionSemantic.versions().forEach(version -> versions.add(version));
-
-        // adding the new (edit form) version here
-        versions.add(SemanticVersionRecordBuilder.builder()
-                .chronology(descriptionSemantic)
-                .stampNid(stampEntity.nid())
-                .fieldValues(descriptionFields.toImmutable())
-                .build());
-
-        // apply the updated versions to the new semantic record
-        SemanticRecord newSemanticRecord = SemanticRecordBuilder.builder(descriptionSemantic).versions(versions.toImmutable()).build();
-
-        otherName.setSemanticPublicId(newSemanticRecord.publicId());
-        // put the new semantic record in the transaction
-        transaction.addComponent(newSemanticRecord);
-
-        // perform the save
-        Entity.provider().putEntity(newSemanticRecord);
-
-        // commit the transaction
-        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        TinkExecutor.threadPool().submit(commitTransactionTask);
-
-        LOG.info("transaction complete");
+        ImmutableList<Object> axiomField = Lists.immutable.of(axiomTreeEntityBuilder.build());
+        SemanticRecord statedAxioms = SemanticRecord.build(UUID.randomUUID(),
+                TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
+                conceptRecord.nid(),
+                stampEntity.lastVersion(),
+                axiomField);
+        transaction.addComponent(statedAxioms);
+        Entity.provider().putEntity(statedAxioms);
     }
 
-    public ViewProperties getViewProperties() {
-        return getPropertyValue(VIEW_PROPERTIES);
+    private void recursiveAddChildren(DiTreeEntity.Builder axiomTreeBuilder, EntityVertex parentVertex, AxiomBuilderRecord parentAxiom) {
+        for (AxiomBuilderRecord child : parentAxiom.children()) {
+            EntityVertex childVertex = EntityVertex.make(child);
+            axiomTreeBuilder.addVertex(childVertex);
+            axiomTreeBuilder.addEdge(childVertex, parentVertex);
+            recursiveAddChildren(axiomTreeBuilder, childVertex, child);
+        }
     }
+
 
 }

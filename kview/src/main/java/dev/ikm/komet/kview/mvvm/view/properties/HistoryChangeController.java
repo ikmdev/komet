@@ -51,6 +51,9 @@ import static dev.ikm.komet.kview.mvvm.view.properties.ChangeListItemController.
  */
 public class HistoryChangeController implements BasicController {
     private static final Logger LOG = LoggerFactory.getLogger(HistoryChangeController.class);
+
+    public static final String HISTORY_CHANGE_FXML_FILE = "history-change-selection.fxml";
+
     protected static final String DESCRIPTION_LIST_ITEM_FXML_FILE = "change-list-item.fxml";
     @FXML
     private ChoiceBox<String> changeFilterChoiceBox;

@@ -40,8 +40,6 @@ public class DescrName {
 
     private ConceptEntity language;
 
-
-
     // the public ID of the description semantic that this class represents
     private PublicId semanticPublicId;
 

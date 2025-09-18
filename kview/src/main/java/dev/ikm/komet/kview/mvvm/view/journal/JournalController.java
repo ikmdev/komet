@@ -1230,8 +1230,7 @@ public class JournalController {
             }
 
             // Getting the details node from the concept window
-            ConceptNode conceptNode = conceptKlWindow.getDetailsNode();
-            conceptNode.getConceptDetailsViewController().onReasonerSlideoutTray(reasonerToggleConsumer);
+            conceptKlWindow.getConceptController().onReasonerSlideoutTray(reasonerToggleConsumer);
         }
     }
 

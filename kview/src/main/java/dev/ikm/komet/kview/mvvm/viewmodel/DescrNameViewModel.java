@@ -31,6 +31,7 @@ import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -124,7 +125,7 @@ public class DescrNameViewModel extends FormViewModel {
         return CASE_SIGNIFICANCE_OPTIONS;
     }
 
-    public void updateFullyQualifiedName(PublicId publicId, ViewProperties viewProperties) {
+    private void updateSemanticName(PublicId publicId, ViewProperties viewProperties, EntityProxy.Concept semanticType) {
         Transaction transaction = Transaction.make();
 
         StampEntity stampEntity = transaction.getStamp(
@@ -151,7 +152,7 @@ public class DescrNameViewModel extends FormViewModel {
         descriptionFields.add(getValue(LANGUAGE));
         descriptionFields.add(getValue(NAME_TEXT));
         descriptionFields.add(getValue(CASE_SIGNIFICANCE));
-        descriptionFields.add(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        descriptionFields.add(semanticType);
 
         // iterating over the existing versions and adding them to a new record list builder
         theSemantic.versions().forEach(version -> versions.add(version));
@@ -175,6 +176,20 @@ public class DescrNameViewModel extends FormViewModel {
         // commit the transaction
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
         TinkExecutor.threadPool().submit(commitTransactionTask);
+    }
+
+    public void updateFullyQualifiedName(PublicId publicId, ViewProperties viewProperties) {
+        EntityProxy.Concept semanticType = TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+
+        updateSemanticName(publicId, viewProperties , semanticType);
+        LOG.info("transaction complete");
+    }
+
+    public void updateOtherName(PublicId publicId, ViewProperties viewProperties) {
+        EntityProxy.Concept semanticType =  TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+
+        updateSemanticName(publicId, viewProperties , semanticType);
+        LOG.info("transaction complete");
     }
 
     public DescrName create() {
@@ -200,56 +215,5 @@ public class DescrNameViewModel extends FormViewModel {
         editDescrName.setSemanticPublicId(getValue(SEMANTIC_PUBLIC_ID));
     }
 
-    public void updateOtherName(PublicId publicId, ViewProperties viewProperties) {
-        Transaction transaction = Transaction.make();
-        StampEntity stampEntity = transaction.getStamp(
-                State.fromConcept(getValue(STATUS)), // active, inactive, etc
-                System.currentTimeMillis(),
-                viewProperties.nodeView().editCoordinate().getAuthorForChanges().nid(),
-                ((ConceptEntity)getValue(MODULE)).nid(), // SNOMED CT, LOINC, etc
-                TinkarTerm.DEVELOPMENT_PATH.nid()); //TODO should this path come from the parent concept's path?
 
-        // existing semantic
-        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
-
-
-        // the versions that we will first populate with the existing versions of the semantic
-        RecordListBuilder versions = RecordListBuilder.make();
-
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
-                theSemantic.referencedComponentNid(), versions);
-
-        // we grabbing the form data
-        // populating the field values for the new version we are writing
-        MutableList<Object> descriptionFields = Lists.mutable.empty();
-        descriptionFields.add(getValue(LANGUAGE));
-        descriptionFields.add(getValue(NAME_TEXT));
-        descriptionFields.add(getValue(CASE_SIGNIFICANCE));
-        descriptionFields.add(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
-
-        // iterating over the existing versions and adding them to a new record list builder
-        theSemantic.versions().forEach(version -> versions.add(version));
-
-        // adding the new (edit form) version here
-        versions.add(SemanticVersionRecordBuilder.builder()
-                .chronology(descriptionSemantic)
-                .stampNid(stampEntity.nid())
-                .fieldValues(descriptionFields.toImmutable())
-                .build());
-
-        // apply the updated versions to the new semantic record
-        SemanticRecord newSemanticRecord = SemanticRecordBuilder.builder(descriptionSemantic).versions(versions.toImmutable()).build();
-
-        // put the new semantic record in the transaction
-        transaction.addComponent(newSemanticRecord);
-
-        // perform the save
-        Entity.provider().putEntity(newSemanticRecord);
-
-        // commit the transaction
-        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        TinkExecutor.threadPool().submit(commitTransactionTask);
-
-        LOG.info("transaction complete");
-    }
 }

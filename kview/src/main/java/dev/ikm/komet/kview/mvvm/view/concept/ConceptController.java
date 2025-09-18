@@ -33,8 +33,9 @@ import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
-import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
-import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
+import dev.ikm.komet.kview.mvvm.view.timeline.TimelineController;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModelNext;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModelNext.*;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -48,12 +49,15 @@ import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -64,13 +68,13 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.viewmodel.ValidationViewModel;
+import org.carlfx.cognitive.loader.*;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -80,6 +84,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
+import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
 import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
@@ -89,9 +94,7 @@ import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
@@ -102,6 +105,9 @@ import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class ConceptController {
+    public static final String CONCEPT_DETAILS_VIEW_FXML_FILE = "concept-details.fxml";
+
+    private static final String CONCEPT_TIMELINE_VIEW_FXML_FILE = "timeline.fxml";
 
     private static final PseudoClass STAMP_SELECTED = PseudoClass.getPseudoClass("selected");
 
@@ -237,12 +243,22 @@ public class ConceptController {
     /**
      * A function from the caller. This class passes a boolean true if classifier button is pressed invoke caller's function to be returned a view.
      */
+
+    // TODO: feature or bug?: this links the "reasonorToggleButton" from journal.fxml / JournalController with this button
+            // e.g if this controller toggle is activated -> slideOut also the global reasonnerToggleButton
+            // slideIn is the same logic. E.g if local state is different make the globalState the same
+            // if both are the same state nothing changes
+
+            // this functionality is only used in Concept. Not in pattern/semantic
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
 
-    private PropertiesController propertiesController;
+
+
+//    @InjectViewModel
+//    private ConceptViewModel conceptViewModel;
 
     @InjectViewModel
-    private ConceptViewModel conceptViewModel;
+    private ConceptViewModelNext conceptViewModelNext;
     private EvtBus eventBus;
 
     private UUID conceptTopic;
@@ -278,59 +294,40 @@ public class ConceptController {
 
     private boolean isUpdatingStampSelection = false;
 
+    // <JFXNodes>
+    private JFXNode<Pane, ConceptPropertiesController> propertiesJFXNode;
+
+    private TimelineController timelineController;
+    private Pane timelinePane;
+
     public ConceptController() {
     }
 
-    public ConceptController(UUID conceptTopic) {
-        this.conceptTopic = conceptTopic;
-    }
+//    public ConceptController(UUID conceptTopic) {
+//        this.conceptTopic = conceptTopic;
+//    }
 
     @FXML
     public void initialize() {
-        stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
-        identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
-            // query all available memberships (semantics having the purpose as 'membership', and no fields)
-            // query current concept's membership semantic records.
-            // build menuItems according to 'add' or 'remove' , style to look like figma designs style classes.
-            // show offset to the right of the identicon
-            ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-            EntityFacade currentConceptFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
-            List<PatternEntityVersion> patterns = getMembershipPatterns();
-            ContextMenu membershipContextMenu = new ContextMenu();
-            membershipContextMenu.getStyleClass().add("kview-context-menu");
+        setupNodes();
 
-            Comparator<MenuItem> patternMenuComparator = (m1, m2) -> m1.getText().compareToIgnoreCase(m2.getText());
-            List<MenuItem> addedMenuItems = new ArrayList<>();
-            List<MenuItem> removedMenuItems = new ArrayList<>();
-            for (PatternEntityVersion pattern : patterns) {
-                MenuItem menuItem = new MenuItem();
-                if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid(), viewCalculator)) {
-                    menuItem.setText("Remove from " + pattern.entity().description());
-                    menuItem.setOnAction(evt -> removeFromMembershipPattern(currentConceptFacade.nid(), pattern.entity(), viewCalculator));
-                    addedMenuItems.add(menuItem);
-                } else {
-                    menuItem.setText("Add to " + pattern.entity().description());
-                    menuItem.setOnAction(evt -> addToMembershipPattern(currentConceptFacade, pattern.entity(), viewCalculator));
-                    removedMenuItems.add(menuItem);
-                }
-            }
-            if (!addedMenuItems.isEmpty()) {
-                // sort the added (able to be removed)
-                addedMenuItems.sort(patternMenuComparator);
-                membershipContextMenu.getItems().addAll(addedMenuItems);
-                // then add a menu line separator
-                if (!removedMenuItems.isEmpty()) {
-                    membershipContextMenu.getItems().add(new SeparatorMenuItem());
-                }
-            }
-            // then add the sorted removed (that can be added)
-            removedMenuItems.sort(patternMenuComparator);
-            membershipContextMenu.getItems().addAll(removedMenuItems);
+        // attach properties and timeline node to slideout
+        addPaneToTray(timelinePane, timelineSlideoutTrayPane);
+        addPaneToTray(propertiesJFXNode.node(), propertiesSlideoutTrayPane);
 
-            membershipContextMenu.show(identiconImageView, contextMenuEvent.getScreenX(),
-                    contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
-        });
+        String styleSheet = defaultStyleSheet();
+        propertiesJFXNode.node().getStylesheets().add(styleSheet);
+        timelinePane.getStylesheets().add(styleSheet);
+
+        setupTimelineBindings();
+        setupPropertyBindings();
+
+        setupDetailsBanner();
+
+        setupDetailsNameSemantics();
+
+
 
         Tooltip.install(fqnTitleText, conceptNameTooltip);
 
@@ -381,78 +378,107 @@ public class ConceptController {
         eventBus.subscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
 
         // Listener when user enters a new fqn
-        ObservableList<DescrName> fullyQualifiedNames = getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES);
-        fullyQualifiedNames.addListener((InvalidationListener) observable -> {
-            if (!fullyQualifiedNames.isEmpty()) {
-                DescrName fqnDescrName = fullyQualifiedNames.get(0);
-                updateConceptBanner();
+        ObservableList<DescrName> fqnFacades = conceptViewModelNext.getObservableList(ConceptPropertyKeys.ASOCIATED_FQN_DESCRIPTION_SEMANTICS);
+        fqnFacades.subscribe( () -> {
+            SimpleBooleanProperty hasValidStampProp = conceptViewModelNext.getProperty(ConceptPropertyKeys.HAS_VALID_STAMP);
+            if (hasValidStampProp.getValue()) {
+                // TODO: make sure updateConceptBanner equivalent is there
+                updateFullyQualifiedNamesDescription(fqnFacades);
+            } else {
+                LOG.error("Stamp not valid -> Cannot update FQN description");
             }
-            updateFullyQualifiedNamesDescription(fullyQualifiedNames);
+
+        });
+//        ObservableList<DescrName> fullyQualifiedNames = getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES);
+//        fullyQualifiedNames.addListener((InvalidationListener) observable -> {
+//            if (!fullyQualifiedNames.isEmpty()) {
+//                DescrName fqnDescrName = fullyQualifiedNames.get(0);
+//                updateConceptBanner();
+//            }
+//            updateFullyQualifiedNamesDescription(fullyQualifiedNames);
+//        });
+
+        ObservableList<DescrName> otherNameFacades = conceptViewModelNext.getObservableList(ConceptViewModelNext.ConceptPropertyKeys.ASOCIATED_OTHER_NAME_DESCRIPTION_SEMANTICS);
+        otherNameFacades.subscribe( () -> {
+            SimpleBooleanProperty hasValidStampProp = conceptViewModelNext.getProperty(ConceptPropertyKeys.HAS_VALID_STAMP);
+
+            if (hasValidStampProp.getValue()) {
+                updateOtherNamesDescription(otherNameFacades);
+            } else {
+                LOG.error("Stamp not valid -> Cannot update otherName description");
+            }
         });
 
-        ObservableList<DescrName> otherNames = getConceptViewModel().getObservableList(OTHER_NAMES);
-        otherNames.addListener((InvalidationListener) obs -> {
-            if (!otherNames.isEmpty()) {
-                propertiesController.setHasOtherName(true);
-            }
-            updateOtherNamesDescription(otherNames);
-        });
+//        // TODO: This is a wired binding we may want to reconstruct that
+//        ObservableList<DescrName> otherNames = getConceptViewModel().getObservableList(OTHER_NAMES);
+//        otherNames.addListener((InvalidationListener) obs -> {
+//            if (!otherNames.isEmpty()) {
+//                propertiesController.setHasOtherName(true);
+//            }
+//            updateOtherNamesDescription(otherNames);
+//        });
+
+
+        // TODO: down below the outcommented code listend fro each AddFqn EditFqn AddOther and EditOther
+        // TODO: it provided mostly a DescrName with the call, that was then pluged back into
+        // TODO: what we just need is to handle the case when a user "creates a new FQN or otherName with the UI Button"
+        // TODO: since the case when a user clicks on a existing one is handeld via the above subscribers
 
         // Listens for events related to new fqn or other names added to this concept. Subscriber is responsible for
         // the final create concept transaction.
-        createConceptEventSubscriber = evt -> {
-            DescrName descrName = evt.getModel();
-
-            if (getConceptViewModel() == null || descrName == null) {
-                LOG.warn("ViewModel should not be null. Event type:" + evt.getEventType());
-                return;
-            }
-
-            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
-                if (evt.getEventType() == CreateConceptEvent.ADD_FQN) {
-                    fullyQualifiedNames.clear();
-                    fullyQualifiedNames.add(descrName);
-                } else if (evt.getEventType() == CreateConceptEvent.ADD_OTHER_NAME) {
-                    otherNames.add(descrName);
-                }else if (evt.getEventType() == CreateConceptEvent.EDIT_OTHER_NAME) { // Since we are
-                    updateOtherNamesDescription(otherNames);
-                }else { // Since we are
-                    updateFullyQualifiedNamesDescription(fullyQualifiedNames);
-                }
-                // Attempts to write data
-                boolean isWritten = conceptViewModel.createConcept(propertiesController.getStampFormViewModel());
-                // when written the mode changes to EDIT.
-                LOG.info("Is " + conceptViewModel + " created? " + isWritten);
-                if (isWritten) {
-                    updateView();
-                }
-                // remove 'Add Fully Qualified Name' from the menu
-                setUpDescriptionContextMenu(addDescriptionButton);
-                //TODO revisit: why should the mode ever be edit inside a create event?
-            } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
-                    conceptViewModel.addOtherName(conceptViewModel.getViewProperties().calculator().viewCoordinateRecord().editCoordinate(), descrName);
-                    otherNames.add(descrName);
-            }
-
-        };
-        eventBus.subscribe(conceptTopic, CreateConceptEvent.class, createConceptEventSubscriber);
+//        createConceptEventSubscriber = evt -> {
+//            DescrName descrName = evt.getModel();
+//
+//            if (getConceptViewModel() == null || descrName == null) {
+//                LOG.warn("ViewModel should not be null. Event type:" + evt.getEventType());
+//                return;
+//            }
+//
+//            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+//                if (evt.getEventType() == CreateConceptEvent.ADD_FQN) {
+//                    fullyQualifiedNames.clear();
+//                    fullyQualifiedNames.add(descrName);
+//                } else if (evt.getEventType() == CreateConceptEvent.ADD_OTHER_NAME) {
+//                    otherNames.add(descrName);
+//                }else if (evt.getEventType() == CreateConceptEvent.EDIT_OTHER_NAME) { // Since we are
+//                    updateOtherNamesDescription(otherNames);
+//                }else { // Since we are
+//                    updateFullyQualifiedNamesDescription(fullyQualifiedNames);
+//                }
+//                // Attempts to write data
+//                boolean isWritten = conceptViewModel.createConcept(propertiesController.getStampFormViewModel());
+//                // when written the mode changes to EDIT.
+//                LOG.info("Is " + conceptViewModel + " created? " + isWritten);
+//                if (isWritten) {
+//                    updateView();
+//                }
+//                // remove 'Add Fully Qualified Name' from the menu
+//                setUpDescriptionContextMenu(addDescriptionButton);
+//                //TODO revisit: why should the mode ever be edit inside a create event?
+//            } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
+//                    conceptViewModel.addOtherName(conceptViewModel.getViewProperties().calculator().viewCoordinateRecord().editCoordinate(), descrName);
+//                    otherNames.add(descrName);
+//            }
+//
+//        };
+//        eventBus.subscribe(conceptTopic, CreateConceptEvent.class, createConceptEventSubscriber);
 
         // set up the event handler for editing a concept
-        editConceptEventSubscriber = evt -> {
-            DescrName descrName = evt.getModel();
-
-            if (getConceptViewModel() == null || descrName == null) {
-                LOG.warn("ViewModel should not be null. Event type:" + evt.getEventType());
-                return;
-            }
-            if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))) {
-                if (evt.getEventType() == EditConceptEvent.EDIT_FQN) {
-                    // the listener will fire on the FQN when we update this
-                    fullyQualifiedNames.add(descrName);
-                }
-            }
-        };
-        eventBus.subscribe(conceptTopic, EditConceptEvent.class, editConceptEventSubscriber);
+//        editConceptEventSubscriber = evt -> {
+//            DescrName descrName = evt.getModel();
+//
+//            if (getConceptViewModel() == null || descrName == null) {
+//                LOG.warn("ViewModel should not be null. Event type:" + evt.getEventType());
+//                return;
+//            }
+//            if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))) {
+//                if (evt.getEventType() == EditConceptEvent.EDIT_FQN) {
+//                    // the listener will fire on the FQN when we update this
+//                    fullyQualifiedNames.add(descrName);
+//                }
+//            }
+//        };
+//        eventBus.subscribe(conceptTopic, EditConceptEvent.class, editConceptEventSubscriber);
 
 
         // listen to rules changes to update the axioms
@@ -475,6 +501,7 @@ public class ConceptController {
                 conceptContentScrollPane.pseudoClassStateChanged(V_SCROLLBAR_NEEDED, isVerticalScrollbarVisible(conceptContentScrollPane)));
 
         // TODO: When event bus is more universally used the database can emit events. For now we listen for a refresh calculator events
+        // TODO: this can be moved into the Node Later and we can have there a clean ExternalUpdate <--> ConceptViewModel update
         // Refresh Concept window
         refreshCalculatorEventSubscriber = _ -> {
             LOG.info("Refresh concept window details");
@@ -504,35 +531,220 @@ public class ConceptController {
                 updateView();
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(conceptViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_UNIQUE_CONCEPT_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
 
-        conceptViewModel.getViewProperties().nodeView().addListener((obs, oldViewCoord, newViewCoord) -> {
-            if (newViewCoord != null) {
-                LOG.info("refresh concept window when view coordinate has changed." + newViewCoord);
-                updateView();
+
+
+
+        // TODO: this is wrong it should be -> when we have a entityFacade we cannot edit anymore ever right?
+        SimpleObjectProperty<EntityFacade> thisFacade = conceptViewModelNext.getProperty(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE);
+        BooleanBinding nonEditableAxiom = thisFacade.isNotNull();
+        addAxiomButton.visibleProperty().bind(nonEditableAxiom);
+
+        // this through bindings is handeld in the properties controller itself, simmilar on how overall window state is handeld
+//        hasValidStampProp.subscribe((isValidStamp) -> {
+//            if( isValidStamp) { // we can now bind the values directly
+//                // TODO instead of this mumble jumble between Concept and Propertie Controller do the right thing
+//                //propertiesController
+//            } else { // we can only show "default stamp" values
+//
+//            }
+//        });
+
+        // in create mode we do not have a stamp by default, thats why the first thing we need to archive
+        // is having a valid stamp. Hold anyting else until that.
+
+
+
+
+//        conceptViewModel.getProperty(MODE).subscribe(() -> {
+//            propertiesController.setEditMode(conceptViewModel.getPropertyValue(MODE).equals(EDIT));
+//            // setEditMode true if current conceptViewModel Mode is Edit otherwise False
+//
+//            if (conceptViewModel.getPropertyValue(MODE).equals(CREATE)) {
+//                StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
+//                // if conceptViewModel say CREATE than we sub on stampFormViewModel on IS_CONFIRMED_OR_SUBMITTED
+//                stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(this::onConfirmStampFormWhenCreating);
+//            } else {
+//                // add axiom pencil is only for create mode
+//                // In view mode you can't add a sufficient/necc set
+//                addAxiomButton.setVisible(false);
+//            }
+//        });
+    }
+
+    // setup ConceptPropertiesController only for now
+    // later can also do timeline etc
+    private void setupNodes() {
+
+        Config propertiesConfig = new Config(ConceptPropertiesController.class.getResource(
+                ConceptPropertiesController.CONCEPT_PROPERTIES_FXML_FILE
+        )).addNamedViewModel(new NamedVm("conceptViewModelNext", conceptViewModelNext));
+        this.propertiesJFXNode= FXMLMvvmLoader.make(propertiesConfig);
+
+        // Load Timeline View Panel (FXML & Controller)
+        FXMLLoader timelineFXMLLoader = new FXMLLoader(TimelineController.class.getResource(CONCEPT_TIMELINE_VIEW_FXML_FILE));
+        try {
+            this.timelinePane = timelineFXMLLoader.load();
+            this.timelineController = timelineFXMLLoader.getController();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setupTimelineBindings() {
+        // This will highlight with green around the pane when the user selects a date point in the timeline.
+        this.timelineController.onDatePointSelected((changeCoordinate) -> {
+            propertiesJFXNode.controller().getHistoryChangeController().highlightListItemByChangeCoordinate(changeCoordinate);
+        });
+        // When Date points are in range (range slider)
+        this.timelineController.onDatePointInRange((rangeToggleOn, changeCoordinates) -> {
+            if (rangeToggleOn) {
+                propertiesJFXNode.controller().getHistoryChangeController().filterByRange(changeCoordinates);
+                propertiesJFXNode.controller().getHierarchyController().diffNavigationGraph(changeCoordinates);
+            } else {
+                propertiesJFXNode.controller().getHistoryChangeController().unfilterByRange();
+                propertiesJFXNode.controller().getHierarchyController().diffNavigationGraph(Set.of());
             }
         });
 
-        conceptViewModel.getProperty(MODE).subscribe(() -> {
-            propertiesController.setEditMode(conceptViewModel.getPropertyValue(MODE).equals(EDIT));
+    }
 
-            if (conceptViewModel.getPropertyValue(MODE).equals(CREATE)) {
-                StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
-                stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(this::onConfirmStampFormWhenCreating);
-            } else {
-                // add axiom pencil is only for create mode
-                // In view mode you can't add a sufficient/necc set
-                addAxiomButton.setVisible(false);
+    private void setupPropertyBindings() {}
+
+    private void setupDetailsBanner() {
+        setupIdenticon();
+        setupStampBindings();
+    }
+
+    private void setupIdenticon() {
+        identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
+            // query all available memberships (semantics having the purpose as 'membership', and no fields)
+            // query current concept's membership semantic records.
+            // build menuItems according to 'add' or 'remove' , style to look like figma designs style classes.
+            // show offset to the right of the identicon
+            ViewCalculator viewCalculator = conceptViewModelNext.getViewProperties().calculator();
+            EntityFacade currentConceptFacade = conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE);
+            List<PatternEntityVersion> patterns = getMembershipPatterns();
+            ContextMenu membershipContextMenu = new ContextMenu();
+            membershipContextMenu.getStyleClass().add("kview-context-menu");
+
+            Comparator<MenuItem> patternMenuComparator = (m1, m2) -> m1.getText().compareToIgnoreCase(m2.getText());
+            List<MenuItem> addedMenuItems = new ArrayList<>();
+            List<MenuItem> removedMenuItems = new ArrayList<>();
+            for (PatternEntityVersion pattern : patterns) {
+                MenuItem menuItem = new MenuItem();
+                if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid(), viewCalculator)) {
+                    menuItem.setText("Remove from " + pattern.entity().description());
+                    menuItem.setOnAction(evt -> removeFromMembershipPattern(currentConceptFacade.nid(), pattern.entity(), viewCalculator));
+                    addedMenuItems.add(menuItem);
+                } else {
+                    menuItem.setText("Add to " + pattern.entity().description());
+                    menuItem.setOnAction(evt -> addToMembershipPattern(currentConceptFacade, pattern.entity(), viewCalculator));
+                    removedMenuItems.add(menuItem);
+                }
             }
+            if (!addedMenuItems.isEmpty()) {
+                // sort the added (able to be removed)
+                addedMenuItems.sort(patternMenuComparator);
+                membershipContextMenu.getItems().addAll(addedMenuItems);
+                // then add a menu line separator
+                if (!removedMenuItems.isEmpty()) {
+                    membershipContextMenu.getItems().add(new SeparatorMenuItem());
+                }
+            }
+            // then add the sorted removed (that can be added)
+            removedMenuItems.sort(patternMenuComparator);
+            membershipContextMenu.getItems().addAll(removedMenuItems);
+
+            membershipContextMenu.show(identiconImageView, contextMenuEvent.getScreenX(),
+                    contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
         });
     }
 
+    private void setupStampBindings() {
+        // posibility stamp view state
+        // newConcept(no facade) & noValidStamp
+        // -> DISPLAY: BLANK | DO : waiting for stampForm to return as a valid one
+        // newConcept(no facade) & ValidStamp via Form
+        // -> DISPLAY: formValues, "uncommited" | DO : waiting for concept to be created and commited on axim creation
+        // on facade update ( e.g non null facade)
+        // -> DISPLAY: values derived from facade | DO: wait for either new facade update or update from form?
+
+        stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged); // This needed ?
+
+        SimpleBooleanProperty isNewConcept = conceptViewModelNext.getProperty(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT);
+        SimpleBooleanProperty hasValidStamp =  conceptViewModelNext.getProperty(ConceptPropertyKeys.HAS_VALID_STAMP);
+        SimpleObjectProperty<EntityFacade> thisEntityProp = conceptViewModelNext.getProperty(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE);
+
+        BooleanBinding shouldUpdateStampInfo = isNewConcept.and(hasValidStamp);
+
+
+        hasValidStamp.subscribe((isStamp) -> {
+            if (isStamp) {
+                LOG.info("has valid stamp triggerd: " + isStamp);
+
+                onConfirmStampFormWhenCreating();
+            }
+        });
+
+//        shouldUpdateStampInfo.subscribe(isTimeToUpdate -> {
+//            LOG.info("In create mode: Created new STAMP correctly -> update stamp info");
+//            if(isTimeToUpdate) {
+//                onConfirmStampFormWhenCreating();
+//            }
+//        });
+
+        if (shouldUpdateStampInfo.getValue().equals(true)) { // if this all true directly at startup then once fire it manualy
+            onConfirmStampFormWhenCreating();
+        }
+
+        thisEntityProp.subscribe(conceptEntity -> {
+
+        });
+    }
+
+    private void setupDetailsNameSemantics() {
+
+        SimpleBooleanProperty hasValidStampProp = conceptViewModelNext.getProperty(ConceptPropertyKeys.HAS_VALID_STAMP);
+
+        // TODO: make sure that we can only change otherName or other FQN but not the primary fqn in non create Mode
+        addDescriptionButton.disableProperty().bind(hasValidStampProp.not());
+
+        // Listener when user enters a new fqn
+        ObservableList<DescrName> fqnFacades = conceptViewModelNext.getObservableList(ConceptPropertyKeys.ASOCIATED_FQN_DESCRIPTION_SEMANTICS);
+        fqnFacades.subscribe( () -> {
+            //SimpleBooleanProperty hasValidStampProp = conceptViewModelNext.getProperty(ConceptPropertyKeys.HAS_VALID_STAMP);
+            if (hasValidStampProp.getValue()) {
+                // TODO: make sure updateConceptBanner equivalent is there
+                updateFullyQualifiedNamesDescription(fqnFacades);
+            } else {
+                LOG.error("Stamp not valid -> Cannot update FQN description");
+            }
+
+        });
+
+        ObservableList<DescrName> otherNameFacades = conceptViewModelNext.getObservableList(ConceptViewModelNext.ConceptPropertyKeys.ASOCIATED_OTHER_NAME_DESCRIPTION_SEMANTICS);
+        otherNameFacades.subscribe( () -> {
+            //SimpleBooleanProperty hasValidStampProp = conceptViewModelNext.getProperty(ConceptPropertyKeys.HAS_VALID_STAMP);
+
+            if (hasValidStampProp.getValue()) {
+                updateOtherNamesDescription(otherNameFacades);
+            } else {
+                LOG.error("Stamp not valid -> Cannot update otherName description");
+            }
+        });
+
+    }
+
+
     private void onConfirmStampFormWhenCreating() {
         // Update StampViewControl
-        StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
-        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
+        StampFormViewModelBase stampFormViewModel = this.propertiesJFXNode.controller().getStampFormViewModel();
+        ViewCalculator viewCalculator = conceptViewModelNext.getViewProperties().calculator();
 
+        LOG.info(stampFormViewModel.toString());
         // - Status
         State status = stampFormViewModel.getPropertyValue(STATUS);
         String statusText = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(status.nid());
@@ -617,8 +829,8 @@ public class ConceptController {
         return (atTop && deltaY > 0) || (atBottom && deltaY < 0);
     }
 
-    public ValidationViewModel getConceptViewModel() {
-        return conceptViewModel;
+    public ConceptViewModelNext getConceptViewModel() {
+        return conceptViewModelNext;
     }
 
     private void setUpDescriptionContextMenu(Button addDescriptionButton) {
@@ -628,8 +840,10 @@ public class ConceptController {
     }
 
     private void onAddDescriptionButtonPressed(ActionEvent actionEvent) {
-        if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
-                getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES).isEmpty()) {
+        boolean isNewConcept = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT);
+        boolean hasNoFQNSemantics =  this.conceptViewModelNext.getObservableList(ConceptPropertyKeys.ASOCIATED_FQN_DESCRIPTION_SEMANTICS).isEmpty();
+        if ( isNewConcept &&
+                hasNoFQNSemantics) {
             // Show the context menu with 'Add Fully Qualified' option when it is a new concept in create mode and
             // there is no fully qualified name.
             fireContextMenuEvent(actionEvent, Side.RIGHT, 2, 0);
@@ -641,10 +855,12 @@ public class ConceptController {
 
     private void showAddAnotherNameUI() {
         ConceptEntity currentConcept = null;
-        if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) instanceof EntityProxy.Concept concept) {
+        if (this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE) instanceof EntityProxy.Concept concept) {
+            LOG.info("current ConceptEntitiy via EntityProxy Service !!!");
             currentConcept = (ConceptEntity) EntityService.get().getEntity(concept.nid()).get();
         } else {
-            currentConcept = getConceptViewModel().getPropertyValue(CURRENT_ENTITY);
+            LOG.info("current ConceptEntitiy read from our state !!!"); // TODO: maybe this is not correct?
+            currentConcept = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE);
         }
         if (currentConcept != null) {
             // in edit mode, will have a concept and public id
@@ -676,19 +892,21 @@ public class ConceptController {
 
         // if there is a fully qualified name, then do not give the option Add Fully Qualified
         Object[][] menuItems;
+
+        boolean isNewConcept = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT);
+        boolean hasNoFQNSet = this.conceptViewModelNext.getObservableList(ConceptPropertyKeys.ASOCIATED_FQN_DESCRIPTION_SEMANTICS).isEmpty();
         // show the 'Add Fully Qualified' option when it is a new concept in create mode and there is no fully qualified name
-        if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
-                getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES).isEmpty()) {
+        if (isNewConcept &&
+                hasNoFQNSet) {
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
                     {MenuHelper.SEPARATOR},
-                    {"Add Fully Qualified Name", true, null, (EventHandler<ActionEvent>) actionEvent ->
-                            eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(contextMenu,
-                                    AddFullyQualifiedNameEvent.ADD_FQN, conceptViewModel.getViewProperties())),
+                    {"Add Fully Qualified Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
+                        conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
+                    }                           ,
                             createConceptEditDescrIcon()},
                     {"Add Other Name", true, null, (EventHandler<ActionEvent>) actionEvent -> {
-                        eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(contextMenu,
-                                AddOtherNameToConceptEvent.ADD_DESCRIPTION));
+                        conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
                     },
                             createConceptEditDescrIcon()},
                     {MenuHelper.SEPARATOR},
@@ -711,9 +929,9 @@ public class ConceptController {
                 MenuItem menuItem = menuHelper.createMenuOption(
                         String.valueOf(menuItemObj[NAME]),                           /* name */
                         Boolean.parseBoolean(String.valueOf(menuItemObj[ENABLED])),  /* enabled */
-                        (String[]) menuItemObj[STYLES],                                                  /* styling */
+                        (String[]) menuItemObj[STYLES],                              /* styling */
                         menuItemAction,                                              /* action when selected */
-                        (Node) menuItemObj[GRAPHIC]                                                         /* optional graphic */
+                        (Node) menuItemObj[GRAPHIC]                                  /* optional graphic */
                 );
                 contextMenu.getItems().add(menuItem);
             }
@@ -737,41 +955,33 @@ public class ConceptController {
 
     @FXML
     private void addNecessarySet(ActionEvent actionEvent) {
-        conceptViewModel.setPropertyValue(AXIOM, ConceptViewModel.NECESSARY_SET);
+        conceptViewModelNext.setPropertyValue(AXIOM, ConceptViewModelNext.NECESSARY_SET);
+        createConcept();
 
-        // Attempts to write data
-        if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
-            boolean isWritten = conceptViewModel.createConcept(propertiesController.getStampFormViewModel());
-            LOG.info("Is " + conceptViewModel + " created? " + isWritten);
-            if (isWritten) {
-                updateView();
-            }
-        }
     }
 
     @FXML
     private void addSufficientSet(ActionEvent actionEvent) {
-        conceptViewModel.setPropertyValue(AXIOM, ConceptViewModel.SUFFICIENT_SET);
+        conceptViewModelNext.setPropertyValue(AXIOM, ConceptViewModelNext.SUFFICIENT_SET);
+        createConcept();
 
+    }
+
+    private void createConcept() {
+        boolean isNewConcept = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT);
         // Attempts to write data
-        if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
-            boolean isWritten = conceptViewModel.createConcept(propertiesController.getStampFormViewModel());
-            LOG.info("Is " + conceptViewModel + " created? " + isWritten);
+        if (isNewConcept) { // TODO: is this the correct | e.g do we make sure that this does not happen in wrong state
+            boolean isWritten = conceptViewModelNext.createConcept(this.propertiesJFXNode.controller().getStampFormViewModel());
+            LOG.info("Is " + conceptViewModelNext + " created? " + isWritten);
             if (isWritten) {
-                updateView();
+                LOG.info( "yell at our overlords to reset ourself");
+                //TODO: reset ourselfs
+                //updateView();
             }
         }
     }
 
-    public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane,
-                                                 PropertiesController propertiesController) {
-        this.propertiesController = propertiesController;
-        addPaneToTray(propertiesViewBorderPane, propertiesSlideoutTrayPane);
-    }
 
-    public void attachTimelineViewSlideoutTray(Pane timelineViewBorderPane) {
-        addPaneToTray(timelineViewBorderPane, timelineSlideoutTrayPane);
-    }
     private void addPaneToTray(Pane contentViewPane, Pane slideoutTrayPane) {
         double width = contentViewPane.getWidth();
         contentViewPane.setLayoutX(width);
@@ -795,7 +1005,7 @@ public class ConceptController {
         // Clean up the draggable nodes
         removeDraggableNodes(detailsOuterBorderPane,
                 conceptHeaderControlToolBarHbox,
-                propertiesController != null ? propertiesController.getPropertiesTabsPane() : null);
+                this.propertiesJFXNode.controller() != null ? this.propertiesJFXNode.controller().getPropertiesTabsPane() : null);
 
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
@@ -817,12 +1027,13 @@ public class ConceptController {
     }
 
     public void updateView() {
-        EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
-        if (entityFacade != null) { // edit concept
-            getConceptViewModel().setPropertyValue(MODE, EDIT);
-        } else { // create concept
-            getConceptViewModel().setPropertyValue(MODE, CREATE);
-        }
+        // TODO: this should have happend on whatever called updateView
+//        EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
+//        if (entityFacade != null) { // edit concept
+//            getConceptViewModel().setPropertyValue(MODE, EDIT);
+//        } else { // create concept
+//            getConceptViewModel().setPropertyValue(MODE, CREATE);
+//        }
 
         // Display info for top banner area
         updateConceptBanner();
@@ -847,18 +1058,22 @@ public class ConceptController {
      */
     public void updateConceptBanner() {
         // do not update ui should be blank
-        if (getConceptViewModel().getPropertyValue(MODE) == CREATE) {
+
+        // in create mode we update the ui through a callback from thew viewmodel ( e.g getting the uncommited stamp)
+        // and not through this updateConceptBanner
+        boolean isNewConcept = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT);
+        if (isNewConcept) {
             return;
         }
 
-        EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
 
-        final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
+        EntityFacade entityFacade = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE);
+
+        final ViewCalculator viewCalculator = this.conceptViewModelNext.getViewProperties().calculator();
 
         // check to see if the latest version exists
         viewCalculator.latest(entityFacade).ifPresentOrElse(
                 entityVersion -> {
-
                     // Title (FQN of concept)
             String conceptNameStr = viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid());
             fqnTitleText.setText(conceptNameStr);
@@ -903,7 +1118,7 @@ public class ConceptController {
         },
         // else no value present
         () -> {
-            getConceptViewModel().setPropertyValue(MODE, VIEW);
+            //getConceptViewModel().setPropertyValue(MODE, VIEW);
             stampViewControl.setStatus(NO_VERSION_FOR_VIEW_TEXT);
             stampViewControl.setModule(NO_VERSION_FOR_VIEW_TEXT);
             stampViewControl.setAuthor(NO_VERSION_FOR_VIEW_TEXT);
@@ -920,26 +1135,30 @@ public class ConceptController {
 
     public void updateFullyQualifiedNamesDescription(List<DescrName> descrNameViewModels) {
         fullyQualifiedNameNodeListControl.getItems().clear();
-        descrNameViewModels.forEach(fullyQualifedName -> {
+        descrNameViewModels.forEach(nameModel -> {
             // start adding a row
-            VBox fullyQualifiedNameVBox = generateDescriptionSemanticRow(fullyQualifedName);
+            VBox fullyQualifiedNameVBox = generateDescriptionSemanticRow(nameModel);
             TextFlow firstRow = (TextFlow) fullyQualifiedNameVBox.getChildren().getFirst();
-            firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-                    new EditConceptFullyQualifiedNameEvent(fullyQualifiedNameVBox,
-                            EditConceptFullyQualifiedNameEvent.EDIT_FQN, fullyQualifedName)));
+            firstRow.setOnMouseClicked(event -> {
+                LOG.info("clicked to update fqn");
+                conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_DESCRIPTION_SEMANTIC, new UncommittedSemanticNameDescr(nameModel));
+                conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
+            });
             fullyQualifiedNameNodeListControl.getItems().add(fullyQualifiedNameVBox);
         });
     }
 
     public void updateOtherNamesDescription(List<DescrName> descrNameViewModels) {
         otherNamesNodeListControl.getItems().clear();
-        descrNameViewModels.forEach(otherName -> {
+        descrNameViewModels.forEach(nameModel -> {
                     // start adding a row
-                    VBox otherNameBox = generateDescriptionSemanticRow(otherName);
+                    VBox otherNameBox = generateDescriptionSemanticRow(nameModel);
                     TextFlow firstRow = (TextFlow) otherNameBox.getChildren().getFirst();
-                    firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-                            new EditOtherNameConceptEvent(otherNameBox,
-                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherName)));
+                    firstRow.setOnMouseClicked(event -> {
+                        LOG.info("clicked to update otherName");
+                        conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_DESCRIPTION_SEMANTIC, new UncommittedSemanticNameDescr(nameModel));
+                        conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
+                    });
                     otherNamesNodeListControl.getItems().add(otherNameBox);
         });
     }
@@ -949,13 +1168,17 @@ public class ConceptController {
      */
     public void updateConceptDescription() {
         // do not update ui should be blank
-        if (getConceptViewModel().getPropertyValue(MODE) == CREATE) {
+
+        //TODO: while we are updating the stamp via callbacks in new Concepts we do it differently for desciptions..
+        boolean isNewConcept = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT);
+        if (isNewConcept) {
             return;
         }
 
-        final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
 
-        EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
+        final ViewCalculator viewCalculator = this.conceptViewModelNext.getViewProperties().calculator();
+
+        EntityFacade entityFacade = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE);
 
         viewCalculator.latest(entityFacade).ifPresentOrElse(
             _ -> {
@@ -969,6 +1192,7 @@ public class ConceptController {
             int descriptionTypeIndex = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE.nid());
 
             descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
+
                 EntityFacade fieldTypeValue = (EntityFacade) semanticEntityVersion.fieldValues().get(descriptionTypeIndex);
                 boolean isFQN = FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
                 boolean isOtherName = REGULAR_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
@@ -979,9 +1203,15 @@ public class ConceptController {
                     VBox fullyQualifiedNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
                     PublicId fullyQuallifiedNamePublicId = (PublicId) fullyQualifiedNameBox.getChildren().getFirst().getUserData();
                     TextFlow row = (TextFlow) fullyQualifiedNameBox.getChildren().getFirst();
-                    row.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-                            new EditConceptFullyQualifiedNameEvent(fullyQualifiedNameBox,
-                                    EditConceptFullyQualifiedNameEvent.EDIT_FQN, fullyQuallifiedNamePublicId)));
+                    row.setOnMouseClicked(event -> {
+                        LOG.info("clicked edit FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
+                        this.conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_DESCRIPTION_SEMANTIC, new SemanticPublicId(fullyQuallifiedNamePublicId));
+                        this.conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
+//                       // TODO: remove associated event
+//                        eventBus.publish(conceptTopic,
+//                                new EditConceptFullyQualifiedNameEvent(fullyQualifiedNameBox,
+//                                        EditConceptFullyQualifiedNameEvent.EDIT_FQN, fullyQuallifiedNamePublicId));
+                    });
                     fullyQualifiedNameNodeListControl.getItems().add(fullyQualifiedNameBox);
                     LOG.debug("FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
                 } else if (isOtherName) {
@@ -989,9 +1219,15 @@ public class ConceptController {
                     VBox otherNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
                     PublicId otherNamePublicId = (PublicId) otherNameBox.getChildren().getFirst().getUserData();
                     TextFlow firstRow = (TextFlow) otherNameBox.getChildren().getFirst();
-                    firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-                            new EditOtherNameConceptEvent(otherNameBox,
-                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId)));
+                    firstRow.setOnMouseClicked(event -> {
+                            LOG.info("edit Other Names = " + semanticEntityVersion + " " + fieldDescriptions);
+                        this.conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_DESCRIPTION_SEMANTIC, new SemanticPublicId(otherNamePublicId));
+                        this.conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
+//                            // TODO: remove associated event
+//                            eventBus.publish(conceptTopic,
+//                            new EditOtherNameConceptEvent(otherNameBox,
+//                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId));
+                    });
                     otherNamesNodeListControl.getItems().add(otherNameBox);
 
                     LOG.debug("Other Names = " + semanticEntityVersion + " " + fieldDescriptions);
@@ -1008,14 +1244,15 @@ public class ConceptController {
         },
         // else no value present
         () -> {
-            getConceptViewModel().setPropertyValue(MODE, VIEW);
-            List<DescrName> fqns = getConceptViewModel().getValue(FULLY_QUALIFIED_NAMES);
+                LOG.error(" try to populate description semantics while not having a valid concept entity and not being in create mode");
+            this.conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT, false);
+            List<DescrName> fqns = this.conceptViewModelNext.getList(ConceptPropertyKeys.ASOCIATED_FQN_DESCRIPTION_SEMANTICS);
             if (fqns != null && !fqns.isEmpty()) {
                 VBox fqnVBox = new VBox(new Label(NO_VERSION_FOR_VIEW_TEXT));
                 fullyQualifiedNameNodeListControl.getItems().clear();
                 fullyQualifiedNameNodeListControl.getItems().add(fqnVBox);
             }
-            List<DescrName> ots = getConceptViewModel().getValue(OTHER_NAMES);
+            List<DescrName> ots = this.conceptViewModelNext.getList(ConceptPropertyKeys.ASOCIATED_OTHER_NAME_DESCRIPTION_SEMANTICS);
             if (ots != null && !ots.isEmpty()) {
                 VBox otherNameVBox = new VBox(new Label(NO_VERSION_FOR_VIEW_TEXT));
                 otherNamesNodeListControl.getItems().clear();
@@ -1033,17 +1270,64 @@ public class ConceptController {
      * @return
      */
     private VBox generateDescriptionSemanticRow(SemanticEntityVersion semanticEntityVersion, List<String> fieldDescriptions) {
-        VBox textFlowsBox = new VBox();
+        ViewCalculator viewCalculator = this.conceptViewModelNext.getViewProperties().calculator(); //*
+
+        boolean hasFieldDescription = !fieldDescriptions.isEmpty();
+        String nameDescText = getFieldValueByMeaning(semanticEntityVersion, TinkarTerm.TEXT_FOR_DESCRIPTION);
+
+        PublicId semanticPubId = semanticEntityVersion.publicId(); //*
+        boolean isACommitedSemantic = semanticPubId != null;
         String descrSemanticStr = String.join(", ", fieldDescriptions);
+        //----
+
+        return updateThing(viewCalculator, semanticPubId, descrSemanticStr, nameDescText);
+    }
+
+    // This method is usefull when we are adding new semantics descr and want to update
+    // the shown display while the parent concept itself is a) in create mode && not commited
+    // otherwise we can always get the "latest" via DB
+    private VBox generateDescriptionSemanticRow(DescrName nameModel) {
+        ViewCalculator viewCalculator = this.conceptViewModelNext.getViewProperties().calculator(); //*
+        ConceptEntity caseSigConcept = nameModel.getCaseSignificance(); //*
+        String casSigText = viewCalculator.languageCalculator().getDescriptionTextOrNid(caseSigConcept.nid()); //*
+        ConceptEntity langConcept = nameModel.getLanguage(); //*
+        String langText = viewCalculator.languageCalculator().getDescriptionTextOrNid(langConcept.nid()); //*
+        boolean hasFieldDescription = !casSigText.isEmpty() && !langText.isEmpty();
+        // TODO: need to retrieve the description Semantic's Text field (latest version text).
+        PublicId semanticPubId = nameModel.getSemanticPublicId(); //*
+        boolean isACommitedSemantic = semanticPubId != null;
+        String nameDescText;
+        // the semanticPublicId is null in CREATE mode, so use the nameText that was entered
+        // instead of the semanticPublicId field value
+        if (isACommitedSemantic) {
+            int nid = EntityService.get().nidForPublicId(semanticPubId);
+            Latest<SemanticEntityVersion> regularDescriptionTextversion = viewCalculator.latest(nid);
+            nameDescText = regularDescriptionTextversion.get().fieldValues().get(1).toString();
+        } else {
+            nameDescText = nameModel.getNameText();
+        }
+        LOG.info("NameLabel : "+ nameDescText);
+        String descrSemanticStr = "%s, %s".formatted(casSigText, langText); //*-
+
+        //-----
+
+        return updateThing(viewCalculator, semanticPubId, descrSemanticStr, nameDescText);
+
+    }
+
+    private VBox updateThing(ViewCalculator viewCalculator, PublicId semanticPubId,String descrSemanticStr, String nameDescText) {
+        boolean isACommitedSemantic = semanticPubId != null;
+
+        VBox textFlowsBox = new VBox();
 
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
-        String otherNameDescText = getFieldValueByMeaning(semanticEntityVersion, TinkarTerm.TEXT_FOR_DESCRIPTION);
-        Text otherNameLabel = new Text(otherNameDescText);
-        otherNameLabel.getStyleClass().add("descr-concept-name");
+
+        Text nameLabel = new Text(nameDescText);
+        nameLabel.getStyleClass().add("descr-concept-name");
 
         Text semanticDescrText = new Text();
-        if (!fieldDescriptions.isEmpty()) {
+        if (!descrSemanticStr.isEmpty() || !descrSemanticStr.isBlank()) {
             semanticDescrText.setText(" (%s)".formatted(descrSemanticStr));
             semanticDescrText.getStyleClass().add("descr-concept-name");
         } else {
@@ -1054,16 +1338,15 @@ public class ConceptController {
         // store the public id of this semantic entity version
         // so that when clicked the event bus can pass it to the form
         // and the form can populate the data from the publicId
-        row1.setUserData(semanticEntityVersion.publicId());
-        row1.getChildren().addAll(otherNameLabel, semanticDescrText);
+        row1.setUserData(semanticPubId);
+        row1.getChildren().addAll(nameLabel, semanticDescrText);
 
         TextFlow row2 = new TextFlow();
         Text dateAddedLabel = new Text("Date Added: ");
         dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
 
-        if (semanticEntityVersion.publicId() != null) {
-            ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-            Latest<EntityVersion> semanticVersionLatest = viewCalculator.latest(Entity.nid(semanticEntityVersion.publicId()));
+        if (isACommitedSemantic) {
+            Latest<EntityVersion> semanticVersionLatest = viewCalculator.latest(Entity.nid(semanticPubId));
             semanticVersionLatest.ifPresent(entityVersion -> {
                 long rawTime = entityVersion.time();
                 String dateText = null;
@@ -1090,86 +1373,6 @@ public class ConceptController {
             });
         }
 
-        textFlowsBox.getChildren().addAll(row1, row2);
-        return textFlowsBox;
-    }
-
-    private VBox generateDescriptionSemanticRow(DescrName otherName) {
-        VBox textFlowsBox = new VBox();
-        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-        ConceptEntity caseSigConcept = otherName.getCaseSignificance();
-        String casSigText = viewCalculator.languageCalculator().getDescriptionTextOrNid(caseSigConcept.nid());
-        ConceptEntity langConcept = otherName.getLanguage();
-
-        String langText = viewCalculator.languageCalculator().getDescriptionTextOrNid(langConcept.nid());
-
-        String descrSemanticStr = "%s, %s".formatted(casSigText, langText);
-
-        // create textflow to hold regular name label
-        TextFlow row1 = new TextFlow();
-
-        // TODO: need to retrieve the description Semantic's Text field (latest version text).
-
-        PublicId semanticPid = otherName.getSemanticPublicId();
-        Text otherNameLabel;
-
-        // the semanticPublicId is null in CREATE mode, so use the nameText that was entered
-        // instead of the semanticPublicId field value
-        if (semanticPid != null) {
-            int nid = EntityService.get().nidForPublicId(semanticPid);
-            Latest<SemanticEntityVersion> regularDescriptionTextversion = viewCalculator.latest(nid);
-            otherNameLabel = new Text(regularDescriptionTextversion.get().fieldValues().get(1).toString());
-        } else {
-            otherNameLabel = new Text(otherName.getNameText());
-        }
-        LOG.info("otherNameLabel : "+otherNameLabel);
-
-        otherNameLabel.getStyleClass().add("descr-concept-name");
-
-        Text semanticDescrText = new Text();
-        semanticDescrText.setText(" (%s)".formatted(descrSemanticStr));
-        semanticDescrText.getStyleClass().add("descr-concept-name");
-
-        // add the other name label and description semantic label
-        row1.getStyleClass().add("descr-semantic-container");
-        // store the public id of this semantic entity version
-        // so that when clicked the event bus can pass it to the form
-        // and the form can populate the data from the publicId
-//        this.otherNamePublicId = semanticEntityVersion.publicId();
-
-        row1.getChildren().addAll(otherNameLabel, semanticDescrText);
-
-        TextFlow row2 = new TextFlow();
-        Text dateAddedLabel = new Text("Date Added: ");
-        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
-
-        if (otherName.getSemanticPublicId() != null) {
-            Latest<EntityVersion> semanticVersionLatest = viewCalculator.latest(Entity.nid(otherName.getSemanticPublicId()));
-            semanticVersionLatest.ifPresent(entityVersion -> {
-                long rawTime = entityVersion.time();
-                String dateText = null;
-                if (rawTime == PREMUNDANE_TIME) {
-                    dateText = PREMUNDANE;
-                } else {
-                    Locale userLocale = Locale.getDefault();
-                    LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
-                    DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
-                    dateText = formatter.format(localDate);
-                }
-
-                Text dateLabel = new Text(dateText);
-                dateLabel.getStyleClass().add("grey8-12pt-bold");
-
-                Region spacer = new Region();
-                spacer.setMinWidth(10);
-
-                Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
-                Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
-
-                // Add the date info and additional hyperlinks
-                row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
-            });
-        }
         textFlowsBox.getChildren().addAll(row1, row2);
         return textFlowsBox;
     }
@@ -1209,7 +1412,7 @@ public class ConceptController {
         // TODO: This should rely on the view calculator from the parent view properties. Below will always get the actual latest semantic version
         //        ViewCalculator viewCalculator = getViewProperties().calculator(); /* after import this is not getting latest */
 
-        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator(); /* returns committed latest from db */
+        ViewCalculator viewCalculator = this.conceptViewModelNext.getViewProperties().calculator(); /* returns committed latest from db */
         viewCalculator.getDescriptionsForComponent(conceptFacade).stream()
                 .filter(semanticEntity -> {
                     // TODO FIXME - the latest() methods should be relative to the
@@ -1217,7 +1420,7 @@ public class ConceptController {
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
 
-                    Latest<SemanticEntityVersion> semanticEntityVersionLatest = conceptViewModel.getViewProperties().calculator().latest(semanticEntity.nid());
+                    Latest<SemanticEntityVersion> semanticEntityVersionLatest = this.conceptViewModelNext.getViewProperties().calculator().latest(semanticEntity.nid());
                     if (semanticEntityVersionLatest.isAbsent()) {
                         return false; // No version found
                     }
@@ -1244,7 +1447,7 @@ public class ConceptController {
                     //              This will always return the latest record from the database not the
                     //              latest from the view coordinate position data time range.
 
-                    Latest<SemanticEntityVersion> semanticEntityVersionLatest = conceptViewModel.getViewProperties().calculator().latest(semanticEntity.nid());
+                    Latest<SemanticEntityVersion> semanticEntityVersionLatest = this.conceptViewModelNext.getViewProperties().calculator().latest(semanticEntity.nid());
                     if(semanticEntityVersionLatest.isAbsent()) {
                         return;
                     }
@@ -1297,29 +1500,30 @@ public class ConceptController {
     private void updateAxioms() {
 
         // do not update ui should be blank
-        if (getConceptViewModel().getPropertyValue(MODE) == CREATE) {
+        boolean isNewConcept = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT);
+        if (isNewConcept) {
             return;
         }
 
         // clear Axioms areas
-        ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-        EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
+        ViewCalculator viewCalculator = this.conceptViewModelNext.getViewProperties().calculator();
+        EntityFacade entityFacade = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE);
 
         viewCalculator.latest(entityFacade).ifPresentOrElse(
         entityVersion -> {
 
             // Create a SheetItem (AXIOM inferred semantic version)
             // TODO Should this be reused instead of instanciating a new one everytime?
-            KometPropertySheet inferredPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
+            KometPropertySheet inferredPropertySheet = new KometPropertySheet(this.conceptViewModelNext.getViewProperties(), true);
             Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
-            makeSheetItem(conceptViewModel.getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
+            makeSheetItem(this.conceptViewModelNext.getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
             inferredAxiomPane.setCenter(inferredPropertySheet);
 
 
             // Create a SheetItem (AXIOM stated semantic version)
-            KometPropertySheet statedPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
+            KometPropertySheet statedPropertySheet = new KometPropertySheet(this.conceptViewModelNext.getViewProperties(), true);
             Latest<SemanticEntityVersion> statedSemanticVersion = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
-            makeSheetItem(conceptViewModel.getViewProperties(), statedPropertySheet, statedSemanticVersion);
+            makeSheetItem(this.conceptViewModelNext.getViewProperties(), statedPropertySheet, statedSemanticVersion);
             statedAxiomPane.setCenter(statedPropertySheet);
 
             //TODO discuss the blue theme color related to AXIOMs
@@ -1339,11 +1543,11 @@ public class ConceptController {
                                KometPropertySheet propertySheet,
                                Latest<SemanticEntityVersion> semanticVersion) {
         semanticVersion.ifPresent(semanticEntityVersion -> {
-            Latest<PatternEntityVersion> statedPatternVersion = conceptViewModel.getViewProperties().calculator().latestPatternEntityVersion(semanticEntityVersion.pattern());
-            ImmutableList<ObservableField> fields = fields(semanticEntityVersion, statedPatternVersion.get(), conceptViewModel.getViewProperties().calculator());
+            Latest<PatternEntityVersion> statedPatternVersion = this.conceptViewModelNext.getViewProperties().calculator().latestPatternEntityVersion(semanticEntityVersion.pattern());
+            ImmutableList<ObservableField> fields = fields(semanticEntityVersion, statedPatternVersion.get(), this.conceptViewModelNext.getViewProperties().calculator());
             fields.forEach(field ->
                     // create a row as a label: editor. For Axioms we hide the left labels.
-                    propertySheet.getItems().add(SheetItem.make(field, semanticEntityVersion, conceptViewModel.getViewProperties())));
+                    propertySheet.getItems().add(SheetItem.make(field, semanticEntityVersion, this.conceptViewModelNext.getViewProperties())));
         });
 
     }
@@ -1390,10 +1594,13 @@ public class ConceptController {
         }
 
         if (stampViewControl.isSelected()) {
-            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+            boolean isNewConcept = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT);
+            if (isNewConcept) {
                 eventBus.publish(conceptTopic, new StampEvent(stampViewControl, StampEvent.CREATE_STAMP));
+                this.conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.STAMP);
             } else {
                 eventBus.publish(conceptTopic, new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
+                this.conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.STAMP);
             }
 
             if (!propertiesToggleButton.isSelected()) {
@@ -1401,6 +1608,7 @@ public class ConceptController {
             }
         } else {
             eventBus.publish(conceptTopic, new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
+            this.conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NONE);
         }
     }
 
@@ -1414,11 +1622,19 @@ public class ConceptController {
 
             updateDraggableNodesForPropertiesPanel(true);
 
-            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE)) && !stampViewControl.isSelected()) {
+            boolean isNewConcept = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT);
+            boolean hasValidStamp = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.HAS_VALID_STAMP);
+
+            if (isNewConcept) {
                 // show the Add FQN
-                eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(propertyToggle,
-                        AddFullyQualifiedNameEvent.ADD_FQN, conceptViewModel.getViewProperties()));
-            } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
+                if (hasValidStamp) {
+                    eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(propertyToggle,
+                            AddFullyQualifiedNameEvent.ADD_FQN, this.conceptViewModelNext.getViewProperties()));
+                } else {
+                    // TODO open stamForm
+                }
+
+            } else {
                 // show the button form
                 eventBus.publish(conceptTopic, new OpenPropertiesPanelEvent(propertyToggle,
                         OpenPropertiesPanelEvent.OPEN_PROPERTIES_PANEL, fqnPublicId, fqnTitleText.getText()));
@@ -1444,12 +1660,12 @@ public class ConceptController {
      * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
      */
     private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
-        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+        if (this.propertiesJFXNode.controller() != null && this.propertiesJFXNode.controller().getPropertiesTabsPane() != null) {
             if (isOpen) {
-                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                addDraggableNodes(detailsOuterBorderPane, this.propertiesJFXNode.controller().getPropertiesTabsPane());
                 LOG.debug("Added properties nodes as draggable");
             } else {
-                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                removeDraggableNodes(detailsOuterBorderPane, this.propertiesJFXNode.controller().getPropertiesTabsPane());
                 LOG.debug("Removed properties nodes from draggable");
             }
         }
@@ -1507,7 +1723,7 @@ public class ConceptController {
      * generate the classic Komet coordinate menu
      */
     public void setUpEditCoordinateMenu() {
-        this.viewMenuModel = new ViewMenuModel(conceptViewModel.getViewProperties(), coordinatesMenuButton, "DetailsController");
+        this.viewMenuModel = new ViewMenuModel(this.conceptViewModelNext.getViewProperties(), coordinatesMenuButton, "DetailsController");
     }
 
     private DateTimeFormatter dateFormatter(String formatString) {
@@ -1519,7 +1735,7 @@ public class ConceptController {
 
     private int getFieldIndexByMeaning(SemanticEntityVersion entityVersion, EntityFacade ...meaning) {
         PatternEntity<PatternEntityVersion> patternEntity = entityVersion.entity().pattern();
-        PatternEntityVersion patternEntityVersion = conceptViewModel.getViewProperties().calculator().latest(patternEntity).get();
+        PatternEntityVersion patternEntityVersion = this.conceptViewModelNext.getViewProperties().calculator().latest(patternEntity).get();
         int index = -1;
         if (meaning != null && meaning.length > 0){
             for (int i=0; i < meaning.length; i++){
@@ -1542,7 +1758,7 @@ public class ConceptController {
 
     private <T> T getFieldValueByPurpose(SemanticEntityVersion entityVersion, EntityFacade ...purpose) {
         PatternEntity<PatternEntityVersion> patternEntity = entityVersion.entity().pattern();
-        PatternEntityVersion patternEntityVersion = conceptViewModel.getViewProperties().calculator().latest(patternEntity).get();
+        PatternEntityVersion patternEntityVersion = this.conceptViewModelNext.getViewProperties().calculator().latest(patternEntity).get();
         int index = -1;
         if (purpose != null && purpose.length > 0){
             for (int i=0; i < purpose.length; i++){
