@@ -17,14 +17,6 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
-import dev.ikm.komet.kview.common.ViewCalculatorUtils;
-import dev.ikm.komet.kview.controls.StampViewControl;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.events.StampEvent;
-import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.EvtType;
-import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservablePattern;
@@ -35,18 +27,22 @@ import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
+import dev.ikm.komet.kview.controls.PublicIDListControl;
+import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.Toast;
-import dev.ikm.komet.kview.controls.PublicIDControl;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -60,7 +56,12 @@ import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtType;
+import dev.ikm.tinkar.events.Subscriber;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
+import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
@@ -94,10 +95,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
@@ -214,7 +213,7 @@ public class GenEditingDetailsController {
     private ImageView identiconImageView;
 
     @FXML
-    private PublicIDControl identifierControl;
+    private PublicIDListControl identifierControl;
 
     @InjectViewModel
     private GenEditingViewModel genEditingViewModel;
@@ -319,6 +318,7 @@ public class GenEditingDetailsController {
 
         if(genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
             addReferenceButton.setDisable(!isConfirmedOrSubmitted);
+            stampViewControl.setDisable(isConfirmedOrSubmitted);
         }
     }
 
@@ -355,17 +355,9 @@ public class GenEditingDetailsController {
 
     private void updateDisplayUUID() {
         EntityFacade semanticComponent = genEditingViewModel.getPropertyValue(SEMANTIC);
-        if (semanticComponent == null) {
-            return;
+        if (semanticComponent != null) {
+            identifierControl.updatePublicIdList(genEditingViewModel.getViewProperties().calculator(), semanticComponent);
         }
-
-        List<String> idList = semanticComponent.publicId().asUuidList().stream()
-                .map(UUID::toString)
-                .collect(Collectors.toList());
-        idList.addAll(DataModelHelper.getIdsToAppend(genEditingViewModel.getViewProperties().calculator(), semanticComponent.toProxy()));
-        String idString = String.join(", ", idList);
-
-        identifierControl.setPublicId(idString);
     }
 
     private void updateIdenticon(ObjectProperty<EntityFacade> refComponent) {

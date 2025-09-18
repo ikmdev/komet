@@ -134,19 +134,6 @@
     -fx-max-height: -fx-height;
 }
 
-.stamp-text {
-    -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: 11px;
-    -fx-fill: -Grey-11;
-}
-
-.stamp-label {
-    -fx-font-family: "Noto Sans Medium";
-    -fx-font-weight: 500;
-    -fx-font-size: 12px;
-    -fx-text-fill: -Grey-11;
-}
-
 .stamp-form-container .help-icon-container {
     -fx-padding: 8px 10px 0 0;
 
