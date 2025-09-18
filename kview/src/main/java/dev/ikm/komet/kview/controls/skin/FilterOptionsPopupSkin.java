@@ -266,6 +266,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         setupFilter(defaultFilterOptions);
         updating = false;
         updateCurrentFilterOptions();
+        currentFilterOptionsProperty.set(defaultFilterOptions);
     }
 
     private <T> void updateCurrentFilterOptions() {
@@ -371,8 +372,10 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 pane.setDefaultLangCoordinates(defaultFilterOptions.getLanguageCoordinates(pane.getOrdinal())));
         // finally, setup filter with default options
         setupFilter(defaultFilterOptions);
-        // and update control with default options
-        currentFilterOptionsProperty.set(defaultFilterOptions);
+        if (control.getFilterOptions() == null) {
+            // and update control with default options, if there are no options yet
+            currentFilterOptionsProperty.set(defaultFilterOptions);
+        }
     }
 
     private void setDefaultOptions(FilterOptions filterOptions) {

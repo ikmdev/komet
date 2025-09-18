@@ -375,12 +375,12 @@ public class FilterOptionsUtils {
                             if (fromView) {
                                 return;
                             }
-                            if (((ListPropertyWithOverride<PatternFacade>) observableLanguageCoordinate.dialectPatternPreferenceListProperty()).isOverridden() &&
-                                    !filterOptions.getLanguageCoordinatesList().getFirst().getDialect().isInOverride()) {
+                            ListPropertyWithOverride<PatternFacade> propertyWithOverride = (ListPropertyWithOverride<PatternFacade>) observableLanguageCoordinate.dialectPatternPreferenceListProperty();
+                            if (propertyWithOverride.isOverridden() && !filterOptions.getLanguageCoordinatesList().getFirst().getDialect().isInOverride()) {
                                 // force a reset of the property, so it fires a change event when it gets updated
                                 // to its originalValue, in case parentView and nodeView values are the same
                                 observableLanguageCoordinate.dialectPatternPreferenceListProperty().set(FXCollections.emptyObservableList()); // Dummy, not null
-                                observableLanguageCoordinate.removeOverrides();
+                                propertyWithOverride.removeOverride();
                             } else if (!observableLanguageCoordinate.dialectPatternPreferenceListProperty().get().equals(list)) {
                                 fromFilter = true;
                                 observableLanguageCoordinate.dialectPatternPreferenceListProperty().set(list);
@@ -392,12 +392,12 @@ public class FilterOptionsUtils {
                             if (fromView) {
                                 return;
                             }
-                            if (((ListPropertyWithOverride<ConceptFacade>) observableLanguageCoordinate.descriptionTypePreferenceListProperty()).isOverridden() &&
-                                    !filterOptions.getLanguageCoordinatesList().getFirst().getDialect().isInOverride()) {
+                            ListPropertyWithOverride<ConceptFacade> propertyWithOverride = (ListPropertyWithOverride<ConceptFacade>) observableLanguageCoordinate.descriptionTypePreferenceListProperty();
+                            if (propertyWithOverride.isOverridden() && !filterOptions.getLanguageCoordinatesList().getFirst().getDialect().isInOverride()) {
                                 // force a reset of the property, so it fires a change event when it gets updated
                                 // to its originalValue, in case parentView and nodeView values are the same
                                 observableLanguageCoordinate.descriptionTypePreferenceListProperty().set(FXCollections.emptyObservableList()); // Dummy, not null
-                                observableLanguageCoordinate.removeOverrides();
+                                propertyWithOverride.removeOverride();
                             } else if (!observableLanguageCoordinate.descriptionTypePreferenceListProperty().get().equals(list)) {
                                 fromFilter = true;
                                 observableLanguageCoordinate.descriptionTypePreferenceListProperty().set(list);
