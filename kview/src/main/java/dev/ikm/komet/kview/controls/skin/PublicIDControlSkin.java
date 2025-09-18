@@ -2,7 +2,6 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
-import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
@@ -12,7 +11,6 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
-import javafx.scene.text.Text;
 import javafx.util.Subscription;
 
 /// Provides the Skin for the PublicIDControl.
@@ -93,26 +91,6 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
             identifier = publicId;
             publicIdTooltip.setText(identifier);
             publicIdLabel.setText(identifier);
-
-            Platform.runLater(() -> {
-                // set the preferredWidth of the TextField to completely show the identifier text
-
-                Text text = new Text(identifier); // Create a temporary Text node with the new text
-                text.setFont(publicIdLabel.getFont()); // Set the same font as the TextField
-                double labelWidth = text.getLayoutBounds().getWidth() +
-                        publicIdLabel.getLabelPadding().getLeft() +
-                        publicIdLabel.getLabelPadding().getRight() +
-                        publicIdLabel.getPadding().getLeft() +
-                        publicIdLabel.getPadding().getRight() + 2; // Add padding and a small buffer
-
-//                publicIdLabel.setPrefWidth(labelWidth);
-//                publicIdLabel.setMaxWidth(labelWidth);
-
-                double borderWidth = labelWidth + 10 + copyToClipboardButton.getPrefWidth();
-
-//                rootBorderPane.setPrefWidth(borderWidth);
-//                rootBorderPane.setMaxWidth(borderWidth);
-            });
         });
     }
 
