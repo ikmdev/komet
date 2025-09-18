@@ -65,9 +65,6 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
     private final StackPane filterPane;
     private Subscription subscription;
 
-    // listen to parent/node view coordinate menu changes
-    private Subscription viewSubscription;
-
     private final ListView<KLSearchControl.SearchResult> resultsPane;
     private final FilterOptionsPopup filterOptionsPopup;
 
@@ -237,30 +234,11 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         });
 
         subscription = subscription.and((control.viewPropertiesProperty().subscribe(view -> {
-            if (viewSubscription != null) {
-                viewSubscription.unsubscribe();
-            }
-            viewSubscription = Subscription.EMPTY;
             if (view != null) {
-                // listen to changes to the current overrideable view, after changes coming from the parentView
-                // or the F.O. popup, and publish event
-                viewSubscription = viewSubscription.and(view.nodeView().subscribe((_, _) -> {
-                    // publish event to refresh the navigator
-                    EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC,
-                            new RefreshCalculatorCacheEvent("child filter menu refresh next gen nav", RefreshCalculatorCacheEvent.GLOBAL_REFRESH));
-                }));
-
                 // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
                 // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
                 filterOptionsPopup.getFilterOptionsUtils().subscribeFilterOptionsToView(
                         filterOptionsPopup.getInheritedFilterOptions(), view.nodeView());
-
-                // listen to changes to the parent of the current overrideable view, and publish event
-                viewSubscription = viewSubscription.and(view.parentView().subscribe((_, _) -> {
-                    // publish event to refresh the navigator
-                    EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC,
-                            new RefreshCalculatorCacheEvent("parent refresh next gen nav", RefreshCalculatorCacheEvent.GLOBAL_REFRESH));
-                }));
             }
         })));
 
@@ -280,9 +258,6 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
     public void dispose() {
         if (subscription != null) {
             subscription.unsubscribe();
-        }
-        if (viewSubscription != null) {
-            viewSubscription.unsubscribe();
         }
         textField.textProperty().unbind();
         textField.promptTextProperty().unbind();
