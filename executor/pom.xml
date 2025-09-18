@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.56.0-SNAPSHOT</version>
+        <version>1.56.0-IIA-2912-semantic-title-update-SNAPSHOT</version>
     </parent>
     <artifactId>executor</artifactId>
     <dependencies>
