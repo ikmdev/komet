@@ -30,7 +30,7 @@ public class StampViewControlSkin extends SkinBase<StampViewControl> {
         root.setOnMousePressed(this::onMousePressedOnStamp);
 
         // --- Status ---
-        Text statusText = new Text("Status: ");
+        Label statusText = new Label("Status: ");
         statusText.getStyleClass().add("stamp-text");
 
         statusLabel = new Label();
@@ -40,7 +40,7 @@ public class StampViewControlSkin extends SkinBase<StampViewControl> {
         HBox statusBox = new HBox(statusText, statusLabel);
 
         // --- Last Updated ---
-        Text lastUpdatedText = new Text("Last Updated: ");
+        Label lastUpdatedText = new Label("Last Updated: ");
         lastUpdatedText.getStyleClass().add("stamp-text");
 
         lastUpdatedLabel = new Label();
@@ -50,7 +50,7 @@ public class StampViewControlSkin extends SkinBase<StampViewControl> {
         HBox lastUpdatedBox = new HBox(lastUpdatedText, lastUpdatedLabel);
 
         // --- Author ---
-        Text authorText = new Text("Author: ");
+        Label authorText = new Label("Author: ");
         authorText.getStyleClass().add("stamp-text");
 
         authorLabel = new Label();
@@ -60,7 +60,7 @@ public class StampViewControlSkin extends SkinBase<StampViewControl> {
         HBox authorBox = new HBox(authorText, authorLabel);
 
         // --- Module ---
-        Text moduleText = new Text("Module: ");
+        Label moduleText = new Label("Module: ");
         moduleText.getStyleClass().add("stamp-text");
 
         moduleLabel = new Label();
@@ -70,7 +70,7 @@ public class StampViewControlSkin extends SkinBase<StampViewControl> {
         HBox moduleBox = new HBox(moduleText, moduleLabel);
 
         // --- Path ---
-        Text pathText = new Text("Path: ");
+        Label pathText = new Label("Path: ");
         pathText.getStyleClass().add("stamp-text");
 
         pathLabel = new Label();

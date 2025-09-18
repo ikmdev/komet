@@ -9,6 +9,18 @@
     highlight-border-color: #9ae281;
 }
 
+.stamp-view-control .stamp-container .stamp-label {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 12px;
+    -fx-text-fill: #444;
+}
+
+.stamp-view-control .stamp-container .stamp-text {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 12px;
+    -fx-fill: #999;
+}
+
 .stamp-view-control:selected .stamp-container {
     -fx-background-color: highlight-color;
     -fx-background-radius: 3px;
