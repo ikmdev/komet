@@ -24,6 +24,7 @@ import java.util.ServiceLoader.Provider;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ import dev.ikm.komet.reasoner.ui.RunReasonerIncrementalTask;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.reasoner.elksnomed.ElkSnomedReasonerService;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -86,7 +88,15 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				ArrayList<CheckMenuItem> reasonerServiceMenuItems = new ArrayList<>();
 				menuItems.add(new SeparatorMenuItem());
 				List<ReasonerService> rss = PluggableService.load(ReasonerService.class).stream().map(Provider::get)
-						.sorted(Comparator.comparing(ReasonerService::getName)).toList();
+						.sorted(Comparator.comparing(ReasonerService::getName))
+						.collect(Collectors.toCollection(ArrayList::new));
+				ReasonerService rs_sel = rss.stream().filter(rs -> rs.getClass() == ElkSnomedReasonerService.class)
+						.findFirst().orElse(null);
+				if (rs_sel != null) {
+					rss.remove(rs_sel);
+					rss.addFirst(rs_sel);
+				}
+				MenuItem selectedMenuItem = null;
 				for (ReasonerService rs : rss) {
 					LOG.info("Reasoner service add: " + rs);
 					CheckMenuItem item = new CheckMenuItem("Use " + rs.getName());
@@ -101,11 +111,16 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 					if (this.reasonerService == null) {
 						this.reasonerService = rs;
 						item.setSelected(true);
-					} else if (rs.getName().equals("ElkSnomedReasonerService")) {
+					} else if (rs == rs_sel) {
 						reasonerServiceMenuItems.forEach(xi -> xi.setSelected(false));
 						this.reasonerService = rs;
 						item.setSelected(true);
+						selectedMenuItem = item;
 					}
+				}
+				if (selectedMenuItem != null) {
+					menuItems.remove(selectedMenuItem);
+					menuItems.add(selectedMenuItem);
 				}
 				if (this.reasonerService == null)
 					throw new RuntimeException("No ReasonerService available");

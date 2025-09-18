@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.timeline;
 
 import dev.ikm.tinkar.coordinate.stamp.change.VersionChangeRecord;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -27,5 +28,13 @@ import java.util.TreeSet;
 public class TimelinePathMap extends TreeMap<String, TreeMap<Integer, TreeMap<Integer, TreeSet<VersionChangeRecord>>>> {
     public List<Integer> getModuleNids(String pathName) {
         return get(pathName).keySet().stream().toList();
+    }
+
+    public LinkedHashMap<String, List<Integer>> getPathModulesNidOnlyMap() {
+        LinkedHashMap<String, List<Integer>> collection = new LinkedHashMap<>();
+        forEach( (path, moduleMap) -> {
+            collection.put(path, this.getModuleNids(path));
+        });
+        return  collection;
     }
 }

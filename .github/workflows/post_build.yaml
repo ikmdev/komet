@@ -30,9 +30,11 @@ jobs:
           
       - name: IKMDEV Post Build Action
         id: ikmdev_post_build
-        uses: ikmdev/maven-post-build-action@v3.2.0
+        uses: ikmdev/maven-post-build-action@v3.3.0
         with:
-            nexus_repo_password: ${{secrets.EC2_NEXUS_PASSWORD}}
+            nexus_repo_url: ${{secrets.NEXUS_URL}}
+            nexus_repo_username: ${{secrets.NEXUS_USER}}
+            nexus_repo_password: ${{secrets.NEXUS_PASSWORD}}
             branch_name: ${{github.event.workflow_run.head_branch}}
             github_token: ${{secrets.GITHUB_TOKEN}}
             maven_central_username: ${{secrets.MC_SECRET_USERNAME}}

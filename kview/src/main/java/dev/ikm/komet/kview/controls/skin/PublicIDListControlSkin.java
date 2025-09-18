@@ -42,7 +42,7 @@ public class PublicIDListControlSkin extends SkinBase<PublicIDListControl> {
 
             if (publicIdList != null && !publicIdList.isEmpty()) {
                 for (String identifier : publicIdList) {
-                    PublicIDControl publicIDControl = new PublicIDControl(false, identifier);
+                    PublicIDControl publicIDControl = new PublicIDControl(false, identifier, true);
 
                     identifierVBox.getChildren().add(publicIDControl);
                 }

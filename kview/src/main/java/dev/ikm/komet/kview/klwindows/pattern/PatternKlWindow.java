@@ -108,4 +108,14 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
     protected void setPropertyPanelOpen(boolean isOpen) {
         jfxNode.controller().setPropertiesPanelOpen(isOpen);
     }
+
+    @Override
+    protected String selectedPropertyPanel() {
+        return jfxNode.controller().getPropertiesController().selectedView();
+    }
+
+    @Override
+    protected void setSelectedPropertyPanel(String pane) {
+        jfxNode.controller().getPropertiesController().restoreSelectedView(pane);
+    }
 }
