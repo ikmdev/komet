@@ -372,10 +372,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 pane.setDefaultLangCoordinates(defaultFilterOptions.getLanguageCoordinates(pane.getOrdinal())));
         // finally, setup filter with default options
         setupFilter(defaultFilterOptions);
-        if (control.getFilterOptions() == null) {
-            // and update control with default options, if there are no options yet
-            currentFilterOptionsProperty.set(defaultFilterOptions);
-        }
     }
 
     private void setDefaultOptions(FilterOptions filterOptions) {

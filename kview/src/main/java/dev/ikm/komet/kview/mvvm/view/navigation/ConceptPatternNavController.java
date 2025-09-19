@@ -291,8 +291,13 @@ public class ConceptPatternNavController {
         nodePanel.getStyleClass().add("concept-navigator-container");
         VBox.setVgrow(conceptNavigatorControl, Priority.ALWAYS);
 
-        // When nodeView changes, update the Navigator, which also rebuilds the treeView
-        viewProperties.nodeView().subscribe((_, nv) -> conceptNavigatorControl.setNavigator(new ViewNavigator(nv)));
+        // When nodeView changes, update the Navigator, to update the Search Control and the FilterOptionsPopup, and
+        // also rebuild the ConceptNavigator treeView
+        viewProperties.nodeView().subscribe((_, nv) -> {
+            ViewNavigator nav = new ViewNavigator(nv);
+            searchControl.setNavigator(nav);
+            conceptNavigatorControl.setNavigator(nav);
+        });
 
         return nodePanel;
     }
