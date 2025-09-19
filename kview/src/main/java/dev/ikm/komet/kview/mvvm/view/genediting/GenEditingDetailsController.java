@@ -468,11 +468,8 @@ public class GenEditingDetailsController {
             semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
             //Set and Update STAMP values
             semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-                propertiesController.getStampFormViewModel().setPropertyValue(CURRENT_STAMP, semanticEntityVersion.stamp());
                 updateUIStamp(semanticEntityVersion.stamp().lastVersion());
             });
-            //Commenting out this method since the above line #470 does not updated the stampFormViewModel CURRENT_STAMP.
-      //      updateUIStamp(propertiesController.getStampFormViewModel());
         };
         subscriberList.add(refreshSubscriber);
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
