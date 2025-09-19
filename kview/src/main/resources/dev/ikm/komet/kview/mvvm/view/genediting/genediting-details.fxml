@@ -4,7 +4,10 @@
 <?import dev.ikm.komet.kview.controls.PublicIDListControl?>
 <?import dev.ikm.komet.kview.controls.StampViewControl?>
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.MenuButton?>
@@ -13,8 +16,6 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.Cursor?>
-<?import javafx.scene.Group?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
@@ -32,169 +33,144 @@
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
-<?import java.lang.String?>
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308"
-            maxWidth="1.7976931348623157E308" prefWidth="727.0" stylesheets="@../kview.css"
-            xmlns="http://javafx.com/javafx/24.0.1"
-            fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController">
+
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController">
     
     <top>
-        <VBox BorderPane.alignment="CENTER" minWidth="480.0">
+        <VBox minWidth="480.0" BorderPane.alignment="CENTER">
             <children>
                 <FlowPane styleClass="rounded-top">
                     <children>
-                        <HBox fx:id="tabHeader" prefHeight="18.0" spacing="4.0"
-                              style="-fx-background-color: -Natural-Grey-Main;">
+                        <HBox fx:id="tabHeader" prefHeight="18.0" spacing="4.0" style="-fx-background-color: -Natural-Grey-Main;">
                             <styleClass>
-                                <String fx:value="lidr-rounded-tab"/>
+                                <String fx:value="lidr-rounded-tab" />
                             </styleClass>
                             <children>
-                                <Region prefHeight="12.0" prefWidth="8.4" styleClass="lidr-tab-icon"/>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="lidr-tab-text"
-                                      text="Pattern Semantic"/>
+                                <Region prefHeight="12.0" prefWidth="8.4" styleClass="lidr-tab-icon" />
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="lidr-tab-text" text="Pattern Semantic" />
                             </children>
                             <cursor>
-                                <Cursor fx:constant="CLOSED_HAND"/>
+                                <Cursor fx:constant="CLOSED_HAND" />
                             </cursor>
                         </HBox>
                     </children>
                 </FlowPane>
-                <HBox fx:id="conceptHeaderControlToolBarHbox" prefHeight="100.0" prefWidth="762.0"
-                      style="-fx-background-color: -Natural-Grey-Main;">
+                <HBox fx:id="conceptHeaderControlToolBarHbox" prefHeight="100.0" prefWidth="762.0" style="-fx-background-color: -Natural-Grey-Main;">
                     <children>
-                        <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
-                            <styleClass>
-                                <String fx:value="icon"/>
-                                <String fx:value="coordinate"/>
-                            </styleClass>
+                        <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY" styleClass="coordinate">
                             <tooltip>
-                                <Tooltip text="Coordinates"/>
+                                <Tooltip text="Coordinates" />
                             </tooltip>
                         </MenuButton>
-                        <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE"
-                                   styleClass="vertical-divider" width="1.0"/>
+                        <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
                         <HBox fx:id="controlBoxHbox1" alignment="CENTER" spacing="15.0">
                             <children>
-                                <Button fx:id="savePatternButton" mnemonicParsing="false" onAction="#save"
-                                        text="Button">
+                                <Button fx:id="savePatternButton" mnemonicParsing="false" onAction="#save" text="Button">
                                     <graphic>
                                         <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
                                             <content>
-                                                <SVGConstants fx:constant="SAVE_SVG_PATH"/>
+                                                <SVGConstants fx:constant="SAVE_SVG_PATH" />
                                             </content>
                                         </SVGPath>
                                     </graphic>
                                     <tooltip>
-                                        <Tooltip text="Publish"/>
+                                        <Tooltip text="Publish" />
                                     </tooltip>
                                 </Button>
                                 <Button mnemonicParsing="false" text="Button">
                                     <graphic>
                                         <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
                                             <content>
-                                                <SVGConstants fx:constant="DUPLICATE_SVG_PATH"/>
+                                                <SVGConstants fx:constant="DUPLICATE_SVG_PATH" />
                                             </content>
                                         </SVGPath>
                                     </graphic>
                                     <tooltip>
-                                        <Tooltip text="Duplicate Semantic"/>
+                                        <Tooltip text="Duplicate Semantic" />
                                     </tooltip>
                                 </Button>
                                 <Button mnemonicParsing="false" styleClass="share-concept" text="Button">
                                     <graphic>
-                                        <Region styleClass="share-icon"/>
+                                        <Region styleClass="share-icon" />
                                     </graphic>
                                     <tooltip>
-                                        <Tooltip text="Share Semantic"/>
+                                        <Tooltip text="Share Semantic" />
                                     </tooltip>
                                 </Button>
                                 <Button mnemonicParsing="false" styleClass="favorite-concept" text="Button">
                                     <graphic>
-                                        <Region styleClass="favorite-icon"/>
+                                        <Region styleClass="favorite-icon" />
                                     </graphic>
                                     <tooltip>
-                                        <Tooltip text="Favorite Semantic"/>
+                                        <Tooltip text="Favorite Semantic" />
                                     </tooltip>
                                 </Button>
-                                <ToggleButton fx:id="reasonerToggleButton" mnemonicParsing="false"
-                                              onAction="#openReasonerSlideout" styleClass="reasoner"
-                                              text="ToggleButton">
+                                <ToggleButton fx:id="reasonerToggleButton" mnemonicParsing="false" onAction="#openReasonerSlideout" styleClass="reasoner" text="ToggleButton">
                                     <graphic>
                                         <Region prefHeight="200.0" prefWidth="200.0">
                                             <styleClass>
-                                                <String fx:value="icon"/>
-                                                <String fx:value="reasoner-icon"/>
+                                                <String fx:value="icon" />
+                                                <String fx:value="reasoner-icon" />
                                             </styleClass>
                                         </Region>
                                     </graphic>
                                     <tooltip>
-                                        <Tooltip text="Reasoner"/>
+                                        <Tooltip text="Reasoner" />
                                     </tooltip>
                                 </ToggleButton>
                             </children>
                         </HBox>
-                        <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE"
-                                   styleClass="vertical-divider" width="1.0"/>
+                        <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
                         <Button mnemonicParsing="false" text="Button">
                             <graphic>
-                                <Region prefHeight="200.0" prefWidth="200.0" styleClass="kview-listview"/>
+                                <Region prefHeight="200.0" prefWidth="200.0" styleClass="kview-listview" />
                             </graphic>
                             <tooltip>
-                                <Tooltip text="List View"/>
+                                <Tooltip text="List View" />
                             </tooltip>
                         </Button>
-                        <ToggleButton fx:id="timelineToggleButton" mnemonicParsing="false" onAction="#openTimelinePanel"
-                                      styleClass="timeline" text="ToggleButton">
+                        <ToggleButton fx:id="timelineToggleButton" mnemonicParsing="false" onAction="#openTimelinePanel" styleClass="timeline" text="ToggleButton">
                             <graphic>
                                 <Region prefHeight="200.0" prefWidth="200.0">
                                     <styleClass>
-                                        <String fx:value="icon"/>
-                                        <String fx:value="timeline-icon"/>
+                                        <String fx:value="icon" />
+                                        <String fx:value="timeline-icon" />
                                     </styleClass>
                                 </Region>
                             </graphic>
                             <tooltip>
-                                <Tooltip text="Time Travel"/>
+                                <Tooltip text="Time Travel" />
                             </tooltip>
                         </ToggleButton>
-                        <Region fx:id="controlBoxRegion2" minWidth="10.0" prefHeight="200.0" prefWidth="200.0"
-                                HBox.hgrow="ALWAYS"/>
-                        <Text fill="#FFFFFF" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="properties-toggle"
-                              text="PROPERTIES">
+                        <Region fx:id="controlBoxRegion2" minWidth="10.0" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                        <Text fill="#FFFFFF" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="properties-toggle" text="PROPERTIES">
                             <font>
-                                <Font name="Open Sans SemiBold" size="13.0"/>
+                                <Font name="Open Sans SemiBold" size="13.0" />
                             </font>
                         </Text>
-                        <ToggleButton fx:id="propertiesToggleButton" mnemonicParsing="false"
-                                      onAction="#openPropertiesPanel" text="ToggleButton">
+                        <ToggleButton fx:id="propertiesToggleButton" mnemonicParsing="false" onAction="#openPropertiesPanel" text="ToggleButton">
                             <graphic>
                                 <Group>
                                     <children>
-                                        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="20.0"
-                                                   stroke="BLACK" strokeType="INSIDE" styleClass="toggle-switch-body"
-                                                   width="32.0"/>
-                                        <Ellipse centerX="10.0" centerY="10.0" fill="DODGERBLUE" radiusX="8.0"
-                                                 radiusY="8.0" stroke="BLACK" strokeType="INSIDE"
-                                                 styleClass="property-toggle-switch"/>
+                                        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="20.0" stroke="BLACK" strokeType="INSIDE" styleClass="toggle-switch-body" width="32.0" />
+                                        <Ellipse centerX="10.0" centerY="10.0" fill="DODGERBLUE" radiusX="8.0" radiusY="8.0" stroke="BLACK" strokeType="INSIDE" styleClass="property-toggle-switch" />
                                     </children>
                                 </Group>
                             </graphic>
                         </ToggleButton>
-                        <Rectangle fx:id="controlBoxRectangle1" fill="DODGERBLUE" height="26.0" stroke="BLACK"
-                                   strokeType="INSIDE" styleClass="vertical-divider" width="1.0"/>
-                        <Button fx:id="closeConceptButton" mnemonicParsing="false" onAction="#closeConceptWindow"
-                                text="Button">
+                        <Rectangle fx:id="controlBoxRectangle1" fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
+                        <Button fx:id="closeConceptButton" mnemonicParsing="false" onAction="#closeConceptWindow" text="Button">
                             <graphic>
-                                <Region prefHeight="200.0" prefWidth="200.0" styleClass="close-window"/>
+                                <Region prefHeight="200.0" prefWidth="200.0" styleClass="close-window" />
                             </graphic>
                         </Button>
                     </children>
                     <padding>
-                        <Insets left="5.0" right="5.0"/>
+                        <Insets left="5.0" right="5.0" />
                     </padding>
                     <styleClass>
-                        <String fx:value="concept-header-control"/>
-                        <String fx:value="rounded-upper-right-only"/>
+                        <String fx:value="concept-header-control" />
+                        <String fx:value="rounded-upper-right-only" />
                     </styleClass>
                 </HBox>
             </children>
@@ -203,78 +179,66 @@
     <right>
         <HBox styleClass="main-right-container" BorderPane.alignment="CENTER">
             <children>
-                <Pane fx:id="propertiesSlideoutTrayPane" styleClass="slideout-tray-pane"/>
-                <Pane fx:id="timelineSlideoutTrayPane" styleClass="slideout-tray-pane"/>
+                <Pane fx:id="propertiesSlideoutTrayPane" styleClass="slideout-tray-pane" />
+                <Pane fx:id="timelineSlideoutTrayPane" styleClass="slideout-tray-pane" />
             </children>
         </HBox>
     </right>
     <center>
         <BorderPane prefWidth="762.0" styleClass="main-center-container" BorderPane.alignment="CENTER">
             <top>
-                <GridPane hgap="8.0" maxWidth="1.7976931348623157E308"
-                          styleClass="concept-detail-banner-background">
+                <GridPane hgap="8.0" maxWidth="1.7976931348623157E308" styleClass="concept-detail-banner-background">
                     
                     <padding>
-                        <Insets top="8.0" right="8.0" bottom="4.0" left="8.0"/>
+                        <Insets bottom="4.0" left="8.0" right="8.0" top="8.0" />
                     </padding>
                     
                     <columnConstraints>
-                        <ColumnConstraints halignment="LEFT" prefWidth="42.0"/>
-                        <ColumnConstraints halignment="LEFT" hgrow="NEVER"/>
-                        <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES"/>
-                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" prefWidth="210.0" minWidth="210.0"/>
+                        <ColumnConstraints halignment="LEFT" prefWidth="42.0" />
+                        <ColumnConstraints halignment="LEFT" hgrow="NEVER" />
+                        <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" />
+                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="210.0" prefWidth="210.0" />
                     </columnConstraints>
                     
                     <rowConstraints>
-                        <RowConstraints fillHeight="false" vgrow="NEVER" valignment="TOP"/>
-                        <RowConstraints vgrow="NEVER"/>
-                        <RowConstraints vgrow="NEVER"/>
-                        <RowConstraints vgrow="NEVER"/>
-                        <RowConstraints vgrow="ALWAYS" valignment="BOTTOM"/>
+                        <RowConstraints fillHeight="false" valignment="TOP" vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
+                        <RowConstraints vgrow="NEVER" />
+                        <RowConstraints valignment="BOTTOM" vgrow="ALWAYS" />
                     </rowConstraints>
                     
-                    <ImageView fx:id="identiconImageView" fitWidth="44.0" pickOnBounds="true" preserveRatio="true"
-                               GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.rowSpan="3"
-                               GridPane.valignment="TOP">
-                        <Image url="@../images/identicon-placeholder.png"/>
+                    <ImageView fx:id="identiconImageView" fitWidth="44.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.rowSpan="3" GridPane.valignment="TOP">
+                        <Image url="@../images/identicon-placeholder.png" />
                     </ImageView>
                     
-                    <Label fx:id="semanticTitleText" text="SEMANTIC TITLE"
-                           GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="2" wrapText="true">
+                    <Label fx:id="semanticTitleText" text="SEMANTIC TITLE" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="0">
                         <font>
-                            <Font name="Open Sans Regular" size="17.0"/>
+                            <Font name="Open Sans Regular" size="17.0" />
                         </font>
                         <tooltip>
-                            <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip"/>
+                            <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip" />
                         </tooltip>
                     </Label>
                     
-                    <Label fx:id="semanticDescriptionLabel" text="Semantic for Test Performed Pattern"
-                           GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.columnSpan="2" wrapText="true"/>
+                    <Label fx:id="semanticDescriptionLabel" text="Semantic for Test Performed Pattern" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" />
                     
                     
-                    <Label styleClass="semantic-banner-label" text="Meaning:" GridPane.rowIndex="2"
-                           GridPane.columnIndex="1" minWidth="60.0" GridPane.valignment="TOP"/>
+                    <Label minWidth="60.0" styleClass="semantic-banner-label" text="Meaning:" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.valignment="TOP" />
                     
-                    <Label fx:id="semanticMeaningText" styleClass="semantic-banner-value" text="[]" wrapText="true"
-                           GridPane.rowIndex="2" GridPane.columnIndex="2" GridPane.valignment="TOP"/>
+                    <Label fx:id="semanticMeaningText" styleClass="semantic-banner-value" text="[]" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="2" GridPane.valignment="TOP" />
                     
                     
-                    <Label styleClass="semantic-banner-label" text="Purpose:" GridPane.rowIndex="3"
-                           GridPane.columnIndex="1" GridPane.valignment="TOP"/>
+                    <Label styleClass="semantic-banner-label" text="Purpose:" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.valignment="TOP" />
                     
-                    <Label fx:id="semanticPurposeText" styleClass="semantic-banner-value" text="[]" wrapText="true"
-                           GridPane.rowIndex="3" GridPane.columnIndex="2" GridPane.valignment="TOP"/>
+                    <Label fx:id="semanticPurposeText" styleClass="semantic-banner-value" text="[]" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="3" GridPane.valignment="TOP" />
                     
                     
-                    <PublicIDListControl fx:id="identifierControl" GridPane.columnSpan="4"
-                                     GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.valignment="BOTTOM"
-                                     GridPane.halignment="LEFT"/>
+                    <PublicIDListControl fx:id="identifierControl" GridPane.columnIndex="0" GridPane.columnSpan="4" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
                     
                     
-                    <StackPane GridPane.columnIndex="3" GridPane.rowIndex="0" GridPane.rowSpan="4"
-                               styleClass="stamp-container">
-                        <StampViewControl fx:id="stampViewControl" prefWidth="210"/>
+                    <StackPane styleClass="stamp-container" GridPane.columnIndex="3" GridPane.rowIndex="0" GridPane.rowSpan="4">
+                        <StampViewControl fx:id="stampViewControl" prefWidth="210" />
                     
                     </StackPane>
                 
@@ -285,16 +249,13 @@
                     <children>
                         <HBox prefWidth="711.0">
                             <children>
-                                <TitledPane fx:id="referenceComponentTitledPane" contentDisplay="BOTTOM"
-                                            maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-                                            nodeOrientation="LEFT_TO_RIGHT" prefWidth="5000.0"
-                                            styleClass="pattern-titled-pane" text="REFERENCE COMPONENT">
+                                <TitledPane fx:id="referenceComponentTitledPane" contentDisplay="BOTTOM" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefWidth="5000.0" styleClass="pattern-titled-pane" text="REFERENCE COMPONENT">
                                     <font>
-                                        <Font name="Noto Sans Batak Regular" size="12.0"/>
+                                        <Font name="Noto Sans Batak Regular" size="12.0" />
                                     </font>
                                     <content>
                                         <VBox maxWidth="1.7976931348623157E308" styleClass="semantic-field-container">
-                                            <KLReadOnlyComponentControl fx:id="referenceComponent"/>
+                                            <KLReadOnlyComponentControl fx:id="referenceComponent" />
                                         </VBox>
                                     </content>
                                 </TitledPane>
@@ -302,24 +263,20 @@
                                     <children>
                                         <HBox layoutX="-32.0">
                                             <children>
-                                                <Separator maxWidth="-Infinity" orientation="VERTICAL" prefHeight="20.0"
-                                                           styleClass="pattern-vertical-separator">
+                                                <Separator maxWidth="-Infinity" orientation="VERTICAL" prefHeight="20.0" styleClass="pattern-vertical-separator">
                                                     <HBox.margin>
-                                                        <Insets top="4.0"/>
+                                                        <Insets top="4.0" />
                                                     </HBox.margin>
                                                 </Separator>
-                                                <Button fx:id="addReferenceButton" mnemonicParsing="false"
-                                                        onAction="#showAddRefComponentPanel"
-                                                        styleClass="add-pencil-button" text="Button">
+                                                <Button fx:id="addReferenceButton" mnemonicParsing="false" onAction="#showAddRefComponentPanel" styleClass="add-pencil-button" text="Button">
                                                     <graphic>
-                                                        <Region prefHeight="200.0" prefWidth="200.0"
-                                                                styleClass="add-pencil" stylesheets="@../kview.css"/>
+                                                        <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
                                                     </graphic>
                                                     <tooltip>
-                                                        <Tooltip text="Edit Reference Component"/>
+                                                        <Tooltip text="Edit Reference Component" />
                                                     </tooltip>
                                                     <HBox.margin>
-                                                        <Insets top="4.0"/>
+                                                        <Insets top="4.0" />
                                                     </HBox.margin>
                                                 </Button>
                                             </children>
@@ -330,21 +287,17 @@
                         </HBox>
                         <HBox layoutX="14.0" layoutY="135.0" prefWidth="711.0" VBox.vgrow="ALWAYS">
                             <children>
-                                <TitledPane fx:id="semanticDetailsTitledPane" contentDisplay="BOTTOM"
-                                            maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-                                            nodeOrientation="LEFT_TO_RIGHT" prefWidth="5000.0"
-                                            styleClass="pattern-titled-pane" text="SEMANTIC DETAILS">
+                                <TitledPane fx:id="semanticDetailsTitledPane" contentDisplay="BOTTOM" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefWidth="5000.0" styleClass="pattern-titled-pane" text="SEMANTIC DETAILS">
                                     <font>
-                                        <Font name="Noto Sans Batak Regular" size="12.0"/>
+                                        <Font name="Noto Sans Batak Regular" size="12.0" />
                                     </font>
                                     <content>
                                         <ScrollPane styleClass="semantic-details-scroll">
                                             <content>
-                                                <VBox fx:id="semanticDetailsVBox" maxWidth="1.7976931348623157E308"
-                                                      prefWidth="610.0" styleClass="titled-content-background">
+                                                <VBox fx:id="semanticDetailsVBox" maxWidth="1.7976931348623157E308" prefWidth="610.0" styleClass="titled-content-background">
                                                     <styleClass>
-                                                        <String fx:value="titled-content-background"/>
-                                                        <String fx:value="semantic-field-container"/>
+                                                        <String fx:value="titled-content-background" />
+                                                        <String fx:value="semantic-field-container" />
                                                     </styleClass>
                                                 </VBox>
                                             </content>
@@ -355,24 +308,20 @@
                                     <children>
                                         <HBox layoutX="-32.0">
                                             <children>
-                                                <Separator orientation="VERTICAL" prefHeight="20.0"
-                                                           styleClass="pattern-vertical-separator">
+                                                <Separator orientation="VERTICAL" prefHeight="20.0" styleClass="pattern-vertical-separator">
                                                     <HBox.margin>
-                                                        <Insets top="4.0"/>
+                                                        <Insets top="4.0" />
                                                     </HBox.margin>
                                                 </Separator>
-                                                <Button fx:id="editFieldsButton" mnemonicParsing="false"
-                                                        onAction="#showAndEditSemanticFieldsPanel"
-                                                        styleClass="add-pencil-button" text="Button">
+                                                <Button fx:id="editFieldsButton" mnemonicParsing="false" onAction="#showAndEditSemanticFieldsPanel" styleClass="add-pencil-button" text="Button">
                                                     <graphic>
-                                                        <Region prefHeight="200.0" prefWidth="200.0"
-                                                                styleClass="add-pencil" stylesheets="@../kview.css"/>
+                                                        <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
                                                     </graphic>
                                                     <tooltip>
-                                                        <Tooltip text="Edit Details"/>
+                                                        <Tooltip text="Edit Details" />
                                                     </tooltip>
                                                     <HBox.margin>
-                                                        <Insets top="4.0"/>
+                                                        <Insets top="4.0" />
                                                     </HBox.margin>
                                                 </Button>
                                             </children>
@@ -388,8 +337,8 @@
         </BorderPane>
     </center>
     <styleClass>
-        <String fx:value="concept-detail-pane"/>
-        <String fx:value="lidr-container"/>
-        <String fx:value="pattern-window"/>
+        <String fx:value="concept-detail-pane" />
+        <String fx:value="lidr-container" />
+        <String fx:value="pattern-window" />
     </styleClass>
 </BorderPane>
