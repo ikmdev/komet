@@ -1031,9 +1031,9 @@ selected(active) - dark black
 .coordinate.menu-button:showing {
     -fx-background-color: white;
 }
-.coordinate.menu-button:openvertically > .arrow-button > .arrow,
-.coordinate.menu-button > .arrow-button > .arrow {
-    -fx-background-color: transparent;
+
+.coordinate.override.menu-button {
+    -fx-background-color: #ff9100;
 }
 
 .download {
