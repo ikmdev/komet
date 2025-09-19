@@ -30,15 +30,11 @@
          <top>
             <HBox fx:id="projectBarHBox" prefHeight="100.0" prefWidth="200.0" styleClass="project-bar" BorderPane.alignment="CENTER">
                <children>
-                  <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
+                  <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY" styleClass="coordinate">
                      <items>
                         <Menu fx:id="windowCoordinates" mnemonicParsing="false" text="Coordinates" />
                      </items>
                      <tooltip><Tooltip text="Coordinates" /></tooltip>
-                     <styleClass>
-                        <String fx:value="icon" />
-                        <String fx:value="coordinate-project-bar" />
-                     </styleClass>
                   </MenuButton>
                   <Button fx:id="addButton" mnemonicParsing="false" onAction="#popupAddContextMenu" text="Button">
                      <graphic>
