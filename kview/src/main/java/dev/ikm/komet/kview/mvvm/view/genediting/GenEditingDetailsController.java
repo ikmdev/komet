@@ -262,7 +262,7 @@ public class GenEditingDetailsController {
         // Setup Properties Bump out view.
         setupProperties();
         //Populate the Title Pattern meaning purpose
-        setupSemanticForPatternInfo();
+        updateSemanticForPatternInfo();
         setupFilterCoordinatesMenu();
 
         //Populate readonly reference component.
@@ -476,7 +476,7 @@ public class GenEditingDetailsController {
                 GenEditingEvent.class, refreshSubscriber);
     }
 
-    private void setupSemanticForPatternInfo() {
+    private void updateSemanticForPatternInfo() {
         PatternFacade patternFacade = (PatternFacade) genEditingViewModel.getProperty(PATTERN).getValue();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
         ObservablePattern observablePattern = ObservableEntity.get(patternFacade.nid());
@@ -493,17 +493,9 @@ public class GenEditingDetailsController {
 
         ObjectProperty<EntityFacade> refComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
         if(refComponentProp != null){
-            refComponentProp.addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) {
-                    String refComponentTitle = languageCalculator.getPreferredDescriptionTextWithFallbackOrNid(newVal.nid());
-                    Platform.runLater(() -> {
-                        semanticTitleText.setText(refComponentTitle + " in " + patternFQN);
-                    });
-                }
-            });
             EntityFacade refComponent = refComponentProp.get();
             if(refComponent != null) {
-                String refComponentTitle = languageCalculator.getPreferredDescriptionTextWithFallbackOrNid(refComponent.nid());
+                String refComponentTitle = getViewProperties().calculator().languageCalculator().getDescriptionText(refComponent.nid()).get();
                 //TODO in the future we can internationalize the word "in" (and other labels and text) for the preferred language
                 semanticTitleText.setText(refComponentTitle + " in " + patternFQN);
             }
@@ -637,6 +629,7 @@ public class GenEditingDetailsController {
                 case ConceptEntity ignored -> {
                     refType = "Concept";
                     description = refComponent2.description();
+                    updateSemanticForPatternInfo();
                 }
                 case PatternEntity ignored -> {
                     refType= "Pattern";
