@@ -420,7 +420,6 @@ public class FilterOptionsUtils {
         // remove previous subscriptions
         unsubscribeOptions();
 
-        ObservableView observableViewForFilter = filterOptions.observableViewForFilterProperty();
         FilterOptions.MainFilterCoordinates mainCoordinates = filterOptions.getMainCoordinates();
         List<FilterOptions.LanguageFilterCoordinates> languageCoordinatesList = filterOptions.getLanguageCoordinatesList();
 

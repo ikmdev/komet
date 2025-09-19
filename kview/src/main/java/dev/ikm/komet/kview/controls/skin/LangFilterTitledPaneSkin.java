@@ -164,6 +164,7 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
         }));
 
         subscription = subscription.and(control.langCoordinatesProperty().subscribe((_, _) -> setupTitledPane()));
+        subscription = subscription.and(control.navigatorProperty().subscribe((_, _) -> setupTitledPane()));
         updateModifiedState(currentLangCoordinates);
     }
 
