@@ -9,35 +9,22 @@
     -fx-pref-height: -public-id-height;
     -fx-min-height: -public-id-height;
 
-    /* the spacing for the HBoxes in the control, is inherited in child nodes */
-    -fx-spacing: 4;
+    /* -fx-background-color: #00FF00;  for debugging */
 }
 
-.public-id > .public-id-box {
-    -fx-spacing: inherit;
-}
-
-.public-id > .title-label {
-   -fx-font-family: "Noto Sans Bold";
-   -fx-font-size: 12px;
-   -fx-text-fill: black;
-}
-
-.public-id > .public-id-box > .public-id-textfield {
+.public-id > .public-id-label {
     /* The preferred width, set to display the first public ID in the TextField.
        This value will change based on the -fx-font-size setting above.
        The value used must work on the Concept, Pattern, and Semantic windows. */
-    -fx-pref-width: 195;
+    /* -fx-pref-width: 195; */
     -fx-font-family: "Noto Sans";
     -fx-font-size: 10;
     -fx-text-fill: -Grey-10;
-}
-
-.public-id-text {
     -fx-font-weight: normal;
+    -fx-text-alignment: left;
 }
 
-.public-id > .public-id-box > .copy-to-clipboard-button {
+.public-id > .copy-to-clipboard-button {
     -fx-padding: 2;
     -fx-border-insets: 0;
     -fx-border-radius: 4;
@@ -54,19 +41,19 @@
     -fx-background-color: transparent;
 }
 
-.public-id > .public-id-box > .copy-to-clipboard-button:hover {
+.public-id > .copy-to-clipboard-button:hover {
     -fx-background-color: -Grey-3;
 }
 
-.public-id > .public-id-box > .copy-to-clipboard-button:pressed {
+.public-id > .copy-to-clipboard-button:pressed {
     -fx-background-color: -Grey-5;
 }
 
-.public-id > .public-id-box > .copy-to-clipboard-button:disabled {
+.public-id > .copy-to-clipboard-button:disabled {
     -fx-fill: -Grey-3;
 }
 
-.public-id > .public-id-box > .copy-to-clipboard-button > .copy-to-clipboard-svg {
+.public-id > .copy-to-clipboard-button > .copy-to-clipboard-svg {
     -icon-scale: 0.7;
 
     -fx-fill: -Grey-10;
