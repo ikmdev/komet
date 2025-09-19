@@ -41,7 +41,7 @@
                         <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
                            <styleClass>
                               <String fx:value="icon" />
-                              <String fx:value="coordinate" />
+                              <String fx:value="coordinate-project-bar" />
                            </styleClass>
                            <tooltip><Tooltip text="Coordinates" /></tooltip>
                         </MenuButton>
