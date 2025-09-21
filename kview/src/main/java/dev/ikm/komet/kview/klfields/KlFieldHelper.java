@@ -25,11 +25,13 @@ import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.UUID_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
 import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
 import dev.ikm.komet.framework.observable.ObservablePatternVersion;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
@@ -275,25 +277,24 @@ public class KlFieldHelper {
 
     /**
      * This method will return the latest commited version.
-     * //TODO this method can be generalized to return latest<EntityVersion> As of now it is just returning SemanticEntityVersion.
-     * // TODO need to implement logic for create Semantic.
      *
      * @return entityVersionLatest
      * */
-    public static Latest<SemanticEntityVersion> retrieveCommittedLatestVersion(ObservableSemanticSnapshot observableSemanticSnapshot) {
-        if(observableSemanticSnapshot == null){
+    public static Latest<EntityVersion> retrieveCommittedLatestVersion(ObservableEntitySnapshot observableEntitySnapshot) {
+        if(observableEntitySnapshot == null){
             return new Latest<>();
         }
-        AtomicReference<Latest<SemanticEntityVersion>> entityVersionLatest = new AtomicReference<>();
-        SemanticEntityVersion semanticEntityVersion = (SemanticEntityVersion) observableSemanticSnapshot.getLatestVersion().get().getEntityVersion();
-        if(semanticEntityVersion.committed()){
-            return new Latest<>(semanticEntityVersion);
+        AtomicReference<Latest<EntityVersion>> entityVersionLatest = new AtomicReference<>();
+        ObservableVersion observableVersion = (ObservableVersion) observableEntitySnapshot.getLatestVersion().get();
+        EntityVersion entityVersion = observableVersion.getEntityVersion();
+        if(entityVersion.committed()){
+            return new Latest<>(entityVersion);
         }
         //Get list of previously committed data sorted in latest at the top.
-        ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+        ImmutableList<ObservableVersion> historicVersions = observableEntitySnapshot.getHistoricVersions();
         // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
-        Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
-        observableSemanticVersionOptional.ifPresentOrElse((p) -> {
+        Optional<ObservableVersion> optionalObservableVersion = historicVersions.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
+        optionalObservableVersion.ifPresentOrElse((p) -> {
             entityVersionLatest.set(new Latest<>(p));
         }, () -> {entityVersionLatest.set(new Latest<>());});
         return entityVersionLatest.get();

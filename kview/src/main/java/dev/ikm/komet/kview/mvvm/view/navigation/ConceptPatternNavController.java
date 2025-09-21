@@ -5,7 +5,6 @@ import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
@@ -101,7 +100,6 @@ public class ConceptPatternNavController {
     private JournalController journalController;
 
     private Subscriber<PatternSavedEvent> patternCreationEventSubscriber;
-    private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
 
     private KLConceptNavigatorControl conceptNavigatorControl;
 
@@ -292,6 +290,14 @@ public class ConceptPatternNavController {
         VBox nodePanel = new VBox(searchControl, conceptNavigatorControl);
         nodePanel.getStyleClass().add("concept-navigator-container");
         VBox.setVgrow(conceptNavigatorControl, Priority.ALWAYS);
+
+        // When nodeView changes, update the Navigator, to update the Search Control and the FilterOptionsPopup, and
+        // also rebuild the ConceptNavigator treeView
+        viewProperties.nodeView().subscribe((_, nv) -> {
+            ViewNavigator nav = new ViewNavigator(nv);
+            searchControl.setNavigator(nav);
+            conceptNavigatorControl.setNavigator(nav);
+        });
 
         return nodePanel;
     }

@@ -173,8 +173,11 @@ public class NextGenSearchController {
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
 
         // listen to changes to the current overrideable view, after changes coming from the parentView
-        // or the F.O. popup, and publish event
-        getViewProperties().nodeView().subscribe((_, _) -> doSearch(new ActionEvent(null, null)));
+        // or the FilterOptionsPopup, updating the Navigator, and triggering the search
+        getViewProperties().nodeView().subscribe((_, nv) -> {
+            filterOptionsPopup.setNavigator(new ViewNavigator(nv));
+            doSearch(new ActionEvent(null, null));
+        });
 
         // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
         // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
@@ -476,7 +479,7 @@ public class NextGenSearchController {
         }
     }
 
-    public ViewProperties getViewProperties() {
+    private ViewProperties getViewProperties() {
         return nextGenSearchViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
 
