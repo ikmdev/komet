@@ -302,7 +302,7 @@ public class EditFullyQualifiedNameController implements BasicController {
             PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
 
             int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
-            ConceptFacade caseSigConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexCaseSig);
+            ConceptFacade caseSigConceptFacade = latestEntityVersion.get().fieldAsConceptFacade(indexCaseSig);
             findByNid(caseSignificanceComboBox.getItems(), caseSigConceptFacade.nid())
                     .ifPresent(concept -> fqnViewModel.setPropertyValue(CASE_SIGNIFICANCE, concept));
 
@@ -311,7 +311,7 @@ public class EditFullyQualifiedNameController implements BasicController {
             setupComboBox(languageComboBox, fetchDescendentsOfConcept(viewProperties, TinkarTerm.LANGUAGE.publicId()));
             // get the language (e.g. 'English language')
             int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
-            ConceptFacade langConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexLang);
+            ConceptFacade langConceptFacade = latestEntityVersion.get().fieldAsConceptFacade(indexLang);
             findByNid(languageComboBox.getItems(), langConceptFacade.nid())
                     .ifPresent(concept -> fqnViewModel.setPropertyValue(LANGUAGE, concept));
 
@@ -319,7 +319,7 @@ public class EditFullyQualifiedNameController implements BasicController {
             setupComboBox(typeDisplayComboBox, fetchDescendentsOfConcept(viewProperties, DESCRIPTION_TYPE.publicId()));
             //Set selected value for DESCRIPTION TYPE
             int indexType = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE);
-            ConceptFacade typeConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexType);
+            ConceptFacade typeConceptFacade = latestEntityVersion.get().fieldAsConceptFacade(indexType);
             findByNid(typeDisplayComboBox.getItems(), typeConceptFacade.nid())
                     .ifPresent(concept -> fqnViewModel.setPropertyValue(NAME_TYPE, concept));
 
