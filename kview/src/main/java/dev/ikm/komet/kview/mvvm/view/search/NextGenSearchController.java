@@ -31,9 +31,7 @@ import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
-import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
-import dev.ikm.komet.kview.controls.FilterOptionsUtils;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
@@ -44,7 +42,6 @@ import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
-import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -57,11 +54,7 @@ import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.provider.search.TypeAheadSearch;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.beans.value.ChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -79,7 +72,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
-import javafx.util.Subscription;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -93,7 +85,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -146,8 +137,6 @@ public class NextGenSearchController {
 
     private SearchResultType currentSearchResultType;
 
-    private Subscription parentSubscription;
-
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
 
@@ -183,8 +172,28 @@ public class NextGenSearchController {
 
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
 
-        // initialize the filter options
-        filterOptionsPopup.setInheritedFilterOptionsProperty(FilterOptionsUtils.loadFilterOptions(getViewProperties().parentView(), getViewProperties().calculator()));
+        // listen to changes to the current overrideable view, after changes coming from the parentView
+        // or the FilterOptionsPopup, updating the Navigator, and triggering the search
+        getViewProperties().nodeView().subscribe((_, nv) -> {
+            filterOptionsPopup.setNavigator(new ViewNavigator(nv));
+            doSearch(new ActionEvent(null, null));
+        });
+
+        // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
+        // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
+        filterOptionsPopup.getFilterOptionsUtils().subscribeFilterOptionsToView(
+                filterOptionsPopup.getInheritedFilterOptions(), getViewProperties().nodeView());
+
+        // Subscribe nodeView to F.O., so changes from the F.O. popup are propagated to this nodeView
+        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, filterOptions) -> {
+            if (oldFilterOptions != null) {
+                filterOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
+            }
+            if (filterOptions != null) {
+                filterOptionsPopup.getFilterOptionsUtils().subscribeViewToFilterOptions(filterOptions, getViewProperties().nodeView());
+            }
+        });
+
         root.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
         filterPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (filterOptionsPopup.getNavigator() == null) {
@@ -206,59 +215,6 @@ public class NextGenSearchController {
 
         filterOptionsPopup.defaultOptionsSetProperty().subscribe(isDefault ->
                 filterPane.pseudoClassStateChanged(FILTER_SET, !isDefault));
-
-        // listen for changes to the filter options
-        ChangeListener<FilterOptions> changeListener = ((obs, oldFilterOptions, newFilterOptions) -> {
-            if (newFilterOptions != null) {
-                if (!newFilterOptions.getMainCoordinates().getStatus().selectedOptions().isEmpty()) {
-                    StateSet stateSet = StateSet.make(
-                            newFilterOptions.getMainCoordinates().getStatus().selectedOptions().stream().map(
-                                    s -> State.valueOf(s.toUpperCase())).toList());
-                    // update the STATUS
-                    getViewProperties().nodeView().stampCoordinate().allowedStatesProperty().setValue(stateSet);
-                }
-                if (!newFilterOptions.getMainCoordinates().getPath().selectedOptions().isEmpty()) {
-                    //NOTE: there is no known way to set multiple paths
-                    String pathStr = newFilterOptions.getMainCoordinates().getPath().selectedOptions().stream().findFirst().get();
-
-                    ConceptFacade conceptPath = switch(pathStr) {
-                        case "Master path" -> TinkarTerm.MASTER_PATH;
-                        case "Primordial path" -> TinkarTerm.PRIMORDIAL_PATH;
-                        case "Sandbox path" -> TinkarTerm.SANDBOX_PATH;
-                        default -> TinkarTerm.DEVELOPMENT_PATH;
-                    };
-                    // update the Path
-                    getViewProperties().nodeView().stampCoordinate().pathConceptProperty().setValue(conceptPath);
-                }
-                if (!newFilterOptions.getMainCoordinates().getTime().selectedOptions().isEmpty() &&
-                        oldFilterOptions != null &&
-                        !oldFilterOptions.getMainCoordinates().getTime().selectedOptions().equals(newFilterOptions.getMainCoordinates().getTime().selectedOptions())) {
-                    long millis = FilterOptionsUtils.getMillis(newFilterOptions);
-                    // update the time
-                    getViewProperties().nodeView().stampCoordinate().timeProperty().set(millis);
-                } else {
-                    // revert to the Latest
-                    Date latest = new Date();
-                    getViewProperties().nodeView().stampCoordinate().timeProperty().set(latest.getTime());
-                }
-
-                //TODO Type, Module, Language, Description Type, Kind of, Membership, Sort By
-            }
-            doSearch(new ActionEvent(null, null));
-        });
-
-
-
-        // listen for changes to the filter options
-        filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
-
-        // listen to changes to the parent of the current overrideable view
-        parentSubscription = getViewProperties().parentView().subscribe((oldValue, newValue) -> {
-            filterOptionsPopup.filterOptionsProperty().removeListener(changeListener);
-            filterOptionsPopup.inheritedFilterOptionsProperty().setValue(FilterOptionsUtils.loadFilterOptions(getViewProperties().parentView(), getViewProperties().calculator()));
-            filterOptionsPopup.filterOptionsProperty().addListener(changeListener);
-            doSearch(new ActionEvent(null, null));
-        });
     }
 
     private void initSearchResultType() {
@@ -523,7 +479,7 @@ public class NextGenSearchController {
         }
     }
 
-    public ViewProperties getViewProperties() {
+    private ViewProperties getViewProperties() {
         return nextGenSearchViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
 
@@ -542,12 +498,6 @@ public class NextGenSearchController {
 
     public void clearView() {
         searchResultsListView.getItems().clear();
-    }
-
-    public void cleanup() {
-        if (parentSubscription != null) {
-            parentSubscription.unsubscribe();
-        }
     }
 
 

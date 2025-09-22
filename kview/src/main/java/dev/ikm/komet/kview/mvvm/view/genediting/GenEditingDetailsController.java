@@ -55,6 +55,7 @@ import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.StampEntityVersion;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
@@ -126,6 +127,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.CURRENT_STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
@@ -230,7 +232,7 @@ public class GenEditingDetailsController {
 
     private List<Subscriber> subscriberList = new ArrayList<>();
 
-    private Latest<SemanticEntityVersion> semanticEntityVersionLatest;
+    private Latest<EntityVersion> semanticEntityVersionLatest;
 
     private ObservableSemantic observableSemantic;
 
@@ -318,6 +320,7 @@ public class GenEditingDetailsController {
 
         if(genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
             addReferenceButton.setDisable(!isConfirmedOrSubmitted);
+            stampViewControl.setDisable(isConfirmedOrSubmitted);
         }
     }
 
@@ -417,6 +420,9 @@ public class GenEditingDetailsController {
                 // If the window is in creation mode ignore the refresh event
                 return;
             }
+            if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
+                observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+            }
             // TODO update identicon and identifier fields.
             EntityFacade finalSemantic = semanticProperty.get();
             if (evt.getEventType() == GenEditingEvent.PUBLISH
@@ -426,7 +432,6 @@ public class GenEditingDetailsController {
                     observableSemantic = ObservableEntity.get(finalSemantic.nid());
                     // populate the semantic and its observable fields once saved
                     semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
-
                     // clear out the temporary placeholders
                     semanticDetailsVBox.getChildren().clear();
                     nodes.clear();
@@ -434,7 +439,6 @@ public class GenEditingDetailsController {
                     populateSemanticDetails();
                     // change the mode from CREATE to EDIT
                     genEditingViewModel.setPropertyValue(MODE, EDIT);
-
                     // Update STAMP control and STAMP form
                     StampFormViewModelBase stampFormViewModelBase = propertiesController.getStampFormViewModel();
                     stampFormViewModelBase.update(semanticEntityVersionLatest.get().entity(),
@@ -459,22 +463,13 @@ public class GenEditingDetailsController {
                         }
                     }
                 }
-
             }
 
             semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
             //Set and Update STAMP values
             semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-//                StampEntity stampEntity = semanticEntityVersion.stamp();
-//                stampViewModel.setPropertyValue(STATUS, stampEntity.state())
-//                        .setPropertyValue(TIME, stampEntity.time())
-//                        .setPropertyValue(AUTHOR, stampEntity.author())
-//                        .setPropertyValue(MODULE, stampEntity.module())
-//                        .setPropertyValue(PATH, stampEntity.path())
-//                ;
-//                stampViewModel.save(true);
+                updateUIStamp(semanticEntityVersion.stamp().lastVersion());
             });
-            updateUIStamp(propertiesController.getStampFormViewModel());
         };
         subscriberList.add(refreshSubscriber);
         EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
@@ -554,6 +549,24 @@ public class GenEditingDetailsController {
                 semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
             }
         }
+    }
+
+    private void updateUIStamp(StampEntityVersion stampEntityVersion){
+
+        State state = stampEntityVersion.state();
+        stampViewControl.setStatus(state == null? "" : getViewProperties().calculator().getDescriptionTextOrNid(state.nid()));
+
+        // -- Time
+        updateTimeText(stampEntityVersion.time());
+
+        EntityFacade author = stampEntityVersion.author();
+        stampViewControl.setAuthor(author == null? "" : getViewProperties().calculator().getDescriptionTextOrNid(author.nid()));
+
+        EntityFacade module = stampEntityVersion.module();
+        stampViewControl.setModule(getViewProperties().calculator().getDescriptionTextOrNid(module.nid()));
+        EntityFacade path = stampEntityVersion.path();
+        stampViewControl.setPath(getViewProperties().calculator().getDescriptionTextOrNid(path.nid()));
+
     }
 
     private void updateUIStamp(StampFormViewModelBase stampFormViewModel) {

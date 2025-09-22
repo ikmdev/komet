@@ -900,32 +900,33 @@ public class PatternDetailsController {
         propertiesController.updateModel(patternViewModel.getPropertyValue(PATTERN));
 
         patternViewModel.getProperty(MODE).subscribe(newMode -> {
-            StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
-
             if (newMode.equals(EDIT)) {
                 updateStampControlFromViewModel();
 
                 // now in EDIT mode, update the identifier
                 updateDisplayIdentifier();
-
-                stampFormViewModel.getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isSubmitted -> {
-                    if (isSubmitted) {
-                        updateStampControlFromViewModel();
-                        patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
-                    }
-                });
-            } else if(newMode.equals(CREATE)) {
-                stampFormViewModel.getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(isConfirmed -> {
-                    if (isConfirmed) {
-                        updateStampControlFromViewModel();
-                    }
-                });
             }
         });
+
+        propertiesController.getStampFormViewModel().getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(this::onStampConfirmedOrSubmitted);
 
         //FIXME this doesn't work properly, should leave for a future effort...
         // open the panel, allow the state machine to determine which panel to show
         //EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(propertiesToggleButton, OPEN_PANEL));
+    }
+
+    private void onStampConfirmedOrSubmitted(boolean isSubmittedOrConfirmed) {
+        if (!isSubmittedOrConfirmed) {
+            return;
+        }
+
+        updateStampControlFromViewModel();
+
+        if (patternViewModel.getPropertyValue(MODE).equals(EDIT)) {
+            patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
+        }
+
+        stampViewControl.setDisable(true);
     }
 
     private void updateStampControlFromViewModel() {

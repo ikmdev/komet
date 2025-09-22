@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.FilterTitledPaneSkin;
+import dev.ikm.komet.navigator.graph.Navigator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -48,6 +49,18 @@ public class FilterTitledPane extends TitledPane {
     }
     public final void setOption(FilterOptions.Option value) {
         optionProperty.set(value);
+    }
+
+    // navigatorProperty
+    private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator");
+    public final ObjectProperty<Navigator> navigatorProperty() {
+        return navigatorProperty;
+    }
+    public final Navigator getNavigator() {
+        return navigatorProperty.get();
+    }
+    public final void setNavigator(Navigator value) {
+        navigatorProperty.set(value);
     }
 
     @Override
