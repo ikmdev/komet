@@ -103,10 +103,11 @@ public class FilterOptionsUtils {
                     if (t != null) {
                         Long time = t.longValue();
                         if (!time.equals(Long.MAX_VALUE) && !time.equals(PREMUNDANE_TIME)) {
-                            //FIXME the custom control doesn't support premundane yet
                             mainCoordinates.getTime().selectedOptions().addAll(String.valueOf(time));
                         } else if (time.equals(Long.MAX_VALUE)) {
                             mainCoordinates.getTime().selectedOptions().addAll(mainCoordinates.getTime().availableOptions().getFirst());
+                        } else {
+                            mainCoordinates.getTime().selectedOptions().addAll(mainCoordinates.getTime().availableOptions().getLast());
                         }
                     }
                     observableViewForFilterProperty.stampCoordinate().timeProperty().setValue(t);
