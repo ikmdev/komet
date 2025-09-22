@@ -102,13 +102,7 @@ public class FilterOptionsUtils {
                     mainCoordinates.getTime().selectedOptions().clear();
                     if (t != null) {
                         Long time = t.longValue();
-                        if (!time.equals(Long.MAX_VALUE) && !time.equals(PREMUNDANE_TIME)) {
-                            mainCoordinates.getTime().selectedOptions().addAll(String.valueOf(time));
-                        } else if (time.equals(Long.MAX_VALUE)) {
-                            mainCoordinates.getTime().selectedOptions().addAll(mainCoordinates.getTime().availableOptions().getFirst());
-                        } else {
-                            mainCoordinates.getTime().selectedOptions().addAll(mainCoordinates.getTime().availableOptions().getLast());
-                        }
+                        mainCoordinates.getTime().selectedOptions().addAll(String.valueOf(time));
                     }
                     observableViewForFilterProperty.stampCoordinate().timeProperty().setValue(t);
                     fromView = false;

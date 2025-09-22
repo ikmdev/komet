@@ -1,6 +1,5 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
 import dev.ikm.komet.kview.controls.DateFilterTitledPane;
 import dev.ikm.komet.kview.controls.DateRange;
 import dev.ikm.komet.kview.controls.FilterOptions;
@@ -35,12 +34,17 @@ import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+
 public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
     private static final PseudoClass MODIFIED_TITLED_PANE = PseudoClass.getPseudoClass("modified");
     private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private static final PseudoClass TALLER_TITLE_AREA = PseudoClass.getPseudoClass("taller");
+    private static final String PREMUNDANE_TIME_STRING = String.valueOf(PREMUNDANE_TIME);
+    private static final String LATEST_TIME_STRING = String.valueOf(Long.MAX_VALUE);
 
     private final Region arrow;
     private final VBox titleBox;
@@ -205,10 +209,10 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         List<String> selectedOptions = control.getOption().selectedOptions();
         List<String> excludedOptions = control.getOption().excludedOptions();
         if (selectedOptions.isEmpty() || (selectedOptions.size() == 1 &&
-                resources.getString("time.item1").equals(selectedOptions.getFirst()))) {
+                LATEST_TIME_STRING.equals(selectedOptions.getFirst()))) {
             control.setMode(DateFilterTitledPane.MODE.LATEST);
         } else if (selectedOptions.isEmpty() || (selectedOptions.size() == 1 &&
-                resources.getString("time.item3").equals(selectedOptions.getFirst()))) {
+                PREMUNDANE_TIME_STRING.equals(selectedOptions.getFirst()))) {
             control.setMode(DateFilterTitledPane.MODE.PREMUNDANE);
         } else if (containsDateRange(selectedOptions) || containsDateRange(excludedOptions)) {
             control.setMode(DateFilterTitledPane.MODE.DATE_RANGE_LIST);
@@ -249,7 +253,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
             }
         } else {
             currentOption.selectedOptions().add(selectedItem == DateFilterTitledPane.MODE.PREMUNDANE ?
-                    resources.getString("time.item3") : resources.getString("time.item1"));
+                    PREMUNDANE_TIME_STRING : LATEST_TIME_STRING);
         }
         updateModifiedState(currentOption);
         control.setOption(currentOption.copy());
@@ -276,12 +280,18 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         if (containsDate(option.selectedOptions())) {
             String value = option.selectedOptions().getFirst();
-            try {
-                long timestamp = Long.parseLong(value);
-                calendarControl.setTimestamp(timestamp);
-                ZonedDateTime zonedDateTime = DateTimeUtil.epochToZonedDateTime(timestamp);
-                calendarControl.setDate(zonedDateTime.toLocalDate());
-            } catch (NumberFormatException e) {
+            if (!PREMUNDANE_TIME_STRING.equals(value) && !LATEST_TIME_STRING.equals(value)) {
+                try {
+                    long timestamp = Long.parseLong(value);
+                    calendarControl.setTimestamp(timestamp);
+                    ZonedDateTime zonedDateTime = DateTimeUtil.epochToZonedDateTime(timestamp);
+                    calendarControl.setDate(zonedDateTime.toLocalDate());
+                } catch (NumberFormatException e) {
+                    ZonedDateTime now = ZonedDateTime.now();
+                    calendarControl.setTimestamp(now.toInstant().toEpochMilli());
+                    calendarControl.setDate(now.toLocalDate());
+                }
+            } else {
                 ZonedDateTime now = ZonedDateTime.now();
                 calendarControl.setTimestamp(now.toInstant().toEpochMilli());
                 calendarControl.setDate(now.toLocalDate());
@@ -351,6 +361,10 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
             } else {
                 return MessageFormat.format(resources.getString("time.option.range.excluding"), including, excluding);
             }
+        } else if (!option.selectedOptions().isEmpty() && option.selectedOptions().getFirst().equals(PREMUNDANE_TIME_STRING)) {
+            return resources.getString("time.item3");
+        } else if (!option.selectedOptions().isEmpty() && option.selectedOptions().getFirst().equals(LATEST_TIME_STRING)) {
+            return resources.getString("time.item1");
         } else {
             return String.join(", ", option.selectedOptions());
         }
