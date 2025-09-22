@@ -541,14 +541,14 @@ public class DataModelHelper {
      * @param viewProperties
      * @return
      */
-    public static Optional<Transaction> createTranscationForEntity(StampEntity currentStamp, Latest<EntityVersion> entityVersionLatest, ViewProperties viewProperties){
+    public static Optional<Transaction> createTranscationForEntity(Latest<EntityVersion> entityVersionLatest, ViewProperties viewProperties){
         Transaction transaction = Transaction.make();
         ConceptFacade author = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
         if (entityVersionLatest.isPresent()) {
             EntityVersion entityVersion = entityVersionLatest.get();
 
             Entity entity = entityVersion.entity();
-//            StampEntity currentStamp = entityVersion.stamp();
+            StampEntity currentStamp = entityVersion.stamp();
             StampEntity stampEntity = transaction.getStampForEntities(currentStamp.state(), author.nid(), currentStamp.moduleNid(), currentStamp.pathNid(), entity);
             ObservableEntity observableEntity = ObservableEntity.get(entity.nid());
             ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
