@@ -11,7 +11,6 @@ import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampCreateFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.terms.EntityFacade;
-import javafx.beans.property.Property;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
@@ -31,6 +30,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_STAMP_VALUES_THE_SAME_OR_EMPTY;
 
 public class ConceptPropertiesController {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptPropertiesController.class);
@@ -112,7 +112,7 @@ public class ConceptPropertiesController {
 
         createAllNodes();
 
-        setupStampBindings();
+        setupStampFormBindings();
 
         // <Bindings> -------------------------------------------------------------------------------------------------
 
@@ -136,7 +136,7 @@ public class ConceptPropertiesController {
 
         // TODO:  open respective windows - this sets up the correct values for the property ViewModels
         windowToDisplay.subscribe((windowKind) -> {
-                    if (windowKind != null) { // TODO: should neve rbe null ? ThinkingFace
+                    if (windowKind != null) {
                         switch (windowKind) {
                             case STAMP -> {
 
@@ -145,28 +145,35 @@ public class ConceptPropertiesController {
                                 ViewProperties viewProperties = conceptViewModelNext.getViewProperties();
 
                                 boolean isValidStamp = conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.HAS_VALID_STAMP);
+                                boolean isNewConcept = conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT);
 
-                                if (isValidStamp) { // TODO: test scenario where we "create" a new concept -> than isValidStamp -> special handeld ?
-                                    // create can be used if we dont have a EntityFacade ( used if this Concept is newly created )
-                                    stampFormJFXNode.controller().init(stampAddSubmitFormViewModel);
+                                if (isNewConcept) {
+                                    if (!isValidStamp) {
+                                        stampFormJFXNode.controller().init(stampCreateFormViewModel);
+                                        conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.CURRENT_STAMP_FORM, stampCreateFormViewModel);
 
+                                    }  // As long as newConcept we don't need to reiniate the stamp form
                                 } else {
-                                    // otherwise we can edit the stamp stampCreateFormViewModel
-                                    stampFormJFXNode.controller().init(stampCreateFormViewModel);
+                                    stampFormJFXNode.controller().init(stampAddSubmitFormViewModel);
+                                    conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.CURRENT_STAMP_FORM, stampAddSubmitFormViewModel);
                                 }
+
                                 // NOTICE: call update after setting the controller above so we init the "right" ViewModel
                                 stampFormJFXNode.controller().getStampFormViewModel().update(thisConceptFacade, conceptTopic,viewProperties);
 
                                 contentBorderPane.setCenter(stampFormJFXNode.node());
 
+                                untoggleAllTabButtons();
+
                             }
                             case MENU -> {
                                 LOG.info("MENU: ");
+                                editButton.setSelected(true);
                                 contentBorderPane.setCenter(menuJFXNode.node());
                             }
                             case NAME_MENU -> {
                                 LOG.info("NAME_MENU: ");
-
+                                editButton.setSelected(true);
                                 contentBorderPane.setCenter(nameMenuJFXNode.node());
 
                                 // updateDescViewModel save() / restore() cycle
@@ -203,21 +210,31 @@ public class ConceptPropertiesController {
                                         this.descrNameViewModelNext.updateNonCommitedSemantic(value, conceptViewModelNext.getViewProperties());
                                     }
                                 }
+                                editButton.setSelected(true);
                                 contentBorderPane.setCenter(nameFormJFXNode.node());
 
                             }
 
                             case HISTORY -> {
+                                historyButton.setSelected(true);
                                 contentBorderPane.setCenter(historyTabsBorderPane);
                             }
                             case HIERARCHY -> {
+                                hierarchyButton.setSelected(true);
                                 contentBorderPane.setCenter(hierarchyTabBorderPane);
                             }
                             case COMMENTS -> {
+                                commentsButton.setSelected(true);
                                 contentBorderPane.setCenter(commentsPane);
+                            }
+                            case NONE -> {
+                                untoggleAllTabButtons();
+                                contentBorderPane.setCenter(null);
                             }
                         }
                     } else {
+                        untoggleAllTabButtons();
+                        contentBorderPane.setCenter(null);
                         // TODO: do nothing right?
                     }
         });
@@ -230,10 +247,10 @@ public class ConceptPropertiesController {
         // headerTab --> ViewModel
         headerTabToggleButtonGroup.selectedToggleProperty().subscribe((newToggle) -> {
 
-            if (editButton.equals(newToggle)) windowToDisplay.set(SelectedPropertyWindowKind.MENU);
-            else if (hierarchyButton.equals(newToggle)) windowToDisplay.set(SelectedPropertyWindowKind.HIERARCHY);
-            else if (historyButton.equals(newToggle)) windowToDisplay.set(SelectedPropertyWindowKind.HISTORY);
-            else if (commentsButton.equals(newToggle)) windowToDisplay.set(SelectedPropertyWindowKind.COMMENTS);
+            if (editButton.equals(newToggle)) conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND,SelectedPropertyWindowKind.MENU);
+            else if (hierarchyButton.equals(newToggle)) conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND,SelectedPropertyWindowKind.HIERARCHY);
+            else if (historyButton.equals(newToggle)) conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND,SelectedPropertyWindowKind.HISTORY);
+            else if (commentsButton.equals(newToggle)) conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND,SelectedPropertyWindowKind.COMMENTS);
         });
 
 
@@ -243,6 +260,13 @@ public class ConceptPropertiesController {
 
 
 
+    }
+
+    private void untoggleAllTabButtons() {
+        editButton.setSelected(false);
+        hierarchyButton.setSelected(false);
+        historyButton.setSelected(false);
+        commentsButton.setSelected(false);
     }
 
     private void createAllNodes() {
@@ -309,16 +333,27 @@ public class ConceptPropertiesController {
         // </JFX Nodes>
     }
 
-    private void setupStampBindings() {
+    private void setupStampFormBindings() {
         SimpleBooleanProperty confirmedPressedProperty = this.stampCreateFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED);
-        confirmedPressedProperty.subscribe( isPressed -> {
+        confirmedPressedProperty.subscribe( (wasPressed, isPressed) -> {
            if (isPressed)  {
-               LOG.info("Confirmed pressed on stampFormMenu");
-               conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.HAS_VALID_STAMP, true);
+               LOG.info("Confirmed pressed on stampCreate Form");
+               boolean isStampSame = stampCreateFormViewModel.getPropertyValue(IS_STAMP_VALUES_THE_SAME_OR_EMPTY);
+               if (!isStampSame) {
+                   conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.HAS_VALID_STAMP, true);
+                   conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NONE);
+                   confirmedPressedProperty.setValue(false);
+               }
            }
         });
 
-        //TODO: bind other FormViewModel
+        SimpleBooleanProperty submittedPressedProperty = this.stampAddSubmitFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED);
+        submittedPressedProperty.subscribe(isSubmitted -> {
+            if (isSubmitted) {
+                LOG.info("STAMP submit form: sbmit button pressed");
+                conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.HAS_VALID_STAMP, true); // TODO is this correct?
+            }
+        });
 
     }
 
@@ -332,13 +367,7 @@ public class ConceptPropertiesController {
 
 
     public StampFormViewModelBase getStampFormViewModel() {
-        // TODO check if this is equivalent to edit mode or isValidStamp
-        boolean isNewConcept = conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_IS_A_NEW_CONCEPT);
-        if (isNewConcept) {
-            return stampCreateFormViewModel;
-        } else {
-            return stampAddSubmitFormViewModel;
-        }
+        return conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.CURRENT_STAMP_FORM);
     }
 
     /**

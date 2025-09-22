@@ -4,6 +4,7 @@ package dev.ikm.komet.kview.mvvm.view.concept;
 
 import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModelNext;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModelNext.*;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -29,19 +30,34 @@ public class ConceptPropertiesNameMenuController {
     @FXML
     public void initialize() {
 
+        ObservableList<Object> fqnSemanticProps = conceptViewModelNext.getObservableList(ConceptPropertyKeys.ASOCIATED_FQN_DESCRIPTION_SEMANTICS);
+        fqnSemanticProps.subscribe(() -> {
+           if(fqnSemanticProps.isEmpty())  {
+               editFullyQualifiedNameButton.setText("ADD FULLY QUALIFIED");
+           } else {
+               editFullyQualifiedNameButton.setText("EDIT FULLY QUALIFIED");
+           }
+        });
+
+        if(fqnSemanticProps.isEmpty())  {
+            editFullyQualifiedNameButton.setText("ADD FULLY QUALIFIED");
+        } else {
+            editFullyQualifiedNameButton.setText("EDIT FULLY QUALIFIED");
+        }
+
+
         editFullyQualifiedNameButton.setOnMouseClicked( mouseEvent -> {
-            conceptViewModelNext.setValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
+            conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
 
         });
 
         addOtherNameButton.setOnMouseClicked( mouseEvent -> {
-            conceptViewModelNext.setValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
+            conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
 
         });
 
-        // TODO: make sure slideIn is triggerd correctly?
         closePropertiesPanelButton.setOnMouseClicked(mouseEvent -> {
-            conceptViewModelNext.setValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NONE);
+            conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NONE);
         });
 
     }

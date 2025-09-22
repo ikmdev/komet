@@ -69,11 +69,11 @@ public class ConceptPropertiesNameFormController {
 
         initNameText();
 
-//        initTypeComboBox();
-//        initCaseSignificanceComboBox();
-//        initStatusComboBox();
-//        initModuleComboBox();
-//        initLanguageComboBox();
+        initTypeComboBox();
+        initCaseSignificanceComboBox();
+        initStatusComboBox();
+        initModuleComboBox();
+        initLanguageComboBox();
 
         bindLanguageSelectionToDialects();
 
@@ -102,7 +102,8 @@ public class ConceptPropertiesNameFormController {
                 descrNameViewModelNext.getObservableList(DescrPropKeys.NAME_TYPE_VARIANTS),
                 this::getViewProperties);
 
-        typeDisplayComboBox.valueProperty().bindBidirectional(descrNameViewModelNext.getProperty(DescrPropKeys.NAME_TYPE_VARIANTS));
+
+        typeDisplayComboBox.valueProperty().bindBidirectional(descrNameViewModelNext.getProperty(DescrPropKeys.SELECTED_NAME_TYPE));
     }
 
     private void initCaseSignificanceComboBox() {
@@ -120,7 +121,7 @@ public class ConceptPropertiesNameFormController {
                 descrNameViewModelNext.getObservableList(DescrPropKeys.STATUS_VARIANTS),
                 this::getViewProperties);
 
-        statusComboBox.valueProperty().bindBidirectional(descrNameViewModelNext.getProperty(DescrPropKeys.STATUS_VARIANTS));
+        statusComboBox.valueProperty().bindBidirectional(descrNameViewModelNext.getProperty(DescrPropKeys.SELECTED_STATUS));
     }
 
     private void initModuleComboBox() {
@@ -142,8 +143,9 @@ public class ConceptPropertiesNameFormController {
     }
 
     private void bindLanguageSelectionToDialects() {
-        BooleanBinding isLanguageSelected = languageComboBox.valueProperty().isNotNull();
-        dialectsContainer.visibleProperty().bind(isLanguageSelected);
+        // TODO: enable it after cleaning up the layout
+//        BooleanBinding isLanguageSelected = languageComboBox.valueProperty().isNotNull();
+//        dialectsContainer.visibleProperty().bind(isLanguageSelected);
     }
 
 
@@ -231,7 +233,7 @@ public class ConceptPropertiesNameFormController {
     }
 
     private void closeView() {
-        conceptViewModelNext.setValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NONE);
+        conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NONE);
     }
 
 }

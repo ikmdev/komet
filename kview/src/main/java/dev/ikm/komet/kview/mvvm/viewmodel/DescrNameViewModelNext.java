@@ -88,7 +88,8 @@ public class DescrNameViewModelNext extends ValidationViewModel {
                 .addProperty(DescrPropKeys.VIEW_PROPERTIES, (ViewProperties) viewProperties)
                 .addProperty(DescrPropKeys.TITLE_TEXT, (String) "hello world");
 
-
+        // This works only for a DescNameViewModel that works ontop of a concept
+        fetchSemanticFieldChoicesViaParentConcept(viewProperties);
 
         // run validators when the following properties change.
         doOnChange(this::validate,
@@ -244,7 +245,5 @@ public class DescrNameViewModelNext extends ValidationViewModel {
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
         TinkExecutor.threadPool().submit(commitTransactionTask);
     }
-
-
 
 }

@@ -40,7 +40,7 @@ public class ConceptPropertiesMenuController {
 
         // open the name menu pane
         editDescriptionsButton.setOnMouseClicked(mouseEvent -> {
-            conceptViewModelNext.setValue(ConceptViewModelNext.ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, ConceptViewModelNext.SelectedPropertyWindowKind.NAME_MENU);
+            conceptViewModelNext.setPropertyValue(ConceptViewModelNext.ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, ConceptViewModelNext.SelectedPropertyWindowKind.NAME_MENU);
 
         });
 

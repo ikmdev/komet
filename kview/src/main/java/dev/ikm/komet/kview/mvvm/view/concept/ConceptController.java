@@ -312,21 +312,14 @@ public class ConceptController {
 
         setupNodes();
 
-        // attach properties and timeline node to slideout
-        addPaneToTray(timelinePane, timelineSlideoutTrayPane);
-        addPaneToTray(propertiesJFXNode.node(), propertiesSlideoutTrayPane);
-
-        String styleSheet = defaultStyleSheet();
-        propertiesJFXNode.node().getStylesheets().add(styleSheet);
-        timelinePane.getStylesheets().add(styleSheet);
-
         setupTimelineBindings();
         setupPropertyBindings();
 
+        setupConceptHeader();
+
         setupDetailsBanner();
-
         setupDetailsNameSemantics();
-
+        setupAxioms();
 
 
         Tooltip.install(fqnTitleText, conceptNameTooltip);
@@ -334,6 +327,7 @@ public class ConceptController {
         clearView();
 
         eventBus = EvtBusFactory.getDefaultEvtBus();
+
 
         // when the user clicks a fully qualified name, open the PropertiesPanel
         editConceptFullyQualifiedNameEventSubscriber = evt -> {
@@ -591,6 +585,36 @@ public class ConceptController {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        // attach properties and timeline node to slideout
+        addPaneToTray(timelinePane, timelineSlideoutTrayPane);
+        addPaneToTray(propertiesJFXNode.node(), propertiesSlideoutTrayPane);
+
+        String styleSheet = defaultStyleSheet();
+        propertiesJFXNode.node().getStylesheets().add(styleSheet);
+        timelinePane.getStylesheets().add(styleSheet);
+    }
+
+    private void setupConceptHeader() {
+        propertiesToggleButton.selectedProperty().subscribe( isToggled -> {
+            if (isToggled != null) {
+                if (isToggled) {
+                    LOG.info("toogled prop button");
+                    SelectedPropertyWindowKind windowKind = conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND);
+                    boolean noWindowWasPreviouslyOpen = windowKind == SelectedPropertyWindowKind.NONE || windowKind == null;
+                    LOG.info("Current window Kind: " + windowKind);
+
+                    if (noWindowWasPreviouslyOpen) {
+                        LOG.info("open default window");
+                        // open default one
+                        conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.HISTORY);
+                    }
+                }
+
+                updateDraggableNodesForPropertiesPanel(isToggled);
+            }
+
+        });
     }
 
     private void setupTimelineBindings() {
@@ -611,7 +635,33 @@ public class ConceptController {
 
     }
 
-    private void setupPropertyBindings() {}
+    private void setupPropertyBindings() {
+        SimpleObjectProperty<SelectedPropertyWindowKind> windowKindProp =  conceptViewModelNext.getProperty(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND);
+        windowKindProp.subscribe(selectedPropertyWindowKind -> {
+            LOG.info("New Window Kind: " + selectedPropertyWindowKind);
+            switch (selectedPropertyWindowKind) {
+                case STAMP -> setPropertiesPanelOpen(true, true);
+                case MENU -> setPropertiesPanelOpen(true, true);
+                case NAME_MENU -> {
+                    setPropertiesPanelOpen(true, true);
+                }
+                case NAME_FORM -> {
+                    setPropertiesPanelOpen(true, true);
+                }
+                case HISTORY -> {
+                    setPropertiesPanelOpen(true, true);
+                }
+                case HIERARCHY -> {
+                    setPropertiesPanelOpen(true, true);
+                }
+                case COMMENTS -> {
+                    setPropertiesPanelOpen(true, true);
+                }
+                case NONE -> setPropertiesPanelOpen(false, true);
+                case null -> setPropertiesPanelOpen(false, true);
+            }
+        });
+    }
 
     private void setupDetailsBanner() {
         setupIdenticon();
@@ -682,10 +732,15 @@ public class ConceptController {
 
 
         hasValidStamp.subscribe((isStamp) -> {
+            LOG.info("test retrigger of stamp toggle in ConceptController");
             if (isStamp) {
                 LOG.info("has valid stamp triggerd: " + isStamp);
 
                 onConfirmStampFormWhenCreating();
+                if (isNewConcept.getValue()) { // as long as we are in create mode we can update the stamp
+                    conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.HAS_VALID_STAMP, false);
+                }
+
             }
         });
 
@@ -710,7 +765,8 @@ public class ConceptController {
         SimpleBooleanProperty hasValidStampProp = conceptViewModelNext.getProperty(ConceptPropertyKeys.HAS_VALID_STAMP);
 
         // TODO: make sure that we can only change otherName or other FQN but not the primary fqn in non create Mode
-        addDescriptionButton.disableProperty().bind(hasValidStampProp.not());
+        // TODO2: above is wrong siince we can add semantics to uncommited because ViewProperties allow us to do so...
+        //addDescriptionButton.disableProperty().bind(hasValidStampProp.not());
 
         // Listener when user enters a new fqn
         ObservableList<DescrName> fqnFacades = conceptViewModelNext.getObservableList(ConceptPropertyKeys.ASOCIATED_FQN_DESCRIPTION_SEMANTICS);
@@ -737,6 +793,8 @@ public class ConceptController {
         });
 
     }
+
+    private void setupAxioms(){}
 
 
     private void onConfirmStampFormWhenCreating() {
@@ -1589,6 +1647,11 @@ public class ConceptController {
     }
 
     private void onStampSelectionChanged() {
+        LOG.info("StampSelection changed called");
+
+
+
+
         if (isUpdatingStampSelection) {
             return;
         }
@@ -1663,10 +1726,10 @@ public class ConceptController {
         if (this.propertiesJFXNode.controller() != null && this.propertiesJFXNode.controller().getPropertiesTabsPane() != null) {
             if (isOpen) {
                 addDraggableNodes(detailsOuterBorderPane, this.propertiesJFXNode.controller().getPropertiesTabsPane());
-                LOG.debug("Added properties nodes as draggable");
+                LOG.info("Added properties nodes as draggable");
             } else {
                 removeDraggableNodes(detailsOuterBorderPane, this.propertiesJFXNode.controller().getPropertiesTabsPane());
-                LOG.debug("Removed properties nodes from draggable");
+                LOG.info("Removed properties nodes from draggable");
             }
         }
     }
@@ -1804,6 +1867,24 @@ public class ConceptController {
             SlideOutTrayHelper.slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
         } else {
             SlideOutTrayHelper.slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane, false);
+        }
+
+        updateDraggableNodesForPropertiesPanel(isOpen);
+    }
+
+    private void setPropertiesPanelOpen(boolean isOpen, boolean animated) {
+
+        // if we are alredy in the state we do not need to do it again
+        if (propertiesToggleButton.isSelected() == isOpen) {
+            return;
+        }
+
+        propertiesToggleButton.setSelected(isOpen);
+
+        if (isOpen) {
+            SlideOutTrayHelper.slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane, animated);
+        } else {
+            SlideOutTrayHelper.slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane, animated);
         }
 
         updateDraggableNodesForPropertiesPanel(isOpen);

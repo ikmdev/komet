@@ -77,6 +77,8 @@ public class ConceptViewModelNext extends SimpleViewModel {
 
         HAS_VALID_STAMP,
 
+        CURRENT_STAMP_FORM,
+
         AXIOM,
 
     }
@@ -118,7 +120,9 @@ public class ConceptViewModelNext extends SimpleViewModel {
                 .addProperty(ConceptPropertyKeys.PROPERTY_WINDOW_OPEN, false)
                 .addProperty(ConceptPropertyKeys.UNCOMMITED_CHANGES, false)
                 .addProperty(ConceptPropertyKeys.HAS_VALID_STAMP, false)
-                .addProperty(ConceptPropertyKeys.AXIOM, (String) null);
+                .addProperty(ConceptPropertyKeys.CURRENT_STAMP_FORM, (StampFormViewModelBase) null)
+                .addProperty(ConceptPropertyKeys.AXIOM, (String) null)
+                ;
 
     }
 

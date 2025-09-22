@@ -116,8 +116,6 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
                 .setValue(ConceptPropertyKeys.THIS_UNIQUE_CONCEPT_TOPIC, conceptTopic)
                 .reset(); // make sure that View values are init
 
-        LOG.info(conceptViewModelNext.viewModel().toString());
-
         Config conceptConfig = new Config(ConceptController.class.getResource(ConceptController.CONCEPT_DETAILS_VIEW_FXML_FILE)).addNamedViewModel(conceptViewModelNext);
 
         this.conceptJFXNode = FXMLMvvmLoader.make(conceptConfig);
@@ -230,6 +228,8 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
     private void listenOnEntityFacadeUpdate() {
         // remove later when closing
         this.entityFocusChangeListener = (observable, oldEntityFacade, newEntityFacade) -> {
+            LOG.info("Concept Entity Facade changed");
+
             if (newEntityFacade != null) {
 
                 if (newEntityFacade == oldEntityFacade) {
