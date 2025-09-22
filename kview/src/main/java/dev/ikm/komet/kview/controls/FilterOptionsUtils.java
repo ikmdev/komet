@@ -625,11 +625,11 @@ public class FilterOptionsUtils {
             case String value -> value;
             case State value -> viewCalculator == null ?
                     Entity.getFast(value.nid()).description() :
-                    getPreferredDescriptionTextOrNid(viewCalculator, value.nid());
+                    getDescriptionTextOrNid(viewCalculator, value.nid());
             case Long value -> String.valueOf(value);
             case EntityFacade value -> {
                 if (viewCalculator != null) {
-                    yield getPreferredDescriptionTextOrNid(viewCalculator, value);
+                    yield getDescriptionTextOrNid(viewCalculator, value);
                 }
                 yield value.description();
             }
@@ -638,18 +638,18 @@ public class FilterOptionsUtils {
         };
     }
 
-    public static String getPreferredDescriptionTextOrNid(ViewCalculator viewCalculator, int nid) {
+    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, int nid) {
         try {
-            return viewCalculator.getPreferredDescriptionTextOrNid(nid);
+            return viewCalculator.getDescriptionTextOrNid(nid);
         } catch (Exception e) {
             LOG.error("Exception occurred", e);
             return DEFAULT_DESCRIPTION_STRING;
         }
     }
 
-    public static String getPreferredDescriptionTextOrNid(ViewCalculator viewCalculator, EntityFacade entityFacade) {
+    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, EntityFacade entityFacade) {
         try {
-            return viewCalculator.getPreferredDescriptionTextOrNid(entityFacade);
+            return viewCalculator.getDescriptionTextOrNid(entityFacade);
         } catch (Exception e) {
             LOG.error("Exception occurred", e);
             return DEFAULT_DESCRIPTION_STRING;

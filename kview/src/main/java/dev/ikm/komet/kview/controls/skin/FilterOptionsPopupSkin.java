@@ -385,7 +385,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.NAVIGATOR) {
             // header: All first children of root
             List<String> headerList = navigator.getChildEdges(rootNid).stream()
-                    .map(edge -> FilterOptionsUtils.getPreferredDescriptionTextOrNid(navigator.getViewCalculator(), edge.destinationNid()))
+                    .map(edge -> FilterOptionsUtils.getDescriptionTextOrNid(navigator.getViewCalculator(), edge.destinationNid()))
                     .toList();
             setAvailableOptions(options.getMainCoordinates().getHeader(), headerList);
         }
