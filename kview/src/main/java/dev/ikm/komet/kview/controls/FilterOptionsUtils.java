@@ -25,6 +25,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Subscription;
 import org.eclipse.collections.api.list.primitive.ImmutableLongList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -36,6 +38,9 @@ import java.util.stream.Collectors;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 
 public class FilterOptionsUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FilterOptionsUtils.class);
+    private static final String DEFAULT_DESCRIPTION_STRING = Integer.toString(Integer.MAX_VALUE);
 
     public FilterOptionsUtils() {}
 
@@ -615,11 +620,34 @@ public class FilterOptionsUtils {
             case String value -> value;
             case State value -> viewCalculator == null ?
                     Entity.getFast(value.nid()).description() :
-                    viewCalculator.getPreferredDescriptionTextOrNid(value.nid());
+                    getDescriptionTextOrNid(viewCalculator, value.nid());
             case Long value -> String.valueOf(value);
-            case EntityFacade value -> viewCalculator == null ?
-                    value.description() : viewCalculator.getPreferredDescriptionTextOrNid(value);
+            case EntityFacade value -> {
+                if (viewCalculator != null) {
+                    yield getDescriptionTextOrNid(viewCalculator, value);
+                }
+                yield value.description();
+            }
+
             default -> throw new RuntimeException("Unsupported type: " + t.getClass().getName());
         };
+    }
+
+    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, int nid) {
+        try {
+            return viewCalculator.getDescriptionTextOrNid(nid);
+        } catch (Exception e) {
+            LOG.error("Exception occurred", e);
+            return DEFAULT_DESCRIPTION_STRING;
+        }
+    }
+
+    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, EntityFacade entityFacade) {
+        try {
+            return viewCalculator.getDescriptionTextOrNid(entityFacade);
+        } catch (Exception e) {
+            LOG.error("Exception occurred", e);
+            return DEFAULT_DESCRIPTION_STRING;
+        }
     }
 }

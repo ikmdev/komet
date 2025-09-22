@@ -13,4 +13,7 @@
 
 .identifier-vbox  {
     -fx-spacing: 0;
+    -fx-fill-width: false;
+
+    /* -fx-background-color: #ff0000;  for debugging */
 }
