@@ -1,9 +1,5 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import static dev.ikm.komet.kview.controls.FilterOptions.OPTION_ITEM.MODULE;
-import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
-
-import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.kview.controls.DateFilterTitledPane;
 import dev.ikm.komet.kview.controls.FilterOptions;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
@@ -15,7 +11,6 @@ import dev.ikm.komet.kview.controls.SavedFiltersPopup;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.Preferences;
-import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -390,7 +385,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.NAVIGATOR) {
             // header: All first children of root
             List<String> headerList = navigator.getChildEdges(rootNid).stream()
-                    .map(edge -> navigator.getViewCalculator().getPreferredDescriptionTextOrNid(edge.destinationNid()))
+                    .map(edge -> FilterOptionsUtils.getPreferredDescriptionTextOrNid(navigator.getViewCalculator(), edge.destinationNid()))
                     .toList();
             setAvailableOptions(options.getMainCoordinates().getHeader(), headerList);
         }
