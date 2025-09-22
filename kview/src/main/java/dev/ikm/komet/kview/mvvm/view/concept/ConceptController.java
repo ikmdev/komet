@@ -918,24 +918,26 @@ public class ConceptController {
     }
 
     private void showAddAnotherNameUI() {
-        ConceptEntity currentConcept = null;
-        if (this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE) instanceof EntityProxy.Concept concept) {
-            LOG.info("current ConceptEntitiy via EntityProxy Service !!!");
-            currentConcept = (ConceptEntity) EntityService.get().getEntity(concept.nid()).get();
-        } else {
-            LOG.info("current ConceptEntitiy read from our state !!!"); // TODO: maybe this is not correct?
-            currentConcept = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE);
-        }
-        if (currentConcept != null) {
-            // in edit mode, will have a concept and public id
-            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(addDescriptionButton,
-                    // pass the publicId of the Concept
-                    AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
-        } else {
-            // in create mode, we won't have a concept and public id yet
-            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(addDescriptionButton,
-                    AddOtherNameToConceptEvent.ADD_DESCRIPTION));
-        }
+//        ConceptEntity currentConcept = null;
+//        if (this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE) instanceof EntityProxy.Concept concept) {
+//            LOG.info("current ConceptEntitiy via EntityProxy Service !!!");
+//            currentConcept = (ConceptEntity) EntityService.get().getEntity(concept.nid()).get();
+//        } else {
+//            LOG.info("current ConceptEntitiy read from our state !!!"); // TODO: maybe this is not correct?
+//            currentConcept = this.conceptViewModelNext.getPropertyValue(ConceptPropertyKeys.THIS_CONCEPT_ENTITY_FACADE);
+//        }
+        conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_DESCRIPTION_SEMANTIC, null); // make sure that we create a new window
+        conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
+//        if (currentConcept != null) {
+//            // in edit mode, will have a concept and public id
+//            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(addDescriptionButton,
+//                    // pass the publicId of the Concept
+//                    AddOtherNameToConceptEvent.ADD_DESCRIPTION, currentConcept.publicId())); // concept's publicId
+//        } else {
+//            // in create mode, we won't have a concept and public id yet
+//            eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(addDescriptionButton,
+//                    AddOtherNameToConceptEvent.ADD_DESCRIPTION));
+//        }
     }
 
     private ContextMenu buildMenuOptionContextMenu() {

@@ -63,7 +63,7 @@
                 <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
                 <!-- Dialects section / Comments label : depending on edit mode will set all Height parameters programatically -->
-                <RowConstraints fx:id="dialectCommentsRowConstraints"  minHeight="40.0" prefHeight="40.0" maxHeight="40" vgrow="SOMETIMES" />
+                <RowConstraints fx:id="dialectCommentsRowConstraints"  minHeight="200.0" prefHeight="200.0" vgrow="SOMETIMES" />
                 <!-- Comments section -->
                 <RowConstraints vgrow="SOMETIMES" minHeight="80.0"/>
             </rowConstraints>
