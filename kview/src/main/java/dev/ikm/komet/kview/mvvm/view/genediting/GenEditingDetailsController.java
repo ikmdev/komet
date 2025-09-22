@@ -629,7 +629,6 @@ public class GenEditingDetailsController {
                 case ConceptEntity ignored -> {
                     refType = "Concept";
                     description = refComponent2.description();
-                    updateSemanticForPatternInfo();
                 }
                 case PatternEntity ignored -> {
                     refType= "Pattern";
@@ -646,6 +645,7 @@ public class GenEditingDetailsController {
 
             referenceComponent.setTitle(refType);
             referenceComponent.setValue(componentItem);
+            updateSemanticForPatternInfo();
         };
         if (refComponent != null) {
             updateRefComponentInfo.accept(refComponent);
