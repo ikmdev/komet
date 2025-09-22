@@ -153,6 +153,9 @@ public class AppMenu {
     }
 
     /*
+    // This can be used to add a developer menu with Scenic View
+    // This is very useful for debugging JavaFX applications.
+    // Therefore this comment shouldn't be deleted
     Menu createDevMenu(Parent node) {
         Menu devMenu = new Menu("Dev");
 
