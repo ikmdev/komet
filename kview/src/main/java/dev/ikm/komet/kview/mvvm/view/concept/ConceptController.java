@@ -68,6 +68,7 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Stage;
 import org.carlfx.cognitive.loader.*;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -327,6 +328,11 @@ public class ConceptController {
         clearView();
 
         eventBus = EvtBusFactory.getDefaultEvtBus();
+
+        conceptViewModelNext.getViewProperties().nodeView().subscribe(() -> {
+            clearView();
+            updateView();
+        });
 
 
         // when the user clicks a fully qualified name, open the PropertiesPanel
@@ -1299,6 +1305,19 @@ public class ConceptController {
             final int otherNamesCount = otherNamesNodeListControl.getItems().size();
             otherNamesHeaderText.setText(otherNamesCount > 0 ?
                     String.format("OTHER NAMES (%d):", otherNamesCount) : "OTHER NAMES:");
+
+            LOG.info("set exampend stuff in update Concept description");
+            //otherNamesNodeListControl.setExpanded(true);
+                LOG.info("Layout bounds");
+                LOG.info(otherNamesNodeListControl.getLayoutBounds().toString());
+                LOG.info(" bounds in parent");
+                LOG.info(otherNamesNodeListControl.getBoundsInParent().toString());
+                LOG.info(" bounds in local");
+                LOG.info(otherNamesNodeListControl.getBoundsInLocal().toString());
+
+
+            //otherNamesNodeListControl.setExpanded(false);
+            //otherNamesNodeListControl.setExpanded(true);
         },
         // else no value present
         () -> {

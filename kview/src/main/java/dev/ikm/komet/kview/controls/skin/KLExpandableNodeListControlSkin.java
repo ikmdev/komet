@@ -249,6 +249,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
         transitionStartValue = getTransition();
 
         if (expanded) {
+
             contentContainer.getChildren().add(hiddenContentContainer);
         }
 
