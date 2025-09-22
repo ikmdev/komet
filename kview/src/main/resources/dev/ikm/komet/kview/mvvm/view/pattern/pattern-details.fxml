@@ -1,20 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import dev.ikm.komet.kview.controls.PublicIDControl?>
+<?import dev.ikm.komet.kview.controls.PublicIDListControl?>
+<?import dev.ikm.komet.kview.controls.StampViewControl?>
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
-<?import javafx.scene.text.*?>
-<?import java.lang.*?>
-<?import dev.ikm.komet.kview.controls.StampViewControl?>
-<BorderPane fx:id="detailsOuterBorderPane" maxHeight="Infinity" maxWidth="Infinity" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Ellipse?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="Infinity" maxWidth="Infinity" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
          <top>
@@ -38,11 +63,7 @@
                   </FlowPane>
                   <HBox fx:id="conceptHeaderControlToolBarHbox" prefHeight="100.0" prefWidth="762.0" style="-fx-background-color: -Natural-Grey-Main;">
                      <children>
-                        <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
-                           <styleClass>
-                              <String fx:value="icon" />
-                              <String fx:value="coordinate" />
-                           </styleClass>
+                        <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY" styleClass="coordinate">
                            <tooltip><Tooltip text="Coordinates" /></tooltip>
                         </MenuButton>
                         <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
@@ -521,33 +542,11 @@
                               <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="234.0" prefWidth="416.0" />
                            </columnConstraints>
                            <rowConstraints>
-                              <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="ALWAYS" />
-                              <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="0.0" vgrow="SOMETIMES" />
-                              <RowConstraints maxHeight="65.0" minHeight="-Infinity" prefHeight="12.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="22.0" prefHeight="22.0" vgrow="NEVER" />
+                              <RowConstraints maxHeight="51.0" minHeight="47.0" prefHeight="47.0" vgrow="ALWAYS" />
+                              <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="66.0" vgrow="SOMETIMES" />
                            </rowConstraints>
                            <children>
-                              <HBox GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
-                                 <children>
-                                    <Label minWidth="61.0" prefHeight="25.0" prefWidth="50.0" styleClass="pattern-field" text="Pattern">
-                                       <font>
-                                          <Font name="Open Sans" size="10.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField fx:id="snomedIdentifierText" editable="false" maxWidth="1.7976931348623157E308" prefWidth="251.0" styleClass="copyable-label">
-                                       <font>
-                                          <Font name="Open Sans Regular" size="10.0" />
-                                       </font>
-                                       <opaqueInsets>
-                                          <Insets />
-                                       </opaqueInsets>
-                                       <tooltip>
-                                          <Tooltip fx:id="identifierTooltip1" />
-                                       </tooltip>
-                                    </TextField>
-                                 </children>
-                              </HBox>
-                              <PublicIDControl fx:id="identifierControl" styleClass="concept-definition-title" GridPane.columnSpan="2" GridPane.rowIndex="3"/>
+                              <PublicIDListControl fx:id="identifierControl" styleClass="concept-definition-title" GridPane.columnSpan="2" GridPane.rowIndex="1" />
                               <Label fx:id="patternTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0" styleClass="pattern-main-title" text="New Pattern" textFill="#212430" wrapText="true" GridPane.columnIndex="1">
                                  <font>
                                     <Font name="Open Sans Regular" size="17.0" />
@@ -569,7 +568,7 @@
                      <right>
                         <StackPane prefHeight="128.0" prefWidth="210.0" BorderPane.alignment="CENTER">
                            <BorderPane.margin>
-                              <Insets top="5" bottom="5" right="5"/>
+                              <Insets bottom="5" right="5" top="5" />
                            </BorderPane.margin>
                            <StampViewControl fx:id="stampViewControl" prefWidth="210.0" />
                         </StackPane>

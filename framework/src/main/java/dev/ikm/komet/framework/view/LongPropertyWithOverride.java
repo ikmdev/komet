@@ -125,7 +125,8 @@ public class LongPropertyWithOverride extends SimpleLongProperty implements Prop
             if (this.oldValue != null) {
                 if (!this.oldValue.equals(newValue)) {
                     if (this.changeListeners != null) {
-                        this.changeListeners.forEach(changeListener -> changeListener.changed(this, this.oldValue, newValue));
+                        HashSet<ChangeListener<? super Number>> changeListenerHashSet = new HashSet<>(this.changeListeners);
+                        changeListenerHashSet.forEach(changeListener -> changeListener.changed(this, this.oldValue, newValue));
                     }
                 }
             }

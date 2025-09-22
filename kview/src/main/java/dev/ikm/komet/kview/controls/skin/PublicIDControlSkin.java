@@ -2,15 +2,15 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
-import javafx.application.Platform;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.SkinBase;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.SVGPath;
-import javafx.scene.text.Text;
 import javafx.util.Subscription;
 
 /// Provides the Skin for the PublicIDControl.
@@ -25,16 +25,10 @@ import javafx.util.Subscription;
 public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
 
     /// The root Node for the Skin
-    private final HBox rootHBox = new HBox();
-
-    /// The title label that precedes the public ID UUID label
-    private final Label titleLabel = new Label("IDENTIFIER:");
-
-    /// The HBox that contians the public ID label and copy to clipboard button
-    private final HBox publicIdHBox = new HBox();
+    private final BorderPane rootBorderPane = new BorderPane();
 
     /// The TextField that displays the public ID UUID value
-    private final TextField publicIdTextField = new TextField("");
+    private final Label publicIdLabel = new Label("");
 
     /// The tooltip for the publicIdLabel, which is needed because the text in the label
     /// could exceed the Label width
@@ -45,7 +39,7 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     private final Button copyToClipboardButton = new Button();
 
     /// The subscription to the PublicIDControl publicIdProperty, which receives property change events
-    private Subscription subscription;
+    private Subscription publicIdSubscription;
 
     /// The current public id property value, as received in the subscription listener
     private String identifier;
@@ -53,15 +47,11 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
     public PublicIDControlSkin(PublicIDControl control) {
         super(control);
 
-        Tooltip.install(publicIdTextField, publicIdTooltip);
+        Tooltip.install(publicIdLabel, publicIdTooltip);
 
-        rootHBox.getStyleClass().add("public-id");
+        rootBorderPane.getStyleClass().add("public-id");
 
-        rootHBox.setAlignment(Pos.CENTER_LEFT);
-
-        titleLabel.getStyleClass().add("title-label");
-        publicIdTextField.setEditable(false);
-        publicIdTextField.getStyleClass().addAll("public-id-textfield", "copyable-label");
+        publicIdLabel.getStyleClass().addAll("public-id-label", "copyable-label");
 
         // the SVG graphic for the copy to clipboard icon
         var svgPath = new SVGPath();
@@ -73,15 +63,8 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
         copyToClipboardButton.getStyleClass().add("copy-to-clipboard-button");
         Tooltip.install(copyToClipboardButton, new Tooltip("Copy to Clipboard"));
 
-        publicIdHBox.getStyleClass().add("public-id-box");
-
-        // the publicIdHBox contains the publicIdLabel and the copyToClipboardButton.
-        // Both controls need to be in a single HBox to be able to show and hide the
-        // Button when the mouse enters and exits the HBox.
-        publicIdHBox.setAlignment(Pos.CENTER_LEFT);
-        publicIdHBox.getChildren().addAll(publicIdTextField, copyToClipboardButton);
-
-        rootHBox.getChildren().addAll(titleLabel, publicIdHBox);
+        rootBorderPane.setCenter(publicIdLabel);
+        rootBorderPane.setRight(copyToClipboardButton);
 
         // handle the button press action to copy the public id UUID value to the clipboard
         copyToClipboardButton.setOnAction(event -> {
@@ -91,47 +74,62 @@ public class PublicIDControlSkin extends SkinBase<PublicIDControl> {
 
         // initially hide the button
         copyToClipboardButton.setVisible(false);
-        copyToClipboardButton.setManaged(false);
 
         // when the mouse enters, show the button
-        publicIdHBox.setOnMouseEntered(event -> {
+        rootBorderPane.setOnMouseEntered(event -> {
             copyToClipboardButton.setVisible(true);
-            copyToClipboardButton.setManaged(true);
         });
         // when the mouse exits, hide the button
-        publicIdHBox.setOnMouseExited(event -> {
+        rootBorderPane.setOnMouseExited(event -> {
             copyToClipboardButton.setVisible(false);
-            copyToClipboardButton.setManaged(false);
         });
 
-        getChildren().add(rootHBox);
+        getChildren().add(rootBorderPane);
 
         // subscribe to changes to the publicIdProperty in the PublicIDControl
-        subscription = control.publicIdProperty().subscribe(publicId -> {
+        publicIdSubscription = control.publicIdProperty().subscribe(publicId -> {
             identifier = publicId;
             publicIdTooltip.setText(identifier);
-            publicIdTextField.setText(identifier);
+            publicIdLabel.setText(identifier);
         });
+    }
+
+    /// Trims the identifier to remove the prefix and colon if the trimIdentifier property has been set to true
+    private String trimTheIdentifier() {
+        String trimmedIdentifier = identifier;
+
+        if (identifier != null) {
+            int colonIndex = identifier.indexOf(':');
+            if (colonIndex >= 0) {
+                // trim the prefix
+                trimmedIdentifier = identifier.substring(colonIndex + 1);
+
+                // trim the whitespace
+                trimmedIdentifier = trimmedIdentifier.trim();
+            }
+        }
+
+        return trimmedIdentifier;
     }
 
     /// Copy the Public Identifier UUID String value to the System Clipboard
     private void copyToClipboard() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
         ClipboardContent content = new ClipboardContent();
-        content.putString(identifier);
+        content.putString(trimTheIdentifier());
         clipboard.setContent(content);
     }
 
     @Override
     protected void layoutChildren(double x, double y, double w, double h) {
-        rootHBox.resizeRelocate(x, y, w, h);
+        rootBorderPane.resizeRelocate(x, y, w, h);
     }
 
     /// Unsubscribes from the subscription to stop receiving the publicIdProperty change events
     @Override
     public void dispose() {
-        if (subscription != null) {
-            subscription.unsubscribe();
+        if (publicIdSubscription != null) {
+            publicIdSubscription.unsubscribe();
         }
     }
 

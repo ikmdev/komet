@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import static dev.ikm.komet.kview.common.ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.ADD_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
@@ -34,6 +35,11 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.TOTAL_EX
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
+
+import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
+
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -49,9 +55,9 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.*;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -74,6 +80,10 @@ public class PatternFieldsController {
 
     @InjectViewModel
     private PatternFieldsViewModel patternFieldsViewModel;
+
+    @InjectViewModel
+    private PatternViewModel patternViewModel;
+
 
     @FXML
     private Label addEditLabel;
@@ -111,17 +121,45 @@ public class PatternFieldsController {
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
         ObjectProperty<EntityProxy> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
         ObjectProperty<EntityProxy> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
+        ObjectProperty<PatternField> previousPatternFieldProperty = patternFieldsViewModel.getProperty(PREVIOUS_PATTERN_FIELD);
 
-        // the display name is derived from the meaning's description text and is not user editable
-        displayNameTextField.setEditable(false);
+
         patternFieldsViewModel.getProperty(MEANING_ENTITY).subscribe(meaningObject -> {
             if (meaningObject != null) {
                 ConceptEntity conceptEntity = Entity.getFast((EntityFacade) meaningObject);
-                displayNameTextField.setText(conceptEntity.description());
+                if (conceptEntity != null && viewProperties != null) {
+                    LanguageCalculator languageCalculator = viewProperties.calculator().languageCalculator();
+                    displayNameTextField.setText(languageCalculator.getDescriptionTextOrNid(conceptEntity.nid()));
+                } else {
+                    displayNameTextField.setText("");
+                    LOG.warn("conceptEntity is null.");
+                }
             } else {
                 displayNameTextField.setText("");
             }
         });
+
+        SimpleStringProperty mode =  patternViewModel.getProperty(MODE);
+
+        // Users should not be able to edit Field Order / DisplayName in all circumstances
+        // state check a) Either a Pattern was never commited or is a complete new one
+        // state check b) either we add a field or edit one.
+        //                      field order | display name | data type
+        //   newPattern + add ->    enabled    non-edit      enabled
+        //     commited + add ->    disabled   disabled      enabled
+        //   newPattern + edit->    enabled    non-edit      disabled
+        //     commited + edit->    disabled   disabled      disabled
+
+        // Create boolean bindings
+
+        BooleanBinding isEdit = Bindings.isNotNull(previousPatternFieldProperty);
+        BooleanBinding patternIsInCreateMode = Bindings.equal(mode, CREATE);
+
+        // Bind the disable/editable properties
+        fieldOrderComboBox.disableProperty().bind(patternIsInCreateMode.not());
+        displayNameTextField.editableProperty().bind(Bindings.when(patternIsInCreateMode).then(false).otherwise(true));
+        displayNameTextField.disableProperty().bind(patternIsInCreateMode.not());
+        dataTypeComboBox.disableProperty().bind(isEdit);
 
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
         fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder

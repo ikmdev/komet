@@ -15,99 +15,38 @@
  */
 package dev.ikm.komet.kview.mvvm.view.concept;
 
-import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
-import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
-import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
-import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.AXIOM;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAMES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.FORM_TIME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampProperties.IS_CONFIRMED_OR_SUBMITTED;
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
-import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
-import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_PATTERN;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
-import dev.ikm.komet.framework.observable.ObservableEntity;
-import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
-import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
-import dev.ikm.komet.kview.controls.PublicIDControl;
+import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
-import dev.ikm.komet.kview.events.AddFullyQualifiedNameEvent;
-import dev.ikm.komet.kview.events.AddOtherNameToConceptEvent;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.events.CreateConceptEvent;
-import dev.ikm.komet.kview.events.EditConceptEvent;
-import dev.ikm.komet.kview.events.EditConceptFullyQualifiedNameEvent;
-import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
-import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
-import dev.ikm.komet.kview.events.StampEvent;
+import dev.ikm.komet.kview.events.*;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.AxiomChangeEvent;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.collections.ObservableList;
@@ -117,25 +56,11 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -151,16 +76,30 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
+
+import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
+import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.*;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
+import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 public class ConceptController {
 
@@ -169,6 +108,8 @@ public class ConceptController {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptController.class);
 
     private static final String EDIT_STAMP_OPTIONS_FXML = "stamp-edit.fxml";
+
+    private static final String NO_VERSION_FOR_VIEW_TEXT = "No version for view";
 
     @FXML
     private MenuButton coordinatesMenuButton;
@@ -207,7 +148,7 @@ public class ConceptController {
     private Label definitionTextField;
 
     @FXML
-    private PublicIDControl identifierControl;
+    private PublicIDListControl identifierControl;
 
     @FXML
     private StampViewControl stampViewControl;
@@ -402,6 +343,7 @@ public class ConceptController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
+            setStampSelectedSilently(false);
         };
         eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);
 
@@ -409,6 +351,7 @@ public class ConceptController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
+            setStampSelectedSilently(false);
         };
         eventBus.subscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFullyQualifiedNameEventSubscriber);
 
@@ -417,6 +360,7 @@ public class ConceptController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
+            setStampSelectedSilently(false);
         };
         eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameConceptEventSubscriber);
 
@@ -424,18 +368,22 @@ public class ConceptController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
+            setStampSelectedSilently(false);
         };
         eventBus.subscribe(conceptTopic, AddOtherNameToConceptEvent.class, addOtherNameToConceptEventSubscriber);
 
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
-        closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
+        closePropertiesPanelEventSubscriber = evt -> {
+            propertiesToggleButton.fire();
+            setStampSelectedSilently(false);
+        };
         eventBus.subscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
 
         // Listener when user enters a new fqn
         ObservableList<DescrName> fullyQualifiedNames = getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES);
         fullyQualifiedNames.addListener((InvalidationListener) observable -> {
-            if(!fullyQualifiedNames.isEmpty()){
+            if (!fullyQualifiedNames.isEmpty()) {
                 DescrName fqnDescrName = fullyQualifiedNames.get(0);
                 updateConceptBanner();
             }
@@ -572,6 +520,10 @@ public class ConceptController {
             if (conceptViewModel.getPropertyValue(MODE).equals(CREATE)) {
                 StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
                 stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(this::onConfirmStampFormWhenCreating);
+            } else {
+                // add axiom pencil is only for create mode
+                // In view mode you can't add a sufficient/necc set
+                addAxiomButton.setVisible(false);
             }
         });
     }
@@ -603,6 +555,8 @@ public class ConceptController {
 
         // Latest update time
         stampViewControl.setLastUpdated(stampFormViewModel.getPropertyValue(FORM_TIME_TEXT));
+
+        stampViewControl.setDisable(true);
     }
 
     /**
@@ -848,7 +802,7 @@ public class ConceptController {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
-        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierControl.getPublicId(), fqnTitleText.getText()));
+        LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierControl.getPublicIdList(), fqnTitleText.getText()));
         // unsubscribe listeners
         eventBus.unsubscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);
         eventBus.unsubscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFullyQualifiedNameEventSubscriber);
@@ -900,62 +854,70 @@ public class ConceptController {
         }
 
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
-        // TODO do a null check on the entityFacade
-        // Title (FQN of concept)
+
         final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-        String conceptNameStr = viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid());
-        fqnTitleText.setText(conceptNameStr);
-        conceptNameTooltip.setText(conceptNameStr);
 
-        // Definition description text
-        viewCalculator
-                .languageCalculator()
-                .getDefinitionDescriptionText(entityFacade)
-                .ifPresentOrElse(definition ->
-                        definitionTextField.setText(definition),
-                        () -> definitionTextField.setText(""));
+        // check to see if the latest version exists
+        viewCalculator.latest(entityFacade).ifPresentOrElse(
+                entityVersion -> {
 
-        setupDisplayUUID(entityFacade, viewCalculator);
+                    // Title (FQN of concept)
+            String conceptNameStr = viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid());
+            fqnTitleText.setText(conceptNameStr);
+            conceptNameTooltip.setText(conceptNameStr);
 
-        // Identicon
-        Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
-        identiconImageView.setImage(identicon);
+            // Definition description text
+            viewCalculator
+                    .languageCalculator()
+                    .getDefinitionDescriptionText(entityFacade)
+                    .ifPresentOrElse(definition ->
+                            definitionTextField.setText(definition),
+                            () -> definitionTextField.setText(""));
 
-        // Obtain STAMP info
-        EntityVersion latestVersion = viewCalculator.latest(entityFacade).get();
+            updateDisplayIdentifier(viewCalculator, (ConceptFacade) entityFacade);
 
-        StampEntity stamp = latestVersion.stamp();
+            // Identicon
+            Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
+            identiconImageView.setImage(identicon);
 
-        // Status
-        String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
-        stampViewControl.setStatus(statusText);
+            // Obtain STAMP info
+            StampEntity stamp = entityVersion.stamp();
 
-        // Module
-        String moduleText = viewCalculator.getDescriptionTextOrNid(stamp.moduleNid());
-        stampViewControl.setModule(moduleText);
+            // Status
+            String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
+            stampViewControl.setStatus(statusText);
 
-        // Author
-        String authorDescription = viewCalculator.getDescriptionTextOrNid(stamp.authorNid());
-        stampViewControl.setAuthor(authorDescription);
+            // Module
+            String moduleText = viewCalculator.getDescriptionTextOrNid(stamp.moduleNid());
+            stampViewControl.setModule(moduleText);
 
-        // Path
-        String pathText = viewCalculator.getDescriptionTextOrNid(stamp.pathNid());
-        stampViewControl.setPath(pathText);
+            // Author
+            String authorDescription = viewCalculator.getDescriptionTextOrNid(stamp.authorNid());
+            stampViewControl.setAuthor(authorDescription);
 
-        // Latest update time
-        long stampTime = stamp.time();
-        stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
+            // Path
+            String pathText = viewCalculator.getDescriptionTextOrNid(stamp.pathNid());
+            stampViewControl.setPath(pathText);
+
+            // Latest update time
+            long stampTime = stamp.time();
+            stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
+        },
+        // else no value present
+        () -> {
+            getConceptViewModel().setPropertyValue(MODE, VIEW);
+            stampViewControl.setStatus(NO_VERSION_FOR_VIEW_TEXT);
+            stampViewControl.setModule(NO_VERSION_FOR_VIEW_TEXT);
+            stampViewControl.setAuthor(NO_VERSION_FOR_VIEW_TEXT);
+            stampViewControl.setPath(NO_VERSION_FOR_VIEW_TEXT);
+            stampViewControl.setLastUpdated(NO_VERSION_FOR_VIEW_TEXT);
+            fqnTitleText.setText(NO_VERSION_FOR_VIEW_TEXT);
+        });
     }
 
-    /// Show the public ID
-    private void setupDisplayUUID(EntityFacade entityFacade, ViewCalculator viewCalculator) {
-        List<String> idList = entityFacade.publicId().asUuidList().stream()
-                .map(UUID::toString)
-                .collect(Collectors.toList());
-        idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
-        String idStr = String.join(", ", idList);
-
-        identifierControl.setPublicId(idStr);
+    /// Show the public IDs
+    private void updateDisplayIdentifier(ViewCalculator viewCalculator, ConceptFacade conceptFacade) {
+        identifierControl.updatePublicIdList(viewCalculator, conceptFacade);
     }
 
     public void updateFullyQualifiedNamesDescription(List<DescrName> descrNameViewModels) {
@@ -996,52 +958,73 @@ public class ConceptController {
         final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
 
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
-        // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
-        Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
-        otherNamesNodeListControl.getItems().clear();
-        fullyQualifiedNameNodeListControl.getItems().clear();
 
-        //Obtain the index field of DESCRIPTION_TYPE
-        PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(DESCRIPTION_PATTERN.nid()).get();
-        int descriptionTypeIndex = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE.nid());
+        viewCalculator.latest(entityFacade).ifPresentOrElse(
+            _ -> {
+            // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
+            Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
+            otherNamesNodeListControl.getItems().clear();
+            fullyQualifiedNameNodeListControl.getItems().clear();
 
-        descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
-            EntityFacade fieldTypeValue = (EntityFacade) semanticEntityVersion.fieldValues().get(descriptionTypeIndex);
-            boolean isFQN = FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
-            boolean isOtherName = REGULAR_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
+            //Obtain the index field of DESCRIPTION_TYPE
+            PatternEntityVersion patternEntityVersion = (PatternEntityVersion)viewCalculator.latest(DESCRIPTION_PATTERN.nid()).get();
+            int descriptionTypeIndex = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE.nid());
 
-            if (isFQN) {
-                // Latest FQN
-             //   updateFQNSemantics(semanticEntityVersion, fieldDescriptions);
-                VBox fullyQualifiedNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
-                PublicId fullyQuallifiedNamePublicId = (PublicId) fullyQualifiedNameBox.getChildren().getFirst().getUserData();
-                TextFlow row = (TextFlow) fullyQualifiedNameBox.getChildren().getFirst();
-                row.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-                        new EditConceptFullyQualifiedNameEvent(fullyQualifiedNameBox,
-                                EditConceptFullyQualifiedNameEvent.EDIT_FQN, fullyQuallifiedNamePublicId)));
-                fullyQualifiedNameNodeListControl.getItems().add(fullyQualifiedNameBox);
-                LOG.debug("FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
-            } else if (isOtherName) {
-                // start adding a row
-                VBox otherNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
-                PublicId otherNamePublicId = (PublicId) otherNameBox.getChildren().getFirst().getUserData();
-                TextFlow firstRow = (TextFlow) otherNameBox.getChildren().getFirst();
-                firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
-                        new EditOtherNameConceptEvent(otherNameBox,
-                                EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId)));
-                otherNamesNodeListControl.getItems().add(otherNameBox);
+            descriptionSemanticsMap.forEach((semanticEntityVersion, fieldDescriptions) -> {
+                EntityFacade fieldTypeValue = (EntityFacade) semanticEntityVersion.fieldValues().get(descriptionTypeIndex);
+                boolean isFQN = FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
+                boolean isOtherName = REGULAR_NAME_DESCRIPTION_TYPE.nid() == fieldTypeValue.nid();
 
-                LOG.debug("Other Names = " + semanticEntityVersion + " " + fieldDescriptions);
+                if (isFQN) {
+                    // Latest FQN
+                    //   updateFQNSemantics(semanticEntityVersion, fieldDescriptions);
+                    VBox fullyQualifiedNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
+                    PublicId fullyQuallifiedNamePublicId = (PublicId) fullyQualifiedNameBox.getChildren().getFirst().getUserData();
+                    TextFlow row = (TextFlow) fullyQualifiedNameBox.getChildren().getFirst();
+                    row.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
+                            new EditConceptFullyQualifiedNameEvent(fullyQualifiedNameBox,
+                                    EditConceptFullyQualifiedNameEvent.EDIT_FQN, fullyQuallifiedNamePublicId)));
+                    fullyQualifiedNameNodeListControl.getItems().add(fullyQualifiedNameBox);
+                    LOG.debug("FQN Name = " + semanticEntityVersion + " " + fieldDescriptions);
+                } else if (isOtherName) {
+                    // start adding a row
+                    VBox otherNameBox = generateDescriptionSemanticRow(semanticEntityVersion, fieldDescriptions);
+                    PublicId otherNamePublicId = (PublicId) otherNameBox.getChildren().getFirst().getUserData();
+                    TextFlow firstRow = (TextFlow) otherNameBox.getChildren().getFirst();
+                    firstRow.setOnMouseClicked(event -> eventBus.publish(conceptTopic,
+                            new EditOtherNameConceptEvent(otherNameBox,
+                                    EditOtherNameConceptEvent.EDIT_OTHER_NAME, otherNamePublicId)));
+                    otherNamesNodeListControl.getItems().add(otherNameBox);
+
+                    LOG.debug("Other Names = " + semanticEntityVersion + " " + fieldDescriptions);
+                }
+            });
+
+            final int fullyQualifiedNameCount = fullyQualifiedNameNodeListControl.getItems().size();
+            fullyQualifiedNameHeaderText.setText(fullyQualifiedNameCount > 0 ?
+                    String.format("FULLY QUALIFIED NAMES (%d):", fullyQualifiedNameCount) : "FULLY QUALIFIED NAMES:");
+
+            final int otherNamesCount = otherNamesNodeListControl.getItems().size();
+            otherNamesHeaderText.setText(otherNamesCount > 0 ?
+                    String.format("OTHER NAMES (%d):", otherNamesCount) : "OTHER NAMES:");
+        },
+        // else no value present
+        () -> {
+            getConceptViewModel().setPropertyValue(MODE, VIEW);
+            List<DescrName> fqns = getConceptViewModel().getValue(FULLY_QUALIFIED_NAMES);
+            if (fqns != null && !fqns.isEmpty()) {
+                VBox fqnVBox = new VBox(new Label(NO_VERSION_FOR_VIEW_TEXT));
+                fullyQualifiedNameNodeListControl.getItems().clear();
+                fullyQualifiedNameNodeListControl.getItems().add(fqnVBox);
+            }
+            List<DescrName> ots = getConceptViewModel().getValue(OTHER_NAMES);
+            if (ots != null && !ots.isEmpty()) {
+                VBox otherNameVBox = new VBox(new Label(NO_VERSION_FOR_VIEW_TEXT));
+                otherNamesNodeListControl.getItems().clear();
+                otherNamesNodeListControl.getItems().add(otherNameVBox);
             }
         });
 
-        final int fullyQualifiedNameCount = fullyQualifiedNameNodeListControl.getItems().size();
-        fullyQualifiedNameHeaderText.setText(fullyQualifiedNameCount > 0 ?
-                String.format("FULLY QUALIFIED NAMES (%d):", fullyQualifiedNameCount) : "FULLY QUALIFIED NAMES:");
-
-        final int otherNamesCount = otherNamesNodeListControl.getItems().size();
-        otherNamesHeaderText.setText(otherNamesCount > 0 ?
-                String.format("OTHER NAMES (%d):", otherNamesCount) : "OTHER NAMES:");
     }
 
     /**
@@ -1324,25 +1307,34 @@ public class ConceptController {
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
 
-        // add axiom pencil
-        addAxiomButton.setVisible(entityFacade == null); // In view mode you can't add a sufficient/necc set
+        viewCalculator.latest(entityFacade).ifPresentOrElse(
+        entityVersion -> {
 
-        // Create a SheetItem (AXIOM inferred semantic version)
-        // TODO Should this be reused instead of instanciating a new one everytime?
-        KometPropertySheet inferredPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
-        Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
-        makeSheetItem(conceptViewModel.getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
-        inferredAxiomPane.setCenter(inferredPropertySheet);
+            // Create a SheetItem (AXIOM inferred semantic version)
+            // TODO Should this be reused instead of instanciating a new one everytime?
+            KometPropertySheet inferredPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
+            Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
+            makeSheetItem(conceptViewModel.getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
+            inferredAxiomPane.setCenter(inferredPropertySheet);
 
 
-        // Create a SheetItem (AXIOM stated semantic version)
-        KometPropertySheet statedPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
-        Latest<SemanticEntityVersion> statedSemanticVersion    = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
-        makeSheetItem(conceptViewModel.getViewProperties(), statedPropertySheet, statedSemanticVersion);
-        statedAxiomPane.setCenter(statedPropertySheet);
+            // Create a SheetItem (AXIOM stated semantic version)
+            KometPropertySheet statedPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
+            Latest<SemanticEntityVersion> statedSemanticVersion = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
+            makeSheetItem(conceptViewModel.getViewProperties(), statedPropertySheet, statedSemanticVersion);
+            statedAxiomPane.setCenter(statedPropertySheet);
 
-        //TODO discuss the blue theme color related to AXIOMs
+            //TODO discuss the blue theme color related to AXIOMs
+        },
+        // no latest version present
+        () -> {
+            inferredAxiomPane.setCenter(showNoVersionPresentForAxiom());
+            statedAxiomPane.setCenter(showNoVersionPresentForAxiom());
+        });
+    }
 
+    private Node showNoVersionPresentForAxiom() {
+        return new Label(NO_VERSION_FOR_VIEW_TEXT);
     }
 
     private void makeSheetItem(ViewProperties viewProperties,
@@ -1360,7 +1352,7 @@ public class ConceptController {
 
     public void clearView() {
         definitionTextField.setText("");
-        identifierControl.setPublicId("");
+        identifierControl.setPublicIdList(null);
 
         stampViewControl.clear();
 
@@ -1380,6 +1372,18 @@ public class ConceptController {
 
     public HBox getConceptHeaderControlToolBarHbox() {
         return conceptHeaderControlToolBarHbox;
+    }
+
+    /**
+     * Sets the Stamp View Control selection.
+     * This update won't trigger any events (hence the name "silently).
+     *
+     * @param selected whether to select or not select the Stamp View Control
+     */
+    private void setStampSelectedSilently(boolean selected) {
+        isUpdatingStampSelection = true;
+        stampViewControl.setSelected(selected);
+        isUpdatingStampSelection = false;
     }
 
     private void onStampSelectionChanged() {
@@ -1428,9 +1432,9 @@ public class ConceptController {
             updateDraggableNodesForPropertiesPanel(false);
         }
 
-        isUpdatingStampSelection = true;
-        stampViewControl.setSelected(propertyToggle.isSelected());
-        isUpdatingStampSelection = false;
+        if (!propertyToggle.isSelected()) {
+            setStampSelectedSilently(false);
+        }
     }
 
     /**

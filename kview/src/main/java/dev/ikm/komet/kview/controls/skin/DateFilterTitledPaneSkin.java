@@ -49,7 +49,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
     private Subscription subscription;
     private ScrollPane scrollPane;
     private RangeCalendarControl calendarControl;
-    private FilterOptions.Option currentOption;
+    private FilterOptions.Option<String> currentOption;
 
     public DateFilterTitledPaneSkin(DateFilterTitledPane control) {
         super(control);
@@ -122,13 +122,6 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         subscription = selectedOption.boundsInParentProperty().subscribe(b ->
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
-
-        subscription = subscription.and(selectedOption.textProperty().subscribe(_ -> {
-            List<String> defaultOptions = currentOption.defaultOptions();
-            if (defaultOptions.isEmpty()) {
-                defaultOptions.add(currentOption.availableOptions().getFirst());
-            }
-        }));
 
         if (control.getParent() instanceof FilterOptionsPopupSkin.AccordionBox accordion) {
             subscription = subscription.and(accordion.expandedPaneProperty().subscribe(pane -> {
@@ -222,7 +215,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         updateModifiedState(currentOption);
     }
 
-    private void updateModifiedState(FilterOptions.Option currentOption) {
+    private void updateModifiedState(FilterOptions.Option<String> currentOption) {
         boolean modified = !Objects.equals(currentOption, control.getDefaultOption());
         pseudoClassStateChanged(MODIFIED_TITLED_PANE, currentOption.isInOverride() || modified);
         if (modified && !currentOption.isInOverride()) {
@@ -242,7 +235,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         super.dispose();
     }
 
-    private void createSpecificDatePane(FilterOptions.Option option) {
+    private void createSpecificDatePane(FilterOptions.Option<String> option) {
         StackPane separatorRegion = new StackPane(new IconRegion("line"));
         separatorRegion.getStyleClass().add("separator-region");
 
@@ -264,7 +257,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         control.setMode(DateFilterTitledPane.MODE.SINGLE_DATE);
     }
 
-    private void createDateRangePane(FilterOptions.Option option) {
+    private void createDateRangePane(FilterOptions.Option<String> option) {
         StackPane separatorRegion = new StackPane(new IconRegion("line"));
         separatorRegion.getStyleClass().add("separator-region");
 
@@ -304,7 +297,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         control.setMode(DateFilterTitledPane.MODE.DATE_RANGE_LIST);
     }
 
-    private String getOptionText(FilterOptions.Option option) {
+    private String getOptionText(FilterOptions.Option<String> option) {
         if (option == null) {
             return null;
         }
@@ -326,7 +319,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 return MessageFormat.format(resources.getString("time.option.range.excluding"), including, excluding);
             }
         } else {
-            return String.join(", ", option.defaultOptions());
+            return String.join(", ", option.selectedOptions());
         }
     }
 

@@ -140,7 +140,7 @@ public final class ObservableSemanticVersion
         if (version.committed()) {
             Transaction t = Transaction.make();
             // newStamp already written to the entity store.
-            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
+            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), getAuthorForChanges().nid(), stamp.moduleNid(), stamp.pathNid(), entity());
             // Create new version...
             newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
 

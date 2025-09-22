@@ -17,9 +17,9 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampAddFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampCreateFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampAddSubmitFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampCreateFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
@@ -33,6 +33,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
@@ -52,7 +53,7 @@ import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneControl
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampFormViewModelBase.StampType.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.SEMANTIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 
 public class PropertiesController {
@@ -69,6 +70,8 @@ public class PropertiesController {
 
     @FXML
     private ToggleButton instancesButton;
+
+    public ToggleButton commentsButton;
 
     @FXML
     private ToggleGroup propertyToggleButtonGroup;
@@ -92,7 +95,7 @@ public class PropertiesController {
 
     private Pane closePropsPane;
 
-    private StampAddFormViewModel stampAddFormViewModel;
+    private StampAddSubmitFormViewModel stampAddSubmitFormViewModel;
 
     private StampCreateFormViewModel stampCreateFormViewModel;
 
@@ -115,7 +118,7 @@ public class PropertiesController {
     private JFXNode<Pane, ReferenceComponentController> referenceComponentJfxNode;
 
     public PropertiesController() {
-        this.stampAddFormViewModel = new StampAddFormViewModel(SEMANTIC);
+        this.stampAddSubmitFormViewModel = new StampAddSubmitFormViewModel(SEMANTIC);
         this.stampCreateFormViewModel = new StampCreateFormViewModel(SEMANTIC);
     }
 
@@ -136,8 +139,8 @@ public class PropertiesController {
         // -- add stamp
         addStampSubscriber = evt -> {
             if (evt.getEventType() == ADD_STAMP) {
-                stampJFXNode.controller().init(stampAddFormViewModel);
-                this.stampAddFormViewModel.init(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
+                stampJFXNode.controller().init(stampAddSubmitFormViewModel);
+                this.stampAddSubmitFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
                         genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
 
                 contentBorderPane.setCenter(stampJFXNode.node());
@@ -151,7 +154,7 @@ public class PropertiesController {
         createStampSubscriber = evt -> {
             if (evt.getEventType() == CREATE_STAMP) {
                 stampJFXNode.controller().init(stampCreateFormViewModel);
-                this.stampCreateFormViewModel.init(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
+                this.stampCreateFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
                         genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
 
                 contentBorderPane.setCenter(stampJFXNode.node());
@@ -255,6 +258,50 @@ public class PropertiesController {
 //        contentBorderPane.setCenter(historyPane);
     }
 
+    public String selectedView() {
+        Toggle tab = propertyToggleButtonGroup.getSelectedToggle();
+        if (addEditButton.equals(tab)) {
+            return "EDIT";
+        } else if (instancesButton.equals(tab)) {
+            return "INSTANCES";
+        } else if (historyButton.equals(tab)) {
+            return "HISTORY";
+        } else if (commentsButton.equals(tab)) {
+            return "COMMENTS";
+        } else {
+            return "NONE";
+        }
+    };
+
+    public void restoreSelectedView(String selectedView) {
+        LOG.info("restore selected Pattern view with " + selectedView);
+        switch (selectedView) {
+            case "EDIT" -> {
+                addEditButton.setSelected(true);
+                contentBorderPane.setCenter(currentEditPane);
+            }
+            case "INSTANCES" -> {
+                instancesButton.setSelected(true);
+                //contentBorderPane.setCenter(instancesPane); // TODO: hook up nodes once impelemted
+            }
+            case "HISTORY" -> {
+                historyButton.setSelected(true);
+                //contentBorderPane.setCenter(historyPane); // TODO: hook up nodes once impelemted
+            }
+            case "COMMENTS" -> {
+                commentsButton.setSelected(true);
+                // contentBorderPane.setCenter(commentsPane); // TODO hook up nodes once impelemted
+            }
+            default -> {
+                addEditButton.setSelected(false);
+                instancesButton.setSelected(false);
+                historyButton.setSelected(false);
+                commentsButton.setSelected(false);
+                contentBorderPane.setCenter(closePropsPane);
+            }
+        }
+    }
+
     public void clearView() {
     }
 
@@ -269,12 +316,12 @@ public class PropertiesController {
     public void updateModel(EntityFacade newSemantic) {
         this.newSemantic = newSemantic;
 
-        if (newSemantic != null && stampAddFormViewModel != null) {
-            setStampFormViewModel(stampAddFormViewModel);
+        if (newSemantic != null && stampAddSubmitFormViewModel != null) {
+            setStampFormViewModel(stampAddSubmitFormViewModel);
         } else if (newSemantic == null && stampCreateFormViewModel != null) {
             setStampFormViewModel(stampCreateFormViewModel);
         }
-        stampFormViewModel.get().init(newSemantic, genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+        stampFormViewModel.get().update(newSemantic, genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
     }
 
     /***************************************************************************

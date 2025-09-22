@@ -37,6 +37,11 @@ module dev.ikm.komet.kview {
     requires dev.ikm.tinkar.reasoner.service;
     requires org.eclipse.collections.api;
     requires org.eclipse.collections.impl;
+    requires javafx.graphics;
+    requires javafx.fxml;
+    requires javafx.controls;
+    requires org.slf4j;
+    requires javafx.base;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
@@ -155,6 +160,8 @@ module dev.ikm.komet.kview {
 
     exports dev.ikm.komet.kview.mvvm.view.loginauthor;
     opens dev.ikm.komet.kview.mvvm.view.loginauthor;
+    exports dev.ikm.komet.kview.mvvm.viewmodel.stamp;
+    opens dev.ikm.komet.kview.mvvm.viewmodel.stamp to dev.ikm.komet.application, javafx.fxml, org.carlfx.cognitive;
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.concept.ConceptNodeFactory;
 
