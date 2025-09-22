@@ -1,5 +1,6 @@
 package dev.ikm.komet.app;
 
+import com.jpro.webapi.WebAPI;
 import com.sun.management.OperatingSystemMXBean;
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
@@ -16,6 +17,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -33,6 +35,7 @@ import javafx.util.Duration;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
+//import org.scenicview.ScenicView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,6 +128,7 @@ public class AppMenu {
         menuBar.getMenus().add(fileMenu);
         menuBar.getMenus().add(editMenu);
         menuBar.getMenus().add(windowMenu);
+        //menuBar.getMenus().add(createDevMenu(kometRoot));
         if (topBarVBox != null) {
             // add MS Windows menu to the classic komet menu
             Platform.runLater(() -> topBarVBox.getChildren().addFirst(menuBar));
@@ -147,6 +151,28 @@ public class AppMenu {
         exchangeMenu.getItems().addAll(infoMenuItem, pullMenuItem, pushMenuItem);
         return exchangeMenu;
     }
+
+    /*
+    // This can be used to add a developer menu with Scenic View
+    // This is very useful for debugging JavaFX applications.
+    // Therefore this comment shouldn't be deleted
+    Menu createDevMenu(Parent node) {
+        Menu devMenu = new Menu("Dev");
+
+        MenuItem reloadMenuItem = new MenuItem("Scenic View");
+        reloadMenuItem.setOnAction(actionEvent -> {
+            var stage2 = new Stage();
+            if(WebAPI.isBrowser()) {
+                WebAPI.getWebAPI(node.getScene()).openStageAsPopup(stage2);
+            }
+            ScenicView.show(node, stage2);
+        });
+        // Add shortcut Ctrl+Shift+S to open Scenic View
+        KeyCombination scenicViewKeyCombo = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
+        reloadMenuItem.setAccelerator(scenicViewKeyCombo);
+        devMenu.getItems().add(reloadMenuItem);
+        return devMenu;
+    }*/
 
     public void showAboutDialog() {
         AboutDialog aboutDialog = new AboutDialog();
@@ -189,6 +215,7 @@ public class AppMenu {
         menuBar.getMenus().add(viewMenu);
         menuBar.getMenus().add(windowMenu);
         menuBar.getMenus().add(exchangeMenu);
+        //menuBar.getMenus().add(createDevMenu(landingPageRoot));
         landingPageRoot.setTop(menuBar);
     }
 
@@ -209,7 +236,7 @@ public class AppMenu {
     }
 
 
-    void setupMenus() {
+    void setupMenus(Parent parent) {
         Menu kometAppMenu;
 
         if (IS_MAC_AND_NOT_TESTFX_TEST) {
@@ -262,6 +289,8 @@ public class AppMenu {
         // Create and add the help menu to the menu bar
         Menu helpMenu = createHelpMenu();
         menuBar.getMenus().add(helpMenu);
+
+       // menuBar.getMenus().add(createDevMenu(parent));
     }
 
     private Menu createFileMenu() {

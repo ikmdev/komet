@@ -74,7 +74,7 @@ public class AppPages {
         app.rootPane.getChildren().setAll(loginPane);
         stage.setTitle("KOMET Login");
 
-        app.appMenu.setupMenus();
+        app.appMenu.setupMenus(loginPane);
     }
 
     void launchSelectDataSourcePage(Stage stage) {
@@ -90,7 +90,7 @@ public class AppPages {
             app.rootPane.getChildren().setAll(sourceRoot);
             stage.setTitle("KOMET Startup");
 
-            app.appMenu.setupMenus();
+            app.appMenu.setupMenus(app.rootPane);
         } catch (IOException ex) {
             LOG.error("Failed to initialize the select data source window", ex);
         }
@@ -216,7 +216,7 @@ public class AppPages {
 
             app.rootPane.getChildren().add(landingPageBorderPane);
 
-            app.appMenu.setupMenus();
+            app.appMenu.setupMenus(app.rootPane);
         } catch (IOException e) {
             LOG.error("Failed to initialize the landing page window", e);
         }
