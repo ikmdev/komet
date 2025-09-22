@@ -3,7 +3,6 @@
 <?import dev.ikm.komet.kview.controls.KLExpandableNodeListControl?>
 <?import dev.ikm.komet.kview.controls.PublicIDListControl?>
 <?import dev.ikm.komet.kview.controls.StampViewControl?>
-<?import dev.ikm.komet.kview.controls.StampViewControl?>
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
 <?import java.lang.String?>
@@ -47,11 +46,11 @@
             <HBox fx:id="conceptHeaderControlToolBarHbox" BorderPane.alignment="CENTER">
                <children>
                   <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
-                     <styleClass>
-                        <String fx:value="icon" />
-                        <String fx:value="coordinate" />
-                     </styleClass>
                      <tooltip><Tooltip text="Coordinates" /></tooltip>
+               <styleClass>
+                  <String fx:value="coordinate" />
+                  <String fx:value="icon" />
+               </styleClass>
                   </MenuButton>
                   <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
                   <HBox fx:id="controlBoxHbox1" alignment="CENTER" spacing="15.0">
