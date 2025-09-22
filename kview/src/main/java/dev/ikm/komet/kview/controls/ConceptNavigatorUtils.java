@@ -2,12 +2,15 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.transform.Scale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +24,8 @@ import static dev.ikm.komet.kview.controls.KLConceptNavigatorControl.MAX_LEVEL;
  * Utility class for the {@link KLConceptNavigatorControl} and related controls and components.
  */
 public class ConceptNavigatorUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ConceptNavigatorUtils.class);
 
     private static final String STYLE1 = """
             data:text/css,
@@ -130,7 +135,7 @@ public class ConceptNavigatorUtils {
      * @return a list of {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
      */
     static List<InvertedTree.ConceptItem> getSecondaryParents(int childNid, int primaryNid, Navigator navigator) {
-        return new ArrayList<>(Arrays.stream(navigator.getParentNids(childNid)).boxed()
+        return new ArrayList<>(Arrays.stream(getParentNids(navigator, childNid)).boxed()
                 .filter(nid -> nid != primaryNid)
                 .map(nid -> new InvertedTree.ConceptItem(nid, childNid, Entity.getFast(nid).description()))
                 .toList());
@@ -315,4 +320,33 @@ public class ConceptNavigatorUtils {
             }
         }
     }
+
+    public static boolean isDefined(ViewCalculator viewCalculator, ConceptFacade facade) {
+        try {
+            return viewCalculator.isDefined(facade);
+        } catch (Exception e) {
+            LOG.error("Exception occurred", e);
+        }
+        return false;
+    }
+
+    public static boolean isLeaf(Navigator navigator, int nid) {
+        try {
+            return navigator.isLeaf(nid);
+        } catch (Exception e) {
+            LOG.error("Exception occurred", e);
+        }
+        return false;
+    }
+
+    public static int[] getParentNids(Navigator navigator, int nid) {
+        try {
+            return navigator.getParentNids(nid);
+        } catch (Exception e) {
+            LOG.error("Exception occurred", e);
+            return new int[0];
+        }
+    }
+
+
 }

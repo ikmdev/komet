@@ -488,8 +488,8 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     private ConceptNavigatorTreeItem createSingleConceptNavigatorTreeItem(int nid, int parentNid) {
         ConceptFacade facade = Entity.getFast(nid);
         ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(getNavigator(), facade, parentNid);
-        conceptNavigatorTreeItem.setDefined(getNavigator().getViewCalculator().isDefined(facade));
-        conceptNavigatorTreeItem.setMultiParent(getNavigator().getParentNids(nid).length > 1);
+        conceptNavigatorTreeItem.setDefined(ConceptNavigatorUtils.isDefined(getNavigator().getViewCalculator(), facade));
+        conceptNavigatorTreeItem.setMultiParent(ConceptNavigatorUtils.getParentNids(getNavigator(), nid).length > 1);
         // DUMMY!
         int nextTag = new Random().nextInt(100);
         conceptNavigatorTreeItem.setTag(ConceptNavigatorTreeItem.TAG.values()[nextTag < 90 ? 0 : nextTag < 95 ? 1 : 2]);
