@@ -45,7 +45,6 @@ public class ConceptPropertiesController {
     // --- hierarchy tab ---
     protected static final String HIERARCHY_VIEW_FXML_FILE = "hierarchy-view.fxml";
     // --- description tab ---
-    protected static final String EDIT_DESCRIPTIONS_FXML_FILE = "edit-descriptions.fxml";
 
 
     // --- Properties Tab / Header ---

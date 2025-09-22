@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.app.test;
 
-import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModelNext;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
@@ -27,9 +27,6 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
@@ -60,14 +57,11 @@ public class ConceptViewModelTest {
         log("Creation stampViewModel \n" + stampViewModel);
         log("--------------");
 
-        ViewModel conceptViewModel = new ConceptViewModel()
-                .setPropertyValue(MODE, CREATE)
-                .setPropertyValue(AXIOM, SUFFICIENT_SET)
-                .setPropertyValue(CONCEPT_STAMP_VIEW_MODEL, stampViewModel);
+        ViewModel conceptViewModelNext = new ConceptViewModelNext();
 
 
         log("--------------");
-        log("Creation conceptViewModel \n" + conceptViewModel);
+        log("Creation conceptViewModel \n" + conceptViewModelNext);
         log("--------------");
 
         // stop database

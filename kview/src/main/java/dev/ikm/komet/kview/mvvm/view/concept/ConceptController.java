@@ -94,7 +94,6 @@ import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
@@ -264,14 +263,8 @@ public class ConceptController {
 
     private UUID conceptTopic;
 
-    private Subscriber<EditConceptFullyQualifiedNameEvent> editConceptFullyQualifiedNameEventSubscriber;
 
-    private Subscriber<AddFullyQualifiedNameEvent> addFullyQualifiedNameEventSubscriber;
-
-    private Subscriber<EditOtherNameConceptEvent> editOtherNameConceptEventSubscriber;
     private Subscriber<EditConceptEvent> editConceptEventSubscriber;
-
-    private Subscriber<AddOtherNameToConceptEvent> addOtherNameToConceptEventSubscriber;
 
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
@@ -304,10 +297,6 @@ public class ConceptController {
     public ConceptController() {
     }
 
-//    public ConceptController(UUID conceptTopic) {
-//        this.conceptTopic = conceptTopic;
-//    }
-
     @FXML
     public void initialize() {
 
@@ -334,48 +323,6 @@ public class ConceptController {
             updateView();
         });
 
-
-        // when the user clicks a fully qualified name, open the PropertiesPanel
-        editConceptFullyQualifiedNameEventSubscriber = evt -> {
-            if (!propertiesToggleButton.isSelected()) {
-                propertiesToggleButton.fire();
-            }
-            setStampSelectedSilently(false);
-        };
-        eventBus.subscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);
-
-        addFullyQualifiedNameEventSubscriber = evt -> {
-            if (!propertiesToggleButton.isSelected()) {
-                propertiesToggleButton.fire();
-            }
-            setStampSelectedSilently(false);
-        };
-        eventBus.subscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFullyQualifiedNameEventSubscriber);
-
-        // when the user clicks one of the other names, open the PropertiesPanel
-        editOtherNameConceptEventSubscriber = evt -> {
-            if (!propertiesToggleButton.isSelected()) {
-                propertiesToggleButton.fire();
-            }
-            setStampSelectedSilently(false);
-        };
-        eventBus.subscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameConceptEventSubscriber);
-
-        addOtherNameToConceptEventSubscriber = evt -> {
-            if (!propertiesToggleButton.isSelected()) {
-                propertiesToggleButton.fire();
-            }
-            setStampSelectedSilently(false);
-        };
-        eventBus.subscribe(conceptTopic, AddOtherNameToConceptEvent.class, addOtherNameToConceptEventSubscriber);
-
-        // if the user clicks the Close Properties Button from the Edit Descriptions panel
-        // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
-        closePropertiesPanelEventSubscriber = evt -> {
-            propertiesToggleButton.fire();
-            setStampSelectedSilently(false);
-        };
-        eventBus.subscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
 
         // Listener when user enters a new fqn
         ObservableList<DescrName> fqnFacades = conceptViewModelNext.getObservableList(ConceptPropertyKeys.ASOCIATED_FQN_DESCRIPTION_SEMANTICS);
@@ -1021,14 +968,14 @@ public class ConceptController {
 
     @FXML
     private void addNecessarySet(ActionEvent actionEvent) {
-        conceptViewModelNext.setPropertyValue(AXIOM, ConceptViewModelNext.NECESSARY_SET);
+        conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.AXIOM, ConceptViewModelNext.NECESSARY_SET);
         createConcept();
 
     }
 
     @FXML
     private void addSufficientSet(ActionEvent actionEvent) {
-        conceptViewModelNext.setPropertyValue(AXIOM, ConceptViewModelNext.SUFFICIENT_SET);
+        conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.AXIOM, ConceptViewModelNext.SUFFICIENT_SET);
         createConcept();
 
     }
@@ -1078,11 +1025,6 @@ public class ConceptController {
         }
         LOG.info("Closing & cleaning concept window: %s - %s".formatted(identifierControl.getPublicIdList(), fqnTitleText.getText()));
         // unsubscribe listeners
-        eventBus.unsubscribe(conceptTopic, EditConceptFullyQualifiedNameEvent.class, editConceptFullyQualifiedNameEventSubscriber);
-        eventBus.unsubscribe(conceptTopic, AddFullyQualifiedNameEvent.class, addFullyQualifiedNameEventSubscriber);
-        eventBus.unsubscribe(conceptTopic, EditOtherNameConceptEvent.class, editOtherNameConceptEventSubscriber);
-        eventBus.unsubscribe(conceptTopic, AddOtherNameToConceptEvent.class, addOtherNameToConceptEventSubscriber);
-        eventBus.unsubscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
         eventBus.unsubscribe(conceptTopic, CreateConceptEvent.class, createConceptEventSubscriber);
         eventBus.unsubscribe(conceptTopic, EditConceptEvent.class, editConceptEventSubscriber);
         eventBus.unsubscribe(RULES_TOPIC, AxiomChangeEvent.class, changeSetTypeEventSubscriber);
@@ -1711,17 +1653,18 @@ public class ConceptController {
 
             if (isNewConcept) {
                 // show the Add FQN
+
                 if (hasValidStamp) {
-                    eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(propertyToggle,
-                            AddFullyQualifiedNameEvent.ADD_FQN, this.conceptViewModelNext.getViewProperties()));
+                    conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.NAME_FORM);
+
                 } else {
-                    // TODO open stamForm
+                    conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.STAMP);
                 }
 
             } else {
                 // show the button form
-                eventBus.publish(conceptTopic, new OpenPropertiesPanelEvent(propertyToggle,
-                        OpenPropertiesPanelEvent.OPEN_PROPERTIES_PANEL, fqnPublicId, fqnTitleText.getText()));
+                conceptViewModelNext.setPropertyValue(ConceptPropertyKeys.SELECTED_PROPERTY_WINDOW_KIND, SelectedPropertyWindowKind.MENU);
+
             }
         } else {
             LOG.info("Close Properties slideout");
