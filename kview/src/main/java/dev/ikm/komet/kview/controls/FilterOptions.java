@@ -264,7 +264,7 @@ public class FilterOptions implements Serializable {
 
         private Option<String> time;
         {
-            List<String> dateOptions = Stream.of("time.item1", "time.item2") // , "time.item3" Range not supported yet
+            List<String> dateOptions = Stream.of("time.item1", "time.item2", "time.item3") // , "time.item4" Range not supported yet
                     .map(resources::getString)
                     .toList();
             time = new Option<>(OPTION_ITEM.TIME, "time.title",
