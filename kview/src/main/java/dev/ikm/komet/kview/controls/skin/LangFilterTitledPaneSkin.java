@@ -169,6 +169,10 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
     }
 
     private void updateModifiedState(FilterOptions.LanguageFilterCoordinates currentLangCoordinates) {
+        if (control.getOrdinal() != 0) {
+            // modified only applies for the primary language
+            return;
+        }
         boolean langModified = false;
         List<FilterOptions.Option<EntityFacade>> currentOptions = currentLangCoordinates.getOptions();
         List<FilterOptions.Option<EntityFacade>> defaultOptions = control.getDefaultLangCoordinates().getOptions();
@@ -362,7 +366,7 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
         private final VBox patternBox;
         private final ToggleGroup patternGroup;
         private final SortedBox descriptionBox;
-        private List<EntityFacade> disabledLanguages;
+        private final List<EntityFacade> disabledLanguages = new ArrayList<>();
         private final BooleanProperty initialized = new SimpleBooleanProperty();
 
         public LangContentBox() {
@@ -407,12 +411,9 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
                     if (item != null && !empty) {
                         label.setText(getDescription(item));
                         setGraphic(box);
-                        if (disabledLanguages != null) {
-                            setDisable(disabledLanguages.contains(item));
-                        } else {
-                            setDisable(false);
-                        }
+                        setDisable(disabledLanguages.contains(item));
                     } else {
+                        setDisable(false);
                         setGraphic(null);
                     }
                 }
@@ -474,8 +475,9 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
                 }
                 FilterOptions.LanguageFilterCoordinates languageOptions = get();
                 if (languageOptions != null) {
+                    disabledLanguages.clear();
+                    disabledLanguages.addAll(languageOptions.getLanguage().excludedOptions());
                     comboBox.setItems(FXCollections.observableArrayList(languageOptions.getLanguage().availableOptions()));
-                    disabledLanguages = new ArrayList<>(languageOptions.getLanguage().excludedOptions());
                     comboBox.setValue(languageOptions.getLanguage().selectedOptions().isEmpty() ?
                             null : languageOptions.getLanguage().selectedOptions().getFirst());
 
@@ -509,7 +511,7 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
                     descriptionBox.setOption(languageOptions.getDescriptionType());
                 } else {
                     comboBox.setValue(null);
-                    disabledLanguages = null;
+                    disabledLanguages.clear();
                     comboBox.getItems().clear();
                     dialectBox.setOption(null);
                     patternBox.getChildren().clear();
