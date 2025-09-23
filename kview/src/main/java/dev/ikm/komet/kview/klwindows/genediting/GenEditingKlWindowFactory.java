@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.klwindows.genediting;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
@@ -60,7 +61,7 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
     }
 
     @Override
-    public GenEditingKlWindow restore(KometPreferences preferences) {
+    public GenEditingKlWindow restore(WindowSettings windowSettings, KometPreferences preferences) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
         try {
             // Load window state from preferences
@@ -70,7 +71,7 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
             Optional<UUID> journalTopicOpt = preferences.getUuid(JOURNAL_TOPIC);
             if (journalTopicOpt.isPresent()) {
                 final UUID journalTopic = journalTopicOpt.get();
-                final ViewProperties viewProperties = getJournalViewProperties(journalTopic);
+                final ViewProperties viewProperties = getJournalViewProperties(windowSettings, journalTopic);
 
                 // Try to extract entity facade from saved state
                 final int entityNid = windowState.getEntityNid();

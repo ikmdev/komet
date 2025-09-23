@@ -1,6 +1,7 @@
 package dev.ikm.komet.layout;
 
 import dev.ikm.komet.framework.view.ObservableView;
+import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.layout.context.KnowledgeBaseContext;
 import dev.ikm.komet.layout.window.KlFxWindow;
@@ -391,16 +392,17 @@ public sealed interface KlGadget<FX> extends KlContextSensitiveComponent, KlObje
      * {@code KometPreferences}. This method iterates through all children of the given preferences,
      * restoring a {@code KlGadget} from each child and collecting the results in an immutable list.
      *
+     * @param windowSettings the parent's window settings
      * @param preferences the {@code KometPreferences} containing child preferences from which to restore
      *                    {@code KlGadget} instances.
      * @return an immutable list of restored {@code KlGadget} instances.
      * @throws RuntimeException if an error occurs while accessing the backing store during the restoration process.
      */
-    default ImmutableList<? extends KlGadget> restoreFromAllChildren(KometPreferences preferences) {
+    default ImmutableList<? extends KlGadget> restoreFromAllChildren(WindowSettings windowSettings, KometPreferences preferences) {
         try {
             MutableList<? extends KlGadget> gadgets = Lists.mutable.empty();
             for (KometPreferences childPreferences: preferences.children()) {
-                gadgets.add(restore(childPreferences));
+                gadgets.add(restore(windowSettings, childPreferences));
             }
             return gadgets.toImmutable();
         } catch (BackingStoreException e) {
@@ -413,18 +415,19 @@ public sealed interface KlGadget<FX> extends KlContextSensitiveComponent, KlObje
      * is not equal to one, an exception is thrown. The restored {@code KlGadget} is derived using the child preference.
      *
      * @param <G> the type of {@code KlGadget} that will be restored.
+     * @param windowSettings the parent's window settings
      * @param preferences the {@code KometPreferences} containing the child preference from which to restore the {@code KlGadget}.
      * @return the restored {@code KlGadget} instance of type {@code G}.
      * @throws IllegalStateException if the number of child preferences is not equal to one.
      * @throws RuntimeException if there is an error during the restoration process.
      */
-    default <G extends KlGadget> G restoreFromOnlyChild(KometPreferences preferences) {
+    default <G extends KlGadget> G restoreFromOnlyChild(WindowSettings windowSettings, KometPreferences preferences) {
         try {
             KometPreferences[] childPreferences = preferences.children();
             if (childPreferences.length != 1) {
                 throw new IllegalStateException("Expecting 1 child preference, got " + childPreferences.length + " instead.");
             }
-            return restore(childPreferences[0]);
+            return restore(windowSettings, childPreferences[0]);
         } catch (BackingStoreException e) {
             throw new RuntimeException(e);
         }
@@ -435,19 +438,20 @@ public sealed interface KlGadget<FX> extends KlContextSensitiveComponent, KlObje
      * This method attempts to load a factory class from the preferences, instantiate it,
      * and then invoke its restore method to reconstruct the {@code KlGadget}.
      *
+     * @param windowSettings the windowSettings of the parent
      * @param preferences the {@code KometPreferences} from which to restore the {@code KlGadget}.
      *                     Must contain the class name of the factory under the key {@code FACTORY_CLASS}.
      * @return the restored {@code KlGadget} instance of type {@code G}.
      * @throws IllegalStateException if the key {@code FACTORY_CLASS} does not exist in the preferences.
      * @throws RuntimeException if any error occurs during the instantiation and execution of the factory class.
      */
-    default <G extends KlGadget> G restore(KometPreferences preferences) {
+    default <G extends KlGadget> G restore(WindowSettings windowSettings, KometPreferences preferences) {
         try {
             Optional<String> optionalFactoryClassName = preferences.get(FACTORY_CLASS);
             if (optionalFactoryClassName.isPresent()) {
                 Class<KlFactory> factoryClass = (Class<KlFactory>) PluggableService.forName(optionalFactoryClassName.get());
                 KlFactory klFactory = factoryClass.getDeclaredConstructor().newInstance();
-                return (G) klFactory.restore(preferences);
+                return (G) klFactory.restore(windowSettings, preferences);
             } else {
                 throw new IllegalStateException("FACTORY_CLASS not found in child preferences.");
             }
