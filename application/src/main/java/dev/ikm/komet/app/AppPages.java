@@ -282,7 +282,7 @@ public class AppPages {
             journalStage.setWidth(journalWindowSettings.getValue(JOURNAL_WIDTH));
             journalStage.setX(journalWindowSettings.getValue(JOURNAL_XPOS));
             journalStage.setY(journalWindowSettings.getValue(JOURNAL_YPOS));
-            journalController.restoreWindows(journalWindowSettings);
+            journalController.restoreWindows(windowSettings, journalWindowSettings);
         } else {
             journalStage.setMaximized(true);
         }
