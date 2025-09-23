@@ -84,7 +84,7 @@ public class ExportController {
 
     private static final String CURRRENT_DATE = "Current Date";
 
-    public static ObservableList<tagsDataModel> tagsData=FXCollections.observableArrayList();
+    public ObservableList<tagsDataModel> tagsData = FXCollections.observableArrayList();
 
     @InjectViewModel
     private ExportViewModel exportViewModel;
@@ -131,7 +131,7 @@ public class ExportController {
 
     private UUID exportTopic;
 
-    public static BooleanProperty haschanges = new SimpleBooleanProperty(false);
+    public BooleanProperty haschanges = new SimpleBooleanProperty(false);
 
     private static final String CHANGE_SET = "Change set";
     @FXML
@@ -145,8 +145,8 @@ public class ExportController {
 
     @FXML
     public void initialize() {
-tagsData.clear();
-makeFakeTags();
+        tagsData.clear();
+        makeFakeTags();
         haschanges.subscribe(newValue -> {
             if (newValue) {
                 System.out.println("has changes - update tags");
@@ -434,7 +434,7 @@ makeFakeTags();
         }
     }
 
-    public static void makeFakeTags() {
+    public void makeFakeTags() {
         for (int i = 0; i < 30; i++) {
           tagsDataModel tag = new tagsDataModel();
             tag.setTagName("FakeTag " + i);
@@ -474,10 +474,12 @@ tagPane.getChildren().removeAll();
         stage.initModality(Modality.APPLICATION_MODAL);
 
         try {
-          stage.setScene(new Scene(loader.load()));
-          stage.setTitle("Add and Edit Tags");
-          stage.initStyle(StageStyle.UNDECORATED);
-          //addExistingTags();
+            stage.setScene(new Scene(loader.load()));
+            var controller = (addAndEditController) loader.getController();
+            controller.setModel(tagsData, haschanges);
+            stage.setTitle("Add and Edit Tags");
+            stage.initStyle(StageStyle.UNDECORATED);
+            //addExistingTags();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

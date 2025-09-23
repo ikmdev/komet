@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import dev.ikm.tinkar.common.service.NidGenerator;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.Size;
@@ -31,14 +32,23 @@ public class addAndEditController {
     @FXML
     private Button okButton;
 
+    private ObservableList<tagsDataModel> tags = FXCollections.observableArrayList();
+    private BooleanProperty hasChanges;
+
+    public void setModel(ObservableList<tagsDataModel> tags, BooleanProperty hasChanges) {
+        this.tags = tags;
+        this.hasChanges = hasChanges;
+        initialize2();
+    }
+
     //public ObservableList<String> tagsSelected = FXCollections.observableArrayList();
     @FXML
-    public void initialize() {
+    public void initialize2() {
         System.out.println("addAndEditController initialized!");
 
-        for (int g = 0; g < ExportController.tagsData.size(); g++) {
+        for (int g = 0; g < tags.size(); g++) {
 tagsDataModel tag = new tagsDataModel();
-            tag=ExportController.tagsData.get(g);
+            tag= tags.get(g);
             CheckBox checkBox = new CheckBox();
             checkBox.setText(tag.getTagName());
             tagsDataModel finalTag = tag;
@@ -47,44 +57,44 @@ tagsDataModel tag = new tagsDataModel();
             checkBox.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                 String name = checkBox.getText();
                 boolean selectValue=checkBox.isSelected();
-                for (int h=0;h<ExportController.tagsData.size();h++) {
+                for (int h=0;h<tags.size();h++) {
                     tagsDataModel tag1 = new tagsDataModel();
-                    tag1 = ExportController.tagsData.get(h);
+                    tag1 = tags.get(h);
                     if (tag1.getTagName().equals(name)) {
-                        ExportController.tagsData.get(h).setTagSelected(true);
+                        tags.get(h).setTagSelected(true);
                         tag1.setTagSelected(checkBox.isSelected());
                         boolean selected = true;
-                        ExportController.tagsData.get(h).setTagSelected(selectValue);
+                        tags.get(h).setTagSelected(selectValue);
                         System.out.println(tag1.getTagName() + "tag selection" + tag1.isTagSelected());
                         break;
                     }
 
 
                 }
-addLabels();
+                addLabels();
 
             });
             g++;
-            if (ExportController.tagsData.size() - 1 > g) {
+            if (tags.size() - 1 > g) {
                 CheckBox checkbBox = new CheckBox();
-                tag=ExportController.tagsData.get(g);
+                tag=tags.get(g);
                 checkbBox.setText(tag.getTagName());
                 tagsGrid.addRow(g, checkBox, checkbBox);
                 tagsGrid.setVgap(20);
 
- value = tag.isTagSelected();
+                value = tag.isTagSelected();
                 checkbBox.setSelected(value);
                 checkbBox.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
                     String name = checkbBox.getText();
                     boolean selectValue=checkbBox.isSelected();
-                    for (int h=0;h<ExportController.tagsData.size();h++) {
+                    for (int h=0;h<tags.size();h++) {
                         tagsDataModel tag1 = new tagsDataModel();
-                        tag1=ExportController.tagsData.get(h);
+                        tag1=tags.get(h);
                         if (tag1.getTagName().equals(name)) {
-                            ExportController.tagsData.get(h).setTagSelected(true);
+                            tags.get(h).setTagSelected(true);
                             tag1.setTagSelected(checkbBox.isSelected());
                             boolean selected=true;
-                            ExportController.tagsData.get(h).setTagSelected(selectValue);
+                            tags.get(h).setTagSelected(selectValue);
                             System.out.println(tag1.getTagName() + "tag selection" + tag1.isTagSelected());
                             break;
                         }
@@ -100,9 +110,9 @@ addLabels();
 
     public void addLabels() {
         selectedTags.getChildren().clear();
-        for (int t = 0; t < ExportController.tagsData.size(); t++) {
+        for (int t = 0; t < tags.size(); t++) {
             tagsDataModel tag = new tagsDataModel();
-            tag = ExportController.tagsData.get(t);
+            tag = tags.get(t);
             System.out.println(tag.getTagName() + "tag selection" + tag.isTagSelected());
             if (tag.isTagSelected()) {
                 Label label = new Label(tag.getTagName());
@@ -118,8 +128,7 @@ addLabels();
     @FXML
     public void okButtonPressed(ActionEvent actionEvent) {
         //transfer chaynges list to ExportController
-        ExportController.haschanges.set(true);
-        ExportController.haschanges.set(true);
+        hasChanges.set(true);
         Stage stage = (Stage) okButton.getScene().getWindow();
         stage.close();
 
@@ -127,7 +136,7 @@ addLabels();
 
     @FXML
     public void cancelButtonPressed(ActionEvent actionEvent) {
-        ExportController.haschanges.set(false);
+        hasChanges.set(false);
         Stage stage = (Stage) cancelButton.getScene().getWindow();
         // do what you have to do
         stage.close();
