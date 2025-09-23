@@ -262,7 +262,7 @@ public class GenEditingDetailsController {
         // Setup Properties Bump out view.
         setupProperties();
         //Populate the Title Pattern meaning purpose
-        setupSemanticForPatternInfo();
+        updateSemanticForPatternInfo();
         setupFilterCoordinatesMenu();
 
         //Populate readonly reference component.
@@ -476,7 +476,7 @@ public class GenEditingDetailsController {
                 GenEditingEvent.class, refreshSubscriber);
     }
 
-    private void setupSemanticForPatternInfo() {
+    private void updateSemanticForPatternInfo() {
         PatternFacade patternFacade = (PatternFacade) genEditingViewModel.getProperty(PATTERN).getValue();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
         ObservablePattern observablePattern = ObservableEntity.get(patternFacade.nid());
@@ -645,6 +645,7 @@ public class GenEditingDetailsController {
 
             referenceComponent.setTitle(refType);
             referenceComponent.setValue(componentItem);
+            updateSemanticForPatternInfo();
         };
         if (refComponent != null) {
             updateRefComponentInfo.accept(refComponent);
