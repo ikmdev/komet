@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout.window;
 
+import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.layout.KlFactory;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -47,13 +48,14 @@ public interface KlFxWindowFactory extends KlFactory<KlFxWindow> {
      * This method allows the recreation of a window with its previous state and configuration
      * as specified in the supplied {@link KometPreferences}.
      *
+     * @param windowSettings the parent's window settings
      * @param preferences The {@link KometPreferences} object containing the saved configuration
      *                    settings for the window to be restored. These preferences determine
      *                    the state and properties of the restored {@link KlFxWindow}.
      * @return A restored {@link KlFxWindow} instance configured with the provided preferences.
      */
     @Override
-    KlFxWindow restore(KometPreferences preferences);
+    KlFxWindow restore(WindowSettings windowSettings, KometPreferences preferences);
 
     /**
      * Creates and returns an immutable list of actions that can be used to create new windows

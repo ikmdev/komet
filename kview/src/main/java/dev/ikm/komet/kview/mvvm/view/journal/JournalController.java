@@ -1473,7 +1473,7 @@ public class JournalController {
      * @param journalWindowSettings The settings object containing journal metadata
      * @throws NullPointerException if journalWindowSettings is null
      */
-    public void restoreWindows(PrefX journalWindowSettings) {
+    public void restoreWindows(WindowSettings windowSettings, PrefX journalWindowSettings) {
         Objects.requireNonNull(journalWindowSettings, "journalWindowSettings cannot be null");
         final String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
 
@@ -1496,7 +1496,7 @@ public class JournalController {
                 final KometPreferences windowPreferences = journalPreferences.node(windowId);
                 windowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
                 try {
-                    setupWorkspaceWindow(restoreWindow(windowPreferences));
+                    setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences));
                 } catch (Exception e) {
                     LOG.error("Error restoring window: {}", windowId, e);
                 }
@@ -1528,21 +1528,6 @@ public class JournalController {
         }, TinkExecutor.ioThreadPool());
     }
 
-    /**
-     * Asynchronously restores previously saved windows for this journal.
-     * <p>
-     * This method provides a non-blocking alternative to {@link #restoreWindows(PrefX)}
-     * by executing the restoration operation on a background thread pool. It delegates
-     * to the synchronous version after scheduling the task.
-     *
-     * @param journalWindowSettings The settings object containing journal metadata and window information
-     * @throws NullPointerException if journalWindowSettings is null
-     * @see #restoreWindows(PrefX)
-     */
-    public void restoreWindowsAsync(PrefX journalWindowSettings) {
-        restoreWindows(journalWindowSettings);
-        TinkExecutor.ioThreadPool();
-    }
 
     /**
      * Bring window to the front of all windows.
