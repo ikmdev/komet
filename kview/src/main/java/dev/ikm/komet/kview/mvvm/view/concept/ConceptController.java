@@ -1099,9 +1099,9 @@ public class ConceptController {
     private VBox generateDescriptionSemanticRow(DescrName otherName) {
         VBox textFlowsBox = new VBox();
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
-        ConceptEntity caseSigConcept = otherName.getCaseSignificance();
+        EntityFacade caseSigConcept = otherName.getCaseSignificance();
         String casSigText = viewCalculator.languageCalculator().getDescriptionTextOrNid(caseSigConcept.nid());
-        ConceptEntity langConcept = otherName.getLanguage();
+        EntityFacade langConcept = otherName.getLanguage();
 
         String langText = viewCalculator.languageCalculator().getDescriptionTextOrNid(langConcept.nid());
 
