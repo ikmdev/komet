@@ -697,6 +697,9 @@ public class PatternDetailsController {
 
     private ContextMenu createContextMenuForPatternField(PatternField selectedPatternField) {
 
+        String patternMode =  patternViewModel.getPropertyValue(MODE);
+        boolean isCreateMode = CREATE.equals(patternMode);
+
         Object[][] menuItems = new Object[][]{
                 {"Edit", true, new String[]{"menu-item"}, (EventHandler<ActionEvent>) actionEvent -> showEditFieldsPanel(actionEvent, selectedPatternField), createGraphics("edit-icon")},
                 {MenuHelper.SEPARATOR},
@@ -704,7 +707,7 @@ public class PatternDetailsController {
                 {"Save to Favorites",  false, new String[]{"menu-item"}, null, createGraphics("favorites-icon")},
                 {MenuHelper.SEPARATOR},
                 {"Add Comment",  false, new String[]{"menu-item"}, null, createGraphics("comment-icon")},
-                {"Remove", true, new String[]{"menu-item"}, (EventHandler<ActionEvent>) actionEvent -> patternViewModel.getObservableList(FIELDS_COLLECTION).remove(selectedPatternField)
+                {"Remove", isCreateMode, new String[]{"menu-item"}, (EventHandler<ActionEvent>) actionEvent -> patternViewModel.getObservableList(FIELDS_COLLECTION).remove(selectedPatternField)
                 , createGraphics("remove-icon")}
         };
         return MenuHelper.getInstance().createContextMenuWithMenuItems(menuItems);
