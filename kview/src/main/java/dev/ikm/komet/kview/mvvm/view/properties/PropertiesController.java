@@ -267,38 +267,35 @@ public class PropertiesController implements Serializable {
         // Add Other Name button from the Properties > Edit bump out, we want to change the Pane in the
         // Edit Concept bump out to be the Add Other Name form
         addOtherNameSubscriber = evt -> {
-            // check if the center pane is already showing, we don't want duplicate entries in the dropdowns
-            if (!contentBorderPane.getCenter().equals(addOtherNamePane)) {
-                contentBorderPane.setCenter(addOtherNamePane);
-                editButton.setSelected(true);
-                editButton.setText("ADD");
+            contentBorderPane.setCenter(addOtherNamePane);
+            editButton.setSelected(true);
+            editButton.setText("ADD");
 
-                // Create a new View Model for this form
-                addOtherNameController.updateModel(getViewProperties(), (viewModel, controller) -> {
-                    // Clear view model. Please see addOtherNameController's initialize() method.
-                    viewModel.setValue(NAME_TEXT, "")
-                            .setValue(CASE_SIGNIFICANCE, null)
-                            .setValue(MODULE, null)
-                            .setValue(LANGUAGE, null)
-                            .setValue(STATUS, TinkarTerm.ACTIVE_STATE)
-                            .setValue(IS_SUBMITTED, false)
+            // Create a new View Model for this form
+            addOtherNameController.updateModel(getViewProperties(), (viewModel, controller) -> {
+                // Clear view model. Please see addOtherNameController's initialize() method.
+                viewModel.setValue(NAME_TEXT, "")
+                        .setValue(CASE_SIGNIFICANCE, null)
+                        .setValue(MODULE, null)
+                        .setValue(LANGUAGE, null)
+                        .setValue(STATUS, TinkarTerm.ACTIVE_STATE)
+                        .setValue(IS_SUBMITTED, false)
 
-                            .setValue(DESCRIPTION_CASE_SIGNIFICANCE, addFullyQualifiedNameController.getViewModel().getValue(CASE_SIGNIFICANCE))
-                            .setValue(DESCRIPTION_LANGUAGE, addFullyQualifiedNameController.getViewModel().getValue(LANGUAGE))
+                        .setValue(DESCRIPTION_CASE_SIGNIFICANCE, addFullyQualifiedNameController.getViewModel().getValue(CASE_SIGNIFICANCE))
+                        .setValue(DESCRIPTION_LANGUAGE, addFullyQualifiedNameController.getViewModel().getValue(LANGUAGE))
 
-                            .setValue(HAS_OTHER_NAME, hasOtherNames);
+                        .setValue(HAS_OTHER_NAME, hasOtherNames);
 
-                    // if in edit mode and navigating from the properties > edit > add other name
-                    // then the public id will be set
-                    if (evt.getPublicId() != null) {
-                        viewModel.setValue(PARENT_PUBLIC_ID, evt.getPublicId());
-                    }
-                    viewModel.reset(); // copy model values into property values
-                    // update the UI form
-                    controller.clearView();
-                    controller.updateView();
-                });
-            }
+                // if in edit mode and navigating from the properties > edit > add other name
+                // then the public id will be set
+                if (evt.getPublicId() != null) {
+                    viewModel.setValue(PARENT_PUBLIC_ID, evt.getPublicId());
+                }
+                viewModel.reset(); // copy model values into property values
+                // update the UI form
+                controller.clearView();
+                controller.updateView();
+            });
         };
         eventBus.subscribe(conceptTopic, AddOtherNameToConceptEvent.class, addOtherNameSubscriber);
 
