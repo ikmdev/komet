@@ -226,9 +226,6 @@ public class FilterOptionsUtils {
         // remove previous subscriptions
         unsubscribeNodeFilterOptions();
 
-        // add Option to observableViewForFilterProperty subscriptions
-        addOptionSubscriptions(filterOptions);
-
         // get parent menu settings
         for (ObservableCoordinate<?> observableCoordinate : observableView.getCompositeCoordinates()) {
             if (observableCoordinate instanceof ObservableNavigationCoordinate observableNavigationCoordinate) {
@@ -406,6 +403,9 @@ public class FilterOptionsUtils {
                         }));
             }
         }
+
+        // add Option to observableViewForFilterProperty subscriptions
+        addOptionSubscriptions(filterOptions);
     }
 
     public void unsubscribeNodeFilterOptions() {

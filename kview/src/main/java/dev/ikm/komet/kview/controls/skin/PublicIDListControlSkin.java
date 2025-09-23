@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
+import javafx.application.Platform;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SkinBase;
@@ -73,16 +74,20 @@ public class PublicIDListControlSkin extends SkinBase<PublicIDListControl> {
     protected void layoutChildren(double x, double y, double w, double h) {
         rootScrollPane.resizeRelocate(x, y, w, h);
 
-        // if the vertical scroll bar is visible set the width of the
-        // vbox to the viewport width
-        if (isVerticalScrollBarVisible()) {
-            var viewPortBounds = rootScrollPane.getViewportBounds();
+        // runLater() added to fix a weird error of the PublicIDListControl having a small width on
+        // initial creation of the concept, pattern, and semantic windows.
+        Platform.runLater(() -> {
+            // if the vertical scroll bar is visible set the width of the
+            // vbox to the viewport width
+            if (isVerticalScrollBarVisible()) {
+                var viewPortBounds = rootScrollPane.getViewportBounds();
 
-            identifierVBox.setPrefWidth(viewPortBounds.getWidth());
-        } else {
-            // if not visible, set the width to the same as the PublicIDListControlSkin (this) width
-            identifierVBox.setPrefWidth(w);
-        }
+                identifierVBox.setPrefWidth(viewPortBounds.getWidth());
+            } else {
+                // if not visible, set the width to the same as the PublicIDListControlSkin (this) width
+                identifierVBox.setPrefWidth(w);
+            }
+        });
     }
 
     /// Unsubscribes from the subscription to stop receiving the publicIdProperty change events
