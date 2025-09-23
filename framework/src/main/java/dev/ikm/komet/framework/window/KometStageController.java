@@ -27,12 +27,21 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.SaveState;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
@@ -314,16 +323,21 @@ public class KometStageController implements SaveState {
 
         TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView(), "KometStageController"),
                 (List<MenuItem> result) -> {
-                    windowCoordinates.getItems().addAll(result);
+                    Platform.runLater(() -> windowCoordinates.getItems().addAll(result));
                 }));
 
-        windowSettings.getView().addListener((observable, oldValue, newValue) -> {
-            windowCoordinates.getItems().clear();
-            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView(), "KometStageController"),
-                    (List<MenuItem> result) -> windowCoordinates.getItems().addAll(result)));
-        });
+            windowSettings.getView().addListener((observable, oldValue, newValue) -> {
+                TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView(), "KometStageController"),
+                        (List<MenuItem> result) ->
+                                Platform.runLater(() -> {
+                                    var menuItems = windowCoordinates.getItems();
+                                    menuItems.clear();
+                                    menuItems.addAll(result);
+                                })
+                ));
+            });
 
-        // allow the Classic Komet window to save its preferences on close.
+            // allow the Classic Komet window to save its preferences on close.
         window.setOnCloseRequest(_ -> save());
         PrimitiveData.getStatesToSave().add(this);
     }
