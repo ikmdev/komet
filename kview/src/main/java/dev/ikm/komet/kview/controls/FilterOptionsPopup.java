@@ -9,6 +9,7 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.MapChangeListener;
+import javafx.scene.Node;
 import javafx.scene.control.PopupControl;
 import javafx.scene.control.Skin;
 
@@ -74,6 +75,18 @@ public class FilterOptionsPopup extends PopupControl {
     }
     public final void setNavigator(Navigator value) {
         navigatorProperty.set(value);
+    }
+
+    // containerProperty
+    private final ObjectProperty<Node> containerProperty = new SimpleObjectProperty<>(this, "container");
+    public final ObjectProperty<Node> containerProperty() {
+       return containerProperty;
+    }
+    public final Node getContainer() {
+       return containerProperty.get();
+    }
+    public final void setContainer(Node value) {
+        containerProperty.set(value);
     }
 
     // defaultOptionsSetProperty
