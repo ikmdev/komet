@@ -327,7 +327,7 @@ public class KometStageController implements SaveState {
                 }));
 
             windowSettings.getView().addListener((observable, oldValue, newValue) -> {
-                TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView(), "JournalController"),
+                TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowSettings.getView(), "KometStageController"),
                         (List<MenuItem> result) ->
                                 Platform.runLater(() -> {
                                     var menuItems = windowCoordinates.getItems();
