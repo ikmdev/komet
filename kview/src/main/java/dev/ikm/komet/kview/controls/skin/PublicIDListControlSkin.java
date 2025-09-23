@@ -31,7 +31,6 @@ public class PublicIDListControlSkin extends SkinBase<PublicIDListControl> {
     public PublicIDListControlSkin(PublicIDListControl control) {
         super(control);
 
-        rootScrollPane.getStyleClass().add("public-id-list");
         identifierVBox.getStyleClass().add("identifier-vbox");
 
         rootScrollPane.setContent(identifierVBox);
