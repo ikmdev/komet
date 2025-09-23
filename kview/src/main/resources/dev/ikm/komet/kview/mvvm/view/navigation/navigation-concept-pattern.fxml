@@ -47,16 +47,6 @@
                               </ToggleButton>
                            </children>
                         </HBox>
-                        <Button mnemonicParsing="false" styleClass="search-button" GridPane.columnIndex="2">
-                           <graphic>
-                              <Region focusTraversable="true">
-                                 <styleClass>
-                                    <String fx:value="icon" />
-                                    <String fx:value="search-button-region" />
-                                 </styleClass>
-                              </Region>
-                           </graphic>
-                        </Button>
                      </children>
                   </GridPane>
                </children>
