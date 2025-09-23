@@ -20,6 +20,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
@@ -156,8 +157,12 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.NAVIGATOR);
 
         filterOptionsPopup.navigatorProperty().bind(control.navigatorProperty());
-        getSkinnable().parentProperty().subscribe(parent -> {
-            if (parent instanceof Region region) {
+        filterOptionsPopup.containerProperty().bind(control.containerProperty());
+        filterOptionsPopup.containerProperty().subscribe(container -> {
+            if (container == null) {
+                container = getSkinnable().getParent();
+            }
+            if (container instanceof Region region) {
                 subscription = subscription.and(
                         region.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h)));
             }
@@ -170,8 +175,10 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
                     e.consume();
                     filterOptionsPopup.hide();
                 } else {
-                    Bounds bounds = control.localToScreen(control.getLayoutBounds());
-                    filterOptionsPopup.show(control.getScene().getWindow(), bounds.getMaxX(), bounds.getMinY());
+                    Node container = control.getContainer() != null ? control.getContainer() : control.getParent();
+                    Bounds containerBounds = container.localToScreen(container.getLayoutBounds());
+                    Bounds controlBounds = control.localToScreen(control.getLayoutBounds());
+                    filterOptionsPopup.show(control.getScene().getWindow(), controlBounds.getMaxX(), containerBounds.getMinY());
                 }
             }
         });
@@ -265,6 +272,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         closePane.visibleProperty().unbind();
         closePane.managedProperty().unbind();
         filterOptionsPopup.navigatorProperty().unbind();
+        filterOptionsPopup.containerProperty().unbind();
         filterOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
         super.dispose();
     }
