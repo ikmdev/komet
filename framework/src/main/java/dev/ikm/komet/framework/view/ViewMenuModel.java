@@ -28,7 +28,11 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Control;
+import javafx.scene.control.Labeled;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Shape;
 
@@ -36,7 +40,6 @@ import java.util.List;
 
 public class ViewMenuModel {
     private ViewProperties viewProperties;
-    private ViewCalculatorWithCache viewCalculator;
     private Control baseControlToShowOverride;
     private Shape baseControlGraphic;
     private Menu coordinateMenu;
@@ -81,7 +84,7 @@ public class ViewMenuModel {
     private void initialize(ViewProperties viewProperties, Control baseControlToShowOverride, String whichMenu) {
         this.viewProperties = viewProperties;
         this.viewProperties.nodeView().addListener(this.viewChangedListener);
-        this.viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
+        ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
         FxGet.pathCoordinates(viewCalculator).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change ->
                 updateCoordinateMenu(isClassicViewCoordMenuButton)
         );
@@ -156,6 +159,7 @@ public class ViewMenuModel {
             }
 
             if (menuItems != null) {
+                ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
                 var viewMenuTask = new ViewMenuTask(viewCalculator, viewProperties.nodeView(), whichMenu);
 
                 final List<MenuItem> finalMenuItems = menuItems;
