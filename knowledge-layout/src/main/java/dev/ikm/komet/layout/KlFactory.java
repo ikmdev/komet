@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout;
 
+import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.layout.context.KlContextFactory;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -63,14 +64,17 @@ public interface KlFactory<KL extends KlObject> {
         // Most KL components depend on context provided elsewhere and can ignore the context factory. Override if needed.
         return create(preferencesFactory);
     }
+
+
     /**
      * Restores an instance of type T using the provided preferences.
      *
+     * @param windowSettings the windowSettings of the parent
      * @param preferences an instance of KometPreferences that contains the
      *                    configuration or state required to restore the object.
      * @return an instance of type T restored using the given preferences.
      */
-    KL restore(KometPreferences preferences);
+    KL restore(WindowSettings windowSettings, KometPreferences preferences);
 
     /**
      * Provides a palette icon for the layout tool that represents this factory.

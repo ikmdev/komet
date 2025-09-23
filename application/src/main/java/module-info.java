@@ -77,6 +77,7 @@ module dev.ikm.komet.application {
     // Logging related modules
     requires org.apache.logging.log4j.core;
     requires org.apache.logging.log4j.slf4j2.impl;
+    //requires org.scenicview.scenicview;
 
     uses DataServiceController;
     uses DefaultDescriptionForNidService;

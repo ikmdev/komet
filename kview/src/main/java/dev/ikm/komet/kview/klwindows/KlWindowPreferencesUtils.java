@@ -27,6 +27,7 @@ import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.WINDOW_ID;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.WINDOW_TYPE;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_FOLDER_PREFIX;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 import static java.io.File.separator;
 
 /**
@@ -92,19 +93,20 @@ public interface KlWindowPreferencesUtils {
      * consistent view property retrieval across different window types. It enables
      * windows to maintain visual and behavioral consistency with their parent journal.
      *
+     * @param windowSettings the parent's window settings
      * @param journalTopic the UUID identifying the journal for which to retrieve view properties
      * @return view properties configured for the specified journal
      * @throws NullPointerException if journalTopic is null
      * @see WindowSettings
      * @see ObservableViewNoOverride#makeOverridableViewProperties()
      */
-    static ViewProperties getJournalViewProperties(UUID journalTopic) {
+    static ViewProperties getJournalViewProperties(WindowSettings windowSettings, UUID journalTopic) {
         KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final String journalPath = JOURNALS + separator
                 + JOURNAL_FOLDER_PREFIX + shortenUUID(journalTopic);
         KometPreferences journalPreferences = appPreferences.node(journalPath);
-        WindowSettings journalWindowSettings = new WindowSettings(journalPreferences);
-        ObservableViewNoOverride windowView = journalWindowSettings.getView();
+        //WindowSettings journalWindowSettings = new WindowSettings(journalPreferences);
+        ObservableViewNoOverride windowView = windowSettings.getView();
         return windowView.makeOverridableViewProperties("KlWindowPreferencesUtils.getJournalViewProperties");
     }
 

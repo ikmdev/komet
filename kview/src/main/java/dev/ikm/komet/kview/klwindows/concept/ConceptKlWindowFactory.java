@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.klwindows.concept;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
@@ -68,7 +69,7 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
     }
 
     @Override
-    public ConceptKlWindow restore(KometPreferences preferences) {
+    public ConceptKlWindow restore(WindowSettings windowSettings, KometPreferences preferences) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
         try {
             // Load window state from preferences
@@ -78,7 +79,9 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
             Optional<UUID> journalTopicOpt = preferences.getUuid(JOURNAL_TOPIC);
             if (journalTopicOpt.isPresent()) {
                 final UUID journalTopic = journalTopicOpt.get();
-                final ViewProperties viewProperties = getJournalViewProperties(journalTopic);
+
+                // don't call this
+                final ViewProperties viewProperties = getJournalViewProperties(windowSettings, journalTopic);
 
                 // Try to extract entity facade from saved state
                 final int entityNid = windowState.getEntityNid();
