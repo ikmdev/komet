@@ -217,6 +217,7 @@ public class ConceptPatternNavController {
         ViewProperties viewProperties = patternNavViewModel.getPropertyValue(VIEW_PROPERTIES);
         Navigator navigator = new ViewNavigator(viewProperties.nodeView());
         KLSearchControl searchControl = new KLSearchControl();
+        searchControl.setContainer(scrollPaneContent);
         searchControl.setViewProperties(viewProperties);
         searchControl.setNavigator(navigator);
         searchControl.setOnAction(_ -> {
