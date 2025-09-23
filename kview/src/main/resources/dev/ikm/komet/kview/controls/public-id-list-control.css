@@ -6,14 +6,17 @@
     -fx-hbar-policy: never;
 }
 
-/* must set the viewport background color as well */
-.public-id-list > .viewport  {
+.public-id-list .scroll-pane {
+    -fx-border-style: none;
+    -fx-background-color: transparent;
+    -fx-hbar-policy: never;
+}
+
+.public-id-list .scroll-pane > .viewport {
     -fx-background-color: transparent;
 }
 
-.identifier-vbox  {
+.public-id-list .identifier-vbox  {
     -fx-spacing: 0;
     -fx-fill-width: false;
-
-    /* -fx-background-color: #ff0000;  for debugging */
 }

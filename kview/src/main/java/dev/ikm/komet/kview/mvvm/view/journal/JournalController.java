@@ -484,7 +484,8 @@ public class JournalController {
                 }));
 
         windowSettings.getView().addListener((observable, oldValue, newValue) -> {
-            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowView, "JournalController"),
+            ViewCalculatorWithCache listenerViewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
+            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(listenerViewCalculator, windowView, "JournalController"),
                     (List<MenuItem> result) ->
                             Platform.runLater(() -> {
                                 var menuItems = windowCoordinates.getItems();

@@ -334,7 +334,7 @@ public class ConceptViewModel extends FormViewModel {
         Transaction transaction = Transaction.make();
 
         StampEntity stampEntity = transaction.getStamp(
-                State.fromConcept(otherName.getStatus()), // active, inactive, etc
+                State.fromConceptNid(otherName.getStatus().nid()), // active, inactive, etc
                 System.currentTimeMillis(),
                 getViewProperties().nodeView().editCoordinate().getAuthorForChanges().nid(),
                 otherName.getModule().nid(), // SNOMED CT, LOINC, etc

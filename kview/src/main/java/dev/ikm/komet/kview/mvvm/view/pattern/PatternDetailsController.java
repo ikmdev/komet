@@ -736,10 +736,10 @@ public class PatternDetailsController {
      */
     private String generateDescriptionSemantics(DescrName descrName){
         ViewCalculator viewCalculator = getViewProperties().calculator();
-        ConceptEntity caseSigConcept = descrName.getCaseSignificance();
+        EntityFacade caseSigConcept = descrName.getCaseSignificance();
         String casSigText = viewCalculator.getRegularDescriptionText(caseSigConcept.nid())
                 .orElse(caseSigConcept.nid()+"");
-        ConceptEntity langConcept = descrName.getLanguage();
+        EntityFacade langConcept = descrName.getLanguage();
         String langText = viewCalculator.getRegularDescriptionText(langConcept.nid())
                 .orElse(String.valueOf(langConcept.nid()));
         return "%s | %s".formatted(casSigText, langText);

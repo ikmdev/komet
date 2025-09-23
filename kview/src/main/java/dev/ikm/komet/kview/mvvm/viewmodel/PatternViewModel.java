@@ -282,10 +282,10 @@ public class PatternViewModel extends FormViewModel {
 
             viewCalculator.forEachSemanticVersionForComponentOfPattern(entity.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(),
                 (semanticEntityVersion,  entityVersion1, patternEntityVersion) -> {
-                    ConceptFacade language = (ConceptFacade) semanticEntityVersion.fieldValues().get(0);
+                    EntityFacade language = (EntityFacade) semanticEntityVersion.fieldValues().get(0);
                     String nameText = (String) semanticEntityVersion.fieldValues().get(1);
-                    ConceptFacade caseSignificance = (ConceptFacade) semanticEntityVersion.fieldValues().get(2);
-                    ConceptFacade descriptionType = (ConceptFacade) semanticEntityVersion.fieldValues().get(3);
+                    EntityFacade caseSignificance = (EntityFacade) semanticEntityVersion.fieldValues().get(2);
+                    EntityFacade descriptionType = (EntityFacade) semanticEntityVersion.fieldValues().get(3);
                     DescrName descrName = new DescrName(null, nameText, descriptionType,
                         Entity.getFast(caseSignificance.nid()), Entity.getFast(semanticEntityVersion.state().nid()),
                             Entity.getFast(semanticEntityVersion.module().nid()),Entity.getFast(language.nid()), semanticEntityVersion.publicId());
@@ -319,10 +319,10 @@ public class PatternViewModel extends FormViewModel {
         SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().languageCalculator()
                 .getFullyQualifiedDescription(patternFacade).getWithContradictions().getFirstOptional().get();
 
-        ConceptFacade fqnLanguage = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(0);
+        EntityFacade fqnLanguage = (EntityFacade) fqnSemanticEntityVersion.fieldValues().get(0);
         String fqnString = (String) fqnSemanticEntityVersion.fieldValues().get(1);
-        ConceptFacade fqnCaseSignificance = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(2);
-        ConceptFacade fqnDescriptionType = (ConceptFacade) fqnSemanticEntityVersion.fieldValues().get(3);
+        EntityFacade fqnCaseSignificance = (EntityFacade) fqnSemanticEntityVersion.fieldValues().get(2);
+        EntityFacade fqnDescriptionType = (EntityFacade) fqnSemanticEntityVersion.fieldValues().get(3);
         DescrName fqnDescrName = new DescrName(null, fqnString, fqnDescriptionType,
                 Entity.getFast(fqnCaseSignificance.nid()), Entity.getFast(fqnSemanticEntityVersion.state().nid()),
                 Entity.getFast(fqnSemanticEntityVersion.module().nid()),Entity.getFast(fqnLanguage.nid()), fqnSemanticEntityVersion.publicId());
