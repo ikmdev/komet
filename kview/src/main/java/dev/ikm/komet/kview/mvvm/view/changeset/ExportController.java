@@ -16,6 +16,8 @@
 package dev.ikm.komet.kview.mvvm.view.changeset;
 
 import com.jpro.webapi.WebAPI;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -32,6 +34,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -89,7 +92,11 @@ public class ExportController {
     @FXML
     private static final String CURRENT_DATE_TIME_RANGE_FROM = "01/01/2022, 12:00 AM";
 
-    private static final String CHANGE_SET = "Change set";
+    public static final String CHANGE_SET = "Change set";
+
+    public static final String MODULES_BY_TAG = "Modules (by tag)";
+
+    private static final String[] EXPORT_OPTIONS = {CHANGE_SET, MODULES_BY_TAG};
     public ObservableList<TagsDataModel> tagsData = FXCollections.observableArrayList();
     public BooleanProperty haschanges = new SimpleBooleanProperty(false);
 
@@ -157,10 +164,18 @@ public class ExportController {
             }
         });
 
+        // only add tags if they choose to
+        addTagButton.disableProperty().bind(exportOptions.getSelectionModel().selectedItemProperty()
+                .isNotEqualTo(MODULES_BY_TAG));
+
+        // only show the time choices if they choose 'change set'
+        timePeriodComboBox.disableProperty().bind(exportOptions.getSelectionModel().selectedItemProperty()
+                .isNotEqualTo(CHANGE_SET));
+
         exportDatasetEventBus = EvtBusFactory.getDefaultEvtBus();
         exportTopic = UUID.randomUUID();
 
-        exportOptions.getItems().addAll(CHANGE_SET);
+        exportOptions.getItems().addAll(EXPORT_OPTIONS);
         setupDateTimeExportComboBox();
         setupCustomDateRangeLabel();
 
@@ -173,7 +188,7 @@ public class ExportController {
             exportButton.setDisable(!isFormValid);
         };
         exportOptions.getSelectionModel().selectedItemProperty().addListener(formValid);
-        exportOptions.setValue(CHANGE_SET);
+        exportOptions.setValue(EXPORT_OPTIONS[0]); // change set
         // Create PopOver for From Date
         fromDateTimePopOver = createPopover(exportTopic, FROM_DATE, (epochTime) -> {
             this.customFromEpochMillis = epochTime;
@@ -277,34 +292,44 @@ public class ExportController {
     private void handleExportButtonEvent(ActionEvent exportEvent) {
         String exportOption = exportOptions.getSelectionModel().getSelectedItem();
         FileSavePicker fileSavePicker = FileSavePicker.create(exportButton);
-        //Date formatter for the desired date template
-        String pattern = "yyyyMMdd-HHmm";
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
-        // get the from and to dates as millisecond long values
-        long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
-        long toDate = System.currentTimeMillis();
-        String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
-        if (CUSTOM_RANGE.equals(dateChoice)) {
-            fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
-            toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
-        }
-        // if the user enters a name then use that name, e.g. test.json or test.zip
-        // if the user does not enter a name, then default to komet-yyyyMMdd-HHmm.zip|.json
-        String initialFileName = exportName.getText().isBlank()
-                ? "komet-%s".formatted(simpleDateFormat.format(new Date()))
-                : exportName.getText();
         if (exportOption.equalsIgnoreCase(CHANGE_SET)) {
-            initialFileName += ".zip";
-            fileSavePicker.setInitialFileName(initialFileName);
-            fileSavePicker.setTitle("Export file name as");
-            //Making sure the zip is the only thing that is zipped up
-            ExtensionFilter zipExtensionFilter = new ExtensionFilter("Zip Files", ".zip");
-            fileSavePicker.getExtensionFilters().addAll(zipExtensionFilter);
+            //Date formatter for the desired date template
+            String pattern = "yyyyMMdd-HHmm";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+
+            // get the from and to dates as millisecond long values
+            long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
+            long toDate = System.currentTimeMillis();
+            String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
+            if (CUSTOM_RANGE.equals(dateChoice)) {
+                fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
+                toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
+            }
+            // if the user enters a name then use that name, e.g. test.json or test.zip
+            // if the user does not enter a name, then default to komet-yyyyMMdd-HHmm.zip|.json
+            String initialFileName = exportName.getText().isBlank()
+                    ? "komet-%s".formatted(simpleDateFormat.format(new Date()))
+                    : exportName.getText();
+
+            setupFileName(initialFileName, fileSavePicker);
             performChangeSetExport(fileSavePicker, fromDate, toDate);
+        } else if (exportOption.equalsIgnoreCase(MODULES_BY_TAG)) {
+            String initialFileName = exportName.getText().isBlank()
+                    ? "komet-with-modules" : exportName.getText();
+            setupFileName(initialFileName, fileSavePicker);
+            performMembershipSetExport(fileSavePicker);
         } else {
             AlertStreams.dispatchToRoot(new UnsupportedOperationException("Export Type not supported"));
         }
+    }
+
+    private void setupFileName(String initialFileName, FileSavePicker fileSavePicker) {
+        initialFileName += ".zip";
+        fileSavePicker.setInitialFileName(initialFileName);
+        fileSavePicker.setTitle("Export file name as");
+        //Making sure the zip is the only thing that is zipped up
+        ExtensionFilter zipExtensionFilter = new ExtensionFilter("Zip Files", ".zip");
+        fileSavePicker.getExtensionFilters().addAll(zipExtensionFilter);
     }
 
     /**
@@ -337,16 +362,51 @@ public class ExportController {
             });
             return exportFuture.thenAccept(exportResult -> {
                 if (exportResult != null) {
-                    LOG.info("Exported Total records: {}", exportResult.conceptsCount());
-                    LOG.info("Exported      Concepts: {}", exportResult.conceptsCount());
-                    LOG.info("Exported     Patterns : {}", exportResult.patternsCount());
-                    LOG.info("Exported     Semantics: {}", exportResult.semanticsCount());
-                    LOG.info("Exported        Stamps: {}", exportResult.stampsCount());
+                    logExportResults(exportResult);
                 }
             });
         });
+    }
+    
+    private void performMembershipSetExport(final FileSavePicker fileSavePicker) {
+        fileSavePicker.setOnFileSelected(exportFile -> {
+            closeDialog();
+            if (exportFile == null) {
+                LOG.warn("Export file is null");
+                AlertStreams.dispatchToRoot(new IllegalArgumentException("Export file cannot be null"));
+                return CompletableFuture.failedFuture(new IllegalArgumentException("Export file cannot be null"));
+            }
+            List<PublicId> membershipPublicIds = tagsData.stream().filter(t -> t.tagSelected).map(
+                    tagsDataModel ->
+                        // map TagsDataModel to a publicId
+                        EntityService.get().getEntityFast(Integer.parseInt(tagsDataModel.tagNid)).publicId()
+                    ).toList();
+            ExportEntitiesToProtobufFile exportEntities = new ExportEntitiesToProtobufFile(exportFile, membershipPublicIds);
+            CompletableFuture<EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
 
+            exportFuture.handle((result, throwable) -> {
+                if (throwable != null) {
+                    LOG.error("Export to file '{}' failed", exportFile, throwable);
+                    deleteFile(exportFile);
+                } else {
+                    LOG.info("Export completed successfully to file {}", exportFile);
+                }
+                return result;
+            });
+            return exportFuture.thenAccept(exportResult -> {
+                if (exportResult != null) {
+                    logExportResults(exportResult);
+                }
+            });
+        });
+    }
 
+    private void logExportResults(EntityCountSummary exportResult) {
+        LOG.info("Exported Total records: {}", exportResult.conceptsCount());
+        LOG.info("Exported      Concepts: {}", exportResult.conceptsCount());
+        LOG.info("Exported     Patterns : {}", exportResult.patternsCount());
+        LOG.info("Exported     Semantics: {}", exportResult.semanticsCount());
+        LOG.info("Exported        Stamps: {}", exportResult.stampsCount());
     }
 
     private long transformStringInLocalDateTimeToEpochMillis(String localDateTimeFormat) {
@@ -360,15 +420,12 @@ public class ExportController {
         List<PatternEntityVersion> membershipPatterns = getMembershipPatterns();
         for (PatternEntityVersion patternEntityVersion : membershipPatterns) {
             TagsDataModel tag = new TagsDataModel();
-            //TODO use viewCalculator
             Optional<String> descriptionOpt = getViewProperties().calculator().languageCalculator()
                     .getDescriptionText(patternEntityVersion.entity().nid());
             if (descriptionOpt.isPresent()) {
                 tag.setTagName(patternEntityVersion.entity().description());
                 tag.setTagNid(String.valueOf(patternEntityVersion.entity().nid()));
                 tag.setTagSelected(false);
-                //FIXME do we need a tag description?
-                //tag.setTagDescription("This is tag number " + i);
                 tagsData.add(tag);
             }
         }
@@ -412,9 +469,6 @@ public class ExportController {
     public void addTagButton_pressed(ActionEvent actionEvent) {
         addTagButton.setText("EDIT TAGS");
         tagPane.getChildren().removeAll();
-        timePeriodComboBox.setDisable(true);
-        dateTimePickerFrom.setDisable(true);
-        dateTimePickerTo.setDisable(true);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("addAndEditTags.fxml"));
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
