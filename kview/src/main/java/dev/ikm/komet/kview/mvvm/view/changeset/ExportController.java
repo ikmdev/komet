@@ -16,10 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.changeset;
 
 import com.jpro.webapi.WebAPI;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.events.EvtBus;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ExportDateTimePopOverEvent;
@@ -27,7 +23,11 @@ import dev.ikm.komet.kview.fxutils.ComboBoxHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.ExportViewModel;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.export.ExportEntitiesToProtobufFile;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
@@ -58,8 +58,6 @@ import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.plaf.RootPaneUI;
-import java.beans.FeatureDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -69,7 +67,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.*;
@@ -77,66 +75,44 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class ExportController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExportController.class);
-
     protected static final String TIME_EXPORT_PICKER_FXML_FILE = "time-export-picker.fxml";
-
+    private static final Logger LOG = LoggerFactory.getLogger(ExportController.class);
     private static final String CUSTOM_RANGE = "Custom Range";
 
     private static final String CURRRENT_DATE = "Current Date";
-
-    public ObservableList<TagsDataModel> tagsData = FXCollections.observableArrayList();
-
-    @InjectViewModel
-    private ExportViewModel exportViewModel;
-
-    @FXML
-    private TextField exportName;
-
     //@FXML
     private static final String CURRENT_DATE_TIME_RANGE_FROM = "01/01/2022, 12:00 AM";
-
-    @FXML
-    private ComboBox<String> exportOptions;
-
-    @FXML
-    private ComboBox<EntityFacade> pathOptions;
-
-    @FXML
-    private ComboBox<String> timePeriodComboBox;
-
-    @FXML
-    private HBox dateTimePickerHbox;
-
-    @FXML
-    private Button cancelButton;
-
-    @FXML
-    private Button exportButton;
-
-    @FXML
-    private Label dateTimeFromLabel;
-
-    @FXML
-    private Label dateTimeToLabel;
-
-    private PopOver fromDateTimePopOver;
-
-    private PopOver toDateTimePopOver;
-
-    private long customFromEpochMillis;
-
-    private long customToEpochMillis;
-
-    private EvtBus exportDatasetEventBus;
-
-    private UUID exportTopic;
-
-    public BooleanProperty haschanges = new SimpleBooleanProperty(false);
-
     private static final String CHANGE_SET = "Change set";
+    public ObservableList<TagsDataModel> tagsData = FXCollections.observableArrayList();
+    public BooleanProperty haschanges = new SimpleBooleanProperty(false);
     @FXML
     public FlowPane tagPane;
+    @InjectViewModel
+    private ExportViewModel exportViewModel;
+    @FXML
+    private TextField exportName;
+    @FXML
+    private ComboBox<String> exportOptions;
+    @FXML
+    private ComboBox<EntityFacade> pathOptions;
+    @FXML
+    private ComboBox<String> timePeriodComboBox;
+    @FXML
+    private HBox dateTimePickerHbox;
+    @FXML
+    private Button cancelButton;
+    @FXML
+    private Button exportButton;
+    @FXML
+    private Label dateTimeFromLabel;
+    @FXML
+    private Label dateTimeToLabel;
+    private PopOver fromDateTimePopOver;
+    private PopOver toDateTimePopOver;
+    private long customFromEpochMillis;
+    private long customToEpochMillis;
+    private EvtBus exportDatasetEventBus;
+    private UUID exportTopic;
     @FXML
     private Button dateTimePickerFrom;
     @FXML
@@ -250,7 +226,6 @@ public class ExportController {
         };
         exportDatasetEventBus.subscribe(exportTopic, ExportDateTimePopOverEvent.class, datePopOverSubscriber);
         return dateTimePopOver;
-
     }
 
     public void handleCurrentDateTimeExport() {
@@ -344,8 +319,6 @@ public class ExportController {
                 }
             });
         });
-
-
     }
 
     private long transformStringInLocalDateTimeToEpochMillis(String localDateTimeFormat) {
@@ -417,8 +390,6 @@ public class ExportController {
         }
     }
 
-
-
     public void makeFakeTags() {
         for (int i = 0; i < 30; i++) {
             TagsDataModel tag = new TagsDataModel();
@@ -441,31 +412,28 @@ public class ExportController {
                 collectedTags.add(tagname);
             }
         }
-            int maxLabels=5;
-            for(int z=0;z<collectedTags.size();z++) {
+        int maxLabels = 5;
+        for (int z = 0; z < collectedTags.size(); z++) {
 
-if(z<maxLabels) {
-    Label label = new Label();
+            if (z < maxLabels) {
+                Label label = new Label();
 
-    label.setText(collectedTags.get(z));
-    label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
+                label.setText(collectedTags.get(z));
+                label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
 
-    label.setTextFill(Color.web("#555D73"));
-    tagPane.getChildren().add(label);
-}else {
-    if (z==maxLabels) {
-        int labelAmount = collectedTags.size() - maxLabels;
-        Label label = new Label("+" + labelAmount + " more");
-        label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
-        label.setTextFill(Color.web("#555D73"));
-        tagPane.getChildren().add(label);
-    }
-}
+                label.setTextFill(Color.web("#555D73"));
+                tagPane.getChildren().add(label);
+            } else {
+                if (z == maxLabels) {
+                    int labelAmount = collectedTags.size() - maxLabels;
+                    Label label = new Label("+" + labelAmount + " more");
+                    label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
+                    label.setTextFill(Color.web("#555D73"));
+                    tagPane.getChildren().add(label);
+                }
             }
         }
-
-
-
+    }
 
     @FXML
     public void addTagButton_pressed(ActionEvent actionEvent) {
@@ -485,7 +453,6 @@ if(z<maxLabels) {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         stage.show();
     }
 }

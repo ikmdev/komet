@@ -12,12 +12,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-
-import java.util.ArrayList;
 
 public class AddAndEditController {
 
@@ -74,8 +72,6 @@ public class AddAndEditController {
                         tags.get(h).setTagSelected(selectValue);
                         break;
                     }
-
-
                 }
                 addLabels();
             });
@@ -106,12 +102,10 @@ public class AddAndEditController {
                         }
                     }
                     addLabels();
-
                 });
             }
         }
     }
-
 
     public void addLabels() {
         selectedTags.getChildren().clear();
@@ -124,7 +118,6 @@ public class AddAndEditController {
                 label.setStyle("-fx-font-size: 20px; -fx-background-color: #E1E8F1;");
                 label.setTextFill(Color.rgb(85, 93, 115));
                 selectedTags.getChildren().add(label);
-
             }
         }
     }
@@ -135,7 +128,6 @@ public class AddAndEditController {
         hasChanges.set(true);
         Stage stage = (Stage) okButton.getScene().getWindow();
         stage.close();
-
     }
 
     @FXML
@@ -147,14 +139,12 @@ public class AddAndEditController {
                 tag1 = tags.get(h);
                 String SuchString = tag1.getTagName();
                 if (tag1.getTagName().equals(name)) {
-                    System.out.println("Found: " + SuchString);
                     if (tag1.isTagSelected()) {
                         tags.get(h).setTagSelected(false);
                     } else {
                         tags.get(h).setTagSelected(true);
                     }
                 }
-
             }
         }
         hasChanges.set(false);
@@ -167,7 +157,6 @@ public class AddAndEditController {
     @FXML
     public void searchButtonPressed(Event event) {
         ObservableList<TagsDataModel> searchTags = FXCollections.observableArrayList();
-        System.out.println("Search for: " + searchText.getText());
         String SearchString = searchText.getText();
 
         for (int i = 0; i < tags.size(); i++) {
@@ -175,12 +164,8 @@ public class AddAndEditController {
             tag = tags.get(i);
 
             if (tag.getTagName().contains(SearchString)) {
-                System.out.println("Found: " + SearchString);
-
 
                 searchTags.add(tag);
-
-
             }
             tagsGrid.getChildren().clear();
 
@@ -210,8 +195,6 @@ public class AddAndEditController {
                             searchTags.get(h).setTagSelected(selectValue);
                             break;
                         }
-
-
                     }
                     addLabels();
                 });
@@ -220,7 +203,6 @@ public class AddAndEditController {
                     CheckBox checkbBox = new CheckBox();
                     tag = searchTags.get(g);
                     checkbBox.setText(tag.getTagName());
-
 
                     tagsGrid.setColumnIndex(tagsGrid, 1);
                     tagsGrid.add(checkbBox, 1, n);
@@ -243,12 +225,9 @@ public class AddAndEditController {
                             }
                         }
                         addLabels();
-
                     });
                 }
             }
-
-
         }
     }
 }
