@@ -159,7 +159,7 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
         this.navigator = navigator;
         invertedTree = new InvertedTree(new InvertedTree.ConceptItem(conceptFacade.nid(), parentNid, conceptFacade.description()));
         setValue(conceptFacade);
-        future = TinkExecutor.threadPool().submit(() -> navigator.isLeaf(conceptFacade.nid()));
+        future = TinkExecutor.threadPool().submit(() -> ConceptNavigatorUtils.isLeaf(navigator, conceptFacade.nid()));
     }
 
     /**

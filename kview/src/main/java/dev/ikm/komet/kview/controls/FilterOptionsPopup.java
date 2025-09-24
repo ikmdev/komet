@@ -5,8 +5,11 @@ import dev.ikm.komet.navigator.graph.Navigator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.MapChangeListener;
+import javafx.scene.Node;
 import javafx.scene.control.PopupControl;
 import javafx.scene.control.Skin;
 
@@ -20,8 +23,13 @@ public class FilterOptionsPopup extends PopupControl {
     private final FILTER_TYPE filterType;
     private static final String DEFAULT_OPTIONS_KEY = "default-options";
 
+    private final FilterOptionsUtils filterOptionsUtils;
+
     public FilterOptionsPopup(FILTER_TYPE filterType) {
         this.filterType = filterType;
+
+        filterOptionsUtils = new FilterOptionsUtils();
+
         setAutoHide(true);
         getStyleClass().add("filter-options-popup");
         setAnchorLocation(AnchorLocation.WINDOW_TOP_LEFT);
@@ -37,15 +45,12 @@ public class FilterOptionsPopup extends PopupControl {
     }
 
     // inheritedFilterOptionsProperty
-    private final ObjectProperty<FilterOptions> inheritedFilterOptionsProperty = new SimpleObjectProperty<>(this, "initialFilterOptions", new FilterOptions());
-    public final ObjectProperty<FilterOptions> inheritedFilterOptionsProperty() {
-        return inheritedFilterOptionsProperty;
+    private final ReadOnlyObjectWrapper<FilterOptions> inheritedFilterOptionsProperty = new ReadOnlyObjectWrapper<>(this, "inheritedFilterOptions", new FilterOptions());
+    public final ReadOnlyObjectProperty<FilterOptions> inheritedFilterOptionsProperty() {
+       return inheritedFilterOptionsProperty.getReadOnlyProperty();
     }
     public final FilterOptions getInheritedFilterOptions() {
-        return inheritedFilterOptionsProperty.get();
-    }
-    public final void setInheritedFilterOptionsProperty(FilterOptions value) {
-        inheritedFilterOptionsProperty.set(value);
+       return inheritedFilterOptionsProperty.get();
     }
 
     // filterOptionsProperty
@@ -72,6 +77,18 @@ public class FilterOptionsPopup extends PopupControl {
         navigatorProperty.set(value);
     }
 
+    // containerProperty
+    private final ObjectProperty<Node> containerProperty = new SimpleObjectProperty<>(this, "container");
+    public final ObjectProperty<Node> containerProperty() {
+       return containerProperty;
+    }
+    public final Node getContainer() {
+       return containerProperty.get();
+    }
+    public final void setContainer(Node value) {
+        containerProperty.set(value);
+    }
+
     // defaultOptionsSetProperty
     private final ReadOnlyBooleanWrapper defaultOptionsSetProperty = new ReadOnlyBooleanWrapper(this, "defaultOptionsSet", true);
     public final ReadOnlyBooleanProperty defaultOptionsSetProperty() {
@@ -83,6 +100,10 @@ public class FilterOptionsPopup extends PopupControl {
 
     public final FILTER_TYPE getFilterType() {
         return filterType;
+    }
+
+    public FilterOptionsUtils getFilterOptionsUtils() {
+        return filterOptionsUtils;
     }
 
     @Override

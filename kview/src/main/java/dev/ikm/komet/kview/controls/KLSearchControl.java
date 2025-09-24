@@ -16,6 +16,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
@@ -244,16 +245,28 @@ public class KLSearchControl extends Control {
         navigatorProperty.set(value);
     }
 
+    // containerProperty
+    private final ObjectProperty<Node> containerProperty = new SimpleObjectProperty<>(this, "container");
+    public final ObjectProperty<Node> containerProperty() {
+        return containerProperty;
+    }
+    public final Node getContainer() {
+        return containerProperty.get();
+    }
+    public final void setContainer(Node value) {
+        containerProperty.set(value);
+    }
+
     // viewPropertiesObjectProperty
-    private final ObjectProperty<ViewProperties> ViewPropertiesProperty = new SimpleObjectProperty<>(this, "ViewProperties");
-    public final ObjectProperty<ViewProperties> ViewPropertiesProperty() {
-        return ViewPropertiesProperty;
+    private final ObjectProperty<ViewProperties> viewPropertiesProperty = new SimpleObjectProperty<>(this, "ViewProperties");
+    public final ObjectProperty<ViewProperties> viewPropertiesProperty() {
+        return viewPropertiesProperty;
     }
     public final ViewProperties getViewProperties() {
-        return ViewPropertiesProperty.get();
+        return viewPropertiesProperty.get();
     }
     public final void setViewProperties(ViewProperties value) {
-        ViewPropertiesProperty.set(value);
+        viewPropertiesProperty.set(value);
     }
 
     /**

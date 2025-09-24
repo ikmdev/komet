@@ -43,13 +43,24 @@ public class ObservableViewWithOverride extends ObservableViewBase {
         });
     }
 
+    // TODO when the story is worked to compare the view coordinate change within the child
+    // there will be a lot of work around this method and the setExceptOverrides() to determine
+    // if the change will now match the parent, and to clear any overridden flags that match
     private void overriddenBaseChanged(ObservableValue<? extends ViewCoordinateRecord> observableValue,
                                        ViewCoordinateRecord oldValue,
                                        ViewCoordinateRecord newValue) {
         var name = super.getName();
 
         if (this.hasOverrides()) {
+            // TODO need to check the overrides and compare with the newValue
+            // if the objects are the same, then the child is no longer overridden
             setExceptOverrides(newValue);
+
+            if (!this.hasOverrides()) {
+                // TODO need to remove the override indicator in the view coordinate menu
+
+                LOG.debug("{} view coordinate menu no longer has overrides", getName());
+            }
         } else {
             setValue(newValue);
         }

@@ -22,7 +22,9 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.builder.ConceptEntityBuilder;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
+import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -199,6 +201,17 @@ public class ConceptViewModel extends FormViewModel {
             throw new RuntimeException(e);
         }
 
+        String pathText = getViewProperties().calculator().getDescriptionTextOrNid(path.nid());
+        String moduleText = getViewProperties().calculator().getDescriptionTextOrNid(module.nid());
+        String statusText = getViewProperties().calculator().getDescriptionTextOrNid(status.nid());
+
+        // alert the user of the concept being created and were it exists
+        JournalController.toast()
+            .show(
+                Toast.Status.SUCCESS,
+                String.format("Concept created %s, %s, %s", pathText, moduleText, statusText)
+            );
+
         // place inside as current Concept
         setValue(CURRENT_ENTITY, conceptFacade);
         setPropertyValue(CURRENT_ENTITY, conceptFacade);
@@ -321,7 +334,7 @@ public class ConceptViewModel extends FormViewModel {
         Transaction transaction = Transaction.make();
 
         StampEntity stampEntity = transaction.getStamp(
-                State.fromConcept(otherName.getStatus()), // active, inactive, etc
+                State.fromConceptNid(otherName.getStatus().nid()), // active, inactive, etc
                 System.currentTimeMillis(),
                 getViewProperties().nodeView().editCoordinate().getAuthorForChanges().nid(),
                 otherName.getModule().nid(), // SNOMED CT, LOINC, etc

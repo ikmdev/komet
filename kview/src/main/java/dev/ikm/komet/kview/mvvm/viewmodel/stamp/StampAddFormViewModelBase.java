@@ -1,8 +1,11 @@
 package dev.ikm.komet.kview.mvvm.viewmodel.stamp;
 
 import dev.ikm.komet.framework.controls.TimeUtils;
+import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.component.Stamp;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -10,6 +13,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 
 import java.util.UUID;
 
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.CLEAR_RESET_BUTTON_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.CURRENT_STAMP;
@@ -60,10 +64,19 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
     }
 
     protected void loadStamp() {
-        EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
-        StampEntity stampEntity = latestVersion.stamp();
+        ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
+        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+        Latest<EntityVersion> latestEntityVersion = retrieveCommittedLatestVersion(observableEntitySnapshot);
+        latestEntityVersion
+                .ifPresentOrElse(latestVersion -> setPropertyValue(CURRENT_STAMP, latestEntityVersion.get().stamp())
+                    , () -> {
+                               EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
+                               setPropertyValue(CURRENT_STAMP, latestVersion.stamp());
+                    }
+                );
 
-        setPropertyValue(CURRENT_STAMP, stampEntity);
+
+
     }
 
     protected void loadStampValuesFromDB() {

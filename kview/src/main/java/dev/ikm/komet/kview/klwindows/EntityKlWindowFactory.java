@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.klwindows;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.layout.KlFactory;
 import dev.ikm.komet.layout.window.KlJournalWindow;
@@ -299,13 +300,14 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
          * <p>
          * The window is fully initialized with its previous state when this method returns.
          *
+         * @param windowSettings the parent's window settings
          * @param preferences preferences containing the serialized window state
          * @return a restored {@link AbstractEntityChapterKlWindow} instance
          * @throws IllegalArgumentException if no factory is registered for the window type
          *                                  found in the preferences, or if the preferences
          *                                  contain invalid window state information
          */
-        public static AbstractEntityChapterKlWindow restoreWindow(KometPreferences preferences) {
+        public static AbstractEntityChapterKlWindow restoreWindow(WindowSettings windowSettings, KometPreferences preferences) {
             EntityKlWindowState windowState = EntityKlWindowState.fromPreferences(preferences);
             EntityKlWindowType windowType = windowState.getWindowType();
             EntityKlWindowFactory factory = getFactory(windowType);
@@ -313,7 +315,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
                 LOG.warn("No factory registered for window type: {}", windowType);
                 throw new IllegalArgumentException("No factory registered for window type: " + windowType);
             }
-            return factory.restore(preferences);
+            return factory.restore(windowSettings, preferences);
         }
 
         /**

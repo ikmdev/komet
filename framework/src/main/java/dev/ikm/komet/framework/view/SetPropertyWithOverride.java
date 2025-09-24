@@ -23,6 +23,7 @@ import javafx.collections.ObservableSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<T>
@@ -53,16 +54,19 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
         this.set(null);
     }
 
+    /// called by ViewMenuTask when view coordinate Set.setValue() is called
     @Override
     public void set(ObservableSet<T> newValue) {
-        if (!overridden) {
-            overridden = true;
-            this.unbind();
-        }
-        if (newValue == null) {
-            overridden = false;
+        if (newValue == null || Objects.equals(newValue, this.overriddenProperty.get())) {
+            // values equal so not an override.
+            this.overridden = false;
             this.bind(overriddenProperty);
         } else {
+            // values not equal
+            if (!overridden) {
+                this.overridden = true;
+                this.unbind();
+            }
             super.set(newValue);
         }
     }
@@ -74,18 +78,25 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
 
     @Override
     public boolean setAll(Collection<? extends T> elements) {
-        if (!this.get().equals(elements)) {
+        if (!Objects.equals(this.get(), elements)) {
             if (!overridden) {
                 overridden = true;
                 this.unbind();
             }
             return super.setAll(elements);
+        } else {
+            overridden = false;
+            this.bind(overriddenProperty);
         }
+
         return false;
     }
 
+    /// called by ViewMenuTask when view coordinate Set is removed from
     @Override
     public boolean remove(Object obj) {
+        boolean returnValue = false;
+
         if (!overridden) {
             overridden = true;
 
@@ -94,14 +105,31 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
 
             ObservableSet<T> set = FXCollections.observableSet(copiedSet);
             this.unbind();
-            boolean returnValue = set.remove(obj);
+            returnValue = set.remove(obj);
             super.set(set);
             return returnValue;
+        } else {
+            // must make a copy to remove the object from the copied set
+            // to use to compare with the overriddenProperty FIRST
+
+            HashSet<T> copiedSet = new HashSet<>(get());
+            returnValue = copiedSet.remove(obj);
+
+            if (Objects.equals(copiedSet, this.overriddenProperty.get())) {
+                overridden = false;
+                this.bind(overriddenProperty);
+            } else {
+                // remove() calls the Set property listeners, which updates the view coordinate menu
+                returnValue = super.remove(obj);
+            }
         }
-        return super.remove(obj);
+
+        return returnValue;
     }
 
     /**
+     * called by ViewMenuTask when view coordinate Set is added to
+     * <p>
      * Note:  cannot use the parent's overriddenProperty because doing so causes the
      * parent property to be changed when the child property is changed
      *
@@ -109,6 +137,8 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
      */
     @Override
     public boolean add(T element) {
+        boolean returnValue = false;
+
         if (!overridden) {
             overridden = true;
 
@@ -117,12 +147,27 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
 
             ObservableSet<T> set = FXCollections.observableSet(copiedSet);
             this.unbind();
-            boolean returnValue = set.add(element);
+            returnValue = set.add(element);
             super.set(set);
 
             return returnValue;
+        } else {
+            // must make a copy to add the object to the copied set
+            // to use to compare with the overriddenProperty FIRST
+
+            HashSet<T> copiedSet = new HashSet<>(get());
+            returnValue = copiedSet.add(element);
+
+            if (Objects.equals(this.get(), this.overriddenProperty.get())) {
+                overridden = false;
+                this.bind(overriddenProperty);
+            } else {
+                // add() calls the Set property listeners, which updates the view coordinate menu
+                returnValue = super.add(element);
+            }
         }
-        return super.add(element);
+
+        return returnValue;
     }
 
     @Override
@@ -176,6 +221,7 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
         return super.retainAll(objects);
     }
 
+    /// called by ViewMenuTask when view coordinate Set is cleared
     @Override
     public void clear() {
         if (!overridden) {
@@ -184,7 +230,14 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
             // create a new empty set
             super.set(FXCollections.observableSet(new HashSet<>()));
         } else {
-            super.clear();
+            // FIRST check to see if the overriddenProperty Set is empty
+            if (this.overriddenProperty.get().isEmpty()) {
+                overridden = false;
+                this.bind(overriddenProperty);
+            } else {
+                // clear() calls the Set property listeners, which updates the view coordinate menu
+                super.clear();
+            }
         }
     }
 

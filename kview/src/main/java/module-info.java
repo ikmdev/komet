@@ -38,6 +38,10 @@ module dev.ikm.komet.kview {
     requires org.eclipse.collections.api;
     requires org.eclipse.collections.impl;
     requires javafx.graphics;
+    requires javafx.fxml;
+    requires javafx.controls;
+    requires org.slf4j;
+
     requires javafx.base;
 
     exports dev.ikm.komet.kview.state;

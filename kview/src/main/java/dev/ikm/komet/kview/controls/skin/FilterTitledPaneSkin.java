@@ -1,12 +1,13 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.FilterOptions;
+import dev.ikm.komet.kview.controls.FilterOptionsUtils;
 import dev.ikm.komet.kview.controls.FilterTitledPane;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.TruncatedTextFlow;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
@@ -28,7 +29,6 @@ import javafx.util.Subscription;
 
 import java.text.MessageFormat;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Stream;
@@ -121,8 +121,8 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
     private void setupTitledPane() {
         if (subscription != null) {
             subscription.unsubscribe();
-            subscription = Subscription.EMPTY;
         }
+        subscription = Subscription.EMPTY;
 
         FilterOptions.Option option = control.getOption();
         if (option == null) {
@@ -132,17 +132,19 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         control.pseudoClassStateChanged(SINGLE_SELECT_OPTION, !multiSelectionAllowed);
 
         FilterOptions.Option currentOption = option.copy();
-        selectedOption.setText(getOptionText(currentOption));
+        // whenever the navigator changes, update the option text
+        subscription = subscription.and(control.navigatorProperty().subscribe(_ ->
+                selectedOption.setText(getOptionText(currentOption))));
 
         // add toggles only once
         if (contentBox.getChildren().size() == 1) {
-            option.availableOptions().forEach(text ->
-                    contentBox.getChildren().add(new OptionToggle(text)));
+            option.availableOptions().forEach(o ->
+                    contentBox.getChildren().add(new OptionToggle<>(o)));
         }
         setupToggleBox(currentOption);
 
-        subscription = selectedOption.boundsInParentProperty().subscribe(b ->
-                pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30));
+        subscription = subscription.and(selectedOption.boundsInParentProperty().subscribe(b ->
+                pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30)));
 
         if (control.getParent() instanceof Accordion accordion) {
             subscription = subscription.and(accordion.expandedPaneProperty().subscribe(pane -> {
@@ -270,34 +272,36 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                     }
                     singleSelection = false;
                 }
-                if (selected && !currentOption.selectedOptions().contains(tb.getText())) {
+                if (selected && !currentOption.selectedOptions().contains(tb.getT())) {
                     if (multiSelectionAllowed) {
-                        addAndSort(currentOption.selectedOptions(), tb.getText());
+                        currentOption.selectedOptions().add(tb.getT());
+                        currentOption.selectedOptions().sort(Comparator.comparing(this::getDescription));
                     } else {
                         currentOption.selectedOptions().clear();
-                        currentOption.selectedOptions().add(tb.getText());
+                        currentOption.selectedOptions().add(tb.getT());
                     }
                 } else if (!selected && !(currentOption.hasExcluding() && excludingToggle.isSelected())) {
-                    currentOption.selectedOptions().remove(tb.getText());
+                    currentOption.selectedOptions().remove(tb.getT());
                 }
                 excludingToggle.setDisable(!(currentOption.areAllSelected() || anyToggle.isSelected()));
             }));
             subscription = subscription.and(tb.excludedProperty().subscribe((_, excluded) -> {
                 if (currentOption.hasExcluding()) {
-                    if (excluded && !currentOption.excludedOptions().contains(tb.getText())) {
+                    if (excluded && !currentOption.excludedOptions().contains(tb.getT())) {
                         if (currentOption.excludedOptions().size() == currentOption.availableOptions().size() - 1) {
                             // don't let all options get excluded
                             tb.fire();
                         } else {
-                            addAndSort(currentOption.excludedOptions(), tb.getText());
+                            currentOption.excludedOptions().add(tb.getT());
+                            currentOption.excludedOptions().sort(Comparator.comparing(this::getDescription));
                         }
                     } else if (!excluded) {
-                        currentOption.excludedOptions().remove(tb.getText());
+                        currentOption.excludedOptions().remove(tb.getT());
                     }
                 }
             }));
-            tb.setExcluded(currentOption.hasExcluding() && currentOption.excludedOptions().contains(tb.getText()));
-            tb.setSelected(currentOption.selectedOptions().contains(tb.getText()) && !tb.isExcluded());
+            tb.setExcluded(currentOption.hasExcluding() && currentOption.excludedOptions().contains(tb.getT()));
+            tb.setSelected(currentOption.selectedOptions().contains(tb.getT()) && !tb.isExcluded());
         });
 
         // confirm changes, and set again titledPane
@@ -312,7 +316,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         updateModifiedState(currentOption);
     }
 
-    private void updateModifiedState(FilterOptions.Option currentOption) {
+    private <T> void updateModifiedState(FilterOptions.Option<T> currentOption) {
         boolean modified = !Objects.equals(currentOption, control.getDefaultOption());
         pseudoClassStateChanged(MODIFIED_TITLED_PANE, currentOption.isInOverride() || modified);
         if (modified && !currentOption.isInOverride()) {
@@ -320,7 +324,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         }
     }
 
-    private void setupToggleBox(FilterOptions.Option currentOption) {
+    private <T> void setupToggleBox(FilterOptions.Option<T> currentOption) {
         String name = currentOption.item().getName();
         boolean empty = contentBox.getChildren().size() <= 1;
         allToggle.setDisable(empty);
@@ -354,7 +358,11 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                 .map(OptionToggle.class::cast);
     }
 
-    private String getOptionText(FilterOptions.Option option) {
+    private <T> String getDescription(T t) {
+        return FilterOptionsUtils.getDescription(control.getNavigator() == null ? null : control.getNavigator().getViewCalculator(), t);
+    }
+
+    private <T> String getOptionText(FilterOptions.Option<T> option) {
         if (option == null) {
             return null;
         }
@@ -363,7 +371,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             String any = resources.getString(name + ".label." + (option.hasAny() && option.any() ? "any" : "all"));
 
             return MessageFormat.format(resources.getString(name + ".label.exclude"),
-                    any, String.join(", ", option.excludedOptions()));
+                    any, String.join(", ", option.excludedOptions().stream().map(this::getDescription).toList()));
         } else {
             if (option.selectedOptions().isEmpty()) {
                 return resources.getString(name + ".label.none");
@@ -373,26 +381,22 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             }
             if (option.hasAny() && option.any()) {
                 return MessageFormat.format(resources.getString(name + ".label.from"),
-                        resources.getString(name + ".label.any"), String.join(", ", option.selectedOptions()));
+                        resources.getString(name + ".label.any"),
+                        String.join(", ", option.selectedOptions().stream().map(this::getDescription).toList()));
             }
-            return String.join(", ", option.selectedOptions());
+            return String.join(", ", option.selectedOptions().stream().map(this::getDescription).toList());
         }
     }
 
-    private void addAndSort(List<String> list, String value) {
-        list.add(value);
-        list.sort(Comparator.naturalOrder());
-    }
-
-    protected class OptionToggle extends HBox {
+    private class OptionToggle<T> extends HBox {
 
         private final ToggleButton toggleButton;
 
-        public OptionToggle(String text) {
+        public OptionToggle(T t) {
             StackPane checkPane = new StackPane(new IconRegion("cross"));
             checkPane.getStyleClass().add("option-check");
 
-            toggleButton = new ToggleButton(text, new IconRegion("check"));
+            toggleButton = new ToggleButton(getDescription(t), new IconRegion("check"));
             toggleButton.getStyleClass().add("option-toggle");
             toggleButton.setMouseTransparent(true);
             if (!control.getOption().isMultiSelectionAllowed()) {
@@ -403,7 +407,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                     }
                 });
             }
-            textProperty.bind(toggleButton.textProperty());
+            tProperty.set(t);
 
             getChildren().addAll(checkPane, toggleButton);
             getStyleClass().add("option-toggle-box");
@@ -436,13 +440,13 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             selectedProperty.set(value);
         }
 
-        // textProperty
-        private final ReadOnlyStringWrapper textProperty = new ReadOnlyStringWrapper(this, "text");
-        public final ReadOnlyStringProperty textProperty() {
-            return textProperty.getReadOnlyProperty();
+        // tProperty
+        private final ReadOnlyObjectWrapper<T> tProperty = new ReadOnlyObjectWrapper<>(this, "t");
+        public final ReadOnlyObjectProperty<T> tProperty() {
+           return tProperty.getReadOnlyProperty();
         }
-        public final String getText() {
-            return textProperty.get();
+        public final T getT() {
+           return tProperty.get();
         }
 
         // excludedProperty
