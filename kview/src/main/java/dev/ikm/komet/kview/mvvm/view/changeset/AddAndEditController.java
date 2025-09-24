@@ -45,6 +45,7 @@ public class AddAndEditController {
 
     @FXML
     public void initialize2() {
+        addLabels();
         tagsGrid.setVgap(5);
         tagChanges.clear();
         for (int g = 0; g < tags.size(); g++) {
