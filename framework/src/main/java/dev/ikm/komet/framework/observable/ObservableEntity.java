@@ -17,8 +17,6 @@ package dev.ikm.komet.framework.observable;
 
 import static dev.ikm.tinkar.events.EntityVersionChangeEvent.VERSION_UPDATED;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
-import dev.ikm.tinkar.events.EntityVersionChangeEvent;
-import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.collection.ConcurrentReferenceHashMap;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import dev.ikm.tinkar.component.FieldDataType;
@@ -33,6 +31,8 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
+import dev.ikm.tinkar.events.EntityVersionChangeEvent;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import javafx.application.Platform;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -76,8 +76,11 @@ public abstract sealed class ObservableEntity<O extends ObservableVersion<V>, V 
      * @param newVersionRecord entity version record
      */
     public void saveToDB(Entity<?> analogue, EntityVersion newVersionRecord , EntityVersion oldVersionRecord) {
-        Entity.provider().putEntity(analogue);
         versionPropertyMap.put(newVersionRecord.stamp().nid(), wrap((V)newVersionRecord));
+        if(oldVersionRecord.uncommitted()){
+            versionPropertyMap.remove(oldVersionRecord.stamp().nid());
+        }
+        Entity.provider().putEntity(analogue);
         EvtBusFactory.getDefaultEvtBus()
                 .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, VERSION_UPDATED, newVersionRecord));
     }

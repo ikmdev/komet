@@ -17,7 +17,13 @@ package dev.ikm.komet.framework.observable;
 
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.ConceptRecord;
+import dev.ikm.tinkar.entity.ConceptVersionRecord;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
+import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.ImmutableMap;
@@ -32,7 +38,17 @@ public final class ObservableConcept
 
     @Override
     protected ObservableConceptVersion wrap(ConceptVersionRecord version) {
-        return new ObservableConceptVersion(version);
+        ObservableConceptVersion observableConceptVersion = new ObservableConceptVersion(version);
+        observableConceptVersion.versionProperty.addListener((observable, oldValue, newValue) -> {
+            updateEntity(newValue, oldValue);
+        });
+        return observableConceptVersion;
+    }
+
+    private void updateEntity(ConceptVersionRecord newConceptVersionRecord, ConceptVersionRecord oldConceptVersionRecord) {
+        ConceptRecord semantic = Entity.getFast(newConceptVersionRecord.nid());
+        ConceptRecord analogue = semantic.with(newConceptVersionRecord).build();
+        saveToDB(analogue, newConceptVersionRecord, oldConceptVersionRecord);
     }
 
     @Override

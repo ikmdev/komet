@@ -32,7 +32,17 @@ public final class ObservablePattern
 
     @Override
     protected ObservablePatternVersion wrap(PatternVersionRecord version) {
-        return new ObservablePatternVersion(version);
+        ObservablePatternVersion observablePatternVersion = new ObservablePatternVersion(version);
+        observablePatternVersion.versionProperty.addListener((observable, oldValue, newValue) -> {
+            updateEntity(newValue, oldValue);
+        });
+        return observablePatternVersion;
+    }
+
+    private void updateEntity(PatternVersionRecord newPatternVersionRecord, PatternVersionRecord oldPatternVersionRecord) {
+        PatternRecord semantic = Entity.getFast(newPatternVersionRecord.nid());
+        PatternRecord analogue = semantic.with(newPatternVersionRecord).build();
+        saveToDB(analogue, newPatternVersionRecord, oldPatternVersionRecord);
     }
 
     @Override

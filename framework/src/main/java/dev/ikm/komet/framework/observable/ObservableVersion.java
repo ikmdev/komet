@@ -135,6 +135,10 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
 
     protected abstract V withStampNid(int stampNid);
 
+    public V updateStampNid(int stampNid) {
+        return withStampNid(stampNid);
+    }
+
     public ObjectProperty<V> versionProperty() {
         return versionProperty;
     }
