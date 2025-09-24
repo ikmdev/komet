@@ -469,7 +469,7 @@ public class ExportController {
     public void addTagButton_pressed(ActionEvent actionEvent) {
         addTagButton.setText("EDIT TAGS");
         tagPane.getChildren().removeAll();
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("addAndEditTags.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("add-and-edit-tags.fxml"));
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
 
