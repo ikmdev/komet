@@ -65,12 +65,15 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.*;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class ExportController {
@@ -145,7 +148,7 @@ public class ExportController {
     @FXML
     public void initialize() {
         tagsData.clear();
-        makeFakeTags();
+        loadMembershipPatternTags();
         haschanges.subscribe(newValue -> {
             if (newValue) {
                 tagPane.getChildren().clear();
@@ -353,14 +356,21 @@ public class ExportController {
         return localDateTime.atZone(zoneId).toInstant().toEpochMilli();
     }
 
-    public void makeFakeTags() {
-        for (int i = 0; i < 30; i++) {
+    public void loadMembershipPatternTags() {
+        List<PatternEntityVersion> membershipPatterns = getMembershipPatterns();
+        for (PatternEntityVersion patternEntityVersion : membershipPatterns) {
             TagsDataModel tag = new TagsDataModel();
-            tag.setTagName("FakeTag " + i);
-            tag.setTagNid("1000" + i);
-            tag.setTagSelected(false);
-            tag.setTagDescription("This is tag number " + i);
-            tagsData.add(tag);
+            //TODO use viewCalculator
+            Optional<String> descriptionOpt = getViewProperties().calculator().languageCalculator()
+                    .getDescriptionText(patternEntityVersion.entity().nid());
+            if (descriptionOpt.isPresent()) {
+                tag.setTagName(patternEntityVersion.entity().description());
+                tag.setTagNid(String.valueOf(patternEntityVersion.entity().nid()));
+                tag.setTagSelected(false);
+                //FIXME do we need a tag description?
+                //tag.setTagDescription("This is tag number " + i);
+                tagsData.add(tag);
+            }
         }
     }
 
