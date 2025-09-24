@@ -30,14 +30,24 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.export.ExportEntitiesToProtobufFile;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.skin.DatePickerSkin;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
 import one.jpro.platform.file.ExtensionFilter;
 import one.jpro.platform.file.picker.FileSavePicker;
@@ -49,9 +59,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
@@ -71,10 +83,15 @@ public class ExportController {
 
     private static final String CURRRENT_DATE = "Current Date";
 
-      @FXML
-    private BorderPane borderPane;
     @FXML
     private static final String CURRENT_DATE_TIME_RANGE_FROM = "01/01/2022, 12:00 AM";
+
+    private static final String CHANGE_SET = "Change set";
+    public ObservableList<TagsDataModel> tagsData = FXCollections.observableArrayList();
+    public BooleanProperty haschanges = new SimpleBooleanProperty(false);
+
+    @FXML
+    public FlowPane tagPane;
 
     @InjectViewModel
     private ExportViewModel exportViewModel;
@@ -118,10 +135,25 @@ public class ExportController {
 
     private UUID exportTopic;
 
-    private static final String CHANGE_SET = "Change set";
+    @FXML
+    private Button dateTimePickerFrom;
+    @FXML
+    private Button dateTimePickerTo;
+    @FXML
+    private Button addTagButton;
 
     @FXML
     public void initialize() {
+        tagsData.clear();
+        makeFakeTags();
+        haschanges.subscribe(newValue -> {
+            if (newValue) {
+                tagPane.getChildren().clear();
+                haschanges.set(false);
+                addselectedTags();
+            }
+        });
+
         exportDatasetEventBus = EvtBusFactory.getDefaultEvtBus();
         exportTopic = UUID.randomUUID();
 
@@ -222,12 +254,8 @@ public class ExportController {
     public void handleCurrentDateTimeExport() {
         // Responsible for showing/hiding custom date range controls
         timePeriodComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (timePeriodComboBox.getValue().equals("Current Date")) {
-                // Hide custom date range controls
-                dateTimePickerHbox.setVisible(false);
-            } else {
-                dateTimePickerHbox.setVisible(true);
-            }
+            // Hide custom date range controls
+            dateTimePickerHbox.setVisible(!timePeriodComboBox.getValue().equals("Current Date"));
         });
     }
 
@@ -252,7 +280,7 @@ public class ExportController {
 
         // get the from and to dates as millisecond long values
         long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
-        long toDate =  System.currentTimeMillis();
+        long toDate = System.currentTimeMillis();
         String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
         if (CUSTOM_RANGE.equals(dateChoice)) {
             fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
@@ -274,7 +302,7 @@ public class ExportController {
         } else {
             AlertStreams.dispatchToRoot(new UnsupportedOperationException("Export Type not supported"));
         }
-            }
+    }
 
     /**
      * Performs the export of a change set within the specified date range.
@@ -304,14 +332,14 @@ public class ExportController {
                 }
                 return result;
             });
-            return  exportFuture.thenAccept(exportResult -> {
+            return exportFuture.thenAccept(exportResult -> {
                 if (exportResult != null) {
                     LOG.info("Exported Total records: {}", exportResult.conceptsCount());
                     LOG.info("Exported      Concepts: {}", exportResult.conceptsCount());
                     LOG.info("Exported     Patterns : {}", exportResult.patternsCount());
                     LOG.info("Exported     Semantics: {}", exportResult.semanticsCount());
                     LOG.info("Exported        Stamps: {}", exportResult.stampsCount());
-                                    }
+                }
             });
         });
 
@@ -324,6 +352,76 @@ public class ExportController {
         ZoneId zoneId = ZoneId.of("America/New_York");
         return localDateTime.atZone(zoneId).toInstant().toEpochMilli();
     }
+
+    public void makeFakeTags() {
+        for (int i = 0; i < 30; i++) {
+            TagsDataModel tag = new TagsDataModel();
+            tag.setTagName("FakeTag " + i);
+            tag.setTagNid("1000" + i);
+            tag.setTagSelected(false);
+            tag.setTagDescription("This is tag number " + i);
+            tagsData.add(tag);
+        }
+    }
+
+    public void addselectedTags() {
+        tagPane.getChildren().removeAll();
+        ArrayList<String> collectedTags = new ArrayList<>();
+        for (int o = 0; o < tagsData.size(); o++) {
+            TagsDataModel tag = new TagsDataModel();
+            tag = tagsData.get(o);
+            if (tag.isTagSelected()) {
+                String tagname = tag.getTagName();
+                collectedTags.add(tagname);
+            }
+        }
+        int maxLabels = 5;
+        for (int z = 0; z < collectedTags.size(); z++) {
+
+            if (z < maxLabels) {
+                Label label = new Label();
+
+                label.setText(collectedTags.get(z));
+                label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
+
+                label.setTextFill(Color.web("#555D73"));
+                tagPane.getChildren().add(label);
+            } else {
+                if (z == maxLabels) {
+                    int labelAmount = collectedTags.size() - maxLabels;
+                    Label label = new Label("+" + labelAmount + " more");
+                    label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
+                    label.setTextFill(Color.web("#555D73"));
+                    tagPane.getChildren().add(label);
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void addTagButton_pressed(ActionEvent actionEvent) {
+        addTagButton.setText("EDIT TAGS");
+        tagPane.getChildren().removeAll();
+        timePeriodComboBox.setDisable(true);
+        dateTimePickerFrom.setDisable(true);
+        dateTimePickerTo.setDisable(true);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("addAndEditTags.fxml"));
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        try {
+            stage.setScene(new Scene(loader.load()));
+            var controller = (AddAndEditController) loader.getController();
+            controller.setModel(tagsData, haschanges);
+            stage.setTitle("Add and Edit Tags");
+            stage.initStyle(StageStyle.UNDECORATED);
+            //addExistingTags();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        stage.show();
+    }
+
 
     @FXML
     private void updateFromDateTime(ActionEvent event) {
