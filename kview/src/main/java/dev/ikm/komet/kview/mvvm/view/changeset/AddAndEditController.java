@@ -43,6 +43,9 @@ public class AddAndEditController {
 
     @FXML
     public void initialize2() {
+        //FIXME search doesn't work; disable for now
+        searchText.setDisable(true);
+
         addLabels();
         tagsGrid.setVgap(5);
         tagChanges.clear();
@@ -75,6 +78,7 @@ public class AddAndEditController {
                 }
                 addLabels();
             });
+            /*
             g++;
             if (tags.size() - 1 > g) {
                 CheckBox checkbBox = new CheckBox();
@@ -104,6 +108,8 @@ public class AddAndEditController {
                     addLabels();
                 });
             }
+
+             */
         }
     }
 
@@ -179,7 +185,7 @@ public class AddAndEditController {
                 boolean value = finalTag.isTagSelected();
                 checkBox.setSelected(value);
                 tagsGrid.setColumnIndex(tagsGrid, 0);
-                tagsGrid.add(checkBox, 0, n);
+                tagsGrid.add(checkBox, 0, n); // column 0, row n
                 checkBox.addEventHandler(MouseEvent.MOUSE_CLICKED, eventb -> {
                     String name = checkBox.getText();
                     tagChanges.add(name);
@@ -198,6 +204,7 @@ public class AddAndEditController {
                     }
                     addLabels();
                 });
+                /*
                 g++;
                 if (searchTags.size() - 1 > g) {
                     CheckBox checkbBox = new CheckBox();
@@ -227,6 +234,8 @@ public class AddAndEditController {
                         addLabels();
                     });
                 }
+                */
+
             }
         }
     }

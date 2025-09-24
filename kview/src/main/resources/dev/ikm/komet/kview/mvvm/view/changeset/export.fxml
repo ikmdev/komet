@@ -14,8 +14,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<VBox minHeight="632.0" prefHeight="632.0" prefWidth="600.0" spacing="20.0" styleClass="white-container-border6" stylesheets="@../kview.css"
-      xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.changeset.ExportController">
+<VBox minHeight="632.0" prefHeight="632.0" prefWidth="600.0" spacing="20.0" styleClass="white-container-border6" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.changeset.ExportController">
    <HBox>
       <Label styleClass="grey12-18pt-normal" text="Export Data Set" />
       <Region HBox.hgrow="ALWAYS" />
@@ -24,8 +23,8 @@
    <VBox spacing="4.0">
       <Label styleClass="grey9-14pt-normal" text="Name Export" />
       <HBox spacing="11.0">
-         <TextField fx:id="exportName" prefHeight="32.0" prefWidth="474.0" promptText="Enter name" styleClass="text-field-black" HBox.hgrow="ALWAYS" />
-         <ComboBox fx:id="exportOptions" prefHeight="32.0" prefWidth="192.0" styleClass="white-combo-grey-arrow" />
+         <TextField fx:id="exportName" prefHeight="28.0" prefWidth="378.0" promptText="Enter name" styleClass="text-field-black" HBox.hgrow="ALWAYS" />
+         <ComboBox fx:id="exportOptions" maxWidth="1.7976931348623157E308" prefHeight="32.0" prefWidth="192.0" styleClass="white-combo-grey-arrow" />
       </HBox>
    </VBox>
    <VBox spacing="4.0">
