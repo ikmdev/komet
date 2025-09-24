@@ -202,7 +202,7 @@
                                                 <Text fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
                                              </children>
                                           </TextFlow>
-                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Date Added: Feb 02" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="13.0" />
                                              </font>
@@ -212,7 +212,7 @@
                                                 <Text fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
                                              </children>
                                           </TextFlow>
-                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Date Added: Feb 02" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                                        </children>
                                     </GridPane>
                                  </content>
@@ -271,7 +271,7 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added:" />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label fx:id="fqnAddDateLabel" styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                                             <Hyperlink textFill="#1c1d1d80">
                                                                <graphic>
@@ -306,7 +306,7 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added:" />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                                             <Hyperlink text="Attachment" />
                                                             <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
@@ -324,7 +324,7 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added:" />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label styleClass="descr-semantic" text="May 10, 2023" />
                                                             <Hyperlink text="Attachment" />
                                                             <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
@@ -405,7 +405,7 @@
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label maxWidth="90.0" prefWidth="90.0" styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
@@ -426,7 +426,7 @@
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
@@ -447,7 +447,7 @@
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
@@ -468,7 +468,7 @@
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
@@ -489,7 +489,7 @@
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>

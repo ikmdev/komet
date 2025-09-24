@@ -486,7 +486,7 @@ public class PatternDetailsController {
                         DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
                         dateText = formatter.format(localDate);
                     }
-                    fqnAddDateLabel.setText(dateText);
+                    fqnAddDateLabel.setText("");
                 });
             }
         });
@@ -768,8 +768,8 @@ public class PatternDetailsController {
         row2.getChildren().addAll(semanticDescrText);
 
         TextFlow row3 = new TextFlow();
-        Text dateAddedLabel = new Text("Date Added: ");
-        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
+//        Text dateAddedLabel = new Text("Date Added: ");
+//        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
 
         if (otherName.getSemanticPublicId() != null) {
             Latest<EntityVersion> semanticVersionLatest = getViewProperties().calculator().latest(Entity.nid(otherName.getSemanticPublicId()));
@@ -785,13 +785,13 @@ public class PatternDetailsController {
                     dateText = formatter.format(localDate);
                 }
 
-                Text dateLabel = new Text(dateText);
-                dateLabel.getStyleClass().add("grey8-12pt-bold");
+//                Text dateLabel = new Text(dateText);
+//                dateLabel.getStyleClass().add("grey8-12pt-bold");
                 Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
                 Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
 
                 // Add the date info and additional hyperlinks
-                row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentsHyperlink);
+                row3.getChildren().addAll(attachmentHyperlink, commentsHyperlink);
             });
         }
 
@@ -842,27 +842,27 @@ public class PatternDetailsController {
         HBox outerHBox = new HBox();
         outerHBox.setSpacing(8);
         HBox innerHBox = new HBox();
-        Label dateAddedLabel = new Label("Date Added: ");
-        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
-        String dateAddedStr = "";
-        if (patternField.stamp() == null) {
-            dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-        } else {
-            Long fieldMilis = patternField.stamp().time();
-            if (fieldMilis.equals(PREMUNDANE_TIME)) {
-                dateAddedStr = PREMUNDANE;
-            } else {
-                LocalDate localDate = Instant.ofEpochMilli(fieldMilis).atZone(ZoneId.systemDefault()).toLocalDate();
-                dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-            }
-        }
-        Label dateLabel = new Label(dateAddedStr);
-        double dateWidth = 90;
-        dateLabel.prefWidth(dateWidth);
-        dateLabel.maxWidth(dateWidth);
-        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
-        dateLabel.getStyleClass().add("grey8-12pt-bold");
-        innerHBox.getChildren().addAll(dateAddedLabel, dateLabel);
+//        Label dateAddedLabel = new Label("Date Added: ");
+//        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
+//        String dateAddedStr = "";
+//        if (patternField.stamp() == null) {
+//            dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+//        } else {
+//            Long fieldMilis = patternField.stamp().time();
+//            if (fieldMilis.equals(PREMUNDANE_TIME)) {
+//                dateAddedStr = PREMUNDANE;
+//            } else {
+//                LocalDate localDate = Instant.ofEpochMilli(fieldMilis).atZone(ZoneId.systemDefault()).toLocalDate();
+//                dateAddedStr = localDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
+//            }
+//        }
+//        Label dateLabel = new Label(dateAddedStr);
+//        double dateWidth = 90;
+//        dateLabel.prefWidth(dateWidth);
+//        dateLabel.maxWidth(dateWidth);
+//        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
+//        dateLabel.getStyleClass().add("grey8-12pt-bold");
+//        innerHBox.getChildren().addAll(dateAddedLabel, dateLabel);
         Region commentIconRegion = new Region();
         commentIconRegion.getStyleClass().add("comment-icon");
         outerHBox.getChildren().addAll(innerHBox, commentIconRegion);
