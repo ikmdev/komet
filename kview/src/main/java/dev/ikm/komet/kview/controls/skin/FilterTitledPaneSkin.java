@@ -132,7 +132,9 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         control.pseudoClassStateChanged(SINGLE_SELECT_OPTION, !multiSelectionAllowed);
 
         FilterOptions.Option currentOption = option.copy();
-        selectedOption.setText(getOptionText(currentOption));
+        // whenever the navigator changes, update the option text
+        subscription = subscription.and(control.navigatorProperty().subscribe(_ ->
+                selectedOption.setText(getOptionText(currentOption))));
 
         // add toggles only once
         if (contentBox.getChildren().size() == 1) {
