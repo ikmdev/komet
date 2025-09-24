@@ -439,6 +439,9 @@ public class ExportController {
     public void addTagButton_pressed(ActionEvent actionEvent) {
         addTagButton.setText("EDIT TAGS");
         tagPane.getChildren().removeAll();
+        timePeriodComboBox.setDisable(true);
+        dateTimePickerFrom.setDisable(true);
+        dateTimePickerTo.setDisable(true);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("addAndEditTags.fxml"));
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
