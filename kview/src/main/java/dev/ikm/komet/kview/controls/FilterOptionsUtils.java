@@ -121,9 +121,18 @@ public class FilterOptionsUtils {
                     fromView = true;
                     mainCoordinates.getModule().selectedOptions().clear();
                     if (m != null) {
-                        mainCoordinates.getModule().selectedOptions().addAll(m);
+                        // When the set is empty, it means "all module wildcard", and that implies "Any" is selected
+                        // When the set contains all available modules, it means "all individual modules",
+                        // and that implies "Select All" is selected.
+                        // If it only contains a few of them, "Select All" and "Any" are deselected, and those modules
+                        // are selected.
+                        mainCoordinates.getModule().setAny(m.isEmpty());
+                        mainCoordinates.getModule().selectedOptions().addAll(m.stream().toList());
+                        observableViewForFilterProperty.stampCoordinate().moduleSpecificationsProperty().set(
+                                m.stream().collect(Collectors.toCollection(FXCollections::observableSet)));
+                    } else {
+                        observableViewForFilterProperty.stampCoordinate().moduleSpecificationsProperty().set(null);
                     }
-                    observableViewForFilterProperty.stampCoordinate().moduleSpecificationsProperty().set(m);
                     fromView = false;
                 }));
                 viewSubscription = viewSubscription.and(observableStampCoordinate.excludedModuleSpecificationsProperty().subscribe(e -> {
@@ -133,9 +142,12 @@ public class FilterOptionsUtils {
                     fromView = true;
                     mainCoordinates.getModule().excludedOptions().clear();
                     if (e != null) {
-                        mainCoordinates.getModule().excludedOptions().addAll(e);
+                        mainCoordinates.getModule().excludedOptions().addAll(e.stream().toList());
+                        observableViewForFilterProperty.stampCoordinate().excludedModuleSpecificationsProperty().set(
+                                e.stream().collect(Collectors.toCollection(FXCollections::observableSet)));
+                    } else {
+                        observableViewForFilterProperty.stampCoordinate().excludedModuleSpecificationsProperty().set(null);
                     }
-                    observableViewForFilterProperty.stampCoordinate().excludedModuleSpecificationsProperty().set(e);
                     fromView = false;
                 }));
 
@@ -519,7 +531,10 @@ public class FilterOptionsUtils {
         if (fromView) {
             return;
         }
-        Set<ConceptFacade> includedSet = new HashSet<>(filterOptions.getMainCoordinates().getModule().selectedOptions());
+        Set<ConceptFacade> includedSet = new HashSet<>();
+        if (!filterOptions.getMainCoordinates().getModule().any()) {
+            includedSet.addAll(filterOptions.getMainCoordinates().getModule().selectedOptions());
+        }
         fromFilter = true;
         filterOptions.observableViewForFilterProperty().stampCoordinate().moduleSpecificationsProperty().addAll(includedSet);
         fromFilter = false;
