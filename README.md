@@ -192,35 +192,41 @@ being cached  and reused, thus forcing fresh test execution. For example:
 This section details on the basic design methodology used for developing nex-gen Komet UI.
 
 1. Komet UI application is moving towards the nex-gen implementation which follows 
-Model-View-View-Model (MVVM) design pattern.
-
-2. Komet application design is event-based where the subscriber to an event listens for a particular event 
+Model-View-View-Model (MVVM) design pattern. [Cognitive](https://github.com/carldea/cognitive/wiki)
+   
+3. Komet application design is event-based where the subscriber to an event listens for a particular event 
 and when it is triggered, desired logic can be executed in the listener code.
 
     Example:
     ```java
+    import dev.ikm.tinkar.events.EvtBus;
     import java.util.UUID;
-   
-    public class MyController {
-       private EvtBus eventBus;
-       private Subscriber<MyDefienedEvent> someMyDefinedEventSubscriber;
     
+    public class MyController {
+       
        public void initialize() {
-          someMyDefinedEventSubscriber = evt -> {
+          Subscriber<MyEvent> subscriber = evt -> {
+             // a broader event type of the event type's parent
+             if (evt.getEventType().getSuperType() == MyEvent.MY_ANY_EVENT) {
+                System.out.println("1. Received Event Type's parent is MY_ANY_EVENT. Event type = " + evt.getEventType());
+             }
+             
              // Some logic to process the event.
-             if (evt.getEventType() == MyDefienedEvent.SOME_EVENT_1) {
-                // do something.
-             } else if (evt.getEventType() == MyDefienedEvent.SOME_EVENT_2) {
-                //do something else.
+             if (evt.getEventType() == MyEvent.SOME_EVENT_1) {
+                System.out.println("2. Received Event Type's = SOME_EVENT_1");
+             } else if (evt.getEventType() == MyEvent.SOME_EVENT_2) {
+                System.out.println("2. Received Event Type's = SOME_EVENT_2");
              }
           };
-          eventBus.subscribe(myTopic, MyDefienedEvent.class, someMyDefinedEventSubscriber);
+          // Register subscriber
+          EvtBus.getDefaultEvtBus().subscribe("HELLO_WORLD_TOPIC", MyEvent.class, subscriber);
        }
     }
     
-    public class MyDefienedEvent extends Evt {
-       public static final EvtType<MyDefienedEvent> SOME_EVENT_1 = new EvtType<>(Evt.ANY, "SOME_EVENT_1");
-       public static final EvtType<MyDefienedEvent> SOME_EVENT_2 = new EvtType<>(Evt.ANY, "SOME_EVENT_2");
+    public class MyEvent extends Evt {
+       public static final EvtType<MyEvent> MY_ANY_EVENT = new EvtType<>(Evt.ANY, "MY_ANY_EVENT");
+       public static final EvtType<MyEvent> SOME_EVENT_1 = new EvtType<>(MY_ANY_EVENT, "SOME_EVENT_1");
+       public static final EvtType<MyEvent> SOME_EVENT_2 = new EvtType<>(MY_ANY_EVENT, "SOME_EVENT_2");
     
        /**
         * Constructs a prototypical Event.
@@ -229,30 +235,39 @@ and when it is triggered, desired logic can be executed in the listener code.
         * @param source         the object on which the Event initially occurred
         * @param eventType
         */
-       public MyDefienedEvent(Object source, EvtType eventType) {
+       public MyEvent(Object source, EvtType eventType) {
           super(source, eventType);
        }
     }
     
-    public class MySomeClass {
-       private EvtBus eventBus;
-       private UUID someTopic;
-       
-       public MySomeClass(UUID someTopic){
-           this.someTopic = someTopic;
+    public class MyEventEmitter {
+       private final String topic;
+       public MyEventEmitter(String topic) {
+          this.topic = topic;
        }
-       
-       public void someMethod() {
-          eventBus.publish(someTopic, new MyDefienedEvent(this, MyDefienedEvent.SOME_EVENT_1));
+       public void messageEvent1() {
+          EvtBus.getDefaultEvtBus().publish(topic, new MyEvent(this, MyEvent.SOME_EVENT_1));
+       }
+       public void messageEvent2() {
+          EvtBus.getDefaultEvtBus().publish(topic, new MyEvent(this, MyEvent.SOME_EVENT_2));
        }
     }
     
     public class MainClass {
        public static void main(String[] args) {
-          MySomeClass mySomeClass = new MySomeClass(UUID.randomUUID());
+          MyEventEmitter eventEmitter = new MyEventEmitter("HELLO_WORLD_TOPIC");
+          eventEmitter.messageEvent1(); // 
+          eventEmitter.messageEvent2();
        }
     }
    ```
+    The output is:
+    ```
+    1. Received Event Type's parent is MY_ANY_EVENT. Event type = SOME_EVENT_1
+    2. Received Event Type's = SOME_EVENT_1
+    1. Received Event Type's parent is MY_ANY_EVENT. Event type = SOME_EVENT_2
+    2. Received Event Type's = SOME_EVENT_2
+    ```
    
 4. Komet's design also includes the cognitive framework to implement MVVM architecture framework.
 You can find more information along with the examples [here](https://github.com/carldea/cognitive/wiki).
@@ -277,10 +292,10 @@ You can find more information along with the examples [here](https://github.com/
 
 1. No specific configuration is required to run the installed version of Komet.
 
-2. To run Komet from an IDE (development environment), you will have to do some VM configuration as below:
+2. To run Komet from an IDE (development environment), you will have to do some VM Options configuration as below:
 
    ```shell
-   -Xmx10g --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+   -Xmx10g --enable-native-access=org.apache.lucene.core --enable-native-access=javafx.graphics --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator --add-exports javafx.base/com.sun.javafx.event=one.jpro.platform.file --add-exports javafx.base/com.sun.javafx.event=org.controlsfx.controls 
    ```
 
 3. The DB needs to be configured under the '_**users -> SOLAR**_' directory.
