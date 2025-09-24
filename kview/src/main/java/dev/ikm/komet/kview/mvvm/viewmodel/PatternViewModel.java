@@ -196,14 +196,6 @@ public class PatternViewModel extends FormViewModel {
         setPropertyValue(PURPOSE_ENTITY, patternDefinition.purpose());
         setPropertyValue(MEANING_ENTITY, patternDefinition.meaning());
 
-//        String dateAddedStr = LocalDate.now().format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-//        if (patternDefinition.meaning() != null) {
-//            setPropertyValue(MEANING_DATE_STR, "Date Added: " + dateAddedStr);
-//        }
-//        if (patternDefinition.purpose() != null) {
-//            setPropertyValue(PURPOSE_DATE_STR, "Date Added: " + dateAddedStr);
-//        }
-
         EntityFacade purposeFacade = getPropertyValue(PURPOSE_ENTITY);
         EntityFacade meaningFacade = getPropertyValue(MEANING_ENTITY);
 
@@ -266,15 +258,6 @@ public class PatternViewModel extends FormViewModel {
             setPropertyValue(MEANING_ENTITY, meaningEntity);
             setPropertyValue(MEANING_TEXT, meaningEntity.description());
 
-//            Long meaningMillis = viewCalculator.latest(Entity.getFast(meaningEntity.nid())).get().stamp().time();
-//            if (meaningMillis.equals(PREMUNDANE_TIME)) {
-//                setPropertyValue(MEANING_DATE_STR, "Date Added: Premundane");
-//            } else {
-//                LocalDate meaningDate =
-//                        Instant.ofEpochMilli(meaningMillis).atZone(ZoneId.systemDefault()).toLocalDate();
-//                String meaningDateStr = meaningDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-//                setPropertyValue(MEANING_DATE_STR, "Date Added: " + meaningDateStr);
-//            }
             String patternTitleText = retrieveDisplayName((PatternFacade) patternFacade);
             setPropertyValue(PATTERN_TITLE_TEXT, patternTitleText);
 
