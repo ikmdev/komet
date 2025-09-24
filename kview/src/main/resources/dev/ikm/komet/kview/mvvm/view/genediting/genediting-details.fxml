@@ -232,9 +232,9 @@
                     <Label styleClass="semantic-banner-label" text="Purpose:" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.valignment="TOP" />
                     
                     <Label fx:id="semanticPurposeText" styleClass="semantic-banner-value" text="[]" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="3" GridPane.valignment="TOP" />
-                    
-                    
-                    <PublicIDListControl fx:id="identifierControl" GridPane.columnIndex="0" GridPane.columnSpan="4" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
+
+
+                    <PublicIDListControl fx:id="identifierControl" GridPane.columnIndex="0" GridPane.columnSpan="3" GridPane.halignment="LEFT" GridPane.rowIndex="4" GridPane.valignment="BOTTOM" />
                     
                     
                     <StackPane styleClass="stamp-container" GridPane.columnIndex="3" GridPane.rowIndex="0" GridPane.rowSpan="4">
