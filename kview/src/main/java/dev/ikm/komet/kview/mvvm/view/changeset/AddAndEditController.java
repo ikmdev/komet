@@ -47,7 +47,7 @@ public class AddAndEditController {
         tagsGrid.setVgap(5);
         tagChanges.clear();
         for (int g = 0; g < tags.size(); g++) {
-            TagsDataModel tag = new TagsDataModel();
+            TagsDataModel tag;
             final int n = g;
             tag = tags.get(g);
             CheckBox checkBox = new CheckBox();
@@ -115,7 +115,7 @@ public class AddAndEditController {
             if (tag.isTagSelected()) {
                 Label label = new Label(tag.getTagName());
 
-                label.setStyle("-fx-font-size: 20px; -fx-background-color: #E1E8F1;");
+                label.setStyle("-fx-font-size: 14px; -fx-background-color: #E1E8F1;");
                 label.setTextFill(Color.rgb(85, 93, 115));
                 selectedTags.getChildren().add(label);
             }
