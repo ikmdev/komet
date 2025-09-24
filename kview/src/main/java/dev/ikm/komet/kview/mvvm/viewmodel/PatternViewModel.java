@@ -89,8 +89,6 @@ public class PatternViewModel extends FormViewModel {
 
     public static String FQN_DESCRIPTION_NAME = "fqnDescriptionName";
 
-    public static String FQN_DATE_ADDED_STR = "fqnDateAddedStr";
-
     public static String FQN_CASE_SIGNIFICANCE = "fqnCaseSignificance";
 
     public static String FQN_LANGUAGE = "fqnLanguage";
@@ -243,16 +241,6 @@ public class PatternViewModel extends FormViewModel {
             Entity purposeEntity = ((PatternVersionRecord) entityVersion).semanticPurpose();
             setPropertyValue(PURPOSE_ENTITY, purposeEntity);
             setPropertyValue(PURPOSE_TEXT, purposeEntity.description());
-
-//            Long purposeMilis = viewCalculator.latest(Entity.getFast(purposeEntity.nid())).get().stamp().time();
-//            if (purposeMilis.equals(PREMUNDANE_TIME)) {
-//                setPropertyValue(PURPOSE_DATE_STR, "Date Added: Premundane");
-//            } else {
-//                LocalDate purposeDate =
-//                        Instant.ofEpochMilli(purposeMilis).atZone(ZoneId.systemDefault()).toLocalDate();
-//                String purposeDateStr = purposeDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy")).toString();
-//                setPropertyValue(PURPOSE_DATE_STR, "Date Added: " +  purposeDateStr);
-//            }
 
             Entity meaningEntity = ((PatternVersionRecord) entityVersion).semanticMeaning();
             setPropertyValue(MEANING_ENTITY, meaningEntity);
