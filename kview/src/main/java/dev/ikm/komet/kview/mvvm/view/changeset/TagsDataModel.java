@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.changeset;
 
-public class tagsDataModel {
+public class TagsDataModel {
     public String tagName;
     public String tagNid;
     public boolean tagSelected;

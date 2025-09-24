@@ -65,6 +65,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
@@ -84,7 +85,7 @@ public class ExportController {
 
     private static final String CURRRENT_DATE = "Current Date";
 
-    public ObservableList<tagsDataModel> tagsData = FXCollections.observableArrayList();
+    public ObservableList<TagsDataModel> tagsData = FXCollections.observableArrayList();
 
     @InjectViewModel
     private ExportViewModel exportViewModel;
@@ -149,7 +150,6 @@ public class ExportController {
         makeFakeTags();
         haschanges.subscribe(newValue -> {
             if (newValue) {
-                System.out.println("has changes - update tags");
                 tagPane.getChildren().clear();
                 haschanges.set(false);
                 addselectedTags();
@@ -196,7 +196,7 @@ public class ExportController {
             public String toString(EntityFacade conceptEntity) {
                 ViewCalculator viewCalculator = getViewProperties().calculator();
                 return (conceptEntity != null) ? viewCalculator.getRegularDescriptionText(conceptEntity).get() : "";
-                            }
+            }
 
             @Override
             public EntityFacade fromString(String s) {
@@ -282,7 +282,7 @@ public class ExportController {
 
         // get the from and to dates as millisecond long values
         long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
-        long toDate =  System.currentTimeMillis();
+        long toDate = System.currentTimeMillis();
         String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
         if (CUSTOM_RANGE.equals(dateChoice)) {
             fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
@@ -304,14 +304,14 @@ public class ExportController {
         } else {
             AlertStreams.dispatchToRoot(new UnsupportedOperationException("Export Type not supported"));
         }
-            }
+    }
 
     /**
      * Performs the export of a change set within the specified date range.
      *
      * @param fileSavePicker the file save picker to select the export file
-     * @param fromDate the start date of the export range in epoch milliseconds
-     * @param toDate the end date of the export range in epoch milliseconds
+     * @param fromDate       the start date of the export range in epoch milliseconds
+     * @param toDate         the end date of the export range in epoch milliseconds
      */
     private void performChangeSetExport(final FileSavePicker fileSavePicker, final long fromDate, final long toDate) {
         fileSavePicker.setOnFileSelected(exportFile -> {
@@ -334,14 +334,14 @@ public class ExportController {
                 }
                 return result;
             });
-            return  exportFuture.thenAccept(exportResult -> {
+            return exportFuture.thenAccept(exportResult -> {
                 if (exportResult != null) {
                     LOG.info("Exported Total records: {}", exportResult.conceptsCount());
                     LOG.info("Exported      Concepts: {}", exportResult.conceptsCount());
                     LOG.info("Exported     Patterns : {}", exportResult.patternsCount());
                     LOG.info("Exported     Semantics: {}", exportResult.semanticsCount());
                     LOG.info("Exported        Stamps: {}", exportResult.stampsCount());
-                                    }
+                }
             });
         });
 
@@ -417,26 +417,11 @@ public class ExportController {
         }
     }
 
-    public void addExistingTags(){
-        tagPane.getChildren().removeAll();
-        for (int o=0;o<tagsData.size();o++){
-            tagsDataModel tag = new tagsDataModel();
-            tag=tagsData.get(o);
-            if (tag.isTagSelected()){
 
-                Label label = new Label(tag.getTagName());
-
-                label.setStyle("-fx-font-size: 20px; -fx-background-color: Black;");
-                label.setTextFill(Color.WHITE);
-                tagPane.getChildren().add(label);
-            }
-
-        }
-    }
 
     public void makeFakeTags() {
         for (int i = 0; i < 30; i++) {
-          tagsDataModel tag = new tagsDataModel();
+            TagsDataModel tag = new TagsDataModel();
             tag.setTagName("FakeTag " + i);
             tag.setTagNid("1000" + i);
             tag.setTagSelected(false);
@@ -445,25 +430,42 @@ public class ExportController {
         }
     }
 
-    public void addselectedTags(){
-tagPane.getChildren().removeAll();
-        for (int o=0;o<tagsData.size();o++){
-            tagsDataModel tag = new tagsDataModel();
-            tag=tagsData.get(o);
+    public void addselectedTags() {
+        tagPane.getChildren().removeAll();
+        ArrayList<String> collectedTags = new ArrayList<>();
+        for (int o = 0; o < tagsData.size(); o++) {
+            TagsDataModel tag = new TagsDataModel();
+            tag = tagsData.get(o);
             if (tag.isTagSelected()) {
+                String tagname = tag.getTagName();
+                collectedTags.add(tagname);
+            }
+        }
+            int maxLabels=5;
+            for(int z=0;z<collectedTags.size();z++) {
 
-                Label label = new Label();
+if(z<maxLabels) {
+    Label label = new Label();
 
-                label.setText(tag.getTagName());
-                label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(0,0,0,0.42);");
-                label.setTextFill(Color.WHITE);
-                tagPane.getChildren().add(label);
+    label.setText(collectedTags.get(z));
+    label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
 
-                System.out.println("added selected tag " + tag.getTagName());
+    label.setTextFill(Color.web("#555D73"));
+    tagPane.getChildren().add(label);
+}else {
+    if (z==maxLabels) {
+        int labelAmount = collectedTags.size() - maxLabels;
+        Label label = new Label("+" + labelAmount + " more");
+        label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
+        label.setTextFill(Color.web("#555D73"));
+        tagPane.getChildren().add(label);
+    }
+}
             }
         }
 
-    }
+
+
 
     @FXML
     public void addTagButton_pressed(ActionEvent actionEvent) {
@@ -475,7 +477,7 @@ tagPane.getChildren().removeAll();
 
         try {
             stage.setScene(new Scene(loader.load()));
-            var controller = (addAndEditController) loader.getController();
+            var controller = (AddAndEditController) loader.getController();
             controller.setModel(tagsData, haschanges);
             stage.setTitle("Add and Edit Tags");
             stage.initStyle(StageStyle.UNDECORATED);
