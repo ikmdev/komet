@@ -271,7 +271,7 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="" />
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added:" />
                                                             <Label fx:id="fqnAddDateLabel" styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                                             <Hyperlink textFill="#1c1d1d80">
                                                                <graphic>
@@ -306,7 +306,7 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="" />
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added:" />
                                                             <Label styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                                             <Hyperlink text="Attachment" />
                                                             <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
@@ -324,7 +324,7 @@
                                                       </TextFlow>
                                                       <TextFlow prefWidth="200.0">
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="" />
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added:" />
                                                             <Label styleClass="descr-semantic" text="May 10, 2023" />
                                                             <Hyperlink text="Attachment" />
                                                             <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
