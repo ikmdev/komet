@@ -872,7 +872,7 @@ public class ConceptController {
                     .getDefinitionDescriptionText(entityFacade)
                     .ifPresentOrElse(definition ->
                             definitionTextField.setText(definition),
-                            () -> definitionTextField.setText(""));
+                            () -> definitionTextField.setText(NO_VERSION_FOR_VIEW_TEXT));
 
             updateDisplayIdentifier(viewCalculator, (ConceptFacade) entityFacade);
 
@@ -1049,7 +1049,7 @@ public class ConceptController {
             semanticDescrText.setText(" (%s)".formatted(descrSemanticStr));
             semanticDescrText.getStyleClass().add("descr-concept-name");
         } else {
-            semanticDescrText.setText("");
+            semanticDescrText.setText(NO_VERSION_FOR_VIEW_TEXT);
         }
         // add the other name label and description semantic label
         row1.getStyleClass().add("descr-semantic-container");
