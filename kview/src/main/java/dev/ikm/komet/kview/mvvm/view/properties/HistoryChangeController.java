@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * The user is shown a search and dropdown to filter between change list items (concept &amp; semantic versions).
@@ -167,7 +168,7 @@ public class HistoryChangeController implements BasicController {
         StampEntity<StampEntityVersion> stamp1 = Entity.getStamp(changeCoordinate.versionChangeRecord().stampNid());
         StampEntity<StampEntityVersion> stamp2 = Entity.getStamp(pointDate.versionChangeRecord().stampNid());
         // Truncate time info to get the date info and compare if dates are the same.
-        long millisecondsInADay = 24L * 60 * 60 * 1000;
+        long millisecondsInADay = TimeUnit.DAYS.toMillis(1);
         long epochMillis1 = stamp1.time();
         long epochMillis2 = stamp2.time();
         long daysSinceEpoch1 = epochMillis1 / millisecondsInADay;
