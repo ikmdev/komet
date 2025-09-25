@@ -16,10 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.changeset;
 
 import com.jpro.webapi.WebAPI;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.events.EvtBus;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ExportDateTimePopOverEvent;
@@ -27,17 +23,31 @@ import dev.ikm.komet.kview.fxutils.ComboBoxHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.ExportViewModel;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.export.ExportEntitiesToProtobufFile;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.skin.DatePickerSkin;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
 import one.jpro.platform.file.ExtensionFilter;
 import one.jpro.platform.file.picker.FileSavePicker;
@@ -49,13 +59,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.*;
@@ -63,65 +75,63 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class ExportController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExportController.class);
-
     protected static final String TIME_EXPORT_PICKER_FXML_FILE = "time-export-picker.fxml";
-
+    private static final Logger LOG = LoggerFactory.getLogger(ExportController.class);
     private static final String CUSTOM_RANGE = "Custom Range";
 
     private static final String CURRRENT_DATE = "Current Date";
-
-      @FXML
-    private BorderPane borderPane;
-    @FXML
+    //@FXML
     private static final String CURRENT_DATE_TIME_RANGE_FROM = "01/01/2022, 12:00 AM";
-
+    private static final String CHANGE_SET = "Change set";
+    public ObservableList<TagsDataModel> tagsData = FXCollections.observableArrayList();
+    public BooleanProperty haschanges = new SimpleBooleanProperty(false);
+    @FXML
+    public FlowPane tagPane;
     @InjectViewModel
     private ExportViewModel exportViewModel;
-
     @FXML
     private TextField exportName;
-
     @FXML
     private ComboBox<String> exportOptions;
-
     @FXML
     private ComboBox<EntityFacade> pathOptions;
-
     @FXML
     private ComboBox<String> timePeriodComboBox;
-
     @FXML
     private HBox dateTimePickerHbox;
-
     @FXML
     private Button cancelButton;
-
     @FXML
     private Button exportButton;
-
     @FXML
     private Label dateTimeFromLabel;
-
     @FXML
     private Label dateTimeToLabel;
-
     private PopOver fromDateTimePopOver;
-
     private PopOver toDateTimePopOver;
-
     private long customFromEpochMillis;
-
     private long customToEpochMillis;
-
     private EvtBus exportDatasetEventBus;
-
     private UUID exportTopic;
-
-    private static final String CHANGE_SET = "Change set";
+    @FXML
+    private Button dateTimePickerFrom;
+    @FXML
+    private Button dateTimePickerTo;
+    @FXML
+    private Button addTagButton;
 
     @FXML
     public void initialize() {
+        tagsData.clear();
+        makeFakeTags();
+        haschanges.subscribe(newValue -> {
+            if (newValue) {
+                tagPane.getChildren().clear();
+                haschanges.set(false);
+                addselectedTags();
+            }
+        });
+
         exportDatasetEventBus = EvtBusFactory.getDefaultEvtBus();
         exportTopic = UUID.randomUUID();
 
@@ -216,18 +226,13 @@ public class ExportController {
         };
         exportDatasetEventBus.subscribe(exportTopic, ExportDateTimePopOverEvent.class, datePopOverSubscriber);
         return dateTimePopOver;
-
     }
 
     public void handleCurrentDateTimeExport() {
         // Responsible for showing/hiding custom date range controls
         timePeriodComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (timePeriodComboBox.getValue().equals("Current Date")) {
-                // Hide custom date range controls
-                dateTimePickerHbox.setVisible(false);
-            } else {
-                dateTimePickerHbox.setVisible(true);
-            }
+            // Hide custom date range controls
+            dateTimePickerHbox.setVisible(!timePeriodComboBox.getValue().equals("Current Date"));
         });
     }
 
@@ -252,7 +257,7 @@ public class ExportController {
 
         // get the from and to dates as millisecond long values
         long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
-        long toDate =  System.currentTimeMillis();
+        long toDate = System.currentTimeMillis();
         String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
         if (CUSTOM_RANGE.equals(dateChoice)) {
             fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
@@ -274,14 +279,14 @@ public class ExportController {
         } else {
             AlertStreams.dispatchToRoot(new UnsupportedOperationException("Export Type not supported"));
         }
-            }
+    }
 
     /**
      * Performs the export of a change set within the specified date range.
      *
      * @param fileSavePicker the file save picker to select the export file
-     * @param fromDate the start date of the export range in epoch milliseconds
-     * @param toDate the end date of the export range in epoch milliseconds
+     * @param fromDate       the start date of the export range in epoch milliseconds
+     * @param toDate         the end date of the export range in epoch milliseconds
      */
     private void performChangeSetExport(final FileSavePicker fileSavePicker, final long fromDate, final long toDate) {
         fileSavePicker.setOnFileSelected(exportFile -> {
@@ -304,18 +309,16 @@ public class ExportController {
                 }
                 return result;
             });
-            return  exportFuture.thenAccept(exportResult -> {
+            return exportFuture.thenAccept(exportResult -> {
                 if (exportResult != null) {
                     LOG.info("Exported Total records: {}", exportResult.conceptsCount());
                     LOG.info("Exported      Concepts: {}", exportResult.conceptsCount());
                     LOG.info("Exported     Patterns : {}", exportResult.patternsCount());
                     LOG.info("Exported     Semantics: {}", exportResult.semanticsCount());
                     LOG.info("Exported        Stamps: {}", exportResult.stampsCount());
-                                    }
+                }
             });
         });
-
-
     }
 
     private long transformStringInLocalDateTimeToEpochMillis(String localDateTimeFormat) {
@@ -385,5 +388,75 @@ public class ExportController {
         if (!WebAPI.isBrowser() && exportFile.exists() && exportFile.delete()) {
             LOG.info("Export file '{}' deleted", exportFile);
         }
+    }
+
+    public void makeFakeTags() {
+        for (int i = 0; i < 30; i++) {
+            TagsDataModel tag = new TagsDataModel();
+            tag.setTagName("FakeTag " + i);
+            tag.setTagNid("1000" + i);
+            tag.setTagSelected(false);
+            tag.setTagDescription("This is tag number " + i);
+            tagsData.add(tag);
+        }
+    }
+
+    public void addselectedTags() {
+        tagPane.getChildren().removeAll();
+        ArrayList<String> collectedTags = new ArrayList<>();
+        for (int o = 0; o < tagsData.size(); o++) {
+            TagsDataModel tag = new TagsDataModel();
+            tag = tagsData.get(o);
+            if (tag.isTagSelected()) {
+                String tagname = tag.getTagName();
+                collectedTags.add(tagname);
+            }
+        }
+        int maxLabels = 5;
+        for (int z = 0; z < collectedTags.size(); z++) {
+
+            if (z < maxLabels) {
+                Label label = new Label();
+
+                label.setText(collectedTags.get(z));
+                label.setStyle("-fx-font-size: 14px;-fx-background-color: rgba(225,232,241);-fx-font-family: 'Noto Sans';-fx-font-weight: 500;-fx-font-style: oblique;");
+
+                label.setTextFill(Color.web("#555D73"));
+                tagPane.getChildren().add(label);
+            } else {
+                if (z == maxLabels) {
+                    int labelAmount = collectedTags.size() - maxLabels;
+                    Label label = new Label("+" + labelAmount + " more");
+                    label.setStyle("-fx-font-size: 14px;-fx-background-color: rgba(225,232,241);-fx-font-family: 'Noto Sans';-fx-font-weight: 500;-fx-font-style: oblique;");
+
+                    label.setTextFill(Color.web("#555D73"));
+                    tagPane.getChildren().add(label);
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void addTagButton_pressed(ActionEvent actionEvent) {
+        addTagButton.setText("EDIT");
+        tagPane.getChildren().removeAll();
+        timePeriodComboBox.setDisable(true);
+        dateTimePickerFrom.setDisable(true);
+        dateTimePickerTo.setDisable(true);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("addAndEditTags.fxml"));
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        try {
+            stage.setScene(new Scene(loader.load()));
+            var controller = (AddAndEditController) loader.getController();
+            controller.setModel(tagsData, haschanges);
+            stage.setTitle("Add and Edit Tags");
+            stage.initStyle(StageStyle.UNDECORATED);
+            //addExistingTags();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        stage.show();
     }
 }
