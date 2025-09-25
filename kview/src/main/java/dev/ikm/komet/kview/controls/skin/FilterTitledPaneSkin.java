@@ -174,6 +174,10 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                         getOptionToggles().forEach(tb -> tb.setExcluded(false));
                         excludingToggle.setSelected(false);
                         anyToggle.setSelected(false);
+                    } else if (currentOption.hasAny() && !anyToggle.isSelected() &&
+                            (getOptionToggles().allMatch(OptionToggle::isSelected) || getOptionToggles().noneMatch(OptionToggle::isSelected))) {
+                        // when Select All is deselected, select Any, if all toggles or none are selected
+                        anyToggle.setSelected(true);
                     }
                     allSelection = false;
                 }
@@ -197,6 +201,9 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                         singleSelection = true;
                         allToggle.setSelected(true);
                         singleSelection = false;
+                    } else if (getOptionToggles().noneMatch(OptionToggle::isSelected)) {
+                        // don't allow Any being deselected, and all toggles are deselected
+                        anyToggle.setSelected(true);
                     }
                 }
                 excludingToggle.setDisable(!(currentOption.areAllSelected() || anyToggle.isSelected()));
@@ -247,7 +254,9 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                 anyToggle.setSelected(true);
             } else {
                 anyToggle.setSelected(false);
+                singleSelection = true;
                 allToggle.setSelected(currentOption.areAllSelected());
+                singleSelection = false;
             }
         } else {
             allToggle.setSelected(currentOption.areAllSelected() && !currentOption.hasExclusions() && multiSelectionAllowed);
@@ -266,6 +275,9 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                             !excludingToggle.isSelected() && (!currentOption.hasAny() || !anyToggle.isSelected()));
                     if (allToggle.isSelected()) {
                         anyToggle.setSelected(false);
+                    } else if (currentOption.hasAny() && !anyToggle.isSelected() && getOptionToggles().noneMatch(OptionToggle::isSelected)) {
+                        // select Any if all the toggles are deselected
+                        anyToggle.setSelected(true);
                     }
                     singleSelection = false;
                 }
