@@ -419,7 +419,7 @@ public class ExportController {
                 Label label = new Label();
 
                 label.setText(collectedTags.get(z));
-                label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
+                label.setStyle("-fx-font-size: 14px;-fx-background-color: rgba(225,232,241);-fx-font-family: 'Noto Sans';-fx-font-weight: 500;-fx-font-style: oblique;");
 
                 label.setTextFill(Color.web("#555D73"));
                 tagPane.getChildren().add(label);
@@ -427,7 +427,8 @@ public class ExportController {
                 if (z == maxLabels) {
                     int labelAmount = collectedTags.size() - maxLabels;
                     Label label = new Label("+" + labelAmount + " more");
-                    label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
+                    label.setStyle("-fx-font-size: 14px;-fx-background-color: rgba(225,232,241);-fx-font-family: 'Noto Sans';-fx-font-weight: 500;-fx-font-style: oblique;");
+
                     label.setTextFill(Color.web("#555D73"));
                     tagPane.getChildren().add(label);
                 }
@@ -437,7 +438,7 @@ public class ExportController {
 
     @FXML
     public void addTagButton_pressed(ActionEvent actionEvent) {
-        addTagButton.setText("EDIT TAGS");
+        addTagButton.setText("EDIT");
         tagPane.getChildren().removeAll();
         timePeriodComboBox.setDisable(true);
         dateTimePickerFrom.setDisable(true);
