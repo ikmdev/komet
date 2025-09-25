@@ -113,10 +113,6 @@ public class PatternViewModel extends FormViewModel {
 
     public static String FIELDS_COLLECTION = "fieldsCollection";
 
-    public static String PURPOSE_DATE_STR = "purposeDateStr";
-
-    public static String MEANING_DATE_STR = "meaningDateStr";
-
     public static String PATTERN = "pattern";
 
     public static String FQN_PROXY = "fqnProxy";
@@ -152,8 +148,6 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(MEANING_ENTITY, (EntityFacade) null) // this is/will be the 'meaning' concept entity
                     .addProperty(PURPOSE_TEXT, "")
                     .addProperty(MEANING_TEXT, "")
-                    .addProperty(PURPOSE_DATE_STR, "")
-                    .addProperty(MEANING_DATE_STR, "")
                     .addProperty(PUBLISH_PENDING,false)
                     // PATTERN>DESCRIPTION FQN and Other Name
                     .addProperty(FQN_DESCRIPTION_NAME_TEXT, "")
