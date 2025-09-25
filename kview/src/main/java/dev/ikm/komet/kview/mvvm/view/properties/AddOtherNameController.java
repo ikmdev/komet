@@ -36,6 +36,7 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -160,21 +161,20 @@ public class AddOtherNameController extends AbstractBasicController {
     }
 
 
-    private String getDisplayText(ConceptEntity conceptEntity) {
-        Optional<String> stringOptional = getViewProperties().calculator().languageCalculator().getRegularDescriptionText(conceptEntity.nid());
-        return stringOptional.orElse("");
+    private String getDisplayText(ConceptFacade conceptFacade) {
+        return getViewProperties().calculator().languageCalculator().getDescriptionTextOrNid(conceptFacade.nid());
     }
 
     private void setupComboBox(ComboBox comboBox, InvalidationListener listener) {
-        comboBox.setConverter(new StringConverter<ConceptEntity>() {
+        comboBox.setConverter(new StringConverter<ConceptFacade>() {
 
             @Override
-            public String toString(ConceptEntity conceptEntity) {
-                return getDisplayText(conceptEntity);
+            public String toString(ConceptFacade conceptFacade) {
+                return getDisplayText(conceptFacade.toProxy());
             }
 
             @Override
-            public ConceptEntity fromString(String string) {
+            public ConceptFacade fromString(String string) {
                 return null;
             }
         });
@@ -187,13 +187,13 @@ public class AddOtherNameController extends AbstractBasicController {
              * @return
              */
             @Override
-            public ListCell<ConceptEntity> call(Object param) {
+            public ListCell<ConceptFacade> call(Object param) {
                 return new ListCell<>(){
                     @Override
-                    protected void updateItem(ConceptEntity conceptEntity, boolean b) {
-                        super.updateItem(conceptEntity, b);
-                        if (conceptEntity != null) {
-                            setText(getDisplayText(conceptEntity));
+                    protected void updateItem(ConceptFacade conceptFacade, boolean b) {
+                        super.updateItem(conceptFacade, b);
+                        if (conceptFacade != null) {
+                            setText(getDisplayText(conceptFacade));
                         } else {
                             setText(null);
                         }
