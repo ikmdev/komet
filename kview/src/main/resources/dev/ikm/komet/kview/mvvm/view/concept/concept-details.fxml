@@ -163,7 +163,7 @@
                            </columnConstraints>
                            <rowConstraints>
                                <RowConstraints maxHeight="5.0" minHeight="5.0" prefHeight="5.0" vgrow="NEVER" />
-                               <RowConstraints fillHeight="false" maxHeight="51.0" minHeight="47.0" prefHeight="47.0" valignment="TOP" vgrow="NEVER" />
+                               <RowConstraints fillHeight="false" valignment="TOP" vgrow="ALWAYS" />
                                <RowConstraints fillHeight="false" maxHeight="35.0" minHeight="28.0" prefHeight="29.0" valignment="CENTER" vgrow="SOMETIMES" />
                                <RowConstraints fillHeight="false" maxHeight="32.0" minHeight="30.0" prefHeight="31.0" valignment="CENTER" vgrow="SOMETIMES" />
                                <RowConstraints maxHeight="5.0" minHeight="5.0" prefHeight="5.0" vgrow="NEVER" />
