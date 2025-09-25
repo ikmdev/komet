@@ -33,7 +33,11 @@ import dev.ikm.tinkar.coordinate.view.VertexSortNone;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.StampService;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.PatternFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
@@ -50,9 +54,19 @@ import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
 import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.function.LongConsumer;
 
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
@@ -744,11 +758,58 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         return sb.toString();
     }
 
-    private static String getPropertyNameWithOverride(ViewCalculator viewCalculator, Property<?> baseProperty) {
-        if (baseProperty instanceof PropertyWithOverride propertyWithOverride) {
-            return propertyWithOverride.getOverrideName(viewCalculator);
+    /// Extracts the "desc" attribute from the XML stirng provided, if the string provides is actually in
+    /// XML and if the XML contains the "desc" attribute.
+    private static String extractDescAttribute(String xmlStr) {
+        final String DESC_ATTR = "desc";
+        String extractedStr = xmlStr;
+
+        if (xmlStr != null && xmlStr.startsWith("<") && xmlStr.endsWith("/>") && xmlStr.contains(DESC_ATTR)) {
+            LOG.debug("The viewCalculator returned XML for the preferred name:  {}", xmlStr);
+
+            try {
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                Document doc = dBuilder.parse(new ByteArrayInputStream(xmlStr.getBytes()));
+                doc.normalizeDocument();
+
+                // first get the element name from the XML string
+                int spaceIndex = xmlStr.indexOf(" ");
+                String elementName = xmlStr.substring(1, spaceIndex);
+
+                // next get the element node from the document
+                NodeList nodeList = doc.getElementsByTagName(elementName);
+                Element element = (Element) nodeList.item(0);
+
+                // finally get the attribute value from the element
+                String attributeValue = element.getAttribute(DESC_ATTR);
+
+                if (attributeValue != null) {
+                    extractedStr = attributeValue;
+                }
+            } catch (Exception e) {
+                LOG.error("An exception occurred parsing XML", e);
+            }
         }
-        return viewCalculator.toPreferredEntityStringOrInputString(baseProperty.getName());
+
+        return extractedStr;
+    }
+
+    /// Gets the property name from either the PropertyWithOverride or from the ViewCalculator.
+    private static String getPropertyNameWithOverride(ViewCalculator viewCalculator, Property<?> baseProperty) {
+        String prefString;
+
+        if (baseProperty instanceof PropertyWithOverride propertyWithOverride) {
+            prefString = propertyWithOverride.getOverrideName(viewCalculator);
+        } else {
+            var name = baseProperty.getName();
+            prefString = viewCalculator.toPreferredEntityStringOrInputString(name);
+        }
+
+        // extract the "desc" attribute if the prefString is in XML
+        prefString = extractDescAttribute(prefString);
+
+        return prefString;
     }
 
     @Override
@@ -781,6 +842,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         makeRecursiveOverrideMenu(viewCalculator, menuItems,
                 observableCoordinate);
 
+        // TODO the XML that appears in the view coordinate menu comes from the baseProperties
         for (Property<?> baseProperty : observableCoordinate.getBaseProperties()) {
             // variables added for simpler debugging
             var basePropStr = baseProperty.toString();
