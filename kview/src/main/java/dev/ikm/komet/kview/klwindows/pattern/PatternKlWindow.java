@@ -6,16 +6,11 @@ import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.kview.state.pattern.PatternDetailsPattern;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
 import javafx.scene.layout.Pane;
 import org.carlfx.axonic.StateMachine;
 import org.carlfx.cognitive.loader.Config;
@@ -25,12 +20,8 @@ import org.carlfx.cognitive.loader.JFXNode;
 import java.util.Optional;
 import java.util.UUID;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 /**
  * The General Editing Chapter window showing semantic details on the Journal Window's surface as a JavaFX Pane
@@ -73,8 +64,21 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
         // Create pattern window
         jfxNode = FXMLMvvmLoader.make(patternConfig);
         Optional<PatternViewModel> optPatternViewModel = jfxNode.getViewModel("patternViewModel");
-        // Here we load the Pattern Data.
-        optPatternViewModel.ifPresent(PatternViewModel::loadPatternValues);
+
+        optPatternViewModel.ifPresent((PatternViewModel vm ) -> {
+            // Here we load the Pattern Data.
+            vm.loadPatternValues();
+
+            // Listen to pattern changes (caused by a newly commited pattern)
+            ObjectProperty<EntityFacade> patternProperty = vm.getProperty(PATTERN);
+            patternProperty.subscribe((eF) -> {
+                this.setEntityFacade(eF);
+                // save to preference
+                this.save(); // call captureAdditionalState of AbstractEntityChapterKLWindow
+            });
+        });
+
+
 
         // Getting the concept window pane
         paneWindow = jfxNode.node();

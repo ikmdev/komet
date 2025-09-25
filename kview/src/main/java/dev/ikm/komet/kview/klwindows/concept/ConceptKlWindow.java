@@ -32,13 +32,16 @@ import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.beans.property.ObjectProperty;
 import javafx.scene.layout.Pane;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 import org.eclipse.collections.api.factory.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 
@@ -101,6 +104,9 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
         // Getting the concept window pane
         this.paneWindow = (Pane) conceptNode.getNode();
 
+        // tracks viewModel changes and save them into prefereces
+        listenToEntityChanges();
+
         // Set the onClose callback for the details window.
         conceptNode.getConceptDetailsViewController().setOnCloseConceptWindow(detailsController -> {
             ActivityStreams.delete(detailsActivityStreamKey);
@@ -153,6 +159,16 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
     protected void setSelectedPropertyPanel(String selectedPanel) {
         LOG.debug("restoring pane with "+ selectedPanel);
         conceptNode.getPropertiesViewController().restoreSelectedView(selectedPanel);
+    }
+
+    private void listenToEntityChanges() {
+        ViewModel conceptViewModel = conceptNode.getConceptDetailsViewController().getConceptViewModel();
+        ObjectProperty<EntityFacade> conceptProperty = conceptViewModel.getProperty(CURRENT_ENTITY);
+        conceptProperty.subscribe( entityFacade -> {
+            this.setEntityFacade(entityFacade);
+            // save to preference
+            this.save(); // call captureAdditionalState of AbstractEntityChapterKLWindow
+        });
     }
 
 }

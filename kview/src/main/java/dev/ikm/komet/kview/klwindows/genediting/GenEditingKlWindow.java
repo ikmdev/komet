@@ -20,22 +20,27 @@ import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController;
+import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
+import javafx.beans.property.ObjectProperty;
 import javafx.scene.layout.Pane;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
 
 /**
  * The General Editing Chapter window showing semantic details on the Journal Window's surface as a JavaFX Pane
@@ -83,8 +88,21 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
                                 .setPropertyValue(SEMANTIC, semanticComponent)
                                 .setPropertyValue(PATTERN, patternFacade));
 
-        // Create chapter window
+                // Create chapter window
         jfxNode = FXMLMvvmLoader.make(config);
+
+        Optional<GenEditingViewModel> optGenEditingViewModel = jfxNode.getViewModel("genEditingViewModel");
+        optGenEditingViewModel.ifPresent(( vm) -> {
+
+            // Listen to semantic changes (caused by a newly commited semantic)
+            ObjectProperty<EntityFacade> patternProperty = vm.getProperty(SEMANTIC);
+            patternProperty.subscribe((eF) -> {
+                this.setEntityFacade(eF);
+                // save to preference
+                this.save(); // call captureAdditionalState of AbstractEntityChapterKLWindow
+            });
+
+        });
 
         // Getting the concept window pane
         this.paneWindow = jfxNode.node();
