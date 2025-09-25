@@ -15,14 +15,21 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
+import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.kview.mvvm.view.properties.ChangeListItemController.COLORS_FOR_EXTENSIONS;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.ChangeCoordinate;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
-import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.change.ChangeChronology;
 import dev.ikm.tinkar.coordinate.stamp.change.VersionChangeRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.StampEntityVersion;
+import dev.ikm.tinkar.entity.StampVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -40,9 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
-
-import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.kview.mvvm.view.properties.ChangeListItemController.COLORS_FOR_EXTENSIONS;
+import java.util.concurrent.*;
 
 /**
  * The user is shown a search and dropdown to filter between change list items (concept &amp; semantic versions).
@@ -153,10 +158,24 @@ public class HistoryChangeController implements BasicController {
         });
     }
 
-    private boolean checkEqualityOfChangeCoordinate(ChangeCoordinate changeCoordinate, ChangeCoordinate userData) {
+    /**
+     * Returns true if the dates are the same (minus time information) otherwise false.
+     * @param changeCoordinate A change coordinate object from the history tab.
+     * @param pointDate - A change coordinate object on the point date (circle) in the timeline UI.
+     * @return Returns true if the dates are the same (minus time information) otherwise false.
+     */
+    private boolean checkEqualityOfChangeCoordinate(ChangeCoordinate changeCoordinate, ChangeCoordinate pointDate) {
         StampEntity<StampEntityVersion> stamp1 = Entity.getStamp(changeCoordinate.versionChangeRecord().stampNid());
-        StampEntity<StampEntityVersion> stamp2 = Entity.getStamp(userData.versionChangeRecord().stampNid());
-        return (stamp1.time() == stamp2.time()
+        StampEntity<StampEntityVersion> stamp2 = Entity.getStamp(pointDate.versionChangeRecord().stampNid());
+        // Truncate time info to get the date info and compare if dates are the same.
+        long millisecondsInADay = TimeUnit.DAYS.toMillis(1);
+        long epochMillis1 = stamp1.time();
+        long epochMillis2 = stamp2.time();
+        long daysSinceEpoch1 = epochMillis1 / millisecondsInADay;
+        long daysSinceEpoch2 = epochMillis2 / millisecondsInADay;
+        boolean sameDate1And2 = (daysSinceEpoch1 == daysSinceEpoch2);
+
+        return (sameDate1And2
                 && stamp1.moduleNid() == stamp2.moduleNid()
                 && stamp1.pathNid() == stamp2.pathNid());
     }
