@@ -8,14 +8,9 @@
     </parent>
     <artifactId>dev</artifactId>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>jpro-repository</id>
-            <url>https://sandec.jfrog.io/artifactory/repo</url>
-        </pluginRepository>
-    </pluginRepositories>
     <repositories>
         <repository>
+            <!-- used to access scenic view fork -->
             <id>jpro-repository</id>
             <url>https://sandec.jfrog.io/artifactory/repo</url>
         </repository>
@@ -95,6 +90,12 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
 
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>jpro-repository</id>
+                    <url>https://sandec.jfrog.io/artifactory/repo</url>
+                </pluginRepository>
+            </pluginRepositories>
             <build>
                 <plugins>
                     <plugin>
