@@ -117,12 +117,13 @@ public class SortResultSemanticEntryController  {
     @FXML
     private void populateConcept(ActionEvent actionEvent) {
         actionEvent.consume();
+        UUID journalTopic = searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
         if (entity instanceof ConceptEntity conceptEntity) {
-            eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+            eventBus.publish(journalTopic, new MakeConceptWindowEvent(this,
                     MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
         } else if (entity instanceof SemanticEntity semanticEntity) {
            ConceptEntity conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
-            eventBus.publish(JOURNAL_TOPIC, new MakeConceptWindowEvent(this,
+            eventBus.publish(journalTopic, new MakeConceptWindowEvent(this,
                     MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
         }
     }
