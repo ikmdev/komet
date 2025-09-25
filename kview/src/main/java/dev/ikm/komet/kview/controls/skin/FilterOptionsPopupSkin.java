@@ -416,7 +416,9 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 //        setAvailableOptions(options.getMainCoordinates().getModule(), descendentsList.stream().map(ConceptFacade.class::cast).toList());
 
         // path: all descendants of Path
-        List<EntityFacade> descendentsList = FilterOptionsUtils.getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath());
+//        List<EntityFacade> descendentsList = FilterOptionsUtils.getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath());
+        List<EntityFacade> descendentsList = FxGet.pathCoordinates(navigator.getViewCalculator()).values()
+                .stream().map(v -> (EntityFacade) v.pathConcept()).toList();
         setAvailableOptions(options.getMainCoordinates().getPath(), descendentsList.stream().map(ConceptFacade.class::cast).toList());
 
         // TODO: language: all descendants of Model concept->Tinkar Model concept->Language
@@ -450,7 +452,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         option.availableOptions().clear();
         option.availableOptions().addAll(options);
         option.selectedOptions().clear();
-        option.selectedOptions().addAll(option.isMultiSelectionAllowed() ? options : List.of(options.getFirst()));
+        option.selectedOptions().addAll(option.isMultiSelectionAllowed() || options.isEmpty() ? options : List.of(options.getFirst()));
     }
 
     private <T> void setInheritedOptions(FilterOptions.Option<T> sourceOption, FilterOptions.Option<T> targetOption) {
