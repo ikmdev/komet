@@ -59,6 +59,7 @@
         <module>kview</module>
         <module>sync</module>
         <module>application</module>
+        <module>dev</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

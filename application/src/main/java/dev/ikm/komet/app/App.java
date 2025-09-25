@@ -61,7 +61,6 @@ import java.util.UUID;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.app.AppState.*;
-import static dev.ikm.komet.app.LoginFeatureFlag.ENABLED_WEB_ONLY;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
@@ -112,6 +111,7 @@ public class App extends Application  {
     static final boolean IS_DESKTOP = !IS_BROWSER && PlatformUtils.isDesktop();
     static final boolean IS_MAC = !IS_BROWSER && PlatformUtils.isMac();
     static final boolean IS_MAC_AND_NOT_TESTFX_TEST = IS_MAC && !isTestFXTest();
+    public static boolean REQUIRE_LOGIN = WebAPI.isBrowser();
     final StackPane rootPane = createRootPane();
     Image appIcon;
     LandingPageController landingPageController;
@@ -276,7 +276,11 @@ public class App extends Application  {
             stage.setScene(scene);
 
             // Handle the login feature based on the platform and the provided feature flag
-            handleLoginFeature(ENABLED_WEB_ONLY, stage);
+            if(REQUIRE_LOGIN) {
+                startLogin(stage);
+            } else {
+                startSelectDataSource(stage);
+            }
 
             addEventFilters(stage);
 
@@ -288,33 +292,6 @@ public class App extends Application  {
         } catch (Exception ex) {
             LOG.error("Failed to initialize the application", ex);
             Platform.exit();
-        }
-    }
-
-    /**
-     * Handles the login feature based on the provided {@link LoginFeatureFlag} and platform.
-     *
-     * @param loginFeatureFlag the current state of the login feature
-     * @param stage            the current application stage
-     */
-    public void handleLoginFeature(LoginFeatureFlag loginFeatureFlag, Stage stage) {
-        switch (loginFeatureFlag) {
-            case ENABLED_WEB_ONLY -> {
-                if (IS_BROWSER) {
-                    startLogin(stage);
-                } else {
-                    startSelectDataSource(stage);
-                }
-            }
-            case ENABLED_DESKTOP_ONLY -> {
-                if (IS_DESKTOP) {
-                    startLogin(stage);
-                } else {
-                    startSelectDataSource(stage);
-                }
-            }
-            case ENABLED -> startLogin(stage);
-            case DISABLED -> startSelectDataSource(stage);
         }
     }
 

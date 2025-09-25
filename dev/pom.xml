@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>dev.ikm.komet</groupId>
+        <artifactId>komet-parent</artifactId>
+        <version>1.56.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>dev</artifactId>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jpro-repository</id>
+            <url>https://sandec.jfrog.io/artifactory/repo</url>
+        </pluginRepository>
+    </pluginRepositories>
+    <repositories>
+        <repository>
+            <id>jpro-repository</id>
+            <url>https://sandec.jfrog.io/artifactory/repo</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>dev.ikm.komet</groupId>
+            <artifactId>application</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>one.jpro</groupId>
+            <artifactId>jpro-webapi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/net.raumzeitfalle.fx/scenic-view -->
+
+        <dependency>
+            <groupId>org.scenic-view</groupId>
+            <artifactId>scenic-view</artifactId>
+            <version>11.0.3-SNAPSHOT-FORK</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>dev.ikm.komet.dev/dev.ikm.komet.dev.Starter</mainClass>
+                    <stripDebug>false</stripDebug>
+                    <compress>2</compress>
+                    <bindServices>true</bindServices>
+                    <noHeaderFiles>true</noHeaderFiles>
+                    <noManPages>true</noManPages>
+                    <ignoreSigningInformation>true</ignoreSigningInformation>
+                    <options>
+                        <option>-Xmx8g</option>
+                        <option>--add-opens</option>
+                        <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
+                        <option>--add-exports</option>
+                        <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
+                        <option>--add-exports</option>
+                        <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
+                        <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
+                    </options>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>jpro</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>one.jpro</groupId>
+                        <artifactId>jpro-maven-plugin</artifactId>
+                        <version>${jpro.version}</version>
+                        <configuration>
+                            <mainClassName>dev.ikm.komet.app.App</mainClassName>
+                            <useModuleSystem>true</useModuleSystem>
+                            <JVMArgs>
+                                <JVMArg>-Djpro.isbrowser=true</JVMArg> <!-- workaround -->
+                                <JVMArg>-Djpro.onJVMStartup=dev.ikm.komet.dev.Starter</JVMArg>
+                                <JVMArg>-Xmx16g</JVMArg>
+                                <JVMArg>--add-opens</JVMArg>
+                                <JVMArg>javafx.graphics/javafx.scene=org.controlsfx.controls</JVMArg>
+                                <JVMArg>--add-exports</JVMArg>
+                                <JVMArg>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</JVMArg>
+                                <JVMArg>--add-exports</JVMArg>
+                                <JVMArg>javafx.base/com.sun.javafx.event=one.jpro.platform.file</JVMArg>
+                                <JVMArg>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</JVMArg>
+                            </JVMArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
+
