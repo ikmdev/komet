@@ -227,6 +227,7 @@ public class ExportController {
     }
 
     public void setupDateTimeExportComboBox() {
+        //FIXME there is a better way to set visible on this, JavaFX has both a visibleProperty() and the combobox has a valueProperty()
         dateTimePickerHbox.setVisible(false);
         handleCurrentDateTimeExport();
         ComboBoxHelper.setupComboBoxWithIcon(timePeriodComboBox, String::toString, "check-mark");
