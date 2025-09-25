@@ -29,3 +29,11 @@ jobs:
           file: docker/Dockerfile-komet-web
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/komet:${{ github.ref_name }}
+
+      - name: Trigger Repository Dispatch
+        run: |
+            curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{secrets.IKMDEVOPS_PAT_TOKEN}}" \
+            https://api.github.com/repos/ikmdev/ike-box/dispatches \
+            -d '{"event_type":"ike-box-update","client_payload":{"version":"${{ github.ref_name }}"}}'

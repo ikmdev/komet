@@ -147,19 +147,17 @@ public class PatternFieldsController {
         //                      field order | display name | data type
         //   newPattern + add ->    enabled    non-edit      enabled
         //     commited + add ->    disabled   disabled      enabled
-        //   newPattern + edit->    enabled    non-edit      disabled
+        //   newPattern + edit->    enabled    non-edit      enabled
         //     commited + edit->    disabled   disabled      disabled
 
         // Create boolean bindings
-
-        BooleanBinding isEdit = Bindings.isNotNull(previousPatternFieldProperty);
         BooleanBinding patternIsInCreateMode = Bindings.equal(mode, CREATE);
 
         // Bind the disable/editable properties
         fieldOrderComboBox.disableProperty().bind(patternIsInCreateMode.not());
         displayNameTextField.editableProperty().bind(Bindings.when(patternIsInCreateMode).then(false).otherwise(true));
         displayNameTextField.disableProperty().bind(patternIsInCreateMode.not());
-        dataTypeComboBox.disableProperty().bind(isEdit);
+        dataTypeComboBox.disableProperty().bind(patternIsInCreateMode.not());
 
         dataTypeComboBox.valueProperty().bindBidirectional(dataTypeProp);
         fieldOrderComboBox.setItems(fieldOrderOptions); // Set the items in fieldOrder

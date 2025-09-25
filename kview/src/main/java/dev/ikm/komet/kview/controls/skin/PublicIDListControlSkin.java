@@ -2,6 +2,8 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.PublicIDControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
+import javafx.application.Platform;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SkinBase;
 import javafx.scene.layout.VBox;
@@ -29,7 +31,6 @@ public class PublicIDListControlSkin extends SkinBase<PublicIDListControl> {
     public PublicIDListControlSkin(PublicIDListControl control) {
         super(control);
 
-        rootScrollPane.getStyleClass().add("public-id-list");
         identifierVBox.getStyleClass().add("identifier-vbox");
 
         rootScrollPane.setContent(identifierVBox);
@@ -42,7 +43,7 @@ public class PublicIDListControlSkin extends SkinBase<PublicIDListControl> {
 
             if (publicIdList != null && !publicIdList.isEmpty()) {
                 for (String identifier : publicIdList) {
-                    PublicIDControl publicIDControl = new PublicIDControl(false, identifier, true);
+                    PublicIDControl publicIDControl = new PublicIDControl(identifier);
 
                     identifierVBox.getChildren().add(publicIDControl);
                 }
@@ -52,9 +53,41 @@ public class PublicIDListControlSkin extends SkinBase<PublicIDListControl> {
         getChildren().add(rootScrollPane);
     }
 
+    /// Determines if the vertical scroll bar is visible
+    private boolean isVerticalScrollBarVisible() {
+        boolean isVisible = false;
+        // the vertical scroll bar must be looked up each time this method is called
+        // because the ScrollBar object changes during the life of a ScrollPane
+        ScrollBar verticalScrollBar = (ScrollBar) rootScrollPane.lookup(".scroll-bar:vertical");;
+
+        if (verticalScrollBar != null) {
+            isVisible = verticalScrollBar.isVisible();
+        }
+
+        return isVisible;
+    }
+
+    /// Layout the children, which includes the ScrollPane and the VBox.
+    /// This method sets the width of the VBox for optimal display, which is
+    /// based on the visibility of the vertical ScrollBar.
     @Override
     protected void layoutChildren(double x, double y, double w, double h) {
         rootScrollPane.resizeRelocate(x, y, w, h);
+
+        // runLater() added to fix a weird error of the PublicIDListControl having a small width on
+        // initial creation of the concept, pattern, and semantic windows.
+        Platform.runLater(() -> {
+            // if the vertical scroll bar is visible set the width of the
+            // vbox to the viewport width
+            if (isVerticalScrollBarVisible()) {
+                var viewPortBounds = rootScrollPane.getViewportBounds();
+
+                identifierVBox.setPrefWidth(viewPortBounds.getWidth());
+            } else {
+                // if not visible, set the width to the same as the PublicIDListControlSkin (this) width
+                identifierVBox.setPrefWidth(w);
+            }
+        });
     }
 
     /// Unsubscribes from the subscription to stop receiving the publicIdProperty change events

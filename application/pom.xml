@@ -4,10 +4,31 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.56.0-gudid-db-SNAPSHOT</version>
+        <version>1.57.0-gudid-db-SNAPSHOT</version>
     </parent>
     <artifactId>application</artifactId>
+    <!-- Required for ScenicView. -->
+    <!--
+    <repositories>
+        <repository>
+            <id>jpro-repository</id>
+            <url>https://sandec.jfrog.io/artifactory/repo</url>
+        </repository>
+    </repositories>-->
     <dependencies>
+
+        <!-- THE FORK has a small change, to allow opening it in JPro as a popup -->
+
+        <!--
+        <dependency>
+            <groupId>org.scenic-view</groupId>
+            <artifactId>scenic-view</artifactId>
+            <version>11.0.3-SNAPSHOT-FORK</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+        </dependency>-->
         <dependency>
             <groupId>de.jangassen</groupId>
             <artifactId>nsmenufx</artifactId>

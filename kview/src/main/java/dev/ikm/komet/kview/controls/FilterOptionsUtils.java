@@ -25,6 +25,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Subscription;
 import org.eclipse.collections.api.list.primitive.ImmutableLongList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -36,6 +38,9 @@ import java.util.stream.Collectors;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 
 public class FilterOptionsUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FilterOptionsUtils.class);
+    private static final String DEFAULT_DESCRIPTION_STRING = Integer.toString(Integer.MAX_VALUE);
 
     public FilterOptionsUtils() {}
 
@@ -102,12 +107,7 @@ public class FilterOptionsUtils {
                     mainCoordinates.getTime().selectedOptions().clear();
                     if (t != null) {
                         Long time = t.longValue();
-                        if (!time.equals(Long.MAX_VALUE) && !time.equals(PREMUNDANE_TIME)) {
-                            //FIXME the custom control doesn't support premundane yet
-                            mainCoordinates.getTime().selectedOptions().addAll(String.valueOf(time));
-                        } else if (time.equals(Long.MAX_VALUE)) {
-                            mainCoordinates.getTime().selectedOptions().addAll(mainCoordinates.getTime().availableOptions().getFirst());
-                        }
+                        mainCoordinates.getTime().selectedOptions().addAll(String.valueOf(time));
                     }
                     observableViewForFilterProperty.stampCoordinate().timeProperty().setValue(t);
                     fromView = false;
@@ -121,9 +121,18 @@ public class FilterOptionsUtils {
                     fromView = true;
                     mainCoordinates.getModule().selectedOptions().clear();
                     if (m != null) {
-                        mainCoordinates.getModule().selectedOptions().addAll(m);
+                        // When the set is empty, it means "all module wildcard", and that implies "Any" is selected
+                        // When the set contains all available modules, it means "all individual modules",
+                        // and that implies "Select All" is selected.
+                        // If it only contains a few of them, "Select All" and "Any" are deselected, and those modules
+                        // are selected.
+                        mainCoordinates.getModule().setAny(m.isEmpty());
+                        mainCoordinates.getModule().selectedOptions().addAll(m.stream().toList());
+                        observableViewForFilterProperty.stampCoordinate().moduleSpecificationsProperty().set(
+                                m.stream().collect(Collectors.toCollection(FXCollections::observableSet)));
+                    } else {
+                        observableViewForFilterProperty.stampCoordinate().moduleSpecificationsProperty().set(null);
                     }
-                    observableViewForFilterProperty.stampCoordinate().moduleSpecificationsProperty().set(m);
                     fromView = false;
                 }));
                 viewSubscription = viewSubscription.and(observableStampCoordinate.excludedModuleSpecificationsProperty().subscribe(e -> {
@@ -133,9 +142,12 @@ public class FilterOptionsUtils {
                     fromView = true;
                     mainCoordinates.getModule().excludedOptions().clear();
                     if (e != null) {
-                        mainCoordinates.getModule().excludedOptions().addAll(e);
+                        mainCoordinates.getModule().excludedOptions().addAll(e.stream().toList());
+                        observableViewForFilterProperty.stampCoordinate().excludedModuleSpecificationsProperty().set(
+                                e.stream().collect(Collectors.toCollection(FXCollections::observableSet)));
+                    } else {
+                        observableViewForFilterProperty.stampCoordinate().excludedModuleSpecificationsProperty().set(null);
                     }
-                    observableViewForFilterProperty.stampCoordinate().excludedModuleSpecificationsProperty().set(e);
                     fromView = false;
                 }));
 
@@ -225,9 +237,6 @@ public class FilterOptionsUtils {
     public void subscribeViewToFilterOptions(FilterOptions filterOptions, ObservableView observableView) {
         // remove previous subscriptions
         unsubscribeNodeFilterOptions();
-
-        // add Option to observableViewForFilterProperty subscriptions
-        addOptionSubscriptions(filterOptions);
 
         // get parent menu settings
         for (ObservableCoordinate<?> observableCoordinate : observableView.getCompositeCoordinates()) {
@@ -406,6 +415,9 @@ public class FilterOptionsUtils {
                         }));
             }
         }
+
+        // add Option to observableViewForFilterProperty subscriptions
+        addOptionSubscriptions(filterOptions);
     }
 
     public void unsubscribeNodeFilterOptions() {
@@ -519,7 +531,10 @@ public class FilterOptionsUtils {
         if (fromView) {
             return;
         }
-        Set<ConceptFacade> includedSet = new HashSet<>(filterOptions.getMainCoordinates().getModule().selectedOptions());
+        Set<ConceptFacade> includedSet = new HashSet<>();
+        if (!filterOptions.getMainCoordinates().getModule().any()) {
+            includedSet.addAll(filterOptions.getMainCoordinates().getModule().selectedOptions());
+        }
         fromFilter = true;
         filterOptions.observableViewForFilterProperty().stampCoordinate().moduleSpecificationsProperty().addAll(includedSet);
         fromFilter = false;
@@ -620,11 +635,34 @@ public class FilterOptionsUtils {
             case String value -> value;
             case State value -> viewCalculator == null ?
                     Entity.getFast(value.nid()).description() :
-                    viewCalculator.getPreferredDescriptionTextOrNid(value.nid());
+                    getDescriptionTextOrNid(viewCalculator, value.nid());
             case Long value -> String.valueOf(value);
-            case EntityFacade value -> viewCalculator == null ?
-                    value.description() : viewCalculator.getPreferredDescriptionTextOrNid(value);
+            case EntityFacade value -> {
+                if (viewCalculator != null) {
+                    yield getDescriptionTextOrNid(viewCalculator, value);
+                }
+                yield value.description();
+            }
+
             default -> throw new RuntimeException("Unsupported type: " + t.getClass().getName());
         };
+    }
+
+    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, int nid) {
+        try {
+            return viewCalculator.getDescriptionTextOrNid(nid);
+        } catch (Exception e) {
+            LOG.error("Exception occurred", e);
+            return DEFAULT_DESCRIPTION_STRING;
+        }
+    }
+
+    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, EntityFacade entityFacade) {
+        try {
+            return viewCalculator.getDescriptionTextOrNid(entityFacade);
+        } catch (Exception e) {
+            LOG.error("Exception occurred", e);
+            return DEFAULT_DESCRIPTION_STRING;
+        }
     }
 }

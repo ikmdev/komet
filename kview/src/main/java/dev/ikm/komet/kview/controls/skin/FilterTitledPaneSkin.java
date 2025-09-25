@@ -10,7 +10,6 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.css.PseudoClass;
-import javafx.geometry.Bounds;
 import javafx.scene.Parent;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Label;
@@ -18,8 +17,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.skin.TitledPaneSkin;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -132,7 +129,9 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         control.pseudoClassStateChanged(SINGLE_SELECT_OPTION, !multiSelectionAllowed);
 
         FilterOptions.Option currentOption = option.copy();
-        selectedOption.setText(getOptionText(currentOption));
+        // whenever the navigator changes, update the option text
+        subscription = subscription.and(control.navigatorProperty().subscribe(_ ->
+                selectedOption.setText(getOptionText(currentOption))));
 
         // add toggles only once
         if (contentBox.getChildren().size() == 1) {
@@ -175,6 +174,10 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                         getOptionToggles().forEach(tb -> tb.setExcluded(false));
                         excludingToggle.setSelected(false);
                         anyToggle.setSelected(false);
+                    } else if (currentOption.hasAny() && !anyToggle.isSelected() &&
+                            (getOptionToggles().allMatch(OptionToggle::isSelected) || getOptionToggles().noneMatch(OptionToggle::isSelected))) {
+                        // when Select All is deselected, select Any, if all toggles or none are selected
+                        anyToggle.setSelected(true);
                     }
                     allSelection = false;
                 }
@@ -198,6 +201,9 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                         singleSelection = true;
                         allToggle.setSelected(true);
                         singleSelection = false;
+                    } else if (getOptionToggles().noneMatch(OptionToggle::isSelected)) {
+                        // don't allow Any being deselected, and all toggles are deselected
+                        anyToggle.setSelected(true);
                     }
                 }
                 excludingToggle.setDisable(!(currentOption.areAllSelected() || anyToggle.isSelected()));
@@ -248,7 +254,9 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                 anyToggle.setSelected(true);
             } else {
                 anyToggle.setSelected(false);
+                singleSelection = true;
                 allToggle.setSelected(currentOption.areAllSelected());
+                singleSelection = false;
             }
         } else {
             allToggle.setSelected(currentOption.areAllSelected() && !currentOption.hasExclusions() && multiSelectionAllowed);
@@ -267,6 +275,9 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                             !excludingToggle.isSelected() && (!currentOption.hasAny() || !anyToggle.isSelected()));
                     if (allToggle.isSelected()) {
                         anyToggle.setSelected(false);
+                    } else if (currentOption.hasAny() && !anyToggle.isSelected() && getOptionToggles().noneMatch(OptionToggle::isSelected)) {
+                        // select Any if all the toggles are deselected
+                        anyToggle.setSelected(true);
                     }
                     singleSelection = false;
                 }
@@ -286,13 +297,8 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             subscription = subscription.and(tb.excludedProperty().subscribe((_, excluded) -> {
                 if (currentOption.hasExcluding()) {
                     if (excluded && !currentOption.excludedOptions().contains(tb.getT())) {
-                        if (currentOption.excludedOptions().size() == currentOption.availableOptions().size() - 1) {
-                            // don't let all options get excluded
-                            tb.fire();
-                        } else {
-                            currentOption.excludedOptions().add(tb.getT());
-                            currentOption.excludedOptions().sort(Comparator.comparing(this::getDescription));
-                        }
+                        currentOption.excludedOptions().add(tb.getT());
+                        currentOption.excludedOptions().sort(Comparator.comparing(this::getDescription));
                     } else if (!excluded) {
                         currentOption.excludedOptions().remove(tb.getT());
                     }
@@ -371,16 +377,11 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
             return MessageFormat.format(resources.getString(name + ".label.exclude"),
                     any, String.join(", ", option.excludedOptions().stream().map(this::getDescription).toList()));
         } else {
-            if (option.selectedOptions().isEmpty()) {
-                return resources.getString(name + ".label.none");
-            }
-            if (option.areAllSelected()) {
+            if (option.areAllSelected() || (option.hasAny() && option.any())) {
                 return resources.getString(name + ".label." + (option.hasAny() && option.any() ? "any" : "all"));
             }
-            if (option.hasAny() && option.any()) {
-                return MessageFormat.format(resources.getString(name + ".label.from"),
-                        resources.getString(name + ".label.any"),
-                        String.join(", ", option.selectedOptions().stream().map(this::getDescription).toList()));
+            if (option.selectedOptions().isEmpty()) {
+                return resources.getString(name + ".label.none");
             }
             return String.join(", ", option.selectedOptions().stream().map(this::getDescription).toList());
         }
@@ -463,20 +464,6 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         }
         public final void setExcluded(boolean value) {
             excludedProperty.set(value);
-        }
-
-        void fire() {
-            Bounds screenBounds = localToScreen(getLayoutBounds());
-            Bounds sceneBounds = localToScene(getLayoutBounds());
-            MouseEvent event = new MouseEvent(this, this,
-                    MouseEvent.MOUSE_CLICKED,
-                    sceneBounds.getCenterX(), sceneBounds.getCenterY(), screenBounds.getCenterX(), screenBounds.getCenterY(),
-                    MouseButton.PRIMARY, 1,
-                    false, false, false, false,
-                    false, false, false, false,
-                    false, false, null
-            );
-            fireEvent(event);
         }
     }
 }

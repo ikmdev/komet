@@ -4,16 +4,41 @@
 <?import dev.ikm.komet.kview.controls.StampViewControl?>
 <?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
-<?import javafx.scene.text.*?>
-<?import java.lang.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Ellipse?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
 <BorderPane fx:id="detailsOuterBorderPane" maxHeight="Infinity" maxWidth="Infinity" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
    <center>
       <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
@@ -38,11 +63,7 @@
                   </FlowPane>
                   <HBox fx:id="conceptHeaderControlToolBarHbox" prefHeight="100.0" prefWidth="762.0" style="-fx-background-color: -Natural-Grey-Main;">
                      <children>
-                        <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY">
-                           <styleClass>
-                              <String fx:value="icon" />
-                              <String fx:value="coordinate" />
-                           </styleClass>
+                        <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY" styleClass="coordinate">
                            <tooltip><Tooltip text="Coordinates" /></tooltip>
                         </MenuButton>
                         <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
@@ -181,7 +202,7 @@
                                                 <Text fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
                                              </children>
                                           </TextFlow>
-                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Date Added: Feb 02" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="13.0" />
                                              </font>
@@ -191,7 +212,7 @@
                                                 <Text fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
                                              </children>
                                           </TextFlow>
-                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Date Added: Feb 02" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                                        </children>
                                     </GridPane>
                                  </content>
@@ -384,7 +405,7 @@
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label maxWidth="90.0" prefWidth="90.0" styleClass="grey8-12pt-bold" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
@@ -405,7 +426,7 @@
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
@@ -426,7 +447,7 @@
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
@@ -447,7 +468,7 @@
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
@@ -468,7 +489,7 @@
                                                    <children>
                                                       <HBox>
                                                          <children>
-                                                            <Label styleClass="grey8-12pt-bold" text="Date Added: " />
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
                                                             <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
                                                          </children>
                                                       </HBox>
@@ -525,7 +546,7 @@
                               <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="66.0" vgrow="SOMETIMES" />
                            </rowConstraints>
                            <children>
-                              <PublicIDListControl fx:id="identifierControl" styleClass="concept-definition-title" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+                               <PublicIDListControl fx:id="identifierControl" styleClass="concept-definition-title" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" GridPane.rowSpan="2" />
                               <Label fx:id="patternTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0" styleClass="pattern-main-title" text="New Pattern" textFill="#212430" wrapText="true" GridPane.columnIndex="1">
                                  <font>
                                     <Font name="Open Sans Regular" size="17.0" />

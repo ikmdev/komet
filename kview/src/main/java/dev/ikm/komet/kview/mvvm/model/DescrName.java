@@ -17,9 +17,7 @@ package dev.ikm.komet.kview.mvvm.model;
 
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.component.Stamp;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 
 public class DescrName {
 
@@ -30,15 +28,15 @@ public class DescrName {
 
     private Stamp stamp;
 
-    private ConceptFacade nameType;
+    private EntityFacade nameType;
 
-    private ConceptEntity caseSignificance;
+    private EntityFacade caseSignificance;
 
-    private ConceptEntity status;
+    private EntityFacade status;
 
-    private ConceptEntity module;
+    private EntityFacade module;
 
-    private ConceptEntity language;
+    private EntityFacade language;
 
 
 
@@ -46,8 +44,8 @@ public class DescrName {
     private PublicId semanticPublicId;
 
 
-    public DescrName(PublicId parentConcept, String nameText, ConceptFacade nameType, ConceptEntity caseSignificance,
-                     ConceptEntity status, ConceptEntity module, ConceptEntity language, PublicId semanticPublicId) {
+    public DescrName(PublicId parentConcept, String nameText, EntityFacade nameType, EntityFacade caseSignificance,
+                     EntityFacade status, EntityFacade module, EntityFacade language, PublicId semanticPublicId) {
         this.parentConcept = parentConcept;
         this.nameText = nameText;
         this.nameType = nameType;
@@ -58,8 +56,8 @@ public class DescrName {
         this.semanticPublicId = semanticPublicId;
     }
 
-    public DescrName(PublicId parentConcept, String nameText, ConceptFacade nameType, ConceptEntity caseSignificance,
-                     ConceptEntity status, ConceptEntity module, ConceptEntity language, PublicId semanticPublicId, Stamp stamp) {
+    public DescrName(PublicId parentConcept, String nameText, EntityFacade nameType, EntityFacade caseSignificance,
+                     EntityFacade status, EntityFacade module, EntityFacade language, PublicId semanticPublicId, Stamp stamp) {
         this.parentConcept = parentConcept;
         this.nameText = nameText;
         this.nameType = nameType;
@@ -87,43 +85,43 @@ public class DescrName {
         this.nameText = nameText;
     }
 
-    public ConceptFacade getNameType() {
+    public EntityFacade getNameType() {
         return nameType;
     }
 
-    public void setNameType(ConceptFacade nameType) {
+    public void setNameType(EntityFacade nameType) {
         this.nameType = nameType;
     }
 
-    public ConceptEntity getCaseSignificance() {
+    public EntityFacade getCaseSignificance() {
         return caseSignificance;
     }
 
-    public void setCaseSignificance(ConceptEntity caseSignificance) {
+    public void setCaseSignificance(EntityFacade caseSignificance) {
         this.caseSignificance = caseSignificance;
     }
 
-    public ConceptEntity getStatus() {
+    public EntityFacade getStatus() {
         return status;
     }
 
-    public void setStatus(ConceptEntity status) {
+    public void setStatus(EntityFacade status) {
         this.status = status;
     }
 
-    public ConceptEntity getModule() {
+    public EntityFacade getModule() {
         return module;
     }
 
-    public void setModule(ConceptEntity module) {
+    public void setModule(EntityFacade module) {
         this.module = module;
     }
 
-    public ConceptEntity getLanguage() {
+    public EntityFacade getLanguage() {
         return language;
     }
 
-    public void setLanguage(ConceptEntity language) {
+    public void setLanguage(EntityFacade language) {
         this.language = language;
     }
 

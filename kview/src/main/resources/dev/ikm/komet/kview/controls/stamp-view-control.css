@@ -13,6 +13,8 @@
     -fx-font-family: "Noto Sans Bold";
     -fx-font-size: 12px;
     -fx-text-fill: #444;
+
+    -fx-min-width: 35px;
 }
 
 .stamp-view-control .stamp-container .stamp-text {

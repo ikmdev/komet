@@ -43,7 +43,6 @@ import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
-import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
@@ -53,7 +52,6 @@ import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
-import dev.ikm.komet.kview.mvvm.model.JournalCounter;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
@@ -88,6 +86,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -99,11 +98,26 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.carlfx.cognitive.loader.Config;
@@ -119,7 +133,11 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
@@ -137,19 +155,35 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.*;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromEntity;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromUuids;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.extractEntityFromDragInfo;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.GEN_EDITING;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.PATTERN;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.JOURNAL_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
-import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
 import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.PROGRESS_TOPIC;
@@ -446,13 +480,14 @@ public class JournalController {
 
         TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowView, "JournalController"),
                 (List<MenuItem> result) -> {
-                    FXUtils.runOnFxThread(() -> windowCoordinates.getItems().addAll(result));
+                    Platform.runLater(() -> windowCoordinates.getItems().addAll(result));
                 }));
 
         windowSettings.getView().addListener((observable, oldValue, newValue) -> {
-            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(viewCalculator, windowView, "JournalController"),
+            ViewCalculatorWithCache listenerViewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
+            TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(listenerViewCalculator, windowView, "JournalController"),
                     (List<MenuItem> result) ->
-                            FXUtils.runOnFxThread(() -> {
+                            Platform.runLater(() -> {
                                 var menuItems = windowCoordinates.getItems();
                                 menuItems.clear();
                                 menuItems.addAll(result);
@@ -1473,7 +1508,7 @@ public class JournalController {
      * @param journalWindowSettings The settings object containing journal metadata
      * @throws NullPointerException if journalWindowSettings is null
      */
-    public void restoreWindows(PrefX journalWindowSettings) {
+    public void restoreWindows(WindowSettings windowSettings, PrefX journalWindowSettings) {
         Objects.requireNonNull(journalWindowSettings, "journalWindowSettings cannot be null");
         final String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
 
@@ -1496,7 +1531,7 @@ public class JournalController {
                 final KometPreferences windowPreferences = journalPreferences.node(windowId);
                 windowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
                 try {
-                    setupWorkspaceWindow(restoreWindow(windowPreferences));
+                    setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences));
                 } catch (Exception e) {
                     LOG.error("Error restoring window: {}", windowId, e);
                 }
@@ -1528,21 +1563,6 @@ public class JournalController {
         }, TinkExecutor.ioThreadPool());
     }
 
-    /**
-     * Asynchronously restores previously saved windows for this journal.
-     * <p>
-     * This method provides a non-blocking alternative to {@link #restoreWindows(PrefX)}
-     * by executing the restoration operation on a background thread pool. It delegates
-     * to the synchronous version after scheduling the task.
-     *
-     * @param journalWindowSettings The settings object containing journal metadata and window information
-     * @throws NullPointerException if journalWindowSettings is null
-     * @see #restoreWindows(PrefX)
-     */
-    public void restoreWindowsAsync(PrefX journalWindowSettings) {
-        restoreWindows(journalWindowSettings);
-        TinkExecutor.ioThreadPool();
-    }
 
     /**
      * Bring window to the front of all windows.

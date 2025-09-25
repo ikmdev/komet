@@ -4,6 +4,8 @@ import dev.ikm.komet.kview.controls.skin.PublicIDListControlSkin;
 import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -23,6 +25,21 @@ public class PublicIDListControl extends Control {
 
     /// A list of public IDs (UUID)
     private SimpleListProperty<String> publicIdList = new SimpleListProperty<>(this, "publicIdList");
+
+    public PublicIDListControl() {
+        getStyleClass().add("public-id-list");
+
+        // make styles reloadable
+        sceneProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(Observable observable) {
+                if (getScene() != null) {
+                    getScene().getStylesheets().add(getUserAgentStylesheet());
+                }
+                sceneProperty().removeListener(this);
+            }
+        });
+    }
 
     public SimpleListProperty<String> publicIdListProperty() {
         return publicIdList;

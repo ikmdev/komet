@@ -264,7 +264,7 @@ public class FilterOptions implements Serializable {
 
         private Option<String> time;
         {
-            List<String> dateOptions = Stream.of("time.item1", "time.item2") // , "time.item3" Range not supported yet
+            List<String> dateOptions = Stream.of("time.item1", "time.item2", "time.item3") // , "time.item4" Range not supported yet
                     .map(resources::getString)
                     .toList();
             time = new Option<>(OPTION_ITEM.TIME, "time.title",
@@ -365,6 +365,27 @@ public class FilterOptions implements Serializable {
 
         public List<Option> getOptions() {
             return options;
+        }
+
+        public MainFilterCoordinates copy() {
+            MainFilterCoordinates copy = new MainFilterCoordinates();
+            copy.navigator = navigator.copy();
+            copy.type = type.copy();
+            copy.header = header.copy();
+            copy.status = status.copy();
+            copy.time = time.copy();
+            copy.module = module.copy();
+            copy.path = path.copy();
+            copy.kindOf = kindOf.copy();
+            copy.membership = membership.copy();
+            copy.sortBy = sortBy.copy();
+            copy.options.clear();
+            copy.options.addAll(List.of(copy.navigator, copy.type,
+                    copy.header, copy.status,
+                    copy.time, copy.module,
+                    copy.path, copy.kindOf,
+                    copy.membership, copy.sortBy));
+            return copy;
         }
 
         @Override
@@ -532,8 +553,8 @@ public class FilterOptions implements Serializable {
         }
     }
 
-    private final MainFilterCoordinates mainCoordinates;
-    private final List<LanguageFilterCoordinates> languageCoordinatesList;
+    private MainFilterCoordinates mainCoordinates;
+    private List<LanguageFilterCoordinates> languageCoordinatesList;
 
     private final ObservableView observableViewForFilter;
 
@@ -617,6 +638,15 @@ public class FilterOptions implements Serializable {
         languageCoordinates.options.clear();
         languageCoordinates.options.addAll(List.of(languageCoordinates.language, languageCoordinates.dialect,
                         languageCoordinates.pattern, languageCoordinates.descriptionType));
+    }
+
+    public FilterOptions copy() {
+        FilterOptions copy = new FilterOptions();
+        copy.mainCoordinates = mainCoordinates.copy();
+        copy.languageCoordinatesList = new ArrayList<>(languageCoordinatesList.stream()
+                .map(LanguageFilterCoordinates::copy)
+                .toList());
+        return copy;
     }
 
     @Override
