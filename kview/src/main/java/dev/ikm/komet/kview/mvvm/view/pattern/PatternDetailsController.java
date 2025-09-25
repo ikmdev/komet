@@ -479,7 +479,7 @@ public class PatternDetailsController {
                         DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(userLocale);
                         dateText = formatter.format(localDate);
                     }
-                    fqnAddDateLabel.setText("");
+                    fqnAddDateLabel.setText(dateText);
                 });
             }
         });
@@ -764,6 +764,8 @@ public class PatternDetailsController {
         row2.getChildren().addAll(semanticDescrText);
 
         TextFlow row3 = new TextFlow();
+        Text dateAddedLabel = new Text("Date Added: ");
+        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
 
         if (otherName.getSemanticPublicId() != null) {
             Latest<EntityVersion> semanticVersionLatest = getViewProperties().calculator().latest(Entity.nid(otherName.getSemanticPublicId()));
@@ -779,11 +781,13 @@ public class PatternDetailsController {
                     dateText = formatter.format(localDate);
                 }
 
+                Text dateLabel = new Text(dateText);
+                dateLabel.getStyleClass().add("grey8-12pt-bold");
                 Hyperlink attachmentHyperlink = createActionLink(IconsHelper.createIcon(ATTACHMENT));
                 Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
 
                 // Add the date info and additional hyperlinks
-                row3.getChildren().addAll(attachmentHyperlink, commentsHyperlink);
+                row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentsHyperlink);
             });
         }
 

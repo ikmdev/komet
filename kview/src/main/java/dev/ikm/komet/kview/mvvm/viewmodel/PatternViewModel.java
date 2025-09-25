@@ -89,6 +89,8 @@ public class PatternViewModel extends FormViewModel {
 
     public static String FQN_DESCRIPTION_NAME = "fqnDescriptionName";
 
+    public static String FQN_DATE_ADDED_STR = "fqnDateAddedStr";
+
     public static String FQN_CASE_SIGNIFICANCE = "fqnCaseSignificance";
 
     public static String FQN_LANGUAGE = "fqnLanguage";
