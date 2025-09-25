@@ -292,30 +292,30 @@ public class ExportController {
     private void handleExportButtonEvent(ActionEvent exportEvent) {
         String exportOption = exportOptions.getSelectionModel().getSelectedItem();
         FileSavePicker fileSavePicker = FileSavePicker.create(exportButton);
-        if (exportOption.equalsIgnoreCase(CHANGE_SET)) {
-            //Date formatter for the desired date template
-            String pattern = "yyyyMMdd-HHmm";
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        //Date formatter for the desired date template
+        String pattern = "yyyyMMdd-HHmm";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
 
-            // get the from and to dates as millisecond long values
-            long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
-            long toDate = System.currentTimeMillis();
-            String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
-            if (CUSTOM_RANGE.equals(dateChoice)) {
-                fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
-                toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
-            }
+        // get the from and to dates as millisecond long values
+        long fromDate = transformStringInLocalDateTimeToEpochMillis(CURRENT_DATE_TIME_RANGE_FROM);
+        long toDate = System.currentTimeMillis();
+        String dateChoice = timePeriodComboBox.getSelectionModel().getSelectedItem();
+        if (CUSTOM_RANGE.equals(dateChoice)) {
+            fromDate = this.customFromEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeFromLabel.getText()) : this.customFromEpochMillis;
+            toDate = this.customToEpochMillis == 0 ? transformStringInLocalDateTimeToEpochMillis(dateTimeToLabel.getText()) : this.customToEpochMillis;
+        }
+
+        if (exportOption.equalsIgnoreCase(CHANGE_SET)) {
             // if the user enters a name then use that name, e.g. test.json or test.zip
             // if the user does not enter a name, then default to komet-yyyyMMdd-HHmm.zip|.json
             String initialFileName = exportName.getText().isBlank()
                     ? "komet-%s".formatted(simpleDateFormat.format(new Date()))
                     : exportName.getText();
-
             setupFileName(initialFileName, fileSavePicker);
             performChangeSetExport(fileSavePicker, fromDate, toDate);
         } else if (exportOption.equalsIgnoreCase(MODULES_BY_TAG)) {
             String initialFileName = exportName.getText().isBlank()
-                    ? "komet-with-modules" : exportName.getText();
+                    ? "komet-membership-modules-%s".formatted(simpleDateFormat.format(new Date())) : exportName.getText();
             setupFileName(initialFileName, fileSavePicker);
             performMembershipSetExport(fileSavePicker);
         } else {
