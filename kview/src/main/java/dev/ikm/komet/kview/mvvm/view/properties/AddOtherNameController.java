@@ -162,8 +162,7 @@ public class AddOtherNameController extends AbstractBasicController {
 
 
     private String getDisplayText(ConceptFacade conceptFacade) {
-        Optional<String> stringOptional = getViewProperties().calculator().languageCalculator().getRegularDescriptionText(conceptFacade.nid());
-        return stringOptional.orElse("");
+        return getViewProperties().calculator().languageCalculator().getDescriptionTextOrNid(conceptFacade.nid());
     }
 
     private void setupComboBox(ComboBox comboBox, InvalidationListener listener) {
