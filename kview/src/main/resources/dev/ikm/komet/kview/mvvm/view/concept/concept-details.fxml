@@ -254,7 +254,7 @@
                                                         <items>
                                                             <TextFlow>
                                                                 <children>
-                                                                    <Label text=""/>
+                                                                    <Label text="Date Added:"/>
                                                                     <Label text="May 10, 2023"/>
                                                                     <Hyperlink text="Attachment"/>
                                                                     <Hyperlink text="Comment"/>
@@ -262,7 +262,7 @@
                                                             </TextFlow>
                                                             <TextFlow>
                                                                 <children>
-                                                                    <Label text=""/>
+                                                                    <Label text="Date Added:"/>
                                                                     <Label text="May 10, 2023"/>
                                                                     <Hyperlink text="Attachment"/>
                                                                     <Hyperlink text="Comment"/>
@@ -286,13 +286,13 @@
                                                                                  GridPane.vgrow="ALWAYS">
                                                         <!-- Example placeholder items -->
                                                         <TextFlow>
-                                                            <Label text=""/>
+                                                            <Label text="Date Added:"/>
                                                             <Label text="May 10, 2023"/>
                                                             <Hyperlink text="Attachment"/>
                                                             <Hyperlink text="Comment"/>
                                                         </TextFlow>
                                                         <TextFlow>
-                                                            <Label text=""/>
+                                                            <Label text="Date Added:"/>
                                                             <Label text="May 10, 2023"/>
                                                             <Hyperlink text="Attachment"/>
                                                             <Hyperlink text="Comment"/>
