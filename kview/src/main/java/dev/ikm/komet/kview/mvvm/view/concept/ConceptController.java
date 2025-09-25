@@ -1060,6 +1060,9 @@ public class ConceptController {
         row1.getChildren().addAll(otherNameLabel, semanticDescrText);
 
         TextFlow row2 = new TextFlow();
+        Text dateAddedLabel = new Text("Date Added: ");
+        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
+
         if (semanticEntityVersion.publicId() != null) {
             ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
             Latest<EntityVersion> semanticVersionLatest = viewCalculator.latest(Entity.nid(semanticEntityVersion.publicId()));
@@ -1075,6 +1078,9 @@ public class ConceptController {
                     dateText = formatter.format(localDate);
                 }
 
+                Text dateLabel = new Text(dateText);
+                dateLabel.getStyleClass().add("grey8-12pt-bold");
+
                 Region spacer = new Region();
                 spacer.setMinWidth(10);
 
@@ -1082,7 +1088,7 @@ public class ConceptController {
                 Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
 
                 // Add the date info and additional hyperlinks
-                row2.getChildren().addAll(spacer, attachmentHyperlink, commentsHyperlink);
+                row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
             });
         }
 
@@ -1136,6 +1142,8 @@ public class ConceptController {
         row1.getChildren().addAll(otherNameLabel, semanticDescrText);
 
         TextFlow row2 = new TextFlow();
+        Text dateAddedLabel = new Text("Date Added: ");
+        dateAddedLabel.getStyleClass().add("grey8-12pt-bold");
 
         if (otherName.getSemanticPublicId() != null) {
             Latest<EntityVersion> semanticVersionLatest = viewCalculator.latest(Entity.nid(otherName.getSemanticPublicId()));
@@ -1151,6 +1159,9 @@ public class ConceptController {
                     dateText = formatter.format(localDate);
                 }
 
+                Text dateLabel = new Text(dateText);
+                dateLabel.getStyleClass().add("grey8-12pt-bold");
+
                 Region spacer = new Region();
                 spacer.setMinWidth(10);
 
@@ -1158,7 +1169,7 @@ public class ConceptController {
                 Hyperlink commentsHyperlink = createActionLink(IconsHelper.createIcon(COMMENTS));
 
                 // Add the date info and additional hyperlinks
-                row2.getChildren().addAll(spacer, attachmentHyperlink, commentsHyperlink);
+                row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
             });
         }
         textFlowsBox.getChildren().addAll(row1, row2);
