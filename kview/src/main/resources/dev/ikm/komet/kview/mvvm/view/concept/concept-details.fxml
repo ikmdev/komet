@@ -173,12 +173,13 @@
                                <Image url="@../images/identicon-placeholder.png" />
                            </ImageView>
 
-                           <Label fx:id="fqnTitleText" styleClass="concept-title" text="Concept Name " wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                               <tooltip>
-                                   <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip" />
-                               </tooltip>
-                           </Label>
-
+                           <VBox GridPane.columnIndex="2" GridPane.rowIndex="1">
+                               <Label fx:id="fqnTitleText" styleClass="concept-title" text="Concept Name " wrapText="true" VBox.vgrow="ALWAYS">
+                                   <tooltip>
+                                       <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip" />
+                                   </tooltip>
+                               </Label>
+                           </VBox>
                            <PublicIDListControl fx:id="identifierControl" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.rowSpan="2" />
 
                            <!-- StackPane in its own column -->

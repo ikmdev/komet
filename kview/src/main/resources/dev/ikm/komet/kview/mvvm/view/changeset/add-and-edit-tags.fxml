@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+
+<AnchorPane id="../kview.css" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="400.0" styleClass="background-white" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.changeset.AddAndEditController">
+    <children>
+        <Button fx:id="okButton" layoutX="291.0" layoutY="561.0" mnemonicParsing="false" onAction="#okButtonPressed" prefHeight="26.0" prefWidth="94.0" styleClass="button-blue5-text-grey1-bg" text="OK" AnchorPane.bottomAnchor="13.0" AnchorPane.rightAnchor="15.0" />
+        <Button fx:id="cancelButton" layoutX="186.0" layoutY="561.0" mnemonicParsing="false" onAction="#cancelButtonPressed" prefHeight="26.0" prefWidth="94.0" styleClass="button-blue5-text-grey1-bg" text="CANCEL" AnchorPane.bottomAnchor="13.0" AnchorPane.rightAnchor="120.0" />
+        <ScrollPane layoutX="14.0" layoutY="240.0" prefHeight="301.0" prefWidth="374.0" styleClass="background-white">
+            <content>
+                <GridPane fx:id="tagsGrid" prefHeight="394.0" prefWidth="357.0" styleClass="background-white">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                </GridPane>
+            </content>
+        </ScrollPane>
+        <ScrollPane layoutX="14.0" layoutY="14.0" prefHeight="165.0" prefWidth="374.0">
+            <content>
+                <FlowPane fx:id="selectedTags" hgap="10.0" prefHeight="145.0" prefWidth="371.0" styleClass="background-white" vgap="10.0" />
+            </content>
+        </ScrollPane>
+        <TextField fx:id="searchText" layoutX="14.0" layoutY="185.0" prefHeight="44.0" prefWidth="374.0" promptText="Enter Search Value here" styleClass="text-field" />
+        <ImageView fx:id="searchButton" fitHeight="40.0" fitWidth="38.0" layoutX="348.0" layoutY="188.0" onMousePressed="#searchButtonPressed" pickOnBounds="true" preserveRatio="true">
+            <image>
+                <Image url="@searchIcon.png" />
+            </image>
+        </ImageView>
+    </children>
+</AnchorPane>
