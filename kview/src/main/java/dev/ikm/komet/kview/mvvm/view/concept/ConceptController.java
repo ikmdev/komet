@@ -872,7 +872,7 @@ public class ConceptController {
                     .getDefinitionDescriptionText(entityFacade)
                     .ifPresentOrElse(definition ->
                             definitionTextField.setText(definition),
-                            () -> definitionTextField.setText(""));
+                            () -> definitionTextField.setText(NO_VERSION_FOR_VIEW_TEXT));
 
             updateDisplayIdentifier(viewCalculator, (ConceptFacade) entityFacade);
 
@@ -1049,7 +1049,7 @@ public class ConceptController {
             semanticDescrText.setText(" (%s)".formatted(descrSemanticStr));
             semanticDescrText.getStyleClass().add("descr-concept-name");
         } else {
-            semanticDescrText.setText("");
+            semanticDescrText.setText(NO_VERSION_FOR_VIEW_TEXT);
         }
         // add the other name label and description semantic label
         row1.getStyleClass().add("descr-semantic-container");
@@ -1315,14 +1315,22 @@ public class ConceptController {
             KometPropertySheet inferredPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
             Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
             makeSheetItem(conceptViewModel.getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
-            inferredAxiomPane.setCenter(inferredPropertySheet);
+            if (inferredPropertySheet != null && inferredPropertySheet.getItems().size() > 0) {
+                inferredAxiomPane.setCenter(inferredPropertySheet);
+            } else {
+                inferredAxiomPane.setCenter(showNoVersionPresentForAxiom());
+            }
 
 
             // Create a SheetItem (AXIOM stated semantic version)
             KometPropertySheet statedPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
             Latest<SemanticEntityVersion> statedSemanticVersion = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
             makeSheetItem(conceptViewModel.getViewProperties(), statedPropertySheet, statedSemanticVersion);
-            statedAxiomPane.setCenter(statedPropertySheet);
+            if (statedPropertySheet != null && statedPropertySheet.getItems().size() > 0) {
+                statedAxiomPane.setCenter(statedPropertySheet);
+            } else {
+                statedAxiomPane.setCenter(showNoVersionPresentForAxiom());
+            }
 
             //TODO discuss the blue theme color related to AXIOMs
         },
