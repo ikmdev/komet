@@ -3,7 +3,6 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
-import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.entity.StampService;
@@ -15,7 +14,6 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import org.eclipse.collections.api.set.ImmutableSet;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -26,8 +24,6 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 
 public class FilterOptions implements Serializable {
 
@@ -590,7 +586,19 @@ public class FilterOptions implements Serializable {
     public LanguageFilterCoordinates addLanguageCoordinates() {
         LanguageFilterCoordinates languageCoordinates = new LanguageFilterCoordinates(languageCoordinatesList.size());
         languageCoordinatesList.add(languageCoordinates);
+        observableViewForFilter.languageCoordinates().add(observableViewForFilter.languageCoordinates().getFirst());
         return languageCoordinates;
+    }
+
+    public void removeLanguageCoordinates(int ordinal) {
+        if (ordinal < 1 || ordinal >= languageCoordinatesList.size()) {
+            return;
+        }
+        languageCoordinatesList.remove(ordinal);
+        if (ordinal >= observableViewForFilter.languageCoordinates().size()) {
+            return;
+        }
+        observableViewForFilter.languageCoordinates().remove(ordinal);
     }
 
     public Option getOptionForItem(OPTION_ITEM item) {

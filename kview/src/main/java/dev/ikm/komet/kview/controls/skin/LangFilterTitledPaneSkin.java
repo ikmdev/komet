@@ -158,8 +158,8 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
         subscription = subscription.and(control.expandedProperty().subscribe((_, expanded) -> {
             if (!expanded) {
                 currentLangCoordinates = contentBox.getLangCoordinates().copy();
-                control.setLangCoordinates(currentLangCoordinates.copy());
                 updateModifiedState(currentLangCoordinates);
+                control.setLangCoordinates(currentLangCoordinates.copy());
             }
         }));
 
