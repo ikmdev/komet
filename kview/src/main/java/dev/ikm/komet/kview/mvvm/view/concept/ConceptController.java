@@ -1315,22 +1315,14 @@ public class ConceptController {
             KometPropertySheet inferredPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
             Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
             makeSheetItem(conceptViewModel.getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
-            if (inferredPropertySheet != null && inferredPropertySheet.getItems().size() > 0) {
-                inferredAxiomPane.setCenter(inferredPropertySheet);
-            } else {
-                inferredAxiomPane.setCenter(showNoVersionPresentForAxiom());
-            }
+            inferredAxiomPane.setCenter(inferredPropertySheet);
 
 
             // Create a SheetItem (AXIOM stated semantic version)
             KometPropertySheet statedPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
             Latest<SemanticEntityVersion> statedSemanticVersion = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
             makeSheetItem(conceptViewModel.getViewProperties(), statedPropertySheet, statedSemanticVersion);
-            if (statedPropertySheet != null && statedPropertySheet.getItems().size() > 0) {
-                statedAxiomPane.setCenter(statedPropertySheet);
-            } else {
-                statedAxiomPane.setCenter(showNoVersionPresentForAxiom());
-            }
+            statedAxiomPane.setCenter(statedPropertySheet);
 
             //TODO discuss the blue theme color related to AXIOMs
         },
