@@ -348,7 +348,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
      * This considers both the content container and toggle button to determine
      * the minimum width required.
      *
-     * @param height      The height constraint
+     * @param width      The width constraint
      * @param topInset    The top inset
      * @param rightInset  The right inset
      * @param bottomInset The bottom inset
@@ -356,59 +356,15 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
      * @return The minimum width
      */
     @Override
-    protected double computeMinWidth(double height,
+    protected double computeMinWidth(double width,
                                      double topInset, double rightInset,
                                      double bottomInset, double leftInset) {
-        double contentWidth = snapSizeX(contentContainer.minWidth(height));
-        double toggleWidth = toggleButton.isVisible() ? snapSizeX(toggleButton.minWidth(height)) : 0;
+        double contentWidth = snapSizeX(contentContainer.minWidth(width));
+        double toggleWidth = toggleButton.isVisible() ? snapSizeX(toggleButton.minWidth(width)) : 0;
 
         return leftInset + Math.max(contentWidth, toggleWidth) + rightInset;
     }
 
-    /**
-     * Calculates the minimum height required to display the skin.
-     * <p>
-     * This accounts for the visible content, the toggle button, and the
-     * expanded content based on the current transition value.
-     *
-     * @param width       The width constraint
-     * @param topInset    The top inset
-     * @param rightInset  The right inset
-     * @param bottomInset The bottom inset
-     * @param leftInset   The left inset
-     * @return The minimum height
-     */
-    @Override
-    protected double computeMinHeight(double width,
-                                      double topInset, double rightInset,
-                                      double bottomInset, double leftInset) {
-        if (getSkinnable().getItems().isEmpty()) {
-            return topInset + bottomInset;
-        }
-
-        // Calculate visible items height
-        final double visibleContentHeight = visibleContentContainer.minHeight(width);
-
-        // Add toggle button height if needed
-        final double toggleButtonHeight = toggleButton.isVisible() ? toggleButton.minHeight(width) : 0;
-
-        // Include expanded items height based on transition value (0.0-1.0)
-        final double expandedContentHeight = hiddenContentContainer.minHeight(width) * getTransition();
-
-        // Calculate total height with all components
-        double totalHeight = topInset + visibleContentHeight + bottomInset;
-        final double spacing = contentContainer.getSpacing();
-
-        if (expandedContentHeight > 0) {
-            totalHeight += spacing + expandedContentHeight;
-        }
-
-        if (toggleButton.isVisible()) {
-            totalHeight += spacing + toggleButtonHeight;
-        }
-
-        return totalHeight;
-    }
 
     /**
      * Calculates the preferred width for the skin.
@@ -416,7 +372,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
      * This considers both the content container and toggle button to determine
      * the preferred width.
      *
-     * @param height      The height constraint
+     * @param width      The width constraint
      * @param topInset    The top inset
      * @param rightInset  The right inset
      * @param bottomInset The bottom inset
@@ -424,11 +380,11 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
      * @return The preferred width
      */
     @Override
-    protected double computePrefWidth(double height,
+    protected double computePrefWidth(double width,
                                       double topInset, double rightInset,
                                       double bottomInset, double leftInset) {
-        double contentWidth = snapSizeX(contentContainer.prefWidth(height));
-        double toggleWidth = toggleButton.isVisible() ? snapSizeX(toggleButton.prefWidth(height)) : 0;
+        double contentWidth = snapSizeX(contentContainer.prefWidth(width));
+        double toggleWidth = toggleButton.isVisible() ? snapSizeX(toggleButton.prefWidth(width)) : 0;
 
         return leftInset + Math.max(contentWidth, toggleWidth) + rightInset;
     }
@@ -439,7 +395,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
      * This accounts for the visible content, the toggle button, and the
      * expanded content based on the current transition value.
      *
-     * @param width       The width constraint
+     * @param height       The height constraint
      * @param topInset    The top inset
      * @param rightInset  The right inset
      * @param bottomInset The bottom inset
@@ -447,7 +403,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
      * @return The preferred height
      */
     @Override
-    protected double computePrefHeight(double width,
+    protected double computePrefHeight(double height,
                                        double topInset, double rightInset,
                                        double bottomInset, double leftInset) {
         if (getSkinnable().getItems().isEmpty()) {
@@ -455,13 +411,13 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
         }
 
         // Calculate visible items height
-        final double visibleContentHeight = visibleContentContainer.prefHeight(width);
+        final double visibleContentHeight = visibleContentContainer.prefHeight(height);
 
         // Add toggle button height if needed
-        final double toggleButtonHeight = toggleButton.isVisible() ? toggleButton.prefHeight(width) : 0;
+        final double toggleButtonHeight = toggleButton.isVisible() ? toggleButton.prefHeight(height) : 0;
 
         // Include expanded items height based on transition value (0.0-1.0)
-        final double expandedContentHeight = hiddenContentContainer.prefHeight(width) * getTransition();
+        final double expandedContentHeight = hiddenContentContainer.prefHeight(height) * getTransition();
 
         // Calculate total height with all components
         double totalHeight = topInset + visibleContentHeight + bottomInset;
