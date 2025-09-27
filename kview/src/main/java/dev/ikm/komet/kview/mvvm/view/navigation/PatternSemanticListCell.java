@@ -6,11 +6,7 @@ import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
-import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
@@ -23,15 +19,11 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
 import java.util.Objects;
 import java.util.function.Function;
-
-import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.*;
 
 /**
  * A ListCell for the Pattern Semantic.
@@ -48,7 +40,7 @@ public class PatternSemanticListCell extends ListCell<Object> {
     private Label label;
     private SemanticTooltip tooltip;
 
-    private SemanticEntity<?> currentSemanticEntity;
+    private EntityFacade currentEntity;
     private String currentSemanticTitle;
 
     public PatternSemanticListCell(Function<Integer, String> fetchDescriptionByNid,
@@ -65,7 +57,14 @@ public class PatternSemanticListCell extends ListCell<Object> {
 
         tooltip = new SemanticTooltip(viewProperties);
         tooltip.setOnShowing(windowEvent -> {
-            tooltip.update(currentSemanticEntity, currentSemanticTitle);
+            switch (currentEntity) {
+                case SemanticEntity<?> semanticEntity -> tooltip.update(semanticEntity, currentSemanticTitle);
+                case StampEntity<?> stampEntity -> tooltip.update(stampEntity, currentSemanticTitle);
+                case ConceptEntity entity -> tooltip.update(entity, currentSemanticTitle);
+                case PatternEntity patternEntity -> tooltip.update(patternEntity, currentSemanticTitle);
+                default -> throw new IllegalStateException("Unexpected value: " + currentEntity);
+            }
+
         });
 
         label.setTooltip(tooltip);
@@ -90,7 +89,14 @@ public class PatternSemanticListCell extends ListCell<Object> {
             } else if (item instanceof Integer nid) {
                 String entityDescriptionText = fetchDescriptionByNid.apply(nid);
                 EntityFacade entity = Entity.getFast(nid);
-                currentSemanticEntity = (SemanticEntity<?>) entity;
+                switch (entity) {
+                    case StampEntity stampEntity -> tooltip.update(stampEntity, entityDescriptionText);
+                    case ConceptEntity conceptEntity -> tooltip.update(conceptEntity, entityDescriptionText);
+                    case PatternEntity patternEntity -> tooltip.update(patternEntity, entityDescriptionText);
+                    case SemanticEntity<?> semanticEntity -> tooltip.update(semanticEntity, entityDescriptionText);
+                    default -> throw new IllegalStateException("Unexpected value: " + entity);
+                }
+                currentEntity = entity;
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
                 currentSemanticTitle = entityDescriptionText;

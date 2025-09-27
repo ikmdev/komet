@@ -7,9 +7,8 @@ import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.klfields.KlFieldType;
 import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.PatternVersionRecord;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.terms.EntityBinding;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -27,6 +26,7 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.Optional;
@@ -78,25 +78,75 @@ public class SemanticTooltip extends Tooltip {
 
         grid.getColumnConstraints().addAll(column1, column2);
     }
+    public void update(PatternEntity patternEntity, String titleText) {
+        this.title.setText(titleText);
+        grid.getChildren().clear();
+
+        Latest<? extends PatternEntityVersion> latestId = viewProperties.calculator().latest(patternEntity);
+
+        latestId.ifPresent(pv -> {
+            ImmutableList fields = pv.fieldDefinitions();
+            PatternVersionRecord patternVersionRecord = (PatternVersionRecord) viewProperties.calculator().latest(EntityBinding.Pattern.pattern()).get();
+            int rowIndex = 0;
+            for (int i = 0; i < patternVersionRecord.fieldDefinitions().size(); ++i) {
+                addFieldToGridPane(patternVersionRecord, i, fields, rowIndex);
+                ++rowIndex;
+                if (i < patternVersionRecord.fieldDefinitions().size() - 1) {
+                    addSeparatorToGridPane(rowIndex);
+                    ++rowIndex;
+                }
+            }
+        });
+    }
+    public void update(ConceptEntity conceptEntity, String titleText) {
+        this.title.setText(titleText);
+        grid.getChildren().clear();
+        viewProperties.calculator().latest(conceptEntity);
+        Label  label = new Label(viewProperties.calculator().getDescriptionTextOrNid(conceptEntity));
+        grid.add(label, 0, 0);
+    }
+
+    public void update(StampEntity stampEntity, String titleText) {
+        this.title.setText(titleText);
+        grid.getChildren().clear();
+
+        Latest<? extends StampEntityVersion> latestId = viewProperties.calculator().latest(stampEntity);
+        latestId.ifPresent(sv -> {
+            ImmutableList fields = Lists.immutable.of(sv.state(), sv.instant(), sv.author(), sv.module(), sv.path());
+            viewProperties.calculator().latestPatternEntityVersion(EntityBinding.Stamp.pattern()).ifPresent(patternEntityVersion -> {
+                        int rowIndex = 0;
+                        for (int i = 0; i < patternEntityVersion.fieldDefinitions().size(); ++i) {
+                            addFieldToGridPane(patternEntityVersion, i, fields, rowIndex);
+                            ++rowIndex;
+
+                            if (i < patternEntityVersion.fieldDefinitions().size() - 1) {
+                                addSeparatorToGridPane(rowIndex);
+                                ++rowIndex;
+                            }
+                        }
+            });
+        });
+    }
 
     public void update(SemanticEntity<?> semanticEntity, String titleText) {
-        Latest<? extends SemanticEntityVersion> latestId = viewProperties.calculator().latest(semanticEntity);
-        ImmutableList fields = latestId.get().fieldValues();
-        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) viewProperties.calculator().latest(latestId.get().pattern()).get();
-
         this.title.setText(titleText);
-
         grid.getChildren().clear();
-        int rowIndex = 0;
-        for (int i = 0; i < patternVersionRecord.fieldDefinitions().size(); ++i) {
-            addFieldToGridPane(patternVersionRecord, i, fields, rowIndex);
-            ++rowIndex;
 
-            if (i < patternVersionRecord.fieldDefinitions().size() - 1) {
-                addSeparatorToGridPane(rowIndex);
-                ++rowIndex;
-            }
-        }
+        Latest<? extends SemanticEntityVersion> latestId = viewProperties.calculator().latest(semanticEntity);
+        latestId.ifPresent(sv -> {
+            ImmutableList fields = latestId.get().fieldValues();
+            viewProperties.calculator().latestPatternEntityVersion(EntityBinding.Stamp.pattern()).ifPresent(patternEntityVersion -> {
+                int rowIndex = 0;
+                for (int i = 0; i < patternEntityVersion.fieldDefinitions().size(); ++i) {
+                    addFieldToGridPane(patternEntityVersion, i, fields, rowIndex);
+                    ++rowIndex;
+                    if (i < patternEntityVersion.fieldDefinitions().size() - 1) {
+                        addSeparatorToGridPane(rowIndex);
+                        ++rowIndex;
+                    }
+                }
+            });
+        });
     }
 
     private void addSeparatorToGridPane(int rowIndex) {
@@ -109,15 +159,15 @@ public class SemanticTooltip extends Tooltip {
         grid.getRowConstraints().add(rowConstraints);
     }
 
-    private void addFieldToGridPane(PatternVersionRecord patternVersionRecord, int fieldIndex, ImmutableList fields, int rowIndex) {
+    private void addFieldToGridPane(PatternEntityVersion patternEntityVersion, int fieldIndex, ImmutableList fields, int rowIndex) {
         // Field Title
-        String fieldTitle = patternVersionRecord.fieldDefinitions().get(fieldIndex).meaning().description();
+        String fieldTitle = patternEntityVersion.fieldDefinitions().get(fieldIndex).meaning().description();
         Label titleLabel = new Label(fieldTitle + ":");
         grid.add(titleLabel, 0, rowIndex);
         titleLabel.getStyleClass().add("field-title");
 
         // Field Value
-        int dataTypeNid = patternVersionRecord.fieldDefinitions().get(fieldIndex).dataTypeNid();
+        int dataTypeNid = patternEntityVersion.fieldDefinitions().get(fieldIndex).dataTypeNid();
         Optional<KlFieldType> optionalFieldType = KlFieldType.of(dataTypeNid);
 
         optionalFieldType.ifPresent(fieldType -> {
