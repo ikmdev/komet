@@ -11,7 +11,7 @@
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
     <name>Komet</name>
-    <version>1.57.0-gudid-db-SNAPSHOT</version>
+    <version>1.58.0-gudid-db-SNAPSHOT</version>
     <packaging>pom</packaging>
     <inceptionYear>2015</inceptionYear>
     <licenses>
