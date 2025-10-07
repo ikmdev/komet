@@ -73,6 +73,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -119,6 +120,10 @@ import java.util.regex.Pattern;
 public class LandingPageController implements BasicController {
 
     private static final Logger LOG = LoggerFactory.getLogger(LandingPageController.class);
+    @FXML
+    private SplitPane homePage;
+
+    private SplitPane klLandingPage;
 
     @FXML
     private Label welcomeTitleLabel;
@@ -622,5 +627,32 @@ public class LandingPageController implements BasicController {
     @FXML
     private void openImport(ActionEvent event) {
         EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(LANDING_PAGE_SOURCE, Evt.ANY));
+    }
+
+    @FXML
+    private void showHomeLandingPage(ActionEvent event) {
+        landingPageBorderPane.setCenter(homePage);
+    }
+
+    private Pane temporaryKlEditWorkspace;
+    @FXML
+    private void showKlEditorLandingPage(ActionEvent event) {
+        // TODO: create a knowledge layout landing page (SplitPane).
+        if (klLandingPage == null) {
+            Config config = new Config()
+                    .fxml(LandingPageController.class.getResource("kl-landing-page.fxml"))
+                    .controllerClass(KlLandingPageController.class);
+
+            JFXNode<SplitPane, Void> klLandingPageJfxNode = FXMLMvvmLoader.make(config);
+            klLandingPage = klLandingPageJfxNode.node();
+        }
+        landingPageBorderPane.setCenter(klLandingPage);
+
+//        // Pedro: the comment out to launch
+//        if (temporaryKlEditWorkspace == null) {
+//            Button button = new Button("Launch KL Editor Window");
+//            temporaryKlEditWorkspace = new Pane(button);
+//        }
+//        landingPageBorderPane.setCenter(temporaryKlEditWorkspace);
     }
 }
