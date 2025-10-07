@@ -1,19 +1,26 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.64.0</version>
+        <version>1.67.0-mvn-model-4.1-SNAPSHOT</version>
         <relativePath/>
     </parent>
+
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
-    <name>Komet</name>
     <version>1.58.0-gudid-db-SNAPSHOT</version>
     <packaging>pom</packaging>
+
+    <name>Komet</name>
+    <url>http://www.ikm.dev</url>
     <inceptionYear>2015</inceptionYear>
+    <organization>
+        <name>Integrated Knowledge Management</name>
+        <url>http://www.ikm.dev</url>
+    </organization>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -22,9 +29,7 @@
             <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
-    <scm>
-        <url>http://www.github.com/ikmdev/komet</url>
-    </scm>
+
     <developers>
         <developer>
             <id>ikmdev</id>
@@ -32,15 +37,7 @@
             <email>support@ikm.dev</email>
         </developer>
     </developers>
-    <issueManagement>
-        <system>GitHub</system>
-        <url>https://github.com/ikmdev/komet/issues</url>
-    </issueManagement>
-    <url>http://www.ikm.dev</url>
-    <organization>
-        <name>Integrated Knowledge Management</name>
-        <url>http://www.ikm.dev</url>
-    </organization>
+
     <modules>
         <module>komet-terms</module>
         <module>preferences</module>
@@ -60,6 +57,15 @@
         <module>sync</module>
         <module>application</module>
     </modules>
+
+    <scm>
+        <url>http://www.github.com/ikmdev/komet</url>
+    </scm>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/ikmdev/komet/issues</url>
+    </issueManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -68,7 +74,7 @@
         <tinkar-composer.version>1.10.0</tinkar-composer.version>
         <tinkar-core.version>1.126.0-gudid-db-SNAPSHOT</tinkar-core.version>
 
-        <asm.version>9.8</asm.version>
+        <asm.version>9.9</asm.version>
         <java.version>25</java.version>
         <maven.compiler.release>25</maven.compiler.release>
         <maven.compiler.source>25</maven.compiler.source>
@@ -95,19 +101,19 @@
         <openjfx-monocle.version>21.0.2-jpms</openjfx-monocle.version>
 
         <!-- Everything Else -->
-        <roaringbitmap.version>1.4.0</roaringbitmap.version>
+        <roaringbitmap.version>1.5.3</roaringbitmap.version>
         <tinkar-jpms-deps.version>1.0.15</tinkar-jpms-deps.version>
         <classgraph.version>4.8.179</classgraph.version>
         <cognitive.version>1.6.1</cognitive.version>
         <fxcomponents.version>1.6.2</fxcomponents.version>
         <axonic.version>1.1.5</axonic.version>
-        <common-java5.version>3.5.2</common-java5.version>
+        <common-java5.version>3.5.4</common-java5.version>
         <controlsfx.version>11.2.2</controlsfx.version>
         <cssfx.version>11.5.1-jpms</cssfx.version>
         <ikonli.version>12.3.1</ikonli.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <jpackage.version>1.6.6</jpackage.version>
-        <mockito.version>5.19.0</mockito.version>
+        <mockito.version>5.20.0</mockito.version>
         <nsmenufx.version>3.1.0</nsmenufx.version>
         <openjfx.version>25</openjfx.version>
         <scenic-view.version>11.0.2</scenic-view.version>
@@ -576,8 +582,7 @@
                 <artifactId>jgit</artifactId>
                 <version>${jgit.version}</version>
             </dependency>
-            <dependency>
-                <!-- Track log4j-slf4j2-impl dependency and log4j-bom for future version updates -->
+            <dependency><!-- Track log4j-slf4j2-impl dependency and log4j-bom for future version updates -->
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-slf4j2-impl</artifactId>
                 <version>${log4j-slf4j2-impl.version}</version>
@@ -635,6 +640,14 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <failOnError>false</failOnError>
+                        <additionalOptions>--add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</additionalOptions>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
