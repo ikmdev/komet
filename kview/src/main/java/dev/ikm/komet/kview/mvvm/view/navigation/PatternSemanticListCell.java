@@ -89,30 +89,34 @@ public class PatternSemanticListCell extends ListCell<Object> {
             } else if (item instanceof Integer nid) {
                 String entityDescriptionText = fetchDescriptionByNid.apply(nid);
                 EntityFacade entity = Entity.getFast(nid);
-                switch (entity) {
-                    case StampEntity stampEntity -> tooltip.update(stampEntity, entityDescriptionText);
-                    case ConceptEntity conceptEntity -> tooltip.update(conceptEntity, entityDescriptionText);
-                    case PatternEntity patternEntity -> tooltip.update(patternEntity, entityDescriptionText);
-                    case SemanticEntity<?> semanticEntity -> tooltip.update(semanticEntity, entityDescriptionText);
-                    default -> throw new IllegalStateException("Unexpected value: " + entity);
+                if (entity == null) {
+                    updateItem(Integer.toString(nid), false);
+                } else {
+                    switch (entity) {
+                        case StampEntity stampEntity -> tooltip.update(stampEntity, entityDescriptionText);
+                        case ConceptEntity conceptEntity -> tooltip.update(conceptEntity, entityDescriptionText);
+                        case PatternEntity patternEntity -> tooltip.update(patternEntity, entityDescriptionText);
+                        case SemanticEntity<?> semanticEntity -> tooltip.update(semanticEntity, entityDescriptionText);
+                        default -> throw new IllegalStateException("Unexpected value: " + entity);
+                    }
+                    currentEntity = entity;
+                    setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+
+                    currentSemanticTitle = entityDescriptionText;
+                    label.setText(currentSemanticTitle);
+
+                    if (!entityDescriptionText.isEmpty()) {
+                        Image identicon = Identicon.generateIdenticonImage(entity.publicId());
+                        ImageView imageView = new ImageView(identicon);
+                        imageView.setFitWidth(16);
+                        imageView.setFitHeight(16);
+                        label.setGraphic(imageView);
+                    }
+
+                    setGraphic(hbox);
+                    // make ListCell (row) draggable to the desktop
+                    setUpDraggable(hbox, entity, DragAndDropType.SEMANTIC);
                 }
-                currentEntity = entity;
-                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-
-                currentSemanticTitle = entityDescriptionText;
-                label.setText(currentSemanticTitle);
-
-                if (!entityDescriptionText.isEmpty()) {
-                    Image identicon = Identicon.generateIdenticonImage(entity.publicId());
-                    ImageView imageView = new ImageView(identicon);
-                    imageView.setFitWidth(16);
-                    imageView.setFitHeight(16);
-                    label.setGraphic(imageView);
-                }
-
-                setGraphic(hbox);
-                // make ListCell (row) draggable to the desktop
-                setUpDraggable(hbox, entity, DragAndDropType.SEMANTIC);
             }
         } else {
             setGraphic(null);
