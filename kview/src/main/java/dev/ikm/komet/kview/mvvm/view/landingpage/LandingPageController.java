@@ -662,6 +662,7 @@ public class LandingPageController implements BasicController {
 
     private void createNewKLEditorWindow(Event event) {
         KLEditorWindow klEditorWindow = new KLEditorWindow();
+        klEditorWindow.setMaximized(true);
         klEditorWindow.show();
     }
 }

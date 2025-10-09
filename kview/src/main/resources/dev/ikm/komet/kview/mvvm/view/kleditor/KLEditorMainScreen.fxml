@@ -1,167 +1,196 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.*?>
 
-<?import javafx.collections.FXCollections?>
 <?import java.lang.String?>
-<BorderPane fx:controller="dev.ikm.komet.kview.mvvm.view.kleditor.KLEditorWindowController" prefWidth="1280.0" prefHeight="780.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" id="root">
-    <!-- TOP BAR (purple header) + TOOLBAR (controls under header) -->
-    <top>
-        <VBox spacing="0">
-            <!-- Purple header -->
-            <HBox styleClass="app-header" alignment="CENTER_LEFT" spacing="8" prefHeight="44">
-                <Button text="☰" styleClass="quiet-icon" minWidth="36" prefWidth="36" />
-                <Separator orientation="VERTICAL" />
-                <Label text="KNOWLEDGE LAYOUT EDITOR" styleClass="app-title" />
-                <Pane HBox.hgrow="ALWAYS" />
-                <Button text="DONE" styleClass="pill primary" />
-            </HBox>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-
-            <!-- Secondary toolbar under header -->
-            <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="10" >
-                <Label text="Name:" />
-                <TextField promptText="Untitled" styleClass="name-field" prefWidth="260" />
-
-
-                <ChoiceBox prefWidth="200">
-                    <items>
-                        <FXCollections fx:factory="observableArrayList">
-                            <String fx:value="Information View Only"/>
-                            <String fx:value="Edit Layout"/>
-                        </FXCollections>
-                    </items>
-                </ChoiceBox>
-
-
-                <Separator orientation="VERTICAL" />
-
-
-                <Label text="Preview" />
-                <ToggleButton selected="true" text=" " styleClass="switch" />
-
-
-                <Pane HBox.hgrow="ALWAYS" />
-
-
-                <Button text="⎙" styleClass="quiet-icon" />
-                <Button text="⬚" styleClass="quiet-icon" />
-                <Button text="SAVE AS TEMPLATE" styleClass="pill" />
-                <Button text="CANCEL" />
-                <Button text="SAVE" styleClass="primary" />
-            </HBox>
-        </VBox>
-    </top>
-
-
-    <!-- LEFT SIDEBAR (library) -->
-    <left>
-    <VBox styleClass="sidebar" prefWidth="320">
-    <!-- Sidebar header -->
-    <HBox alignment="CENTER_LEFT" spacing="8">
-        <Label text="Pattern and Semantic Library" styleClass="sidebar-title" wrapText="true" />
-        <padding>
-            <Insets top="12" right="12" bottom="8" left="12"/>
-        </padding>
-    </HBox>
-
-
-    <!-- Search + options row -->
-    <HBox spacing="8">
-        <TextField promptText="Search concepts, patterns or semantics" HBox.hgrow="ALWAYS">
+<BorderPane xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.kleditor.KLEditorWindowController">
+   <center>
+      <BorderPane id="root" prefHeight="780.0" prefWidth="1280.0">
+          <!-- TOP BAR (purple header) + TOOLBAR (controls under header) -->
+          <top>
+              <VBox spacing="0">
+                  <!-- Purple header -->
+                  <HBox alignment="CENTER_LEFT" prefHeight="44" spacing="8" styleClass="app-header">
+                      <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="app-title" text="KNOWLEDGE LAYOUT EDITOR" HBox.hgrow="ALWAYS" />
+                      <Button styleClass="pill primary" text="DONE" />
+                  </HBox>
+              </VBox>
+          </top>
+          <!-- CENTER CANVAS AREA -->
+          <center>
+            <BorderPane>
+               <center>
+                    <VBox>
+                        <StackPane styleClass="canvas" VBox.vgrow="ALWAYS">
+                            <!-- Empty layout board placeholder -->
+                            <Label text=" " />
+                        </StackPane>
+                    </VBox>
+               </center>
+               <top>
+         
+         
+                     <!-- Secondary toolbar under header -->
+                     <HBox alignment="CENTER_LEFT" spacing="10" styleClass="toolbar" BorderPane.alignment="CENTER">
+                         <Label text="Name:" />
+                         <TextField prefWidth="260" promptText="Untitled" styleClass="name-field" />
+         
+         
+                         <ChoiceBox prefWidth="200">
+                             <items>
+                                 <FXCollections fx:factory="observableArrayList">
+                                     <String fx:value="Information View Only" />
+                                     <String fx:value="Edit Layout" />
+                                 </FXCollections>
+                             </items>
+                         </ChoiceBox>
+         
+         
+                         <Separator orientation="VERTICAL" />
+         
+         
+                         <Label text="Preview" />
+                         <ToggleButton selected="true" styleClass="switch" text=" " />
+         
+         
+                         <Pane HBox.hgrow="ALWAYS" />
+         
+         
+                         <Button styleClass="quiet-icon" text="⎙" />
+                         <Button styleClass="quiet-icon" text="⬚" />
+                         <Button styleClass="pill" text="SAVE AS TEMPLATE" />
+                         <Button text="CANCEL" />
+                         <Button styleClass="primary" text="SAVE" />
+                     </HBox>
+               </top>
+            </BorderPane>
+          </center>
+         <left>
+          <VBox prefWidth="320" styleClass="sidebar" BorderPane.alignment="CENTER">
+          <!-- Sidebar header -->
+          <HBox alignment="CENTER_LEFT" spacing="8">
+                  <Button mnemonicParsing="false" text="x" />
+              <Label alignment="CENTER" maxWidth="1.7976931348623157E308" styleClass="sidebar-title" text="Pattern and Semantic Library" wrapText="true" HBox.hgrow="ALWAYS" />
+              <padding>
+                  <Insets bottom="8" left="12" right="12" top="12" />
+              </padding>
+          </HBox>
+      
+            
+                <!-- Search + options row -->
+          <HBox spacing="8">
+              <TextField promptText="Search concepts, patterns or semantics" HBox.hgrow="ALWAYS">
 <!--            <graphic>-->
 <!--                <StackPane styleClass="icon icon-search" />-->
 <!--            </graphic>-->
         </TextField>
-        <Button styleClass="quiet-icon" text="⚙" />
-        <padding>
-            <Insets top="0" right="12" bottom="8" left="12"/>
-        </padding>
-    </HBox>
-
-
-    <!-- List of items -->
-    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="sidebar-scroll">
-        <content>
-            <VBox spacing="6">
-                <padding>
-                    <Insets top="4" right="8" bottom="12" left="8"/>
-                </padding>
-                <!-- Reusable list row template; duplicate as needed. -->
-                <HBox styleClass="lib-row" alignment="TOP_LEFT" spacing="10">
-                    <StackPane styleClass="icon icon-comment" />
-                    <VBox spacing="2">
-                        <Label text="Comment pattern" styleClass="row-title" />
-                        <HBox spacing="8">
-                            <Label text="Active" styleClass="chip success" />
-                            <Label text="Last update: 6/8/2024" styleClass="dim" />
-                        </HBox>
-                    </VBox>
-                </HBox>
-
-
-                <HBox styleClass="lib-row" alignment="TOP_LEFT" spacing="10">
-                    <StackPane styleClass="icon icon-desc" />
-                    <VBox spacing="2">
-                        <Label text="Description Pattern" styleClass="row-title" />
-                        <HBox spacing="8">
-                            <Label text="Active" styleClass="chip success" />
-                            <Label text="Last update: 6/8/2024" styleClass="dim" />
-                        </HBox>
-                    </VBox>
-                </HBox>
-
-
-                <HBox styleClass="lib-row" alignment="TOP_LEFT" spacing="10">
-                    <StackPane styleClass="icon icon-device" />
-                    <VBox spacing="2">
-                        <Label text="Diagnostic Device Pattern" styleClass="row-title" />
-                        <HBox spacing="8">
-                            <Label text="Active" styleClass="chip success" />
-                            <Label text="Last update: 6/8/2024" styleClass="dim" />
-                        </HBox>
-                    </VBox>
-                </HBox>
-
-
-                <HBox styleClass="lib-row" alignment="TOP_LEFT" spacing="10">
-                    <StackPane styleClass="icon icon-owl" />
-                    <VBox spacing="2">
-                        <Label text="OWL Axiom Syntax Pattern" styleClass="row-title" />
-                        <HBox spacing="8">
-                            <Label text="Active" styleClass="chip success" />
-                            <Label text="Last update: 6/8/2024" styleClass="dim" />
-                        </HBox>
-                    </VBox>
-                </HBox>
-
-
-                <HBox styleClass="lib-row" alignment="TOP_LEFT" spacing="10">
-                    <StackPane styleClass="icon icon-stamp" />
-                    <VBox spacing="2">
-                        <Label text="STAMP Pattern" styleClass="row-title" />
-                        <HBox spacing="8">
-                            <Label text="Active" styleClass="chip success" />
-                            <Label text="Last update: 6/8/2024" styleClass="dim" />
-                        </HBox>
-                    </VBox>
-                </HBox>
-
-
-                <!-- Add more rows as needed to mirror the screenshot list -->
-            </VBox>
-        </content>
-    </ScrollPane>
-    </VBox>
-    </left>
-    <!-- CENTER CANVAS AREA -->
-    <center>
-        <VBox>
-            <StackPane VBox.vgrow="ALWAYS" styleClass="canvas">
-                <!-- Empty layout board placeholder -->
-                <Label text=" " />
-            </StackPane>
-        </VBox>
-    </center>
+              <Button styleClass="quiet-icon" text="⚙" />
+              <padding>
+                  <Insets bottom="8" left="12" right="12" top="0" />
+              </padding>
+          </HBox>
+      
+            
+                <!-- List of items -->
+          <ScrollPane fitToWidth="true" styleClass="sidebar-scroll" VBox.vgrow="ALWAYS">
+              <content>
+                  <VBox spacing="6">
+                      <padding>
+                          <Insets bottom="12" left="8" right="8" top="4" />
+                      </padding>
+                      <!-- Reusable list row template; duplicate as needed. -->
+                      <HBox alignment="TOP_LEFT" spacing="10" styleClass="lib-row">
+                          <StackPane styleClass="icon icon-comment" />
+                          <VBox spacing="2">
+                              <Label styleClass="row-title" text="Comment pattern" />
+                              <HBox spacing="8">
+                                  <Label styleClass="chip success" text="Active" />
+                                  <Label styleClass="dim" text="Last update: 6/8/2024" />
+                              </HBox>
+                          </VBox>
+                      </HBox>
+      
+            
+                            <HBox alignment="TOP_LEFT" spacing="10" styleClass="lib-row">
+                          <StackPane styleClass="icon icon-desc" />
+                          <VBox spacing="2">
+                              <Label styleClass="row-title" text="Description Pattern" />
+                              <HBox spacing="8">
+                                  <Label styleClass="chip success" text="Active" />
+                                  <Label styleClass="dim" text="Last update: 6/8/2024" />
+                              </HBox>
+                          </VBox>
+                      </HBox>
+      
+            
+                            <HBox alignment="TOP_LEFT" spacing="10" styleClass="lib-row">
+                          <StackPane styleClass="icon icon-device" />
+                          <VBox spacing="2">
+                              <Label styleClass="row-title" text="Diagnostic Device Pattern" />
+                              <HBox spacing="8">
+                                  <Label styleClass="chip success" text="Active" />
+                                  <Label styleClass="dim" text="Last update: 6/8/2024" />
+                              </HBox>
+                          </VBox>
+                      </HBox>
+      
+            
+                            <HBox alignment="TOP_LEFT" spacing="10" styleClass="lib-row">
+                          <StackPane styleClass="icon icon-owl" />
+                          <VBox spacing="2">
+                              <Label styleClass="row-title" text="OWL Axiom Syntax Pattern" />
+                              <HBox spacing="8">
+                                  <Label styleClass="chip success" text="Active" />
+                                  <Label styleClass="dim" text="Last update: 6/8/2024" />
+                              </HBox>
+                          </VBox>
+                      </HBox>
+      
+            
+                            <HBox alignment="TOP_LEFT" spacing="10" styleClass="lib-row">
+                          <StackPane styleClass="icon icon-stamp" />
+                          <VBox spacing="2">
+                              <Label styleClass="row-title" text="STAMP Pattern" />
+                              <HBox spacing="8">
+                                  <Label styleClass="chip success" text="Active" />
+                                  <Label styleClass="dim" text="Last update: 6/8/2024" />
+                              </HBox>
+                          </VBox>
+                      </HBox>
+      
+            
+                            <!-- Add more rows as needed to mirror the screenshot list -->
+                  </VBox>
+              </content>
+          </ScrollPane>
+          </VBox>
+         </left>
+      </BorderPane>
+   </center>
+   <left>
+      <ToolBar orientation="VERTICAL" prefHeight="40.0" prefWidth="32.0" BorderPane.alignment="CENTER">
+        <items>
+          <Button mnemonicParsing="false" />
+            <Separator />
+            <Button mnemonicParsing="false" />
+            <Button mnemonicParsing="false" />
+            <Separator />
+            <Button mnemonicParsing="false" />
+        </items>
+      </ToolBar>
+   </left>
 </BorderPane>
