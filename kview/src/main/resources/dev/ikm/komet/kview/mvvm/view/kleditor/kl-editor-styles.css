@@ -1,0 +1,87 @@
+/* ===== Root ===== */
+#root {
+-fx-background-color: -color-bg;
+}
+
+
+/* Color palette */
+:root {
+-color-bg: #f3f5f7;
+-color-surface: #ffffff;
+-color-border: #e2e6ec;
+-color-text: #1f2328;
+-color-dim: #6b7280;
+-color-accent: #7a3df0; /* purple header */
+-color-accent-strong: #5c23df;
+-color-success: #20b27b;
+}
+
+
+/* ===== App header ===== */
+.app-header {
+-fx-background-color: -color-accent;
+-fx-padding: 0 12 0 12;
+}
+.app-title {
+-fx-text-fill: white;
+-fx-font-weight: bold;
+-fx-font-size: 14px;
+-fx-letter-spacing: 0.8px;
+}
+.pill {
+-fx-background-radius: 18;
+-fx-background-color: derive(white, -3%);
+-fx-text-fill: -color-text;
+-fx-padding: 6 12 6 12;
+-fx-font-weight: 600;
+}
+.pill.primary {
+-fx-background-color: -color-accent-strong;
+-fx-text-fill: white;
+}
+.quiet-icon {
+-fx-background-color: transparent;
+-fx-text-fill: white;
+-fx-font-size: 16px;
+}
+
+
+/* ===== Toolbar ===== */
+.toolbar {
+-fx-background-color: -color-surface;
+-fx-border-color: -color-border;
+-fx-border-width: 0 0 1 0;
+}
+.name-field { -fx-pref-width: 260; }
+
+
+.switch { /* simple preview switch look */
+-fx-background-radius: 12;
+-fx-background-color: linear-gradient(to right, derive(-color-border,30%), derive(-color-border,5%));
+-fx-padding: 4 18 4 18;
+}
+.switch:selected {
+-fx-background-color: linear-gradient(to right, -color-accent-strong, -color-accent);
+-fx-text-fill: white;
+}
+
+
+/* ===== Sidebar ===== */
+.sidebar {
+-fx-background-color: -color-surface;
+-fx-border-color: -color-border;
+-fx-border-width: 0 1 0 0;
+}
+.sidebar-title {
+-fx-font-size: 13px;
+-fx-font-weight: 700;
+}
+.sidebar .text-field {
+-fx-background-radius: 8;
+}
+.sidebar-scroll .viewport { -fx-background-color: transparent; }
+
+
+.lib-row {
+-fx-background-color: white;
+.icon-stamp {}

@@ -44,6 +44,8 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
+
+import dev.ikm.komet.kview.mvvm.view.kleditor.KLEditorWindow;
 import dev.ikm.tinkar.events.Evt;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -635,6 +637,7 @@ public class LandingPageController implements BasicController {
     }
 
     private Pane temporaryKlEditWorkspace;
+
     @FXML
     private void showKlEditorLandingPage(ActionEvent event) {
         // TODO: create a knowledge layout landing page (SplitPane).
@@ -648,11 +651,17 @@ public class LandingPageController implements BasicController {
         }
         landingPageBorderPane.setCenter(klLandingPage);
 
-//        // Pedro: the comment out to launch
-//        if (temporaryKlEditWorkspace == null) {
-//            Button button = new Button("Launch KL Editor Window");
-//            temporaryKlEditWorkspace = new Pane(button);
-//        }
-//        landingPageBorderPane.setCenter(temporaryKlEditWorkspace);
+        // Pedro: the comment out to launch
+        if (temporaryKlEditWorkspace == null) {
+            Button button = new Button("Launch KL Editor Window");
+            temporaryKlEditWorkspace = new Pane(button);
+            button.setOnAction(this::createNewKLEditorWindow);
+        }
+        landingPageBorderPane.setCenter(temporaryKlEditWorkspace);
+    }
+
+    private void createNewKLEditorWindow(Event event) {
+        KLEditorWindow klEditorWindow = new KLEditorWindow();
+        klEditorWindow.show();
     }
 }
