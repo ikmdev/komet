@@ -648,11 +648,11 @@ public class LandingPageController implements BasicController {
         }
         landingPageBorderPane.setCenter(klLandingPage);
 
-//        // Pedro: the comment out to launch
-//        if (temporaryKlEditWorkspace == null) {
-//            Button button = new Button("Launch KL Editor Window");
-//            temporaryKlEditWorkspace = new Pane(button);
-//        }
-//        landingPageBorderPane.setCenter(temporaryKlEditWorkspace);
+        // Pedro: the comment out to launch
+        if (temporaryKlEditWorkspace == null) {
+            Button button = new Button("Launch KL Editor Window");
+            temporaryKlEditWorkspace = new Pane(button);
+        }
+        landingPageBorderPane.setCenter(temporaryKlEditWorkspace);
     }
 }
