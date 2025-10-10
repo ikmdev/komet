@@ -27,6 +27,7 @@ import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
@@ -1143,21 +1144,6 @@ public class ConceptController {
                 Text dateLabel = new Text(dateText);
                 dateLabel.getStyleClass().add("grey8-12pt-bold");
 
-                StampEntity<?> stamp = entityVersion.stamp();
-                String tooltipText = """
-                        Status:\t%s
-                        Time:\t%s
-                        Author:\t%s
-                        Module:\t%s
-                        Path:\t%s
-                        """.formatted(
-                                stamp.state(),
-                                DateTimeUtil.format(stamp.time(), DateTimeUtil.SEC_FORMATTER),
-                                viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stamp.authorNid()),
-                                viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stamp.moduleNid()),
-                                viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stamp.pathNid())
-                        );
-
                 Region spacer = new Region();
                 spacer.setMinWidth(10);
 
@@ -1166,6 +1152,7 @@ public class ConceptController {
 
                 // Add the date info and additional hyperlinks
                 row2.getChildren().addAll(dateAddedLabel, dateLabel, spacer, attachmentHyperlink, commentsHyperlink);
+                String tooltipText = ViewCalculatorUtils.getStampToolTipText(entityVersion.stamp(), viewCalculator);
                 Tooltip.install(row2, new Tooltip(tooltipText));
             });
         }

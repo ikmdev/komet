@@ -25,6 +25,7 @@ import dev.ikm.tinkar.coordinate.stamp.change.ChangeChronology;
 import dev.ikm.tinkar.coordinate.stamp.change.VersionChangeRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
@@ -41,13 +42,16 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.input.InputMethodEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * The user is shown a search and dropdown to filter between change list items (concept &amp; semantic versions).
@@ -198,26 +202,23 @@ public class HistoryChangeController implements BasicController {
         // 4. Generate module ids, names and paths to populate filter dialog
 
         final int entityNid = getEntityFacade().nid();
+        Map<VersionChangeRecord, Integer> versionToNidMap = new HashMap<>();
         // User selects All or Concepts display
         if (isFilterSelected("All", "Concept")) {
             // Populate concept versions
             ChangeChronology conceptChronologyChange = viewCalculator.changeChronology(entityNid);
-            // do the sort
-            List<VersionChangeRecord> sortedChronology = sortChangeChronology(conceptChronologyChange);
-            List<Pane> rows = generateRows(getViewProperties(), getEntityFacade().nid(), sortedChronology);
-            this.changeChronologyPane.getChildren().addAll(rows);
+            conceptChronologyChange.changeRecords().forEach(versionChangeRecord ->
+                    versionToNidMap.put(versionChangeRecord, entityNid));
         }
 
         if (isFilterSelected("All", "Description")) {
             // Populate all description semantics of this entity.
             ImmutableList<SemanticEntity> descrSemanticEntities = viewCalculator.getDescriptionsForComponent(entityNid);
             // For each populate a row based on changes
-            descrSemanticEntities.forEach(semanticEntity -> {
-                ChangeChronology changeChronology = viewCalculator.changeChronology(semanticEntity.nid());
-                // do the sort
-                List<VersionChangeRecord> sortedChronology = sortChangeChronology(changeChronology);
-                List<Pane> rows = generateRows(viewProperties, semanticEntity.nid(), sortedChronology);
-                this.changeChronologyPane.getChildren().addAll(rows);
+            descrSemanticEntities.forEach(semanticEntityVersion -> {
+                ChangeChronology changeChronology = viewCalculator.changeChronology(semanticEntityVersion.nid());
+                changeChronology.changeRecords().forEach(versionChangeRecord ->
+                        versionToNidMap.put(versionChangeRecord, semanticEntityVersion.nid()));
             });
         }
 
@@ -227,22 +228,30 @@ public class HistoryChangeController implements BasicController {
             Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityNid);
             inferredSemanticVersion.ifPresent(semanticEntityVersion -> {
                 ChangeChronology axiomInferredChange = viewCalculator.changeChronology(semanticEntityVersion.nid());
-                // do the sort
-                List<VersionChangeRecord> sortedChronology = sortChangeChronology(axiomInferredChange);
-                List<Pane> rows = generateRows(viewProperties, semanticEntityVersion.nid(), sortedChronology);
-                this.changeChronologyPane.getChildren().addAll(rows);
+                axiomInferredChange.changeRecords().forEach(versionChangeRecord ->
+                        versionToNidMap.put(versionChangeRecord, semanticEntityVersion.nid()));
             });
 
             // Stated Axioms
             Latest<SemanticEntityVersion> statedSemanticVersion = viewCalculator.getStatedAxiomSemanticForEntity(entityNid);
             statedSemanticVersion.ifPresent(semanticEntityVersion -> {
                 ChangeChronology axiomStatedChange = viewCalculator.changeChronology(semanticEntityVersion.nid());
-                // do the sort
-                List<VersionChangeRecord> sortedChronology = sortChangeChronology(axiomStatedChange);
-                List<Pane> rows2 = generateRows(viewProperties, semanticEntityVersion.nid(), sortedChronology);
-                this.changeChronologyPane.getChildren().addAll(rows2);
+                axiomStatedChange.changeRecords().forEach(versionChangeRecord ->
+                        versionToNidMap.put(versionChangeRecord, semanticEntityVersion.nid()));
             });
+
         }
+
+        List<VersionChangeRecord> versionsList = new ArrayList<>(versionToNidMap.keySet());
+        versionsList.sort((changeRecord1, changeRecord2) -> {
+            StampEntity<? extends StampVersion> stamp1 = Entity.getStamp(changeRecord1.stampNid());
+            StampEntity<? extends StampVersion> stamp2 = Entity.getStamp(changeRecord2.stampNid());
+            Long time1 = stamp1.time();
+            Long time2 = stamp2.time();
+            return time2.compareTo(time1);
+        });
+        List<Pane> rows = generateRows(viewProperties, versionsList, versionToNidMap);
+        this.changeChronologyPane.getChildren().addAll(rows);
 
         // This will cache all displayed rows.
         cacheOfRows.clear();
@@ -285,6 +294,44 @@ public class HistoryChangeController implements BasicController {
             listItem.setUserData(changeCoordinate);
 
 //            The following is how to programmatically set a color for the vertical bar beside row.
+            int index = pathMap.get(pathName).stream().toList().indexOf(stamp.moduleNid());
+            if (index > -1 && index < COLORS_FOR_EXTENSIONS.length) {
+                changeListItemController.setExtensionVLineColor(COLORS_FOR_EXTENSIONS[index]);
+            }
+
+            // Programmatically change CSS Theme
+            String styleSheet = defaultStyleSheet();
+            listItem.getStylesheets().add(styleSheet);
+            paneList.add(listItem);
+
+        }
+        return paneList;
+    }
+
+    public List<Pane> generateRows(final ViewProperties viewProperties, List<VersionChangeRecord> versionChangeRecords, Map<VersionChangeRecord, Integer> versionToNidMap) {
+        List<Pane> paneList = new ArrayList<>();
+        for (VersionChangeRecord changeRecord : versionChangeRecords) {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(DESCRIPTION_LIST_ITEM_FXML_FILE));
+            Pane listItem = null;
+            try {
+                listItem = loader.load();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            StampEntity<? extends StampVersion> stamp = Entity.getStamp(changeRecord.stampNid());
+            String pathName = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(stamp.pathNid());
+            ChangeListItemController changeListItemController = loader.getController();
+            ChangeCoordinate changeCoordinate = new ChangeCoordinate(pathName, stamp.moduleNid(), changeRecord);
+
+            // Update View (each row)
+            changeListItemController.updateModel(viewProperties, versionToNidMap.get(changeRecord), changeCoordinate);
+            changeListItemController.updateView();
+
+            // add user data
+            listItem.setUserData(changeCoordinate);
+
+            // The following is how to programmatically set a color for the vertical bar beside row.
             int index = pathMap.get(pathName).stream().toList().indexOf(stamp.moduleNid());
             if (index > -1 && index < COLORS_FOR_EXTENSIONS.length) {
                 changeListItemController.setExtensionVLineColor(COLORS_FOR_EXTENSIONS[index]);

@@ -1,12 +1,17 @@
 package dev.ikm.komet.kview.common;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ComponentWithNid;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 public class ViewCalculatorUtils {
@@ -43,5 +48,30 @@ public class ViewCalculatorUtils {
             descr = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(conceptEntity.nid());
         }
         return descr;
+    }
+
+    public static String getStampToolTipText(int stampNid, ViewCalculator viewCalculator) {
+        StringBuilder tooltipText = new StringBuilder();
+        Entity.get(stampNid).ifPresent(entity -> {
+            if (entity instanceof StampEntity<?> stampEntity) {
+                tooltipText.append(getStampToolTipText(stampEntity, viewCalculator));
+            }
+        });
+        return tooltipText.toString();
+    }
+
+    public static String getStampToolTipText(StampEntity<?> stampEntity, ViewCalculator viewCalculator) {
+        return """
+            Status:\t%s
+            Time:\t%s
+            Author:\t%s
+            Module:\t%s
+            Path:\t%s
+            """.formatted(
+                stampEntity.state(),
+                DateTimeUtil.format(stampEntity.time(), DateTimeUtil.SEC_FORMATTER),
+                viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampEntity.authorNid()),
+                viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampEntity.moduleNid()),
+                viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampEntity.pathNid()));
     }
 }
