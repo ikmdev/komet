@@ -47,11 +47,11 @@ import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.view.properties.PropertiesController;
+import dev.ikm.komet.kview.mvvm.view.timeline.TimelineController;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
@@ -303,6 +303,7 @@ public class ConceptController {
     private Consumer<ToggleButton> reasonerResultsControllerConsumer;
 
     private PropertiesController propertiesController;
+    private TimelineController timelineController;
 
     @InjectViewModel
     private ConceptViewModel conceptViewModel;
@@ -834,9 +835,11 @@ public class ConceptController {
         addPaneToTray(propertiesViewBorderPane, propertiesSlideoutTrayPane);
     }
 
-    public void attachTimelineViewSlideoutTray(Pane timelineViewBorderPane) {
+    public void attachTimelineViewSlideoutTray(Pane timelineViewBorderPane, TimelineController timelineController) {
+        this.timelineController = timelineController;
         addPaneToTray(timelineViewBorderPane, timelineSlideoutTrayPane);
     }
+
     private void addPaneToTray(Pane contentViewPane, Pane slideoutTrayPane) {
         double width = contentViewPane.getWidth();
         contentViewPane.setLayoutX(width);
@@ -897,6 +900,14 @@ public class ConceptController {
 
         // Axioms area
         updateAxioms();
+
+        // Update Properties
+        propertiesController.updateModel(conceptViewModel.getViewProperties(), conceptViewModel.getPropertyValue(CURRENT_ENTITY));
+        propertiesController.updateView();
+
+        // Update Timeline
+        timelineController.updateModel(conceptViewModel.getViewProperties(), conceptViewModel.getPropertyValue(CURRENT_ENTITY));
+        timelineController.updateView();
 
         // Add a context menu to the pencil+ icon for: Add Fully Qualified, Add Other Name
         setUpDescriptionContextMenu(addDescriptionButton);
