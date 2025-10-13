@@ -5,7 +5,7 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.67.0-mvn-model-4.1-SNAPSHOT</version>
+        <version>1.67.0-dist-SNAPSHOT</version>
         <relativePath/>
     </parent>
 
