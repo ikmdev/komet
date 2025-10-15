@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
-<?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.kleditor.KLEditorWindowController">
+<BorderPane stylesheets="@kl-editor-styles.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.kleditor.KLEditorWindowController">
    <center>
       <BorderPane id="root" prefHeight="780.0" prefWidth="1280.0">
           <!-- TOP BAR (purple header) + TOOLBAR (controls under header) -->
@@ -45,70 +43,81 @@
          
          
                      <!-- Secondary toolbar under header -->
-                     <HBox alignment="CENTER_LEFT" spacing="10" styleClass="toolbar" BorderPane.alignment="CENTER">
-                         <Label text="Name:" />
+                     <HBox alignment="CENTER_LEFT" spacing="10" styleClass="top-toolbar" BorderPane.alignment="CENTER">
+                         <Label minWidth="-Infinity" text="Name:" />
                          <TextField prefWidth="260" promptText="Untitled" styleClass="name-field" />
+                     <ComboBox prefWidth="150.0" />
          
          
-                         <ChoiceBox prefWidth="200">
-                             <items>
-                                 <FXCollections fx:factory="observableArrayList">
-                                     <String fx:value="Information View Only" />
-                                     <String fx:value="Edit Layout" />
-                                 </FXCollections>
-                             </items>
-                         </ChoiceBox>
+                         <Label minWidth="-Infinity" text="Preview" />
          
          
                          <Separator orientation="VERTICAL" />
          
          
-                         <Label text="Preview" />
-                         <ToggleButton selected="true" styleClass="switch" text=" " />
-         
-         
                          <Pane HBox.hgrow="ALWAYS" />
          
          
-                         <Button styleClass="quiet-icon" text="⎙" />
-                         <Button styleClass="quiet-icon" text="⬚" />
-                         <Button styleClass="pill" text="SAVE AS TEMPLATE" />
-                         <Button text="CANCEL" />
-                         <Button styleClass="primary" text="SAVE" />
+                         <Button styleClass="light">
+                        <graphic>
+                           <StackPane>
+                              <styleClass>
+                                 <String fx:value="icon" />
+                                 <String fx:value="share" />
+                              </styleClass>
+                           </StackPane>
+                        </graphic></Button>
+                         <Button styleClass="light">
+                        <graphic>
+                           <StackPane>
+                              <styleClass>
+                                 <String fx:value="icon" />
+                                 <String fx:value="duplicate" />
+                              </styleClass>
+                           </StackPane>
+                        </graphic></Button>
+                         <Button styleClass="dark" text="SAVE AS TEMPLATE" />
+                     <Separator orientation="VERTICAL" prefHeight="200.0" />
+                         <Button styleClass="dark" text="CANCEL" />
+                         <Button defaultButton="true" text="SAVE" />
                      </HBox>
                </top>
             </BorderPane>
           </center>
          <left>
-          <VBox prefWidth="320" styleClass="sidebar" BorderPane.alignment="CENTER">
+          <VBox styleClass="pattern-browser" BorderPane.alignment="CENTER">
           <!-- Sidebar header -->
-          <HBox alignment="CENTER_LEFT" spacing="8">
-                  <Button mnemonicParsing="false" text="x" />
+          <HBox alignment="CENTER_LEFT" spacing="8" styleClass="header">
+                  <Button mnemonicParsing="false" styleClass="clear-button">
+                     <graphic>
+                        <StackPane prefHeight="0.0" prefWidth="0.0">
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="cross" />
+                           </styleClass>
+                        </StackPane>
+                     </graphic>
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin></Button>
               <Label alignment="CENTER" maxWidth="1.7976931348623157E308" styleClass="sidebar-title" text="Pattern and Semantic Library" wrapText="true" HBox.hgrow="ALWAYS" />
-              <padding>
-                  <Insets bottom="8" left="12" right="12" top="12" />
-              </padding>
           </HBox>
-      
+               <VBox styleClass="content-container" VBox.vgrow="ALWAYS">
+                  <children>
             
-                <!-- Search + options row -->
-          <HBox spacing="8">
-              <TextField promptText="Search concepts, patterns or semantics" HBox.hgrow="ALWAYS">
+                  
+                      <!-- Search + options row -->
+                <HBox spacing="8" styleClass="search-container">
+                    <TextField promptText="Search concepts, patterns or semantics" HBox.hgrow="ALWAYS">
 <!--            <graphic>-->
 <!--                <StackPane styleClass="icon icon-search" />-->
 <!--            </graphic>-->
         </TextField>
-              <Button styleClass="quiet-icon" text="⚙" />
-              <padding>
-                  <Insets bottom="8" left="12" right="12" top="0" />
-              </padding>
-          </HBox>
-      
-            
-                <!-- List of items -->
-          <ScrollPane fitToWidth="true" styleClass="sidebar-scroll" VBox.vgrow="ALWAYS">
-              <content>
-                  <VBox spacing="6">
+                    <padding>
+                        <Insets bottom="8" left="12" right="12" top="0" />
+                    </padding>
+                </HBox>
+                  <VBox maxHeight="1.7976931348623157E308" spacing="6" VBox.vgrow="ALWAYS">
                       <padding>
                           <Insets bottom="12" left="8" right="8" top="4" />
                       </padding>
@@ -124,7 +133,7 @@
                           </VBox>
                       </HBox>
       
-            
+                  
                             <HBox alignment="TOP_LEFT" spacing="10" styleClass="lib-row">
                           <StackPane styleClass="icon icon-desc" />
                           <VBox spacing="2">
@@ -136,7 +145,7 @@
                           </VBox>
                       </HBox>
       
-            
+                  
                             <HBox alignment="TOP_LEFT" spacing="10" styleClass="lib-row">
                           <StackPane styleClass="icon icon-device" />
                           <VBox spacing="2">
@@ -148,7 +157,7 @@
                           </VBox>
                       </HBox>
       
-            
+                  
                             <HBox alignment="TOP_LEFT" spacing="10" styleClass="lib-row">
                           <StackPane styleClass="icon icon-owl" />
                           <VBox spacing="2">
@@ -160,7 +169,7 @@
                           </VBox>
                       </HBox>
       
-            
+                  
                             <HBox alignment="TOP_LEFT" spacing="10" styleClass="lib-row">
                           <StackPane styleClass="icon icon-stamp" />
                           <VBox spacing="2">
@@ -172,25 +181,67 @@
                           </VBox>
                       </HBox>
       
-            
+                  
                             <!-- Add more rows as needed to mirror the screenshot list -->
                   </VBox>
-              </content>
-          </ScrollPane>
+                  </children>
+               </VBox>
           </VBox>
          </left>
       </BorderPane>
    </center>
    <left>
-      <ToolBar orientation="VERTICAL" prefHeight="40.0" prefWidth="32.0" BorderPane.alignment="CENTER">
-        <items>
-          <Button mnemonicParsing="false" />
+      <VBox styleClass="side-bar" BorderPane.alignment="CENTER">
+         <children>
+            <Button mnemonicParsing="false">
+               <graphic>
+                  <StackPane>
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="home" />
+                     </styleClass>
+                  </StackPane>
+               </graphic>
+               <VBox.margin>
+                  <Insets bottom="14.0" />
+               </VBox.margin>
+            </Button>
             <Separator />
-            <Button mnemonicParsing="false" />
-            <Button mnemonicParsing="false" />
+            <ToggleButton mnemonicParsing="false" selected="true">
+               <toggleGroup>
+                  <ToggleGroup fx:id="sideBarToggleButtons" />
+               </toggleGroup>
+               <graphic>
+                  <StackPane>
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="list" />
+                     </styleClass>
+                  </StackPane>
+               </graphic>
+            </ToggleButton>
+            <ToggleButton mnemonicParsing="false" toggleGroup="$sideBarToggleButtons">
+               <graphic>
+                  <StackPane>
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="code" />
+                     </styleClass>
+                  </StackPane>
+               </graphic>
+            </ToggleButton>
             <Separator />
-            <Button mnemonicParsing="false" />
-        </items>
-      </ToolBar>
+            <ToggleButton mnemonicParsing="false" toggleGroup="$sideBarToggleButtons">
+               <graphic>
+                  <StackPane>
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="layout" />
+                     </styleClass>
+                  </StackPane>
+               </graphic>
+            </ToggleButton>
+         </children>
+      </VBox>
    </left>
 </BorderPane>
