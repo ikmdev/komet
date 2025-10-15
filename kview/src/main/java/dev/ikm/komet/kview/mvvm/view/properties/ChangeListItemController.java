@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.mvvm.model.ChangeCoordinate;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -34,6 +35,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -60,6 +62,9 @@ public class ChangeListItemController {
 
     @FXML
     private ImageView identiconImageView;
+
+    @FXML
+    private HBox stampInfoHBox;
 
     @FXML
     private Label stampAuthorLabel;
@@ -143,7 +148,9 @@ public class ChangeListItemController {
         StampEntity stampForChange = Entity.getStamp(versionChangeRecord.stampNid());
 
         // Time format
-        stampTimeLabel.setText(DateTimeUtil.format(stampForChange.time(), DateTimeFormatter.ofPattern("MM-dd-yyyy")));
+        stampTimeLabel.setText(DateTimeUtil.format(stampForChange.time(), DateTimeUtil.SEC_FORMATTER));
+        String tooltipText = ViewCalculatorUtils.getStampToolTipText(stampForChange, viewCalculator);
+        Tooltip.install(stampInfoHBox, new Tooltip(tooltipText));
 
         // Module
         String moduleName = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampForChange.moduleNid());

@@ -480,6 +480,8 @@ public class PatternDetailsController {
                         dateText = formatter.format(localDate);
                     }
                     fqnAddDateLabel.setText(dateText);
+                    String tooltipText = ViewCalculatorUtils.getStampToolTipText(entityVersion.stamp(), getViewProperties().calculator());
+                    fqnAddDateLabel.setTooltip(new Tooltip(tooltipText));
                 });
             }
         });
@@ -788,6 +790,8 @@ public class PatternDetailsController {
 
                 // Add the date info and additional hyperlinks
                 row3.getChildren().addAll(dateAddedLabel, dateLabel, attachmentHyperlink, commentsHyperlink);
+                String tooltipText = ViewCalculatorUtils.getStampToolTipText(entityVersion.stamp(), getViewProperties().calculator());
+                Tooltip.install(row3, new Tooltip(tooltipText));
             });
         }
 

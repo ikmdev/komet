@@ -15,12 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.concept;
 
-import static dev.ikm.komet.framework.activity.ActivityStreamOption.PUBLISH;
-import static dev.ikm.komet.framework.activity.ActivityStreamOption.SYNCHRONIZE;
-import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
@@ -48,6 +42,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
+
+import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 
 public class ConceptNode extends ExplorationNodeAbstract {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptNode.class);
@@ -161,7 +160,7 @@ public class ConceptNode extends ExplorationNodeAbstract {
             this.timelineViewBorderPane.getStylesheets().add(styleSheet);
 
             // setup view and view into details view
-            conceptDetailsViewController.attachTimelineViewSlideoutTray(this.timelineViewBorderPane);
+            conceptDetailsViewController.attachTimelineViewSlideoutTray(this.timelineViewBorderPane, this.timelineViewController);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
