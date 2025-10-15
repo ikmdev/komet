@@ -265,7 +265,7 @@ public class HistoryChangeController implements BasicController {
             StampEntity<? extends StampVersion> stamp2 = Entity.getStamp(changeRecord2.stampNid());
             Long time1 = stamp1.time();
             Long time2 = stamp2.time();
-            return time2.compareTo(time1);
+            return time2.compareTo(time1); // Sorts in descending order
         });
         return sortedRecords;
     }
