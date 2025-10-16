@@ -82,6 +82,7 @@ import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
+import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
@@ -138,6 +139,7 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -274,7 +276,7 @@ public class PatternDetailsController {
     private Label fqnAddDateLabel;
 
     @FXML
-    private VBox otherNamesVBox;
+    private KLExpandableNodeListControl otherNamesNodeListControl;
 
     @FXML
     private Button addDescriptionButton;
@@ -329,7 +331,8 @@ public class PatternDetailsController {
         fqnAddDateLabel.setText("");
         fieldsTilePane.getChildren().clear();
         fieldsTilePane.setPrefColumns(2);
-        otherNamesVBox.getChildren().clear();
+        otherNamesNodeListControl.getItems().clear();
+        otherNamesNodeListControl.setVisibleCount(3);
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
@@ -386,13 +389,13 @@ public class PatternDetailsController {
                 while(change.next()){
                     if(change.wasAdded()){
                         DescrName descrName = change.getAddedSubList().getFirst();
-                        List<TextFlow> rows = generateOtherNameRow(descrName);
-                        otherNamesVBox.getChildren().addAll(rows);
+                        VBox vBox = generateOtherNameRow(descrName);
+                        otherNamesNodeListControl.getItems().add(vBox);
                     } else if (change.wasRemoved()) {
                         //when the modified record is removed from list, there is no easy way to track it in the VBOX.
                         // Hence, we recreate set all the records.
-                        List<TextFlow> rows = generateOtherNameRows();
-                        otherNamesVBox.getChildren().setAll(rows);
+                        List<Node> items = generateOtherNameRows();
+                        otherNamesNodeListControl.getItems().setAll(items);
                     }
                 }
             }
@@ -682,12 +685,12 @@ public class PatternDetailsController {
         });
     }
 
-    private List<TextFlow> generateOtherNameRows() {
-        List<TextFlow> rows = new ArrayList<>();
+    private List<Node> generateOtherNameRows() {
+        List<Node> items = new ArrayList<>();
         patternViewModel.getObservableList(OTHER_NAMES).forEach( descrName -> {
-            rows.addAll(generateOtherNameRow((DescrName) descrName));
+            items.add(generateOtherNameRow((DescrName) descrName));
         });
-        return rows;
+        return items;
     }
 
     private ContextMenu createContextMenuForPatternField(PatternField selectedPatternField) {
@@ -740,8 +743,8 @@ public class PatternDetailsController {
         return "%s | %s".formatted(casSigText, langText);
     }
 
-    private List<TextFlow> generateOtherNameRow(DescrName otherName) {
-        List<TextFlow> textFlows = new ArrayList<>();
+    private VBox generateOtherNameRow(DescrName otherName) {
+        VBox vBox = new VBox();
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
         Object obj = otherName.getNameText();
@@ -795,10 +798,8 @@ public class PatternDetailsController {
             });
         }
 
-        textFlows.add(row1);
-        textFlows.add(row2);
-        textFlows.add(row3);
-        return textFlows;
+        vBox.getChildren().addAll(row1, row2, row3);
+        return vBox;
     }
 
     /**

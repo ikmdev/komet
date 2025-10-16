@@ -682,11 +682,13 @@ public class TimelineController implements BasicController {
         TreeSet<Integer> availableYears = new TreeSet<>();
 
         for (Integer moduleId : modulesSelected) {
-            if (pathMap.get(pathSelected).get(moduleId) == null) {
+            if (pathMap.get(pathSelected) == null || pathMap.get(pathSelected).get(moduleId) == null) {
                 String errorMsg = "Path: %s and Module: %s not found. Module id = %s".formatted(pathSelected,
                         getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleId),
                         moduleId);
-                throw new RuntimeException(errorMsg);
+                LOG.warn(errorMsg);
+                continue;
+//                throw new RuntimeException(errorMsg);
             }
 
             pathMap.get(pathSelected)
@@ -698,7 +700,9 @@ public class TimelineController implements BasicController {
                         availableYears.add(parseYear(time));
                     }));
         }
-
+        if (datePoints.size() < 2) {
+            return datePoints;
+        }
         int firstYear = parseYear(datePoints.first());
         int endYear = parseYear(datePoints.last());
 
@@ -742,17 +746,24 @@ public class TimelineController implements BasicController {
         // HBox each cell contains a timeline.
         HBox timelineColumns = new HBox();
         timelineColumns.getStyleClass().add("timeline-row-container");
-        String [] colors = new String[]{ "first", "second", "third"};
+        String [] colors = new String[]{ "first", "second", "third", "fourth", "fifth"};
         timelineYearContainerVBox.getChildren().add(timelineColumns);
         // Grouping of shapes for the timeline control
         // Line body - length will increase according to how many points in the year.
         // add end points
         // Add line, end, start points
         // each years worth of changes
-        IntStream.range(0, modulesSelected.size()).forEachOrdered(i -> {
+        for (int i = 0; i < modulesSelected.size(); i++) {
             Group timelineGroup = new Group(); // one timeline for all years represented
             timelineColumns.getChildren().add(timelineGroup);
             int indexColumn = pathMap.getModuleNids(pathSelected).indexOf(modulesSelected.get(i));
+            if (indexColumn < 0) {
+                String errorMsg = "Path: %s and Module: %s not found. Module id = %s".formatted(pathSelected,
+                        viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(modulesSelected.get(i)),
+                        modulesSelected.get(i));
+                LOG.warn(errorMsg);
+                continue;
+            }
             String columnColor = indexColumn > colors.length - 1 ? colors[0] : colors[indexColumn];
             Line timeLine = new Line(0, startY, 0, startY + wholeLineLength); //
             timeLine.getStyleClass().addAll("timeline-year-line", columnColor);
@@ -790,10 +801,10 @@ public class TimelineController implements BasicController {
                             allCircleDatePointsSet.add(datePoint);
                         }
                     });
-        });
         }
+    }
 
-        public void dataDump() {
+    public void dataDump() {
             /*
              * <code>
              *   TreeMap<String, TreeMap<String, TreeMap<Integer, TreeSet<VersionChangeRecord>>>> pathMap = new TreeMap<>();
