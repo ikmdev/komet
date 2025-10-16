@@ -1404,31 +1404,22 @@ public class ConceptController {
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
 
-        // TODO: fix below to display the inferred and stated axioms even if the concept version is not present.
-        viewCalculator.latest(entityFacade).ifPresentOrElse(
-        entityVersion -> {
-
-            // Create a SheetItem (AXIOM inferred semantic version)
-            // TODO Should this be reused instead of instanciating a new one everytime?
-            KometPropertySheet inferredPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
+        if (entityFacade != null) {
             Latest<SemanticEntityVersion> inferredSemanticVersion = viewCalculator.getInferredAxiomSemanticForEntity(entityFacade.nid());
-            makeSheetItem(conceptViewModel.getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
-            inferredAxiomPane.setCenter(inferredPropertySheet);
-
+            inferredSemanticVersion.ifPresentOrElse(semanticEntityVersion -> {
+                KometPropertySheet inferredPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
+                makeSheetItem(conceptViewModel.getViewProperties(), inferredPropertySheet, inferredSemanticVersion);
+                inferredAxiomPane.setCenter(inferredPropertySheet);
+            }, () -> inferredAxiomPane.setCenter(showNoVersionPresentForAxiom()));
 
             // Create a SheetItem (AXIOM stated semantic version)
-            KometPropertySheet statedPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
             Latest<SemanticEntityVersion> statedSemanticVersion = viewCalculator.getStatedAxiomSemanticForEntity(entityFacade.nid());
-            makeSheetItem(conceptViewModel.getViewProperties(), statedPropertySheet, statedSemanticVersion);
-            statedAxiomPane.setCenter(statedPropertySheet);
-
-            //TODO discuss the blue theme color related to AXIOMs
-        },
-        // no latest version present
-        () -> {
-            inferredAxiomPane.setCenter(showNoVersionPresentForAxiom());
-            statedAxiomPane.setCenter(showNoVersionPresentForAxiom());
-        });
+            statedSemanticVersion.ifPresentOrElse(semanticEntityVersion -> {
+                KometPropertySheet statedPropertySheet = new KometPropertySheet(conceptViewModel.getViewProperties(), true);
+                makeSheetItem(conceptViewModel.getViewProperties(), statedPropertySheet, statedSemanticVersion);
+                statedAxiomPane.setCenter(statedPropertySheet);
+            }, ()-> statedAxiomPane.setCenter(showNoVersionPresentForAxiom()));
+        }
     }
 
     private Node showNoVersionPresentForAxiom() {
