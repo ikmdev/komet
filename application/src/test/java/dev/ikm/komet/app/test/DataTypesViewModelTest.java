@@ -122,7 +122,7 @@ public class DataTypesViewModelTest {
     }
 
     private void loadStarterData() {
-        File pbFile = new File(System.getProperty("user.home") + "/Solor/tinkar-starter-data-reasoned-0.1-pb.zip");
+        File pbFile = new File("target/data/Solor/tinkar-starter-data-reasoned-1.0.0-pb.zip");
         LoadEntitiesFromProtobufFile loadProto = new LoadEntitiesFromProtobufFile(pbFile);
         EntityCountSummary count = loadProto.compute();
         LOG.info(count + " entitles loaded from file: " + loadProto.summarize() + "\n\n");

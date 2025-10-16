@@ -36,7 +36,7 @@ public class ArtifactImportControllerTest{
     ActionEvent actionEventMock;
 
     @BeforeAll
-    private void setup(){
+    public void setup(){
         actionEventMock = Mockito.mock(ActionEvent.class);
         artifactImportController = mock(ArtifactImportController.class);
     }

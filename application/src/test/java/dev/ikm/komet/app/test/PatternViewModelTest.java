@@ -151,10 +151,10 @@ public class PatternViewModelTest {
         viewCalculator.forEachSemanticVersionForComponentOfPattern(entity.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(),
                 (semanticEntityVersion,  entityVersion1, patternEntityVersion) -> {
 
-            ConceptFacade language = (ConceptFacade) semanticEntityVersion.fieldValues().get(0);
-            String string = (String) semanticEntityVersion.fieldValues().get(1);
-            ConceptFacade caseSignificance = (ConceptFacade) semanticEntityVersion.fieldValues().get(2);
-            ConceptFacade descriptionType = (ConceptFacade) semanticEntityVersion.fieldValues().get(3);
+            ConceptFacade language = semanticEntityVersion.fieldAsConceptFacade(0);
+            String string = semanticEntityVersion.fieldAsString(1);
+            ConceptFacade caseSignificance = semanticEntityVersion.fieldAsConceptFacade(2);
+            ConceptFacade descriptionType = semanticEntityVersion.fieldAsConceptFacade(3);
             DescrName descrName = new DescrName(null, string, descriptionType,
             Entity.getFast(caseSignificance.nid()), Entity.getFast(semanticEntityVersion.state().nid()), Entity.getFast(semanticEntityVersion.module().nid()),
             Entity.getFast(language.nid()), semanticEntityVersion.publicId());

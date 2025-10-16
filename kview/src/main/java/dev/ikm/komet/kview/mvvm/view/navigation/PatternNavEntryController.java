@@ -6,11 +6,12 @@ import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
+import dev.ikm.tinkar.terms.SemanticFacade;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -183,12 +184,18 @@ public class PatternNavEntryController {
         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
 
         // generate the display name in the format of "Reference Component in Pattern"
-        Function<Integer, String> fetchDescription = (semanticNid -> {
-            SemanticEntity semanticEntity = (SemanticEntity) EntityService.get().getEntity(semanticNid).get();
-            EntityFacade refComponent = EntityService.get().getEntity(semanticEntity.referencedComponentNid()).get();
-            String refComponentName = viewProperties.calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(refComponent.nid());
-            return refComponentName + " in " + retriveDisplayName(instancesViewModel.getPropertyValue(PATTERN_FACADE));
-        });
+        Function<Integer, String> fetchDescription = nid -> {
+            return switch (EntityService.get().getEntityFast(nid)) {
+                case null -> "No such entity";
+                case StampEntity stampEntity -> viewProperties.calculator().getTextForStamp(stampEntity);
+                case SemanticEntity semanticFacade -> {
+                    EntityFacade refComponent = EntityService.get().getEntityFast(semanticFacade.referencedComponentNid());
+                    String refComponentName = viewProperties.calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(refComponent.nid());
+                    yield refComponentName + " in " + retriveDisplayName(instancesViewModel.getPropertyValue(PATTERN_FACADE));
+                }
+                case Entity entity -> viewProperties.calculator().getDescriptionTextOrNid(entity);
+            };
+        };
 
         // set the cell factory for each pattern's instance list
         patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescription, viewProperties));

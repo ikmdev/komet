@@ -65,11 +65,15 @@ public class ChooseConceptMenu extends Menu {
                     Menu activityStreamMenu = new Menu(activityStream.getStreamName() + " history", activityStream.getStreamIcon());
                     getItems().add(activityStreamMenu);
                     for (EntityFacade historyItem: activityStream.getHistory()) {
-                        MenuItem historyMenuItem = new MenuItem(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(historyItem));
-                        historyMenuItem.setOnAction(event -> {
-                            chosenConceptConsumer.accept(historyItem);
-                        });
-                        activityStreamMenu.getItems().add(historyMenuItem);
+                        try {
+                            MenuItem historyMenuItem = new MenuItem(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(historyItem));
+                            historyMenuItem.setOnAction(event -> {
+                                chosenConceptConsumer.accept(historyItem);
+                            });
+                            activityStreamMenu.getItems().add(historyMenuItem);
+                        } catch (Exception e) {
+                            LOG.error("Unable to get preferred description for {}", historyItem, e);
+                        }
                     }
                 }
             }

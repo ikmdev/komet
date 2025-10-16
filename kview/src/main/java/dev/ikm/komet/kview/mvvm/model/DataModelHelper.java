@@ -96,6 +96,7 @@ public class DataModelHelper {
      * @return set of allowed data types for a Pattern's field
      */
     public static Set<ConceptEntity> fetchFieldDefinitionDataTypes(ViewProperties viewProperties) {
+        // TODO: Use a binding (TinkarTerm or similar), not a copied UUID
         // 4e627b9c-cecb-5563-82fc-cb0ee25113b1 is the publicId for displayFields which is the parent
         int dataTypeNid = PrimitiveData.nid(UUID.fromString("4e627b9c-cecb-5563-82fc-cb0ee25113b1"));
         IntIdList intIdList = viewProperties.calculator().navigationCalculator().childrenOf(dataTypeNid);

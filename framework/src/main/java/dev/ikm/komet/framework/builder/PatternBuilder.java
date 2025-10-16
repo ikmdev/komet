@@ -18,12 +18,15 @@ package dev.ikm.komet.framework.builder;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.terms.EntityBinding;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import java.util.UUID;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
+
+import static dev.ikm.tinkar.common.service.PrimitiveData.SCOPED_PATTERN_PUBLICID_FOR_NID;
 
 /**
  * builder class to create and persist a Pattern entity
@@ -84,8 +87,12 @@ public class PatternBuilder {
         MutableList<EntityFacade> entities = Lists.mutable.empty();
         UUID patternUuid = UUID.randomUUID();
         RecordListBuilder<PatternVersionRecord> versionRecords = RecordListBuilder.make();
+        int patternNid = ScopedValue
+                .where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Pattern.pattern().publicId())
+                .call(() -> PrimitiveData.nid(patternUuid));
+
         PatternRecord patternRecord = new PatternRecord(patternUuid.getMostSignificantBits(), patternUuid.getLeastSignificantBits(),
-                null, PrimitiveData.nid(patternUuid), versionRecords);
+                null, patternNid, versionRecords);
 
         // iterate through the descriptions to attach to the pattern
         for (DescriptionBuilderRecord descriptionToBuild : descriptionsToBuild) {

@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-import dev.ikm.komet.framework.KometNodeFactory;
-import dev.ikm.komet.framework.concurrent.TaskListsService;
-import dev.ikm.komet.framework.dnd.DragRegistry;
-import dev.ikm.tinkar.events.DefaultEvtBus;
-import dev.ikm.komet.framework.rulebase.RuleService;
-import dev.ikm.komet.preferences.PreferencesService;
+import dev.ikm.komet.framework.menu.WindowCreateProvider;
+import dev.ikm.komet.framework.menu.WindowRestoreProvider;
 import dev.ikm.tinkar.common.service.CachingService;
 
 open module dev.ikm.komet.framework {
@@ -51,6 +47,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.tabs;
     exports dev.ikm.komet.framework.panel.axiom;
     exports dev.ikm.komet.framework.events.appevents;
+    exports dev.ikm.komet.framework.menu;
 
     provides CachingService with dev.ikm.komet.framework.dnd.DragRegistry.CacheProvider;
     requires io.github.classgraph;
@@ -90,10 +87,15 @@ open module dev.ikm.komet.framework {
     requires transitive dev.ikm.tinkar.ext.lang.owl; // Owl expression builder
     requires com.sparrowwallet.toucan;
 
+    uses dev.ikm.komet.framework.menu.WindowCreateProvider;
+    uses dev.ikm.komet.framework.menu.WindowRestoreProvider;
+    uses dev.ikm.komet.framework.menu.MenuService;
+
     uses dev.ikm.komet.framework.concurrent.TaskListsService;
     uses dev.ikm.komet.preferences.PreferencesService;
     uses dev.ikm.komet.framework.KometNodeFactory;
     uses dev.ikm.tinkar.common.alert.AlertReportingService;
     uses dev.ikm.komet.framework.rulebase.RuleService;
     uses dev.ikm.tinkar.events.EvtBus;
+
 }

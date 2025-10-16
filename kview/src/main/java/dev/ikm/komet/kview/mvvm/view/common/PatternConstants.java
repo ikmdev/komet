@@ -10,7 +10,7 @@ import java.util.UUID;
 public final class PatternConstants {
 
     public static final EntityProxy IDENTIFIER_PATTERN_PROXY = EntityProxy.make("Identifier pattern",
-            new UUID[] {UUID.fromString("65dd3f06-71ff-5650-8fb3-ce4019e50642")});
+            new UUID[] {UUID.fromString("5d60e14b-c410-5172-9559-3c4253278ae2"), UUID.fromString("65dd3f06-71ff-5650-8fb3-ce4019e50642")});
 
     public static final EntityProxy INFERRED_DEFINITION_PATTERN_PROXY = EntityProxy.make("Inferred definition pattern",
             new UUID[] {UUID.fromString("9f011812-15c9-5b1b-85f8-bb262bc1b2a2")});

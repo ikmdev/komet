@@ -87,8 +87,10 @@ public class ComponentFocusRules extends RulesBase {
         if ($observation.subject() instanceof ConceptEntityVersion conceptVersion) {
             int[] tinkarSemanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptVersion.nid(),
                     TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN.nid());
-            int[] kometSemanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptVersion.nid(),
-                    TinkarTerm.KOMET_BASE_MODEL_COMPONENT_PATTERN.nid());
+//            int[] kometSemanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptVersion.nid(),
+//                    TinkarTerm.KOMET_BASE_MODEL_COMPONENT_PATTERN.nid());
+            // TODO: Temporary removal for error in starter set...
+            int[] kometSemanticNidsForComponent = new int[0];
             // case 1: never a member of tinkar or komet
             if (tinkarSemanticNidsForComponent.length == 0 && kometSemanticNidsForComponent.length == 0) {
                 addToTinkar(conceptVersion);

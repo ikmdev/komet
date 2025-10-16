@@ -212,7 +212,7 @@ public class LidrViewModelTest {
                 );
 
 
-        EntityFacade manufacturerEntity = (EntityFacade) findDeviceManufacturer(deviceId).get();
+        EntityFacade manufacturerEntity = findDeviceManufacturer(deviceId).get();
         System.out.println("### MANUFACTURER ENTITY: " + manufacturerEntity);
         System.out.println("### MANUFACTURER DESCRIPTION: " + viewPropertiesNode().calculator().getPreferredDescriptionTextWithFallbackOrNid(manufacturerEntity));
 
