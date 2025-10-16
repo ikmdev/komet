@@ -950,7 +950,6 @@ public class ConceptController {
 
         final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
 
-        // TODO: fix below to display the fqn and other name description section even if the concept version is not present.
         if (entityFacade != null) {
             // Title (FQN of concept)
             String conceptNameStr = viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid());
@@ -1003,63 +1002,6 @@ public class ConceptController {
                         stampViewControl.setLastUpdated(NO_VERSION_FOR_VIEW_TEXT);
                     });
         }
-
-//        // check to see if the latest version exists
-//        viewCalculator.latest(entityFacade).ifPresentOrElse(
-//                entityVersion -> {
-//
-//            // Title (FQN of concept)
-//            String conceptNameStr = viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid());
-//            fqnTitleText.setText(conceptNameStr);
-//            conceptNameTooltip.setText(conceptNameStr);
-//
-//            // Definition description text
-//            viewCalculator
-//                    .languageCalculator()
-//                    .getDefinitionDescriptionText(entityFacade)
-//                    .ifPresentOrElse(definition ->
-//                            definitionTextField.setText(definition),
-//                            () -> definitionTextField.setText(NO_VERSION_FOR_VIEW_TEXT));
-//
-//            updateDisplayIdentifier(viewCalculator, (ConceptFacade) entityFacade);
-//
-//            // Identicon
-//            Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
-//            identiconImageView.setImage(identicon);
-//
-//            // Obtain STAMP info
-//            StampEntity stamp = entityVersion.stamp();
-//
-//            // Status
-//            String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
-//            stampViewControl.setStatus(statusText);
-//
-//            // Module
-//            String moduleText = viewCalculator.getDescriptionTextOrNid(stamp.moduleNid());
-//            stampViewControl.setModule(moduleText);
-//
-//            // Author
-//            String authorDescription = viewCalculator.getDescriptionTextOrNid(stamp.authorNid());
-//            stampViewControl.setAuthor(authorDescription);
-//
-//            // Path
-//            String pathText = viewCalculator.getDescriptionTextOrNid(stamp.pathNid());
-//            stampViewControl.setPath(pathText);
-//
-//            // Latest update time
-//            long stampTime = stamp.time();
-//            stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
-//        },
-//        // else no value present
-//        () -> {
-//            getConceptViewModel().setPropertyValue(MODE, VIEW);
-//            stampViewControl.setStatus(NO_VERSION_FOR_VIEW_TEXT);
-//            stampViewControl.setModule(NO_VERSION_FOR_VIEW_TEXT);
-//            stampViewControl.setAuthor(NO_VERSION_FOR_VIEW_TEXT);
-//            stampViewControl.setPath(NO_VERSION_FOR_VIEW_TEXT);
-//            stampViewControl.setLastUpdated(NO_VERSION_FOR_VIEW_TEXT);
-//            fqnTitleText.setText(NO_VERSION_FOR_VIEW_TEXT);
-//        });
     }
 
     /// Show the public IDs
@@ -1106,8 +1048,8 @@ public class ConceptController {
 
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
 
-        viewCalculator.latest(entityFacade).ifPresentOrElse(
-            _ -> {
+        // When there is a concept, populate the description area
+        if (entityFacade != null) {
             // populate UI with FQN and other names. e.g. Hello Solor (English | Case-insensitive)
             Map<SemanticEntityVersion, List<String>> descriptionSemanticsMap = latestDescriptionSemantics(entityFacade);
             otherNamesNodeListControl.getItems().clear();
@@ -1154,24 +1096,30 @@ public class ConceptController {
             final int otherNamesCount = otherNamesNodeListControl.getItems().size();
             otherNamesHeaderText.setText(otherNamesCount > 0 ?
                     String.format("OTHER NAMES (%d):", otherNamesCount) : "OTHER NAMES:");
-        },
-        // else no value present
-        () -> {
+        }
+
+        // when there are no versions for the concept, show no versions for view text
+        Runnable showNoVersionForViewText = () -> {
             getConceptViewModel().setPropertyValue(MODE, VIEW);
             List<DescrName> fqns = getConceptViewModel().getValue(FULLY_QUALIFIED_NAMES);
-            if (fqns != null && !fqns.isEmpty()) {
+            if (fqns != null && fqns.isEmpty()) {
                 VBox fqnVBox = new VBox(new Label(NO_VERSION_FOR_VIEW_TEXT));
                 fullyQualifiedNameNodeListControl.getItems().clear();
                 fullyQualifiedNameNodeListControl.getItems().add(fqnVBox);
             }
             List<DescrName> ots = getConceptViewModel().getValue(OTHER_NAMES);
-            if (ots != null && !ots.isEmpty()) {
+            if (ots != null && ots.isEmpty()) {
                 VBox otherNameVBox = new VBox(new Label(NO_VERSION_FOR_VIEW_TEXT));
                 otherNamesNodeListControl.getItems().clear();
                 otherNamesNodeListControl.getItems().add(otherNameVBox);
             }
-        });
+        };
 
+        // show no version for view text when there is no concept selected
+        if (entityFacade == null) {
+            showNoVersionForViewText.run();
+        }
+        viewCalculator.latest(entityFacade).ifAbsent(showNoVersionForViewText);
     }
 
     /**
