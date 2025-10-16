@@ -74,6 +74,7 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -462,6 +463,10 @@ public class ConceptController {
             updateOtherNamesDescription(otherNames);
         });
 
+        // Re-layout all node in concept window bounds when fqn and other names custom controls change size.
+        otherNamesNodeListControl.getItems().subscribe(() -> forceLayout());
+        fullyQualifiedNameNodeListControl.getItems().subscribe(() -> forceLayout());
+
         // Listens for events related to new fqn or other names added to this concept. Subscriber is responsible for
         // the final create concept transaction.
         createConceptEventSubscriber = evt -> {
@@ -478,9 +483,9 @@ public class ConceptController {
                     fullyQualifiedNames.add(descrName);
                 } else if (evt.getEventType() == CreateConceptEvent.ADD_OTHER_NAME) {
                     otherNames.add(descrName);
-                }else if (evt.getEventType() == CreateConceptEvent.EDIT_OTHER_NAME) { // Since we are
+                } else if (evt.getEventType() == CreateConceptEvent.EDIT_OTHER_NAME) { // Since we are
                     updateOtherNamesDescription(otherNames);
-                }else { // Since we are
+                } else { // Since we are
                     updateFullyQualifiedNamesDescription(fullyQualifiedNames);
                 }
                 // Attempts to write data
@@ -913,7 +918,21 @@ public class ConceptController {
         setUpDescriptionContextMenu(addDescriptionButton);
         // TODO Update stamps view model
 
+        // Force a layout to ensure all controls are properly sized and displayed
+        forceLayout();
     }
+
+    /**
+     * Force a layout pass on the entire concept window. This is useful when dynamic content changes size, such as
+     * when descriptions are added or modified.
+     */
+    public void forceLayout() {
+        // Re-layout entire window because of possible changes in description sizes
+        detailsOuterBorderPane.setPrefWidth(detailsOuterBorderPane.getPrefWidth() - 2.00);
+        // Change properties that affect the size, e.g.,
+        Platform.runLater(() -> detailsOuterBorderPane.setPrefWidth(detailsOuterBorderPane.getPrefWidth() + 2.00));
+    }
+
     public void onReasonerSlideoutTray(Consumer<ToggleButton> reasonerResultsControllerConsumer) {
         this.reasonerResultsControllerConsumer = reasonerResultsControllerConsumer;
     }
@@ -931,11 +950,9 @@ public class ConceptController {
 
         final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
 
-        // check to see if the latest version exists
-        viewCalculator.latest(entityFacade).ifPresentOrElse(
-                entityVersion -> {
-
-                    // Title (FQN of concept)
+        // TODO: fix below to display the fqn and other name description section even if the concept version is not present.
+        if (entityFacade != null) {
+            // Title (FQN of concept)
             String conceptNameStr = viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid());
             fqnTitleText.setText(conceptNameStr);
             conceptNameTooltip.setText(conceptNameStr);
@@ -945,7 +962,7 @@ public class ConceptController {
                     .languageCalculator()
                     .getDefinitionDescriptionText(entityFacade)
                     .ifPresentOrElse(definition ->
-                            definitionTextField.setText(definition),
+                                    definitionTextField.setText(definition),
                             () -> definitionTextField.setText(NO_VERSION_FOR_VIEW_TEXT));
 
             updateDisplayIdentifier(viewCalculator, (ConceptFacade) entityFacade);
@@ -954,39 +971,95 @@ public class ConceptController {
             Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
             identiconImageView.setImage(identicon);
 
-            // Obtain STAMP info
-            StampEntity stamp = entityVersion.stamp();
+            viewCalculator.latest(entityFacade).ifPresentOrElse(
+                    entityVersion -> {
+                        // Obtain STAMP info
+                        StampEntity stamp = entityVersion.stamp();
 
-            // Status
-            String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
-            stampViewControl.setStatus(statusText);
+                        // Status
+                        String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
+                        stampViewControl.setStatus(statusText);
 
-            // Module
-            String moduleText = viewCalculator.getDescriptionTextOrNid(stamp.moduleNid());
-            stampViewControl.setModule(moduleText);
+                        // Module
+                        String moduleText = viewCalculator.getDescriptionTextOrNid(stamp.moduleNid());
+                        stampViewControl.setModule(moduleText);
 
-            // Author
-            String authorDescription = viewCalculator.getDescriptionTextOrNid(stamp.authorNid());
-            stampViewControl.setAuthor(authorDescription);
+                        // Author
+                        String authorDescription = viewCalculator.getDescriptionTextOrNid(stamp.authorNid());
+                        stampViewControl.setAuthor(authorDescription);
 
-            // Path
-            String pathText = viewCalculator.getDescriptionTextOrNid(stamp.pathNid());
-            stampViewControl.setPath(pathText);
+                        // Path
+                        String pathText = viewCalculator.getDescriptionTextOrNid(stamp.pathNid());
+                        stampViewControl.setPath(pathText);
 
-            // Latest update time
-            long stampTime = stamp.time();
-            stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
-        },
-        // else no value present
-        () -> {
-            getConceptViewModel().setPropertyValue(MODE, VIEW);
-            stampViewControl.setStatus(NO_VERSION_FOR_VIEW_TEXT);
-            stampViewControl.setModule(NO_VERSION_FOR_VIEW_TEXT);
-            stampViewControl.setAuthor(NO_VERSION_FOR_VIEW_TEXT);
-            stampViewControl.setPath(NO_VERSION_FOR_VIEW_TEXT);
-            stampViewControl.setLastUpdated(NO_VERSION_FOR_VIEW_TEXT);
-            fqnTitleText.setText(NO_VERSION_FOR_VIEW_TEXT);
-        });
+                        // Latest update time
+                        long stampTime = stamp.time();
+                        stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
+                    }, () -> {
+                        stampViewControl.setStatus(NO_VERSION_FOR_VIEW_TEXT);
+                        stampViewControl.setModule(NO_VERSION_FOR_VIEW_TEXT);
+                        stampViewControl.setAuthor(NO_VERSION_FOR_VIEW_TEXT);
+                        stampViewControl.setPath(NO_VERSION_FOR_VIEW_TEXT);
+                        stampViewControl.setLastUpdated(NO_VERSION_FOR_VIEW_TEXT);
+                    });
+        }
+
+//        // check to see if the latest version exists
+//        viewCalculator.latest(entityFacade).ifPresentOrElse(
+//                entityVersion -> {
+//
+//            // Title (FQN of concept)
+//            String conceptNameStr = viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid());
+//            fqnTitleText.setText(conceptNameStr);
+//            conceptNameTooltip.setText(conceptNameStr);
+//
+//            // Definition description text
+//            viewCalculator
+//                    .languageCalculator()
+//                    .getDefinitionDescriptionText(entityFacade)
+//                    .ifPresentOrElse(definition ->
+//                            definitionTextField.setText(definition),
+//                            () -> definitionTextField.setText(NO_VERSION_FOR_VIEW_TEXT));
+//
+//            updateDisplayIdentifier(viewCalculator, (ConceptFacade) entityFacade);
+//
+//            // Identicon
+//            Image identicon = Identicon.generateIdenticonImage(entityFacade.publicId());
+//            identiconImageView.setImage(identicon);
+//
+//            // Obtain STAMP info
+//            StampEntity stamp = entityVersion.stamp();
+//
+//            // Status
+//            String statusText = viewCalculator.getDescriptionTextOrNid(stamp.stateNid());
+//            stampViewControl.setStatus(statusText);
+//
+//            // Module
+//            String moduleText = viewCalculator.getDescriptionTextOrNid(stamp.moduleNid());
+//            stampViewControl.setModule(moduleText);
+//
+//            // Author
+//            String authorDescription = viewCalculator.getDescriptionTextOrNid(stamp.authorNid());
+//            stampViewControl.setAuthor(authorDescription);
+//
+//            // Path
+//            String pathText = viewCalculator.getDescriptionTextOrNid(stamp.pathNid());
+//            stampViewControl.setPath(pathText);
+//
+//            // Latest update time
+//            long stampTime = stamp.time();
+//            stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
+//        },
+//        // else no value present
+//        () -> {
+//            getConceptViewModel().setPropertyValue(MODE, VIEW);
+//            stampViewControl.setStatus(NO_VERSION_FOR_VIEW_TEXT);
+//            stampViewControl.setModule(NO_VERSION_FOR_VIEW_TEXT);
+//            stampViewControl.setAuthor(NO_VERSION_FOR_VIEW_TEXT);
+//            stampViewControl.setPath(NO_VERSION_FOR_VIEW_TEXT);
+//            stampViewControl.setLastUpdated(NO_VERSION_FOR_VIEW_TEXT);
+//            fqnTitleText.setText(NO_VERSION_FOR_VIEW_TEXT);
+//        });
     }
 
     /// Show the public IDs
@@ -1383,6 +1456,7 @@ public class ConceptController {
         ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
 
+        // TODO: fix below to display the inferred and stated axioms even if the concept version is not present.
         viewCalculator.latest(entityFacade).ifPresentOrElse(
         entityVersion -> {
 
@@ -1588,12 +1662,6 @@ public class ConceptController {
         this.viewMenuModel = new ViewMenuModel(conceptViewModel.getViewProperties(), coordinatesMenuButton, "DetailsController");
     }
 
-    private DateTimeFormatter dateFormatter(String formatString) {
-        return DateTimeFormatter
-                .ofPattern(formatString)
-                .withLocale(Locale.US)
-                .withZone(ZoneId.of("UTC"));
-    }
 
     private int getFieldIndexByMeaning(SemanticEntityVersion entityVersion, EntityFacade ...meaning) {
         PatternEntity<PatternEntityVersion> patternEntity = entityVersion.entity().pattern();
@@ -1613,25 +1681,6 @@ public class ConceptController {
     private <T> T getFieldValueByMeaning(SemanticEntityVersion entityVersion, EntityFacade ...meaning) {
         int index = getFieldIndexByMeaning(entityVersion, meaning);
         if (index == -1) {
-            return null;
-        }
-        return (T) entityVersion.fieldValues().get(index);
-    }
-
-    private <T> T getFieldValueByPurpose(SemanticEntityVersion entityVersion, EntityFacade ...purpose) {
-        PatternEntity<PatternEntityVersion> patternEntity = entityVersion.entity().pattern();
-        PatternEntityVersion patternEntityVersion = conceptViewModel.getViewProperties().calculator().latest(patternEntity).get();
-        int index = -1;
-        if (purpose != null && purpose.length > 0){
-            for (int i=0; i < purpose.length; i++){
-                index = patternEntityVersion.indexForPurpose(purpose[i].nid());
-                if (index != -1){
-                    break;
-                }
-            }
-        }
-
-        if (index == -1){
             return null;
         }
         return (T) entityVersion.fieldValues().get(index);

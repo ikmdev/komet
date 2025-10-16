@@ -659,6 +659,16 @@
     -fx-background-color: transparent, #FF6252;
 }
 
+/* Forth extension vertical red line */
+.descr-row-container .extension-vline.fourth {
+    -fx-background-color: transparent, -Accent-color-green;
+}
+
+/* Forth extension vertical red line */
+.descr-row-container .extension-vline.fifth {
+    -fx-background-color: transparent, -Accent-color-tiffany;
+}
+
 .descr-semantic-name {
     -fx-font-family: "Open Sans";
     -fx-font-weight: bold;
