@@ -5,7 +5,7 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.64.0</version>
+        <version>1.67.0-dist-SNAPSHOT</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
