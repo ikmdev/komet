@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
 import static dev.ikm.komet.framework.controls.TimeUtils.calculateTimeAgoWithPeriodAndDuration;
+import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
@@ -45,7 +46,7 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 
-import dev.ikm.komet.kview.mvvm.view.kleditor.KLEditorWindow;
+import dev.ikm.komet.kview.events.CreateKLEditorWindowEvent;
 import dev.ikm.tinkar.events.Evt;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -661,8 +662,13 @@ public class LandingPageController implements BasicController {
     }
 
     private void createNewKLEditorWindow(Event event) {
-        KLEditorWindow klEditorWindow = new KLEditorWindow();
-        klEditorWindow.setMaximized(true);
-        klEditorWindow.show();
+        // publish the event that the new KLEditor Window button was pressed
+        final PrefX klWindowSettingsObjectMap = PrefX.create();
+        final UUID klEditorTopic = UUID.randomUUID();
+
+        landingPageEventBus.publish(KL_TOPIC,
+                new CreateKLEditorWindowEvent(event.getSource(), CreateKLEditorWindowEvent.CREATE_KL_EDITOR, klWindowSettingsObjectMap));
+
+        LOG.info("KL EDITOR WINDOW LAUNCHED");
      }
 }

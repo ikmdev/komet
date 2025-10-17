@@ -45,6 +45,13 @@ public enum CssFile {
             "dev.ikm.komet.kview",
             "dev/ikm/komet/kview/mvvm/view/",
             Paths.get("kview", "src", "main", "resources")
+    ),
+
+    KLEDITOR_CSS(
+            "kl-editor.css",
+            "dev.ikm.komet.kview",
+            "dev/ikm/komet/kview/mvvm/view/kleditor",
+            Paths.get("kview", "src", "main", "resources")
     );
 
     /**

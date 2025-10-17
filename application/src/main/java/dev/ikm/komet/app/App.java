@@ -20,6 +20,7 @@ import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
+import dev.ikm.komet.kview.events.CreateKLEditorWindowEvent;
 import dev.ikm.komet.kview.events.SignInUserEvent;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
@@ -66,6 +67,7 @@ import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
@@ -227,6 +229,15 @@ public class App extends Application  {
 
         // Subscribe the subscriber to the JOURNAL_TOPIC
         kViewEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, detailsSubscriber);
+
+        // Create a subscriber for handling KL Window Event
+        Subscriber<CreateKLEditorWindowEvent> createKLEditorWindowEventSubscriber = evt -> {
+            final PrefX journalWindowSettingsObjectMap = evt.getWindowSettingsObjectMap();
+            appPages.launchKLEditorViewPage(journalWindowSettingsObjectMap, userProperty.get());
+        };
+
+        // Subscribe the subscriber to the KL_TOPIC
+        kViewEventBus.subscribe(KL_TOPIC, CreateKLEditorWindowEvent.class, createKLEditorWindowEventSubscriber);
 
         Subscriber<SignInUserEvent> signInUserEventSubscriber = evt -> {
             final ConceptFacade loggedInUser = (ConceptFacade) evt.getLoggedInUser();

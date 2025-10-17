@@ -1,84 +1,4 @@
-@import "komet-user-agent-stylesheet.css";
-
-/*******************************************************************************
- *                                                                             *
- * Button                                                                      *
- *                                                                             *
- ******************************************************************************/
-
-.button {
-    -fx-border-radius: 4px;
-    -fx-border-color: -Secondary-05;
-    -fx-border-width: 1px;
-
-    -fx-background-radius: 4px;
-    -fx-background-color: -Grey-2;
-    -fx-background-insets: 0;
-
-    -fx-text-fill: -Secondary-05;
-    -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
-    -fx-font-weight: 600;
-
-    -fx-padding: 0.25em 0.833333em 0.25em  0.833333em; /* 4 10 4 10         */
-}
-
-.button.dark {
-    -fx-background-color: -Grey-11;
-}
-
-.button:default {
-    -fx-background-color: -Secondary-05;
-    -fx-text-fill: white;
-}
-
-.button.light {
-    -fx-border-color: transparent;
-    -fx-background-color: transparent;
-}
-
-/*******************************************************************************
- *                                                                             *
- * ComboBox                                                                    *
- *                                                                             *
- ******************************************************************************/
-
-.combo-box {
-    -fx-background-color: #44495d;
-    -fx-color: -Grey-8;
-
-    -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
-    -fx-font-style: normal;
-    -fx-font-weight: 500;
-}
-
-.combo-box .list-cell {
-    -fx-text-fill: #111;
-    -fx-padding: 0.166667em 0.666667em 0.166667em 0.666667em; /* 2 8 2 8 */
-}
-
-.combo-box .text-input {
-    -fx-background-color: transparent;
-    -fx-border-width: 0;
-
-    -fx-prompt-text-fill: #111;
-}
-
-.combo-box:editable > .arrow-button {
-    -fx-background-color: transparent;
-}
-
-.combo-box:editable > .arrow-button:hover {
-    -fx-background-color: #f0f0f0;
-    -fx-background-radius: 4px;
-    -fx-background-insets: 0;
-}
-
-.combo-box.combo-box-base > .arrow-button > .arrow {
-    -fx-background-color: #5896f6;
-    -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
-}
+@import "kl-core.css";
 
 /*******************************************************************************
  *                                                                             *
@@ -233,7 +153,7 @@
  ******************************************************************************/
 
 .pattern-browser {
-    -fx-pref-width: 280px;
+    -fx-pref-width: 360px;
 }
 
 .pattern-browser .header {
@@ -255,7 +175,7 @@
     -fx-padding: 0 5 0 5;
 }
 
-.pattern-browser .content-container {
+.pattern-browser > .content-container {
     -fx-background-color: #545d72;
     -fx-padding: 0 7px 0 7px;
 }
@@ -276,6 +196,112 @@
 
 .pattern-browser .content-container .label {
     -fx-text-fill: #eee;
+}
+
+/*******************************************************************************
+ * Pattern Browser ListView                                                    *
+ ******************************************************************************/
+
+.pattern-browser .list-view {
+    -fx-background-color: transparent;
+}
+
+.pattern-browser .list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 0 0 0;
+}
+
+.pattern-browser .list-view .scroll-bar:vertical .increment-button,
+.pattern-browser .list-view .scroll-bar:vertical .decrement-button,
+.pattern-browser .list-view .scroll-bar:vertical .increment-arrow,
+.pattern-browser .list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 0 0 2;
+}
+
+.pattern-browser .list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #888888;
+    -fx-background-insets: 3 0 3 3;
+    -fx-background-radius: 16px;
+}
+
+/* Horizontal scrollbars */
+.pattern-browser .list-view .scroll-bar:horizontal .increment-arrow,
+.pattern-browser .list-view .scroll-bar:horizontal .decrement-arrow,
+.pattern-browser .list-view .scroll-bar:horizontal .increment-button,
+.pattern-browser .list-view.scroll-bar:horizontal .decrement-button {
+    -fx-padding: 0;
+}
+
+/**********************************  Cells  **********************************/
+
+.pattern-browser .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+
+    -fx-padding: 0 0px 5px 0px;
+    -fx-effect: dropshadow(gaussian , rgba(0, 0, 0, 0.7), 2, 0, 0 , 2 );
+}
+
+.pattern-browser .list-view .list-cell > .main-container {
+    -fx-background-color: white;
+    -fx-background-radius: 2px;
+
+    -fx-fill-height: false;
+
+    -fx-alignment: center-left;
+
+    -fx-padding: 3px 10px 3px 8px;
+}
+
+.pattern-browser .list-view .list-cell:selected > .main-container {
+    -fx-background-color: #cfcfcf;
+}
+
+.pattern-browser .list-view .list-cell:hover > .main-container {
+    -fx-background-color: #eee;
+}
+
+.pattern-browser .list-view .list-cell:selected:hover  > .main-container {
+    -fx-background-color: #ddd;
+}
+
+.pattern-browser .list-view .list-cell:empty > .main-container {
+    -fx-background-color: transparent;
+}
+
+.pattern-browser .list-view .list-cell > .main-container > .content-container {
+   -fx-padding: 0 0 0 8px;
+   -fx-spacing: 1px;
+}
+
+.pattern-browser .list-view .list-cell > .main-container > .content-container,
+.pattern-browser .list-view .list-cell > .main-container > .content-container > .sub-content-container {
+   -fx-background-color: transparent;
+}
+
+.pattern-browser .list-view .list-cell > .main-container .title-label {
+    -fx-text-fill: #111;
+    -fx-font-size: 12px;
+}
+
+.pattern-browser .list-view .list-cell > .main-container .image-view {
+    -fx-fit-width: 20px;
+    -fx-fit-height: 20px;
+}
+
+.pattern-browser .list-view .list-cell > .main-container .status-label {
+    -fx-text-fill: #555;
+    -fx-font-size: 10px;
+}
+
+.pattern-browser .list-view .list-cell > .main-container .last-updated-container {
+
+}
+.pattern-browser .list-view .list-cell > .main-container .last-updated-container > .label {
+    -fx-text-fill: #666666;
+    -fx-font-size: 10px;
 }
 
 /*******************************************************************************

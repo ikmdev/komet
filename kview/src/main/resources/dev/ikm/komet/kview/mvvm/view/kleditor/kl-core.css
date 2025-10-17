@@ -1,0 +1,151 @@
+@import "komet-base.css";
+
+/*******************************************************************************
+ *                                                                             *
+ * Root definitions (includes "global css variables")                          *
+ * (This is repeated in kview.css we should probably have a common css file    *
+ * and both stylesheets should import it)                                      *
+ *                                                                             *
+ ******************************************************************************/
+.root {
+    -fx-kview-titled-pane-text-color: #4581deff;
+    -fx-kview-titled-pane-background-color: #dbe9ffff;
+    -komet-description-color: #ff9100;
+    -Primary-07: #598F3C;
+    -Primary-06: #5EA03C;
+    -Primary-05: #67BA3F;
+    -Primary-04: #5DCF16;
+    -Primary-03: #7ADE3D;
+    -Primary-02: #94EE5D;
+    -Primary-01: #C0F5A0;
+
+    -Secondary-07: #304971;
+    -Secondary-06: #395C9A;
+    -Secondary-05: #4A7AD2;
+    -Secondary-04: #5896F6;
+    -Secondary-03: #9DC4FF;
+    -Secondary-02: #CADFFF;
+    -Secondary-01: #DEEBFF;
+
+    -Grey-Black: #000;
+
+    -Grey-12: #212430;
+    -Grey-11: #2E3240;
+    -Grey-10: #44495E;
+    -Grey-9: #545D72;
+    -Grey-8: #6E7989;
+    -Grey-7: #9CAABF;
+    -Grey-6: #B3BDCD;
+    -Grey-5: #C3CDDC;
+    -Grey-4: #CFD8E4;
+    -Grey-3: #E1E8F1;
+    -Grey-2: #F1F3F8;
+    -Grey-1: #FBFBFC;
+    -Grey-White: #FFF;
+    -Natural-Grey-Main: #5E5E5E;
+    -Natural-Grey-Dark: #4A4A4A;
+
+    -Accent-color-yellow: #F3BE00;
+    -Accent-color-orange: #FDAD15;
+    -Accent-color-red: #F04938;
+    -Accent-color-lavender: #956AFF;
+    -Accent-color-blue: #0085FF;
+    -Accent-color-tiffany: #02CACD;
+    -Accent-color-green: #00BC62;
+    -Chip-Accepted-color-green: -Accent-color-green;
+    -Chip-Error-color-red: -Accent-color-red;
+    -Text-hover: #C6DCFF4D;
+    -Hover-light-blue: rgba(198, 220, 255, 0.30);
+    -Medium-opaque-red: rgba(200, 70, 70, 0.60);
+
+    -icon-paint: white;
+
+    -fx-font-family: "Noto Sans";
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Styling of core JavaFX controls.                                            *
+ * These styles are good candidates for a user agent stylesheet.               *
+ *                                                                             *
+ ******************************************************************************/
+
+/*******************************************************************************
+ *                                                                             *
+ * Button                                                                      *
+ *                                                                             *
+ ******************************************************************************/
+
+.button {
+    -fx-border-radius: 4px;
+    -fx-border-color: -Secondary-05;
+    -fx-border-width: 1px;
+
+    -fx-background-radius: 4px;
+    -fx-background-color: -Grey-2;
+    -fx-background-insets: 0;
+
+    -fx-text-fill: -Secondary-05;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+
+    -fx-padding: 0.25em 0.833333em 0.25em  0.833333em; /* 4 10 4 10         */
+}
+
+.button.dark {
+    -fx-background-color: -Grey-11;
+}
+
+.button:default {
+    -fx-background-color: -Secondary-05;
+    -fx-text-fill: white;
+}
+
+.button.light {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * ComboBox                                                                    *
+ *                                                                             *
+ ******************************************************************************/
+
+.combo-box {
+    -fx-background-color: #44495d;
+    -fx-color: -Grey-8;
+
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: #111;
+    -fx-padding: 0.166667em 0.666667em 0.166667em 0.666667em; /* 2 8 2 8 */
+}
+
+.combo-box .text-input {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+
+    -fx-prompt-text-fill: #111;
+}
+
+.combo-box:editable > .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.combo-box:editable > .arrow-button:hover {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 4px;
+    -fx-background-insets: 0;
+}
+
+.combo-box.combo-box-base > .arrow-button > .arrow {
+    -fx-background-color: #5896f6;
+    -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+}

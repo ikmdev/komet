@@ -8,6 +8,7 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.mvvm.model.*;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
+import dev.ikm.komet.kview.mvvm.view.kleditor.KLEditorWindowController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
 import dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorController;
@@ -21,6 +22,7 @@ import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -36,6 +38,7 @@ import java.util.*;
 import static dev.ikm.komet.app.App.IS_BROWSER;
 import static dev.ikm.komet.app.App.IS_MAC;
 import static dev.ikm.komet.app.AppState.SHUTDOWN;
+import static dev.ikm.komet.app.util.CssFile.KLEDITOR_CSS;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
@@ -318,6 +321,104 @@ public class AppPages {
             app.webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
         } else {
             journalStage.show();
+        }
+    }
+
+    /**
+     * Launchs a new KE Editor Window
+     *
+     * @param klWindowSettings if present will give the size and positioning of the journal window
+     */
+    void launchKLEditorViewPage(PrefX klWindowSettings, ConceptFacade loggedInUser) {
+        Objects.requireNonNull(klWindowSettings, "klWindowSettings cannot be null");
+
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
+        final WindowSettings windowSettings = new WindowSettings(windowPreferences);
+
+//        final UUID klTopic = klWindowSettings.getValue(KL_TOPIC);
+//        Objects.requireNonNull(klTopic, "klTopic cannot be null");
+
+        ObservableEditCoordinate editCoordinate = windowSettings.getView().editCoordinate();
+        editCoordinate.authorForChangesProperty().setValue(loggedInUser);
+
+        FXMLLoader loader = new FXMLLoader(KLEditorWindowController.class.getResource("KLEditorMainScreen.fxml"));
+        Parent root = null;
+        try {
+            root = loader.load();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        KLEditorWindowController klEditorWindowController = loader.getController();
+
+        klEditorWindowController.init(windowPreferences, windowSettings);
+
+        Scene sourceScene = new Scene(root, DEFAULT_JOURNAL_WIDTH, DEFAULT_JOURNAL_HEIGHT);
+        addStylesheets(sourceScene, KLEDITOR_CSS);
+
+        Stage klEditorWindowStage = new Stage();
+        klEditorWindowStage.getIcons().setAll(app.appIcon);
+        klEditorWindowStage.setScene(sourceScene);
+
+//        if (!IS_MAC) {
+//            app.appMenu.generateMsWindowsMenu(root, klEditorWindowStage);
+//        }
+
+        // load journal specific window settings
+        klEditorWindowStage.setTitle("Knowledge Layout Editor");
+
+        // Get the UUID-based directory name from preferences
+//        String journalDirName = klWindowSettings.getValue(JOURNAL_DIR_NAME);
+
+        // For new journals (no UUID yet), generate one using the controller's UUID
+//        if (journalDirName == null) {
+//            journalDirName = journalController.getJournalDirName();
+//            klWindowSettings.setValue(JOURNAL_DIR_NAME, journalDirName);
+//        }
+
+//        if (klWindowSettings.getValue(JOURNAL_HEIGHT) != null) {
+//            klEditorWindowStage.setHeight(klWindowSettings.getValue(JOURNAL_HEIGHT));
+//            klEditorWindowStage.setWidth(klWindowSettings.getValue(JOURNAL_WIDTH));
+//            klEditorWindowStage.setX(klWindowSettings.getValue(JOURNAL_XPOS));
+//            klEditorWindowStage.setY(klWindowSettings.getValue(JOURNAL_YPOS));
+//            journalController.restoreWindows(windowSettings, klWindowSettings);
+//        } else {
+//            klEditorWindowStage.setMaximized(true);
+//        }
+        klEditorWindowStage.setMaximized(true);
+
+        klEditorWindowStage.setOnHidden(windowEvent -> {
+//            app.saveJournalWindowsToPreferences();
+//            journalController.shutdown();
+//            app.journalControllersList.remove(journalController);
+//
+//            klWindowSettings.setValue(CAN_DELETE, true);
+//            app.kViewEventBus.publish(JOURNAL_TOPIC,
+//                    new JournalTileEvent(this, UPDATE_JOURNAL_TILE, klWindowSettings));
+        });
+
+        klEditorWindowStage.setOnShown(windowEvent -> {
+//            KometNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
+//            KometNodeFactory searchNodeFactory = new SearchNodeFactory();
+//
+//            journalController.launchKometFactoryNodes(
+//                    klWindowSettings.getValue(JOURNAL_TITLE),
+//                    navigatorNodeFactory,
+//                    searchNodeFactory);
+//            // load additional panels
+//            journalController.loadNextGenReasonerPanel();
+//            journalController.loadNextGenSearchPanel();
+        });
+
+        // disable the delete menu option for a Journal Card.
+//        klWindowSettings.setValue(CAN_DELETE, false);
+//        app.kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, klWindowSettings));
+//        app.journalControllersList.add(journalController);
+
+        if (IS_BROWSER) {
+            app.webAPI.openStageAsTab(klEditorWindowStage, "KL Editor");
+        } else {
+            klEditorWindowStage.show();
         }
     }
 }

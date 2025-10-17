@@ -42,6 +42,10 @@ module dev.ikm.komet.kview {
     requires javafx.controls;
     requires org.slf4j;
     requires javafx.base;
+    requires dev.ikm.tinkar.common;
+    requires dev.ikm.tinkar.entity;
+    requires dev.ikm.tinkar.terms;
+    requires dev.ikm.tinkar.events;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
@@ -163,7 +167,7 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.mvvm.viewmodel.stamp;
     opens dev.ikm.komet.kview.mvvm.viewmodel.stamp to dev.ikm.komet.application, javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.kleditor;
-    opens dev.ikm.komet.kview.mvvm.view.kleditor to javafx.fxml, org.carlfx.cognitive;
+    opens dev.ikm.komet.kview.mvvm.view.kleditor to javafx.fxml, org.carlfx.cognitive, dev.ikm.komet.application;
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.concept.ConceptNodeFactory;
 
