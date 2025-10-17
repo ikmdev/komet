@@ -161,6 +161,9 @@ public class LandingPageController implements BasicController {
     @FXML
     ComboBox<String> notificationTypeFilterComboBox;
 
+    @FXML
+    private Label knowledgeLayoutButtonLabel;
+
     public static final String DEMO_AUTHOR = "David";
     public static final String LANDING_PAGE_SOURCE = "LANDING_PAGE_SOURCE";
 
@@ -178,6 +181,8 @@ public class LandingPageController implements BasicController {
     @Override
     public void initialize() {
         clearView();
+
+        knowledgeLayoutButtonLabel.setText("Knowledge\nLayout Editor");
 
         notificationTypeFilterComboBox.getItems().addAll("All types");
         notificationTypeFilterComboBox.getSelectionModel().selectFirst();

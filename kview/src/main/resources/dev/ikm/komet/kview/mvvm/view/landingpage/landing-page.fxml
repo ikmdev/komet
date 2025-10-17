@@ -26,8 +26,6 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.shape.SVGPath?>
-<?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextFlow?>
 
 <BorderPane fx:id="landingPageBorderPane" minHeight="0.0" minWidth="0.0" prefHeight="682.0" prefWidth="1035.0" styleClass="landing-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController">
    <left>
@@ -94,7 +92,7 @@
                         <StackPane alignment="TOP_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" styleClass="counter" StackPane.alignment="TOP_RIGHT">
                            <Label fx:id="notificationCounter" text="4" StackPane.alignment="CENTER" />
                            <StackPane.margin>
-                              <Insets top="-8.0" />
+                              <Insets top="5.0" />
                            </StackPane.margin>
                         </StackPane>
                      </StackPane>
@@ -104,10 +102,10 @@
             </ToggleButton>
             <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#6e7989" height="1.0" stroke="#6e7989" strokeType="INSIDE" width="133.0">
                <VBox.margin>
-                  <Insets left="8.0" />
+                  <Insets bottom="5.0" left="8.0" top="5.0" />
                </VBox.margin>
             </Rectangle>
-            <ToggleButton mnemonicParsing="false" onAction="#showKlEditorLandingPage" text="Knowledge Layout Editor" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton mnemonicParsing="false" onAction="#showKlEditorLandingPage" toggleGroup="$sidebarToggleGroup">
                <graphic>
                   <HBox prefHeight="47.0" prefWidth="109.0" styleClass="icon-container">
                      <children>
@@ -120,11 +118,7 @@
                                  </styleClass></Region>
                            </children>
                         </StackPane>
-                        <TextFlow>
-                           <children>
-                              <Text fill="#f5f2f2" strokeType="OUTSIDE" strokeWidth="0.0" text="Knowledge Layout Editor" />
-                           </children>
-                        </TextFlow>
+                        <Label fx:id="knowledgeLayoutButtonLabel" wrapText="true" HBox.hgrow="ALWAYS" />
                      </children>
                   </HBox>
                </graphic>
