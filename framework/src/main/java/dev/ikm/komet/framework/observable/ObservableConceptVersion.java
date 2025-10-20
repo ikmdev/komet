@@ -59,7 +59,7 @@ public final class ObservableConceptVersion extends ObservableVersion<ConceptVer
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
                 case STATUS_FIELD -> {
                     //TODO temporary until we get a pattern for concept fields...
@@ -76,7 +76,7 @@ public final class ObservableConceptVersion extends ObservableVersion<ConceptVer
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
                 case TIME_FIELD -> {
                     //TODO temporary until we get a pattern for concept fields...
@@ -93,7 +93,7 @@ public final class ObservableConceptVersion extends ObservableVersion<ConceptVer
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
                 case AUTHOR_FIELD -> {
                     //TODO temporary until we get a pattern for concept fields...
@@ -110,7 +110,7 @@ public final class ObservableConceptVersion extends ObservableVersion<ConceptVer
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
 
                 }
                 case MODULE_FIELD -> {
@@ -128,7 +128,7 @@ public final class ObservableConceptVersion extends ObservableVersion<ConceptVer
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
                 case PATH_FIELD -> {
                     //TODO temporary until we get a pattern for concept fields...
@@ -145,7 +145,7 @@ public final class ObservableConceptVersion extends ObservableVersion<ConceptVer
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
             }
         }

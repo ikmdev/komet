@@ -120,7 +120,7 @@ public final class ObservableStampVersion
             FieldDefinitionRecord fieldDefinitionRecord = currentField.fieldDefinitionRecord();
             Object value = fieldValues().get(indexInPattern);
             fieldArray[indexInPattern] =
-                    new ObservableField(new FieldRecord(value, this.nid(), this.stampNid(), fieldDefinitionRecord));
+                    new ObservableField(new FieldRecord(value, this.nid(), this.stampNid(), fieldDefinitionRecord.patternNid(), indexInPattern));
         }
         return Lists.immutable.of(fieldArray);
     }
@@ -147,7 +147,7 @@ public final class ObservableStampVersion
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
                 case STATUS_FIELD -> {
                     //TODO temporary until we get a pattern for concept fields...
@@ -164,7 +164,7 @@ public final class ObservableStampVersion
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
                 case TIME_FIELD -> {
                     //TODO temporary until we get a pattern for concept fields...
@@ -181,7 +181,7 @@ public final class ObservableStampVersion
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
                 case AUTHOR_FIELD -> {
                     //TODO temporary until we get a pattern for concept fields...
@@ -198,7 +198,7 @@ public final class ObservableStampVersion
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
 
                 }
                 case MODULE_FIELD -> {
@@ -216,7 +216,7 @@ public final class ObservableStampVersion
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
                 case PATH_FIELD -> {
                     //TODO temporary until we get a pattern for concept fields...
@@ -233,7 +233,7 @@ public final class ObservableStampVersion
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid, indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
             }
         }

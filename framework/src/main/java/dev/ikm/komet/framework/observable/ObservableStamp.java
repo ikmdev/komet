@@ -94,7 +94,7 @@ public final class ObservableStamp
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid,  indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
 
                 case COMPONENT_VERSIONS_LIST -> {
@@ -112,7 +112,7 @@ public final class ObservableStamp
                     FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
                             patternVersionStampNid, patternNid,  indexInPattern);
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
+                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
                 }
 
             }

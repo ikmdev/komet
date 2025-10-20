@@ -43,7 +43,7 @@ public class FieldLocatorListElementForVersion {
                 case PATTERN_FIELD_DEFINITION -> {
                     ObservableFieldDefinition patternVersionListElement = patternVersion.fieldDefinitions().get(componentFieldListElementLocator.index());
                     FieldDefinitionRecord fieldDefinitionRecord =  patternVersionListElement.fieldDefinitionReference.get();
-                    FieldRecord fieldRecord = new FieldRecord(patternVersionListElement, patternVersion.nid(), patternVersion.stampNid(), fieldDefinitionRecord);
+                    FieldRecord fieldRecord = new FieldRecord(patternVersionListElement, patternVersion.nid(), patternVersion.stampNid(), fieldDefinitionRecord.patternNid(), componentFieldListElementLocator.index());
                     ObservableField observableField = new ObservableField(fieldRecord);
                     yield observableField;
                 }

@@ -163,5 +163,9 @@ public final class ObservableFieldDefinition
         return fieldDefinitionReference.get().indexInPattern();
     }
 
+    public int patternVersionStampNid() {
+        return fieldDefinitionReference.get().patternVersionStampNid();
+    }
+
     enum FIELD {DATATYPE, PURPOSE, MEANING}
 }
