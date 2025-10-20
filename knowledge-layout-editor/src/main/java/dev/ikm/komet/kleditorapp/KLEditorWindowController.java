@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.view.kleditor;
+package dev.ikm.komet.kleditorapp;
 
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;

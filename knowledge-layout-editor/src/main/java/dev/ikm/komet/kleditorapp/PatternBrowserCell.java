@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.view.kleditor;
+package dev.ikm.komet.kleditorapp;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;

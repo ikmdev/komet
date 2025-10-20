@@ -8,7 +8,6 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.mvvm.model.*;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
-import dev.ikm.komet.kview.mvvm.view.kleditor.KLEditorWindowController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
 import dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorController;
@@ -31,6 +30,7 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import dev.ikm.komet.kleditorapp.KLEditorWindowController;
 
 import java.io.IOException;
 import java.util.*;

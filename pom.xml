@@ -59,6 +59,7 @@
         <module>kview</module>
         <module>sync</module>
         <module>application</module>
+        <module>knowledge-layout-editor</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -217,6 +218,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>sync</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>knowledge-layout-editor</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
