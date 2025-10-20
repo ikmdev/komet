@@ -3711,14 +3711,12 @@ Timeline Year line segment (will overlay change circles)
  * End of Journal > Edit Concept UI elements                                    *
  ********************************************************************************/
 
+ /*******************************************************************************
+  *                                                                             *
+  * Landing Page                                                                *
+  *                                                                             *
+  ******************************************************************************/
 
-
-/*
-
-Landing page elements.
-    Notifications
-    flat-split-divider
- */
 .landing-container {
     -fx-min-width: 144px;
     -fx-min-height: -1;
@@ -4416,6 +4414,159 @@ Styling a context menu for kview ui/ux controls
     -fx-pref-width: -1;
     -fx-max-width: 3000;
 }
+
+/*******************************************************************************
+ * Landing page - Knownledge Layout Editor                                     *
+ ******************************************************************************/
+
+.kl-editor-landing-page {
+    -fx-padding: 35px;
+}
+
+/********************************  Title area  *********************************/
+.kl-editor-landing-page > .header-container > .title-container {
+    -fx-fill-height: false;
+    -fx-alignment: center_left;
+    -fx-spacing: 15px;
+
+    -fx-padding: 10px 0 40px 0;
+}
+
+.kl-editor-landing-page > .header-container > .title-container > .icon {
+    size: 32;
+    -fx-pref-width: size;
+    -fx-pref-height: size;
+
+    -fx-background-color: #395c9a;
+}
+
+.kl-editor-landing-page > .header-container > .title-container > .title {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 28px;
+
+    -fx-text-fill: #395c9a;
+}
+
+
+.kl-editor-landing-page > .header-container > .help-icon-container {
+    -fx-background-color: #4a7ad2;
+    -fx-background-radius: 2em;
+
+    size: 26px;
+    -fx-pref-width: size;
+    -fx-pref-height: size;
+    -fx-max-width: size;
+    -fx-max-height: size;
+}
+
+.kl-editor-landing-page > .header-container > .help-icon-container > .label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+
+}
+
+.kl-editor-landing-page > .sub-title {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 20px;
+    -fx-padding: 0 0 10px 0;
+}
+
+.kl-editor-landing-page .create-new-container {
+    -fx-hgap: 15px;
+}
+
+/********************************  Card  *********************************/
+
+.kl-editor-landing-page .card {
+    -fx-pref-width: 200px;
+    -fx-pref-height: 130px;
+    -fx-spacing: 26px;
+
+    -fx-padding: 10px 0 5 0;
+
+    -fx-border-width: 1px, 1px;
+    -fx-border-color: #ccc, transparent;
+}
+
+.kl-editor-landing-page .card:hover {
+    -fx-border-color: #4a7ad2, #4a7ad2;
+}
+
+.kl-editor-landing-page .card > .icon-container {
+    -fx-padding: 10 0 0 0;
+}
+
+.kl-editor-landing-page .card > .icon-container > .icon {
+    width: 60px;
+    height: 50px;
+
+    -fx-min-width: width;
+    -fx-pref-width: width;
+    -fx-max-width:width;
+
+    -fx-min-height: height;
+    -fx-pref-height: height;
+    -fx-max-height: height;
+
+    -fx-background-color: #4a7ad2;
+}
+
+.kl-editor-landing-page .card > .icon-container > .action-panel-icon-container {
+    -fx-spacing: 5px;
+}
+
+.kl-editor-landing-page .card > .icon-container > .action-panel-icon-container .icon {
+    -fx-background-color: #4a7ad2;
+}
+
+.kl-editor-landing-page .card > .icon-container > .action-panel-icon-container > .icon.icon-1 {
+    width: 12px;
+    height: 12px;
+
+    -fx-min-width: width;
+    -fx-pref-width: width;
+    -fx-max-width:width;
+
+    -fx-min-height: height;
+    -fx-pref-height: height;
+    -fx-max-height: height;
+}
+
+.kl-editor-landing-page .card > .icon-container > .action-panel-icon-container > .icon.icon-2 {
+    width: 36px;
+    height: 50px;
+
+    -fx-min-width: width;
+    -fx-pref-width: width;
+    -fx-max-width:width;
+
+    -fx-min-height: height;
+    -fx-pref-height: height;
+    -fx-max-height: height;
+}
+
+
+
+.kl-editor-landing-page .card .bottom-container {
+    -fx-spacing: 8px;
+
+    -fx-padding: 0 0 10px 20px;
+}
+
+.kl-editor-landing-page .card .plus-without-circle.icon {
+    -fx-background-color: #4a7ad2;
+    -fx-scale-shape: false;
+
+    size: 20px;
+    -fx-pref-width: size;
+    -fx-pref-height: size;
+}
+
+.kl-editor-landing-page .card .bottom-container .label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+}
+
 
 .grid-view-symbol {
     -width-size: 32;
@@ -5898,6 +6049,30 @@ Styling a context menu for kview ui/ux controls
 
 .icon.populate {
     -fx-shape: "M4.12492 15.8333H15.7916V11.6667H17.4583V15.8333C17.4583 16.2754 17.2827 16.6993 16.9701 17.0118C16.6575 17.3244 16.2336 17.5 15.7916 17.5H4.12492C3.68289 17.5 3.25897 17.3244 2.94641 17.0118C2.63385 16.6993 2.45825 16.2754 2.45825 15.8333V4.16667C2.45825 3.72464 2.63385 3.30072 2.94641 2.98816C3.25897 2.67559 3.68289 2.5 4.12492 2.5H8.29158V4.16667H4.12492V15.8333ZM13.5416 5.25L10.7916 2.5H17.4583V9.16667L14.7083 6.41667L9.95829 11.1667L8.79162 10L13.5416 5.25Z";
+}
+
+.icon.plus-without-circle {
+    -fx-shape: "M20.5 13.877H13.5V20.877H11.5V13.877H4.5V11.877H11.5V4.87695H13.5V11.877H20.5V13.877Z";
+}
+
+.icon.kl-view-only {
+    -fx-shape: "M2.2185 1.88163C3.57868 0.64739 5.36257 0 7.16702 0H52.833C54.6374 0 56.4213 0.64739 57.7815 1.88163C59.1517 3.125 60 4.89251 60 6.82405V39.0533C60 40.9849 59.1517 42.7524 57.7815 43.9957C56.4213 45.23 54.6374 45.8774 52.833 45.8774H7.16702C5.36256 45.8774 3.57868 45.23 2.2185 43.9957C0.848256 42.7524 0 40.9849 0 39.0533V6.82405C0 4.89251 0.848255 3.125 2.2185 1.88163ZM7.16702 4.43975C6.28006 4.43975 5.48276 4.76252 4.93983 5.25518C4.40695 5.73872 4.18605 6.31339 4.18605 6.82405V39.0533C4.18605 39.564 4.40695 40.1387 4.93983 40.6222C5.48276 41.1149 6.28006 41.4376 7.16702 41.4376H37.167V4.43975H7.16702ZM37.167 4.43975V41.4376H52.833C53.7199 41.4376 54.5172 41.1149 55.0602 40.6222C55.5931 40.1387 55.814 39.564 55.814 39.0533V6.82405C55.814 6.31339 55.5931 5.73872 55.0602 5.25518C54.5172 4.76252 53.7199 4.43975 52.833 4.43975H37.167ZM13.1163 14.0592C13.1163 12.8332 14.0534 11.8393 15.2093 11.8393H45C46.1559 11.8393 47.093 12.8332 47.093 14.0592C47.093 15.2852 46.1559 16.2791 45 16.2791H15.2093C14.0534 16.2791 13.1163 15.2852 13.1163 14.0592ZM13.1163 23.9387C13.1163 22.7127 14.0534 21.7188 15.2093 21.7188H45C46.1559 21.7188 47.093 22.7127 47.093 23.9387C47.093 25.1647 46.1559 26.1586 45 26.1586H15.2093C14.0534 26.1586 13.1163 25.1647 13.1163 23.9387ZM13.1163 30.8182C13.1163 29.5922 14.0534 28.5983 15.2093 28.5983H45C46.1559 28.5983 47.093 29.5922 47.093 30.8182C47.093 32.0442 46.1559 33.0381 45 33.0381H15.2093C14.0534 33.0381 13.1163 32.0442 13.1163 30.8182Z";
+}
+
+.icon.kl-editable-layout {
+    -fx-shape: "M2.2185 1.88163C3.57868 0.64739 5.36257 0 7.16702 0H52.833C54.6374 0 56.4213 0.64739 57.7815 1.88163C59.1517 3.125 60 4.89251 60 6.82405V39.0533C60 40.9849 59.1517 42.7524 57.7815 43.9957C56.4213 45.23 54.6374 45.8774 52.833 45.8774H7.16702C5.36256 45.8774 3.57868 45.23 2.2185 43.9957C0.848256 42.7524 0 40.9849 0 39.0533V6.82405C0 4.89251 0.848255 3.125 2.2185 1.88163ZM7.16702 4.43975C6.28006 4.43975 5.48276 4.76252 4.93983 5.25518C4.40695 5.73872 4.18605 6.31339 4.18605 6.82405V39.0533C4.18605 39.564 4.40695 40.1387 4.93983 40.6222C5.48276 41.1149 6.28006 41.4376 7.16702 41.4376H36.981V4.43975H7.16702ZM41.167 4.43975V41.4376H52.833C53.7199 41.4376 54.5172 41.1149 55.0602 40.6222C55.5931 40.1387 55.814 39.564 55.814 39.0533V6.82405C55.814 6.31339 55.5931 5.73872 55.0602 5.25518C54.5172 4.76252 53.7199 4.43975 52.833 4.43975H41.167ZM12.1163 14.0592C12.1163 12.8332 13.0534 11.8393 14.2093 11.8393H27.9302C29.0862 11.8393 30.0233 12.8332 30.0233 14.0592C30.0233 15.2852 29.0862 16.2791 27.9302 16.2791H14.2093C13.0534 16.2791 12.1163 15.2852 12.1163 14.0592ZM12.1163 23.9387C12.1163 22.7127 13.0534 21.7188 14.2093 21.7188H27.9302C29.0862 21.7188 30.0233 22.7127 30.0233 23.9387C30.0233 25.1647 29.0862 26.1586 27.9302 26.1586H14.2093C13.0534 26.1586 12.1163 25.1647 12.1163 23.9387ZM12.1163 30.8182C12.1163 29.5922 13.0534 28.5983 14.2093 28.5983H27.9302C29.0862 28.5983 30.0233 29.5922 30.0233 30.8182C30.0233 32.0442 29.0862 33.0381 27.9302 33.0381H14.2093C13.0534 33.0381 12.1163 32.0442 12.1163 30.8182Z";
+}
+
+.icon.icon-2.kl-action-panel {
+    -fx-shape: "M13.4685 1.88163C14.8287 0.64739 16.6126 0 18.417 0H32.083C33.8874 0 35.6713 0.64739 37.0315 1.88163C38.4017 3.125 39.25 4.89251 39.25 6.82405V39.0533C39.25 40.9849 38.4017 42.7524 37.0315 43.9957C35.6713 45.23 33.8874 45.8774 32.083 45.8774H18.417C16.6126 45.8774 14.8287 45.23 13.4685 43.9957C12.0983 42.7524 11.25 40.9849 11.25 39.0533V6.82405C11.25 4.89251 12.0983 3.125 13.4685 1.88163ZM18.417 4.43975C17.5301 4.43975 16.7328 4.76252 16.1898 5.25518C15.657 5.73872 15.436 6.31339 15.436 6.82405V39.0533C15.436 39.564 15.657 40.1387 16.1898 40.6222C16.7328 41.1149 17.5301 41.4376 18.417 41.4376H37.75L37.709 4.43975H18.417ZM37.709 4.43975L37.75 41.4376H32.083C32.9699 41.4376 33.7672 41.1149 34.3102 40.6222C34.843 40.1387 35.064 39.564 35.064 39.0533V6.82405C35.064 6.31339 34.843 5.73872 34.3102 5.25518C33.7672 4.76252 32.9699 4.43975 32.083 4.43975H37.709ZM19.3663 11.0592C19.3663 9.83319 20.3034 8.83932 21.4593 8.83932H29.25C30.4059 8.83932 31.343 9.83319 31.343 11.0592C31.343 12.2852 30.4059 13.2791 29.25 13.2791H21.4593C20.3034 13.2791 19.3663 12.2852 19.3663 11.0592Z";
+}
+
+.icon.icon-1.kl-action.panel {
+    -fx-shape: "M0.75 8.87891C0.75 7.77434 1.64543 6.87891 2.75 6.87891H6.75C7.85457 6.87891 8.75 7.77434 8.75 8.87891V12.8789C8.75 13.9835 7.85457 14.8789 6.75 14.8789H2.75C1.64543 14.8789 0.75 13.9835 0.75 12.8789V8.87891Z";
+}
+
+.icon.kl-landing-page-title {
+    -fx-shape: "M3.95837 28.9587V7.29199H32.2917V16.667L28.9584 19.792H23.9584V25.0003L20 28.9587H3.95837ZM7.29171 10.6253V25.6253H12.2917V10.6253H7.29171ZM15.625 19.792V25.6253H20.625V19.792H15.625ZM15.625 10.6253V16.4587H28.9584V10.6253H15.625Z";
 }
 
 .nine-dots-icon {

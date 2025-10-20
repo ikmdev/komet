@@ -46,7 +46,6 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 
-import dev.ikm.komet.kview.events.CreateKLEditorWindowEvent;
 import dev.ikm.tinkar.events.Evt;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -71,6 +70,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
@@ -126,7 +126,7 @@ public class LandingPageController implements BasicController {
     @FXML
     private SplitPane homePage;
 
-    private SplitPane klLandingPage;
+    private Parent klLandingPage;
 
     @FXML
     private Label welcomeTitleLabel;
@@ -642,38 +642,18 @@ public class LandingPageController implements BasicController {
         landingPageBorderPane.setCenter(homePage);
     }
 
-    private Pane temporaryKlEditWorkspace;
-
     @FXML
     private void showKlEditorLandingPage(ActionEvent event) {
-        // TODO: create a knowledge layout landing page (SplitPane).
         if (klLandingPage == null) {
-            Config config = new Config()
-                    .fxml(LandingPageController.class.getResource("kl-landing-page.fxml"))
-                    .controllerClass(KlLandingPageController.class);
-
-            JFXNode<SplitPane, Void> klLandingPageJfxNode = FXMLMvvmLoader.make(config);
-            klLandingPage = klLandingPageJfxNode.node();
+            FXMLLoader loader = new FXMLLoader(LandingPageController.class.getResource("kl-landing-page.fxml"));
+            Parent root = null;
+            try {
+                root = loader.load();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            klLandingPage = root;
         }
         landingPageBorderPane.setCenter(klLandingPage);
-
-        // Pedro: the comment out to launch
-        if (temporaryKlEditWorkspace == null) {
-            Button button = new Button("Launch KL Editor Window");
-            temporaryKlEditWorkspace = new Pane(button);
-            button.setOnAction(this::createNewKLEditorWindow);
-        }
-        landingPageBorderPane.setCenter(temporaryKlEditWorkspace);
     }
-
-    private void createNewKLEditorWindow(Event event) {
-        // publish the event that the new KLEditor Window button was pressed
-        final PrefX klWindowSettingsObjectMap = PrefX.create();
-        final UUID klEditorTopic = UUID.randomUUID();
-
-        landingPageEventBus.publish(KL_TOPIC,
-                new CreateKLEditorWindowEvent(event.getSource(), CreateKLEditorWindowEvent.CREATE_KL_EDITOR, klWindowSettingsObjectMap));
-
-        LOG.info("KL EDITOR WINDOW LAUNCHED");
-     }
 }
