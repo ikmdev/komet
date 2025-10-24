@@ -1,7 +1,8 @@
-package dev.ikm.komet.kleditorapp;
+package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kleditorapp.model.WindowModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -15,8 +16,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 
-public class KLEditorWindowController {
+public class KLEditorMainScreenController {
+
+    @FXML
+    private TextField titleTextField;
 
     @FXML
     private ListView patternBrowserListView;
@@ -49,6 +54,14 @@ public class KLEditorWindowController {
 
         patternBrowserListView.setCellFactory(param -> new PatternBrowserCell(viewCalculator));
         patternBrowserListView.setItems(patterns);
+
+        setupWindow();
+    }
+
+    private void setupWindow() {
+        WindowModel windowModel = WindowModel.instance();
+
+        titleTextField.textProperty().bindBidirectional(windowModel.titleProperty());
     }
 
     @FXML

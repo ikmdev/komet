@@ -38,8 +38,8 @@ module dev.ikm.komet.kleditorapp {
     requires dev.ikm.tinkar.terms;
     requires dev.ikm.tinkar.events;
 
-    exports dev.ikm.komet.kleditorapp;
-    opens dev.ikm.komet.kleditorapp to javafx.fxml, dev.ikm.komet.application;
+    exports dev.ikm.komet.kleditorapp.view;
+    opens dev.ikm.komet.kleditorapp.view to javafx.fxml, dev.ikm.komet.application;
 
 //    uses EvtBus;
     uses EntityKlWindowFactory;

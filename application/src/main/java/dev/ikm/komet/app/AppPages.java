@@ -30,7 +30,7 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import dev.ikm.komet.kleditorapp.KLEditorWindowController;
+import dev.ikm.komet.kleditorapp.view.KLEditorMainScreenController;
 
 import java.io.IOException;
 import java.util.*;
@@ -38,7 +38,10 @@ import java.util.*;
 import static dev.ikm.komet.app.App.IS_BROWSER;
 import static dev.ikm.komet.app.App.IS_MAC;
 import static dev.ikm.komet.app.AppState.SHUTDOWN;
+import static dev.ikm.komet.app.util.CssFile.ICONS;
+import static dev.ikm.komet.app.util.CssFile.KLCORE_CSS;
 import static dev.ikm.komet.app.util.CssFile.KLEDITOR_CSS;
+import static dev.ikm.komet.app.util.CssFile.KLEDITOR_WINDOW_CSS;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
@@ -342,19 +345,19 @@ public class AppPages {
         ObservableEditCoordinate editCoordinate = windowSettings.getView().editCoordinate();
         editCoordinate.authorForChangesProperty().setValue(loggedInUser);
 
-        FXMLLoader loader = new FXMLLoader(KLEditorWindowController.class.getResource("KLEditorMainScreen.fxml"));
+        FXMLLoader loader = new FXMLLoader(KLEditorMainScreenController.class.getResource("KLEditorMainScreen.fxml"));
         Parent root = null;
         try {
             root = loader.load();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        KLEditorWindowController klEditorWindowController = loader.getController();
+        KLEditorMainScreenController klEditorMainScreenController = loader.getController();
 
-        klEditorWindowController.init(windowPreferences, windowSettings);
+        klEditorMainScreenController.init(windowPreferences, windowSettings);
 
         Scene sourceScene = new Scene(root, DEFAULT_JOURNAL_WIDTH, DEFAULT_JOURNAL_HEIGHT);
-        addStylesheets(sourceScene, KLEDITOR_CSS);
+        addStylesheets(sourceScene, KLEDITOR_CSS, KLCORE_CSS, KLEDITOR_WINDOW_CSS, ICONS);
 
         Stage klEditorWindowStage = new Stage();
         klEditorWindowStage.getIcons().setAll(app.appIcon);

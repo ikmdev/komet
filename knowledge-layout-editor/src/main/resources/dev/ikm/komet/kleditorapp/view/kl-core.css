@@ -97,9 +97,20 @@
     -fx-background-color: -Grey-11;
 }
 
+/* Default */
 .button:default {
-    -fx-background-color: -Secondary-05;
+     button-color: -Secondary-05;
+
+    -fx-background-color: button-color;
     -fx-text-fill: white;
+}
+
+.button:default:hover {
+    -fx-background-color: derive(button-color, 10%);
+}
+
+.button:default:pressed {
+    -fx-background-color: derive(button-color, -5%);
 }
 
 .button.light {

@@ -1,0 +1,142 @@
+@import "icons.css";
+
+
+.window {
+    -fx-background-color: transparent;
+
+    -fx-spacing: 10px;
+
+    -fx-pref-height: 800px;
+
+    -fx-border-color: #999;
+    -fx-border-radius: 6 px;
+    -fx-border-style: segments(3, 3);
+
+    -fx-padding: 4px;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Window header                                                               *
+ *                                                                             *
+ ******************************************************************************/
+
+.window .window-header-container .title-container {
+    -fx-alignment: center_left;
+}
+
+.window .window-header-container .title-container .label {
+    -fx-text-fill: white;
+
+    -fx-background-color: #5d5d5d;
+    -fx-background-radius: 3px 3px 0px 0px;
+
+    -fx-padding: 4px 15px 4px 15px;
+
+    -fx-font-size: 14px;
+}
+
+.window .window-header-container .content-container {
+    -fx-background-color: #5d5d5d;
+    -fx-background-radius: 0px 6px 0px 0px;
+
+    -fx-padding: 2px 10px 4px 4px;
+}
+
+.window .window-header-container .content-container .icon-container {
+    -fx-alignment: top-center;
+
+    -fx-pref-width: 70px;
+}
+
+.window .window-header-container .content-container .icon {
+    -fx-background-color: #bcbcbc;  /* This is for when the icon is a Region or something similar */
+    -fx-fill: #bcbcbc;              /* This is for when the icon is a SVGPath */
+}
+
+.window .window-header-container .content-container .icon-container .icon,
+.window .window-header-container .content-container .icon-container .svg-icon-container {
+    -fx-pref-height: 25px;
+}
+
+.window .window-header-container .content-container .icon-container .label {
+    -fx-text-fill: #bcbcbc;
+}
+
+.window .window-header-container .content-container .spacer {
+    -fx-background-color: transparent;
+}
+
+.window .window-header-container .content-container .separator:vertical .line {
+    -fx-border-color: transparent transparent transparent transparent,
+      transparent transparent transparent #888;
+    -fx-border-width: 3, 1;
+    -fx-border-insets: 0, 10 0 10 1;
+}
+
+.window .window-header-container .content-container .icon-container.cross {
+    -fx-padding: 0 10 0 0;
+
+    -fx-pref-width: -1;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Stamp Container                                                             *
+ *                                                                             *
+ ******************************************************************************/
+
+.window .stamp-container {
+    -fx-background-color: white;
+
+    -fx-pref-height: 150px;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Content Container                                                             *
+ *                                                                             *
+ ******************************************************************************/
+
+.window .content-container {
+    -fx-background-color: transparent;
+}
+
+.window .content-container .title-container {
+    -fx-alignment: center_left;
+
+    -fx-background-color: transparent;
+}
+
+.window .content-container .title-container .label {
+    -fx-text-fill: white;
+    -fx-background-color: #5d5d5d;
+    -fx-background-radius: 3px 3px 0px 0px;
+
+    -fx-padding: 4px 10px 4px 10px;
+
+    -fx-font-size: 12px;
+}
+
+.window .content-container .content {
+    -fx-background-color: white;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Others                                                                      *
+ *                                                                             *
+ ******************************************************************************/
+
+.add-section.button {
+    -fx-background-color: white;
+    -fx-border-color: white;
+
+    -fx-text-fill: #4a7ad2;
+
+    -fx-graphic-text-gap: 10px;
+}
+
+.add-section.button .icon {
+    -fx-background-color: #4a7ad2;
+}
