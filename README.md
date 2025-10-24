@@ -12,8 +12,8 @@ data. This file will explain best practices for getting started, building, runni
 Install App Team
 
 ## Project Overview
-This intention of this (Komet) project is to provide a user-friendly interface that lets the user view, analyze, 
-change, create, import and export the various medical terminologies. All the terminology changes and their 
+This intention of this (Komet) project is to provide a user-friendly interface that lets the user view, analyze,
+change, create, import and export the various medical terminologies. All the terminology changes and their
 relationships are saved and can be viewed historically.
 
 # Getting Started
@@ -48,14 +48,14 @@ relationships are saved and can be viewed historically.
 
 ### Building and Running Komet locally:
 
-1. Once you have access to [komet repository](https://github.com/ikmdev/komet) on GitHub, fork the repository using 
-instructions provided in "_**Fork the Repository**_" section in [GitHub document](https://ikmdev.atlassian.net/wiki/spaces/IKM/pages/390201368/GitHub+Account+Creation+IKM+FDA+Shield).
+1. Once you have access to [komet repository](https://github.com/ikmdev/komet) on GitHub, fork the repository using
+   instructions provided in "_**Fork the Repository**_" section in [GitHub document](https://ikmdev.atlassian.net/wiki/spaces/IKM/pages/390201368/GitHub+Account+Creation+IKM+FDA+Shield).
 2. Clone the forked Komet repository on your local machine by running the git bash command.
 
    ```bash
    git clone git@github.com:your-github-username/komet.git
    ```
-   
+
 3. Change the local directory location to `komet`
 4. Enter the following command to build the application:
 
@@ -68,14 +68,23 @@ instructions provided in "_**Fork the Repository**_" section in [GitHub document
    ```bash
    ./mvnw -f application javafx:run
    ```
-   
+
 6. You can open Komet code using your favorite IDE like _Eclipse_ or _IntelliJ Idea_ and try running it from there.
    While running Komet UI from your IDE, you many have to add the following VM arguments:
    ```
-   -Xmx10g --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+   -Xmx10g --enable-native-access=org.apache.lucene.core --enable-native-access=javafx.graphics --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator --add-exports javafx.base/com.sun.javafx.event=one.jpro.platform.file --add-exports javafx.base/com.sun.javafx.event=org.controlsfx.controls
    ```
 
-## Running Komet with JPro locally
+## Configuring and Running Komet with JPro locally
+First ensure you have an `users.ini` file created containing user login information.
+1. Create a file `users.ini` in the `<user home>/Solor` directory.
+2. The contents are the following:
+```text
+[users]
+username1 = password1, role1
+username2 = password2, role1, role2
+```
+Above you'll notice the username = password and remaining fields are possible roles.
 
 After building Komet, you can run it with JPro on your local machine by following these steps:
 1. Execute the following command to run the Komet application in your web browser:
@@ -97,11 +106,11 @@ To run Komet and all of the other tools you might need in a Docker container, fo
    docker compose up -d
    ```
 
-The application should now be running in the Docker container. Access it by navigating to 
-[http://localhost](http://localhost) in your web browser. If running on a remote server, replace localhost with 
+The application should now be running in the Docker container. Access it by navigating to
+[http://localhost](http://localhost) in your web browser. If running on a remote server, replace localhost with
 the server’s IP address.
 
-Note: On the off chance that you have issues with running on the specific port on your computer, the 
+Note: On the off chance that you have issues with running on the specific port on your computer, the
 docker-compose file is configurable to allow for other ports.  This can be run in the following way, substituting 8080
 for whatever port you would like to assign:
 
@@ -117,28 +126,28 @@ The Komet application includes GUI tests built with the TestFX framework. By def
 which is ideal for continuous integration (CI) environments or situations where graphical interaction is unnecessary.
 
 1. **Running TestFX Tests in Headless Mode (Default)**
-To execute all TestFX unit tests, in headless mode (without launching a GUI window), run:
+   To execute all TestFX unit tests, in headless mode (without launching a GUI window), run:
 
    ```bash
    mvn test -DrunUTestFX
    ```
-   
+
 2. **Running TestFX Tests in Graphical Mode (Non-Headless)**
-    
-    If you need to observe the GUI during testing—for instance, when debugging UI components—you can disable headless 
-    mode by setting the headless property to false. To run all tests in non-headless mode:
-   
+
+   If you need to observe the GUI during testing—for instance, when debugging UI components—you can disable headless
+   mode by setting the headless property to false. To run all tests in non-headless mode:
+
    ```bash
    mvn test -DrunUTestFX -Dtestfx.headless=false
    ```
-   
+
 3. **Running Specific Tests**
 - To run a specific test class in a specific module, for example the `LoginUTestFX` class in the `kview` module:
    ```bash
    mvn test -pl kview -DrunUTestFX -Dtest=LoginUTestFX -Dtestfx.headless=false
    ```
-- To run a specific test method inside a specific class, for example the `testSuccessfulAuthentication` method in the 
-`LoginUTestFX` class in the `kview` module:
+- To run a specific test method inside a specific class, for example the `testSuccessfulAuthentication` method in the
+  `LoginUTestFX` class in the `kview` module:
    ```bash
    mvn test -pl kview -DrunUTestFX -Dtest=LoginUTestFX#testSuccessfulAuthentication -Dtestfx.headless=false
    ```
@@ -148,26 +157,26 @@ To execute all TestFX unit tests, in headless mode (without launching a GUI wind
 In addition to unit tests, Komet includes integration tests to ensure that different components work seamlessly together.
 
 1. Running all Integration Tests in Headless Mode (Default)
-To execute all TestFX integration tests use the following command:
+   To execute all TestFX integration tests use the following command:
 
    ```bash
    mvn verify -DrunITestFX
    ```
-   This command triggers the `verify` phase in Maven, running all TestFX integration tests defined in the project. 
+   This command triggers the `verify` phase in Maven, running all TestFX integration tests defined in the project.
    By default, TestFX integration tests run in headless mode, suitable for CI environments.
 
 2. Running all Integration Tests in Graphical Mode
-If you need to observe the GUI during TestFX integration testing—for example, when debugging UI interactions—you can 
-disable headless mode by setting the `testfx.headless` property to `false`:
+   If you need to observe the GUI during TestFX integration testing—for example, when debugging UI interactions—you can
+   disable headless mode by setting the `testfx.headless` property to `false`:
    ```bash
    mvn verify -DrunITestFX -Dtestfx.headless=false
    ```
    This will launch the GUI windows during test execution, allowing you to visually monitor the tests as they run.
 
 3. Running Specific Integration Tests
-To run a specific integration test class in a specific module, you can specify the module using the `-pl` parameter and 
-the test class using the `-Dit.test` parameter.
-For example, to run the `PatternWindowITestFX` integration test class:
+   To run a specific integration test class in a specific module, you can specify the module using the `-pl` parameter and
+   the test class using the `-Dit.test` parameter.
+   For example, to run the `PatternWindowITestFX` integration test class:
 
    ```bash
    mvn verify -pl application -DrunITestFX -Dit.test=PatternWindowITestFX
@@ -175,9 +184,9 @@ For example, to run the `PatternWindowITestFX` integration test class:
 
 **Important Note on Test Execution**
 - The tests will only run once after they pass successfully. To trigger the tests again, changes must be made
-to any part of the project.
-- Adding the `-Dmaven.build.cache.enabled=false` parameter will disable the Maven build cache, preventing tests from 
-being cached  and reused, thus forcing fresh test execution. For example:
+  to any part of the project.
+- Adding the `-Dmaven.build.cache.enabled=false` parameter will disable the Maven build cache, preventing tests from
+  being cached  and reused, thus forcing fresh test execution. For example:
 
    ```bash
    mvn test -DrunUTestFX -Dmaven.build.cache.enabled=false
@@ -191,36 +200,55 @@ being cached  and reused, thus forcing fresh test execution. For example:
 
 This section details on the basic design methodology used for developing nex-gen Komet UI.
 
-1. Komet UI application is moving towards the nex-gen implementation which follows 
-Model-View-View-Model (MVVM) design pattern.
+1. Komet UI application nex-gen currently make use of the
+   Model-View-View-Model (MVVM) design pattern. [Cognitive](https://github.com/carldea/cognitive/wiki)
+2. Komet application design is event-based where the subscriber to an event listens for a particular event
+   and when it is triggered, desired logic can be executed in the listener code.
 
-2. Komet application design is event-based where the subscriber to an event listens for a particular event 
-and when it is triggered, desired logic can be executed in the listener code.
+The below example does not show how to use MVVM. You can refer to the project Cognitive. The example below illustrates how to use tinkar-core library eventbus.
+   Example:
 
-    Example:
-    ```java
+`MyController.java` - A fictitious JavaFX controller responding to events being published.
+
+```java
+    import dev.ikm.tinkar.events.EvtBus;
     import java.util.UUID;
-   
-    public class MyController {
-       private EvtBus eventBus;
-       private Subscriber<MyDefienedEvent> someMyDefinedEventSubscriber;
+    import javafx.scene.control.Label;
     
+    public class MyController {
+           
+       @FXML
+       Label messageLabel;
+       
+       @FXML
        public void initialize() {
-          someMyDefinedEventSubscriber = evt -> {
+          Subscriber<MyEvent> subscriber = evt -> {
+             // a broader event type of the event type's parent
+             if (evt.getEventType().getSuperType() == MyEvent.MY_ANY_EVENT) {
+                System.out.println("1. Received Event Type's parent is MY_ANY_EVENT. Event type = " + evt.getEventType());
+             }
+             
              // Some logic to process the event.
-             if (evt.getEventType() == MyDefienedEvent.SOME_EVENT_1) {
-                // do something.
-             } else if (evt.getEventType() == MyDefienedEvent.SOME_EVENT_2) {
-                //do something else.
+             if (evt.getEventType() == MyEvent.SOME_EVENT_1) {
+                messageLabel.setText("Some Event 1 received");
+                System.out.println("2. Received Event Type's = SOME_EVENT_1");
+             } else if (evt.getEventType() == MyEvent.SOME_EVENT_2) {
+                System.out.println("2. Received Event Type's = SOME_EVENT_2");
+                messageLabel.setText("Some Event 2 received");
              }
           };
-          eventBus.subscribe(myTopic, MyDefienedEvent.class, someMyDefinedEventSubscriber);
+          // Register subscriber
+          EvtBus.getDefaultEvtBus().subscribe("HELLO_WORLD_TOPIC", MyEvent.class, subscriber);
        }
     }
-    
-    public class MyDefienedEvent extends Evt {
-       public static final EvtType<MyDefienedEvent> SOME_EVENT_1 = new EvtType<>(Evt.ANY, "SOME_EVENT_1");
-       public static final EvtType<MyDefienedEvent> SOME_EVENT_2 = new EvtType<>(Evt.ANY, "SOME_EVENT_2");
+```
+
+`MyEvent.java` - An event object defining event types.
+```java    
+    public class MyEvent extends Evt {
+       public static final EvtType<MyEvent> MY_ANY_EVENT = new EvtType<>(Evt.ANY, "MY_ANY_EVENT");
+       public static final EvtType<MyEvent> SOME_EVENT_1 = new EvtType<>(MY_ANY_EVENT, "SOME_EVENT_1");
+       public static final EvtType<MyEvent> SOME_EVENT_2 = new EvtType<>(MY_ANY_EVENT, "SOME_EVENT_2");
     
        /**
         * Constructs a prototypical Event.
@@ -229,33 +257,63 @@ and when it is triggered, desired logic can be executed in the listener code.
         * @param source         the object on which the Event initially occurred
         * @param eventType
         */
-       public MyDefienedEvent(Object source, EvtType eventType) {
+       public MyEvent(Object source, EvtType eventType) {
           super(source, eventType);
        }
     }
-    
-    public class MySomeClass {
-       private EvtBus eventBus;
-       private UUID someTopic;
-       
-       public MySomeClass(UUID someTopic){
-           this.someTopic = someTopic;
+ ```
+
+
+`MyEventEmitter.java` - simple object that publishes an event.
+ ```java 
+     
+    public class MyEventEmitter {
+       private final String topic;
+       public MyEventEmitter(String topic) {
+          this.topic = topic;
        }
-       
-       public void someMethod() {
-          eventBus.publish(someTopic, new MyDefienedEvent(this, MyDefienedEvent.SOME_EVENT_1));
+       public void messageEvent1() {
+          EvtBus.getDefaultEvtBus().publish(topic, new MyEvent(this, SOME_EVENT_1));
+       }
+       public void messageEvent2() {
+          EvtBus.getDefaultEvtBus().publish(topic, new MyEvent(this, SOME_EVENT_2));
        }
     }
+```
+
+`Main.java`
+```java  
+public class Main extends Application {
     
-    public class MainClass {
-       public static void main(String[] args) {
-          MySomeClass mySomeClass = new MySomeClass(UUID.randomUUID());
-       }
+    @Override
+    public void start(Stage stage) {
+      FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
+      Scene scene = new Scene(fxmlLoader.load(), 320, 240);
+      stage.setTitle("Event bus fun");
+      stage.setScene(scene);
+      stage.show();
     }
+
+    public static void main(String[] args) {
+       // Code to launch JavaFX Application.
+       MyEventEmitter eventEmitter = new MyEventEmitter("HELLO_WORLD_TOPIC");
+       eventEmitter.messageEvent1(); // emit some event 1
+       eventEmitter.messageEvent2(); // emit some event 2
+    }
+}
    ```
-   
+
+   The output to the console should be the following:
+```text
+    1. Received Event Type's parent is MY_ANY_EVENT. Event type = SOME_EVENT_1
+    2. Received Event Type's = SOME_EVENT_1
+    1. Received Event Type's parent is MY_ANY_EVENT. Event type = SOME_EVENT_2
+    2. Received Event Type's = SOME_EVENT_2
+```
+Of course if the JavaFX Application was displayed the Label's text would be set. (Warning: when updating the ui use the `Platform.runLater()`.)
+
 4. Komet's design also includes the cognitive framework to implement MVVM architecture framework.
-You can find more information along with the examples [here](https://github.com/carldea/cognitive/wiki).
+   You can find more information along with the examples [here](https://github.com/carldea/cognitive/wiki).
    1. Gradle:
       ```
       implementation 'org.carlfx:cognitive:1.3.0'
@@ -265,7 +323,7 @@ You can find more information along with the examples [here](https://github.com/
       <dependency>
       <groupId>org.carlfx</groupId>
       <artifactId>cognitive</artifactId>
-      <version>1.3.0</version>
+      <version>1.6.1</version>
       </dependency>
       ```
    3. Project using Java Modules (JPMS) will want to do the following in the consuming module:
@@ -277,10 +335,10 @@ You can find more information along with the examples [here](https://github.com/
 
 1. No specific configuration is required to run the installed version of Komet.
 
-2. To run Komet from an IDE (development environment), you will have to do some VM configuration as below:
+2. To run Komet from an IDE (development environment), you will have to do some VM Options configuration as below:
 
    ```shell
-   -Xmx10g --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
+   -Xmx10g --enable-native-access=org.apache.lucene.core --enable-native-access=javafx.graphics --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator --add-exports javafx.base/com.sun.javafx.event=one.jpro.platform.file --add-exports javafx.base/com.sun.javafx.event=org.controlsfx.controls 
    ```
 
 3. The DB needs to be configured under the '_**users -> SOLAR**_' directory.

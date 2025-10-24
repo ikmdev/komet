@@ -17,16 +17,16 @@ package dev.ikm.komet.kview.mvvm.view.timeline;
 
 import dev.ikm.tinkar.coordinate.stamp.change.VersionChangeRecord;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Path Name -> ModuleNid -> StampNid -> Set of VersionChangeRecords
  */
 public class TimelinePathMap extends TreeMap<String, TreeMap<Integer, TreeMap<Integer, TreeSet<VersionChangeRecord>>>> {
     public List<Integer> getModuleNids(String pathName) {
+        if (get(pathName) == null) {
+            return  Collections.emptyList();
+        }
         return get(pathName).keySet().stream().toList();
     }
 
