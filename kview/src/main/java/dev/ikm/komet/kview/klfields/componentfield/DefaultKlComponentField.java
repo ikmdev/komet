@@ -8,22 +8,24 @@ import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
+import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.Parent;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Region;
 
 public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
 
     public DefaultKlComponentField(ObservableField<EntityProxy> observableComponentField, ObservableView observableView, boolean isEditable) {
         super(observableComponentField, observableView, isEditable);
-
-        Parent node;
+        FeatureDefinition fieldDefinition = field().definition(observableView.calculator());
+        Region node;
         if (isEditable) {
             KLComponentControl componentControl = KLComponentControlFactory.createTypeAheadComponentControl(
                     observableView.calculator());
             // title
-            componentControl.setTitle(field().meaning().description());
+            componentControl.setTitle(calculatorForContext().getDescriptionTextOrNid(fieldDefinition.meaningNid()));
            // entity
             componentControl.entityProperty().bindBidirectional(observableComponentField.valueProperty());
             node = componentControl;
@@ -31,7 +33,7 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
             KLReadOnlyComponentControl readOnlyComponentControl = new KLReadOnlyComponentControl();
             ObjectProperty<EntityProxy> valueProperty = observableComponentField.valueProperty();
             // title
-            String title = observableView.calculator().languageCalculator().getDescriptionText(observableComponentField.meaningNid()).orElse("Blank Title");
+            String title = observableView.calculator().getDescriptionText(fieldDefinition.meaningNid()).orElse("Blank Title");
             readOnlyComponentControl.setTitle(title);
             // value
             updateControlValue(valueProperty.get(), readOnlyComponentControl);

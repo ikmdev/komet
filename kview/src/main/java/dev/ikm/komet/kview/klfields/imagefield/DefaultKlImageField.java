@@ -7,6 +7,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyImageControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import javafx.scene.Parent;
+import javafx.scene.layout.Region;
 
 import java.io.ByteArrayOutputStream;
 
@@ -17,7 +18,7 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
 
     public DefaultKlImageField(ObservableField<byte[]> observableImageField, ObservableView observableView, boolean isEditable) {
         super(observableImageField, observableView, isEditable);
-        Parent node;
+        Region node;
         if (isEditable) {
             KLImageControl imageControl = new KLImageControl();
             imageControl.setTitle(getTitle());

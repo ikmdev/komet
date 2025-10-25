@@ -2,9 +2,9 @@ package dev.ikm.komet.kview.klfields.booleanfield;
 
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.layout.component.version.field.KlBooleanField;
-import dev.ikm.komet.layout.component.version.field.KlField;
-import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
+import dev.ikm.komet.layout.version.field.KlBooleanField;
+import dev.ikm.komet.layout.version.field.KlField;
+import dev.ikm.komet.layout.version.field.KlFieldFactory;
 
 public class KlBooleanFieldFactory implements KlFieldFactory<Boolean> {
     @Override

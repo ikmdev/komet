@@ -112,5 +112,9 @@
             <groupId>dev.ikm.jpms</groupId>
             <artifactId>jgit</artifactId>
         </dependency>
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>entity</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -55,6 +55,7 @@ open module dev.ikm.komet.framework {
     provides CachingService with dev.ikm.komet.framework.dnd.DragRegistry.CacheProvider;
     requires io.github.classgraph;
     requires dev.ikm.tinkar.collection;
+    requires com.github.benmanes.caffeine;
     requires org.kordamp.ikonli.fontawesome5;
     requires org.kordamp.ikonli.fontawesome;
     requires org.kordamp.ikonli.foundation;

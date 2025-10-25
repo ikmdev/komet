@@ -15,37 +15,40 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import javafx.beans.property.LongProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleLongProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.komet.framework.observable.binding.Binding;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.State;
-import org.eclipse.collections.api.map.ImmutableMap;
+import javafx.beans.property.*;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 
 public abstract sealed class ObservableVersion<V extends EntityVersion>
-        implements EntityVersion, ObservableComponent
+        implements EntityVersion, ObservableComponent, Feature<ObservableVersion<?>>
         permits ObservableConceptVersion, ObservablePatternVersion, ObservableSemanticVersion, ObservableStampVersion {
     protected final SimpleObjectProperty<V> versionProperty = new SimpleObjectProperty<>();
 
-    private final EntityVersion entityVersion;
+    private final SimpleObjectProperty<State> stateProperty = new SimpleObjectProperty<>();
+    private final SimpleLongProperty timeProperty = new SimpleLongProperty();
+    private final SimpleObjectProperty<ConceptFacade> authorProperty = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<ConceptFacade> moduleProperty = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<ConceptFacade> pathProperty = new SimpleObjectProperty<>();
 
-    final SimpleObjectProperty<State> stateProperty = new SimpleObjectProperty<>();
-    final SimpleLongProperty timeProperty = new SimpleLongProperty();
-    final SimpleObjectProperty<ConceptFacade> authorProperty = new SimpleObjectProperty<>();
-    final SimpleObjectProperty<ConceptFacade> moduleProperty = new SimpleObjectProperty<>();
-    final SimpleObjectProperty<ConceptFacade> pathProperty = new SimpleObjectProperty<>();
+    // Replace with JEP 502 (Stable Values) when available.
+    private final AtomicReference<ReadOnlyProperty<Feature<ObservableVersion<?>>>> featurePropertyReference = new AtomicReference<>();
+
+
 
 
     ObservableVersion(V entityVersion) {
         versionProperty.set(entityVersion);
-        this.entityVersion = entityVersion;
         stateProperty.set(entityVersion.state());
         timeProperty.set(entityVersion.time());
         authorProperty.set(Entity.provider().getEntityFast(entityVersion.authorNid()));
@@ -54,13 +57,31 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
         addListeners();
     }
 
-    public abstract ImmutableMap<FieldCategory, ObservableField> getObservableFields();
+    public abstract ObservableEntity<? extends ObservableVersion> getObservableEntity();
+
+    // TODO: replace with JEP 502: Stable Values when finalized, or for testing.
+    AtomicInteger versionIndex = new AtomicInteger(-1);
+
+    @Override
+    public FeatureKey featureKey() {
+        return FeatureKey.Entity.Version(nid(), stampNid());
+    }
+
+    @Override
+    public ObservableComponent containingComponent() {
+        return getObservableEntity();
+    }
+
+    public int nid() {
+        return versionProperty.get().nid();
+    }
 
     protected void addListeners() {
         stateProperty.addListener((observable, oldValue, newValue) -> {
             if (version().uncommitted()) {
                 Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                    StampEntity newStamp = transaction.getStamp(newValue, version().time(), version().authorNid(), version().moduleNid(), version().pathNid());
+                    StampEntity newStamp = transaction.getStamp(newValue, version().time(),
+                            version().authorNid(), version().moduleNid(), version().pathNid());
                     versionProperty.set(withStampNid(newStamp.nid()));
                 }, () -> {
                     throw new IllegalStateException("No transaction for uncommitted version: " + version());
@@ -74,7 +95,8 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
             // TODO when to update the chronology with new record? At commit time? Automatically with reactive stream for commits?
             if (version().uncommitted()) {
                 Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                    StampEntity newStamp = transaction.getStamp(version().state(), newValue.longValue(), version().authorNid(), version().moduleNid(), version().pathNid());
+                    StampEntity newStamp = transaction.getStamp(version().state(), newValue.longValue(),
+                            version().authorNid(), version().moduleNid(), version().pathNid());
                     versionProperty.set(withStampNid(newStamp.nid()));
                 }, () -> {
                     throw new IllegalStateException("No transaction for uncommitted version: " + version());
@@ -87,7 +109,8 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
         authorProperty.addListener((observable, oldValue, newValue) -> {
             if (version().uncommitted()) {
                 Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(), newValue.nid(), version().moduleNid(), version().pathNid());
+                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(),
+                            newValue.nid(), version().moduleNid(), version().pathNid());
                     versionProperty.set(withStampNid(newStamp.nid()));
                 }, () -> {
                     throw new IllegalStateException("No transaction for uncommitted version: " + version());
@@ -100,7 +123,8 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
         moduleProperty.addListener((observable, oldValue, newValue) -> {
             if (version().uncommitted()) {
                 Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(), version().authorNid(), newValue.nid(), version().pathNid());
+                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(),
+                            version().authorNid(), newValue.nid(), version().pathNid());
                     versionProperty.set(withStampNid(newStamp.nid()));
                 }, () -> {
                     throw new IllegalStateException("No transaction for uncommitted version: " + version());
@@ -113,7 +137,8 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
         pathProperty.addListener((observable, oldValue, newValue) -> {
             if (version().uncommitted()) {
                 Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(), version().authorNid(), version().moduleNid(), newValue.nid());
+                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(),
+                            version().authorNid(), version().moduleNid(), newValue.nid());
                     versionProperty.set(withStampNid(newStamp.nid()));
                 }, () -> {
                     throw new IllegalStateException("No transaction for uncommitted version: " + version());
@@ -122,15 +147,10 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
                 throw new IllegalStateException("Version is already committed, cannot change value.");
             }
         });
-
     }
 
     public V version() {
         return versionProperty.getValue();
-    }
-
-    public EntityVersion getEntityVersion(){
-        return this.entityVersion;
     }
 
     protected abstract V withStampNid(int stampNid);
@@ -190,12 +210,57 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
 
     public abstract V getVersionRecord();
 
-    private ConceptFacade authorForChanges;
-
-    public void setAuthorForChanges(ConceptFacade authorForChanges){
-        this.authorForChanges = authorForChanges;
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + ": " + getVersionRecord().toString();
     }
-    public ConceptFacade getAuthorForChanges(){
-        return this.authorForChanges;
+
+    @Override
+    public ReadOnlyProperty<? extends Feature<ObservableVersion<?>>> featureProperty() {
+        // Replace with JEP 502 (Stable Values) when available.
+        return this.featurePropertyReference.updateAndGet(old -> old == null ?
+                new ReadOnlyObjectWrapper<>(this.getObservableEntity(), this.getClass().getSimpleName(), (Feature<ObservableVersion<?>>) this).getReadOnlyProperty(): old);
+    }
+
+
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    private AtomicReference<FeatureWrapper> versionStampReference = new AtomicReference<>();
+    private FeatureWrapper getVersionStampFeature() {
+        return versionStampReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makeVersionStampFeature());
+    }
+    private FeatureWrapper makeVersionStampFeature() {
+        FeatureKey locator = FeatureKey.Version.VersionStamp(this.nid(), this.stampNid());
+        ObservableStamp stamp = ObservableEntity.get(stampNid());
+        return new FeatureWrapper(stamp.asFeature(), Binding.Stamp.Version.pattern().nid(),
+                Binding.Stamp.Version.stampFieldDefinitionIndex(),this, locator);
+    }
+
+    @Override
+    public final ImmutableList<Feature> getFeatures() {
+        // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature lists.
+        MutableList<Feature> features = Lists.mutable.empty();
+        addAdditionalVersionFeatures(features);
+
+        if (this instanceof ObservableStampVersion) {
+            // if this is an ObservableStampVersion, the fields will be added as part of addAdditionalVersionFeatures.
+        } else {
+            // Add the stamp features. Other layouts may choose to handle the stamp fields differently.
+            // TODO: question if we should include the stamp fields here for convenience, or have the developer specifically retrieve them if wanted.
+            ObservableStamp stamp = ObservableEntity.get(stampNid());
+            ObservableStampVersion stampEntityVersion = stamp.lastVersion();
+            stampEntityVersion.addAdditionalVersionFeatures( features);
+        }
+        // Add the feature for the stamp itself.
+        features.add(getVersionStampFeature());
+
+        return features.toImmutable();
+    }
+
+    protected abstract void addAdditionalVersionFeatures(MutableList<Feature> features);
+
+    public Feature<?> getFeature(FeatureKey.VersionFeature versionFeatureKey) {
+        return getFeatures().select(feature -> versionFeatureKey.match(feature.featureKey())).getOnly();
     }
 }

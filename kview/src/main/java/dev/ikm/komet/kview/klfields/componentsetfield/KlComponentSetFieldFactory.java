@@ -2,8 +2,7 @@ package dev.ikm.komet.kview.klfields.componentsetfield;
 
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.layout.component.version.field.KlField;
-import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
+import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.tinkar.common.id.IntIdSet;
 
 import java.util.UUID;

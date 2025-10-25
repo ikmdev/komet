@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.function.Predicate;
 
 public final class ObservableConceptSnapshot
-        extends ObservableEntitySnapshot<ObservableConcept, ObservableConceptVersion, ConceptVersionRecord> {
+        extends ObservableEntitySnapshot<ObservableConcept, ObservableConceptVersion> {
 
     public ObservableConceptSnapshot(ViewCalculator viewCalculator, ObservableConcept entity) {
         super(viewCalculator, entity);

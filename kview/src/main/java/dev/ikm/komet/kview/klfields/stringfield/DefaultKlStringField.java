@@ -5,15 +5,16 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
 import dev.ikm.komet.kview.controls.KLStringControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
-import dev.ikm.komet.layout.component.version.field.KlStringField;
-import javafx.scene.Parent;
+import dev.ikm.komet.layout.version.field.KlStringField;
+import javafx.scene.layout.Region;
+
 
 public class DefaultKlStringField extends BaseDefaultKlField<String> implements KlStringField {
 
     public DefaultKlStringField(ObservableField<String> observableStringField, ObservableView observableView, boolean isEditable) {
         super(observableStringField, observableView, isEditable);
 
-        Parent node;
+        Region node;
         if (isEditable) {
             KLStringControl stringControl = new KLStringControl();
 

@@ -350,7 +350,9 @@ public class DataModelHelper {
                     semanticEntityVersion.fieldValues().get(i),
                     semanticEntityVersion.nid(),
                     semanticEntityVersion.stampNid(),
-                    fieldDefinitionForEntities.get(i))
+                    fieldDefinitionForEntities.get(i).patternNid(),
+                    fieldDefinitionForEntities.get(i).indexInPattern()
+                    )
             );
         }
         return fieldRecords;

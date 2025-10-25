@@ -1,5 +1,7 @@
 package dev.ikm.komet.framework.observable;
 
+import org.eclipse.collections.api.list.ImmutableList;
+
 /**
  * ObservableComponent defines a sealed interface that represents a
  * foundational construct for components in a system. This interface
@@ -26,4 +28,21 @@ package dev.ikm.komet.framework.observable;
  */
 public sealed interface ObservableComponent
         permits ObservableEntity, ObservableVersion {
+    /**
+     * Retrieves an immutable list of features associated with this observable component
+     * based on the provided stamp calculator. The list represents the attributes or
+     * characteristics of the component, each defined by a {@code Feature}.
+     *
+     * @return an {@code ImmutableList} of {@code Feature} objects associated with this component.
+     */
+    ImmutableList<Feature> getFeatures();
+
+    /**
+     * Retrieves the native identifier (nid) of the observable component.
+     * The nid is a unique, integer-based identifier used to represent
+     * and distinguish components within the system.
+     *
+     * @return the native identifier (nid) as an integer.
+     */
+    int nid();
 }

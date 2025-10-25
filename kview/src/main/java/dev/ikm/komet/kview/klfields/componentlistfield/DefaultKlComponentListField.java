@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.klfields.componentlistfield;
 import static dev.ikm.komet.kview.controls.KLComponentControlFactory.createTypeAheadComponentListControl;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.layout.version.field.KlComponentListField;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
@@ -11,7 +12,6 @@ import dev.ikm.komet.kview.controls.KLComponentCollectionControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
-import dev.ikm.komet.layout.component.version.field.KlComponentListField;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -20,6 +20,7 @@ import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.Parent;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Region;
 
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -35,7 +36,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
      */
     public DefaultKlComponentListField(ObservableField<IntIdList> observableComponentListField, ObservableView observableView, boolean isEditable, UUID journalTopic) {
         super(observableComponentListField, observableView, isEditable);
-        Parent node;
+        Region node;
         ObjectProperty<IntIdList> observableProperty = observableComponentListField.valueProperty();
         if (isEditable) {
             KLComponentCollectionControl<IntIdList> klComponentCollectionControl = createTypeAheadComponentListControl(observableView.calculator());

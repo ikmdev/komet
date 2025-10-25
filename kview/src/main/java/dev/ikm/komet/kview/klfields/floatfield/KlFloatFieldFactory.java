@@ -2,9 +2,9 @@ package dev.ikm.komet.kview.klfields.floatfield;
 
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.layout.component.version.field.KlField;
-import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
-import dev.ikm.komet.layout.component.version.field.KlFloatField;
+import dev.ikm.komet.layout.version.field.KlField;
+import dev.ikm.komet.layout.version.field.KlFieldFactory;
+import dev.ikm.komet.layout.version.field.KlFloatField;
 
 public class KlFloatFieldFactory implements KlFieldFactory<Float> {
 

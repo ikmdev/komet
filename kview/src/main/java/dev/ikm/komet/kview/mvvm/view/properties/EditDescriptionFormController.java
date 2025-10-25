@@ -347,8 +347,12 @@ public class EditDescriptionFormController implements BasicController {
             // populate all case significance choices
             IntIdSet caseSenseDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
             Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
-                    .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
+                    .mapToObj(caseNid -> EntityHandle.get(caseNid).asConcept())
                     .collect(Collectors.toSet());
+
+//            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+//                    .mapToObj(caseNid -> EntityHandle.get(caseNid) (ConceptEntity) Entity.getFast(caseNid))
+//                    .collect(Collectors.toSet());
             setupComboBox(caseSignificanceComboBox, allCaseDescendents);
 
             // get case concept's case sensitivity (e.g. 'Case insensitive')

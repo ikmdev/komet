@@ -90,13 +90,13 @@ public class SheetItem<T> implements PropertySheet.Item {
     public static <T> SheetItem<T> make(ObservableField field, String category, SemanticEntityVersion version, ViewProperties viewProperties) {
         Class<?> classType;
         // meaning
-        String name = viewProperties.calculator().getDescriptionTextOrNid(field.meaningNid());
+        String name = viewProperties.calculator().getDescriptionTextOrNid(field.definition(viewProperties.calculator()).meaningNid());
         // Purpose
-        String description = viewProperties.calculator().getDescriptionTextOrNid(field.purposeNid());
+        String description = viewProperties.calculator().getDescriptionTextOrNid(field.definition(viewProperties.calculator()).purposeNid());
         ObjectProperty property = field.valueProperty();
 
         Class propertyEditorClass = null;
-        switch (field.fieldDataType()) {
+        switch (field.definition(viewProperties.calculator()).fieldDataType()) {
             case STRING:
                 classType = String.class;
                 propertyEditorClass = null;

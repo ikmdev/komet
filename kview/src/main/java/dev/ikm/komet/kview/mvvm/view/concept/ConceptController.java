@@ -1384,7 +1384,7 @@ public class ConceptController {
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
         Latest<ObservableSemanticVersion> latest = observableSemanticSnapshot.getLatestVersion();
         if(latest.isPresent()){
-            return latest.get().fields(patternVersion, false);
+            return latest.get().fields();
         } else {
             return Lists.immutable.of(new ObservableField[semanticEntityVersion.fieldValues().size()]);
         }

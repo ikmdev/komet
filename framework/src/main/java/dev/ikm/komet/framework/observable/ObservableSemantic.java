@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -28,21 +29,23 @@ import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class ObservableSemantic
-        extends ObservableEntity<ObservableSemanticVersion, SemanticVersionRecord>
+        extends ObservableEntity<ObservableSemanticVersion>
         implements SemanticEntity<ObservableSemanticVersion> {
     ObservableSemantic(SemanticEntity<SemanticVersionRecord> semanticEntity) {
         super(semanticEntity);
     }
 
     @Override
-    protected ObservableSemanticVersion wrap(SemanticVersionRecord version) {
-        ObservableSemanticVersion observableSemanticVersion = new ObservableSemanticVersion(version);
+    protected ObservableSemanticVersion wrap(EntityVersion version) {
+        ObservableSemanticVersion observableSemanticVersion = new ObservableSemanticVersion((SemanticVersionRecord) version);
         observableSemanticVersion.versionProperty.addListener((observable, oldValue, newValue) -> {
                 updateEntity(newValue, oldValue);
         });
@@ -108,88 +111,38 @@ public final class ObservableSemantic
         return Optional.of(axiomSemanticSnapshot);
     }
 
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    final AtomicReference<FeatureWrapper> patternForSemanticFieldReference = new AtomicReference<>();
+    private FeatureWrapper getPatternForSemanticFeature() {
+        return patternForSemanticFieldReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makePatternForSemanticFeature());
+    }
+    private FeatureWrapper makePatternForSemanticFeature() {
+        FeatureKey locator = FeatureKey.Entity.SemanticPattern(this.nid());
+        return new FeatureWrapper(this.pattern(), Binding.Semantic.pattern().nid(), Binding.Semantic.patternFieldDefinitionIndex(), this, locator);
+    }
+
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    final AtomicReference<FeatureWrapper> referencedComponentFieldReference = new AtomicReference<>();
+    private FeatureWrapper getReferencedComponentFeature() {
+        return referencedComponentFieldReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makeReferencedComponentFeature());
+    }
+
+    private FeatureWrapper makeReferencedComponentFeature() {
+        FeatureKey locator = FeatureKey.Entity.SemanticReferencedComponent(this.nid());
+        return new FeatureWrapper(this.referencedComponent(), Binding.Semantic.pattern().nid(), Binding.Component.versionsFieldDefinitionIndex(), this, locator);
+    }
+
     @Override
-    public ImmutableMap<FieldCategory, ObservableField> getObservableFields() {
-        MutableMap<FieldCategory, ObservableField> fieldMap = Maps.mutable.empty();
+    protected void addAdditionalChronologyFeatures(MutableList<Feature> features) {
+        // Pattern for semantic
+        features.add(getPatternForSemanticFeature());
 
-        int firstStamp = StampCalculator.firstStampTimeOnly(this.entity().stampNids());
-
-        for (FieldCategory field: FieldCategorySet.semanticFields()) {
-            switch (field) {
-                case PUBLIC_ID_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.publicId();
-                    int dataTypeNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    int purposeNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    int meaningNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    Entity<EntityVersion> idPattern = Entity.getFast(TinkarTerm.IDENTIFIER_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(idPattern.stampNids());
-                    int patternNid = TinkarTerm.IDENTIFIER_PATTERN.nid();
-                    int indexInPattern = 0;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid,  indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-                case SEMANTIC_PATTERN_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.versions();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.COMPONENT_FOR_SEMANTIC.nid();
-                    int meaningNid = TinkarTerm.COMPONENT_FOR_SEMANTIC.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 0;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid,  indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-                case SEMANTIC_REFERENCED_COMPONENT_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.versions();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.ASSEMBLAGE.nid();
-                    int meaningNid = TinkarTerm.ASSEMBLAGE.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 0;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid,  indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-
-                case COMPONENT_VERSIONS_LIST -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.versions();
-                    int dataTypeNid = TinkarTerm.VERSION_LIST_FOR_CHRONICLE.nid();
-                    int purposeNid = TinkarTerm.VERSION_LIST_FOR_CHRONICLE.nid();
-                    int meaningNid = TinkarTerm.VERSION_LIST_FOR_CHRONICLE.nid();
-                    Entity<EntityVersion> idPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(idPattern.stampNids());
-                    int patternNid = TinkarTerm.IDENTIFIER_PATTERN.nid();
-                    int indexInPattern = 0;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid,  indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-
-            }
-        }
-
-        return fieldMap.toImmutable();
+        // Referenced component for semantic
+        features.add(getReferencedComponentFeature());
     }
 
 }
