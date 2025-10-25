@@ -263,4 +263,15 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
     public Feature<?> getFeature(FeatureKey.VersionFeature versionFeatureKey) {
         return getFeatures().select(feature -> versionFeatureKey.match(feature.featureKey())).getOnly();
     }
+
+    //TODO: added temporarily to support intermediate state of KL merge with main.
+    //TODO: Need to eliminate author for changes and make sure editing is performed correctly.
+    private ConceptFacade authorForChanges;
+
+    public void setAuthorForChanges(ConceptFacade authorForChanges){
+        this.authorForChanges = authorForChanges;
+    }
+    public ConceptFacade getAuthorForChanges(){
+        return this.authorForChanges;
+    }
 }

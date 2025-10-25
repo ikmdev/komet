@@ -74,6 +74,7 @@ module dev.ikm.komet.application.test {
     requires org.testfx.junit5;
     requires org.testfx.monocle;
     requires org.junit.jupiter;
+    requires surefire.shared.utils;
 
     exports dev.ikm.komet.app.test.integration.testfx;
     opens dev.ikm.komet.app.test.integration.testfx;

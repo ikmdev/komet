@@ -51,6 +51,7 @@ import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.*;
 import javafx.embed.swing.SwingFXUtils;
@@ -311,10 +312,11 @@ public class KlFieldHelper {
      *  During create (new Semantic) the user can change the reference component.
      *  the hash is stating any change. By default a reference component during created would be TinkarTerms.ANONOUMOUS_CONCEPT (I can't remember).
      */
-    public static int calculateHashValue(List<ObservableField<?>> observableFieldsList ) {
+    public static int calculateHashValue(List<ObservableField<?>> observableFieldsList, StampCalculator stampCalculator) {
         StringBuilder stringBuilder = new StringBuilder();
         observableFieldsList.forEach(observableField -> {
-            if (observableField.dataTypeNid() == IMAGE_FIELD.nid() || observableField.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
+            FeatureDefinition definition = observableField.definition(stampCalculator);
+            if (definition.dataTypeNid() == IMAGE_FIELD.nid() || definition.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
                 // need to handle byte array to ensure that the same image is not getting uploaded and resaved. This is to enable/disable submit button.
                 byte [] byteArray = (byte[]) observableField.valueProperty().get();
                 String str = new String(byteArray, java.nio.charset.StandardCharsets.UTF_8);

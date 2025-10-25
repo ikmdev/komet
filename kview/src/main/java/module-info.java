@@ -44,6 +44,7 @@ module dev.ikm.komet.kview {
     requires javafx.base;
     requires dev.ikm.tinkar.common;
     requires dev.ikm.tinkar.component;
+    requires dev.ikm.tinkar.entity;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;

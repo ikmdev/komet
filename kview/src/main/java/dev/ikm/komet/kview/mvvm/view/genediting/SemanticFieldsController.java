@@ -16,6 +16,9 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
+import dev.ikm.komet.framework.view.ObservableViewWithOverride;
+import dev.ikm.tinkar.component.FeatureDefinition;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.events.EntityVersionChangeEvent;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
@@ -111,11 +114,17 @@ public class SemanticFieldsController {
 
     private void enableDisableButtons() {
         boolean emptyFields = checkForEmptyFields();
-        int uncommittedHash = calculateHashValue(observableFields);
+        int uncommittedHash = calculateHashValue(observableFields, getStampCalculator());
         boolean fieldsHaveNotChanged = committedHash == uncommittedHash;
 
         submitButton.setDisable(emptyFields || fieldsHaveNotChanged);
         clearOrResetFormButton.setDisable(fieldsHaveNotChanged);
+    }
+
+    private StampCalculator getStampCalculator() {
+        ObservableViewWithOverride view = genEditingViewModel.getViewProperties().nodeView();
+        StampCalculator stampCalculator = view.calculator();
+        return stampCalculator;
     }
 
     /**
@@ -126,9 +135,10 @@ public class SemanticFieldsController {
         AtomicBoolean invalid = new AtomicBoolean(false);
 
         for (ObservableField<?> observableField : observableFields) {
-            if (observableField.dataTypeNid() == IMAGE_FIELD.nid()) {
+            FeatureDefinition fieldDefinition = observableField.definition(getStampCalculator());
+            if (fieldDefinition.dataTypeNid() == IMAGE_FIELD.nid()) {
                 invalid.set(observableField.valueProperty().get() == null || (((byte[]) observableField.valueProperty().get()).length == 0));
-            } else if (observableField.dataTypeNid() == COMPONENT_FIELD.nid()) {
+            } else if (fieldDefinition.dataTypeNid() == COMPONENT_FIELD.nid()) {
                 invalid.set(observableField.valueProperty().get() == null || observableField.valueProperty().get() == BLANK_CONCEPT);
             }
             if (!invalid.get()) {
@@ -147,8 +157,8 @@ public class SemanticFieldsController {
         //Get the latest version
         Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
         observableSemanticVersionLatest.ifPresent(observableSemanticVersion -> { // if latest version present
-           if (observableSemanticVersion.committed()) { // and if latest version is committed then,
-               immutableList.set(observableSemanticSnapshot.getLatestFields(true, false).get()); // get the latest fields
+            if (observableSemanticVersion.committed()) { // and if latest version is committed then,
+               immutableList.set(observableSemanticSnapshot.getLatestFields().get()); // get the latest fields
            } else { //if The latest version is Uncommitted, then retrieve the committed version from historic versions list.
                ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
                // replace any versions with uncommited stamp
@@ -157,14 +167,14 @@ public class SemanticFieldsController {
                    EntityFacade pattern = EntityFacade.make(committedObservableSemanticVersion.patternNid());
                    Latest<PatternEntityVersion> patternEntityVersionLatest = getViewProperties().calculator().latest(pattern.nid());
                    if (patternEntityVersionLatest.isPresent()) {
-                       immutableList.set(committedObservableSemanticVersion.fields(patternEntityVersionLatest.get()));
+                       immutableList.set(committedObservableSemanticVersion.fields());
                    }
                });
            }
         });
         if (immutableList.get() != null) {
             List<ObservableField<?>> observableFieldsList = new ArrayList<>((Collection) immutableList.get());
-            committedHash = calculateHashValue(observableFieldsList);  // and calculate the hashValue for commited data.
+            committedHash = calculateHashValue(observableFieldsList, getStampCalculator());  // and calculate the hashValue for commited data.
         }
 
     }
@@ -262,7 +272,7 @@ public class SemanticFieldsController {
         // Displaying editable controls and populating the observable fields array list.
         observableFields.clear();
         if(observableSemanticSnapshot != null) {
-            observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(true, false).get());
+            observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
         }
         observableFields.forEach(observableField -> {
             if (genEditingViewModel.getPropertyValue(MODE) == CREATE && observableField.value() instanceof EntityProxy){

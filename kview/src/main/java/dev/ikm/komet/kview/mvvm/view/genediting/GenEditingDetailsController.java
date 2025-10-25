@@ -509,20 +509,20 @@ public class GenEditingDetailsController {
             observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
             ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
             if (observableSemanticVersionImmutableList.isEmpty()) {
-                observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(false, false).get());
+                observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
             } else {
                 //Cast to mutable list
                 List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
                 //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
                 observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
                 if (observableSemanticVersionList.isEmpty()) {
-                    observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields(false, false).get());
+                    observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
                 } else {
                     ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
                     Latest<PatternEntityVersion> latestPatternEntityVersion = getViewProperties().calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
                     // Populate the Semantic Details
                     // Displaying editable controls and populating the observable fields array list.
-                    observableFields.addAll((Collection) observableSemanticVersion.fields(latestPatternEntityVersion.get()));
+                    observableFields.addAll((Collection) observableSemanticVersion.fields());
                 }
             }
             // function to apply for the components' edit action (a.k.a. right click > Edit)
