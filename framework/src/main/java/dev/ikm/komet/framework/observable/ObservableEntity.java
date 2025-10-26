@@ -445,10 +445,40 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
     @Deprecated(since = "Current", forRemoval = true)
     public static <OE extends ObservableEntity<OV>, OV extends ObservableVersion<EV>, EV extends EntityVersion>
     ObservableEntitySnapshot<OE, OV> getSnapshot(int nid, ViewCalculator calculator) {
-        return get(Entity.getFast(nid)).getSnapshot(calculator);
+        return packagePrivateGetSnapshot(nid, calculator);
+    }
+
+    /**
+     * Package-private method for internal use by ObservableEntityHandle.
+     * External code should use {@link ObservableEntityHandle#getSnapshot(int, ViewCalculator)}.
+     */
+    static <OE extends ObservableEntity<OV>, OV extends ObservableVersion<EV>, EV extends EntityVersion>
+    ObservableEntitySnapshot<OE, OV> packagePrivateGetSnapshot(int nid, ViewCalculator calculator) {
+        return packagePrivateGet(Entity.packagePrivateGetFast(nid)).getSnapshot(calculator);
     }
 
     public abstract ObservableEntitySnapshot<?,?> getSnapshot(ViewCalculator calculator);
+
+    /**
+     * Package-private method for internal use by ObservableEntityHandle.
+     * External code should use {@link ObservableEntityHandle#get(int)}.
+     */
+    static <OE extends ObservableEntity> OE packagePrivateGet(Entity<? extends EntityVersion> entity) {
+        if (!Platform.isFxApplicationThread()) {
+            //Throw exception since we need to get the version using JavaFx thread.
+            throw new RuntimeException( "Invalid calling thread.");
+        }
+        ObservableEntity observableEntity = switch (entity) {
+            case ObservableEntity oe -> oe;
+            case ConceptEntity conceptEntity -> new ObservableConcept(conceptEntity);
+            case PatternEntity patternEntity -> new ObservablePattern(patternEntity);
+            case SemanticEntity semanticEntity -> new ObservableSemantic(semanticEntity);
+            case StampEntity stampEntity -> new ObservableStamp(stampEntity);
+            default -> throw new UnsupportedOperationException("Can't handle: " + entity);
+        };
+        observableEntity.updateVersions(entity);
+        return (OE) observableEntity;
+    }
 
     /**
      * @deprecated Use {@link ObservableEntityHandle#get(int)} or type-specific methods instead.
@@ -478,20 +508,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
      */
     @Deprecated(since = "Current", forRemoval = true)
     public static <OE extends ObservableEntity> OE get(Entity<? extends EntityVersion> entity) {
-        if (!Platform.isFxApplicationThread()) {
-            //Throw exception since we need to get the version using JavaFx thread.
-            throw new RuntimeException( "Invalid calling thread.");
-        }
-        ObservableEntity observableEntity = switch (entity) {
-            case ObservableEntity oe -> oe;
-            case ConceptEntity conceptEntity -> new ObservableConcept(conceptEntity);
-            case PatternEntity patternEntity -> new ObservablePattern(patternEntity);
-            case SemanticEntity semanticEntity -> new ObservableSemantic(semanticEntity);
-            case StampEntity stampEntity -> new ObservableStamp(stampEntity);
-            default -> throw new UnsupportedOperationException("Can't handle: " + entity);
-        };
-        observableEntity.updateVersions(entity);
-        return (OE) observableEntity;
+        return packagePrivateGet(entity);
     }
 
     /**
@@ -529,6 +546,14 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
     }
 
     /**
+     * Package-private method for internal use by ObservableEntityHandle.
+     * External code should use {@link ObservableEntityHandle#get(int)}.
+     */
+    static <OE extends ObservableEntity> OE packagePrivateGet(int nid) {
+        return packagePrivateGet(Entity.packagePrivateGetFast(nid));
+    }
+
+    /**
      * @deprecated Use {@link ObservableEntityHandle#get(int)} or type-specific methods instead.
      * <p>
      * This static accessor method is being phased out in favor of the fluent
@@ -556,7 +581,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
      */
     @Deprecated(since = "Current", forRemoval = true)
     public static <OE extends ObservableEntity> OE get(int nid) {
-        return get(Entity.getFast(nid));
+        return packagePrivateGet(nid);
     }
 
     protected Entity<?> entity() {

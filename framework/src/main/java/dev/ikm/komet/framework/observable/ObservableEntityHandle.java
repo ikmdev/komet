@@ -497,7 +497,7 @@ public interface ObservableEntityHandle {
      */
     static ObservableEntityHandle get(int nid) {
         try {
-            ObservableEntity<?> entity = ObservableEntity.get(nid);
+            ObservableEntity<?> entity = ObservableEntity.packagePrivateGet(nid);
             return entity != null ? of(entity) : absent();
         } catch (RuntimeException e) {
             // Entity not found or thread check failed
