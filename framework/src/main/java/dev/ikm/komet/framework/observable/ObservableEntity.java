@@ -54,9 +54,264 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * TODO: should be a way of listening for changes to the versions of the entity? Yes, use the versionProperty()...
+ * JavaFX-compatible observable wrapper for immutable Tinkar entities, providing reactive property bindings
+ * for UI components and change notification support.
+ * <p>
+ * {@code ObservableEntity} bridges the gap between immutable Tinkar entities and JavaFX's reactive
+ * programming model by wrapping {@link Entity} instances with JavaFX properties. This enables direct
+ * binding to UI controls, automatic UI updates when entity data changes, and listener registration for
+ * entity version changes.
  *
- * @param <OV>
+ * <h2>What is an ObservableEntity?</h2>
+ * <p>
+ * An {@code ObservableEntity} is a <b>mutable, observable wrapper</b> around an immutable {@link Entity}
+ * that provides:
+ * <ul>
+ *   <li><b>JavaFX Properties:</b> Expose entity data as {@link javafx.beans.property.Property} objects
+ *       for direct UI binding (e.g., {@code label.textProperty().bind(concept.descriptionProperty())})</li>
+ *   <li><b>Change Notifications:</b> Automatically notify observers when the underlying entity versions
+ *       are updated or new versions are committed</li>
+ *   <li><b>Canonical Instances:</b> Maintain a single in-memory instance per NID (while strongly referenced),
+ *       ensuring all observers see consistent state</li>
+ *   <li><b>Thread Safety:</b> Require JavaFX application thread for access, enforcing proper UI threading</li>
+ * </ul>
+ *
+ * <h2>Four Observable Entity Types</h2>
+ * <p>
+ * This sealed interface has four permitted implementations mirroring the four entity types:
+ * <ul>
+ *   <li>{@link ObservableConcept} - Observable wrapper for {@link ConceptEntity}</li>
+ *   <li>{@link ObservableSemantic} - Observable wrapper for {@link SemanticEntity}</li>
+ *   <li>{@link ObservablePattern} - Observable wrapper for {@link PatternEntity}</li>
+ *   <li>{@link ObservableStamp} - Observable wrapper for {@link StampEntity}</li>
+ * </ul>
+ *
+ * <h2>⚠️ How to Access: Use ObservableEntityHandle</h2>
+ * <p>
+ * <b>DO NOT</b> call the static {@code get()} methods on this class directly. They are deprecated and
+ * will be made module-internal in a future release. Instead, use {@link ObservableEntityHandle}, which
+ * provides a fluent, type-safe API for accessing observable entities.
+ *
+ * <h3>Why Use ObservableEntityHandle?</h3>
+ * <ul>
+ *   <li><b>Type Safety:</b> Compile-time checks ensure you're working with the correct entity type
+ *       (Concept, Semantic, Pattern, or Stamp)</li>
+ *   <li><b>Null Safety:</b> Explicit handling of absent entities via {@link java.util.Optional} or
+ *       fluent conditional methods</li>
+ *   <li><b>Composability:</b> Chain operations fluently without manual type checks or casts</li>
+ *   <li><b>Three Access Patterns:</b> Side effects ({@code ifXxx}), safe extraction ({@code asXxx}),
+ *       or direct assertion ({@code expectXxx}) - choose the right pattern for your use case</li>
+ * </ul>
+ *
+ * <h3>Correct Usage Examples</h3>
+ * <pre>{@code
+ * // ✅ CORRECT: Use ObservableEntityHandle for type-safe access
+ * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(conceptNid);
+ * titleLabel.textProperty().bind(concept.descriptionProperty());
+ *
+ * // ✅ CORRECT: Fluent API with type checking
+ * ObservableEntityHandle.get(nid)
+ *     .ifConcept(concept -> {
+ *         titleLabel.textProperty().bind(concept.descriptionProperty());
+ *         statusIcon.visibleProperty().bind(concept.activeProperty());
+ *     })
+ *     .ifSemantic(semantic -> bindSemanticFields(semantic))
+ *     .ifAbsent(() -> showNotFound());
+ *
+ * // ✅ CORRECT: Safe Optional-based extraction
+ * ObservableEntityHandle.get(userInputNid)
+ *     .asConcept()
+ *     .ifPresent(concept -> displayLabel.setText(concept.description()));
+ *
+ * // ❌ WRONG: Direct static method (deprecated, will be removed)
+ * ObservableConcept concept = ObservableEntity.get(conceptNid); // DON'T DO THIS
+ * }</pre>
+ *
+ * <h2>When to Use ObservableEntity vs Entity</h2>
+ * <table border="1" cellpadding="5">
+ * <caption>ObservableEntity vs Entity Comparison</caption>
+ * <tr>
+ *   <th>Use Case</th>
+ *   <th>Use Entity</th>
+ *   <th>Use ObservableEntity</th>
+ * </tr>
+ * <tr>
+ *   <td><b>UI Binding</b></td>
+ *   <td>❌ Not reactive</td>
+ *   <td>✅ Direct property binding</td>
+ * </tr>
+ * <tr>
+ *   <td><b>Change Notifications</b></td>
+ *   <td>❌ Manual polling</td>
+ *   <td>✅ Automatic listeners</td>
+ * </tr>
+ * <tr>
+ *   <td><b>Threading</b></td>
+ *   <td>✅ Any thread</td>
+ *   <td>⚠️ JavaFX thread only</td>
+ * </tr>
+ * <tr>
+ *   <td><b>Immutability</b></td>
+ *   <td>✅ Fully immutable</td>
+ *   <td>⚠️ Mutable wrapper</td>
+ * </tr>
+ * <tr>
+ *   <td><b>Calculations/Logic</b></td>
+ *   <td>✅ Preferred</td>
+ *   <td>❌ Unnecessary overhead</td>
+ * </tr>
+ * <tr>
+ *   <td><b>Background Processing</b></td>
+ *   <td>✅ Thread-safe</td>
+ *   <td>❌ Requires Platform.runLater()</td>
+ * </tr>
+ * </table>
+ *
+ * <h2>Canonical Instance Pool</h2>
+ * <p>
+ * The {@link #CANONICAL_INSTANCES} cache ensures that for any given NID, only one
+ * {@code ObservableEntity} instance exists in memory at a time (while strongly referenced). This is
+ * critical for JavaFX property binding - all UI components must observe the <b>exact same object</b>
+ * to receive change notifications. The cache uses weak references, allowing automatic cleanup when
+ * no UI components or code hold references to the entity.
+ *
+ * <h2>Thread Safety Requirements</h2>
+ * <p>
+ * <b>⚠️ IMPORTANT:</b> All {@code ObservableEntity} access must occur on the JavaFX application thread.
+ * Attempting to access from other threads will throw {@link RuntimeException}. If you need entity data
+ * in background threads, use immutable {@link Entity} instead, then wrap in {@code ObservableEntity}
+ * on the JavaFX thread when updating UI.
+ *
+ * <pre>{@code
+ * // Background thread
+ * CompletableFuture.supplyAsync(() -> {
+ *     // Use immutable Entity for calculations
+ *     Entity<?> entity = Entity.getFast(nid);
+ *     return computeResult(entity);
+ * }).thenAccept(result -> {
+ *     // Switch to JavaFX thread for UI updates
+ *     Platform.runLater(() -> {
+ *         ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(nid);
+ *         resultLabel.textProperty().bind(concept.descriptionProperty());
+ *     });
+ * });
+ * }</pre>
+ *
+ * <h2>Working with Snapshots for View-Specific Access</h2>
+ * <p>
+ * While {@code ObservableEntity} gives you access to <i>all</i> versions of an entity, you typically need
+ * to work within a specific <b>view context</b> - seeing only the versions visible on certain development
+ * paths, in certain modules, or at a specific point in time. This is where {@link ObservableEntitySnapshot}
+ * becomes essential.
+ *
+ * <h3>What Are Snapshots?</h3>
+ * <p>
+ * An {@link ObservableEntitySnapshot} is a view-specific projection that:
+ * <ul>
+ *   <li><b>Filters versions</b> according to {@link ViewCalculator} coordinates (path, module, time, language)</li>
+ *   <li><b>Categorizes versions</b> into latest (current), historic (superseded), contradicted (conflicts), and uncommitted (unsaved)</li>
+ *   <li><b>Enables "time travel"</b> - see what the entity looked like at previous points in time</li>
+ *   <li><b>Provides processing tools</b> - filter, sort, and analyze versions within the view context</li>
+ * </ul>
+ *
+ * <h3>Why Use Snapshots?</h3>
+ * <p>
+ * <b>Problem:</b> Directly using {@code ObservableEntity} gives you all versions, but you need to determine
+ * which ones are "current" for a specific user's view, which are historic, and which represent conflicts.
+ * <p>
+ * <b>Solution:</b> {@link ObservableEntitySnapshot} automatically applies view coordinates and categorizes
+ * versions, giving you instant access to:
+ * <ul>
+ *   <li>The latest version(s) visible in this view</li>
+ *   <li>Any contradictions (multiple "current" versions on different paths)</li>
+ *   <li>Historic versions (what it looked like before recent changes)</li>
+ *   <li>Uncommitted local changes not yet saved</li>
+ * </ul>
+ *
+ * <h3>Creating Snapshots via ObservableEntityHandle</h3>
+ * <p>
+ * Always create snapshots using {@link ObservableEntityHandle}, never by calling deprecated methods or
+ * constructing directly:
+ *
+ * <pre>{@code
+ * // ✅ CORRECT: Type-safe snapshot creation
+ * ViewCalculator viewCalc = // ... from ViewCoordinateRecord
+ * ObservableConceptSnapshot snapshot = 
+ *     ObservableEntityHandle.getConceptSnapshotOrThrow(conceptNid, viewCalc);
+ *
+ * // ✅ CORRECT: Fluent API with snapshot
+ * ObservableEntityHandle.get(nid)
+ *     .ifConceptGetSnapshot(viewCalc, snapshot -> {
+ *         Latest<ObservableConceptVersion> latest = snapshot.getLatestVersion();
+ *         if (latest.contradictions().isEmpty()) {
+ *             // Single current version
+ *             displayVersion(latest.get());
+ *         } else {
+ *             // Multiple current versions - show conflict
+ *             showConflictDialog(latest);
+ *         }
+ *     });
+ *
+ * // ✅ CORRECT: Time travel through history
+ * ObservableConceptSnapshot snapshot = 
+ *     ObservableEntityHandle.getConceptSnapshotOrThrow(nid, viewCalc);
+ * for (ObservableConceptVersion historic : snapshot.getHistoricVersions()) {
+ *     displayHistoricVersion(historic);
+ * }
+ * }</pre>
+ *
+ * <h3>Observable Entity vs Snapshot Decision Guide</h3>
+ * <table border="1" cellpadding="5">
+ * <caption>When to Use ObservableEntity vs ObservableEntitySnapshot</caption>
+ * <tr>
+ *   <th>Scenario</th>
+ *   <th>Use ObservableEntity</th>
+ *   <th>Use ObservableEntitySnapshot</th>
+ * </tr>
+ * <tr>
+ *   <td><b>Direct property binding</b></td>
+ *   <td>✅ Bind to properties directly</td>
+ *   <td>❌ Not needed</td>
+ * </tr>
+ * <tr>
+ *   <td><b>View-specific version filtering</b></td>
+ *   <td>❌ Shows all versions</td>
+ *   <td>✅ Filters by view coordinates</td>
+ * </tr>
+ * <tr>
+ *   <td><b>Determining "current" version</b></td>
+ *   <td>❌ Manual calculation needed</td>
+ *   <td>✅ Automatic categorization</td>
+ * </tr>
+ * <tr>
+ *   <td><b>Detecting contradictions</b></td>
+ *   <td>❌ Manual analysis required</td>
+ *   <td>✅ Built-in detection</td>
+ * </tr>
+ * <tr>
+ *   <td><b>Version history/"time travel"</b></td>
+ *   <td>⚠️ All history, no filtering</td>
+ *   <td>✅ View-filtered history</td>
+ * </tr>
+ * <tr>
+ *   <td><b>Change notifications</b></td>
+ *   <td>✅ Automatic via properties</td>
+ *   <td>⚠️ Snapshot is point-in-time</td>
+ * </tr>
+ * </table>
+ * <p>
+ * <b>Rule of Thumb:</b> Use {@code ObservableEntity} for direct UI binding and change notifications.
+ * Use {@link ObservableEntitySnapshot} when you need to determine what's "current" vs "historic" vs
+ * "contradicting" within a specific view context, or when implementing version history/audit features.
+ *
+ * @param <OV> the observable version type ({@link ObservableConceptVersion}, {@link ObservableSemanticVersion}, etc.)
+ * @see ObservableEntityHandle
+ * @see ObservableEntitySnapshot
+ * @see ObservableConcept
+ * @see ObservableSemantic
+ * @see ObservablePattern
+ * @see ObservableStamp
+ * @see Entity
  */
 public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
         implements Entity<OV>, ObservableComponent
@@ -111,7 +366,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
      * @see com.github.benmanes.caffeine.cache.Cache
      * @see java.lang.ref.WeakReference
      */
-    protected static final Cache<Integer, ObservableEntity> SINGLETONS =
+    protected static final Cache<Integer, ObservableEntity> CANONICAL_INSTANCES =
             Caffeine.newBuilder()
                     .weakValues()
                     .build();
@@ -165,6 +420,29 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
 
     protected abstract OV wrap(EntityVersion version);
 
+    /**
+     * @deprecated Use {@link ObservableEntityHandle#getSnapshot(int, ViewCalculator)} instead.
+     * <p>
+     * This static accessor method is being phased out in favor of the fluent
+     * {@link ObservableEntityHandle} API, which provides better type safety, null handling,
+     * and composability. This method will be made module-internal in a future release.
+     * <p>
+     * <b>Migration:</b>
+     * <pre>{@code
+     * // Old (deprecated):
+     * ObservableEntitySnapshot snapshot = ObservableEntity.getSnapshot(nid, calculator);
+     *
+     * // New (recommended):
+     * Optional<ObservableEntitySnapshot<?, ?>> snapshot =
+     *     ObservableEntityHandle.getSnapshot(nid, calculator);
+     * }</pre>
+     *
+     * @see ObservableEntityHandle#getSnapshot(int, ViewCalculator)
+     * @see ObservableEntityHandle#getConceptSnapshotOrThrow(int, ViewCalculator)
+     * @see ObservableEntityHandle#getSemanticSnapshotOrThrow(int, ViewCalculator)
+     * @see ObservableEntityHandle#getPatternSnapshotOrThrow(int, ViewCalculator)
+     */
+    @Deprecated(since = "Current", forRemoval = true)
     public static <OE extends ObservableEntity<OV>, OV extends ObservableVersion<EV>, EV extends EntityVersion>
     ObservableEntitySnapshot<OE, OV> getSnapshot(int nid, ViewCalculator calculator) {
         return get(Entity.getFast(nid)).getSnapshot(calculator);
@@ -172,6 +450,33 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
 
     public abstract ObservableEntitySnapshot<?,?> getSnapshot(ViewCalculator calculator);
 
+    /**
+     * @deprecated Use {@link ObservableEntityHandle#get(int)} or type-specific methods instead.
+     * <p>
+     * This static accessor method is being phased out in favor of the fluent
+     * {@link ObservableEntityHandle} API, which provides better type safety, null handling,
+     * and composability. This method will be made module-internal in a future release.
+     * <p>
+     * <b>Migration:</b>
+     * <pre>{@code
+     * // Old (deprecated):
+     * ObservableConcept concept = ObservableEntity.get(nid);
+     *
+     * // New (recommended - type-safe):
+     * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(nid);
+     *
+     * // Or with safe Optional handling:
+     * ObservableEntityHandle.get(nid)
+     *     .asConcept()
+     *     .ifPresent(concept -> process(concept));
+     * }</pre>
+     *
+     * @see ObservableEntityHandle#get(int)
+     * @see ObservableEntityHandle#getConceptOrThrow(int)
+     * @see ObservableEntityHandle#getSemanticOrThrow(int)
+     * @see ObservableEntityHandle#getPatternOrThrow(int)
+     */
+    @Deprecated(since = "Current", forRemoval = true)
     public static <OE extends ObservableEntity> OE get(Entity<? extends EntityVersion> entity) {
         if (!Platform.isFxApplicationThread()) {
             //Throw exception since we need to get the version using JavaFx thread.
@@ -223,6 +528,33 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
         }
     }
 
+    /**
+     * @deprecated Use {@link ObservableEntityHandle#get(int)} or type-specific methods instead.
+     * <p>
+     * This static accessor method is being phased out in favor of the fluent
+     * {@link ObservableEntityHandle} API, which provides better type safety, null handling,
+     * and composability. This method will be made module-internal in a future release.
+     * <p>
+     * <b>Migration:</b>
+     * <pre>{@code
+     * // Old (deprecated):
+     * ObservableConcept concept = ObservableEntity.get(nid);
+     *
+     * // New (recommended - type-safe):
+     * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(nid);
+     *
+     * // Or using fluent API:
+     * ObservableEntityHandle.get(nid)
+     *     .ifConcept(concept -> process(concept))
+     *     .ifAbsent(() -> handleMissing());
+     * }</pre>
+     *
+     * @see ObservableEntityHandle#get(int)
+     * @see ObservableEntityHandle#getConceptOrThrow(int)
+     * @see ObservableEntityHandle#getSemanticOrThrow(int)
+     * @see ObservableEntityHandle#getPatternOrThrow(int)
+     */
+    @Deprecated(since = "Current", forRemoval = true)
     public static <OE extends ObservableEntity> OE get(int nid) {
         return get(Entity.getFast(nid));
     }
@@ -384,7 +716,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
         @Override
         public void onNext(Integer nid) {
             // Do nothing with item, but request another...
-            if (SINGLETONS.getIfPresent(nid) != null) {
+            if (CANONICAL_INSTANCES.getIfPresent(nid) != null) {
                 if (!Platform.isFxApplicationThread()) {
                     Platform.runLater(() -> get(nid));
                 } else {
