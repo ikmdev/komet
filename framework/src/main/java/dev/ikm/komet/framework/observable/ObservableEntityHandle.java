@@ -5,6 +5,7 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.EntityFacade;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -45,6 +46,11 @@ import java.util.function.Supplier;
  *   <td>Get an entity by NID/PublicId safely</td>
  *   <td>{@code ObservableEntityHandle}</td>
  *   <td>{@code ObservableEntityHandle.get(nid).ifConcept(c -> ...)}</td>
+ * </tr>
+ * <tr>
+ *   <td>Work with entity regardless of type</td>
+ *   <td>{@code ObservableEntityHandle}</td>
+ *   <td>{@code ObservableEntityHandle.get(nid).ifEntity(e -> log(e.nid()))}</td>
  * </tr>
  * <tr>
  *   <td>Bind UI controls to entity properties</td>
@@ -248,6 +254,14 @@ import java.util.function.Supplier;
  * <br><b>Key benefit:</b> Fluent branching for reactive operations.
  *
  * <pre>{@code
+ * // General entity access (works with any type)
+ * ObservableEntityHandle.get(nid)
+ *     .ifEntity(entity -> {
+ *         LOG.info("Processing entity: {}", entity.nid());
+ *         cache.put(entity.nid(), entity);
+ *     })
+ *     .ifAbsent(() -> LOG.warn("Entity {} not found", nid));
+ *
  * // Bind UI controls to observable properties
  * ObservableEntityHandle.get(nid)
  *     .ifConcept(concept -> {
@@ -256,8 +270,9 @@ import java.util.function.Supplier;
  *     })
  *     .ifSemantic(semantic -> {
  *         fieldList.itemsProperty().bind(semantic.fieldsProperty());
- *     });
- *
+ *     })
+ *     .ifAbsent(() -> showNotFound());
+
  * // Register listeners for changes
  * ObservableEntityHandle.get(nid)
  *     .ifConcept(concept -> concept.versionProperty().addListener(
@@ -469,16 +484,163 @@ import java.util.function.Supplier;
 public interface ObservableEntityHandle {
 
     // ========== Core Method - Must Be Implemented ==========
-
+    
     /**
-     * Returns an Optional containing the observable entity, or empty if absent.
+     * Returns the observable entity as an Optional, regardless of its specific type.
      * <p>
-     * This is the only method implementors must provide. All other methods
-     * are implemented as defaults based on this method.
+     * This is the core method that all other methods build upon. Use this when you need access
+     * to the entity without caring about its specific type (Concept, Semantic, Pattern, or Stamp).
      *
-     * @return Optional containing the observable entity, or empty if absent
+     * @return Optional containing the entity if present, empty otherwise
      */
     Optional<ObservableEntity<?>> entity();
+
+    // ========== Pattern 1: Side Effects - General Entity Access ==========
+
+    /**
+     * Executes the consumer if an entity is present, regardless of type.
+     * <p>
+     * Use this when you want to perform operations that work on any entity type,
+     * such as logging, caching, or accessing common entity properties (nid, publicId, versions).
+     *
+     * <pre>{@code
+     * // Log any entity
+     * ObservableEntityHandle.get(nid)
+     *     .ifEntity(entity -> LOG.info("Found entity: {}", entity.nid()));
+     *
+     * // Cache any entity type
+     * ObservableEntityHandle.get(nid)
+     *     .ifEntity(entity -> cache.put(entity.nid(), entity))
+     *     .ifAbsent(() -> LOG.warn("Entity {} not found", nid));
+     * }</pre>
+     *
+     * @param consumer the code to execute with the entity
+     * @return this handle for fluent chaining
+     */
+    default ObservableEntityHandle ifEntity(Consumer<ObservableEntity<?>> consumer) {
+        entity().ifPresent(consumer);
+        return this;
+    }
+
+    /**
+     * Executes the runnable if no entity is present.
+     * <p>
+     * This complements the {@code ifXxx} methods by handling the absent case. Use this
+     * for error handling, logging, or default behavior when an entity is not found.
+     *
+     * <pre>{@code
+     * // Handle missing entity
+     * ObservableEntityHandle.get(nid)
+     *     .ifConcept(concept -> bindToUI(concept))
+     *     .ifSemantic(semantic -> bindToUI(semantic))
+     *     .ifAbsent(() -> showNotFoundMessage());
+     *
+     * // Log missing entities
+     * ObservableEntityHandle.get(userInputNid)
+     *     .ifEntity(entity -> processEntity(entity))
+     *     .ifAbsent(() -> LOG.warn("Entity {} not found", userInputNid));
+     * }</pre>
+     *
+     * @param runnable the code to execute if entity is absent
+     * @return this handle for fluent chaining
+     */
+    default ObservableEntityHandle ifAbsent(Runnable runnable) {
+        if (entity().isEmpty()) {
+            runnable.run();
+        }
+        return this;
+    }
+
+    // ========== Pattern 2: Safe Extraction - General Entity Access ==========
+
+    /**
+     * Returns this handle's entity as an {@link Optional}.
+     * <p>
+     * This is a convenience method that simply returns {@link #entity()}, providing symmetry
+     * with the {@code asXxx()} pattern used for type-specific extraction. Use this when you
+     * want Optional-based extraction of the entity regardless of type.
+     *
+     * <h3>Usage Examples:</h3>
+     * <pre>{@code
+     * // Extract entity with Optional chaining
+     * Optional<ObservableEntity<?>> maybeEntity = ObservableEntityHandle.get(nid).asEntity();
+     * maybeEntity.ifPresent(entity -> process(entity));
+     *
+     * // Filter and map
+     * String description = ObservableEntityHandle.get(nid)
+     *     .asEntity()
+     *     .filter(entity -> entity.versions().size() > 1)
+     *     .map(entity -> "Multi-version entity: " + entity.nid())
+     *     .orElse("Single or no version");
+     *
+     * // Extract entity or provide default
+     * ObservableEntity<?> entity = ObservableEntityHandle.get(nid)
+     *     .asEntity()
+     *     .orElseThrow(() -> new IllegalStateException("Entity required"));
+     *
+     * // Stream processing
+     * List<ObservableEntity<?>> entities = nids.stream()
+     *     .map(ObservableEntityHandle::get)
+     *     .map(handle -> handle.asEntity())
+     *     .flatMap(Optional::stream)
+     *     .toList();
+     * }</pre>
+     *
+     * @return Optional containing the entity if present, empty otherwise
+     * @see #entity() for direct access to the same Optional
+     * @see #expectEntity() for assertion-based access that throws if absent
+     * @see #ifEntity(Consumer) for side-effect operations
+     */
+    default Optional<ObservableEntity<?>> asEntity() {
+        return entity();
+    }
+
+    // entity() method is the safe extraction for general entity access
+
+    // ========== Pattern 3: Assertion - General Entity Access ==========
+
+    /**
+     * Returns the entity or throws if absent, regardless of specific type.
+     * <p>
+     * Use this when you know an entity must exist but don't need a specific type.
+     * Throws {@link NoSuchElementException} if the entity is not found.
+     *
+     * <pre>{@code
+     * // Get any entity type (will throw if absent)
+     * ObservableEntity<?> entity = ObservableEntityHandle.get(nid).expectEntity();
+     * LOG.info("Entity nid: {}, type: {}", entity.nid(), entity.getClass().getSimpleName());
+     *
+     * // Use common entity operations
+     * ObservableEntity<?> entity = ObservableEntityHandle.get(nid).expectEntity();
+     * ImmutableList<?> versions = entity.versions();
+     * }</pre>
+     *
+     * @return the entity (never null)
+     * @throws NoSuchElementException if the entity is absent
+     */
+    default ObservableEntity<?> expectEntity() {
+        return entity().orElseThrow(() ->
+            new NoSuchElementException("Expected entity to be present"));
+    }
+
+    /**
+     * Returns the entity or throws with a custom message if absent.
+     * <p>
+     * Use this when you want more descriptive error messages for debugging.
+     *
+     * <pre>{@code
+     * ObservableEntity<?> entity = ObservableEntityHandle.get(nid)
+     *     .expectEntity("Required entity for initialization");
+     * }</pre>
+     *
+     * @param message the exception message if entity is absent
+     * @return the entity (never null)
+     * @throws NoSuchElementException if the entity is absent
+     */
+    default ObservableEntity<?> expectEntity(String message) {
+        return entity().orElseThrow(() -> new NoSuchElementException(message));
+    }
+
 
     // ========== Static Factory Methods ==========
 
@@ -623,19 +785,6 @@ public interface ObservableEntityHandle {
                 consumer.accept(stamp);
             }
         });
-        return this;
-    }
-
-    /**
-     * If entity is absent (not found or not yet loaded), executes the action.
-     *
-     * @param action the action to perform if entity is absent
-     * @return this handle for chaining
-     */
-    default ObservableEntityHandle ifAbsent(Runnable action) {
-        if (entity().isEmpty()) {
-            action.run();
-        }
         return this;
     }
 
@@ -789,6 +938,223 @@ public interface ObservableEntityHandle {
                                                          Consumer<ObservablePatternSnapshot> consumer) {
         asPattern().ifPresent(pattern -> consumer.accept(pattern.getSnapshot(viewCalculator)));
         return this;
+    }
+
+    // ========== Snapshot Retrieval Methods - Side Effects Pattern (ifStampGetSnapshot) ==========
+
+    /**
+     * If this entity is a stamp, gets its snapshot and executes the consumer.
+     * <p>
+     * Returns {@code this} for chaining regardless of whether consumer executed.
+     * <p>
+     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>
+     * <b>Note:</b> Stamp snapshots have simplified semantics compared to other entity types
+     * because stamps represent immutable change metadata (Status, Time, Author, Module, Path).
+     * Most stamps have a single version with no contradictions. Historic versions are rare and
+     * typically indicate metadata corrections after creation.
+     *
+     * <h3>Usage Example:</h3>
+     * <pre>{@code
+     * ObservableEntityHandle.get(stampNid)
+     *     .ifStampGetSnapshot(calculator, snapshot -> {
+     *         Latest<ObservableStampVersion> latest = snapshot.getLatestVersion();
+     *         latest.ifPresent(stamp -> displayStampMetadata(stamp));
+     *     });
+     * }</pre>
+     *
+     * @param viewCalculator the view calculator for snapshot computation
+     * @param consumer the action to perform on the ObservableStampSnapshot
+     * @return this handle for chaining
+     */
+    default ObservableEntityHandle ifStampGetSnapshot(ViewCalculator viewCalculator,
+                                                       Consumer<ObservableStampSnapshot> consumer) {
+        asStamp().ifPresent(stamp -> consumer.accept(stamp.getSnapshot(viewCalculator)));
+        return this;
+    }
+
+    // ========== Snapshot Retrieval Methods - Safe Extraction Pattern (asStampSnapshot) ==========
+
+    /**
+     * Returns a snapshot of this entity as an {@link ObservableStampSnapshot} if it is a stamp.
+     * <p>
+     * Use this method when wrong type is a valid possibility.
+     * <p>
+     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>
+     * <b>Note:</b> Stamp snapshots typically contain a single version with no contradictions.
+     * Historic versions are rare and indicate metadata corrections. Uncommitted stamp versions
+     * would only exist if stamp metadata was being edited but not yet persisted (very unusual).
+     *
+     * <h3>Usage Example:</h3>
+     * <pre>{@code
+     * ObservableEntityHandle.get(nid)
+     *     .asStampSnapshot(calculator)
+     *     .ifPresent(snapshot -> {
+     *         if (!snapshot.getHistoricVersions().isEmpty()) {
+     *             LOG.warn("Stamp has metadata corrections: {}",
+     *                 snapshot.getHistoricVersions().size());
+     *         }
+     *     });
+     * }</pre>
+     *
+     * @param viewCalculator the view calculator for snapshot computation
+     * @return Optional containing the ObservableStampSnapshot, or empty if absent or not a stamp
+     */
+    default Optional<ObservableStampSnapshot> asStampSnapshot(ViewCalculator viewCalculator) {
+        return asStamp().map(stamp -> stamp.getSnapshot(viewCalculator));
+    }
+
+    // ========== Static Stamp Snapshot Methods (Primary API) ==========
+
+    /**
+     * Retrieves an observable stamp snapshot by nid and view calculator in a single call.
+     * <p>
+     * This is the <b>primary API</b> for retrieving stamp snapshots when you have the nid and
+     * the entity type is guaranteed by your data model. Combines entity retrieval, type checking,
+     * and snapshot creation in one call.
+     * <p>
+     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>
+     * <b>Stamp Snapshot Characteristics:</b>
+     * <ul>
+     *   <li>Most stamps have exactly one version (the original metadata record)</li>
+     *   <li>Contradictions are extremely rare (would require metadata corrections on different paths)</li>
+     *   <li>Historic versions indicate metadata corrections after initial creation (uncommon)</li>
+     *   <li>Uncommitted versions would only exist during active metadata editing (very unusual)</li>
+     * </ul>
+     *
+     * <h3>Usage Example:</h3>
+     * <pre>{@code
+     * ViewCalculator calculator = viewCoordinateRecord.calculator();
+     * ObservableStampSnapshot snapshot =
+     *     ObservableEntityHandle.getStampSnapshotOrThrow(stampNid, calculator);
+     *
+     * // Access stamp metadata
+     * Latest<ObservableStampVersion> latest = snapshot.getLatestVersion();
+     * if (latest.isPresent()) {
+     *     ObservableStampVersion stamp = latest.get();
+     *     statusLabel.textProperty().bind(stamp.stateProperty().asString());
+     *     authorLabel.textProperty().bind(stamp.authorProperty().asString());
+     *     timeLabel.textProperty().bind(stamp.timeProperty().asString());
+     * }
+     *
+     * // Check for metadata corrections (rare)
+     * if (!snapshot.getHistoricVersions().isEmpty()) {
+     *     LOG.warn("Stamp {} was corrected {} times",
+     *         stampNid, snapshot.getHistoricVersions().size());
+     * }
+     * }</pre>
+     *
+     * @param nid the stamp entity nid
+     * @param viewCalculator the view calculator to use for computing the snapshot
+     * @return the ObservableStampSnapshot (never null)
+     * @throws IllegalStateException if entity is absent or not a stamp
+     * @throws RuntimeException if not called on JavaFX application thread
+     * @see ObservableStampSnapshot
+     * @see #asStampSnapshot(ViewCalculator) for safe Optional-based extraction
+     * @see #ifStampGetSnapshot(ViewCalculator, Consumer) for side-effect operations
+     */
+    static ObservableStampSnapshot getStampSnapshotOrThrow(int nid, ViewCalculator viewCalculator) {
+        return get(nid).expectStamp().getSnapshot(viewCalculator);
+    }
+
+    /**
+     * Retrieves an observable stamp snapshot by PublicId and view calculator.
+     * <p>
+     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     *
+     * <h3>Usage Example:</h3>
+     * <pre>{@code
+     * PublicId stampPublicId = PublicIds.of(uuid);
+     * ObservableStampSnapshot snapshot =
+     *     ObservableEntityHandle.getStampSnapshotOrThrow(stampPublicId, calculator);
+     * snapshot.getLatestVersion().ifPresent(v -> displayMetadata(v));
+     * }</pre>
+     *
+     * @param publicId the stamp entity public identifier
+     * @param viewCalculator the view calculator to use for computing the snapshot
+     * @return the ObservableStampSnapshot (never null)
+     * @throws IllegalStateException if entity is absent or not a stamp
+     * @throws RuntimeException if not called on JavaFX application thread
+     */
+    static ObservableStampSnapshot getStampSnapshotOrThrow(PublicId publicId, ViewCalculator viewCalculator) {
+        return get(publicId).expectStamp().getSnapshot(viewCalculator);
+    }
+
+    /**
+     * Retrieves an observable stamp snapshot by EntityFacade and view calculator.
+     * <p>
+     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     *
+     * <h3>Usage Example:</h3>
+     * <pre>{@code
+     * EntityFacade stampFacade = EntityProxy.make(stampNid);
+     * ObservableStampSnapshot snapshot =
+     *     ObservableEntityHandle.getStampSnapshotOrThrow(stampFacade, calculator);
+     *
+     * // Process all versions (typically just one)
+     * for (ObservableStampVersion version : snapshot.getProcessedVersions()) {
+     *     processStampMetadata(version);
+     * }
+     * }</pre>
+     *
+     * @param entityFacade the stamp entity facade
+     * @param viewCalculator the view calculator to use for computing the snapshot
+     * @return the ObservableStampSnapshot (never null)
+     * @throws IllegalStateException if entity is absent or not a stamp
+     * @throws RuntimeException if not called on JavaFX application thread
+     */
+    static ObservableStampSnapshot getStampSnapshotOrThrow(EntityFacade entityFacade, ViewCalculator viewCalculator) {
+        return get(entityFacade).expectStamp().getSnapshot(viewCalculator);
+    }
+
+    // ========== Generic Snapshot Retrieval ==========
+
+    /**
+     * Retrieves a generic snapshot for an entity of unknown type.
+     * <p>
+     * Use this method when you don't know the entity type in advance. The returned Optional
+     * will contain the appropriate snapshot type (Concept, Semantic, Pattern, or Stamp) based
+     * on the actual entity type.
+     * <p>
+     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>
+     * <b>Note:</b> For most use cases, prefer the type-specific methods ({@link #getConceptSnapshotOrThrow},
+     * {@link #getSemanticSnapshotOrThrow}, {@link #getPatternSnapshotOrThrow}, {@link #getStampSnapshotOrThrow})
+     * which provide better type safety and clearer semantics.
+     *
+     * <h3>Usage Example:</h3>
+     * <pre>{@code
+     * // When entity type is unknown (user input, generic processing)
+     * Optional<ObservableEntitySnapshot<?, ?>> maybeSnapshot =
+     *     ObservableEntityHandle.getSnapshot(unknownNid, calculator);
+     *
+     * maybeSnapshot.ifPresent(snapshot -> {
+     *     switch (snapshot) {
+     *         case ObservableConceptSnapshot cs ->
+     *             processConceptSnapshot(cs);
+     *         case ObservableSemanticSnapshot ss ->
+     *             processSemanticSnapshot(ss);
+     *         case ObservablePatternSnapshot ps ->
+     *             processPatternSnapshot(ps);
+     *         case ObservableStampSnapshot sts ->
+     *             processStampSnapshot(sts);
+     *     }
+     * });
+     * }</pre>
+     *
+     * @param nid the entity nid
+     * @param viewCalculator the view calculator to use for computing the snapshot
+     * @return Optional containing the appropriate snapshot type, or empty if entity is absent
+     * @throws RuntimeException if not called on JavaFX application thread
+     * @see #getConceptSnapshotOrThrow(int, ViewCalculator)
+     * @see #getSemanticSnapshotOrThrow(int, ViewCalculator)
+     * @see #getPatternSnapshotOrThrow(int, ViewCalculator)
+     * @see #getStampSnapshotOrThrow(int, ViewCalculator)
+     */
+    static Optional<ObservableEntitySnapshot<?, ?>> getSnapshot(int nid, ViewCalculator viewCalculator) {
+        return get(nid).entity().map(e -> e.getSnapshot(viewCalculator));
     }
 
     // ========== Snapshot Retrieval Methods - Safe Extraction Pattern (asXxx) ==========
@@ -989,38 +1355,6 @@ public interface ObservableEntityHandle {
      */
     static ObservablePatternSnapshot getPatternSnapshotOrThrow(EntityFacade entityFacade, ViewCalculator viewCalculator) {
         return get(entityFacade).expectPattern().getSnapshot(viewCalculator);
-    }
-
-    /**
-     * Retrieves a snapshot of any observable entity type by nid and view calculator.
-     * <p>
-     * Use this method when you don't know the entity type in advance or need to handle
-     * multiple types polymorphically. For type-specific retrieval with compile-time safety,
-     * prefer {@link #getConceptSnapshotOrThrow(int, ViewCalculator)},
-     * {@link #getSemanticSnapshotOrThrow(int, ViewCalculator)}, or
-     * {@link #getPatternSnapshotOrThrow(int, ViewCalculator)}.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
-     *
-     * <h3>Usage Example:</h3>
-     * <pre>{@code
-     * ViewCalculator calculator = viewCoordinateRecord.calculator();
-     * Optional<ObservableEntitySnapshot<?, ?>> snapshot =
-     *     ObservableEntityHandle.getSnapshot(nid, calculator);
-     *
-     * snapshot.ifPresent(snap -> {
-     *     snap.latestVersion().ifPresent(version -> processVersion(version));
-     *     snap.historicVersions().forEach(historic -> logHistory(historic));
-     * });
-     * }</pre>
-     *
-     * @param nid the entity nid
-     * @param viewCalculator the view calculator to use for computing the snapshot
-     * @return Optional containing the snapshot, or empty if entity is absent
-     * @throws RuntimeException if not called on JavaFX application thread
-     */
-    static Optional<ObservableEntitySnapshot<?, ?>> getSnapshot(int nid, ViewCalculator viewCalculator) {
-        return get(nid).entity().map(e -> e.getSnapshot(viewCalculator));
     }
 
     /**

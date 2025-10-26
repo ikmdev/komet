@@ -36,8 +36,8 @@ public final class ObservableStamp
     }
 
     @Override
-    public ObservableEntitySnapshot getSnapshot(ViewCalculator calculator) {
-        throw new UnsupportedOperationException();
+    public ObservableStampSnapshot getSnapshot(ViewCalculator calculator) {
+        return new ObservableStampSnapshot(calculator, this);
     }
 
     /**

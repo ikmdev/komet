@@ -63,7 +63,7 @@ public final class ObservableSemanticVersion
 
     @Override
     public int patternNid() {
-        return Binding.Semantic.pattern().nid();
+        return version().patternNid();
     }
 
     @Override

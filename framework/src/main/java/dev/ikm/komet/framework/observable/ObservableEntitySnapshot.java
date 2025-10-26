@@ -329,7 +329,7 @@ import java.util.function.Predicate;
  */
 public abstract sealed class ObservableEntitySnapshot<OE extends ObservableEntity<OV>,
         OV extends ObservableVersion<?>>
-        permits ObservableConceptSnapshot, ObservablePatternSnapshot, ObservableSemanticSnapshot {
+        permits ObservableConceptSnapshot, ObservablePatternSnapshot, ObservableSemanticSnapshot, ObservableStampSnapshot {
     protected final Latest<OV> latestVersion;
     protected final IntIdCollection latestStampIds;
     protected final IntIdCollection allStampIds;

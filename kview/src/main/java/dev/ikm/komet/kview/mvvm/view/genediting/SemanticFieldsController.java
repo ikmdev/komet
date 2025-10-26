@@ -35,6 +35,7 @@ import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityBinding;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.application.Platform;
@@ -104,9 +105,9 @@ public class SemanticFieldsController {
 
     private int committedHash;
 
-    ObservableSemantic observableSemantic;
+    ObservableEntityHandle observableEntityHandle;
 
-    ObservableSemanticSnapshot observableSemanticSnapshot;
+    ObservableEntitySnapshot observableEntitySnapshot;
 
     Subscriber<EntityVersionChangeEvent> entityVersionChangeEventSubscriber;
 
@@ -155,12 +156,16 @@ public class SemanticFieldsController {
     private void processCommittedValues() {
         AtomicReference<ImmutableList<ObservableField>> immutableList = new AtomicReference<>();
         //Get the latest version
-        Latest<ObservableSemanticVersion> observableSemanticVersionLatest = observableSemanticSnapshot.getLatestVersion();
-        observableSemanticVersionLatest.ifPresent(observableSemanticVersion -> { // if latest version present
-            if (observableSemanticVersion.committed()) { // and if latest version is committed then,
-               immutableList.set(observableSemanticSnapshot.getLatestFields().get()); // get the latest fields
+        Latest<ObservableVersion> latestObservableVersion = observableEntitySnapshot.getLatestVersion();
+        latestObservableVersion.ifPresent(observableVersion -> { // if latest version present
+            if (observableVersion.committed()) {
+                if (observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot) {
+                    immutableList.set(observableSemanticSnapshot.getLatestFields().get());
+                }
+                // and if latest version is committed then,
+                // get the latest fields
            } else { //if The latest version is Uncommitted, then retrieve the committed version from historic versions list.
-               ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
+               ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableEntitySnapshot.getHistoricVersions();
                // replace any versions with uncommited stamp
                Optional<ObservableSemanticVersion> observableSemanticVersionOptional = observableSemanticVersionImmutableList.stream().filter(VersionData::committed).findFirst();
                observableSemanticVersionOptional.ifPresent(committedObservableSemanticVersion -> {
@@ -208,39 +213,78 @@ public class SemanticFieldsController {
 
     private void setupEditSemanticDetails() {
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-        observableSemantic = ObservableEntity.get(semantic.nid());
-        observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+        ObservableEntityHandle.get(semantic.nid()).ifSemantic(observableSemantic -> {
+            observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
 
-        //Setting author to author for change. This value will be used during auto-save
-        ConceptFacade authorForChanges = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
-        observableSemanticSnapshot.getLatestVersion().get().setAuthorForChanges(authorForChanges);
+            //Setting author to author for change. This value will be used during auto-save
+            ConceptFacade authorForChanges = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+            //TODO: setAuthorForChanges seems to be an API decision to revisit.
+            if (observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot) {
+                observableSemanticSnapshot.getLatestVersion().get().setAuthorForChanges(authorForChanges);
+            }
 
-        processCommittedValues();
-        loadUIData(); // And populates Nodes and Observable fields.
-        entityVersionChangeEventSubscriber = evt -> {
-            LOG.info("Version has been updated: " + evt.getEventType());
-            // get payload
-            if (evt.getEntityVersion().nid() == observableSemantic.nid()
-                    && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
-                ImmutableList<Object> values = semanticVersionRecord.fieldValues();
-                for (int i = 0; i< values.size(); i++) {
-                    ObservableField observableField = observableFields.get(i);
-                    observableField.autoSaveOff();
-                    observableField.valueProperty().set(values.get(i));
-                    observableField.autoSaveOn();
+            processCommittedValues();
+            loadUIData(); // And populates Nodes and Observable fields.
+            entityVersionChangeEventSubscriber = evt -> {
+                LOG.info("Version has been updated: " + evt.getEventType());
+                // get payload
+                if (evt.getEntityVersion().nid() == observableSemantic.nid()
+                        && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
+                    ImmutableList<Object> values = semanticVersionRecord.fieldValues();
+                    for (int i = 0; i< values.size(); i++) {
+                        ObservableField observableField = observableFields.get(i);
+                        observableField.autoSaveOff();
+                        observableField.valueProperty().set(values.get(i));
+                        observableField.autoSaveOn();
+                    }
                 }
-            }
-            if(reloadPatternNavigator && genEditingViewModel.getPropertyValue(MODE) == CREATE) {
-                // refresh the pattern navigation
-                EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
-                        new PatternSavedEvent(this, PatternSavedEvent.PATTERN_CREATION_EVENT));
-                reloadPatternNavigator = false;
-            }
-            enableDisableButtons();
-        };
+                if(reloadPatternNavigator && genEditingViewModel.getPropertyValue(MODE) == CREATE) {
+                    // refresh the pattern navigation
+                    EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
+                            new PatternSavedEvent(this, PatternSavedEvent.PATTERN_CREATION_EVENT));
+                    reloadPatternNavigator = false;
+                }
+                enableDisableButtons();
+            };
 
-        EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
-                EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
+            EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
+                    EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
+        }).ifStamp(observableStamp -> {
+            observableEntitySnapshot = observableStamp.getSnapshot(getViewProperties().calculator());
+
+            //Setting author to author for change. This value will be used during auto-save
+            ConceptFacade authorForChanges = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+            if (observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot) {
+                observableSemanticSnapshot.getLatestVersion().get().setAuthorForChanges(authorForChanges);
+            }
+
+            processCommittedValues();
+            loadUIData(); // And populates Nodes and Observable fields.
+            entityVersionChangeEventSubscriber = evt -> {
+                LOG.info("Version has been updated: " + evt.getEventType());
+                // get payload
+                if (evt.getEntityVersion().nid() == observableEntityHandle.expectEntity().nid()
+                        && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
+                    ImmutableList<Object> values = semanticVersionRecord.fieldValues();
+                    for (int i = 0; i< values.size(); i++) {
+                        ObservableField observableField = observableFields.get(i);
+                        observableField.autoSaveOff();
+                        observableField.valueProperty().set(values.get(i));
+                        observableField.autoSaveOn();
+                    }
+                }
+                if(reloadPatternNavigator && genEditingViewModel.getPropertyValue(MODE) == CREATE) {
+                    // refresh the pattern navigation
+                    EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
+                            new PatternSavedEvent(this, PatternSavedEvent.PATTERN_CREATION_EVENT));
+                    reloadPatternNavigator = false;
+                }
+                enableDisableButtons();
+            };
+
+            EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
+                    EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
+        });
     }
 
     private void loadVBox() {
@@ -271,8 +315,10 @@ public class SemanticFieldsController {
         // Populate the Semantic Details
         // Displaying editable controls and populating the observable fields array list.
         observableFields.clear();
-        if(observableSemanticSnapshot != null) {
-            observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+        if(observableEntitySnapshot != null) {
+            if (observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot) {
+                observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+            }
         }
         observableFields.forEach(observableField -> {
             if (genEditingViewModel.getPropertyValue(MODE) == CREATE && observableField.value() instanceof EntityProxy){
@@ -332,7 +378,7 @@ public class SemanticFieldsController {
     }
 
     private void doTheClearOrResetForm() {
-        Latest<EntityVersion> latestCommitted =  retrieveCommittedLatestVersion(observableSemanticSnapshot);
+        Latest<EntityVersion> latestCommitted =  retrieveCommittedLatestVersion(observableEntitySnapshot);
         latestCommitted.ifPresentOrElse(this::resetFieldValues, this::clearField);
         clearOrResetFormButton.setDisable(true);
     }
@@ -341,12 +387,20 @@ public class SemanticFieldsController {
      * Clears the fields in create mode
      */
     private void clearField(){
-        EntityFacade pattern = EntityFacade.make(observableSemantic.pattern().nid());
-        ImmutableList<Object> fieldValues = createDefaultFieldValues(pattern, getViewProperties());
-        for (int i = 0; i < fieldValues.size(); i++) {
-            ObservableField observableField = observableFields.get(i);
-            observableField.valueProperty().setValue(fieldValues.get(i));
-        }
+        observableEntityHandle.ifPresent(observableEntity -> {
+            EntityFacade patternForEntity = switch (observableEntity) {
+                case ObservableConcept concept -> EntityBinding.Concept.pattern();
+                case ObservablePattern pattern -> EntityBinding.Pattern.pattern();
+                case ObservableSemantic semantic -> semantic.pattern();
+                case ObservableStamp stamp -> EntityBinding.Stamp.pattern();
+            };
+            ImmutableList<Object> fieldValues = createDefaultFieldValues(patternForEntity, getViewProperties());
+            for (int i = 0; i < fieldValues.size(); i++) {
+                ObservableField observableField = observableFields.get(i);
+                observableField.valueProperty().setValue(fieldValues.get(i));
+            }
+        });
+
     }
 
     /**
@@ -384,8 +438,10 @@ public class SemanticFieldsController {
                    // This runs after the first transaction parameter runs
                    Platform.runLater(() -> {
                        //update the observableSemantic version and observableSemanticSnapShot
-                       observableSemantic = ObservableEntity.get(semantic.nid());
-                       observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+                       observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
+                       if (observableEntityHandle.isPresent()) {
+                           observableEntitySnapshot = observableEntityHandle.expectEntity().getSnapshot(getViewProperties().calculator());
+                       }
                        processCommittedValues();
                        enableDisableButtons();
                        // EventBus implementation changes to refresh the details area if commit successful

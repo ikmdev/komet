@@ -17,14 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
-import dev.ikm.komet.framework.observable.ObservableEntity;
-import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservablePattern;
-import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
-import dev.ikm.komet.framework.observable.ObservablePatternVersion;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
-import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
@@ -394,23 +387,13 @@ public class GenEditingDetailsController {
             semanticDetailsVBox.getChildren().addAll(readOnlyControls);
         } else {
             genEditingViewModel.setPropertyValue(MODE, EDIT);
-            observableSemantic = ObservableEntity.get(semantic.nid());
-            observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-            //retrieve latest committed semanticVersion
-            semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
-            //Set and Update STAMP values
-//            semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-//                StampEntity stampEntity = semanticEntityVersion.stamp();
-//                stampViewModel.setPropertyValue(STATUS, stampEntity.state())
-//                        .setPropertyValue(TIME, stampEntity.time())
-//                        .setPropertyValue(AUTHOR, stampEntity.author())
-//                        .setPropertyValue(MODULE, stampEntity.module())
-//                        .setPropertyValue(PATH, stampEntity.path())
-//                ;
-//                stampViewModel.save(true);
-//            });
-            // Populate the Semantic Details
-            populateSemanticDetails();
+            ObservableEntityHandle.get(semantic.nid()).ifSemantic(observableSemantic -> {
+                observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+                //retrieve latest committed semanticVersion
+                semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
+                // Populate the Semantic Details
+                populateSemanticDetails();
+            });
         }
 
         Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
@@ -479,27 +462,28 @@ public class GenEditingDetailsController {
     private void updateSemanticForPatternInfo() {
         PatternFacade patternFacade = (PatternFacade) genEditingViewModel.getProperty(PATTERN).getValue();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
-        ObservablePattern observablePattern = ObservableEntity.get(patternFacade.nid());
-        ObservablePatternSnapshot observablePatternSnapshot = observablePattern.getSnapshot(getViewProperties().calculator());
-        ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
-        PatternEntityVersion patternEntityVersion = observablePatternVersion.getVersionRecord();
-        String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
-        String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
-        semanticMeaningText.setText(meaning);
-        semanticPurposeText.setText(purpose);
-        String patternFQN = getViewProperties().calculator().languageCalculator()
-                .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
-        semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
+        ObservableEntityHandle.get(patternFacade.nid()).ifPattern(observablePattern -> {
+            ObservablePatternSnapshot observablePatternSnapshot = observablePattern.getSnapshot(getViewProperties().calculator());
+            ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
+            PatternEntityVersion patternEntityVersion = observablePatternVersion.getVersionRecord();
+            String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
+            String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
+            semanticMeaningText.setText(meaning);
+            semanticPurposeText.setText(purpose);
+            String patternFQN = getViewProperties().calculator().languageCalculator()
+                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
+            semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
 
-        ObjectProperty<EntityFacade> refComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
-        if(refComponentProp != null){
-            EntityFacade refComponent = refComponentProp.get();
-            if(refComponent != null) {
-                String refComponentTitle = getViewProperties().calculator().languageCalculator().getDescriptionText(refComponent.nid()).get();
-                //TODO in the future we can internationalize the word "in" (and other labels and text) for the preferred language
-                semanticTitleText.setText(refComponentTitle + " in " + patternFQN);
+            ObjectProperty<EntityFacade> refComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
+            if(refComponentProp != null){
+                EntityFacade refComponent = refComponentProp.get();
+                if(refComponent != null) {
+                    String refComponentTitle = getViewProperties().calculator().languageCalculator().getDescriptionText(refComponent.nid()).get();
+                    //TODO in the future we can internationalize the word "in" (and other labels and text) for the preferred language
+                    semanticTitleText.setText(refComponentTitle + " in " + patternFQN);
+                }
             }
-        }
+        });
     }
 
     //TODO revisit and optimize this method.
