@@ -77,7 +77,13 @@ import org.eclipse.collections.impl.factory.primitive.IntLists;
  * @see <a href="https://openjfx.io/javadoc/17/javafx.base/javafx/collections/ModifiableObservableListBase.html">JavaFX ModifiableObservableListBase</a>
  */
 public class ObservableIntList extends ModifiableObservableListBase<Integer> {
-    
+    /**
+     * Maximum array size to prevent OutOfMemoryError and VM limit errors.
+     * Some VMs reserve header words in arrays, so we use Integer.MAX_VALUE - 8
+     * as a safe maximum, similar to ArrayList.
+     */
+    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+
     private final MutableIntList backingList;
     
     /**
@@ -89,15 +95,42 @@ public class ObservableIntList extends ModifiableObservableListBase<Integer> {
     
     /**
      * Creates an ObservableIntList with the specified initial capacity.
+     * <p>
+     * <b>Important:</b> This creates an <i>empty</i> list with pre-allocated storage capacity.
+     * To create a list with a single value, use {@code new ObservableIntList(new int[]{value})}
+     * or {@code new ObservableIntList(value1, value2, ...)} for multiple values.
      * 
      * @param initialCapacity the initial capacity of the backing list
+     * @throws IllegalArgumentException if initialCapacity is negative or exceeds maximum array size
      */
     public ObservableIntList(int initialCapacity) {
+        if (initialCapacity < 0) {
+            throw new IllegalArgumentException(
+                "Illegal initial capacity: " + initialCapacity + " (must be >= 0)");
+        }
+        if (initialCapacity > MAX_ARRAY_SIZE) {
+            throw new IllegalArgumentException(
+                "Requested initial capacity " + initialCapacity + 
+                " exceeds maximum array size " + MAX_ARRAY_SIZE + 
+                ". Use a smaller capacity or consider alternative data structures.");
+        }
         this.backingList = IntLists.mutable.withInitialCapacity(initialCapacity);
     }
     
     /**
      * Creates an ObservableIntList containing the specified values.
+     * <p>
+     * <b>Examples:</b>
+     * <ul>
+     *   <li>{@code new ObservableIntList()} - empty list</li>
+     *   <li>{@code new ObservableIntList(42)} - <b>CREATES EMPTY LIST WITH CAPACITY 42</b></li>
+     *   <li>{@code new ObservableIntList(new int[]{42})} - list with single value 42</li>
+     *   <li>{@code new ObservableIntList(1, 2, 3)} - list with values [1, 2, 3]</li>
+     * </ul>
+     * <p>
+     * <b>⚠️ Important:</b> Due to Java's overload resolution rules, passing a single
+     * int value calls the capacity constructor, not this varargs constructor. To create
+     * a list with a single value, wrap it in an array: {@code new ObservableIntList(new int[]{value})}
      * 
      * @param values the initial values to populate the list
      */
