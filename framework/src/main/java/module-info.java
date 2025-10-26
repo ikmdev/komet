@@ -34,6 +34,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.docbook;
     exports dev.ikm.komet.framework.graphics;
     exports dev.ikm.komet.framework.observable;
+    exports dev.ikm.komet.framework.observable.collection;
     exports dev.ikm.komet.framework.panel;
     exports dev.ikm.komet.framework.performance.impl;
     exports dev.ikm.komet.framework.performance;
