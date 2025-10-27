@@ -6,6 +6,7 @@ module dev.ikm.komet.layout {
 
     exports dev.ikm.komet.layout;
     exports dev.ikm.komet.layout.action;
+    exports dev.ikm.komet.layout.area;
     exports dev.ikm.komet.layout.component;
     exports dev.ikm.komet.layout.context;
     exports dev.ikm.komet.layout.event;
