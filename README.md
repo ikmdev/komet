@@ -66,7 +66,7 @@ relationships are saved and can be viewed historically.
 5. Run the Komet application with the following command:
 
    ```bash
-   ./mvnw -f application javafx:run
+   ./mvnw -f dev javafx:run
    ```
 
 6. You can open Komet code using your favorite IDE like _Eclipse_ or _IntelliJ Idea_ and try running it from there.
@@ -89,7 +89,7 @@ Above you'll notice the username = password and remaining fields are possible ro
 After building Komet, you can run it with JPro on your local machine by following these steps:
 1. Execute the following command to run the Komet application in your web browser:
    ```bash
-   ./mvnw -f application -Pjpro jpro:run
+   ./mvnw -f dev -Pjpro jpro:run
    ```
    The default web browser should open automatically, displaying the Komet application. If it doesn't, navigate
    to `http://localhost:8080` in your browser.
