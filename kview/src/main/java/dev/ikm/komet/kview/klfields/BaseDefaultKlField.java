@@ -14,12 +14,7 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
     protected final ObservableField<T> observableField;
     protected final ObservableView observableView;
 
-    protected ObjectProperty<Region> klWidget = new SimpleObjectProperty<>() {
-        @Override
-        protected void invalidated() {
-            Tooltip.install(get(), tooltip);
-        }
-    };
+    protected final Region fxObject;
 
     protected final boolean isEditable;
 
@@ -27,17 +22,18 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
 
     private final String title;
 
-    public BaseDefaultKlField(ObservableField<T> observableField, ObservableView observableView, boolean isEditable) {
+    public BaseDefaultKlField(ObservableField<T> observableField, ObservableView observableView,
+                              boolean isEditable, Region fxObject) {
         this.observableField = observableField;
         this.observableView = observableView;
-
         this.isEditable = isEditable;
+        this.fxObject = fxObject;
 
         FeatureDefinition featureDefinition = field().definition(observableView.calculator());
 
         title = observableView.getDescriptionTextOrNid(featureDefinition.meaningNid()) + ":";
 
-        setFxPeer(klWidget);
+        setFxPeer(fxObject);
 
         tooltip.setText(observableView.getDescriptionTextOrNid(featureDefinition.purposeNid()));
     }
@@ -61,13 +57,9 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
     // -- title
     public String getTitle() { return title; }
 
-    // -- klWidget
-    protected void setKlWidget(Region klWidget) { this.klWidget.set(klWidget); }
-
-
     @Override
     public Region fxObject() {
-        return this.klWidget.get();
+        return this.fxObject;
     }
 
     @Override

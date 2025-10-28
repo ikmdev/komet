@@ -12,20 +12,23 @@ import javafx.scene.layout.Region;
 public class DefaultKlIntegerField extends BaseDefaultKlField<Integer> implements KlIntegerField {
 
     public DefaultKlIntegerField(ObservableField<Integer> observableIntegerField, ObservableView observableView, boolean isEditable) {
-        super(observableIntegerField, observableView, isEditable);
+        final Region node = switch (isEditable) {
+            case true -> new KLIntegerControl();
+            case false -> new KLReadOnlyDataTypeControl<>(Integer.class);
+        };
+        super(observableIntegerField, observableView, isEditable, node);
 
-        Region node;
-        if (isEditable) {
-            KLIntegerControl integerControl = new KLIntegerControl();
-            integerControl.valueProperty().bindBidirectional(observableIntegerField.valueProperty());
-            integerControl.setTitle(getTitle());
-            node = integerControl;
-        } else {
-            KLReadOnlyDataTypeControl<Integer> readOnlyIntegerControl = new KLReadOnlyDataTypeControl<>(Integer.class);
-            readOnlyIntegerControl.valueProperty().bindBidirectional(observableIntegerField.valueProperty());
-            readOnlyIntegerControl.setTitle(getTitle());
-            node = readOnlyIntegerControl;
+        switch (node) {
+            case KLIntegerControl integerControl -> {
+                integerControl.valueProperty().bindBidirectional(observableIntegerField.valueProperty());
+                integerControl.setTitle(getTitle());
+            }
+            case KLReadOnlyDataTypeControl readOnlyIntegerControl -> {
+                readOnlyIntegerControl.valueProperty().bind(observableIntegerField.valueProperty());
+                readOnlyIntegerControl.setTitle(getTitle());
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + node);
         }
-        setKlWidget(node);
+
     }
 }

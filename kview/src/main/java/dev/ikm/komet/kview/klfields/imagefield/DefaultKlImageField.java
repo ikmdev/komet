@@ -17,53 +17,53 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
     private boolean isUpdatingObservableField = false;
 
     public DefaultKlImageField(ObservableField<byte[]> observableImageField, ObservableView observableView, boolean isEditable) {
-        super(observableImageField, observableView, isEditable);
-        Region node;
-        if (isEditable) {
-            KLImageControl imageControl = new KLImageControl();
-            imageControl.setTitle(getTitle());
-            // Sync ObservableField and ImageControl
-            observableImageField.valueProperty().subscribe(newByteArray -> {
-                if (isUpdatingObservableField) {
-                    return;
-                }
+        final Region node = switch (isEditable) {
+            case true -> new KLImageControl();
+            case false -> new KLReadOnlyImageControl();
+        };
+        super(observableImageField, observableView, isEditable, node);
 
-                isUpdatingImageControl = true;
-                imageControl.setImage(KlFieldHelper.newImageFromByteArray(newByteArray));
-                isUpdatingImageControl = false;
-            });
-            imageControl.imageProperty().subscribe(() -> {
-                if (isUpdatingImageControl) {
-                    return;
-                }
+        switch (node) {
+            case KLImageControl imageControl -> {
+                imageControl.setTitle(getTitle());
+                // Sync ObservableField and ImageControl
+                observableImageField.valueProperty().subscribe(newByteArray -> {
+                    if (isUpdatingObservableField) {
+                        return;
+                    }
 
-                isUpdatingObservableField = true;
-                if (imageControl.getImage() == null) {
-                    //set the field value to empty byte array since we cannot save null value to database.
-                    field().valueProperty().set(new ByteArrayOutputStream().toByteArray());
-                } else {
-                    byte[] newByteArray = KlFieldHelper.newByteArrayFromImage(imageControl.getImage());
-                    field().valueProperty().set(newByteArray);
-                }
-                isUpdatingObservableField = false;
-            });
+                    isUpdatingImageControl = true;
+                    imageControl.setImage(KlFieldHelper.newImageFromByteArray(newByteArray));
+                    isUpdatingImageControl = false;
+                });
+                imageControl.imageProperty().subscribe(() -> {
+                    if (isUpdatingImageControl) {
+                        return;
+                    }
 
-            // Set Editable Control to be the node
-            node = imageControl;
-        } else {
-            KLReadOnlyImageControl readOnlyImageControl = new KLReadOnlyImageControl();
-            readOnlyImageControl.setTitle(getTitle());
-            // Sync ObservableField and ReadOnlyImageControl
-            byte[] imageBytes = observableImageField.value();
-            readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(imageBytes));
-            observableImageField.valueProperty().subscribe(newByteArray -> {
-                readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(newByteArray));
-            });
-            // Title
-            readOnlyImageControl.setTitle(getTitle());
-            node = readOnlyImageControl;
+                    isUpdatingObservableField = true;
+                    if (imageControl.getImage() == null) {
+                        //set the field value to empty byte array since we cannot save null value to database.
+                        field().valueProperty().set(new ByteArrayOutputStream().toByteArray());
+                    } else {
+                        byte[] newByteArray = KlFieldHelper.newByteArrayFromImage(imageControl.getImage());
+                        field().valueProperty().set(newByteArray);
+                    }
+                    isUpdatingObservableField = false;
+                });            }
+            case KLReadOnlyImageControl readOnlyImageControl -> {
+                readOnlyImageControl.setTitle(getTitle());
+                // Sync ObservableField and ReadOnlyImageControl
+                byte[] imageBytes = observableImageField.value();
+                readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(imageBytes));
+                observableImageField.valueProperty().subscribe(newByteArray -> {
+                    readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(newByteArray));
+                });
+                // Title
+                readOnlyImageControl.setTitle(getTitle());
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + node);
         }
-        setKlWidget(node);
     }
 
 }

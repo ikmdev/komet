@@ -18,32 +18,35 @@ import javafx.scene.layout.Region;
 public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
 
     public DefaultKlComponentField(ObservableField<EntityProxy> observableComponentField, ObservableView observableView, boolean isEditable) {
-        super(observableComponentField, observableView, isEditable);
-        FeatureDefinition fieldDefinition = field().definition(observableView.calculator());
-        Region node;
-        if (isEditable) {
-            KLComponentControl componentControl = KLComponentControlFactory.createTypeAheadComponentControl(
+        Region node = switch (isEditable) {
+            case true -> KLComponentControlFactory.createTypeAheadComponentControl(
                     observableView.calculator());
-            // title
-            componentControl.setTitle(calculatorForContext().getDescriptionTextOrNid(fieldDefinition.meaningNid()));
-           // entity
-            componentControl.entityProperty().bindBidirectional(observableComponentField.valueProperty());
-            node = componentControl;
-        } else {
-            KLReadOnlyComponentControl readOnlyComponentControl = new KLReadOnlyComponentControl();
-            ObjectProperty<EntityProxy> valueProperty = observableComponentField.valueProperty();
-            // title
-            String title = observableView.calculator().getDescriptionText(fieldDefinition.meaningNid()).orElse("Blank Title");
-            readOnlyComponentControl.setTitle(title);
-            // value
-            updateControlValue(valueProperty.get(), readOnlyComponentControl);
-            // Listen and update when EntityProxy changes
-            valueProperty.subscribe(newEntity -> {
-                updateControlValue(newEntity, readOnlyComponentControl);
-            });
-            node = readOnlyComponentControl;
+            case false -> new KLReadOnlyComponentControl();
+        };
+        super(observableComponentField, observableView, isEditable, node);
+
+        FeatureDefinition fieldDefinition = field().definition(observableView.calculator());
+        switch (node) {
+            case KLComponentControl componentControl -> {
+                // title
+                componentControl.setTitle(calculatorForContext().getDescriptionTextOrNid(fieldDefinition.meaningNid()));
+                // entity
+                componentControl.entityProperty().bindBidirectional(observableComponentField.valueProperty());
+            }
+            case KLReadOnlyComponentControl readOnlyComponentControl -> {
+                ObjectProperty<EntityProxy> valueProperty = observableComponentField.valueProperty();
+                // title
+                String title = observableView.calculator().getDescriptionText(fieldDefinition.meaningNid()).orElse("Blank Title");
+                readOnlyComponentControl.setTitle(title);
+                // value
+                updateControlValue(valueProperty.get(), readOnlyComponentControl);
+                // Listen and update when EntityProxy changes
+                valueProperty.subscribe(newEntity -> {
+                    updateControlValue(newEntity, readOnlyComponentControl);
+                });
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + node);
         }
-        setKlWidget(node);
     }
 
     private void updateControlValue(EntityProxy entityProxy, KLReadOnlyComponentControl klReadOnlyComponentControl) {

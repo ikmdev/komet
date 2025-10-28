@@ -3,7 +3,9 @@ package dev.ikm.komet.kview.klfields.componentlistfield;
 import static dev.ikm.komet.kview.controls.KLComponentControlFactory.createTypeAheadComponentListControl;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.layout.version.field.KlComponentListField;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
@@ -35,47 +37,46 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
      * @param journalTopic This is used for the option to summon the concept window in the specific work space.
      */
     public DefaultKlComponentListField(ObservableField<IntIdList> observableComponentListField, ObservableView observableView, boolean isEditable, UUID journalTopic) {
-        super(observableComponentListField, observableView, isEditable);
-        Region node;
+        Region node = switch (isEditable) {
+            case true -> createTypeAheadComponentListControl(observableView.calculator());
+            case false -> new KLReadOnlyComponentListControl();
+        };
+        super(observableComponentListField, observableView, isEditable, node);
         ObjectProperty<IntIdList> observableProperty = observableComponentListField.valueProperty();
-        if (isEditable) {
-            KLComponentCollectionControl<IntIdList> klComponentCollectionControl = createTypeAheadComponentListControl(observableView.calculator());
+        switch (node) {
+            case KLComponentCollectionControl klComponentCollectionControl -> {
+                klComponentCollectionControl.setTitle(getTitle());
+                klComponentCollectionControl.valueProperty().bindBidirectional(observableProperty);
+            }
+            case KLReadOnlyComponentListControl klReadOnlyComponentListControl -> {
+                klReadOnlyComponentListControl.setTitle(getTitle());
 
-            klComponentCollectionControl.setTitle(getTitle());
-            klComponentCollectionControl.valueProperty().bindBidirectional(observableProperty);
+                observableComponentListField.valueProperty().subscribe(intIdSet -> {
+                    klReadOnlyComponentListControl.getItems().clear();
+                    intIdSet.forEach(nid -> {
+                        if (nid != 0) {
+                            EntityProxy entityProxy = EntityProxy.make(nid);
+                            Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
 
-            node = klComponentCollectionControl;
-        } else {
-            KLReadOnlyComponentListControl klReadOnlyComponentListControl = new KLReadOnlyComponentListControl();
+                            String description = observableView.calculator().languageCalculator()
+                                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
 
-            klReadOnlyComponentListControl.setTitle(getTitle());
-
-            observableComponentListField.valueProperty().subscribe(intIdSet -> {
-                klReadOnlyComponentListControl.getItems().clear();
-                intIdSet.forEach(nid -> {
-                    if (nid != 0) {
-                        EntityProxy entityProxy = EntityProxy.make(nid);
-                        Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
-
-                        String description = observableView.calculator().languageCalculator()
-                                .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
-
-                        ComponentItem componentItem = new ComponentItem(description, icon, nid);
-                        klReadOnlyComponentListControl.getItems().add(componentItem);
-                    }
+                            ComponentItem componentItem = new ComponentItem(description, icon, nid);
+                            klReadOnlyComponentListControl.getItems().add(componentItem);
+                        }
+                    });
                 });
-            });
-            Consumer<Integer> itemConsumer= (nid) -> {
-                EntityFacade entityFacade = EntityService.get().getEntityFast(nid);
-                if (entityFacade instanceof ConceptEntity conceptEntity) {
-                    EvtBusFactory.getDefaultEvtBus().publish(journalTopic, new MakeConceptWindowEvent(this,
-                            MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
-                }
-            };
-            klReadOnlyComponentListControl.setOnPopulateAction(itemConsumer);
 
-            node = klReadOnlyComponentListControl;
+                Consumer<Integer> itemConsumer= (nid) -> {
+                    EntityHandle itemHandle = EntityHandle.get(nid);
+                    itemHandle.ifConcept(conceptEntity -> {
+                        EvtBusFactory.getDefaultEvtBus().publish(journalTopic, new MakeConceptWindowEvent(this,
+                                MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
+                    });
+                };
+                klReadOnlyComponentListControl.setOnPopulateAction(itemConsumer);
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + node);
         }
-        setKlWidget(node);
     }
 }

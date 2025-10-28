@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.klfields.componentsetfield;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.layout.version.field.KlComponentSetField;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ObservableView;
@@ -35,36 +36,33 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
      * @param journalTopic This is used for the option to summon the concept window in the specific work space.
      */
     public DefaultKlComponentSetField(ObservableField<IntIdSet> observableComponentSetField, ObservableView observableView, boolean isEditable, UUID journalTopic) {
-        super(observableComponentSetField, observableView, isEditable);
-        Region node;
-        if (isEditable) {
-            KLComponentCollectionControl<IntIdSet> klComponentCollectionControl = KLComponentControlFactory
+        final Region node = switch (isEditable) {
+            case true -> KLComponentControlFactory
                     .createTypeAheadComponentListControl(observableView.calculator());
+            case false -> new KLReadOnlyComponentSetControl();
+        };
+        super(observableComponentSetField, observableView, isEditable, node);
+        switch (node) {
+            case KLComponentCollectionControl klComponentCollectionControl -> {
+                klComponentCollectionControl.setTitle(getTitle());
+                klComponentCollectionControl.valueProperty().bindBidirectional(observableComponentSetField.valueProperty());
+            }
+            case KLReadOnlyComponentSetControl readOnlyComponentSetControl -> {
+                readOnlyComponentSetControl.setTitle(getTitle());
 
-            klComponentCollectionControl.setTitle(getTitle());
-            klComponentCollectionControl.valueProperty().bindBidirectional(observableComponentSetField.valueProperty());
-            node = klComponentCollectionControl;
-        } else {
-            KLReadOnlyComponentSetControl klReadOnlyComponentSetControl = new KLReadOnlyComponentSetControl();
-
-            klReadOnlyComponentSetControl.setTitle(getTitle());
-
-            observableComponentSetField.valueProperty().addListener(observable ->
-                    updateReadOnlyIntIdSet(klReadOnlyComponentSetControl, observableComponentSetField.valueProperty().get(), observableView.calculator()));
-            updateReadOnlyIntIdSet(klReadOnlyComponentSetControl, observableComponentSetField.valueProperty().get(), observableView.calculator());
-            Consumer<Integer> itemConsumer= (nid) -> {
-                EntityFacade entityFacade = EntityService.get().getEntityFast(nid);
-                if (entityFacade instanceof ConceptEntity conceptEntity) {
-                    EvtBusFactory.getDefaultEvtBus().publish(journalTopic, new MakeConceptWindowEvent(this,
-                            MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
-                }
-            };
-            klReadOnlyComponentSetControl.setOnPopulateAction(itemConsumer);
-
-            node = klReadOnlyComponentSetControl;
+                observableComponentSetField.valueProperty().addListener(observable ->
+                        updateReadOnlyIntIdSet(readOnlyComponentSetControl, observableComponentSetField.valueProperty().get(), observableView.calculator()));
+                updateReadOnlyIntIdSet(readOnlyComponentSetControl, observableComponentSetField.valueProperty().get(), observableView.calculator());
+                Consumer<Integer> itemConsumer= (nid) -> {
+                    EntityHandle.get(nid).ifConcept(conceptEntity -> {
+                        EvtBusFactory.getDefaultEvtBus().publish(journalTopic, new MakeConceptWindowEvent(this,
+                                MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
+                    });
+                };
+                readOnlyComponentSetControl.setOnPopulateAction(itemConsumer);
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + node);
         }
-
-        setKlWidget(node);
     }
 
     private void updateReadOnlyIntIdSet(KLReadOnlyComponentSetControl klReadOnlyComponentSetControl, IntIdSet newIntIdSet,

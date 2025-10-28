@@ -12,24 +12,22 @@ import javafx.scene.layout.Region;
 public class DefaultKlFloatField extends BaseDefaultKlField<Float> implements KlFloatField {
 
     public DefaultKlFloatField(ObservableField<Float> observableFloatField, ObservableView observableView, boolean isEditable) {
-        super(observableFloatField, observableView, isEditable);
-
-        Region node;
-        if (isEditable) {
-            KLFloatControl floatControl = new KLFloatControl();
-
-            floatControl.valueProperty().bindBidirectional(observableFloatField.valueProperty());
-            floatControl.setTitle(getTitle());
-
-            node = floatControl;
-        } else {
-            KLReadOnlyDataTypeControl<Float> readOnlyStringControl = new KLReadOnlyDataTypeControl<>(Float.class);
-
-            readOnlyStringControl.valueProperty().bindBidirectional(observableFloatField.valueProperty());
-            readOnlyStringControl.setTitle(getTitle());
-
-            node = readOnlyStringControl;
+        final Region node = switch (isEditable) {
+            case true -> new KLFloatControl();
+            case false -> new KLReadOnlyDataTypeControl<>(Float.class);     
+        };
+        
+        super(observableFloatField, observableView, isEditable, node);
+        switch (node) {
+            case KLFloatControl floatControl -> {
+                floatControl.valueProperty().bindBidirectional(observableFloatField.valueProperty());
+                floatControl.setTitle(getTitle());
+            }
+            case KLReadOnlyDataTypeControl readOnlyFloatControl -> {
+                readOnlyFloatControl.valueProperty().bindBidirectional(observableFloatField.valueProperty());
+                readOnlyFloatControl.setTitle(getTitle());
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + node);
         }
-        setKlWidget(node);
     }
 }

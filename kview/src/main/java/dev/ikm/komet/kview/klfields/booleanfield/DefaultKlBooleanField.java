@@ -11,27 +11,23 @@ import javafx.beans.property.ObjectProperty;
 import javafx.scene.layout.Region;
 
 public class DefaultKlBooleanField extends BaseDefaultKlField<Boolean> implements KlBooleanField {
+
     public DefaultKlBooleanField(ObservableField<Boolean> observableBooleanField, ObservableView observableView, boolean isEditable) {
-        super(observableBooleanField, observableView, isEditable);
-
-        Region klWidget;
-        if (isEditable) {
-            KLBooleanControl klBooleanControl = new KLBooleanControl();
-
-            klBooleanControl.setTitle(getTitle());
-            klBooleanControl.valueProperty().bindBidirectional(observableBooleanField.valueProperty());
-
-            klWidget = klBooleanControl;
-        } else {
-            KLReadOnlyDataTypeControl<Boolean> klReadOnlyBooleanControl = new KLReadOnlyDataTypeControl<>(Boolean.class);
-            klReadOnlyBooleanControl.setTitle(getTitle());
-
-            ObjectProperty<Boolean> booleanProperty = observableBooleanField.valueProperty();
-
-            klReadOnlyBooleanControl.valueProperty().bind(booleanProperty);
-
-            klWidget = klReadOnlyBooleanControl;
+        Region klWidget = switch (isEditable) {
+            case true -> new KLBooleanControl();
+            case false -> new KLReadOnlyDataTypeControl<>(Boolean.class);
+        };
+        super(observableBooleanField, observableView, isEditable, klWidget);
+        switch (klWidget) {
+            case KLBooleanControl klBooleanControl -> {
+                klBooleanControl.valueProperty().bindBidirectional(observableBooleanField.valueProperty());
+                klBooleanControl.setTitle(getTitle());
+            }
+            case KLReadOnlyDataTypeControl klReadOnlyBooleanControl -> {
+                klReadOnlyBooleanControl.valueProperty().bind(observableBooleanField.valueProperty());
+                klReadOnlyBooleanControl.setTitle(getTitle());
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + klWidget);
         }
-        setKlWidget(klWidget);
     }
 }

@@ -12,25 +12,21 @@ import javafx.scene.layout.Region;
 public class DefaultKlStringField extends BaseDefaultKlField<String> implements KlStringField {
 
     public DefaultKlStringField(ObservableField<String> observableStringField, ObservableView observableView, boolean isEditable) {
-        super(observableStringField, observableView, isEditable);
-
-        Region node;
-        if (isEditable) {
-            KLStringControl stringControl = new KLStringControl();
-
-            stringControl.textProperty().bindBidirectional(observableStringField.valueProperty());
-            stringControl.setTitle(getTitle());
-
-            node = stringControl;
-        } else {
-            KLReadOnlyDataTypeControl<String> readOnlyStringControl = new KLReadOnlyDataTypeControl<>(String.class);
-
-            readOnlyStringControl.valueProperty().bindBidirectional(observableStringField.valueProperty());
-            readOnlyStringControl.setTitle(getTitle());
-
-            node = readOnlyStringControl;
+        final Region node = switch (isEditable) {
+            case true -> new KLStringControl();
+            case false -> new KLReadOnlyDataTypeControl<>(String.class);
+        };
+        super(observableStringField, observableView, isEditable, node);
+        switch (node) {
+            case KLStringControl stringControl -> {
+                stringControl.textProperty().bindBidirectional(observableStringField.valueProperty());
+                stringControl.setTitle(getTitle());
+            }
+            case KLReadOnlyDataTypeControl readOnlyStringControl -> {
+                readOnlyStringControl.valueProperty().bindBidirectional(observableStringField.valueProperty());
+                readOnlyStringControl.setTitle(getTitle());
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + node);
         }
-
-        setKlWidget(node);
     }
 }
