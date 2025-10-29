@@ -26,6 +26,9 @@ public class KLEditorMainScreenController {
     @FXML
     private ListView patternBrowserListView;
 
+    @FXML
+    private KLEditorWindowController klEditorWindowController;
+
     private WindowSettings windowSettings;
     private KometPreferences nodePreferences;
 
@@ -56,6 +59,9 @@ public class KLEditorMainScreenController {
         patternBrowserListView.setItems(patterns);
 
         setupWindow();
+
+        // Init KLEditorWindow
+        klEditorWindowController.init(viewCalculator);
     }
 
     private void setupWindow() {

@@ -1,6 +1,5 @@
 @import "icons.css";
 
-
 .window {
     -fx-background-color: transparent;
 
@@ -9,7 +8,7 @@
     -fx-pref-height: 800px;
 
     -fx-border-color: #999;
-    -fx-border-radius: 6 px;
+    -fx-border-radius: 6px;
     -fx-border-style: segments(3, 3);
 
     -fx-padding: 4px;
@@ -120,6 +119,18 @@
 
 .window .content-container .content {
     -fx-background-color: white;
+
+    -fx-spacing: 5px;
+
+    -fx-padding: 4px 2px 4px 2px;
+}
+
+.window .content-container .pattern-container {
+    -fx-border-color: #9747ff;
+    -fx-border-radius: 3px;
+    -fx-border-style: segments(3, 3);
+
+    -fx-padding: 6px;
 }
 
 /*******************************************************************************

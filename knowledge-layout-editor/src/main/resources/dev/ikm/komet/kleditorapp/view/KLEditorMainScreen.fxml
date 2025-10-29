@@ -36,7 +36,7 @@
                     <VBox>
                         <StackPane styleClass="canvas" VBox.vgrow="ALWAYS">
                         <children>
-                           <fx:include source="KLEditorWindow.fxml" />
+                           <fx:include fx:id="klEditorWindow" source="KLEditorWindow.fxml" />
                         </children></StackPane>
                     </VBox>
                </center>

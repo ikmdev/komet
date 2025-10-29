@@ -141,7 +141,7 @@
             </StackPane>
          </top>
          <center>
-            <VBox prefHeight="200.0" prefWidth="100.0" styleClass="content" BorderPane.alignment="CENTER" />
+            <VBox fx:id="windowContent" prefHeight="200.0" prefWidth="100.0" styleClass="content" BorderPane.alignment="CENTER" />
          </center>
       </BorderPane>
       <Button mnemonicParsing="false" styleClass="add-section" text="ADD SECTION">

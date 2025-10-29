@@ -37,6 +37,9 @@ module dev.ikm.komet.kleditorapp {
     requires dev.ikm.tinkar.entity;
     requires dev.ikm.tinkar.terms;
     requires dev.ikm.tinkar.events;
+    requires dev.ikm.komet.framework;
+    requires dev.ikm.komet.preferences;
+    requires org.eclipse.collections.api;
 
     exports dev.ikm.komet.kleditorapp.view;
     opens dev.ikm.komet.kleditorapp.view to javafx.fxml, dev.ikm.komet.application;
