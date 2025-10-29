@@ -54,16 +54,15 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
                 observableComponentListField.valueProperty().subscribe(intIdSet -> {
                     klReadOnlyComponentListControl.getItems().clear();
                     intIdSet.forEach(nid -> {
-                        if (nid != 0) {
-                            EntityProxy entityProxy = EntityProxy.make(nid);
-                            Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
+                        EntityHandle.get(nid).ifPresent(entity -> {
+                            Image icon = Identicon.generateIdenticonImage(entity.publicId());
 
                             String description = observableView.calculator().languageCalculator()
-                                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+                                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entity.nid());
 
                             ComponentItem componentItem = new ComponentItem(description, icon, nid);
                             klReadOnlyComponentListControl.getItems().add(componentItem);
-                        }
+                        });
                     });
                 });
 
