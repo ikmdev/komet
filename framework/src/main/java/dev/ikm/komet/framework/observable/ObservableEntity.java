@@ -536,7 +536,19 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
                     versionPropertyMap.put(newVersion.stampNid(), newWrappedVersion);
                     versionSetAsList.set(index, newWrappedVersion);
                 } else if (newVersion.time() != oldVersion.version().time()) {
-                    throw new IllegalStateException("Version time mismatch: " + newVersion.time() + " != " + oldVersion.version().time());
+                    if (newVersion.time() == Long.MAX_VALUE ) {
+                        changed.set(true);
+                        // We should rewrap the old value? This seems an odd state...
+                        StringBuilder errorBuilder = new StringBuilder();
+                        errorBuilder.append("New version is uncommitted, but old version is committed. \nNew version: ");
+                        errorBuilder.append(newVersion);
+                        errorBuilder.append(" \nOld version: ");
+                        errorBuilder.append(oldVersion);
+                        LOG.error(errorBuilder.toString());
+                        throw new IllegalStateException(errorBuilder.toString());
+                    } else {
+                        throw new IllegalStateException("Version time mismatch: " + newVersion.time() + " != " + oldVersion.version().time());
+                    }
                 }
                 if (changed.get()) {
                     entityReference.set(newEntity);

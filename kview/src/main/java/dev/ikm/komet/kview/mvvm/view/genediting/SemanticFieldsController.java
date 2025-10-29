@@ -387,20 +387,23 @@ public class SemanticFieldsController {
      * Clears the fields in create mode
      */
     private void clearField(){
-        observableEntityHandle.ifPresent(observableEntity -> {
-            EntityFacade patternForEntity = switch (observableEntity) {
-                case ObservableConcept concept -> EntityBinding.Concept.pattern();
-                case ObservablePattern pattern -> EntityBinding.Pattern.pattern();
-                case ObservableSemantic semantic -> semantic.pattern();
-                case ObservableStamp stamp -> EntityBinding.Stamp.pattern();
-            };
-            ImmutableList<Object> fieldValues = createDefaultFieldValues(patternForEntity, getViewProperties());
-            for (int i = 0; i < fieldValues.size(); i++) {
-                ObservableField observableField = observableFields.get(i);
-                observableField.valueProperty().setValue(fieldValues.get(i));
-            }
-        });
-
+        if (observableEntityHandle != null) {
+            observableEntityHandle.ifPresent(observableEntity -> {
+                EntityFacade patternForEntity = switch (observableEntity) {
+                    case ObservableConcept concept -> EntityBinding.Concept.pattern();
+                    case ObservablePattern pattern -> EntityBinding.Pattern.pattern();
+                    case ObservableSemantic semantic -> semantic.pattern();
+                    case ObservableStamp stamp -> EntityBinding.Stamp.pattern();
+                };
+                ImmutableList<Object> fieldValues = createDefaultFieldValues(patternForEntity, getViewProperties());
+                for (int i = 0; i < fieldValues.size(); i++) {
+                    ObservableField observableField = observableFields.get(i);
+                    observableField.valueProperty().setValue(fieldValues.get(i));
+                }
+            });
+        } else {
+            observableFields.clear();
+        }
     }
 
     /**
