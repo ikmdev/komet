@@ -126,6 +126,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.format;
 
 public class GenEditingDetailsController {
 
@@ -583,7 +584,7 @@ public class GenEditingDetailsController {
         if (genEditingViewModel.getPropertyValue(MODE) == CREATE) {
             stampViewControl.setLastUpdated("Uncommitted");
         } else {
-            stampViewControl.setLastUpdated(TimeUtils.toDateString(time));
+            stampViewControl.setLastUpdated(format(time));
         }
     }
 
