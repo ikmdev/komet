@@ -4,6 +4,7 @@ import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -58,7 +59,7 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
         loadStamp();
         loadStampValuesFromDB();
 
-        setPropertyValue(FORM_TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
+        setPropertyValue(FORM_TIME_TEXT, DateTimeUtil.format((Long) getPropertyValue(TIME)));
 
         save(true);
     }

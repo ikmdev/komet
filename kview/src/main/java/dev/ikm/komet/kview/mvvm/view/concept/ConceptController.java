@@ -152,6 +152,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.format;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
@@ -993,7 +994,7 @@ public class ConceptController {
 
                         // Latest update time
                         long stampTime = stamp.time();
-                        stampViewControl.setLastUpdated(TimeUtils.toDateString(stampTime));
+                        stampViewControl.setLastUpdated(format(stampTime));
                     }, () -> {
                         stampViewControl.setStatus(NO_VERSION_FOR_VIEW_TEXT);
                         stampViewControl.setModule(NO_VERSION_FOR_VIEW_TEXT);

@@ -532,6 +532,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
                 } else if (oldVersion.version().time() == Long.MAX_VALUE) {
                     changed.set(true);
                     int index = versionSetAsList.indexOf(oldVersion);
+                    // TODO: Canonical bug? Swap out the old version record for the new one?
                     OV newWrappedVersion = wrap(newVersion);
                     versionPropertyMap.put(newVersion.stampNid(), newWrappedVersion);
                     versionSetAsList.set(index, newWrappedVersion);
