@@ -11,8 +11,11 @@
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -47,7 +50,7 @@
                      <HBox alignment="CENTER_LEFT" spacing="10" styleClass="top-toolbar" BorderPane.alignment="CENTER">
                          <Label minWidth="-Infinity" text="Name:" />
                          <TextField fx:id="titleTextField" prefWidth="260" promptText="Untitled" styleClass="title-name-field" />
-                     <ComboBox prefWidth="150.0" />
+                     <ComboBox prefWidth="150.0" styleClass="dark" />
          
          
                          <Label minWidth="-Infinity" text="Preview" />
@@ -83,6 +86,36 @@
                          <Button defaultButton="true" text="SAVE" />
                      </HBox>
                </top>
+               <right>
+                  <VBox prefHeight="200.0" prefWidth="100.0" styleClass="right-pane" BorderPane.alignment="CENTER">
+                     <children>
+                        <Label styleClass="title" text="Section 1" />
+                        <VBox styleClass="section-name-container">
+                           <children>
+                              <Label text="Name of the section:" />
+                              <TextField fx:id="sectionNameTextField" />
+                           </children>
+                        </VBox>
+                        <Separator prefWidth="200.0" />
+                        <Label styleClass="group-title" text="GRID LAYOUT" />
+                        <GridPane>
+                          <columnConstraints>
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                           <children>
+                              <Label text="Column(s)" GridPane.halignment="RIGHT" />
+                              <ComboBox fx:id="columnsComboBox" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+                           </children>
+                        </GridPane>
+                     </children>
+                  </VBox>
+               </right>
             </BorderPane>
           </center>
          <left>

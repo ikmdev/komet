@@ -2,6 +2,7 @@ package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kleditorapp.model.SectionModel;
 import dev.ikm.komet.kleditorapp.model.WindowModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -15,10 +16,17 @@ import dev.ikm.tinkar.entity.PatternEntityVersion;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 
 public class KLEditorMainScreenController {
+
+    @FXML
+    private ComboBox<String> columnsComboBox;
+
+    @FXML
+    private TextField sectionNameTextField;
 
     @FXML
     private TextField titleTextField;
@@ -62,12 +70,22 @@ public class KLEditorMainScreenController {
 
         // Init KLEditorWindow
         klEditorWindowController.init(viewCalculator);
+
+        // Columns ComboBox
+        for (int i = 1 ; i <= 4 ; ++i) {
+            columnsComboBox.getItems().add(i + " column");
+        }
+        columnsComboBox.setValue(columnsComboBox.getItems().getFirst());
     }
 
     private void setupWindow() {
         WindowModel windowModel = WindowModel.instance();
 
         titleTextField.textProperty().bindBidirectional(windowModel.titleProperty());
+
+        // sections
+        SectionModel sectionModel = windowModel.getSections().getFirst();
+        sectionNameTextField.textProperty().bindBidirectional(sectionModel.nameProperty());
     }
 
     @FXML

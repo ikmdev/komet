@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -136,12 +137,19 @@
          <top>
             <StackPane styleClass="title-container" BorderPane.alignment="CENTER">
                <children>
-                  <Label text="Section" />
+                  <Label text="Section 1" />
                </children>
             </StackPane>
          </top>
          <center>
-            <VBox fx:id="windowContent" prefHeight="200.0" prefWidth="100.0" styleClass="content" BorderPane.alignment="CENTER" />
+            <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+               <children>
+                  <TitledPane fx:id="section1TitledPane" animated="false" maxHeight="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" text="untitled" VBox.vgrow="ALWAYS">
+                     <content>
+                        <VBox fx:id="windowContent" prefHeight="200.0" prefWidth="100.0" styleClass="content" />
+                     </content>
+                  </TitledPane>
+               </children></VBox>
          </center>
       </BorderPane>
       <Button mnemonicParsing="false" styleClass="add-section" text="ADD SECTION">

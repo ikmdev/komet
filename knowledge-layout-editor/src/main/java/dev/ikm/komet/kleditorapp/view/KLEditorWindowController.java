@@ -1,7 +1,7 @@
 package dev.ikm.komet.kleditorapp.view;
 
+import dev.ikm.komet.kleditorapp.model.SectionModel;
 import dev.ikm.komet.kleditorapp.model.WindowModel;
-import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
@@ -12,6 +12,7 @@ import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.TitledPane;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -27,6 +28,9 @@ import static dev.ikm.komet.kleditorapp.view.PatternBrowserCell.KL_EDITOR_VERSIO
 public class KLEditorWindowController {
 
     @FXML
+    private TitledPane section1TitledPane;
+
+    @FXML
     private VBox windowContent;
 
     @FXML
@@ -37,6 +41,10 @@ public class KLEditorWindowController {
     public void initialize() {
         WindowModel windowModel = WindowModel.instance();
         titleLabel.textProperty().bind(windowModel.titleProperty());
+
+        // We only have 1 section for now
+        SectionModel sectionModel = windowModel.getSections().getFirst();
+        section1TitledPane.textProperty().bindBidirectional(sectionModel.nameProperty());
 
         setupDragAndDrop();
     }

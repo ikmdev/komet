@@ -93,7 +93,7 @@
 
 /*******************************************************************************
  *                                                                             *
- * Content Container                                                             *
+ * Content Container                                                           *
  *                                                                             *
  ******************************************************************************/
 
@@ -121,8 +121,6 @@
     -fx-background-color: white;
 
     -fx-spacing: 5px;
-
-    -fx-padding: 4px 2px 4px 2px;
 }
 
 .window .content-container .pattern-container {

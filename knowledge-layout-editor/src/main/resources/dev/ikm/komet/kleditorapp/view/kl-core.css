@@ -122,19 +122,23 @@
  *                                                                             *
  ******************************************************************************/
 
-.combo-box {
-    -fx-background-color: #44495d;
-    -fx-color: -Grey-8;
-
+.combo-box.combo-box-base {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
     -fx-font-weight: 500;
+
+    -fx-background-color: #fbfbfc;
 }
 
-.combo-box .list-cell {
+.combo-box.combo-box-base.dark {
+    -fx-background-color: #44495d;
+    -fx-color: -Grey-8;
+}
+
+.combo-box.combo-box-base .list-cell {
     -fx-text-fill: #111;
-    -fx-padding: 0.166667em 0.666667em 0.166667em 0.666667em; /* 2 8 2 8 */
+    -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; /* 2 8 2 8 */
 }
 
 .combo-box .text-input {
@@ -157,4 +161,72 @@
 .combo-box.combo-box-base > .arrow-button > .arrow {
     -fx-background-color: #5896f6;
     -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * TextField                                                                   *
+ *                                                                             *
+ ******************************************************************************/
+
+.text-field {
+    -fx-background-color: -Grey-5, white;
+    -fx-background-radius: 4, 4;
+    -fx-background-insets: 0, 1;
+    -fx-pref-height: 32.0;
+    -fx-padding: 4 10 4 10;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Grey-10;
+    -fx-border-width: 0;
+}
+
+.text-field:focused {
+    -fx-background-color: #8ab4f8, white;
+    -fx-background-insets: 0, 2;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * TitledPane                                                                  *
+ *                                                                             *
+ ******************************************************************************/
+
+.titled-pane {
+    -fx-text-fill: -Grey-12;
+    -fx-border-insets: 1, 0, 1, 0;
+}
+
+.titled-pane:focused {
+    -fx-color: -fx-base;
+}
+
+.titled-pane > .title {
+    -fx-background-color: -Grey-2;
+    -fx-border-width: 1, .5, 1, .5;
+
+    -fx-font-size: 14 px;
+}
+
+/* focus purely on the arrow */
+.titled-pane:focused > .title > .arrow-button > .arrow {
+    -fx-effect: null;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+.titled-pane > .title > .arrow-button {
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.0em 0.583em 0.0em 0.0em; /* 0 7 0 0 */
+}
+
+.titled-pane > .title > .arrow-button > .arrow {
+    -fx-background-color: -fx-kview-titled-pane-text-color;
+    -fx-shape: "M1.40988 0.295017L-0.000122333 1.70502L5.99988 7.70502L11.9999 1.70502L10.5899 0.295017L5.99988 4.87502L1.40988 0.295017Z";
+}
+/* alternative content using a border and a grad to transparent background - why should TitledPane content have a colour? */
+.titled-pane > *.content {
+     -fx-border-width: 0;
 }
