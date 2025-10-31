@@ -45,7 +45,7 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
         switch (node) {
             case KLComponentCollectionControl klComponentCollectionControl -> {
                 klComponentCollectionControl.setTitle(getTitle());
-                klComponentCollectionControl.valueProperty().bindBidirectional(observableComponentSetField.valueProperty());
+                klComponentCollectionControl.valueProperty().bindBidirectional(observableComponentSetField.editableValueProperty());
             }
             case KLReadOnlyComponentSetControl readOnlyComponentSetControl -> {
                 readOnlyComponentSetControl.setTitle(getTitle());

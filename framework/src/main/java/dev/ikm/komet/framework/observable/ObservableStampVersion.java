@@ -161,4 +161,9 @@ public final class ObservableStampVersion
         // Path
         features.add(getVersionPathField());
     }
+
+    @Override
+    public ObservableEditableStampVersion getEditableVersion(ObservableStamp editStamp) {
+        return ObservableEditableStampVersion.getOrCreate(this, editStamp);
+    }
 }

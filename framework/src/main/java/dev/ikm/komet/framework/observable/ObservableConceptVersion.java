@@ -55,4 +55,9 @@ public final class ObservableConceptVersion extends ObservableVersion<ConceptVer
     protected void addAdditionalVersionFeatures(MutableList<Feature> features) {
         // Nothing to add.
     }
+
+    @Override
+    public ObservableEditableConceptVersion getEditableVersion(ObservableStamp editStamp) {
+        return ObservableEditableConceptVersion.getOrCreate(this, editStamp);
+    }
 }

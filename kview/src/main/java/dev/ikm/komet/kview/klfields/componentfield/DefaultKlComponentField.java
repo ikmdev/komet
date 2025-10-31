@@ -31,17 +31,16 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
                 // title
                 componentControl.setTitle(calculatorForContext().getDescriptionTextOrNid(fieldDefinition.meaningNid()));
                 // entity
-                componentControl.entityProperty().bindBidirectional(observableComponentField.valueProperty());
+                componentControl.entityProperty().bindBidirectional(observableComponentField.editableValueProperty());
             }
             case KLReadOnlyComponentControl readOnlyComponentControl -> {
-                ObjectProperty<EntityProxy> valueProperty = observableComponentField.valueProperty();
                 // title
                 String title = observableView.calculator().getDescriptionText(fieldDefinition.meaningNid()).orElse("Blank Title");
                 readOnlyComponentControl.setTitle(title);
                 // value
-                updateControlValue(valueProperty.get(), readOnlyComponentControl);
+                updateControlValue(observableComponentField.valueProperty().get(), readOnlyComponentControl);
                 // Listen and update when EntityProxy changes
-                valueProperty.subscribe(newEntity -> {
+                observableComponentField.valueProperty().subscribe(newEntity -> {
                     updateControlValue(newEntity, readOnlyComponentControl);
                 });
             }

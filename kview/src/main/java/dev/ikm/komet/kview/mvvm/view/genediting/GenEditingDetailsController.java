@@ -16,7 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -41,6 +40,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntity;
@@ -120,7 +120,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.CURRENT_STAMP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
@@ -214,7 +213,7 @@ public class GenEditingDetailsController {
     @InjectViewModel
     private GenEditingViewModel genEditingViewModel;
 
-    private List<ObservableField<?>> observableFields = new ArrayList<>();
+    private List<ObservableEditableField<?>> editableFields = new ArrayList<>();
 
     private final List<Node> nodes = new ArrayList<>();
 
@@ -382,14 +381,15 @@ public class GenEditingDetailsController {
             // Set empty Semantic Details using pattern fields
             PatternFacade patternFacade = (PatternFacade) genEditingViewModel.getProperty(PATTERN).getValue();
             PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternFacade).get();
-            // generate read only UI controls in create mode
+            // generate read-only UI controls in creation mode
             List<KLReadOnlyBaseControl> readOnlyControls = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
             nodes.addAll(readOnlyControls);
             semanticDetailsVBox.getChildren().addAll(readOnlyControls);
         } else {
             genEditingViewModel.setPropertyValue(MODE, EDIT);
-            ObservableEntityHandle.get(semantic.nid()).ifSemantic(observableSemantic -> {
-                observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+            ObservableEntityHandle.get(semantic).ifSemantic(observableSemantic -> {
+                this.observableSemantic = observableSemantic;
+                observableSemanticSnapshot = this.observableSemantic.getSnapshot(getViewProperties().calculator());
                 //retrieve latest committed semanticVersion
                 semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
                 // Populate the Semantic Details
@@ -413,7 +413,7 @@ public class GenEditingDetailsController {
                     && evt.getNid() == finalSemantic.nid()) {
                 if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
                     // get the latest value for the semantic created.
-                    observableSemantic = ObservableEntity.get(finalSemantic.nid());
+                    observableSemantic = ObservableEntityHandle.getSemanticOrThrow(finalSemantic);
                     // populate the semantic and its observable fields once saved
                     semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
                     // clear out the temporary placeholders
@@ -432,14 +432,14 @@ public class GenEditingDetailsController {
 
                 // Update read-only field values
                 for (int i = 0; i < evt.getList().size(); i++) {
-                    ObservableField observableField = observableFields.get(i);
+                    ObservableEditableField editableField = editableFields.get(i);
                     Object updatedField = evt.getList().get(i);
-                    if (updatedField != null && observableField != null) {
+                    if (updatedField != null && editableField != null) {
                         // readonly integer value 1, editable integer value 1 don't update
                         // readonly integer value 1, editable integer value 5 do update
                         // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
                         // Should we check if the value is different before updating? (blindly updating now).
-                        Runnable setValue = () -> observableField.valueProperty().setValue(updatedField);
+                        Runnable setValue = () -> editableField.editableValueProperty().setValue(updatedField);
                         if (!Platform.isFxApplicationThread()) {
                             Platform.runLater(setValue);
                         } else {
@@ -463,7 +463,7 @@ public class GenEditingDetailsController {
     private void updateSemanticForPatternInfo() {
         PatternFacade patternFacade = (PatternFacade) genEditingViewModel.getProperty(PATTERN).getValue();
         LanguageCalculator languageCalculator = getViewProperties().calculator().languageCalculator();
-        ObservableEntityHandle.get(patternFacade.nid()).ifPattern(observablePattern -> {
+        ObservableEntityHandle.get(patternFacade).ifPattern(observablePattern -> {
             ObservablePatternSnapshot observablePatternSnapshot = observablePattern.getSnapshot(getViewProperties().calculator());
             ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
             PatternEntityVersion patternEntityVersion = observablePatternVersion.getVersionRecord();
@@ -494,20 +494,20 @@ public class GenEditingDetailsController {
             observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
             ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
             if (observableSemanticVersionImmutableList.isEmpty()) {
-                observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+                editableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
             } else {
                 //Cast to mutable list
                 List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
                 //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
                 observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
                 if (observableSemanticVersionList.isEmpty()) {
-                    observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
+                    editableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
                 } else {
                     ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
                     Latest<PatternEntityVersion> latestPatternEntityVersion = getViewProperties().calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
                     // Populate the Semantic Details
                     // Displaying editable controls and populating the observable fields array list.
-                    observableFields.addAll((Collection) observableSemanticVersion.fields());
+                    editableFields.addAll((Collection) observableSemanticVersion.fields());
                 }
             }
             // function to apply for the components' edit action (a.k.a. right click > Edit)
@@ -526,9 +526,9 @@ public class GenEditingDetailsController {
                             new PropertyPanelEvent(readOnlyBaseControl, OPEN_PANEL));
                 };
             int index = 0;
-            for(ObservableField<?> observableField : observableFields){
-                FieldRecord<?> fieldRecord = observableField.field();
-                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) KlFieldHelper.generateNode(fieldRecord, observableField, getViewProperties(), false, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
+            for(ObservableEditableField<?> editableField : editableFields){
+                FieldRecord<?> fieldRecord = (FieldRecord<?>) editableField.field();
+                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) KlFieldHelper.generateNode(fieldRecord, editableField.getObservableFeature(), getViewProperties(), false, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
                 nodes.add(klReadOnlyBaseControl);
                 klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
                 semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
@@ -599,7 +599,7 @@ public class GenEditingDetailsController {
 
         //Disable the  edit the Reference Component of an existing semantic once submitted
         Consumer<EntityFacade> updateRefComponentInfo = (refComponent2) -> {
-            Entity<? extends EntityVersion> entity = Entity.getFast(refComponent2.nid());
+            Entity<? extends EntityVersion> entity = EntityHandle.getConceptOrThrow(refComponent2);
             // update items
 
             String refType = "Unknown";
@@ -642,7 +642,8 @@ public class GenEditingDetailsController {
 
                 // If the Pattern has no field definitions, then commit the Semantic automatically
                 if (genEditingViewModel.getObjectProperty(PATTERN).isNotNull().get()) {
-                    Entity<EntityVersion> patternEntity = Entity.getFast(genEditingViewModel.getPropertyValue(PATTERN));
+                    EntityFacade patternFacade = genEditingViewModel.getPropertyValue(PATTERN);
+                    Entity<EntityVersion> patternEntity =  EntityHandle.getPatternOrThrow(patternFacade);
                     PatternEntityVersion latestPatternVersion = (PatternEntityVersion) genEditingViewModel.getViewProperties().calculator()
                             .latest(patternEntity)
                             .orElse(patternEntity.versions().getAny());
@@ -673,7 +674,7 @@ public class GenEditingDetailsController {
                         new GenEditingEvent(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), PUBLISH, semanticEntityVersion.fieldValues().toList(), semantic.nid()));
                 String submitMessage = "Semantic Details %s Successfully!".formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Editing" : "Added");
                 Platform.runLater(() -> {
-                    observableSemantic = ObservableEntity.get(semantic.nid());
+                    observableSemantic = ObservableEntityHandle.getSemanticOrThrow(semantic);
                     observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
                     toast()
                             .withUndoAction(undoActionEvent ->

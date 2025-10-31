@@ -20,11 +20,11 @@ public class DefaultKlFloatField extends BaseDefaultKlField<Float> implements Kl
         super(observableFloatField, observableView, isEditable, node);
         switch (node) {
             case KLFloatControl floatControl -> {
-                floatControl.valueProperty().bindBidirectional(observableFloatField.valueProperty());
+                floatControl.valueProperty().bindBidirectional(observableFloatField.editableValueProperty());
                 floatControl.setTitle(getTitle());
             }
             case KLReadOnlyDataTypeControl readOnlyFloatControl -> {
-                readOnlyFloatControl.valueProperty().bindBidirectional(observableFloatField.valueProperty());
+                readOnlyFloatControl.valueProperty().bind(observableFloatField.valueProperty());
                 readOnlyFloatControl.setTitle(getTitle());
             }
             default -> throw new IllegalStateException("Unexpected value: " + node);

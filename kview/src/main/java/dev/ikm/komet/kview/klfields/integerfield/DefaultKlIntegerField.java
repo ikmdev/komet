@@ -20,7 +20,7 @@ public class DefaultKlIntegerField extends BaseDefaultKlField<Integer> implement
 
         switch (node) {
             case KLIntegerControl integerControl -> {
-                integerControl.valueProperty().bindBidirectional(observableIntegerField.valueProperty());
+                integerControl.valueProperty().bindBidirectional(observableIntegerField.editableValueProperty());
                 integerControl.setTitle(getTitle());
             }
             case KLReadOnlyDataTypeControl readOnlyIntegerControl -> {

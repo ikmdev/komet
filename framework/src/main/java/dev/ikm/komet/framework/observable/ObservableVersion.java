@@ -33,13 +33,13 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract sealed class ObservableVersion<V extends EntityVersion>
         implements EntityVersion, ObservableComponent, Feature<ObservableVersion<?>>
         permits ObservableConceptVersion, ObservablePatternVersion, ObservableSemanticVersion, ObservableStampVersion {
-    protected final SimpleObjectProperty<V> versionProperty = new SimpleObjectProperty<>();
+    protected final ReadOnlyObjectWrapper<EntityVersion> versionProperty = new ReadOnlyObjectWrapper<>();
 
-    private final SimpleObjectProperty<State> stateProperty = new SimpleObjectProperty<>();
-    private final SimpleLongProperty timeProperty = new SimpleLongProperty();
-    private final SimpleObjectProperty<ConceptFacade> authorProperty = new SimpleObjectProperty<>();
-    private final SimpleObjectProperty<ConceptFacade> moduleProperty = new SimpleObjectProperty<>();
-    private final SimpleObjectProperty<ConceptFacade> pathProperty = new SimpleObjectProperty<>();
+    private final ReadOnlyObjectWrapper<State> stateProperty = new ReadOnlyObjectWrapper<>();
+    private final ReadOnlyLongWrapper timeProperty = new ReadOnlyLongWrapper();
+    private final ReadOnlyObjectWrapper<ConceptFacade> authorProperty = new ReadOnlyObjectWrapper<>();
+    private final ReadOnlyObjectWrapper<ConceptFacade> moduleProperty = new ReadOnlyObjectWrapper<>();
+    private final ReadOnlyObjectWrapper<ConceptFacade> pathProperty = new ReadOnlyObjectWrapper<>();
 
     // Replace with JEP 502 (Stable Values) when available.
     private final AtomicReference<ReadOnlyProperty<Feature<ObservableVersion<?>>>> featurePropertyReference = new AtomicReference<>();
@@ -48,13 +48,19 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
 
 
     ObservableVersion(V entityVersion) {
+        setVersionInternal(entityVersion);
+    }
+
+    /**
+     * Package-private method to update version data. Only called from updateVersions() flow.
+     */
+    void setVersionInternal(V entityVersion) {
         versionProperty.set(entityVersion);
         stateProperty.set(entityVersion.state());
         timeProperty.set(entityVersion.time());
         authorProperty.set(Entity.provider().getEntityFast(entityVersion.authorNid()));
         moduleProperty.set(Entity.provider().getEntityFast(entityVersion.moduleNid()));
         pathProperty.set(Entity.provider().getEntityFast(entityVersion.pathNid()));
-        addListeners();
     }
 
     public abstract ObservableEntity<? extends ObservableVersion> getObservableEntity();
@@ -76,87 +82,14 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
         return versionProperty.get().nid();
     }
 
-    protected void addListeners() {
-        stateProperty.addListener((observable, oldValue, newValue) -> {
-            if (version().uncommitted()) {
-                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                    StampEntity newStamp = transaction.getStamp(newValue, version().time(),
-                            version().authorNid(), version().moduleNid(), version().pathNid());
-                    versionProperty.set(withStampNid(newStamp.nid()));
-                }, () -> {
-                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
-                });
-            } else {
-                throw new IllegalStateException("Version is already committed, cannot change value.");
-            }
-        });
-
-        timeProperty.addListener((observable, oldValue, newValue) -> {
-            // TODO when to update the chronology with new record? At commit time? Automatically with reactive stream for commits?
-            if (version().uncommitted()) {
-                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                    StampEntity newStamp = transaction.getStamp(version().state(), newValue.longValue(),
-                            version().authorNid(), version().moduleNid(), version().pathNid());
-                    versionProperty.set(withStampNid(newStamp.nid()));
-                }, () -> {
-                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
-                });
-            } else {
-                throw new IllegalStateException("Version is already committed, cannot change value.");
-            }
-        });
-
-        authorProperty.addListener((observable, oldValue, newValue) -> {
-            if (version().uncommitted()) {
-                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(),
-                            newValue.nid(), version().moduleNid(), version().pathNid());
-                    versionProperty.set(withStampNid(newStamp.nid()));
-                }, () -> {
-                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
-                });
-            } else {
-                throw new IllegalStateException("Version is already committed, cannot change value.");
-            }
-        });
-
-        moduleProperty.addListener((observable, oldValue, newValue) -> {
-            if (version().uncommitted()) {
-                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(),
-                            version().authorNid(), newValue.nid(), version().pathNid());
-                    versionProperty.set(withStampNid(newStamp.nid()));
-                }, () -> {
-                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
-                });
-            } else {
-                throw new IllegalStateException("Version is already committed, cannot change value.");
-            }
-        });
-
-        pathProperty.addListener((observable, oldValue, newValue) -> {
-            if (version().uncommitted()) {
-                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
-                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(),
-                            version().authorNid(), version().moduleNid(), newValue.nid());
-                    versionProperty.set(withStampNid(newStamp.nid()));
-                }, () -> {
-                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
-                });
-            } else {
-                throw new IllegalStateException("Version is already committed, cannot change value.");
-            }
-        });
-    }
-
     public V version() {
-        return versionProperty.getValue();
+        return (V) versionProperty.getValue();
     }
 
     protected abstract V withStampNid(int stampNid);
 
-    public ObjectProperty<V> versionProperty() {
-        return versionProperty;
+    public ReadOnlyObjectProperty<? extends EntityVersion> versionProperty() {
+        return versionProperty.getReadOnlyProperty();
     }
 
     @Override
@@ -174,24 +107,24 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
         return version().chronology();
     }
 
-    public ObjectProperty<State> stateProperty() {
-        return stateProperty;
+    public ReadOnlyObjectProperty<State> stateProperty() {
+        return stateProperty.getReadOnlyProperty();
     }
 
-    public LongProperty timeProperty() {
-        return timeProperty;
+    public ReadOnlyLongProperty timeProperty() {
+        return timeProperty.getReadOnlyProperty();
     }
 
-    public ObjectProperty<ConceptFacade> authorProperty() {
-        return authorProperty;
+    public ReadOnlyObjectProperty<ConceptFacade> authorProperty() {
+        return authorProperty.getReadOnlyProperty();
     }
 
-    public ObjectProperty<ConceptFacade> moduleProperty() {
-        return moduleProperty;
+    public ReadOnlyObjectProperty<ConceptFacade> moduleProperty() {
+        return moduleProperty.getReadOnlyProperty();
     }
 
-    public ObjectProperty<ConceptFacade> pathProperty() {
-        return pathProperty;
+    public ReadOnlyObjectProperty<ConceptFacade> pathProperty() {
+        return pathProperty.getReadOnlyProperty();
     }
 
     @Override
@@ -274,4 +207,25 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
     public ConceptFacade getAuthorForChanges(){
         return this.authorForChanges;
     }
+
+    /**
+     * Returns the canonical editable version for this ObservableVersion with the specified stamp.
+     * <p>
+     * The same stamp will always return the same editable version instance, allowing multiple
+     * GUI components to bind to and edit the same working copy. Different stamps (e.g., for
+     * different authors) will return different editable versions.
+     * <p>
+     * Uses {@link ObservableStamp} instead of immutable StampEntity because the stamp can change
+     * from uncommitted to committed state during the editing lifecycle.
+     * <p>
+     * The editable version caches all field changes until either:
+     * <ul>
+     *   <li>{@link ObservableEditableVersion#save()} - writes uncommitted version to database</li>
+     *   <li>{@link ObservableEditableVersion#commit()} - commits transaction and writes committed version</li>
+     * </ul>
+     *
+     * @param editStamp the observable stamp to use for this editable version (typically identifies the author)
+     * @return the canonical editable version for this stamp
+     */
+    public abstract ObservableEditableVersion<?, ?> getEditableVersion(ObservableStamp editStamp);
 }

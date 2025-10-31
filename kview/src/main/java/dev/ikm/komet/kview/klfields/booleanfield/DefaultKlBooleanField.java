@@ -20,7 +20,7 @@ public class DefaultKlBooleanField extends BaseDefaultKlField<Boolean> implement
         super(observableBooleanField, observableView, isEditable, klWidget);
         switch (klWidget) {
             case KLBooleanControl klBooleanControl -> {
-                klBooleanControl.valueProperty().bindBidirectional(observableBooleanField.valueProperty());
+                klBooleanControl.valueProperty().bindBidirectional(observableBooleanField.editableValueProperty());
                 klBooleanControl.setTitle(getTitle());
             }
             case KLReadOnlyDataTypeControl klReadOnlyBooleanControl -> {

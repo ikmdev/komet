@@ -109,4 +109,9 @@ public final class ObservableSemanticVersion
             features.add(field);
         }
     }
+
+    @Override
+    public ObservableEditableSemanticVersion getEditableVersion(ObservableStamp editStamp) {
+        return ObservableEditableSemanticVersion.getOrCreate(this, editStamp);
+    }
 }

@@ -513,6 +513,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
 
     /**
      * Updates the versions in the versionProperty list.
+     * This is the ONLY method that should update ObservableVersion data, triggered by EvtBus events.
      * @param newEntity
      */
     private void updateVersions(Entity<? extends EntityVersion> newEntity) {
@@ -525,17 +526,18 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
             for (EntityVersion newVersion: newEntity.versions()) {
                 OV oldVersion = versionPropertyMap.get(newVersion.stampNid());
                 if (oldVersion == null) {
+                    // New version - wrap and add
                     changed.set(true);
                     OV newWrappedVersion = wrap(newVersion);
                     versionPropertyMap.put(newVersion.stampNid(), newWrappedVersion);
-                    versionSetAsList.add(oldVersion);
+                    versionSetAsList.add(newWrappedVersion);
                 } else if (oldVersion.version().time() == Long.MAX_VALUE) {
+                    // Uncommitted version being updated - update in place via setVersionInternal
                     changed.set(true);
-                    int index = versionSetAsList.indexOf(oldVersion);
-                    // TODO: Canonical bug? Swap out the old version record for the new one?
-                    OV newWrappedVersion = wrap(newVersion);
-                    versionPropertyMap.put(newVersion.stampNid(), newWrappedVersion);
-                    versionSetAsList.set(index, newWrappedVersion);
+                    // Safe cast: oldVersion wraps the same version type as newVersion
+                    @SuppressWarnings("unchecked")
+                    var typedOldVersion = (ObservableVersion<EntityVersion>) oldVersion;
+                    typedOldVersion.setVersionInternal(newVersion);
                 } else if (newVersion.time() != oldVersion.version().time()) {
                     if (newVersion.time() == Long.MAX_VALUE ) {
                         changed.set(true);
@@ -551,9 +553,9 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
                         throw new IllegalStateException("Version time mismatch: " + newVersion.time() + " != " + oldVersion.version().time());
                     }
                 }
-                if (changed.get()) {
-                    entityReference.set(newEntity);
-                }
+            }
+            if (changed.get()) {
+                entityReference.set(newEntity);
             }
         }
     }

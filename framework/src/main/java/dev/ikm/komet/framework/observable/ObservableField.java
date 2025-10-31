@@ -34,39 +34,6 @@ import org.eclipse.collections.api.list.MutableList;
 
 public final class ObservableField<DT> extends ObservableFeature<DT> {
 
-
-    /**
-     * Responsible for creating a new an uncommitted semantic version for the versionProperty owned by ObservableVersion.
-     */
-    private InvalidationListener autoSaveChangeListener;
-
-    void setAutoSaveChangeListener(InvalidationListener autoSaveChangeListener) {
-        this.autoSaveChangeListener = autoSaveChangeListener;
-    }
-
-    InvalidationListener getAutoSaveChangeListener() {
-        return this.autoSaveChangeListener;
-    }
-
-    /**
-     * Enables autosave on observable field
-     */
-    public void autoSaveOn() {
-        if (autoSaveChangeListener != null) {
-            valueProperty().removeListener(getAutoSaveChangeListener());
-            valueProperty().addListener(getAutoSaveChangeListener());
-        }
-    }
-
-    /**
-     * Disables autosave on observable field
-     */
-    public void autoSaveOff() {
-        if (autoSaveChangeListener != null) {
-            valueProperty().removeListener(getAutoSaveChangeListener());
-        }
-    }
-
     public ObservableField(FeatureKey featureKey, Field<DT> attribute, ObservableSemanticVersion containingVersion, boolean writeOnEveryChange) {
         super(featureKey, attribute, containingVersion, writeOnEveryChange);
     }
@@ -74,7 +41,5 @@ public final class ObservableField<DT> extends ObservableFeature<DT> {
     public ObservableField(FeatureKey featureKey, Field<DT> attribute, ObservableSemanticVersion containingVersion) {
         this(featureKey, attribute, containingVersion, false);
     }
-
-
 
 }

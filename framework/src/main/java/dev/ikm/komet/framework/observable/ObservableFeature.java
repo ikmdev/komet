@@ -12,10 +12,12 @@ import org.eclipse.collections.api.list.MutableList;
 
 public sealed class ObservableFeature<DT> implements Feature<DT>, Field<DT>
         permits ObservableField {
-    private final SimpleObjectProperty<Field<DT>> fieldProperty = new SimpleObjectProperty<>();
+    private final ReadOnlyObjectWrapper<Field<DT>> fieldProperty = new ReadOnlyObjectWrapper<>();
     public final BooleanProperty refreshProperties = new SimpleBooleanProperty(false);
     private ObservableComponent containingComponent;
-    private SimpleObjectProperty<DT> valueProperty = new SimpleObjectProperty<>();
+    private ReadOnlyObjectWrapper<DT> valueProperty = new ReadOnlyObjectWrapper<>();
+    // Mutable property for UI binding that triggers database writes
+    private SimpleObjectProperty<DT> editableValueProperty = null;
     public final boolean writeOnEveryChange;
     public final FeatureKey featureKey;
     private final ReadOnlyProperty<? extends Feature<DT>> featureProperty = new ReadOnlyObjectWrapper<>(this).getReadOnlyProperty();
@@ -28,12 +30,6 @@ public sealed class ObservableFeature<DT> implements Feature<DT>, Field<DT>
         if (attribute != null) {
             valueProperty.set(attribute.value());
         }
-        valueProperty.addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                handleValueChange(newValue);
-                fieldProperty.set(field().with(newValue));
-            }
-        });
         refreshProperties.addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
                 writeToDatabase(value());
@@ -45,9 +41,17 @@ public sealed class ObservableFeature<DT> implements Feature<DT>, Field<DT>
         this(featureKey, attribute, containingComponent, true);
     }
 
-    private void handleValueChange(Object newValue) {
-        if (writeOnEveryChange && !refreshProperties.get()) {
-            writeToDatabase(newValue);
+    /**
+     * Package-private method to update value internally. Only called from updateVersions() flow.
+     */
+    void setValueInternal(DT newValue) {
+        if (newValue != null) {
+            valueProperty.set(newValue);
+            fieldProperty.set(field().with(newValue));
+            // Also update the editable property if it exists, without triggering the listener
+            if (editableValueProperty != null) {
+                editableValueProperty.set(newValue);
+            }
         }
     }
 
@@ -61,8 +65,28 @@ public sealed class ObservableFeature<DT> implements Feature<DT>, Field<DT>
         return valueProperty.getValue();
     }
 
-    public ObjectProperty<DT> valueProperty() {
-        return valueProperty;
+    public ReadOnlyObjectProperty<DT> valueProperty() {
+        return valueProperty.getReadOnlyProperty();
+    }
+
+    /**
+     * Returns a mutable property for UI binding that triggers database writes when changed.
+     * This property should be used for bidirectional bindings in editable UI controls.
+     * Changes to this property will automatically trigger writeToDatabase() and eventually
+     * update the readonly valueProperty() through the EvtBus event flow.
+     */
+    public ObjectProperty<DT> editableValueProperty() {
+        if (editableValueProperty == null) {
+            editableValueProperty = new SimpleObjectProperty<>(value());
+            editableValueProperty.addListener((observable, oldValue, newValue) -> {
+                if (newValue != null && !newValue.equals(oldValue)) {
+                    if (writeOnEveryChange && !refreshProperties.get()) {
+                        writeToDatabase(newValue);
+                    }
+                }
+            });
+        }
+        return editableValueProperty;
     }
 
     public FieldRecord<DT> field() {
@@ -94,11 +118,14 @@ public sealed class ObservableFeature<DT> implements Feature<DT>, Field<DT>
         return stampCalculator.latestPatternEntityVersion(pattern).get().fieldDefinitions().get(field().indexInPattern());
     }
 
-    public ObjectProperty<Field<DT>> fieldProperty() {
-        return fieldProperty;
+    public ReadOnlyObjectProperty<Field<DT>> fieldProperty() {
+        return fieldProperty.getReadOnlyProperty();
     }
 
-    public void writeToDatabase(Object newValue) {
+    /**
+     * Package-private method to write to database. Only called from updateVersions() flow or explicit triggers.
+     */
+    void writeToDatabase(Object newValue) {
         StampRecord stamp = Entity.getStamp(field().versionStampNid());
         // Get current version
         SemanticVersionRecord version = Entity.getVersionFast(field().nid(), field().versionStampNid());

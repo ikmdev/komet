@@ -19,11 +19,11 @@ public class DefaultKlStringField extends BaseDefaultKlField<String> implements 
         super(observableStringField, observableView, isEditable, node);
         switch (node) {
             case KLStringControl stringControl -> {
-                stringControl.textProperty().bindBidirectional(observableStringField.valueProperty());
+                stringControl.textProperty().bindBidirectional(observableStringField.editableValueProperty());
                 stringControl.setTitle(getTitle());
             }
             case KLReadOnlyDataTypeControl readOnlyStringControl -> {
-                readOnlyStringControl.valueProperty().bindBidirectional(observableStringField.valueProperty());
+                readOnlyStringControl.valueProperty().bind(observableStringField.valueProperty());
                 readOnlyStringControl.setTitle(getTitle());
             }
             default -> throw new IllegalStateException("Unexpected value: " + node);

@@ -201,4 +201,9 @@ public final class ObservablePatternVersion
             features.add(featureDefinition);
         }
     }
+
+    @Override
+    public ObservableEditablePatternVersion getEditableVersion(ObservableStamp editStamp) {
+        return ObservableEditablePatternVersion.getOrCreate(this, editStamp);
+    }
 }
