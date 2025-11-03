@@ -129,6 +129,6 @@
             </VBox>
          </children></FlowPane>
       <Label styleClass="sub-title" text="Saved Custom Views" />
-      <FlowPane prefHeight="200.0" prefWidth="200.0" styleClass="saved-views-container" />
+      <FlowPane fx:id="customViewsContainer" prefHeight="200.0" prefWidth="200.0" styleClass="saved-views-container" />
    </children>
 </VBox>

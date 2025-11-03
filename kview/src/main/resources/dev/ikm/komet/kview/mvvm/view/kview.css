@@ -4066,6 +4066,9 @@ Styling a context menu for kview ui/ux controls
     -fx-shape: "M4.1665 1.66675C2.78579 1.66675 1.6665 2.78604 1.6665 4.16675V15.8334C1.6665 17.2141 2.78579 18.3334 4.1665 18.3334H15.8332C17.2139 18.3334 18.3332 17.2141 18.3332 15.8334V4.16675C18.3332 2.78604 17.2139 1.66675 15.8332 1.66675H4.1665ZM3.33317 4.16675C3.33317 3.70651 3.70627 3.33341 4.1665 3.33341H15.8332C16.2934 3.33341 16.6665 3.70651 16.6665 4.16675V15.8334C16.6665 16.2937 16.2934 16.6667 15.8332 16.6667H4.1665C3.70627 16.6667 3.33317 16.2937 3.33317 15.8334V4.16675Z M9.74463 5.39274C8.40593 5.39274 7.34879 6.44533 7.34879 7.78857C7.34879 8.60503 7.71989 9.32151 8.30295 10.0348C8.88089 10.7419 9.70129 11.4858 10.6573 12.3527L10.6645 12.3593L11.4321 13.0581L12.2003 12.3588L12.2069 12.3528C13.163 11.4859 13.9834 10.7419 14.5613 10.0348C15.1444 9.32151 15.5155 8.60503 15.5155 7.78857C15.5155 6.44533 14.4583 5.39274 13.1196 5.39274C12.4912 5.39274 11.8877 5.63562 11.4321 6.03394C10.9766 5.63562 10.3731 5.39274 9.74463 5.39274ZM8.76546 7.78857C8.76546 7.22267 9.17872 6.80941 9.74463 6.80941C10.1925 6.80941 10.6267 7.10723 10.7728 7.48211L10.8555 7.69441H12.0087L12.0915 7.48211C12.2376 7.10723 12.6717 6.80941 13.1196 6.80941C13.6855 6.80941 14.0988 7.22267 14.0988 7.78857C14.0988 8.20741 13.8708 8.66781 13.367 9.25653C12.9012 9.80085 12.2434 10.4062 11.4304 11.1431C10.6191 10.4062 9.9623 9.80096 9.49688 9.25664C8.99346 8.66787 8.76546 8.20745 8.76546 7.78857Z";
 }
 
+.kview-context-menu .menu-item .icon {
+    -fx-background-color: white;
+}
 
 
 /* Add Concept menu item */
@@ -4481,7 +4484,8 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0 0 10px 0;
 }
 
-.kl-editor-landing-page .create-new-container {
+.kl-editor-landing-page .create-new-container,
+.kl-editor-landing-page .saved-views-container {
     -fx-hgap: 15px;
 }
 
@@ -4563,6 +4567,10 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0 0 10px 20px;
 }
 
+.kl-editor-landing-page .saved-views-container .bottom-container {
+    -fx-padding: 0;
+}
+
 .kl-editor-landing-page .card .plus-without-circle.icon {
     -fx-background-color: #4a7ad2;
     -fx-scale-shape: false;
@@ -4575,6 +4583,17 @@ Styling a context menu for kview ui/ux controls
 .kl-editor-landing-page .card .bottom-container .label {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
+}
+
+.kl-editor-landing-page .card .bottom-container .label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+}
+
+.kl-editor-landing-page .saved-views-container .card .bottom-container .label {
+    -fx-alignment: center;
+
+    -fx-max-width: Infinity;
 }
 
 

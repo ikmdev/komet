@@ -6,7 +6,7 @@ import dev.ikm.tinkar.events.EvtType;
 
 public class CreateKLEditorWindowEvent extends Evt {
 
-    public static final EvtType<CreateJournalEvent> CREATE_KL_EDITOR = new EvtType<>(Evt.ANY, "CREATE");
+    public static final EvtType<CreateJournalEvent> CREATE_KL_WINDOW = new EvtType<>(Evt.ANY, "CREATE");
 
     private PrefX klEditorWindowSettingsObjectMap;
 

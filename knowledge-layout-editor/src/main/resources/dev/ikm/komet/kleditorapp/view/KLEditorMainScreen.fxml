@@ -83,7 +83,7 @@
                          <Button styleClass="dark" text="SAVE AS TEMPLATE" />
                      <Separator orientation="VERTICAL" prefHeight="200.0" />
                          <Button styleClass="dark" text="CANCEL" />
-                         <Button defaultButton="true" text="SAVE" />
+                         <Button defaultButton="true" onAction="#onSave" text="SAVE" />
                      </HBox>
                </top>
                <right>

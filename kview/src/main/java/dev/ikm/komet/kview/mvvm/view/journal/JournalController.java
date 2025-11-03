@@ -34,6 +34,7 @@ import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.KLWorkspace;
+import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.controls.NotificationPopup;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.JournalTileEvent;
@@ -61,6 +62,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.NidTextEnum;
 import dev.ikm.komet.progress.CompletionNodeFactory;
 import dev.ikm.komet.progress.ProgressNodeFactory;
@@ -104,6 +106,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -134,6 +137,7 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -151,6 +155,7 @@ import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.KL_EDITABLE_VIEW;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
@@ -184,6 +189,8 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
 import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.PROGRESS_TOPIC;
@@ -199,6 +206,9 @@ import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
  */
 public class JournalController {
     private static final Logger LOG = LoggerFactory.getLogger(JournalController.class);
+
+    @FXML
+    private SeparatorMenuItem addContextMenuSeparator;
 
     @FXML
     private StackPane trayPaneContainer;
@@ -350,6 +360,8 @@ public class JournalController {
 
     private ObservableViewNoOverride windowView;
 
+    private final HashMap<String, MenuItem> windowTitleToMenuItem = new HashMap<>();
+
     /**
      * Called after JavaFX FXML DI has occurred. Any annotated items above should be valid.
      */
@@ -461,6 +473,26 @@ public class JournalController {
         journalEventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
         toast = new Toast(workspace);
+
+        // New Concept, Pattern... Context Menu
+        initContextMenuWithKLWindows();
+    }
+
+    private void initContextMenuWithKLWindows() {
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+
+        List<String> editorWindows = klEditorAppPreferences.getList(KL_EDITOR_WINDOWS);
+
+        addContextMenuSeparator.setVisible(!editorWindows.isEmpty());
+        for (String windowTitle : editorWindows) {
+            KometIcon icon = KometIcon.create(KL_EDITABLE_VIEW);
+            MenuItem windowMenuItem = new MenuItem(windowTitle, icon);
+            windowTitleToMenuItem.put(windowTitle, windowMenuItem);
+            addContextMenu.getItems().add(windowMenuItem);
+
+            windowTitleToMenuItem.put(windowTitle, windowMenuItem);
+        }
     }
 
     private String formatPromptText(String title) {
