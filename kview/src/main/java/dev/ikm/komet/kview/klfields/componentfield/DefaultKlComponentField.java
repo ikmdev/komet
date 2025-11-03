@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.klfields.componentfield;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLComponentControl;
@@ -17,13 +18,13 @@ import javafx.scene.layout.Region;
 
 public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
 
-    public DefaultKlComponentField(ObservableField<EntityProxy> observableComponentField, ObservableView observableView, boolean isEditable) {
-        Region node = switch (isEditable) {
+    public DefaultKlComponentField(ObservableField<EntityProxy> observableComponentField, ObservableView observableView, ObservableStamp stamp4field) {
+        Region node = switch (stamp4field.lastVersion().uncommitted()) {
             case true -> KLComponentControlFactory.createTypeAheadComponentControl(
                     observableView.calculator());
             case false -> new KLReadOnlyComponentControl();
         };
-        super(observableComponentField, observableView, isEditable, node);
+        super(observableComponentField, observableView, stamp4field, node);
 
         FeatureDefinition fieldDefinition = field().definition(observableView.calculator());
         switch (node) {

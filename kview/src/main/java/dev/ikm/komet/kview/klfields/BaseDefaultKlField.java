@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.klfields;
 
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.tinkar.component.FeatureDefinition;
@@ -16,17 +17,17 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
 
     protected final Region fxObject;
 
-    protected final boolean isEditable;
+    protected final ObservableStamp stamp4field;
 
     protected final Tooltip tooltip = new Tooltip();
 
     private final String title;
 
     public BaseDefaultKlField(ObservableField<T> observableField, ObservableView observableView,
-                              boolean isEditable, Region fxObject) {
+                              ObservableStamp stamp4field, Region fxObject) {
         this.observableField = observableField;
         this.observableView = observableView;
-        this.isEditable = isEditable;
+        this.stamp4field = stamp4field;
         this.fxObject = fxObject;
 
         FeatureDefinition featureDefinition = field().definition(observableView.calculator());

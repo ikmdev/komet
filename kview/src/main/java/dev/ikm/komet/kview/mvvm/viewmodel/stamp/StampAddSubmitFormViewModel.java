@@ -1,18 +1,9 @@
 package dev.ikm.komet.kview.mvvm.viewmodel.stamp;
 
+import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
-import dev.ikm.tinkar.composer.Composer;
-import dev.ikm.tinkar.composer.Session;
-import dev.ikm.tinkar.composer.assembler.ConceptAssembler;
-import dev.ikm.tinkar.composer.assembler.PatternAssemblerConsumer;
-import dev.ikm.tinkar.composer.assembler.SemanticAssemblerConsumer;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternVersionRecord;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.State;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.*;
@@ -27,8 +18,8 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
 
     protected void showSucessToast() {
         State status = getValue(STATUS);
-        EntityFacade module = getValue(MODULE);
-        EntityFacade path = getValue(PATH);
+        ObservableConcept module = StampProperties.MODULE.getFrom(this);
+        ObservableConcept path = StampProperties.PATH.getFrom(this);
 
         String statusString = getViewProperties().calculator().getDescriptionTextOrNid(status.nid());
         String moduleString = getViewProperties().calculator().getDescriptionTextOrNid(module.nid());
@@ -53,60 +44,57 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
             return this;
         }
 
-        // -----------  Get values from the UI form ------------
+        // -----------  Get type-safe canonical observable entities from properties ------------
         State status = getValue(STATUS);
-        EntityFacade module = getValue(MODULE);
-        EntityFacade path = getValue(PATH);
-        EntityFacade author = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
+        ObservableConcept module = StampProperties.MODULE.getFrom(this);
+        ObservableConcept path = StampProperties.PATH.getFrom(this);
+        ObservableConcept author = StampProperties.AUTHOR.getFrom(this);
 
-        // -----------  Save stamp on the Database --------------
-        Composer composer = new Composer("Save new STAMP in Component");
+        // -----------  Create ObservableComposer for STAMP management --------------
+        ObservableComposer composer = ObservableComposer.create(
+                status,
+                author,
+                module,
+                path,
+                "Save new STAMP in Component"
+        );
 
-        Session session = composer.open(status, author.toProxy(), module.toProxy(), path.toProxy());
+        // -----------  Get the observable entity and create editable version using sealed pattern --------------
+        // Get observable entity using ObservableEntityHandle (type-safe)
+        ObservableEntity<?> observableEntity = ObservableEntityHandle.get(entityFacade.nid()).expectEntity();
 
-        switch (type) {
-            case CONCEPT -> {
-                session.compose((ConceptAssembler conceptAssembler) -> {
-                    conceptAssembler.concept(entityFacade.toProxy());
-                });
+        // Use sealed class pattern with switch expression for exhaustive type checking
+        // Compiler guarantees all ObservableEntity subtypes are handled
+        switch (observableEntity) {
+            case ObservableConcept concept -> {
+                // Create editable concept version through ObservableComposer
+                ObservableComposer.ObservableConceptEditor editor = composer.editConcept(concept);
+
+                // Save creates uncommitted version with new stamp coordinates
+                editor.save();
             }
-            // TODO: implement better handing of empty latestEntityVersion
-            case PATTERN -> {
-                Latest<EntityVersion> latestEntityVersion = viewProperties.calculator().latest(entityFacade);
-                EntityVersion entityVersion = latestEntityVersion.get();
-                PatternVersionRecord patternVersionRecord = (PatternVersionRecord) entityVersion;
+            case ObservablePattern pattern -> {
+                // Create editable pattern version through ObservableComposer
+                ObservableComposer.ObservablePatternEditor editor = composer.editPattern(pattern);
 
-                session.compose((PatternAssemblerConsumer) patternAssembler -> { patternAssembler
-                    .pattern(entityFacade.toProxy())
-                    .meaning(patternVersionRecord.semanticMeaning().toProxy())
-                    .purpose(patternVersionRecord.semanticPurpose().toProxy());
-
-                    // Add the field definitions
-                    ((PatternVersionRecord) entityVersion).fieldDefinitions().forEach(fieldDefinitionRecord -> {
-                        ConceptEntity fieldMeaning = fieldDefinitionRecord.meaning();
-                        ConceptEntity fieldPurpose = fieldDefinitionRecord.purpose();
-                        ConceptEntity fieldDataType = fieldDefinitionRecord.dataType();
-                        patternAssembler.fieldDefinition(fieldMeaning.toProxy(), fieldPurpose.toProxy(), fieldDataType.toProxy());
-                    });
-                });
+                // Save creates uncommitted version with new stamp coordinates
+                editor.save();
             }
-            case SEMANTIC -> {
-                Latest<EntityVersion> latestEntityVersion = viewProperties.calculator().latest(entityFacade);
-                EntityVersion entityVersion = latestEntityVersion.get();
-                SemanticVersionRecord semanticVersionRecord = (SemanticVersionRecord) entityVersion;
+            case ObservableSemantic semantic -> {
+                // Create editable semantic version through ObservableComposer
+                ObservableComposer.ObservableSemanticEditor editor = composer.editSemantic(semantic);
 
-                session.compose((SemanticAssemblerConsumer)  semanticAssembler -> semanticAssembler
-                        .semantic(entityFacade.toProxy())
-                        .pattern(semanticVersionRecord.pattern().toProxy())
-                        .reference(semanticVersionRecord.referencedComponent().toProxy())
-                        .fieldValues(vals -> vals.withAll(semanticVersionRecord.fieldValues()))
-                );
+                // Save creates uncommitted version with new stamp coordinates
+                editor.save();
             }
-            default -> throw new RuntimeException("Stamp Type " + type + " not supported");
+            case ObservableStamp stamp -> {
+                // Cannot add new STAMP version to STAMP entity - not a valid operation
+                throw new RuntimeException("Cannot add new STAMP version to STAMP entity - STAMP entities do not support versioning");
+            }
         }
 
-        composer.commitSession(session);
-
+        // Commit the transaction to finalize the stamp timestamps
+        composer.commit();
 
         // Load the new STAMP and store the new initial values
         loadStamp();

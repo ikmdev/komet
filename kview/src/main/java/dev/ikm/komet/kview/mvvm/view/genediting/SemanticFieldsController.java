@@ -32,12 +32,11 @@ import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
-import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityBinding;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
@@ -54,7 +53,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -99,7 +97,12 @@ public class SemanticFieldsController {
     @InjectViewModel
     private GenEditingViewModel genEditingViewModel;
 
-    private List<ObservableField<?>> observableFields = new ArrayList<>();
+    // ObservableComposer integration for proper transaction management
+    private ObservableComposer composer;
+    private ObservableComposer.ObservableSemanticEditor semanticEditor;
+    private ObservableEditableSemanticVersion editableVersion;
+    private List<ObservableEditableField<?>> editableFields = new ArrayList<>();
+    private ObservableStamp currentEditStamp;
 
     private List<Node> nodes = new ArrayList<>();
 
@@ -113,9 +116,20 @@ public class SemanticFieldsController {
 
     private boolean reloadPatternNavigator;
 
+    /**
+     * Helper method to get ObservableFields from EditableFields for compatibility.
+     */
+    private List<ObservableField<?>> getObservableFields() {
+        List<ObservableField<?>> observableFields = new ArrayList<>();
+        for (ObservableEditableField<?> editableField : editableFields) {
+            observableFields.add(editableField.getObservableFeature());
+        }
+        return observableFields;
+    }
+
     private void enableDisableButtons() {
         boolean emptyFields = checkForEmptyFields();
-        int uncommittedHash = calculateHashValue(observableFields, getStampCalculator());
+        int uncommittedHash = calculateHashValue(getObservableFields(), getStampCalculator());
         boolean fieldsHaveNotChanged = committedHash == uncommittedHash;
 
         submitButton.setDisable(emptyFields || fieldsHaveNotChanged);
@@ -129,13 +143,37 @@ public class SemanticFieldsController {
     }
 
     /**
+     * Initialize ObservableComposer with STAMP coordinates from ViewProperties.
+     */
+    private void initializeComposer() {
+        if (composer != null) {
+            return; // Already initialized
+        }
+
+        ConceptFacade author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+        ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
+        ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
+
+        composer = ObservableComposer.create(
+            State.ACTIVE,
+            author,
+            module,
+            path,
+            "Edit Semantic Fields"
+        );
+
+        LOG.info("ObservableComposer initialized for semantic fields editing");
+    }
+
+    /**
      * This method checks for empty/blank/null fields
      * @return invalid
      */
     private boolean checkForEmptyFields() {
         AtomicBoolean invalid = new AtomicBoolean(false);
 
-        for (ObservableField<?> observableField : observableFields) {
+        for (ObservableEditableField<?> editableField : editableFields) {
+            ObservableField<?> observableField = editableField.getObservableFeature();
             FeatureDefinition fieldDefinition = observableField.definition(getStampCalculator());
             if (fieldDefinition.dataTypeNid() == IMAGE_FIELD.nid()) {
                 invalid.set(observableField.valueProperty().get() == null || (((byte[]) observableField.valueProperty().get()).length == 0));
@@ -162,8 +200,7 @@ public class SemanticFieldsController {
                 if (observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot) {
                     immutableList.set(observableSemanticSnapshot.getLatestFields().get());
                 }
-                // and if latest version is committed then,
-                // get the latest fields
+                // and if the latest version is committed, then get the latest fields
            } else { //if The latest version is Uncommitted, then retrieve the committed version from historic versions list.
                ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableEntitySnapshot.getHistoricVersions();
                // replace any versions with uncommited stamp
@@ -232,45 +269,11 @@ public class SemanticFieldsController {
                         && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
                     ImmutableList<Object> values = semanticVersionRecord.fieldValues();
                     for (int i = 0; i< values.size(); i++) {
-                        ObservableField observableField = observableFields.get(i);
-                        observableField.autoSaveOff();
-                        observableField.valueProperty().set(values.get(i));
-                        observableField.autoSaveOn();
-                    }
-                }
-                if(reloadPatternNavigator && genEditingViewModel.getPropertyValue(MODE) == CREATE) {
-                    // refresh the pattern navigation
-                    EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
-                            new PatternSavedEvent(this, PatternSavedEvent.PATTERN_CREATION_EVENT));
-                    reloadPatternNavigator = false;
-                }
-                enableDisableButtons();
-            };
-
-            EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
-                    EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
-        }).ifStamp(observableStamp -> {
-            observableEntitySnapshot = observableStamp.getSnapshot(getViewProperties().calculator());
-
-            //Setting author to author for change. This value will be used during auto-save
-            ConceptFacade authorForChanges = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
-            if (observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot) {
-                observableSemanticSnapshot.getLatestVersion().get().setAuthorForChanges(authorForChanges);
-            }
-
-            processCommittedValues();
-            loadUIData(); // And populates Nodes and Observable fields.
-            entityVersionChangeEventSubscriber = evt -> {
-                LOG.info("Version has been updated: " + evt.getEventType());
-                // get payload
-                if (evt.getEntityVersion().nid() == observableEntityHandle.expectEntity().nid()
-                        && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
-                    ImmutableList<Object> values = semanticVersionRecord.fieldValues();
-                    for (int i = 0; i< values.size(); i++) {
-                        ObservableField observableField = observableFields.get(i);
-                        observableField.autoSaveOff();
-                        observableField.valueProperty().set(values.get(i));
-                        observableField.autoSaveOn();
+                        ObservableEditableField<?> editableField = editableFields.get(i);
+                        // Update via editable field's cached property
+                        @SuppressWarnings("unchecked")
+                        ObservableEditableField<Object> uncheckedField = (ObservableEditableField<Object>) editableField;
+                        uncheckedField.setValue(values.get(i));
                     }
                 }
                 if(reloadPatternNavigator && genEditingViewModel.getPropertyValue(MODE) == CREATE) {
@@ -310,26 +313,60 @@ public class SemanticFieldsController {
         });
     }
 
+    /**
+     * Refactored to use ObservableComposer pattern for proper transaction management.
+     */
     private void loadUIData() {
         nodes.clear();
-        // Populate the Semantic Details
-        // Displaying editable controls and populating the observable fields array list.
-        observableFields.clear();
-        if(observableEntitySnapshot != null) {
-            if (observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot) {
-                observableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
-            }
+        editableFields.clear();
+
+        if (observableEntitySnapshot == null) {
+            return;
         }
-        observableFields.forEach(observableField -> {
-            if (genEditingViewModel.getPropertyValue(MODE) == CREATE && observableField.value() instanceof EntityProxy){
-                ((ObservableField<EntityProxy>)observableField).valueProperty().setValue(BLANK_CONCEPT);
+
+        if (!(observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot)) {
+            return;
+        }
+
+        // Get the observable semantic from the handle
+        observableEntityHandle.ifSemantic(observableSemantic -> {
+            // Initialize composer if not already done
+            initializeComposer();
+
+            // Create semantic editor using composer
+            semanticEditor = composer.editSemantic(observableSemantic);
+
+            // Get editable version with cached editing capabilities
+            editableVersion = semanticEditor.getEditableVersion();
+
+            // Get the edit stamp for UI generation
+            currentEditStamp = editableVersion.getEditStamp();
+
+            // Get editable fields from the editable version
+            editableFields.addAll(editableVersion.getEditableFields());
+
+            // Generate UI nodes from editable fields
+            for (ObservableEditableField<?> editableField : editableFields) {
+                if (genEditingViewModel.getPropertyValue(MODE) == CREATE && editableField.getValue() instanceof EntityProxy) {
+                    // Set default blank concept for new semantics
+                    @SuppressWarnings("unchecked")
+                    ObservableEditableField<EntityProxy> proxyField = (ObservableEditableField<EntityProxy>) editableField;
+                    proxyField.setValue(BLANK_CONCEPT);
+                }
+
+                Field<?> field = editableField.field();
+                // Generate node using the underlying ObservableField (read-only view)
+                nodes.add(generateNode(
+                    (FieldRecord<?>) field,
+                    editableField.getObservableFeature(),
+                    getViewProperties(),
+                    currentEditStamp,
+                    genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC)
+                ));
             }
-            // disable calling writeToData method of observable field by setting refresh flag to true.
-            FieldRecord<?> fieldRecord = observableField.field();
-            nodes.add(generateNode(fieldRecord, observableField, getViewProperties(), true, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC)));
-            // Any changes top any observable field should re-enable the clear or reset button
-            observableField.autoSaveOn();
-          });
+
+            LOG.info("Loaded UI with {} editable fields using ObservableComposer", editableFields.size());
+        });
 
         //Set the hascode for the committed values.
         enableDisableButtons();
@@ -397,12 +434,15 @@ public class SemanticFieldsController {
                 };
                 ImmutableList<Object> fieldValues = createDefaultFieldValues(patternForEntity, getViewProperties());
                 for (int i = 0; i < fieldValues.size(); i++) {
-                    ObservableField observableField = observableFields.get(i);
-                    observableField.valueProperty().setValue(fieldValues.get(i));
+                    ObservableEditableField<?> editableField = editableFields.get(i);
+                    // Use setValue() to update via editable field
+                    @SuppressWarnings("unchecked")
+                    ObservableEditableField<Object> uncheckedField = (ObservableEditableField<Object>) editableField;
+                    uncheckedField.setValue(fieldValues.get(i));
                 }
             });
         } else {
-            observableFields.clear();
+            editableFields.clear();
         }
     }
 
@@ -414,71 +454,88 @@ public class SemanticFieldsController {
         if (entityVersion instanceof SemanticEntityVersion semanticEntityVersion) {
             for(int i = 0; i < semanticEntityVersion.fieldValues().size(); i++){
                 Object object = semanticEntityVersion.fieldValues().get(i);
-                ObservableField observableField = observableFields.get(i);
-                observableField.valueProperty().setValue(object);
+                ObservableEditableField<?> editableField = editableFields.get(i);
+                // Use setValue() to update via editable field
+                @SuppressWarnings("unchecked")
+                ObservableEditableField<Object> uncheckedField = (ObservableEditableField<Object>) editableField;
+                uncheckedField.setValue(object);
             }
         }
     }
 
+    /**
+     * Refactored submit using ObservableComposer pattern.
+     * Saves editable version and commits the transaction.
+     */
     @FXML
     public void submit(ActionEvent actionEvent) {
-       cancelButton.requestFocus();
+        cancelButton.requestFocus();
 
-       //create new list for passing to the event.
-       List<Object> list = new ArrayList<>(observableFields.size());
-       observableFields.forEach(observableField -> list.add(observableField.value()));
+        try {
+            // Create list of current values for event publishing
+            List<Object> list = new ArrayList<>(editableFields.size());
+            for (ObservableEditableField<?> editableField : editableFields) {
+                list.add(editableField.getValue());
+            }
 
-       //Get the semantic need to pass along with event for loading values across Opened Semantics.
-       EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+            // Get the semantic for event publishing
+            EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
 
-       Latest<SemanticEntityVersion> semanticEntityVersionLatest = getViewProperties().calculator().stampCalculator().latest(semantic.nid());
-       semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-           StampRecord stamp = Entity.getStamp(semanticEntityVersion.stampNid());
-           SemanticVersionRecord version = Entity.getVersionFast(semantic.nid(), stamp.nid());
-           Transaction.forVersion(version).ifPresentOrElse(transaction -> {
-               //                       EntityService.get().endLoadPhase();
-               createSemanticVersionTransactionTask(transaction, () -> {
-                   // This runs after the first transaction parameter runs
-                   Platform.runLater(() -> {
-                       //update the observableSemantic version and observableSemanticSnapShot
-                       observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
-                       if (observableEntityHandle.isPresent()) {
-                           observableEntitySnapshot = observableEntityHandle.expectEntity().getSnapshot(getViewProperties().calculator());
-                       }
-                       processCommittedValues();
-                       enableDisableButtons();
-                       // EventBus implementation changes to refresh the details area if commit successful
-                       EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                               new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid()));
-//                       EntityService.get().beginLoadPhase();
+            // Save editable version (creates uncommitted version)
+            semanticEditor.save();
+            LOG.info("Saved editable semantic version");
 
-                       String submitMessage = "Semantic Details %s Successfully!".formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Editing" : "Added");
-                       toast()
-                               .withUndoAction(undoActionEvent ->
-                                       LOG.info("undo called")
-                               )
-                               .show(
-                                       Toast.Status.SUCCESS,
-                                       submitMessage
-                               );
-                   });
-               });
-           }, () -> {
-               //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
-               LOG.error("Unable to commit: Transaction for the given version does not exist.");
-               Alert alert = new Alert(Alert.AlertType.ERROR, "Transaction for current changes does not exist.", ButtonType.OK);
-               alert.setHeaderText("Unable to Commit transaction.");
-               alert.showAndWait();
-           });
-       });
-    }
+            // Commit the transaction asynchronously
+            TinkExecutor.threadPool().submit(() -> {
+                try {
+                    composer.commit();
+                    LOG.info("Committed semantic changes successfully");
 
-    private Future<Void> createSemanticVersionTransactionTask(Transaction transaction, Runnable runAfterTransactionCompletes) {
-        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        return TinkExecutor.threadPool().submit(() -> {
-            commitTransactionTask.call();
-            runAfterTransactionCompletes.run();
-            return null;
-        });
+                    // Update UI on JavaFX thread
+                    Platform.runLater(() -> {
+                        // Refresh observable handles and snapshots
+                        observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
+                        if (observableEntityHandle.isPresent()) {
+                            observableEntitySnapshot = observableEntityHandle.expectEntity()
+                                    .getSnapshot(getViewProperties().calculator());
+                        }
+
+                        // Recalculate committed hash for dirty tracking
+                        processCommittedValues();
+                        enableDisableButtons();
+
+                        // Publish event to refresh details area
+                        EvtBusFactory.getDefaultEvtBus().publish(
+                                genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid())
+                        );
+
+                        // Show success message
+                        String submitMessage = "Semantic Details %s Successfully!"
+                                .formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Editing" : "Added");
+                        toast()
+                                .withUndoAction(undoActionEvent -> LOG.info("undo called"))
+                                .show(Toast.Status.SUCCESS, submitMessage);
+                    });
+                } catch (Exception e) {
+                    LOG.error("Error committing semantic changes", e);
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.ERROR,
+                                "Failed to commit changes: " + e.getMessage(),
+                                ButtonType.OK);
+                        alert.setHeaderText("Commit Failed");
+                        alert.showAndWait();
+                    });
+                }
+            });
+
+        } catch (Exception e) {
+            LOG.error("Error during submit", e);
+            Alert alert = new Alert(Alert.AlertType.ERROR,
+                    "Failed to save changes: " + e.getMessage(),
+                    ButtonType.OK);
+            alert.setHeaderText("Save Failed");
+            alert.showAndWait();
+        }
     }
 }

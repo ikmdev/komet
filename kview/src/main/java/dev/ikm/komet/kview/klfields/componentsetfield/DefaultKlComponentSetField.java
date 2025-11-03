@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.klfields.componentsetfield;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.layout.version.field.KlComponentSetField;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -35,13 +36,13 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
      * @param isEditable
      * @param journalTopic This is used for the option to summon the concept window in the specific work space.
      */
-    public DefaultKlComponentSetField(ObservableField<IntIdSet> observableComponentSetField, ObservableView observableView, boolean isEditable, UUID journalTopic) {
-        final Region node = switch (isEditable) {
+    public DefaultKlComponentSetField(ObservableField<IntIdSet> observableComponentSetField, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
+        final Region node = switch (stamp4field.lastVersion().uncommitted()) {
             case true -> KLComponentControlFactory
                     .createTypeAheadComponentListControl(observableView.calculator());
             case false -> new KLReadOnlyComponentSetControl();
         };
-        super(observableComponentSetField, observableView, isEditable, node);
+        super(observableComponentSetField, observableView, stamp4field, node);
         switch (node) {
             case KLComponentCollectionControl klComponentCollectionControl -> {
                 klComponentCollectionControl.setTitle(getTitle());

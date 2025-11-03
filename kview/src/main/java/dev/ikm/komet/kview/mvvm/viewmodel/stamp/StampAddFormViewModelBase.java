@@ -83,11 +83,15 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
     protected void loadStampValuesFromDB() {
         StampEntity stampEntity = getPropertyValue(Properties.CURRENT_STAMP);
 
+        // Store canonical observable entities from the start
         setPropertyValue(STATUS, stampEntity.state());
         setPropertyValue(TIME, stampEntity.time());
-        setPropertyValue(AUTHOR, stampEntity.author());
-        setPropertyValue(MODULE, stampEntity.module());
-        setPropertyValue(PATH, stampEntity.path());
+        StampProperties.AUTHOR.setTo(this,
+            dev.ikm.komet.framework.observable.ObservableEntityHandle.get(stampEntity.author()).expectConcept());
+        StampProperties.MODULE.setTo(this,
+            dev.ikm.komet.framework.observable.ObservableEntityHandle.get(stampEntity.module()).expectConcept());
+        StampProperties.PATH.setTo(this,
+            dev.ikm.komet.framework.observable.ObservableEntityHandle.get(stampEntity.path()).expectConcept());
     }
 
     @Override

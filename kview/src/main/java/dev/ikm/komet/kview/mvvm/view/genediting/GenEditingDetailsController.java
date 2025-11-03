@@ -38,21 +38,12 @@ import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityHandle;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.PatternVersionRecord;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.StampEntityVersion;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
@@ -213,7 +204,12 @@ public class GenEditingDetailsController {
     @InjectViewModel
     private GenEditingViewModel genEditingViewModel;
 
+    // ObservableComposer integration for proper transaction management
+    private ObservableComposer composer;
+    private ObservableComposer.ObservableSemanticEditor semanticEditor;
+    private ObservableEditableSemanticVersion editableVersion;
     private List<ObservableEditableField<?>> editableFields = new ArrayList<>();
+    private ObservableStamp currentEditStamp;
 
     private final List<Node> nodes = new ArrayList<>();
 
@@ -430,16 +426,15 @@ public class GenEditingDetailsController {
                     updateUIStamp(stampFormViewModelBase);
                 }
 
-                // Update read-only field values
+                // Update editable field values using ObservableEditableFields
                 for (int i = 0; i < evt.getList().size(); i++) {
-                    ObservableEditableField editableField = editableFields.get(i);
+                    ObservableEditableField<?> editableField = editableFields.get(i);
                     Object updatedField = evt.getList().get(i);
                     if (updatedField != null && editableField != null) {
-                        // readonly integer value 1, editable integer value 1 don't update
-                        // readonly integer value 1, editable integer value 5 do update
-                        // readonly IntIdSet value [1,2] editable IntIdSet value [1,2] don't update
-                        // Should we check if the value is different before updating? (blindly updating now).
-                        Runnable setValue = () -> editableField.editableValueProperty().setValue(updatedField);
+                        // Update via editable field's cached property
+                        @SuppressWarnings("unchecked")
+                        ObservableEditableField<Object> uncheckedField = (ObservableEditableField<Object>) editableField;
+                        Runnable setValue = () -> uncheckedField.setValue(updatedField);
                         if (!Platform.isFxApplicationThread()) {
                             Platform.runLater(setValue);
                         } else {
@@ -487,53 +482,93 @@ public class GenEditingDetailsController {
         });
     }
 
-    //TODO revisit and optimize this method.
+    /**
+     * Initialize ObservableComposer with STAMP coordinates from ViewProperties.
+     * Creates composer for managing semantic editing transactions.
+     */
+    private void initializeComposer() {
+        if (composer != null) {
+            return; // Already initialized
+        }
+
+        ConceptFacade author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+        ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
+        ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
+
+        composer = ObservableComposer.create(
+            State.ACTIVE,
+            author,
+            module,
+            path,
+            "Edit Semantic Details"
+        );
+
+        LOG.info("ObservableComposer initialized for semantic editing");
+    }
+
+    /**
+     * Refactored to use ObservableComposer pattern for proper transaction management.
+     * Creates ObservableSemanticEditor and gets ObservableEditableFields for UI binding.
+     */
     private void populateSemanticDetails() {
         nodes.clear();
-        if (semanticEntityVersionLatest.isPresent()) {
-            observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-            ImmutableList<ObservableSemanticVersion> observableSemanticVersionImmutableList = observableSemanticSnapshot.getHistoricVersions();
-            if (observableSemanticVersionImmutableList.isEmpty()) {
-                editableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
-            } else {
-                //Cast to mutable list
-                List<ObservableSemanticVersion> observableSemanticVersionList = new ArrayList<>(observableSemanticVersionImmutableList.castToList());
-                //filter list to have only the latest semantic version passed as argument and remove rest of the entries.
-                observableSemanticVersionList.removeIf(p -> !semanticEntityVersionLatest.stampNids().contains(p.stampNid()));
-                if (observableSemanticVersionList.isEmpty()) {
-                    editableFields.addAll((Collection) observableSemanticSnapshot.getLatestFields().get());
-                } else {
-                    ObservableSemanticVersion observableSemanticVersion = observableSemanticVersionList.getFirst();
-                    Latest<PatternEntityVersion> latestPatternEntityVersion = getViewProperties().calculator().latestPatternEntityVersion(observableSemanticVersion.patternNid());
-                    // Populate the Semantic Details
-                    // Displaying editable controls and populating the observable fields array list.
-                    editableFields.addAll((Collection) observableSemanticVersion.fields());
-                }
-            }
-            // function to apply for the components' edit action (a.k.a. right click > Edit)
-            BiFunction<KLReadOnlyBaseControl, Integer, Runnable> editAction = (readOnlyBaseControl, fieldIndex) ->
-                () -> {
-                    // Clear edit mode for all other controls (in case any of them was already in edit mode)
-                    for (Node node : nodes) {
-                        if (node != readOnlyBaseControl) {
-                            KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
-                            klReadOnlyBaseControl.setEditMode(false);
-                        }
-                    }
-                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(readOnlyBaseControl, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
-                    EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new PropertyPanelEvent(readOnlyBaseControl, OPEN_PANEL));
-                };
-            int index = 0;
-            for(ObservableEditableField<?> editableField : editableFields){
-                FieldRecord<?> fieldRecord = (FieldRecord<?>) editableField.field();
-                KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) KlFieldHelper.generateNode(fieldRecord, editableField.getObservableFeature(), getViewProperties(), false, genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
-                nodes.add(klReadOnlyBaseControl);
-                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
-                semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
-            }
+        editableFields.clear();
+
+        if (!semanticEntityVersionLatest.isPresent()) {
+            return;
         }
+
+        // Initialize composer if not already done
+        initializeComposer();
+
+        // Create semantic editor using composer
+        semanticEditor = composer.editSemantic(observableSemantic);
+
+        // Get editable version with cached editing capabilities
+        editableVersion = semanticEditor.getEditableVersion();
+
+        // Get the edit stamp for UI generation
+        currentEditStamp = editableVersion.getEditStamp();
+
+        // Get editable fields from the editable version
+        editableFields.addAll(editableVersion.getEditableFields());
+
+        // Create edit action for field controls
+        BiFunction<KLReadOnlyBaseControl, Integer, Runnable> editAction = (readOnlyBaseControl, fieldIndex) ->
+            () -> {
+                // Clear edit mode for all other controls
+                for (Node node : nodes) {
+                    if (node != readOnlyBaseControl) {
+                        KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
+                        klReadOnlyBaseControl.setEditMode(false);
+                    }
+                }
+                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new PropertyPanelEvent(readOnlyBaseControl, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
+                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new PropertyPanelEvent(readOnlyBaseControl, OPEN_PANEL));
+            };
+
+        // Generate UI nodes from editable fields
+        int index = 0;
+        for(ObservableEditableField<?> editableField : editableFields){
+            Field<?> field = editableField.field();
+
+            // Generate node using the underlying ObservableField (read-only view)
+            KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) KlFieldHelper.generateNode(
+                (FieldRecord<?>) field,
+                editableField.getObservableFeature(), // Use underlying ObservableField for display
+                getViewProperties(),
+                currentEditStamp,
+                genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC)
+            );
+
+            nodes.add(klReadOnlyBaseControl);
+            klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
+            semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
+        }
+
+        LOG.info("Populated semantic details with {} editable fields using ObservableComposer", editableFields.size());
     }
 
     private void updateUIStamp(StampEntityVersion stampEntityVersion){
@@ -662,37 +697,62 @@ public class GenEditingDetailsController {
                 GenEditingEvent.class, refComponentSubscriber);
     }
 
+    /**
+     * Submit semantic with empty fields using ObservableComposer pattern.
+     * This is called when a pattern has no field definitions.
+     */
     private void submitSemanticWithEmptyFields() {
-        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+        try {
+            // Save creates uncommitted version
+            if (semanticEditor != null) {
+                semanticEditor.save();
+            }
 
-        Latest<SemanticEntityVersion> semanticEntityVersionLatest = getViewProperties().calculator().stampCalculator().latest(semantic.nid());
-        semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-            Transaction.forVersion(semanticEntityVersion).ifPresentOrElse(transaction -> {
-                transaction.commit();
-                // EventBus implementation changes to refresh the details area if commit successful
-                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                        new GenEditingEvent(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), PUBLISH, semanticEntityVersion.fieldValues().toList(), semantic.nid()));
-                String submitMessage = "Semantic Details %s Successfully!".formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Editing" : "Added");
-                Platform.runLater(() -> {
-                    observableSemantic = ObservableEntityHandle.getSemanticOrThrow(semantic);
-                    observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-                    toast()
-                            .withUndoAction(undoActionEvent ->
-                                    LOG.info("undo called")
-                            )
-                            .show(
-                                    Toast.Status.SUCCESS,
-                                    submitMessage
-                            );
-                });
-            }, () -> {
-                //TODO this is a temp alert / workaround till we figure how to reload transactions across multiple restarts of app.
-                LOG.error("Unable to commit: Transaction for the given version does not exist.");
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Transaction for current changes does not exist.", ButtonType.OK);
-                alert.setHeaderText("Unable to Commit transaction.");
-                alert.showAndWait();
+            // Commit finalizes the transaction
+            if (composer != null) {
+                composer.commit();
+            }
+
+            // Publish success event
+            EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+            // Get current field values from editable fields
+            List<Object> fieldValues = new ArrayList<>();
+            if (editableVersion != null) {
+                for (ObservableEditableField<?> field : editableFields) {
+                    fieldValues.add(field.getValue());
+                }
+            }
+
+            EvtBusFactory.getDefaultEvtBus().publish(
+                genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                new GenEditingEvent(
+                    genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                    PUBLISH,
+                    fieldValues,
+                    semantic.nid()
+                )
+            );
+
+            String submitMessage = "Semantic Details %s Successfully!".formatted(
+                genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Edited" : "Added"
+            );
+
+            Platform.runLater(() -> {
+                observableSemantic = ObservableEntityHandle.getSemanticOrThrow(semantic);
+                observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+                toast()
+                    .withUndoAction(undoActionEvent -> LOG.info("undo called"))
+                    .show(Toast.Status.SUCCESS, submitMessage);
             });
-        });
+
+            LOG.info("Semantic with empty fields committed successfully using ObservableComposer");
+
+        } catch (Exception e) {
+            LOG.error("Failed to commit semantic with empty fields", e);
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to save: " + e.getMessage(), ButtonType.OK);
+            alert.setHeaderText("Unable to Commit");
+            alert.showAndWait();
+        }
     }
 
     /**

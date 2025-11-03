@@ -2,6 +2,7 @@ package dev.ikm.komet.layout.version.field;
 
 
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 
 /**
@@ -21,17 +22,20 @@ public interface KlFieldFactory<DT> {
 
     /**
      * Creates a new instance of {@link KlField} associated with the provided observable data
-     * and view context. The method uses the {@link ObservableView} to determine how to display the
-     * attribute (compute preferred or fully qualified names for components, and similar),
-     * enabling dynamic updates and integrations according to the factory's specifications.
+     * and view context. This method utilizes the {@link ObservableView} and {@link ObservableStamp}
+     * to define how the {@link KlField} will behave and display dynamic updates
+     * based on the factory's specifications.
      *
-     * @param observableField the observable attribute that holds the data to be represented by the created {@link KlField}.
-     * @param observableView the observable view that defines the context in which the created {@link KlField} operates.
-     * @param editable flag to determine if the UI control is editable
-     * @return a new {@link KlField} instance parameterized with the same type as the provided {@link ObservableField}.
+     * @param observableField the observable attribute that represents the data to be displayed or managed
+     *                        by the created {@link KlField}.
+     * @param observableView the observable view that provides context for how the created
+     *                       {@link KlField} will be integrated and interacted with.
+     * @param editStamp the observable stamp used to handle editing timestamps and changes
+     *                  associated with the state of the {@link KlField}.
+     * @return a new {@link KlField} instance parameterized with the same type as the provided
+     *         {@link ObservableField}.
      */
-    KlField<DT> create(ObservableField<DT> observableField, ObservableView observableView, boolean editable);
-
+    KlField<DT> create(ObservableField<DT> observableField, ObservableView observableView, ObservableStamp editStamp);
     /**
      * Retrieves the class type of the attribute interface produced by the factory.
      * This class type extends {@link KlField} and indicates the specific
