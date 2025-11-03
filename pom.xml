@@ -84,6 +84,8 @@
         <jpro-platform.version>0.5.7</jpro-platform.version>
 
         <!-- TestFX Variables -->
+        <!-- TODO: duplicate for tinkar-starter-? -->
+        <tinkar-starter-data.version>1.1.2</tinkar-starter-data.version>
         <tinkar-starter-data-reasoned.version>1.0.0</tinkar-starter-data-reasoned.version>
         <testfx.version>4.0.18-jpms</testfx.version>
         <openjfx-monocle.version>21.0.2-jpms</openjfx-monocle.version>
@@ -251,6 +253,12 @@
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>entity-provider</artifactId>
                 <version>${tinkar-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>integration</artifactId>
+                <version>${tinkar-core.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>

@@ -25,13 +25,11 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 /**
  * JavaFX-native composer for building and managing observable entities with full UI binding support.
@@ -722,14 +720,87 @@ public final class ObservableComposer {
     }
 
     /**
-     * Builder for creating new concept entities.
+     * Builder for creating NEW concept entities with fluent configuration.
+     * <p>
+     * Use this when you need to create a brand new concept from scratch. The builder provides
+     * a fluent API for configuring the concept before it's saved to the database.
+     *
+     * <h3>When to Use Builder vs Editor</h3>
+     * <ul>
+     *   <li><b>Use Builder</b> - When creating a NEW entity that doesn't exist yet</li>
+     *   <li><b>Use Editor</b> - When modifying an EXISTING entity you already have</li>
+     * </ul>
+     *
+     * <h3>Unified API</h3>
+     * Both Builder and Editor provide the same core methods for consistency:
+     * <ul>
+     *   <li>{@link #getEditableVersion()} - Access editable version for UI binding</li>
+     *   <li>{@link #getObservableConcept()} - Access the observable concept (after save/build)</li>
+     *   <li>{@link #save()} - Save changes as uncommitted</li>
+     *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
+     * </ul>
+     *
+     * <h3>Example Usage</h3>
+     * <pre>{@code
+     * ObservableComposer composer = ObservableComposer.builder()
+     *     .author(TinkarTerm.USER)
+     *     .module(TinkarTerm.PRIMORDIAL_MODULE)
+     *     .path(TinkarTerm.DEVELOPMENT_PATH)
+     *     .build();
+     *
+     * // Create a new concept
+     * ObservableConceptBuilder builder = composer.createConcept();
+     *
+     * // Optional: set custom public ID
+     * builder.publicId(PublicIds.of(myUuid));
+     *
+     * // Save as uncommitted (creates entity in database)
+     * builder.save();
+     *
+     * // Now you can access the concept and its editable version
+     * ObservableConcept concept = builder.getConcept();
+     * ObservableEditableConceptVersion editable = builder.getEditableVersion();
+     *
+     * // Use concept as reference for other entities
+     * ObservableSemanticBuilder semantic =
+     *     composer.createSemantic(TinkarTerm.DESCRIPTION_PATTERN, concept);
+     *
+     * // Commit when ready
+     * composer.commit();
+     * }</pre>
+     *
+     * @see ObservableConceptEditor for editing existing concepts
      */
     public static final class ObservableConceptBuilder extends EntityBuilder<ObservableConcept> {
         private PublicId publicId;
         private ObservableEditableConceptVersion editableVersion;
+        private ObservableConcept observableConcept;
 
         private ObservableConceptBuilder(ObservableComposer composer) {
             super(composer);
+        }
+
+        private void ensureInitialized() {
+            if (observableConcept == null) {
+                // Generate publicId if not provided
+                if (publicId == null) {
+                    publicId = dev.ikm.tinkar.common.id.PublicIds.newRandom();
+                }
+
+                // Create the stamp for the new concept version
+                ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), null);
+
+                // Create a new concept entity with stamp using the builder pattern
+                ObservableConceptBuilder conceptBuilder = composer.createConcept();
+
+                // Wrap it in ObservableConcept
+                observableConcept = conceptBuilder.getObservableConcept();
+
+                // Create the editable version
+                ObservableConceptVersion latestVersion = observableConcept.versions().getLast();
+                editableVersion = latestVersion.getEditableVersion(stamp);
+                composer.trackEditable(editableVersion);
+            }
         }
 
         /**
@@ -744,10 +815,23 @@ public final class ObservableComposer {
          * Returns the editable version for UI binding.
          */
         public ObservableEditableConceptVersion getEditableVersion() {
-            if (editableVersion == null) {
-                throw new IllegalStateException("Must call save() or build() first");
-            }
+            ensureInitialized();
             return editableVersion;
+        }
+
+        /**
+         * Returns the observable concept being built.
+         */
+        public ObservableConcept getObservableConcept() {
+            ensureInitialized();
+            return observableConcept;
+        }
+
+        /**
+         * Checks if the editable version has unsaved changes.
+         */
+        public boolean isDirty() {
+            return editableVersion != null && editableVersion.isDirty();
         }
 
         @Override
@@ -764,19 +848,98 @@ public final class ObservableComposer {
     }
 
     /**
-     * Builder for creating new semantic entities.
+     * Builder for creating NEW semantic entities with fluent field configuration.
+     * <p>
+     * Use this when you need to create a new semantic annotation on an existing entity.
+     * Semantics attach meaning to entities through patterns with typed fields.
+     *
+     * <h3>When to Use Builder vs Editor</h3>
+     * <ul>
+     *   <li><b>Use Builder</b> - When creating a NEW semantic that doesn't exist yet</li>
+     *   <li><b>Use Editor</b> - When modifying an EXISTING semantic you already have</li>
+     * </ul>
+     *
+     * <h3>Unified API</h3>
+     * Both Builder and Editor provide the same core methods for consistency:
+     * <ul>
+     *   <li>{@link #getEditableVersion()} - Access editable version for UI binding</li>
+     *   <li>{@link #getEditableFields()} - Access editable fields for UI binding</li>
+     *   <li>{@link #getSemantic()} - Access the observable semantic (after save/build)</li>
+     *   <li>{@link #save()} - Save changes as uncommitted</li>
+     *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
+     * </ul>
+     *
+     * <h3>Example Usage</h3>
+     * <pre>{@code
+     * // Create a description semantic on a concept
+     * ObservableSemanticBuilder builder = composer.createSemantic(
+     *     TinkarTerm.DESCRIPTION_PATTERN,
+     *     myConcept
+     * );
+     *
+     * // Save to create the semantic entity
+     * builder.save();
+     *
+     * // Access the semantic and set field values
+     * ObservableSemantic semantic = builder.getSemantic();
+     * ObservableList<ObservableEditableField<?>> fields = builder.getEditableFields();
+     *
+     * // Bind fields to UI controls
+     * ((ObservableEditableField<String>) fields.get(0))
+     *     .editableValueProperty()
+     *     .bindBidirectional(textField.textProperty());
+     *
+     * // Or set values programmatically
+     * ((ObservableEditableField<String>) fields.get(0)).setValue("My description");
+     * ((ObservableEditableField<Object>) fields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
+     *
+     * // Check for changes
+     * if (builder.isDirty()) {
+     *     builder.save();
+     * }
+     *
+     * composer.commit();
+     * }</pre>
+     *
+     * @see ObservableSemanticEditor for editing existing semantics
      */
     public static final class ObservableSemanticBuilder extends EntityBuilder<ObservableSemantic> {
-        private final int referencedComponentNid;
-        private final int patternNid;
+        private final ObservableEntity referencedComponent;
+        private final ObservablePattern pattern;
         private PublicId publicId;
         private final List<Object> fieldValues = new ArrayList<>();
         private ObservableEditableSemanticVersion editableVersion;
+        private ObservableSemantic semantic;
 
         private ObservableSemanticBuilder(ObservableComposer composer, int referencedComponentNid, int patternNid) {
             super(composer);
-            this.referencedComponentNid = referencedComponentNid;
-            this.patternNid = patternNid;
+            this.referencedComponent = ObservableEntityHandle.get(referencedComponentNid).expectEntity();
+            this.pattern = ObservableEntityHandle.get(patternNid).expectPattern();
+        }
+
+        private void ensureInitialized() {
+            if (semantic == null) {
+                // Generate publicId if not provided
+                if (publicId == null) {
+                    publicId = dev.ikm.tinkar.common.id.PublicIds.newRandom();
+                }
+
+                // Create the stamp for the new semantic version
+                ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), null);
+
+                // Create a new semantic entity in the transaction
+                ObservableSemanticBuilder semanticBuilder = composer.createSemantic(
+                    referencedComponent, pattern
+                );
+
+                // Wrap it in ObservableSemantic
+                semantic = semanticBuilder.build();
+
+                // Create the editable version
+                ObservableSemanticVersion latestVersion = semantic.versions().getLast();
+                editableVersion = latestVersion.getEditableVersion(stamp);
+                composer.trackEditable(editableVersion);
+            }
         }
 
         /**
@@ -799,23 +962,34 @@ public final class ObservableComposer {
         }
 
         /**
+         * Returns the editable version for UI binding.
+         */
+        public ObservableEditableSemanticVersion getEditableVersion() {
+            ensureInitialized();
+            return editableVersion;
+        }
+
+        /**
          * Returns the editable fields for UI binding.
          */
         public ObservableList<ObservableEditableField<?>> getEditableFields() {
-            if (editableVersion == null) {
-                throw new IllegalStateException("Must call save() or build() first");
-            }
+            ensureInitialized();
             return editableVersion.getEditableFields();
         }
 
         /**
-         * Returns the editable version for UI binding.
+         * Returns the observable semantic being built.
          */
-        public ObservableEditableSemanticVersion getEditableVersion() {
-            if (editableVersion == null) {
-                throw new IllegalStateException("Must call save() or build() first");
-            }
-            return editableVersion;
+        public ObservableSemantic getSemantic() {
+            ensureInitialized();
+            return semantic;
+        }
+
+        /**
+         * Checks if the editable version has unsaved changes.
+         */
+        public boolean isDirty() {
+            return editableVersion != null && editableVersion.isDirty();
         }
 
         @Override
@@ -870,7 +1044,55 @@ public final class ObservableComposer {
     }
 
     /**
-     * Editor for existing concept entities.
+     * Editor for modifying EXISTING concept entities.
+     * <p>
+     * Use this when you need to edit a concept that already exists in the database.
+     * The editor creates a new editable version with the composer's STAMP coordinates,
+     * allowing you to modify the entity while tracking changes.
+     *
+     * <h3>When to Use Editor vs Builder</h3>
+     * <ul>
+     *   <li><b>Use Builder</b> - When creating a NEW entity that doesn't exist yet</li>
+     *   <li><b>Use Editor</b> - When modifying an EXISTING entity you already have</li>
+     * </ul>
+     *
+     * <h3>Unified API</h3>
+     * Both Builder and Editor provide the same core methods for consistency:
+     * <ul>
+     *   <li>{@link #getEditableVersion()} - Access editable version for UI binding</li>
+     *   <li>{@link #getConcept()} - Access the observable concept being edited</li>
+     *   <li>{@link #save()} - Save changes as uncommitted</li>
+     *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
+     * </ul>
+     *
+     * <h3>Example Usage</h3>
+     * <pre>{@code
+     * // Get an existing concept
+     * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(conceptNid);
+     *
+     * // Create composer and start editing
+     * ObservableComposer composer = ObservableComposer.builder()
+     *     .author(TinkarTerm.USER)
+     *     .module(TinkarTerm.PRIMORDIAL_MODULE)
+     *     .path(TinkarTerm.DEVELOPMENT_PATH)
+     *     .build();
+     *
+     * ObservableConceptEditor editor = composer.editConcept(concept);
+     *
+     * // Get the editable version and modify it
+     * ObservableEditableConceptVersion editable = editor.getEditableVersion();
+     * editable.editableStateProperty().set(State.INACTIVE);
+     *
+     * // Check for changes before saving
+     * if (editor.isDirty()) {
+     *     editor.save();
+     * }
+     *
+     * // Commit when ready
+     * composer.commit();
+     * }</pre>
+     *
+     * @see ObservableConceptBuilder for creating new concepts
      */
     public static final class ObservableConceptEditor {
         private final ObservableComposer composer;
@@ -911,10 +1133,72 @@ public final class ObservableComposer {
         public ObservableConcept getConcept() {
             return concept;
         }
+
+        /**
+         * Checks if the editable version has unsaved changes.
+         */
+        public boolean isDirty() {
+            return editableVersion != null && editableVersion.isDirty();
+        }
     }
 
     /**
-     * Editor for existing semantic entities.
+     * Editor for modifying EXISTING semantic entities.
+     * <p>
+     * Use this when you need to edit a semantic that already exists in the database.
+     * The editor creates a new editable version with the composer's STAMP coordinates,
+     * providing access to editable fields for UI binding and modification.
+     *
+     * <h3>When to Use Editor vs Builder</h3>
+     * <ul>
+     *   <li><b>Use Builder</b> - When creating a NEW semantic that doesn't exist yet</li>
+     *   <li><b>Use Editor</b> - When modifying an EXISTING semantic you already have</li>
+     * </ul>
+     *
+     * <h3>Unified API</h3>
+     * Both Builder and Editor provide the same core methods for consistency:
+     * <ul>
+     *   <li>{@link #getEditableVersion()} - Access editable version for UI binding</li>
+     *   <li>{@link #getEditableFields()} - Access editable fields for UI binding</li>
+     *   <li>{@link #getSemantic()} - Access the observable semantic being edited</li>
+     *   <li>{@link #save()} - Save changes as uncommitted</li>
+     *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
+     * </ul>
+     *
+     * <h3>Example Usage</h3>
+     * <pre>{@code
+     * // Get an existing semantic (e.g., a description)
+     * ObservableSemantic semantic = ObservableEntityHandle.getSemanticOrThrow(semanticNid);
+     *
+     * // Create composer and start editing
+     * ObservableComposer composer = ObservableComposer.builder()
+     *     .author(TinkarTerm.USER)
+     *     .module(TinkarTerm.PRIMORDIAL_MODULE)
+     *     .path(TinkarTerm.DEVELOPMENT_PATH)
+     *     .build();
+     *
+     * ObservableSemanticEditor editor = composer.editSemantic(semantic);
+     *
+     * // Get editable fields and modify them
+     * ObservableList<ObservableEditableField<?>> fields = editor.getEditableFields();
+     * ObservableEditableField<String> textField = (ObservableEditableField<String>) fields.get(0);
+     *
+     * // Bind to UI control
+     * myTextField.textProperty().bindBidirectional(textField.editableValueProperty());
+     *
+     * // Or modify directly
+     * textField.setValue("Updated description text");
+     *
+     * // Check for changes and save
+     * if (editor.isDirty()) {
+     *     editor.save();
+     * }
+     *
+     * // Commit the transaction
+     * composer.commit();
+     * }</pre>
+     *
+     * @see ObservableSemanticBuilder for creating new semantics
      */
     public static final class ObservableSemanticEditor {
         private final ObservableComposer composer;
@@ -960,6 +1244,13 @@ public final class ObservableComposer {
          */
         public ObservableSemantic getSemantic() {
             return semantic;
+        }
+
+        /**
+         * Checks if the editable version has unsaved changes.
+         */
+        public boolean isDirty() {
+            return editableVersion != null && editableVersion.isDirty();
         }
     }
 

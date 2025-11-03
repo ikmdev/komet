@@ -142,6 +142,27 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Integration test dependencies -->
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>integration</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>data-ephemeral-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>entity-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${tinkar-core.groupId}</groupId>
+            <artifactId>executor-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -151,6 +172,98 @@
                 <configuration>
                     <doclint>all,-missing</doclint>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>--enable-preview</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration combine.self="override">
+                            <ignoreUnusedRuntime>true</ignoreUnusedRuntime>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-starter-data</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>dev.ikm.data.tinkar</groupId>
+                                    <artifactId>tinkar-starter-data</artifactId>
+                                    <version>${tinkar-starter-data.version}</version>
+                                    <classifier>reasoned-pb</classifier>
+                                    <type>zip</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/data</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/data</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>rename-starter-data</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <move file="${project.build.directory}/data/tinkar-starter-data-${tinkar-starter-data.version}-reasoned-pb.zip"
+                                      tofile="${project.build.directory}/data/tinkar-starter-data-reasoned-pb.zip" />
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <systemPropertyVariables>
+                                <target.data.directory>${project.build.directory}/data</target.data.directory>
+                            </systemPropertyVariables>
+                            <!-- Add JavaFX arguments for headless testing -->
+                            <argLine>
+                                --enable-preview
+                                -Dtestfx.headless=true
+                                --add-opens=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED
+                                --add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
+                                --add-exports=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
+                            </argLine>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
