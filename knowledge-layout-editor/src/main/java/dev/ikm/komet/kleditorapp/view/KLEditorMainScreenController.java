@@ -62,7 +62,7 @@ public class KLEditorMainScreenController {
     private ViewCalculator viewCalculator;
     private ObservableList<Entity<EntityVersion>> patterns;
 
-    public void init(KometPreferences nodePreferences, WindowSettings windowSettings) {
+    public void init(KometPreferences nodePreferences, WindowSettings windowSettings, String windowToLoad) {
         this.nodePreferences = nodePreferences;
         this.windowSettings = windowSettings;
 
@@ -70,6 +70,21 @@ public class KLEditorMainScreenController {
 
         ViewCalculator viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
 
+        initPatternsList(viewCalculator);
+
+        setupWindow(windowToLoad);
+
+        // Init KLEditorWindow
+        klEditorWindowController.init(viewCalculator);
+
+        // Columns ComboBox
+        for (int i = 1 ; i <= 4 ; ++i) {
+            columnsComboBox.getItems().add(i + " column");
+        }
+        columnsComboBox.setValue(columnsComboBox.getItems().getFirst());
+    }
+
+    private void initPatternsList(ViewCalculator viewCalculator) {
         patterns = FXCollections.observableArrayList();
         PrimitiveData.get().forEachPatternNid(patternNid -> {
             Latest<PatternEntityVersion> latestPattern = viewCalculator.latest(patternNid);
@@ -82,22 +97,12 @@ public class KLEditorMainScreenController {
 
         patternBrowserListView.setCellFactory(param -> new PatternBrowserCell(viewCalculator));
         patternBrowserListView.setItems(patterns);
-
-        setupWindow();
-
-        // Init KLEditorWindow
-        klEditorWindowController.init(viewCalculator);
-
-        // Columns ComboBox
-        for (int i = 1 ; i <= 4 ; ++i) {
-            columnsComboBox.getItems().add(i + " column");
-        }
-        columnsComboBox.setValue(columnsComboBox.getItems().getFirst());
     }
 
-    private void setupWindow() {
+    private void setupWindow(String windowTitle) {
         WindowModel windowModel = WindowModel.instance();
 
+        windowModel.setTitle(windowTitle);
         titleTextField.textProperty().bindBidirectional(windowModel.titleProperty());
 
         // sections

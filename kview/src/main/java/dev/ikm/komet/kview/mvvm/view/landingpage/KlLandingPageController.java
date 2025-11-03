@@ -50,17 +50,26 @@ public class KlLandingPageController {
     private void createNewKLEditorWindow(Event event) {
         // publish the event that the new KLEditor Window button was pressed
         final PrefX klWindowSettingsObjectMap = PrefX.create();
-        final UUID klEditorTopic = UUID.randomUUID();
-
+        // final UUID klEditorTopic = UUID.randomUUID();
         eventBus.publish(KL_TOPIC,
-                new CreateKLEditorWindowEvent(event.getSource(), CreateKLEditorWindowEvent.CREATE_KL_WINDOW, klWindowSettingsObjectMap));
+                new CreateKLEditorWindowEvent(event.getSource(), CreateKLEditorWindowEvent.CREATE_KL_WINDOW, klWindowSettingsObjectMap, null));
 
+        // Subscribe to new KL Windows being created
         Subscriber<KLEditorWindowCreatedEvent> windowCreatedSubscriber = evt -> {
             createAndAddCard(evt.getWindowTitle());
         };
         eventBus.subscribe(KL_TOPIC, KLEditorWindowCreatedEvent.class, windowCreatedSubscriber);
 
         LOG.info("KL EDITOR WINDOW LAUNCHED");
+    }
+
+    private void loadKLEditorWindow(Event event, String windowTitle) {
+        // publish the event that the new KLEditor Window button was pressed
+        final PrefX klWindowSettingsObjectMap = PrefX.create();
+        // final UUID klEditorTopic = UUID.randomUUID();
+        eventBus.publish(KL_TOPIC,
+                new CreateKLEditorWindowEvent(event.getSource(), CreateKLEditorWindowEvent.CREATE_KL_WINDOW, klWindowSettingsObjectMap, windowTitle));
+
     }
 
     private void loadPreferencesForKLLandingPage() {
@@ -74,8 +83,8 @@ public class KlLandingPageController {
         }
     }
 
-    private void createAndAddCard(String title) {
-        String titleCapitalized = title.substring(0, 1).toUpperCase() + title.substring(1);
+    private void createAndAddCard(String windowTitle) {
+        String titleCapitalized = windowTitle.substring(0, 1).toUpperCase() + windowTitle.substring(1);
 
         VBox cardMainContainer = new VBox();
         cardMainContainer.getStyleClass().add("card");
@@ -93,6 +102,8 @@ public class KlLandingPageController {
         HBox.setHgrow(titleLabel, Priority.ALWAYS);
 
         cardMainContainer.getChildren().addAll(iconContainer, bottomContainer);
+
+        cardMainContainer.setOnMouseClicked(event -> loadKLEditorWindow(event, windowTitle));
 
         customViewsContainer.getChildren().add(cardMainContainer);
     }

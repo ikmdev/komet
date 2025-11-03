@@ -332,7 +332,7 @@ public class AppPages {
      *
      * @param klWindowSettings if present will give the size and positioning of the journal window
      */
-    void launchKLEditorViewPage(PrefX klWindowSettings, ConceptFacade loggedInUser) {
+    void launchKLEditorViewPage(PrefX klWindowSettings, ConceptFacade loggedInUser, String windowToLoad) {
         Objects.requireNonNull(klWindowSettings, "klWindowSettings cannot be null");
 
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
@@ -354,7 +354,7 @@ public class AppPages {
         }
         KLEditorMainScreenController klEditorMainScreenController = loader.getController();
 
-        klEditorMainScreenController.init(windowPreferences, windowSettings);
+        klEditorMainScreenController.init(windowPreferences, windowSettings, windowToLoad);
 
         Scene sourceScene = new Scene(root, DEFAULT_JOURNAL_WIDTH, DEFAULT_JOURNAL_HEIGHT);
         addStylesheets(sourceScene, KLEDITOR_CSS, KLCORE_CSS, KLEDITOR_WINDOW_CSS, ICONS);
