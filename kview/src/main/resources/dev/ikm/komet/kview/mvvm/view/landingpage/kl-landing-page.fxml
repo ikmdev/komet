@@ -9,126 +9,42 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="800.0" prefWidth="1200.0" styleClass="kl-editor-landing-page" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.landingpage.KlLandingPageController">
-   <children>
-      <HBox styleClass="header-container">
-         <children>
-            <HBox styleClass="title-container" HBox.hgrow="ALWAYS">
-               <children>
-                  <Region prefHeight="200.0" prefWidth="200.0">
-                     <styleClass>
-                        <String fx:value="icon" />
-                        <String fx:value="kl-landing-page-title" />
-                     </styleClass>
-                  </Region>
-                  <Label maxWidth="1.7976931348623157E308" styleClass="title" text="Knowledge Layout Editor" />
-               </children>
-            </HBox>
-            <StackPane styleClass="help-icon-container">
-               <children>
-                  <Label text="?" />
-               </children>
-               <HBox.margin>
-                  <Insets top="10.0" />
-               </HBox.margin>
-            </StackPane>
-         </children>
-      </HBox>
-      <Label styleClass="sub-title" text="Create new ..." />
-      <FlowPane prefHeight="200.0" prefWidth="200.0" styleClass="create-new-container">
-         <children>
-            <VBox prefHeight="200.0" prefWidth="100.0" styleClass="card">
-               <children>
-                  <StackPane styleClass="icon-container">
-                     <children>
+<?import dev.ikm.komet.kview.mvvm.view.landingpage.KLLandingPageCardControl?>
+<VBox prefHeight="800.0" prefWidth="1200.0" styleClass="kl-editor-landing-page" stylesheets="@../kview.css"
+      xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dev.ikm.komet.kview.mvvm.view.landingpage.KlLandingPageController">
+    <children>
+        <HBox styleClass="header-container">
+            <children>
+                <HBox styleClass="title-container" HBox.hgrow="ALWAYS">
+                    <children>
                         <Region prefHeight="200.0" prefWidth="200.0">
-                           <styleClass>
-                              <String fx:value="icon" />
-                              <String fx:value="kl-view-only" />
-                           </styleClass>
+                            <styleClass>
+                                <String fx:value="icon"/>
+                                <String fx:value="kl-landing-page-title"/>
+                            </styleClass>
                         </Region>
-                     </children>
-                  </StackPane>
-                  <HBox styleClass="bottom-container">
-                     <children>
-                        <Region prefHeight="200.0" prefWidth="200.0">
-                           <styleClass>
-                              <String fx:value="icon" />
-                              <String fx:value="plus-without-circle" />
-                           </styleClass>
-                        </Region>
-                        <Label minWidth="-Infinity" text="View Only Layout" />
-                     </children>
-                  </HBox>
-               </children>
-            </VBox>
-            <VBox prefHeight="200.0" prefWidth="100.0" onMousePressed="#mousePressedOnCreateEditableLayout" styleClass="card">
-               <children>
-                  <StackPane styleClass="icon-container">
-                     <children>
-                        <Region prefHeight="200.0" prefWidth="200.0">
-                           <styleClass>
-                              <String fx:value="icon" />
-                              <String fx:value="kl-editable-layout" />
-                           </styleClass>
-                        </Region>
-                     </children>
-                  </StackPane>
-                  <HBox styleClass="bottom-container">
-                     <children>
-                        <Region prefHeight="200.0" prefWidth="200.0">
-                           <styleClass>
-                              <String fx:value="icon" />
-                              <String fx:value="plus-without-circle" />
-                           </styleClass>
-                        </Region>
-                        <Label minWidth="-Infinity" text="Editable Layout" />
-                     </children>
-                  </HBox>
-               </children>
-            </VBox>
-            <VBox prefHeight="200.0" prefWidth="100.0" styleClass="card">
-               <children>
-                  <StackPane styleClass="icon-container">
-                     <children>
-                        <HBox maxHeight="-Infinity" maxWidth="-Infinity" styleClass="action-panel-icon-container">
-                           <children>
-                              <Region>
-                                 <styleClass>
-                                    <String fx:value="icon-1" />
-                                    <String fx:value="icon" />
-                                    <String fx:value="kl-action.panel" />
-                                 </styleClass>
-                                 <HBox.margin>
-                                    <Insets top="8.0" />
-                                 </HBox.margin>
-                              </Region>
-                              <Region prefHeight="200.0" prefWidth="200.0">
-                                 <styleClass>
-                                    <String fx:value="icon" />
-                                    <String fx:value="kl-action-panel" />
-                                    <String fx:value="icon-2" />
-                                 </styleClass>
-                              </Region>
-                           </children>
-                        </HBox>
-                     </children>
-                  </StackPane>
-                  <HBox styleClass="bottom-container">
-                     <children>
-                        <Region prefHeight="200.0" prefWidth="200.0">
-                           <styleClass>
-                              <String fx:value="icon" />
-                              <String fx:value="plus-without-circle" />
-                           </styleClass>
-                        </Region>
-                        <Label minWidth="-Infinity" text="Action Panel" />
-                     </children>
-                  </HBox>
-               </children>
-            </VBox>
-         </children></FlowPane>
-      <Label styleClass="sub-title" text="Saved Custom Views" />
-      <FlowPane fx:id="customViewsContainer" prefHeight="200.0" prefWidth="200.0" styleClass="saved-views-container" />
-   </children>
+                        <Label maxWidth="1.7976931348623157E308" styleClass="title" text="Knowledge Layout Editor"/>
+                    </children>
+                </HBox>
+                <StackPane styleClass="help-icon-container">
+                    <children>
+                        <Label text="?"/>
+                    </children>
+                    <HBox.margin>
+                        <Insets top="10.0"/>
+                    </HBox.margin>
+                </StackPane>
+            </children>
+        </HBox>
+        <Label styleClass="sub-title" text="Create new ..."/>
+        <FlowPane prefHeight="200.0" prefWidth="200.0" styleClass="create-new-container">
+            <KLLandingPageCardControl title="View Only Layout" iconStyleClass="kl-view-only" createDecorations="true"/>
+            <KLLandingPageCardControl onMousePressed="#mousePressedOnCreateEditableLayout" title="Editable Layout"
+                                      iconStyleClass="kl-editable-layout" createDecorations="true"/>
+            <KLLandingPageCardControl title="Action Panel" iconStyleClass="kl-action-panel" createDecorations="true"/>
+        </FlowPane>
+        <Label styleClass="sub-title" text="Saved Custom Views"/>
+        <FlowPane fx:id="customViewsContainer" prefHeight="200.0" prefWidth="200.0" styleClass="saved-views-container"/>
+    </children>
 </VBox>

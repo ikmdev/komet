@@ -4,8 +4,6 @@ import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.tinkar.events.Evt;
 import dev.ikm.tinkar.events.EvtType;
 
-import java.util.Optional;
-
 public class CreateKLEditorWindowEvent extends Evt {
 
     public static final EvtType<CreateJournalEvent> CREATE_KL_WINDOW = new EvtType<>(Evt.ANY, "CREATE");
@@ -24,7 +22,7 @@ public class CreateKLEditorWindowEvent extends Evt {
         return klEditorWindowSettingsObjectMap;
     }
 
-    public Optional<String> getWindowToLoad() {
-        return windowToLoad == null ? Optional.empty() : Optional.of(windowToLoad);
+    public String getWindowToLoad() {
+        return windowToLoad;
     }
 }

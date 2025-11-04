@@ -84,27 +84,10 @@ public class KlLandingPageController {
     }
 
     private void createAndAddCard(String windowTitle) {
-        String titleCapitalized = windowTitle.substring(0, 1).toUpperCase() + windowTitle.substring(1);
+        KLLandingPageCardControl card = new KLLandingPageCardControl();
+        card.setOnMouseClicked(event -> loadKLEditorWindow(event, windowTitle));
+        card.setTitle(windowTitle);
 
-        VBox cardMainContainer = new VBox();
-        cardMainContainer.getStyleClass().add("card");
-
-        StackPane iconContainer = new StackPane();
-        iconContainer.getStyleClass().add("icon-container");
-        Region icon = new Region();
-        icon.getStyleClass().addAll("icon", "kl-editable-layout");
-        iconContainer.getChildren().add(icon);
-
-        HBox bottomContainer = new HBox();
-        bottomContainer.getStyleClass().add("bottom-container");
-        Label titleLabel = new Label(titleCapitalized);
-        bottomContainer.getChildren().add(titleLabel);
-        HBox.setHgrow(titleLabel, Priority.ALWAYS);
-
-        cardMainContainer.getChildren().addAll(iconContainer, bottomContainer);
-
-        cardMainContainer.setOnMouseClicked(event -> loadKLEditorWindow(event, windowTitle));
-
-        customViewsContainer.getChildren().add(cardMainContainer);
+        customViewsContainer.getChildren().add(card);
     }
 }
