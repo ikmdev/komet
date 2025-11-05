@@ -4,6 +4,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kleditorapp.model.SectionModel;
 import dev.ikm.komet.kleditorapp.model.WindowModel;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.KLEditorWindowCreatedOrRemovedEvent;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -24,6 +25,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,9 @@ public class KLEditorMainScreenController {
     private static final Logger LOG = LoggerFactory.getLogger(KLEditorMainScreenController.class);
 
     private final EvtBus eventBus = EvtBusFactory.getDefaultEvtBus();
+
+    @FXML
+    private BorderPane klEditorMainContainer;
 
     @FXML
     private ComboBox<String> columnsComboBox;
@@ -82,6 +87,9 @@ public class KLEditorMainScreenController {
             columnsComboBox.getItems().add(i + " column");
         }
         columnsComboBox.setValue(columnsComboBox.getItems().getFirst());
+
+        // setup Toast Manager
+        KLToastManager toastManager = new KLToastManager(klEditorMainContainer);
     }
 
     private void initPatternsList(ViewCalculator viewCalculator) {
@@ -141,5 +149,7 @@ public class KLEditorMainScreenController {
 
         eventBus.publish(KL_TOPIC,
                 new KLEditorWindowCreatedOrRemovedEvent(actionEvent, KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED, windowTitle));
+
+        KLToastManager.toast().show(Toast.Status.SUCCESS, "Window saved successfully");
     }
 }

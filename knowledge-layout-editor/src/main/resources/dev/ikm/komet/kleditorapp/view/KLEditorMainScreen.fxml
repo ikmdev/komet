@@ -19,7 +19,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kleditorapp.view.KLEditorMainScreenController">
+<BorderPane fx:id="klEditorMainContainer" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kleditorapp.view.KLEditorMainScreenController">
    <center>
       <BorderPane id="root" prefHeight="780.0" prefWidth="1280.0">
           <!-- TOP BAR (purple header) + TOOLBAR (controls under header) -->
