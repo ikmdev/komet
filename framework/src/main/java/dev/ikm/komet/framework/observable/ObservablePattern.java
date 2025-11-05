@@ -33,7 +33,7 @@ public final class ObservablePattern
 
     @Override
     protected ObservablePatternVersion wrap(EntityVersion version) {
-        return new ObservablePatternVersion((PatternVersionRecord) version);
+        return new ObservablePatternVersion(this, (PatternVersionRecord) version);
     }
 
     @Override

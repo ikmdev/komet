@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.integration.TinkarProviderExtension;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -163,6 +164,7 @@ class ObservableComposerTransactionTest {
     void testTransactionCommentWithStaticFactory() {
             String comment = "Test transaction comment";
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -181,6 +183,7 @@ class ObservableComposerTransactionTest {
     void testTransactionCommentWithBuilder() {
             String comment = "Builder transaction comment";
             ObservableComposer composer = ObservableComposer.builder()
+                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -196,6 +199,7 @@ class ObservableComposerTransactionTest {
     @RunOnJavaFXThread
     void testEmptyTransactionComment() {
             ObservableComposer composer = ObservableComposer.builder()
+                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -299,6 +303,7 @@ class ObservableComposerTransactionTest {
      */
     private ObservableComposer createComposer() {
         return ObservableComposer.create(
+                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,

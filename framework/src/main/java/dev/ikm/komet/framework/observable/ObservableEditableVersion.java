@@ -47,7 +47,9 @@ import dev.ikm.tinkar.entity.transaction.Transaction;
  * @param <OV> the observable version type
  * @param <V> the entity version record type
  */
-public abstract sealed class ObservableEditableVersion<OV extends ObservableVersion<V>, V extends EntityVersion>
+public abstract sealed class ObservableEditableVersion<OE extends ObservableEntity<OV>,
+        OV extends ObservableVersion<OE, V>, V extends EntityVersion>
+
         permits ObservableEditableConceptVersion, ObservableEditablePatternVersion,
                 ObservableEditableSemanticVersion, ObservableEditableStampVersion {
 
@@ -72,20 +74,22 @@ public abstract sealed class ObservableEditableVersion<OV extends ObservableVers
      * The cache is thread-safe and lock-free, avoiding the need for synchronized blocks
      * while maintaining the canonical instance guarantee.
      */
-    private static final Cache<EditableVersionKey, ObservableEditableVersion<?, ?>> EDITABLE_VERSION_CACHE =
+    private static final Cache<EditableVersionKey, ObservableEditableVersion<?, ?, ?>> EDITABLE_VERSION_CACHE =
             Caffeine.newBuilder()
                     .weakValues()
                     .build();
 
+    protected final OE observableEntity;
     protected final OV observableVersion;
-    protected final ObservableStamp editStamp;
+    protected final StampEntity editStamp;
     protected V workingVersion;
     protected Transaction transaction;
 
     /**
      * Package-private constructor. Use ObservableVersion.getEditableVersion(stamp) to create instances.
      */
-    ObservableEditableVersion(OV observableVersion, ObservableStamp editStamp) {
+    ObservableEditableVersion(OE observableEntity, OV observableVersion, StampEntity editStamp) {
+        this.observableEntity = observableEntity;
         this.observableVersion = observableVersion;
         this.editStamp = editStamp;
         this.workingVersion = observableVersion.version();
@@ -111,15 +115,16 @@ public abstract sealed class ObservableEditableVersion<OV extends ObservableVers
      * @return the canonical editable version for this version+stamp combination
      */
     @SuppressWarnings("unchecked")
-    static <OV extends ObservableVersion<V>, V extends EntityVersion, OEV extends ObservableEditableVersion<OV, V>>
-    OEV getOrCreate(OV observableVersion, ObservableStamp editStamp, EditableVersionFactory<OV, V, OEV> factory) {
+    static <OE extends ObservableEntity<OV>, OV extends ObservableVersion<OE, V>, V extends EntityVersion, OEV extends ObservableEditableVersion<OE, OV, V>>
+
+    OEV getOrCreate(OE observableEntity, OV observableVersion, StampEntity editStamp, EditableVersionFactory<OE, OV, V, OEV> factory) {
         // Create composite key using the component's nid (not version nid - versions don't have their own nid)
         EditableVersionKey key = new EditableVersionKey(observableVersion.nid(), editStamp.nid());
 
         // Caffeine's get() with mapping function is atomic and thread-safe
         // If the key exists, returns the existing value
         // If the key doesn't exist, calls the mapping function exactly once and caches the result
-        return (OEV) EDITABLE_VERSION_CACHE.get(key, k -> factory.create(observableVersion, editStamp));
+        return (OEV) EDITABLE_VERSION_CACHE.get(key, k -> factory.create(observableEntity, observableVersion, editStamp));
     }
 
     /**
@@ -133,7 +138,7 @@ public abstract sealed class ObservableEditableVersion<OV extends ObservableVers
      * Returns the observable edit stamp for this editable version.
      * The stamp may change from uncommitted to committed during the editing lifecycle.
      */
-    public ObservableStamp getEditStamp() {
+    public StampEntity getEditStamp() {
         return editStamp;
     }
 
@@ -180,7 +185,7 @@ public abstract sealed class ObservableEditableVersion<OV extends ObservableVers
 
         // Save to database - this will trigger update back to observable entity
         V oldVersion = observableVersion.version();
-        observableVersion.getObservableEntity().saveToDB(analogue, newVersion, oldVersion);
+        observableEntity.saveToDB(analogue, newVersion, oldVersion);
 
         // Update working version
         workingVersion = newVersion;
@@ -235,7 +240,8 @@ public abstract sealed class ObservableEditableVersion<OV extends ObservableVers
      * Factory interface for creating editable versions.
      */
     @FunctionalInterface
-    interface EditableVersionFactory<OV extends ObservableVersion<V>, V extends EntityVersion, OEV extends ObservableEditableVersion<OV, V>> {
-        OEV create(OV observableVersion, ObservableStamp editStamp);
+    interface EditableVersionFactory<OE extends ObservableEntity<OV>, OV extends ObservableVersion<OE, V>,
+            V extends EntityVersion, OEV extends ObservableEditableVersion<OE, OV, V>> {
+        OEV create(OE observableEntity, OV observableVersion, StampEntity editStamp);
     }
 }

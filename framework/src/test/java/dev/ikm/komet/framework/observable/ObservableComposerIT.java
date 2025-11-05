@@ -20,6 +20,7 @@ import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
+import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.entity.transaction.Transaction;
@@ -89,6 +90,7 @@ class ObservableComposerIT {
     void testCreateComposerWithLoadedEntities() throws Exception {
         runOnJavaFXThread(() -> {
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -111,6 +113,7 @@ class ObservableComposerIT {
     void testTransactionCreationWithRealEntities() throws Exception {
         runOnJavaFXThread(() -> {
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -133,6 +136,7 @@ class ObservableComposerIT {
     void testTransactionLifecycleWithDatabase() throws Exception {
         runOnJavaFXThread(() -> {
             ObservableComposer composer = ObservableComposer.builder()
+                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -168,6 +172,7 @@ class ObservableComposerIT {
     void testMultipleComposersIndependence() throws Exception {
         runOnJavaFXThread(() -> {
             ObservableComposer composer1 = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -176,6 +181,7 @@ class ObservableComposerIT {
             );
 
             ObservableComposer composer2 = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.INACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -213,6 +219,7 @@ class ObservableComposerIT {
 
             for (State state : states) {
                 ObservableComposer composer = ObservableComposer.create(
+                        Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                         state,
                         TinkarTerm.USER,
                         TinkarTerm.PRIMORDIAL_MODULE,
@@ -234,6 +241,7 @@ class ObservableComposerIT {
     void testPropertyNotificationsWithDatabase() throws Exception {
         runOnJavaFXThread(() -> {
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -273,6 +281,7 @@ class ObservableComposerIT {
 
             for (EntityProxy author : authors) {
                 ObservableComposer composer = ObservableComposer.builder()
+                        .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                         .author(author)
                         .module(TinkarTerm.PRIMORDIAL_MODULE)
                         .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -296,6 +305,7 @@ class ObservableComposerIT {
     void testConcurrentTransactionCreation() throws Exception {
         runOnJavaFXThread(() -> {
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,

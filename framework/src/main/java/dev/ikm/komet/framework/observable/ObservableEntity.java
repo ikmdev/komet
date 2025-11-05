@@ -313,7 +313,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @see ObservableStamp
  * @see Entity
  */
-public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
+public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
         implements Entity<OV>, ObservableComponent
         permits ObservableConcept, ObservablePattern, ObservableSemantic, ObservableStamp {
 
@@ -443,7 +443,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
      * @see ObservableEntityHandle#getPatternSnapshotOrThrow(int, ViewCalculator)
      */
     @Deprecated(since = "Current", forRemoval = true)
-    public static <OE extends ObservableEntity<OV>, OV extends ObservableVersion<EV>, EV extends EntityVersion>
+    public static <OE extends ObservableEntity<OV>, OV extends ObservableVersion<?, EV>, EV extends EntityVersion>
     ObservableEntitySnapshot<OE, OV> getSnapshot(int nid, ViewCalculator calculator) {
         return packagePrivateGetSnapshot(nid, calculator);
     }
@@ -452,7 +452,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
      * Package-private method for internal use by ObservableEntityHandle.
      * External code should use {@link ObservableEntityHandle#getSnapshot(int, ViewCalculator)}.
      */
-    static <OE extends ObservableEntity<OV>, OV extends ObservableVersion<EV>, EV extends EntityVersion>
+    static <OE extends ObservableEntity<OV>, OV extends ObservableVersion<?, EV>, EV extends EntityVersion>
     ObservableEntitySnapshot<OE, OV> packagePrivateGetSnapshot(int nid, ViewCalculator calculator) {
         return packagePrivateGet(Entity.packagePrivateGetFast(nid)).getSnapshot(calculator);
     }
@@ -478,6 +478,18 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
         };
         observableEntity.updateVersions(entity);
         return (OE) observableEntity;
+    }
+    static ObservableStamp packagePrivateGetStamp(StampEntity entity) {
+        return packagePrivateGet((Entity<? extends EntityVersion>) entity);
+    }
+    static ObservableConcept packagePrivateGetConcept(ConceptEntity entity) {
+        return packagePrivateGet((Entity<? extends EntityVersion>) entity);
+    }
+    static ObservablePattern packagePrivateGetPattern(PatternEntity entity) {
+        return packagePrivateGet((Entity<? extends EntityVersion>) entity);
+    }
+    static ObservableSemantic packagePrivateGetSemantic(SemanticEntity entity) {
+        return packagePrivateGet((Entity<? extends EntityVersion>) entity);
     }
 
     /**
@@ -520,7 +532,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
         // Entities are immutable, so if the entity identities are the same, then the versions are also the same.
         // Versions can never be removed, we are append only. Do not have to check for deletions, just additions or
         // updates.
-        if (entityReference.get() != newEntity) {
+        if (entityReference.get() != newEntity || versionSetAsList.size() != newEntity.versions().size()) {
             final AtomicBoolean changed = new AtomicBoolean(false);
             // Find if there is a changed version...
             for (EntityVersion newVersion: newEntity.versions()) {
@@ -536,7 +548,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?>>
                     changed.set(true);
                     // Safe cast: oldVersion wraps the same version type as newVersion
                     @SuppressWarnings("unchecked")
-                    var typedOldVersion = (ObservableVersion<EntityVersion>) oldVersion;
+                    var typedOldVersion = (ObservableVersion<?, EntityVersion>) oldVersion;
                     typedOldVersion.setVersionInternal(newVersion);
                 } else if (newVersion.time() != oldVersion.version().time()) {
                     if (newVersion.time() == Long.MAX_VALUE ) {

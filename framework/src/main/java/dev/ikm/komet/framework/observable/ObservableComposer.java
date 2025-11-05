@@ -15,17 +15,24 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.common.id.Nid;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.component.SemanticVersion;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
+import org.eclipse.collections.api.factory.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,6 +109,48 @@ import java.util.Objects;
  * </tr>
  * </table>
  *
+ * <h2>Simplified Unified API</h2>
+ * <p>
+ * ObservableComposer provides a simplified API through the {@link EntityComposer} interface that
+ * eliminates the need to know whether you're creating or editing an entity. Simply provide a PublicId,
+ * and the framework handles the rest:
+ * <pre>{@code
+ * ObservableComposer composer = ObservableComposer.builder()
+ *     .author(TinkarTerm.USER)
+ *     .module(TinkarTerm.PRIMORDIAL_MODULE)
+ *     .path(TinkarTerm.DEVELOPMENT_PATH)
+ *     .build();
+ *
+ * // Simple unified API - just provide a PublicId
+ * PublicId myConceptId = PublicIds.of(UUID.fromString("..."));
+ * EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+ *     composer.composeConcept(myConceptId);
+ *
+ * // The implementation (builder vs editor) is hidden - you just work with the entity
+ * ObservableEditableConceptVersion editable = conceptComposer.getEditableVersion();
+ * ObservableConcept concept = conceptComposer.getEntity();
+ * editable.editableStateProperty().set(State.ACTIVE);
+ *
+ * // Save and commit
+ * conceptComposer.save();
+ * composer.commit();
+ * }</pre>
+ * <p>
+ * The same pattern works for all entity types:
+ * <ul>
+ *   <li>{@link #composeConcept(PublicId)} - Compose concepts</li>
+ *   <li>{@link #composeSemantic(PublicId, EntityFacade, PatternFacade)} - Compose semantics</li>
+ *   <li>{@link #composePattern(PublicId)} - Compose patterns</li>
+ * </ul>
+ * <p>
+ * <b>Key Benefits:</b>
+ * <ul>
+ *   <li>No need to know if entity exists - framework handles it automatically</li>
+ *   <li>No builder vs editor classes to learn - just use {@link EntityComposer}</li>
+ *   <li>Consistent API across all entity types</li>
+ *   <li>Type-safe with full JavaFX property binding support</li>
+ * </ul>
+ *
  * <h2>Usage Patterns</h2>
  *
  * <h3>Pattern 1: Creating New Entities with UI Binding</h3>
@@ -114,7 +163,7 @@ import java.util.Objects;
  *     .build();
  *
  * // Start building a concept
- * ObservableConceptBuilder conceptBuilder = composer.createConcept();
+ * ObservableConceptBuilder conceptBuilder = composer.createConceptBuilder();
  *
  * // Get the editable version for UI binding
  * ObservableEditableConceptVersion editableVersion = conceptBuilder.getEditableVersion();
@@ -176,7 +225,7 @@ import java.util.Objects;
  *     .build();
  *
  * // Create semantic on a concept
- * ObservableSemanticBuilder semanticBuilder = composer.createSemantic(
+ * ObservableSemanticBuilder semanticBuilder = composer.createSemanticBuilder(
  *     referencedConcept,
  *     patternForDescription
  * );
@@ -231,7 +280,7 @@ import java.util.Objects;
  * );
  *
  * // Create and modify entities...
- * ObservableConceptBuilder builder = composer.createConcept();
+ * ObservableConceptBuilder builder = composer.createConceptBuilder();
  * builder.save(); // hasUncommittedChangesProperty becomes true
  *
  * // User clicks commit button (automatically enabled)
@@ -267,6 +316,9 @@ import java.util.Objects;
  */
 public final class ObservableComposer {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ObservableComposer.class);
+
+    private final StampCalculator stampCalculator;
     private final int authorNid;
     private final int moduleNid;
     private final int pathNid;
@@ -274,7 +326,7 @@ public final class ObservableComposer {
     private final String transactionComment;
 
     private Transaction transaction;
-    private final List<ObservableEditableVersion<?, ?>> trackedEditables = new ArrayList<>();
+    private final List<ObservableEditableVersion<?, ?, ?>> trackedEditables = new ArrayList<>();
 
     private final ReadOnlyObjectWrapper<TransactionState> transactionStateProperty =
             new ReadOnlyObjectWrapper<>(this, "transactionState", TransactionState.NONE);
@@ -297,21 +349,22 @@ public final class ObservableComposer {
     }
 
     /**
-     * Private constructor. Use static factory methods {@link #create(State, EntityFacade, EntityFacade, EntityFacade)}
-     * or {@link #create(State, EntityFacade, EntityFacade, EntityFacade, String)} to create instances.
+     * Initializes a new instance of the ObservableComposer with specific STAMP coordinates and transaction comment.
      *
-     * @param authorNid the author NID
-     * @param moduleNid the module NID
-     * @param pathNid the path NID
-     * @param defaultState the default state for new entities
-     * @param transactionComment optional comment describing the transaction
+     * @param stampCalculator the StampCalculator instance used for calculations; must not be null
+     * @param authorNid the NID of the author; identifies the author for the transaction
+     * @param moduleNid the NID of the module; identifies the module for the transaction
+     * @param pathNid the NID of the path; identifies the path for the transaction
+     * @param defaultState the default state for entities (typically State.ACTIVE); must not be null
+     * @param transactionComment an optional descriptive comment for the transaction
      */
-    private ObservableComposer(int authorNid, int moduleNid, int pathNid, State defaultState, String transactionComment) {
+    private ObservableComposer(StampCalculator stampCalculator, int authorNid, int moduleNid, int pathNid, State defaultState, String transactionComment) {
         requireJavaFXThread();
-        this.authorNid = authorNid;
-        this.moduleNid = moduleNid;
-        this.pathNid = pathNid;
-        this.defaultState = defaultState;
+        this.stampCalculator = Objects.requireNonNull(stampCalculator, "stampCalculator cannot be null");
+        this.authorNid = Nid.validate(authorNid);
+        this.moduleNid = Nid.validate(moduleNid);
+        this.pathNid = Nid.validate(pathNid);
+        this.defaultState = Objects.requireNonNull(defaultState, "defaultState cannot be null");
         this.transactionComment = transactionComment;
     }
 
@@ -328,8 +381,8 @@ public final class ObservableComposer {
      * @return a new ObservableComposer instance
      * @throws NullPointerException if any parameter is null
      */
-    public static ObservableComposer create(State state, EntityFacade author, EntityFacade module, EntityFacade path) {
-        return create(state, author, module, path, "");
+    public static ObservableComposer create(StampCalculator stampCalculator, State state, EntityFacade author, EntityFacade module, EntityFacade path) {
+        return create(stampCalculator, state, author, module, path, "");
     }
 
     /**
@@ -345,8 +398,9 @@ public final class ObservableComposer {
      * @return a new ObservableComposer instance
      * @throws NullPointerException if any parameter except transactionComment is null
      */
-    public static ObservableComposer create(State state, EntityFacade author, EntityFacade module, EntityFacade path, String transactionComment) {
+    public static ObservableComposer create(StampCalculator stampCalculator, State state, EntityFacade author, EntityFacade module, EntityFacade path, String transactionComment) {
         return new ObservableComposer(
+                stampCalculator,
                 author.nid(),
                 module.nid(),
                 path.nid(),
@@ -358,7 +412,7 @@ public final class ObservableComposer {
     /**
      * Creates a new builder for ObservableComposer.
      * <p>
-     * Note: Consider using the static factory methods {@link #create(State, EntityFacade, EntityFacade, EntityFacade)}
+     * Note: Consider using the static factory methods {@link #create(StampCalculator, State, EntityFacade, EntityFacade, EntityFacade)}
      * for a more concise API.
      */
     public static Builder builder() {
@@ -395,73 +449,159 @@ public final class ObservableComposer {
     }
 
     /**
-     * Creates a builder for a new concept entity.
+     * Creates a composer for a new concept entity.
+     * <p>
+     * For a unified API that automatically handles existing entities, use {@link #composeConcept(PublicId)}.
      *
-     * @return a new concept builder
+     * @return a new concept composer
      */
-    public ObservableConceptBuilder createConcept() {
+    private ObservableConceptBuilder createConceptBuilder() {
         requireJavaFXThread();
         ensureTransaction();
         return new ObservableConceptBuilder(this);
     }
 
     /**
-     * Creates a builder for a new semantic entity.
+     * Creates a composer for a new semantic entity.
+     * <p>
+     * For a unified API that automatically handles existing entities, use {@link #composeSemantic(PublicId, EntityFacade, PatternFacade)}.
      *
      * @param referencedComponent the component this semantic references
      * @param pattern the pattern defining the semantic's structure
-     * @return a new semantic builder
+     * @return a new semantic composer
      */
-    public ObservableSemanticBuilder createSemantic(EntityFacade referencedComponent, EntityFacade pattern) {
+    private ObservableSemanticBuilder createSemanticBuilder(EntityFacade referencedComponent, PatternFacade pattern) {
         requireJavaFXThread();
         ensureTransaction();
-        return new ObservableSemanticBuilder(this, referencedComponent.nid(), pattern.nid());
+        return switch (referencedComponent) {
+            case null -> throw new IllegalArgumentException("referencedComponent cannot be null");
+            case ObservableEntity observableEntity -> new ObservableSemanticBuilder(this, observableEntity, pattern.nid());
+            case Entity entity -> new ObservableSemanticBuilder(this, ObservableEntity.packagePrivateGet(entity), pattern.nid());
+            case EntityFacade entityFacade -> new ObservableSemanticBuilder(this, ObservableEntity.packagePrivateGet(entityFacade.nid()), pattern.nid());
+        };
     }
 
     /**
-     * Creates a builder for a new pattern entity.
+     * Creates a composer for a new pattern entity.
+     * <p>
+     * For a unified API that automatically handles existing entities, use {@link #composePattern(PublicId)}.
      *
-     * @return a new pattern builder
+     * @return a new pattern composer
      */
-    public ObservablePatternBuilder createPattern() {
+    private ObservablePatternBuilder createPatternBuilder() {
         requireJavaFXThread();
         ensureTransaction();
         return new ObservablePatternBuilder(this);
     }
 
     /**
-     * Creates an editor for an existing concept.
+     * Creates a unified composer for a concept entity.
+     * <p>
+     * This is the primary API for working with concepts in ObservableComposer. It automatically
+     * determines whether to create a new entity or edit an existing one based on the PublicId.
+     * <p>
+     * <b>Usage:</b>
+     * <pre>{@code
+     * // If entity with publicId exists, it will be edited; otherwise a new one is created
+     * EntityComposer<ObservableEditableConceptVersion, ObservableConcept> composer =
+     *     observableComposer.composeConcept(myPublicId);
      *
-     * @param concept the concept to edit
-     * @return a concept editor
+     * // Work with the entity without knowing if it's new or existing
+     * ObservableEditableConceptVersion editable = composer.getEditableVersion();
+     * editable.editableStateProperty().set(State.ACTIVE);
+     * composer.save();
+     * }</pre>
+     *
+     * @param publicId the PublicId of the concept; if an entity with this ID exists, it will be edited,
+     *                 otherwise a new entity with this ID will be created
+     * @return a unified concept composer
+     * @throws IllegalArgumentException if the PublicId exists but does not correspond to a concept
      */
-    public ObservableConceptEditor editConcept(ObservableConcept concept) {
+    public EntityComposer<ObservableEditableConceptVersion, ObservableConcept> composeConcept(PublicId publicId) {
         requireJavaFXThread();
         ensureTransaction();
+        Objects.requireNonNull(publicId, "publicId cannot be null");
+
+        ObservableEntityHandle entityHandle = ObservableEntityHandle.get(publicId);
+        if (entityHandle.isAbsent()) {
+            return createConceptBuilder().publicId(publicId);
+        }
+        ObservableConcept concept = entityHandle.asConcept()
+                .orElseThrow(() -> new IllegalArgumentException("PublicId does not correspond to a concept"));
+        return editConcept(concept);
+    }
+
+    /**
+     * Internal method to create an editor for an existing concept.
+     */
+    private ObservableConceptEditor editConcept(ObservableConcept concept) {
         return new ObservableConceptEditor(this, concept);
     }
 
     /**
-     * Creates an editor for an existing semantic.
+     * Creates a unified composer for a semantic entity by PublicId.
+     * <p>
+     * This is the primary API for working with semantics in ObservableComposer. It automatically
+     * determines whether to create a new entity or edit an existing one based on the PublicId.
      *
-     * @param semantic the semantic to edit
-     * @return a semantic editor
+     * @param publicId the PublicId of the semantic; if an entity with this ID exists, it will be edited,
+     *                 otherwise a new entity with this ID will be created
+     * @param referencedComponent the component this semantic references (required if creating new)
+     * @param pattern the pattern defining the semantic's structure (required if creating new)
+     * @return a unified semantic composer
+     * @throws IllegalArgumentException if the PublicId exists but does not correspond to a semantic
      */
-    public ObservableSemanticEditor editSemantic(ObservableSemantic semantic) {
+    public EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> composeSemantic(
+            PublicId publicId, EntityFacade referencedComponent, PatternFacade pattern) {
         requireJavaFXThread();
         ensureTransaction();
+        Objects.requireNonNull(publicId, "publicId cannot be null");
+
+        ObservableEntityHandle entityHandle = ObservableEntityHandle.get(publicId);
+        if (entityHandle.isAbsent()) {
+            return createSemanticBuilder(referencedComponent, pattern).publicId(publicId);
+        }
+        ObservableSemantic semantic = entityHandle.asSemantic()
+                .orElseThrow(() -> new IllegalArgumentException("PublicId does not correspond to a semantic"));
+        return editSemantic(semantic);
+    }
+
+    /**
+     * Internal method to create an editor for an existing semantic.
+     */
+    private ObservableSemanticEditor editSemantic(ObservableSemantic semantic) {
         return new ObservableSemanticEditor(this, semantic);
     }
 
     /**
-     * Creates an editor for an existing pattern.
+     * Creates a unified composer for a pattern entity by PublicId.
+     * <p>
+     * This is the primary API for working with patterns in ObservableComposer. It automatically
+     * determines whether to create a new entity or edit an existing one based on the PublicId.
      *
-     * @param pattern the pattern to edit
-     * @return a pattern editor
+     * @param publicId the PublicId of the pattern; if an entity with this ID exists, it will be edited,
+     *                 otherwise a new entity with this ID will be created
+     * @return a unified pattern composer
+     * @throws IllegalArgumentException if the PublicId exists but does not correspond to a pattern
      */
-    public ObservablePatternEditor editPattern(ObservablePattern pattern) {
+    public EntityComposer<ObservableEditablePatternVersion, ObservablePattern> composePattern(PublicId publicId) {
         requireJavaFXThread();
         ensureTransaction();
+        Objects.requireNonNull(publicId, "publicId cannot be null");
+
+        ObservableEntityHandle entityHandle = ObservableEntityHandle.get(publicId);
+        if (entityHandle.isAbsent()) {
+            return createPatternBuilder().publicId(publicId);
+        }
+        ObservablePattern pattern = entityHandle.asPattern()
+                .orElseThrow(() -> new IllegalArgumentException("PublicId does not correspond to a pattern"));
+        return editPattern(pattern);
+    }
+
+    /**
+     * Internal method to create an editor for an existing pattern.
+     */
+    private ObservablePatternEditor editPattern(ObservablePattern pattern) {
         return new ObservablePatternEditor(this, pattern);
     }
 
@@ -477,7 +617,7 @@ public final class ObservableComposer {
         }
 
         // Commit all tracked editable versions first
-        for (ObservableEditableVersion<?, ?> editable : trackedEditables) {
+        for (ObservableEditableVersion<?, ?, ?> editable : trackedEditables) {
             if (editable.isDirty()) {
                 editable.save();
             }
@@ -507,7 +647,7 @@ public final class ObservableComposer {
         }
 
         // Reset all tracked editable versions
-        for (ObservableEditableVersion<?, ?> editable : trackedEditables) {
+        for (ObservableEditableVersion<?, ?, ?> editable : trackedEditables) {
             editable.reset();
         }
 
@@ -541,21 +681,21 @@ public final class ObservableComposer {
     /**
      * Creates or retrieves an observable stamp for the current author/module/path/state.
      */
-    ObservableStamp createStamp(State state, Entity<?> entity) {
-        StampEntity stampEntity = transaction.getStampForEntities(
-                state,
-                authorNid,
-                moduleNid,
-                pathNid,
-                entity
-        );
-        return ObservableEntityHandle.getStampOrThrow(stampEntity.nid());
+    StampEntity createStamp(State state, Entity<?> entity) {
+        StampEntity stampEntity = transaction.getStamp(state,
+                getAuthorNid(),
+                getModuleNid(),
+                getPathNid());
+        if (entity != null) {
+            transaction.addComponent(entity);
+        }
+        return stampEntity;
     }
 
     /**
      * Tracks an editable version for automatic commit/rollback management.
      */
-    void trackEditable(ObservableEditableVersion<?, ?> editable) {
+    void trackEditable(ObservableEditableVersion<?, ?, ?> editable) {
         trackedEditables.add(editable);
         hasUncommittedChangesProperty.set(true);
     }
@@ -615,6 +755,7 @@ public final class ObservableComposer {
      * Builder for ObservableComposer instances.
      */
     public static final class Builder {
+        private StampCalculator stampCalculator;
         private EntityFacade author;
         private EntityFacade module;
         private EntityFacade path;
@@ -622,6 +763,14 @@ public final class ObservableComposer {
         private String transactionComment = "";
 
         private Builder() {}
+
+        /**
+         * Sets the author for all entities created by this composer.
+         */
+        public Builder stampCalculator(StampCalculator stampCalculator) {
+            this.stampCalculator = Objects.requireNonNull(stampCalculator, "StampCalculator cannot be null");
+            return this;
+        }
 
         /**
          * Sets the author for all entities created by this composer.
@@ -673,11 +822,13 @@ public final class ObservableComposer {
          * Builds the ObservableComposer instance.
          */
         public ObservableComposer build() {
+            Objects.requireNonNull(stampCalculator, "stampCalculator must be set");
             Objects.requireNonNull(author, "author must be set");
             Objects.requireNonNull(module, "module must be set");
             Objects.requireNonNull(path, "path must be set");
 
             return new ObservableComposer(
+                    stampCalculator,
                     author.nid(),
                     module.nid(),
                     path.nid(),
@@ -685,6 +836,37 @@ public final class ObservableComposer {
                     transactionComment
             );
         }
+    }
+
+    /**
+     * Unified API for both editing existing entities and building new ones.
+     * <p>
+     * This interface provides a consistent API regardless of whether you're creating
+     * a new entity or modifying an existing one. Users don't need to know the difference.
+     *
+     * @param <V> the type of editable version (e.g., ObservableEditableConceptVersion)
+     * @param <E> the type of observable entity (e.g., ObservableConcept)
+     */
+    public interface EntityComposer<V extends ObservableEditableVersion<?, ?, ?>, E extends ObservableEntity<?>> {
+        /**
+         * Returns the editable version for UI binding.
+         */
+        V getEditableVersion();
+
+        /**
+         * Returns the observable entity being composed (built or edited).
+         */
+        E getEntity();
+
+        /**
+         * Saves changes as uncommitted.
+         */
+        void save();
+
+        /**
+         * Checks if there are unsaved changes.
+         */
+        boolean isDirty();
     }
 
     /**
@@ -749,7 +931,7 @@ public final class ObservableComposer {
      *     .build();
      *
      * // Create a new concept
-     * ObservableConceptBuilder builder = composer.createConcept();
+     * ObservableConceptBuilder builder = composer.createConceptBuilder();
      *
      * // Optional: set custom public ID
      * builder.publicId(PublicIds.of(myUuid));
@@ -763,7 +945,7 @@ public final class ObservableComposer {
      *
      * // Use concept as reference for other entities
      * ObservableSemanticBuilder semantic =
-     *     composer.createSemantic(TinkarTerm.DESCRIPTION_PATTERN, concept);
+     *     composer.createSemanticBuilder(TinkarTerm.DESCRIPTION_PATTERN, concept);
      *
      * // Commit when ready
      * composer.commit();
@@ -771,10 +953,13 @@ public final class ObservableComposer {
      *
      * @see ObservableConceptEditor for editing existing concepts
      */
-    public static final class ObservableConceptBuilder extends EntityBuilder<ObservableConcept> {
+    private static final class ObservableConceptBuilder extends EntityBuilder<ObservableConcept>
+            implements EntityComposer<ObservableEditableConceptVersion, ObservableConcept> {
         private PublicId publicId;
         private ObservableEditableConceptVersion editableVersion;
         private ObservableConcept observableConcept;
+        private ConceptRecord conceptRecord;
+        private StampEntity stampEntity;
 
         private ObservableConceptBuilder(ObservableComposer composer) {
             super(composer);
@@ -782,27 +967,42 @@ public final class ObservableComposer {
 
         private void ensureInitialized() {
             if (observableConcept == null) {
-                // Generate publicId if not provided
+                requireJavaFXThread();
+
+                // Generate PublicId if not provided
                 if (publicId == null) {
-                    publicId = dev.ikm.tinkar.common.id.PublicIds.newRandom();
+                    publicId = PublicIds.newRandom();
                 }
 
-                // Create the stamp for the new concept version
-                ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), null);
+                // Create the stamp first
+                stampEntity = composer.createStamp(state != null ? state : composer.getDefaultState(), null);
 
-                // Create a new concept entity with stamp using the builder pattern
-                ObservableConceptBuilder conceptBuilder = composer.createConcept();
+                // Create empty version list builder
+                RecordListBuilder<ConceptVersionRecord> versionRecords = RecordListBuilder.make();
 
-                // Wrap it in ObservableConcept
-                observableConcept = conceptBuilder.getObservableConcept();
+                // Create the concept record using the new makeNew method (in-memory)
+                this.conceptRecord = ConceptRecord.makeNew(publicId, versionRecords);
 
-                // Create the editable version
-                ObservableConceptVersion latestVersion = observableConcept.versions().getLast();
-                editableVersion = latestVersion.getEditableVersion(stamp);
+                // Add the initial empty version for the current stamp
+                ConceptVersionRecord versionRecord = new ConceptVersionRecord(this.conceptRecord, stampEntity.nid());
+                versionRecords.addAndBuild(versionRecord);
+
+                // Wrap in observable without persisting yet
+                observableConcept = ObservableEntity.packagePrivateGet(this.conceptRecord);
+
+                // Create the editable version for the new stamp-backed version
+                editableVersion = ObservableEditableConceptVersion.getOrCreate(
+                        observableConcept,
+                        observableConcept.versions().getFirst(),
+                        stampEntity
+                );
+
+                // Track for commit/rollback management
+                composer.getTransaction().addComponent(stampEntity);
+                composer.getTransaction().addComponent(observableConcept);
                 composer.trackEditable(editableVersion);
             }
         }
-
         /**
          * Sets the public ID for this concept (optional - will be generated if not provided).
          */
@@ -828,8 +1028,17 @@ public final class ObservableComposer {
         }
 
         /**
+         * Returns the observable entity being composed (implements EntityComposer).
+         */
+        @Override
+        public ObservableConcept getEntity() {
+            return getObservableConcept();
+        }
+
+        /**
          * Checks if the editable version has unsaved changes.
          */
+        @Override
         public boolean isDirty() {
             return editableVersion != null && editableVersion.isDirty();
         }
@@ -842,8 +1051,14 @@ public final class ObservableComposer {
 
         @Override
         public void save() {
-            // Implementation would save as uncommitted
-            throw new UnsupportedOperationException("Implementation pending");
+            ensureInitialized();
+            // Persist the concept record and stage components in the transaction
+            Entity.provider().putEntity(this.conceptRecord);
+            if (editableVersion.isDirty()) {
+                editableVersion.save();
+            }
+            composer.getTransaction().addComponent(stampEntity);
+            composer.getTransaction().addComponent(observableConcept);
         }
     }
 
@@ -864,7 +1079,7 @@ public final class ObservableComposer {
      * <ul>
      *   <li>{@link #getEditableVersion()} - Access editable version for UI binding</li>
      *   <li>{@link #getEditableFields()} - Access editable fields for UI binding</li>
-     *   <li>{@link #getSemantic()} - Access the observable semantic (after save/build)</li>
+     *   <li>{@link #getObservableSemantic()} - Access the observable semantic (after save/build)</li>
      *   <li>{@link #save()} - Save changes as uncommitted</li>
      *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
      * </ul>
@@ -872,7 +1087,7 @@ public final class ObservableComposer {
      * <h3>Example Usage</h3>
      * <pre>{@code
      * // Create a description semantic on a concept
-     * ObservableSemanticBuilder builder = composer.createSemantic(
+     * ObservableSemanticBuilder builder = composer.createSemanticBuilder(
      *     TinkarTerm.DESCRIPTION_PATTERN,
      *     myConcept
      * );
@@ -903,43 +1118,78 @@ public final class ObservableComposer {
      *
      * @see ObservableSemanticEditor for editing existing semantics
      */
-    public static final class ObservableSemanticBuilder extends EntityBuilder<ObservableSemantic> {
-        private final ObservableEntity referencedComponent;
-        private final ObservablePattern pattern;
+    private final class ObservableSemanticBuilder extends EntityBuilder<ObservableSemantic>
+            implements EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> {
+        private final Entity referencedComponent;
+        private final PatternEntity pattern;
         private PublicId publicId;
         private final List<Object> fieldValues = new ArrayList<>();
         private ObservableEditableSemanticVersion editableVersion;
-        private ObservableSemantic semantic;
+        private ObservableSemantic observableSemantic;
+        private SemanticRecord semanticRecord;
+        private StampEntity stampEntity;
 
         private ObservableSemanticBuilder(ObservableComposer composer, int referencedComponentNid, int patternNid) {
             super(composer);
             this.referencedComponent = ObservableEntityHandle.get(referencedComponentNid).expectEntity();
-            this.pattern = ObservableEntityHandle.get(patternNid).expectPattern();
+            this.pattern = EntityHandle.get(patternNid).expectPattern();
+        }
+
+        private ObservableSemanticBuilder(ObservableComposer composer, ObservableEntity referencedComponent, int patternNid) {
+            super(composer);
+            this.referencedComponent = referencedComponent;
+            this.pattern = EntityHandle.get(patternNid).expectPattern();
         }
 
         private void ensureInitialized() {
-            if (semantic == null) {
+            if (observableSemantic == null) {
                 // Generate publicId if not provided
                 if (publicId == null) {
                     publicId = dev.ikm.tinkar.common.id.PublicIds.newRandom();
                 }
 
-                // Create the stamp for the new semantic version
-                ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), null);
+                // Create the stamp first
+                stampEntity = composer.createStamp(state != null ? state : composer.getDefaultState(), null);
 
-                // Create a new semantic entity in the transaction
-                ObservableSemanticBuilder semanticBuilder = composer.createSemantic(
-                    referencedComponent, pattern
-                );
+                // Prepare versions list (in-memory)
+                RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();
 
-                // Wrap it in ObservableSemantic
-                semantic = semanticBuilder.build();
+                // Create a new semantic record in-memory
+                this.semanticRecord = SemanticRecord.makeNew(publicId, pattern.nid(), referencedComponent.nid(), versions);
 
-                // Create the editable version
-                ObservableSemanticVersion latestVersion = semantic.versions().getLast();
-                editableVersion = latestVersion.getEditableVersion(stamp);
+                // Always start with an empty version sized by the pattern (null fields allowed)
+                makeEmptyVersion(this.semanticRecord, stampEntity, versions);
+
+                versions.build();
+
+                // Wrap in Observable without persisting yet
+                observableSemantic = ObservableEntity.packagePrivateGet(this.semanticRecord);
+
+                // Create editable version for current stamp
+                editableVersion = observableSemantic.getVersion(this.stampEntity)
+                        .orElseThrow(() -> new IllegalStateException("New semantic missing version for stamp nid " + this.stampEntity.nid()))
+                        .getEditableVersion(this.stampEntity);
+
+                // Track for commit/rollback management
+                composer.getTransaction().addComponent(this.stampEntity);
+                composer.getTransaction().addComponent(observableSemantic);
                 composer.trackEditable(editableVersion);
             }
+        }
+
+        private void makeEmptyVersion(SemanticRecord semanticRecord, StampEntity stampEntity, RecordListBuilder versions) {
+            Latest<PatternEntityVersion> latestPattern = ObservableComposer.this.stampCalculator.latestPatternEntityVersion(this.pattern);
+            latestPattern.ifPresentOrElse(version -> {
+               int fieldCount = version.fieldDefinitions().size();
+               Object[] fieldValues = new Object[fieldCount];
+               SemanticVersion semanticVersion = new SemanticVersionRecord(semanticRecord, stampEntity.nid(), Lists.immutable.of(fieldValues));
+               versions.add(semanticVersion);
+            }, () -> {
+                String errorString = "Pattern latest version not found: \n" +
+                        this.pattern + " \n\n For coordinate: " + stampCalculator.stampCoordinate() + "\n\n";
+                LOG.error(errorString);
+                throw new IllegalStateException(errorString);
+            });
         }
 
         /**
@@ -980,14 +1230,23 @@ public final class ObservableComposer {
         /**
          * Returns the observable semantic being built.
          */
-        public ObservableSemantic getSemantic() {
+        public ObservableSemantic getObservableSemantic() {
             ensureInitialized();
-            return semantic;
+            return observableSemantic;
+        }
+
+        /**
+         * Returns the observable entity being composed (implements EntityComposer).
+         */
+        @Override
+        public ObservableSemantic getEntity() {
+            return getObservableSemantic();
         }
 
         /**
          * Checks if the editable version has unsaved changes.
          */
+        @Override
         public boolean isDirty() {
             return editableVersion != null && editableVersion.isDirty();
         }
@@ -999,16 +1258,26 @@ public final class ObservableComposer {
 
         @Override
         public void save() {
-            throw new UnsupportedOperationException("Implementation pending");
+            ensureInitialized();
+            // Persist the semantic record; versions may have null fields until authored
+            Entity.provider().putEntity(this.semanticRecord);
+            if (editableVersion.isDirty()) {
+                editableVersion.save();
+            }
+            // Components already added to transaction during initialization
         }
     }
 
     /**
      * Builder for creating new pattern entities.
      */
-    public static final class ObservablePatternBuilder extends EntityBuilder<ObservablePattern> {
+    private final class ObservablePatternBuilder extends EntityBuilder<ObservablePattern>
+            implements EntityComposer<ObservableEditablePatternVersion, ObservablePattern> {
         private PublicId publicId;
-        private ObservableEditablePatternVersion editableVersion;
+        private ObservableEditablePatternVersion editableVersion; // Strong reference to ensure it's not GC'd
+        private ObservablePattern observablePattern; // Strong reference to avoid GC
+        private PatternRecord patternRecord;
+        private StampEntity stampEntity;
 
         private ObservablePatternBuilder(ObservableComposer composer) {
             super(composer);
@@ -1026,10 +1295,93 @@ public final class ObservableComposer {
          * Returns the editable version for UI binding.
          */
         public ObservableEditablePatternVersion getEditableVersion() {
-            if (editableVersion == null) {
-                throw new IllegalStateException("Must call save() or build() first");
-            }
+            ensureInitialized();
             return editableVersion;
+        }
+
+        private void ensureInitialized() {
+            if (observablePattern == null) {
+                // Generate publicId if not provided
+                if (publicId == null) {
+                    publicId = dev.ikm.tinkar.common.id.PublicIds.newRandom();
+                }
+
+                // Create the stamp first (in-memory)
+                stampEntity = composer.createStamp(state != null ? state : composer.getDefaultState(), null);
+
+                // Prepare versions list (in-memory)
+                RecordListBuilder versions = RecordListBuilder.make();
+
+                // Create a Pattern entity in-memory and keep reference
+                this.patternRecord = PatternRecord.makeNew(publicId, versions);
+
+                // Wrap in Observable without persisting yet
+                observablePattern = ObservableEntity.packagePrivateGet(this.patternRecord);
+
+                // Create the editable version
+                if (observablePattern.versions().isEmpty()) {
+                    makeEmptyVersion(patternRecord, stampEntity, versions);
+                } else {
+                    // Is there a version matching the stamp already? If so, we are done.
+                    if (!observablePattern.getVersion(stampEntity.nid()).isPresent()) {
+                        // No match, so we need to create a new one and will populate it with the latest version
+                        ObservableComposer.this.stampCalculator.latestPatternEntityVersion(observablePattern).ifPresentOrElse(version -> {
+                            int definitionCount = version.fieldDefinitions().size();
+                            FieldDefinitionRecord[] definitions = new FieldDefinitionRecord[definitionCount];
+                            for (int i = 0; i < definitionCount; i++) {
+                                definitions[i] = (FieldDefinitionRecord) version.fieldDefinitions().get(i);
+                            }
+                            PatternVersionRecord semanticVersion = new PatternVersionRecord(patternRecord, stampEntity.nid(),
+                                    version.semanticPurposeNid(), version.semanticMeaningNid(), Lists.immutable.of(definitions));
+                            versions.add(semanticVersion);
+                            observablePattern.versions().forEach(v ->
+                                    versions.add(v.getVersionRecord().withChronology(patternRecord)));
+                        }, () -> {
+                            // no latest, so create an empty one.
+                            makeEmptyVersion(patternRecord, stampEntity, versions);
+                            observablePattern.versions().forEach(v ->
+                                    versions.add(v.getVersionRecord().withChronology(patternRecord)));
+                        });
+                    }
+                }
+                // Update the observable pattern
+                observablePattern = ObservableEntity.packagePrivateGet(patternRecord);
+                editableVersion = observablePattern.getVersion(stampEntity).get().getEditableVersion(stampEntity);
+                composer.getTransaction().addComponent(stampEntity);
+                composer.getTransaction().addComponent(observablePattern);
+                composer.trackEditable(editableVersion);
+            }
+        }
+
+        private void makeEmptyVersion(PatternRecord patternRecord, StampEntity stampEntity, RecordListBuilder versions) {
+            PatternVersionRecord patternVersionRecord = new PatternVersionRecord(patternRecord, stampEntity.nid(),
+            TinkarTerm.PURPOSE.nid(), TinkarTerm.MEANING.nid(),
+                    versions);
+            versions.add(patternVersionRecord);
+        }
+
+        /**
+         * Returns the observable pattern being built.
+         */
+        public ObservablePattern getObservablePattern() {
+            ensureInitialized();
+            return observablePattern;
+        }
+
+        /**
+         * Returns the observable entity being composed (implements EntityComposer).
+         */
+        @Override
+        public ObservablePattern getEntity() {
+            return getObservablePattern();
+        }
+
+        /**
+         * Checks if the editable version has unsaved changes.
+         */
+        @Override
+        public boolean isDirty() {
+            return editableVersion != null && editableVersion.isDirty();
         }
 
         @Override
@@ -1039,7 +1391,13 @@ public final class ObservableComposer {
 
         @Override
         public void save() {
-            throw new UnsupportedOperationException("Implementation pending");
+            ensureInitialized();
+            // Persist the pattern record; definitions may be incomplete until authored
+            Entity.provider().putEntity(this.patternRecord);
+            if (editableVersion.isDirty()) {
+                editableVersion.save();
+            }
+            // Components already added to transaction during initialization
         }
     }
 
@@ -1094,7 +1452,8 @@ public final class ObservableComposer {
      *
      * @see ObservableConceptBuilder for creating new concepts
      */
-    public static final class ObservableConceptEditor {
+    private static final class ObservableConceptEditor
+            implements EntityComposer<ObservableEditableConceptVersion, ObservableConcept> {
         private final ObservableComposer composer;
         private final ObservableConcept concept;
         private ObservableEditableConceptVersion editableVersion;
@@ -1110,7 +1469,7 @@ public final class ObservableComposer {
         public ObservableEditableConceptVersion getEditableVersion() {
             if (editableVersion == null) {
                 // Create editable version with composer's stamp
-                ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), concept.entity());
+                StampEntity stamp = composer.createStamp(composer.getDefaultState(), concept.entity());
                 ObservableConceptVersion latestVersion = concept.versions().getLast();
                 editableVersion = latestVersion.getEditableVersion(stamp);
                 composer.trackEditable(editableVersion);
@@ -1121,6 +1480,7 @@ public final class ObservableComposer {
         /**
          * Saves changes as uncommitted.
          */
+        @Override
         public void save() {
             if (editableVersion != null && editableVersion.isDirty()) {
                 editableVersion.save();
@@ -1135,8 +1495,17 @@ public final class ObservableComposer {
         }
 
         /**
+         * Returns the observable entity being composed (implements EntityComposer).
+         */
+        @Override
+        public ObservableConcept getEntity() {
+            return concept;
+        }
+
+        /**
          * Checks if the editable version has unsaved changes.
          */
+        @Override
         public boolean isDirty() {
             return editableVersion != null && editableVersion.isDirty();
         }
@@ -1200,7 +1569,8 @@ public final class ObservableComposer {
      *
      * @see ObservableSemanticBuilder for creating new semantics
      */
-    public static final class ObservableSemanticEditor {
+    private static final class ObservableSemanticEditor
+            implements EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> {
         private final ObservableComposer composer;
         private final ObservableSemantic semantic;
         private ObservableEditableSemanticVersion editableVersion;
@@ -1215,7 +1585,7 @@ public final class ObservableComposer {
          */
         public ObservableEditableSemanticVersion getEditableVersion() {
             if (editableVersion == null) {
-                ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), semantic.entity());
+                StampEntity stamp = composer.createStamp(composer.getDefaultState(), semantic.entity());
                 ObservableSemanticVersion latestVersion = semantic.versions().getLast();
                 editableVersion = latestVersion.getEditableVersion(stamp);
                 composer.trackEditable(editableVersion);
@@ -1233,6 +1603,7 @@ public final class ObservableComposer {
         /**
          * Saves changes as uncommitted.
          */
+        @Override
         public void save() {
             if (editableVersion != null && editableVersion.isDirty()) {
                 editableVersion.save();
@@ -1247,8 +1618,17 @@ public final class ObservableComposer {
         }
 
         /**
+         * Returns the observable entity being composed (implements EntityComposer).
+         */
+        @Override
+        public ObservableSemantic getEntity() {
+            return semantic;
+        }
+
+        /**
          * Checks if the editable version has unsaved changes.
          */
+        @Override
         public boolean isDirty() {
             return editableVersion != null && editableVersion.isDirty();
         }
@@ -1257,7 +1637,8 @@ public final class ObservableComposer {
     /**
      * Editor for existing pattern entities.
      */
-    public static final class ObservablePatternEditor {
+    private static final class ObservablePatternEditor
+            implements EntityComposer<ObservableEditablePatternVersion, ObservablePattern> {
         private final ObservableComposer composer;
         private final ObservablePattern pattern;
         private ObservableEditablePatternVersion editableVersion;
@@ -1272,7 +1653,7 @@ public final class ObservableComposer {
          */
         public ObservableEditablePatternVersion getEditableVersion() {
             if (editableVersion == null) {
-                ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), pattern.entity());
+                StampEntity stamp = composer.createStamp(composer.getDefaultState(), pattern.entity());
                 ObservablePatternVersion latestVersion = pattern.versions().getLast();
                 editableVersion = latestVersion.getEditableVersion(stamp);
                 composer.trackEditable(editableVersion);
@@ -1283,6 +1664,7 @@ public final class ObservableComposer {
         /**
          * Saves changes as uncommitted.
          */
+        @Override
         public void save() {
             if (editableVersion != null && editableVersion.isDirty()) {
                 editableVersion.save();
@@ -1294,6 +1676,22 @@ public final class ObservableComposer {
          */
         public ObservablePattern getPattern() {
             return pattern;
+        }
+
+        /**
+         * Returns the observable entity being composed (implements EntityComposer).
+         */
+        @Override
+        public ObservablePattern getEntity() {
+            return pattern;
+        }
+
+        /**
+         * Checks if the editable version has unsaved changes.
+         */
+        @Override
+        public boolean isDirty() {
+            return editableVersion != null && editableVersion.isDirty();
         }
     }
 }

@@ -99,7 +99,7 @@ public class SemanticFieldsController {
 
     // ObservableComposer integration for proper transaction management
     private ObservableComposer composer;
-    private ObservableComposer.ObservableSemanticEditor semanticEditor;
+    private ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticEditor;
     private ObservableEditableSemanticVersion editableVersion;
     private List<ObservableEditableField<?>> editableFields = new ArrayList<>();
     private ObservableStamp currentEditStamp;
@@ -250,7 +250,8 @@ public class SemanticFieldsController {
 
     private void setupEditSemanticDetails() {
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
-        ObservableEntityHandle.get(semantic.nid()).ifSemantic(observableSemantic -> {
+        this.observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
+        this.observableEntityHandle.ifSemantic(observableSemantic -> {
             observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
 
             //Setting author to author for change. This value will be used during auto-save
@@ -333,8 +334,11 @@ public class SemanticFieldsController {
             // Initialize composer if not already done
             initializeComposer();
 
-            // Create semantic editor using composer
-            semanticEditor = composer.editSemantic(observableSemantic);
+            // Create semantic editor using composer unified API
+            // Get referenced component and pattern from the semantic
+            ObservableEntity referencedComponent = ObservableEntityHandle.get(observableSemantic.referencedComponentNid()).expectEntity();
+            ObservablePattern pattern = ObservableEntityHandle.get(observableSemantic.patternNid()).expectPattern();
+            semanticEditor = composer.composeSemantic(observableSemantic.publicId(), referencedComponent, pattern);
 
             // Get editable version with cached editing capabilities
             editableVersion = semanticEditor.getEditableVersion();
@@ -485,49 +489,41 @@ public class SemanticFieldsController {
             semanticEditor.save();
             LOG.info("Saved editable semantic version");
 
-            // Commit the transaction asynchronously
-            TinkExecutor.threadPool().submit(() -> {
-                try {
-                    composer.commit();
-                    LOG.info("Committed semantic changes successfully");
-
-                    // Update UI on JavaFX thread
-                    Platform.runLater(() -> {
-                        // Refresh observable handles and snapshots
-                        observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
-                        if (observableEntityHandle.isPresent()) {
-                            observableEntitySnapshot = observableEntityHandle.expectEntity()
-                                    .getSnapshot(getViewProperties().calculator());
-                        }
-
-                        // Recalculate committed hash for dirty tracking
-                        processCommittedValues();
-                        enableDisableButtons();
-
-                        // Publish event to refresh details area
-                        EvtBusFactory.getDefaultEvtBus().publish(
-                                genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                                new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid())
-                        );
-
-                        // Show success message
-                        String submitMessage = "Semantic Details %s Successfully!"
-                                .formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Editing" : "Added");
-                        toast()
-                                .withUndoAction(undoActionEvent -> LOG.info("undo called"))
-                                .show(Toast.Status.SUCCESS, submitMessage);
-                    });
-                } catch (Exception e) {
-                    LOG.error("Error committing semantic changes", e);
-                    Platform.runLater(() -> {
-                        Alert alert = new Alert(Alert.AlertType.ERROR,
-                                "Failed to commit changes: " + e.getMessage(),
-                                ButtonType.OK);
-                        alert.setHeaderText("Commit Failed");
-                        alert.showAndWait();
-                    });
+            try {
+                composer.commit();
+                LOG.info("Committed semantic changes successfully");
+                // Refresh observable handles and snapshots
+                observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
+                if (observableEntityHandle.isPresent()) {
+                    observableEntitySnapshot = observableEntityHandle.expectEntity()
+                            .getSnapshot(getViewProperties().calculator());
                 }
-            });
+
+                // Recalculate committed hash for dirty tracking
+                processCommittedValues();
+                enableDisableButtons();
+
+                // Publish event to refresh details area
+                EvtBusFactory.getDefaultEvtBus().publish(
+                        genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                        new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid())
+                );
+
+                // Show success message
+                String submitMessage = "Semantic Details %s Successfully!"
+                        .formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Editing" : "Added");
+                toast().withUndoAction(undoActionEvent -> LOG.info("undo called"))
+                        .show(Toast.Status.SUCCESS, submitMessage);
+            } catch (Exception e) {
+                LOG.error("Error committing semantic changes", e);
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.ERROR,
+                            "Failed to commit changes: " + e.getMessage(),
+                            ButtonType.OK);
+                    alert.setHeaderText("Commit Failed");
+                    alert.showAndWait();
+                });
+            }
 
         } catch (Exception e) {
             LOG.error("Error during submit", e);

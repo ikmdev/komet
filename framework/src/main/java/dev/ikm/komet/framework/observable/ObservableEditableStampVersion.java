@@ -15,9 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.StampRecord;
-import dev.ikm.tinkar.entity.StampVersionRecord;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.SimpleLongProperty;
@@ -30,7 +28,7 @@ import javafx.beans.property.SimpleObjectProperty;
  * that can be bound to GUI components. Changes are cached until save() or commit() is called.
  */
 public final class ObservableEditableStampVersion
-        extends ObservableEditableVersion<ObservableStampVersion, StampVersionRecord> {
+        extends ObservableEditableVersion<ObservableStamp , ObservableStampVersion, StampVersionRecord> {
 
     private final SimpleObjectProperty<State> editableStateProperty;
     private final SimpleLongProperty editableTimeProperty;
@@ -38,8 +36,8 @@ public final class ObservableEditableStampVersion
     private final SimpleObjectProperty<ConceptFacade> editableModuleProperty;
     private final SimpleObjectProperty<ConceptFacade> editablePathProperty;
 
-    ObservableEditableStampVersion(ObservableStampVersion observableVersion, ObservableStamp editStamp) {
-        super(observableVersion, editStamp);
+    ObservableEditableStampVersion(ObservableStamp observableStamp, ObservableStampVersion observableVersion, StampEntity editStamp) {
+        super(observableStamp, observableVersion, editStamp);
 
         // Initialize editable properties
         StampVersionRecord version = observableVersion.version();
@@ -47,11 +45,11 @@ public final class ObservableEditableStampVersion
         this.editableStateProperty = new SimpleObjectProperty<>(this, "state", version.state());
         this.editableTimeProperty = new SimpleLongProperty(this, "time", version.time());
         this.editableAuthorProperty = new SimpleObjectProperty<>(this, "author",
-                Entity.provider().getEntityFast(version.authorNid()));
+                EntityHandle.getConceptOrThrow(version.authorNid()));
         this.editableModuleProperty = new SimpleObjectProperty<>(this, "module",
-                Entity.provider().getEntityFast(version.moduleNid()));
+                EntityHandle.getConceptOrThrow(version.moduleNid()));
         this.editablePathProperty = new SimpleObjectProperty<>(this, "path",
-                Entity.provider().getEntityFast(version.pathNid()));
+                EntityHandle.getConceptOrThrow(version.pathNid()));
 
         // Add listeners to update working version when properties change
         editableStateProperty.addListener((obs, oldValue, newValue) -> {
@@ -93,8 +91,8 @@ public final class ObservableEditableStampVersion
      * @param editStamp the ObservableStamp (typically identifying the author)
      * @return the canonical editable stamp version for this stamp
      */
-    public static ObservableEditableStampVersion getOrCreate(ObservableStampVersion observableVersion, ObservableStamp editStamp) {
-        return ObservableEditableVersion.getOrCreate(observableVersion, editStamp, ObservableEditableStampVersion::new);
+    public static ObservableEditableStampVersion getOrCreate(ObservableStamp observableStamp, ObservableStampVersion observableVersion, StampEntity editStamp) {
+        return ObservableEditableVersion.getOrCreate(observableStamp, observableVersion, editStamp, ObservableEditableStampVersion::new);
     }
 
     /**
@@ -151,8 +149,8 @@ public final class ObservableEditableStampVersion
         StampVersionRecord version = observableVersion.version();
         editableStateProperty.set(version.state());
         editableTimeProperty.set(version.time());
-        editableAuthorProperty.set(Entity.provider().getEntityFast(version.authorNid()));
-        editableModuleProperty.set(Entity.provider().getEntityFast(version.moduleNid()));
-        editablePathProperty.set(Entity.provider().getEntityFast(version.pathNid()));
+        editableAuthorProperty.set(EntityHandle.getConceptOrThrow(version.authorNid()));
+        editableModuleProperty.set(EntityHandle.getConceptOrThrow(version.moduleNid()));
+        editablePathProperty.set(EntityHandle.getConceptOrThrow(version.pathNid()));
     }
 }

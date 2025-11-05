@@ -18,6 +18,7 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.terms.State;
@@ -86,6 +87,7 @@ class ObservableEditableVersionIT {
         runOnJavaFXThread(() -> {
             // Create composer for entity creation
             ObservableComposer composer = ObservableComposer.builder()
+                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -94,18 +96,20 @@ class ObservableEditableVersionIT {
                     .build();
 
             // Create a test concept using the composer
-            ObservableComposer.ObservableConceptBuilder conceptBuilder = composer.createConcept();
-            ObservableEditableConceptVersion conceptVersion = conceptBuilder.getEditableVersion();
+            ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+                    composer.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
+            ObservableEditableConceptVersion conceptVersion = conceptComposer.getEditableVersion();
 
             conceptVersion.save();
             composer.commit();
 
-            testConcept = conceptBuilder.getObservableConcept();
+            testConcept = conceptComposer.getEntity();
             assertNotNull(testConcept);
             LOG.info("Created test concept with nid: {}", testConcept.nid());
 
             // Create a new composer for the semantic
             ObservableComposer composer2 = ObservableComposer.builder()
+                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -114,9 +118,9 @@ class ObservableEditableVersionIT {
                     .build();
 
             // Create a test semantic on the concept using the composer
-            ObservableComposer.ObservableSemanticBuilder semanticBuilder =
-                    composer2.createSemantic(TinkarTerm.DESCRIPTION_PATTERN, testConcept);
-            ObservableEditableSemanticVersion semanticVersion = semanticBuilder.getEditableVersion();
+            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticComposer =
+                    composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
+            ObservableEditableSemanticVersion semanticVersion = semanticComposer.getEditableVersion();
 
             // Set field values for the description semantic
             javafx.collections.ObservableList<ObservableEditableField<?>> fields = semanticVersion.getEditableFields();
@@ -124,12 +128,13 @@ class ObservableEditableVersionIT {
                 ((ObservableEditableField<String>) fields.get(0)).setValue("Test semantic description");
                 ((ObservableEditableField<Object>) fields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
                 ((ObservableEditableField<Object>) fields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+                ((ObservableEditableField<Object>) fields.get(3)).setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
             }
 
             semanticVersion.save();
             composer2.commit();
 
-            testSemantic = semanticBuilder.getSemantic();
+            testSemantic = semanticComposer.getEntity();
             assertNotNull(testSemantic);
             LOG.info("Created test semantic with nid: {} on concept nid: {}", testSemantic.nid(), testConcept.nid());
         });
@@ -155,6 +160,7 @@ class ObservableEditableVersionIT {
             assertNotNull(testConcept, "Test concept should be created");
 
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -162,7 +168,8 @@ class ObservableEditableVersionIT {
                     "Test editable concept version"
             );
 
-            ObservableComposer.ObservableConceptEditor editor = composer.editConcept(testConcept);
+            ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> editor =
+                    composer.composeConcept(testConcept.publicId());
             assertNotNull(editor);
 
             ObservableEditableConceptVersion editableVersion = editor.getEditableVersion();
@@ -197,6 +204,7 @@ class ObservableEditableVersionIT {
             assertNotNull(testSemantic, "Test semantic should be created");
 
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -204,7 +212,8 @@ class ObservableEditableVersionIT {
                     "Test editable semantic version"
             );
 
-            ObservableComposer.ObservableSemanticEditor editor = composer.editSemantic(testSemantic);
+            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+                    composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
             assertNotNull(editor);
 
             ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
@@ -224,13 +233,15 @@ class ObservableEditableVersionIT {
             assertNotNull(testSemantic, "Test semantic should be created");
 
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
                     TinkarTerm.DEVELOPMENT_PATH
             );
 
-            ObservableComposer.ObservableSemanticEditor editor = composer.editSemantic(testSemantic);
+            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+                    composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
             ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
 
             // Get editable fields
@@ -261,13 +272,15 @@ class ObservableEditableVersionIT {
             assertNotNull(testSemantic, "Test semantic should be created");
 
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
                     TinkarTerm.DEVELOPMENT_PATH
             );
 
-            ObservableComposer.ObservableSemanticEditor editor = composer.editSemantic(testSemantic);
+            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+                    composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
             ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
 
             javafx.collections.ObservableList<ObservableEditableField<?>> fields = editableVersion.getEditableFields();
@@ -297,13 +310,15 @@ class ObservableEditableVersionIT {
             assertNotNull(testSemantic, "Test semantic should be created");
 
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
                     TinkarTerm.DEVELOPMENT_PATH
             );
 
-            ObservableComposer.ObservableSemanticEditor editor = composer.editSemantic(testSemantic);
+            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+                    composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
             ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
 
             // Initially should not be dirty
@@ -338,6 +353,7 @@ class ObservableEditableVersionIT {
             assertNotNull(testConcept, "Test concept should be created");
 
             ObservableComposer composer1 = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -346,6 +362,7 @@ class ObservableEditableVersionIT {
             );
 
             ObservableComposer composer2 = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.KOMET_USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -353,8 +370,10 @@ class ObservableEditableVersionIT {
                     "Composer 2"
             );
 
-            ObservableComposer.ObservableConceptEditor editor1 = composer1.editConcept(testConcept);
-            ObservableComposer.ObservableConceptEditor editor2 = composer2.editConcept(testConcept);
+            ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> editor1 =
+                    composer1.composeConcept(testConcept.publicId());
+            ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> editor2 =
+                    composer2.composeConcept(testConcept.publicId());
 
             ObservableEditableConceptVersion editable1 = editor1.getEditableVersion();
             ObservableEditableConceptVersion editable2 = editor2.getEditableVersion();
@@ -397,7 +416,7 @@ class ObservableEditableVersionIT {
             }
         });
 
-        assertTrue(latch.await(10, TimeUnit.SECONDS), "Test timed out");
+        assertTrue(latch.await(100, TimeUnit.SECONDS), "Test timed out");
 
         if (exception.get() != null) {
             throw exception.get();

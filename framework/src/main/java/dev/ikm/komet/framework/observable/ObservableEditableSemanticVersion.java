@@ -18,6 +18,7 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.eclipse.collections.api.factory.Lists;
@@ -37,13 +38,13 @@ import org.eclipse.collections.api.list.MutableList;
  * </ul>
  */
 public final class ObservableEditableSemanticVersion
-        extends ObservableEditableVersion<ObservableSemanticVersion, SemanticVersionRecord> {
+        extends ObservableEditableVersion<ObservableSemantic, ObservableSemanticVersion, SemanticVersionRecord> {
 
     private final MutableList<ObservableEditableField<?>> editableFields;
     private final ObservableList<ObservableEditableField<?>> unmodifiableFieldList;
 
-    ObservableEditableSemanticVersion(ObservableSemanticVersion observableVersion, ObservableStamp editStamp) {
-        super(observableVersion, editStamp);
+    ObservableEditableSemanticVersion(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, StampEntity editStamp) {
+        super(observableSemantic, observableVersion, editStamp);
 
         // Create editable fields wrapping the read-only fields
         ImmutableList<ObservableField> fields = observableVersion.fields();
@@ -95,8 +96,8 @@ public final class ObservableEditableSemanticVersion
      * @param editStamp the ObservableStamp (typically identifying the author)
      * @return the canonical editable semantic version for this stamp
      */
-    public static ObservableEditableSemanticVersion getOrCreate(ObservableSemanticVersion observableVersion, ObservableStamp editStamp) {
-        return ObservableEditableVersion.getOrCreate(observableVersion, editStamp, ObservableEditableSemanticVersion::new);
+    public static ObservableEditableSemanticVersion getOrCreate(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, StampEntity editStamp) {
+        return ObservableEditableVersion.getOrCreate(observableSemantic, observableVersion, editStamp, ObservableEditableSemanticVersion::new);
     }
 
     /**

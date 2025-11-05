@@ -16,21 +16,17 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.komet.framework.observable.binding.Binding;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampVersionRecord;
 import org.eclipse.collections.api.list.MutableList;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class ObservableStampVersion
-        extends ObservableVersion<StampVersionRecord> {
+        extends ObservableVersion<ObservableStamp, StampVersionRecord> {
 
-    ObservableStampVersion(StampVersionRecord stampVersion) {
-        super(stampVersion);
-    }
-
-    @Override
-    public ObservableStamp getObservableEntity() {
-        return ObservableEntity.get(nid());
+    ObservableStampVersion(ObservableStamp observableStamp, StampVersionRecord stampVersion) {
+        super(observableStamp, stampVersion);
     }
 
     protected void addListeners() {
@@ -163,7 +159,7 @@ public final class ObservableStampVersion
     }
 
     @Override
-    public ObservableEditableStampVersion getEditableVersion(ObservableStamp editStamp) {
-        return ObservableEditableStampVersion.getOrCreate(this, editStamp);
+    public ObservableEditableStampVersion getEditableVersion(StampEntity editStamp) {
+        return ObservableEditableStampVersion.getOrCreate(getObservableEntity(), this, editStamp);
     }
 }

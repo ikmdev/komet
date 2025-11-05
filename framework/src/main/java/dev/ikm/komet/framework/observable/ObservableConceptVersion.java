@@ -18,11 +18,12 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
 import org.eclipse.collections.api.list.MutableList;
 
-public final class ObservableConceptVersion extends ObservableVersion<ConceptVersionRecord> implements ConceptEntityVersion {
-    ObservableConceptVersion(ConceptVersionRecord conceptVersionRecord) {
-        super(conceptVersionRecord);
+public final class ObservableConceptVersion extends ObservableVersion<ObservableConcept, ConceptVersionRecord> implements ConceptEntityVersion {
+    ObservableConceptVersion(ObservableConcept observableConcept, ConceptVersionRecord conceptVersionRecord) {
+        super(observableConcept, conceptVersionRecord);
     }
 
     @Override
@@ -35,10 +36,6 @@ public final class ObservableConceptVersion extends ObservableVersion<ConceptVer
         return version();
     }
 
-    @Override
-    public ObservableConcept getObservableEntity() {
-        return ObservableEntity.get(nid());
-    }
 
     @Override
     public int patternNid() {
@@ -57,7 +54,7 @@ public final class ObservableConceptVersion extends ObservableVersion<ConceptVer
     }
 
     @Override
-    public ObservableEditableConceptVersion getEditableVersion(ObservableStamp editStamp) {
-        return ObservableEditableConceptVersion.getOrCreate(this, editStamp);
+    public ObservableEditableConceptVersion getEditableVersion(StampEntity editStamp) {
+        return ObservableEditableConceptVersion.getOrCreate(getObservableEntity(), this, editStamp);
     }
 }

@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class ObservablePatternVersion
-        extends ObservableVersion<PatternVersionRecord>
+        extends ObservableVersion<ObservablePattern, PatternVersionRecord>
         implements PatternEntityVersion {
     private static final Logger LOG = LoggerFactory.getLogger(ObservablePatternVersion.class);
 
@@ -38,11 +38,11 @@ public final class ObservablePatternVersion
     final SimpleObjectProperty<EntityFacade> meaningProperty = new SimpleObjectProperty<>(this, "Pattern meaning");
     final ImmutableList<ObservableFeatureDefinition> observableFieldDefinitions;
 
-    ObservablePatternVersion(PatternVersionRecord patternVersionRecord) {
-        super(patternVersionRecord);
-        purposeProperty.set(Entity.getFast(patternVersionRecord.semanticPurposeNid()));
+    ObservablePatternVersion(ObservablePattern observablePattern, PatternVersionRecord patternVersionRecord) {
+        super(observablePattern, patternVersionRecord);
+        purposeProperty.set(EntityHandle.getConceptOrThrow(patternVersionRecord.semanticPurposeNid()));
         purposeProperty.addListener(this::purposeChanged);
-        meaningProperty.set(Entity.getFast(patternVersionRecord.semanticMeaningNid()));
+        meaningProperty.set(EntityHandle.getConceptOrThrow(patternVersionRecord.semanticMeaningNid()));
         meaningProperty.addListener(this::meaningChanged);
         MutableList<ObservableFeatureDefinition> mutableFieldDefinitions = Lists.mutable.ofInitialCapacity(patternVersionRecord.fieldDefinitions().size());
         for (FieldDefinitionRecord fieldDefinition : patternVersionRecord.fieldDefinitions()) {
@@ -51,12 +51,6 @@ public final class ObservablePatternVersion
         }
         this.observableFieldDefinitions = mutableFieldDefinitions.toImmutable();
     }
-
-    @Override
-    public ObservablePattern getObservableEntity() {
-        return ObservableEntity.get(nid());
-    }
-
 
     @Override
     public int patternNid() {
@@ -203,7 +197,7 @@ public final class ObservablePatternVersion
     }
 
     @Override
-    public ObservableEditablePatternVersion getEditableVersion(ObservableStamp editStamp) {
-        return ObservableEditablePatternVersion.getOrCreate(this, editStamp);
+    public ObservableEditablePatternVersion getEditableVersion(StampEntity editStamp) {
+        return ObservableEditablePatternVersion.getOrCreate(getObservableEntity(), this, editStamp);
     }
 }

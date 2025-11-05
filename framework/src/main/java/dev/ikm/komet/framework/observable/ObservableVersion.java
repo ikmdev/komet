@@ -17,7 +17,6 @@ package dev.ikm.komet.framework.observable;
 
 import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.*;
@@ -28,10 +27,11 @@ import org.eclipse.collections.api.list.MutableList;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 
-public abstract sealed class ObservableVersion<V extends EntityVersion>
-        implements EntityVersion, ObservableComponent, Feature<ObservableVersion<?>>
+public abstract sealed class ObservableVersion<OE extends ObservableEntity<?>, V extends EntityVersion>
+        implements EntityVersion, ObservableComponent, Feature<ObservableVersion<OE, ?>>
         permits ObservableConceptVersion, ObservablePatternVersion, ObservableSemanticVersion, ObservableStampVersion {
     protected final ReadOnlyObjectWrapper<EntityVersion> versionProperty = new ReadOnlyObjectWrapper<>();
 
@@ -41,13 +41,16 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
     private final ReadOnlyObjectWrapper<ConceptFacade> moduleProperty = new ReadOnlyObjectWrapper<>();
     private final ReadOnlyObjectWrapper<ConceptFacade> pathProperty = new ReadOnlyObjectWrapper<>();
 
-    // Replace with JEP 502 (Stable Values) when available.
-    private final AtomicReference<ReadOnlyProperty<Feature<ObservableVersion<?>>>> featurePropertyReference = new AtomicReference<>();
+     private final Supplier<ReadOnlyProperty<Feature<ObservableVersion<OE, ?>>>> featurePropertySupplier =
+        StableValue.supplier(() -> new ReadOnlyObjectWrapper<>(this.getObservableEntity(),
+                this.getClass().getSimpleName(),
+                (Feature<ObservableVersion<OE, ?>>) this).getReadOnlyProperty());
 
 
+    private final OE observableEntity;
 
-
-    ObservableVersion(V entityVersion) {
+    ObservableVersion(OE observableEntity, V entityVersion) {
+        this.observableEntity = observableEntity;
         setVersionInternal(entityVersion);
     }
 
@@ -58,12 +61,14 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
         versionProperty.set(entityVersion);
         stateProperty.set(entityVersion.state());
         timeProperty.set(entityVersion.time());
-        authorProperty.set(Entity.provider().getEntityFast(entityVersion.authorNid()));
-        moduleProperty.set(Entity.provider().getEntityFast(entityVersion.moduleNid()));
-        pathProperty.set(Entity.provider().getEntityFast(entityVersion.pathNid()));
+        authorProperty.set(EntityHandle.get(entityVersion.authorNid()).expectConcept("Getting author nid: "));
+        moduleProperty.set(EntityHandle.get(entityVersion.moduleNid()).expectConcept("Getting module nid: " + entityVersion.moduleNid() + " "));
+        pathProperty.set(EntityHandle.get(entityVersion.pathNid()).expectConcept("Getting path nid: "));
     }
 
-    public abstract ObservableEntity<? extends ObservableVersion> getObservableEntity();
+    public final OE getObservableEntity() {
+        return observableEntity;
+    }
 
     // TODO: replace with JEP 502: Stable Values when finalized, or for testing.
     AtomicInteger versionIndex = new AtomicInteger(-1);
@@ -149,12 +154,9 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
     }
 
     @Override
-    public ReadOnlyProperty<? extends Feature<ObservableVersion<?>>> featureProperty() {
-        // Replace with JEP 502 (Stable Values) when available.
-        return this.featurePropertyReference.updateAndGet(old -> old == null ?
-                new ReadOnlyObjectWrapper<>(this.getObservableEntity(), this.getClass().getSimpleName(), (Feature<ObservableVersion<?>>) this).getReadOnlyProperty(): old);
+    public ReadOnlyProperty<? extends Feature<ObservableVersion<OE, ?>>> featureProperty() {
+        return this.featurePropertySupplier.get();
     }
-
 
     // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
     private AtomicReference<FeatureWrapper> versionStampReference = new AtomicReference<>();
@@ -165,7 +167,7 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
     }
     private FeatureWrapper makeVersionStampFeature() {
         FeatureKey locator = FeatureKey.Version.VersionStamp(this.nid(), this.stampNid());
-        ObservableStamp stamp = ObservableEntity.get(stampNid());
+        ObservableStamp stamp = ObservableEntityHandle.getStampOrThrow(stampNid());
         return new FeatureWrapper(stamp.asFeature(), Binding.Stamp.Version.pattern().nid(),
                 Binding.Stamp.Version.stampFieldDefinitionIndex(),this, locator);
     }
@@ -181,7 +183,7 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
         } else {
             // Add the stamp features. Other layouts may choose to handle the stamp fields differently.
             // TODO: question if we should include the stamp fields here for convenience, or have the developer specifically retrieve them if wanted.
-            ObservableStamp stamp = ObservableEntity.get(stampNid());
+            ObservableStamp stamp = ObservableEntityHandle.getStampOrThrow(stampNid());
             ObservableStampVersion stampEntityVersion = stamp.lastVersion();
             stampEntityVersion.addAdditionalVersionFeatures( features);
         }
@@ -227,5 +229,5 @@ public abstract sealed class ObservableVersion<V extends EntityVersion>
      * @param editStamp the observable stamp to use for this editable version (typically identifies the author)
      * @return the canonical editable version for this stamp
      */
-    public abstract ObservableEditableVersion<?, ?> getEditableVersion(ObservableStamp editStamp);
+    public abstract ObservableEditableVersion<?, ?, ?> getEditableVersion(StampEntity editStamp);
 }

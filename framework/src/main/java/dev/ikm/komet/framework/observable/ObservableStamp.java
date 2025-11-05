@@ -32,7 +32,7 @@ public final class ObservableStamp
 
     @Override
     protected ObservableStampVersion wrap(EntityVersion version) {
-        return new ObservableStampVersion((StampVersionRecord) version);
+        return new ObservableStampVersion(this, (StampVersionRecord) version);
     }
 
     @Override

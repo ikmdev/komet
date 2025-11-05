@@ -26,16 +26,12 @@ import org.eclipse.collections.api.list.MutableList;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class ObservableSemanticVersion
-        extends ObservableVersion<SemanticVersionRecord>
+        extends ObservableVersion<ObservableSemantic, SemanticVersionRecord>
         implements SemanticEntityVersion {
-    ObservableSemanticVersion(SemanticVersionRecord semanticVersionRecord) {
-        super(semanticVersionRecord);
+    ObservableSemanticVersion(ObservableSemantic observableSemantic, SemanticVersionRecord semanticVersionRecord) {
+        super(observableSemantic, semanticVersionRecord);
     }
 
-    @Override
-    public ObservableSemantic getObservableEntity() {
-        return ObservableEntity.get(nid());
-    }
     @Override
     protected SemanticVersionRecord withStampNid(int stampNid) {
         return version().withStampNid(stampNid);
@@ -111,7 +107,7 @@ public final class ObservableSemanticVersion
     }
 
     @Override
-    public ObservableEditableSemanticVersion getEditableVersion(ObservableStamp editStamp) {
-        return ObservableEditableSemanticVersion.getOrCreate(this, editStamp);
+    public ObservableEditableSemanticVersion getEditableVersion(StampEntity editStamp) {
+        return ObservableEditableSemanticVersion.getOrCreate(getObservableEntity(), this, editStamp);
     }
 }

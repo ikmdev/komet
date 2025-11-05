@@ -18,6 +18,7 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.terms.State;
@@ -87,6 +88,7 @@ class ObservableComposerWorkflowIT {
 
             // 1. Create composer
             ObservableComposer composer = ObservableComposer.builder()
+                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -97,14 +99,15 @@ class ObservableComposerWorkflowIT {
             assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
 
             // 2. Create a concept using the composer
-            ObservableComposer.ObservableConceptBuilder conceptBuilder = composer.createConcept();
-            ObservableConcept observableConcept = conceptBuilder.getObservableConcept();
+            ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+                    composer.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
+            ObservableConcept observableConcept = conceptComposer.getEntity();
 
             assertNotNull(observableConcept);
             LOG.info("Step 1: Created concept with nid: {}", observableConcept.nid());
 
             // 3. Get the editable version
-            ObservableEditableConceptVersion editableVersion = conceptBuilder.getEditableVersion();
+            ObservableEditableConceptVersion editableVersion = conceptComposer.getEditableVersion();
 
             assertNotNull(editableVersion);
             LOG.info("Step 2: Created editable version");
@@ -130,6 +133,7 @@ class ObservableComposerWorkflowIT {
 
             // 1. Create a concept first using composer
             ObservableComposer composer1 = ObservableComposer.builder()
+                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -137,14 +141,16 @@ class ObservableComposerWorkflowIT {
                     .transactionComment("Create concept for semantic test")
                     .build();
 
-            ObservableComposer.ObservableConceptBuilder conceptBuilder = composer1.createConcept();
-            conceptBuilder.getEditableVersion().save();
+            ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+                    composer1.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
+            conceptComposer.getEditableVersion().save();
             composer1.commit();
-            ObservableConcept observableConcept = conceptBuilder.getObservableConcept();
+            ObservableConcept observableConcept = conceptComposer.getEntity();
             LOG.info("Step 1: Created concept with nid: {}", observableConcept.nid());
 
             // 2. Create a semantic on the concept using composer
             ObservableComposer composer2 = ObservableComposer.builder()
+                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -152,9 +158,9 @@ class ObservableComposerWorkflowIT {
                     .transactionComment("Create semantic for test")
                     .build();
 
-            ObservableComposer.ObservableSemanticBuilder semanticBuilder =
-                    composer2.createSemantic(TinkarTerm.DESCRIPTION_PATTERN, observableConcept);
-            ObservableEditableSemanticVersion semanticVersion = semanticBuilder.getEditableVersion();
+            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticComposer =
+                    composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
+            ObservableEditableSemanticVersion semanticVersion = semanticComposer.getEditableVersion();
 
             // Set field values
             javafx.collections.ObservableList<ObservableEditableField<?>> fields = semanticVersion.getEditableFields();
@@ -166,11 +172,12 @@ class ObservableComposerWorkflowIT {
 
             semanticVersion.save();
             composer2.commit();
-            ObservableSemantic observableSemantic = semanticBuilder.getSemantic();
+            ObservableSemantic observableSemantic = semanticComposer.getEntity();
             LOG.info("Step 2: Created semantic with nid: {}", observableSemantic.nid());
 
             // 3. Create composer and edit semantic
             ObservableComposer composer3 = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -178,7 +185,8 @@ class ObservableComposerWorkflowIT {
                     "Edit semantic workflow test"
             );
 
-            ObservableComposer.ObservableSemanticEditor editor = composer3.editSemantic(observableSemantic);
+            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+                    composer3.composeSemantic(observableSemantic.publicId(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
             ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
             LOG.info("Step 3: Created editable semantic version");
 
@@ -213,6 +221,7 @@ class ObservableComposerWorkflowIT {
             LOG.info("=== Testing Property Notification Workflow ===");
 
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -254,6 +263,7 @@ class ObservableComposerWorkflowIT {
 
             // Create multiple composers for different tasks
             ObservableComposer composer1 = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -262,6 +272,7 @@ class ObservableComposerWorkflowIT {
             );
 
             ObservableComposer composer2 = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.KOMET_USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -301,6 +312,7 @@ class ObservableComposerWorkflowIT {
 
             // Create entities using composer
             ObservableComposer composer1 = ObservableComposer.builder()
+                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -308,12 +320,14 @@ class ObservableComposerWorkflowIT {
                     .transactionComment("Create entities for field modification test")
                     .build();
 
-            ObservableComposer.ObservableConceptBuilder conceptBuilder = composer1.createConcept();
-            conceptBuilder.getEditableVersion().save();
+            ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+                    composer1.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
+            conceptComposer.getEditableVersion().save();
             composer1.commit();
-            ObservableConcept observableConcept = conceptBuilder.getObservableConcept();
+            ObservableConcept observableConcept = conceptComposer.getEntity();
 
             ObservableComposer composer2 = ObservableComposer.builder()
+                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -321,9 +335,9 @@ class ObservableComposerWorkflowIT {
                     .transactionComment("Create semantic for field modification test")
                     .build();
 
-            ObservableComposer.ObservableSemanticBuilder semanticBuilder =
-                    composer2.createSemantic(TinkarTerm.DESCRIPTION_PATTERN, observableConcept);
-            ObservableEditableSemanticVersion semanticVersion = semanticBuilder.getEditableVersion();
+            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticComposer =
+                    composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
+            ObservableEditableSemanticVersion semanticVersion = semanticComposer.getEditableVersion();
 
             // Set field values
             javafx.collections.ObservableList<ObservableEditableField<?>> initialFields = semanticVersion.getEditableFields();
@@ -335,17 +349,19 @@ class ObservableComposerWorkflowIT {
 
             semanticVersion.save();
             composer2.commit();
-            ObservableSemantic observableSemantic = semanticBuilder.getSemantic();
+            ObservableSemantic observableSemantic = semanticComposer.getEntity();
 
             // Edit semantic
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
                     TinkarTerm.DEVELOPMENT_PATH
             );
 
-            ObservableComposer.ObservableSemanticEditor editor = composer.editSemantic(observableSemantic);
+            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+                    composer.composeSemantic(observableSemantic.publicId(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
             ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
             javafx.collections.ObservableList<ObservableEditableField<?>> fields = editableVersion.getEditableFields();
 
@@ -386,6 +402,7 @@ class ObservableComposerWorkflowIT {
             LOG.info("=== Testing Transaction State Transitions ===");
 
             ObservableComposer composer = ObservableComposer.create(
+                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,

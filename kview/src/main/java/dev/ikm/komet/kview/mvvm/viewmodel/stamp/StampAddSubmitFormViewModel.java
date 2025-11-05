@@ -52,6 +52,7 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
 
         // -----------  Create ObservableComposer for STAMP management --------------
         ObservableComposer composer = ObservableComposer.create(
+                getViewProperties().calculator().stampCalculator(),
                 status,
                 author,
                 module,
@@ -67,22 +68,28 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
         // Compiler guarantees all ObservableEntity subtypes are handled
         switch (observableEntity) {
             case ObservableConcept concept -> {
-                // Create editable concept version through ObservableComposer
-                ObservableComposer.ObservableConceptEditor editor = composer.editConcept(concept);
+                // Create editable concept version through ObservableComposer unified API
+                ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> editor =
+                        composer.composeConcept(concept.publicId());
 
                 // Save creates uncommitted version with new stamp coordinates
                 editor.save();
             }
             case ObservablePattern pattern -> {
-                // Create editable pattern version through ObservableComposer
-                ObservableComposer.ObservablePatternEditor editor = composer.editPattern(pattern);
+                // Create editable pattern version through ObservableComposer unified API
+                ObservableComposer.EntityComposer<ObservableEditablePatternVersion, ObservablePattern> editor =
+                        composer.composePattern(pattern.publicId());
 
                 // Save creates uncommitted version with new stamp coordinates
                 editor.save();
             }
             case ObservableSemantic semantic -> {
-                // Create editable semantic version through ObservableComposer
-                ObservableComposer.ObservableSemanticEditor editor = composer.editSemantic(semantic);
+                // Create editable semantic version through ObservableComposer unified API
+                // Get referenced component and pattern from the semantic
+                ObservableEntity referencedComponent = ObservableEntityHandle.get(semantic.referencedComponentNid()).expectEntity();
+                ObservablePattern patternFacade = ObservableEntityHandle.get(semantic.patternNid()).expectPattern();
+                ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+                        composer.composeSemantic(semantic.publicId(), referencedComponent, patternFacade);
 
                 // Save creates uncommitted version with new stamp coordinates
                 editor.save();

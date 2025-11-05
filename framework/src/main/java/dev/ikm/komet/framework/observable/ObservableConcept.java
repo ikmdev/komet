@@ -30,7 +30,7 @@ public final class ObservableConcept
 
     @Override
     protected ObservableConceptVersion wrap(EntityVersion version) {
-        return new ObservableConceptVersion((ConceptVersionRecord) version);
+        return new ObservableConceptVersion(this, (ConceptVersionRecord) version);
     }
 
     @Override

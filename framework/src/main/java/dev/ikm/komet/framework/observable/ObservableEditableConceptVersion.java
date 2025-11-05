@@ -18,6 +18,7 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.StampEntity;
 
 /**
  * Editable version wrapper for ObservableConceptVersion.
@@ -26,10 +27,10 @@ import dev.ikm.tinkar.entity.Entity;
  * provides the infrastructure for saving and committing concept versions.
  */
 public final class ObservableEditableConceptVersion
-        extends ObservableEditableVersion<ObservableConceptVersion, ConceptVersionRecord> {
+        extends ObservableEditableVersion<ObservableConcept, ObservableConceptVersion, ConceptVersionRecord> {
 
-    ObservableEditableConceptVersion(ObservableConceptVersion observableVersion, ObservableStamp editStamp) {
-        super(observableVersion, editStamp);
+    ObservableEditableConceptVersion(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, StampEntity editStamp) {
+        super(observableConcept, observableVersion, editStamp);
     }
 
     /**
@@ -42,8 +43,8 @@ public final class ObservableEditableConceptVersion
      * @param editStamp the ObservableStamp (typically identifying the author)
      * @return the canonical editable concept version for this stamp
      */
-    public static ObservableEditableConceptVersion getOrCreate(ObservableConceptVersion observableVersion, ObservableStamp editStamp) {
-        return ObservableEditableVersion.getOrCreate(observableVersion, editStamp, ObservableEditableConceptVersion::new);
+    public static ObservableEditableConceptVersion getOrCreate(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, StampEntity editStamp) {
+        return ObservableEditableVersion.getOrCreate(observableConcept, observableVersion, editStamp, ObservableEditableConceptVersion::new);
     }
 
     @Override

@@ -206,7 +206,7 @@ public class GenEditingDetailsController {
 
     // ObservableComposer integration for proper transaction management
     private ObservableComposer composer;
-    private ObservableComposer.ObservableSemanticEditor semanticEditor;
+    private ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticEditor;
     private ObservableEditableSemanticVersion editableVersion;
     private List<ObservableEditableField<?>> editableFields = new ArrayList<>();
     private ObservableStamp currentEditStamp;
@@ -521,8 +521,11 @@ public class GenEditingDetailsController {
         // Initialize composer if not already done
         initializeComposer();
 
-        // Create semantic editor using composer
-        semanticEditor = composer.editSemantic(observableSemantic);
+        // Create semantic editor using composer unified API
+        // Get referenced component and pattern from the semantic
+        ObservableEntity referencedComponent = ObservableEntityHandle.get(observableSemantic.referencedComponentNid()).expectEntity();
+        ObservablePattern pattern = ObservableEntityHandle.get(observableSemantic.patternNid()).expectPattern();
+        semanticEditor = composer.composeSemantic(observableSemantic.publicId(), referencedComponent, pattern);
 
         // Get editable version with cached editing capabilities
         editableVersion = semanticEditor.getEditableVersion();

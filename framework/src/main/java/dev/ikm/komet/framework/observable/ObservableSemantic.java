@@ -45,7 +45,7 @@ public final class ObservableSemantic
 
     @Override
     protected ObservableSemanticVersion wrap(EntityVersion version) {
-        return new ObservableSemanticVersion((SemanticVersionRecord) version);
+        return new ObservableSemanticVersion(this, (SemanticVersionRecord) version);
     }
 
     @Override
