@@ -2,7 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.landingpage;
 
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.kview.events.CreateKLEditorWindowEvent;
-import dev.ikm.komet.kview.events.KLEditorWindowCreatedEvent;
+import dev.ikm.komet.kview.events.KLEditorWindowCreatedOrRemovedEvent;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.events.EvtBus;
@@ -10,19 +10,12 @@ import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
@@ -55,10 +48,10 @@ public class KlLandingPageController {
                 new CreateKLEditorWindowEvent(event.getSource(), CreateKLEditorWindowEvent.CREATE_KL_WINDOW, klWindowSettingsObjectMap, null));
 
         // Subscribe to new KL Windows being created
-        Subscriber<KLEditorWindowCreatedEvent> windowCreatedSubscriber = evt -> {
+        Subscriber<KLEditorWindowCreatedOrRemovedEvent> windowCreatedSubscriber = evt -> {
             createAndAddCard(evt.getWindowTitle());
         };
-        eventBus.subscribe(KL_TOPIC, KLEditorWindowCreatedEvent.class, windowCreatedSubscriber);
+        eventBus.subscribe(KL_TOPIC, KLEditorWindowCreatedOrRemovedEvent.class, windowCreatedSubscriber);
 
         LOG.info("KL EDITOR WINDOW LAUNCHED");
     }
@@ -86,8 +79,30 @@ public class KlLandingPageController {
     private void createAndAddCard(String windowTitle) {
         KLLandingPageCardControl card = new KLLandingPageCardControl();
         card.setOnMouseClicked(event -> loadKLEditorWindow(event, windowTitle));
+        card.setDeletable(true);
+        card.setOnDeleteAction(() -> onDeleteCard(card));
         card.setTitle(windowTitle);
 
         customViewsContainer.getChildren().add(card);
+    }
+
+    private void onDeleteCard(KLLandingPageCardControl card) {
+        customViewsContainer.getChildren().remove(card);
+
+        String windowTitle = card.getTitle();
+
+        // Remove from preferences
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+
+        List<String> editorWindows = klEditorAppPreferences.getList(KL_EDITOR_WINDOWS);
+        editorWindows.remove(windowTitle);
+
+        klEditorAppPreferences.putList(KL_EDITOR_WINDOWS, editorWindows);
+
+        // fire card remove event
+        eventBus.publish(KL_TOPIC,
+                new KLEditorWindowCreatedOrRemovedEvent(card, KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_REMOVED, windowTitle));
+
     }
 }

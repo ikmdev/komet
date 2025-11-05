@@ -4,7 +4,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kleditorapp.model.SectionModel;
 import dev.ikm.komet.kleditorapp.model.WindowModel;
-import dev.ikm.komet.kview.events.KLEditorWindowCreatedEvent;
+import dev.ikm.komet.kview.events.KLEditorWindowCreatedOrRemovedEvent;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -140,6 +140,6 @@ public class KLEditorMainScreenController {
         }
 
         eventBus.publish(KL_TOPIC,
-                new KLEditorWindowCreatedEvent(actionEvent, KLEditorWindowCreatedEvent.KL_EDITOR_WINDOW_CREATED, windowTitle));
+                new KLEditorWindowCreatedOrRemovedEvent(actionEvent, KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED, windowTitle));
     }
 }

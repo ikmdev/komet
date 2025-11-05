@@ -4494,9 +4494,8 @@ Styling a context menu for kview ui/ux controls
 .kl-editor-landing-page .card {
     -fx-pref-width: 200px;
     -fx-pref-height: 130px;
-    -fx-spacing: 26px;
 
-    -fx-padding: 10px 0 5 0;
+    -fx-padding: 5px 5px 5px 5px;
 
     -fx-border-width: 1px, 1px;
     -fx-border-color: #ccc, transparent;
@@ -4506,11 +4505,60 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: #4a7ad2, #4a7ad2;
 }
 
-.kl-editor-landing-page .card > .icon-container {
+.kl-editor-landing-page .card .card-menu-options {
+    width: 20px;
+    height: 20px;
+
+    -fx-pref-width: width;
+    -fx-pref-height: height;
+    -fx-max-width: width;
+    -fx-max-height: height;
+    -fx-min-width: width;
+    -fx-min-height: height;
+
+    -fx-padding: 4px;
+
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+}
+
+.kl-editor-landing-page .card .button.card-menu-options {
+    -fx-background-color: -Primary-05;
+}
+
+.kl-editor-landing-page .card .card-menu-options-icon {
+    -fx-background-color: -Grey-White;
+}
+
+.kl-editor-landing-page .card .button.card-menu-options:hover {
+    -fx-background-color: derive(-Primary-05, 10%);
+}
+
+.kl-editor-landing-page .card .button.card-menu-options:pressed {
+    -fx-background-color: derive(-Primary-05, -5%);
+}
+
+.context-menu.kview-context-menu .icon {
+    width: 16px;
+    height: 16px;
+
+    -fx-pref-width: width;
+    -fx-pref-height: height;
+    -fx-max-width: width;
+    -fx-max-height: height;
+    -fx-min-width: width;
+    -fx-min-height: height;
+}
+
+.kl-editor-landing-page .card .card-container {
+    -fx-spacing: 26px;
+}
+
+.kl-editor-landing-page .card .card-container > .icon-container {
     -fx-padding: 10 0 0 0;
 }
 
-.kl-editor-landing-page .card > .icon-container > .icon {
+.kl-editor-landing-page .card .card-container > .icon-container > .icon {
     width: 60px;
     height: 50px;
 
@@ -4525,15 +4573,15 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: #4a7ad2;
 }
 
-.kl-editor-landing-page .card > .icon-container > .action-panel-icon-container {
+.kl-editor-landing-page .card .card-container > .icon-container > .action-panel-icon-container {
     -fx-spacing: 5px;
 }
 
-.kl-editor-landing-page .card > .icon-container > .action-panel-icon-container .icon {
+.kl-editor-landing-page .card .card-container > .icon-container > .action-panel-icon-container .icon {
     -fx-background-color: #4a7ad2;
 }
 
-.kl-editor-landing-page .card > .icon-container > .action-panel-icon-container > .icon.icon-1 {
+.kl-editor-landing-page .card .card-container > .icon-container > .action-panel-icon-container > .icon.icon-1 {
     width: 12px;
     height: 12px;
 
@@ -4546,7 +4594,7 @@ Styling a context menu for kview ui/ux controls
     -fx-max-height: height;
 }
 
-.kl-editor-landing-page .card > .icon-container > .action-panel-icon-container > .icon.icon-2 {
+.kl-editor-landing-page .card .card-container > .icon-container > .action-panel-icon-container > .icon.icon-2 {
     width: 36px;
     height: 50px;
 
