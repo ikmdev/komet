@@ -26,7 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ExtendWith({JavaFXThreadExtension.class, NewEphemeralKeyValueProvider.class})
 @RunOnJavaFXThread
-class ObservableComposerTest {
+class ObservableComposer2TestFX {
 
     @Test
     void testCreateComposerWithStaticFactory() {

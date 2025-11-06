@@ -99,7 +99,8 @@ public abstract class AbstractChapterKlWindow<T extends Pane> implements Chapter
 
     /**
      * Temporary Unsupported Method during migration.
-     * @return
+     *
+     * @param renderView the render view to set
      */
     @Override
     public void setKlRenderView(KlRenderView renderView) {

@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tests field value editing, property binding, and change tracking.
  */
 @ExtendWith(JavaFXThreadExtension.class)
-class ObservableEditableFieldTest {
+class ObservableEditableFieldTestFX {
 
     @Test
     @RunOnJavaFXThread

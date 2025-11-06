@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ExtendWith({JavaFXThreadExtension.class, NewEphemeralKeyValueProvider.class})
 @RunOnJavaFXThread
-class ObservableComposerTransactionTest {
+class ObservableComposerTransactionTestFX {
 
     @Test
     @RunOnJavaFXThread
