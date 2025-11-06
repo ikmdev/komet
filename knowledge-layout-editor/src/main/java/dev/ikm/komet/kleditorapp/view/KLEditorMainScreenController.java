@@ -89,7 +89,7 @@ public class KLEditorMainScreenController {
         columnsComboBox.setValue(columnsComboBox.getItems().getFirst());
 
         // setup Toast Manager
-        KLToastManager toastManager = new KLToastManager(klEditorMainContainer);
+        KLToastManager.initParent(klEditorMainContainer);
     }
 
     private void initPatternsList(ViewCalculator viewCalculator) {

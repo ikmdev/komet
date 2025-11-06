@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
@@ -49,7 +50,9 @@ public class KlLandingPageController {
 
         // Subscribe to new KL Windows being created
         Subscriber<KLEditorWindowCreatedOrRemovedEvent> windowCreatedSubscriber = evt -> {
-            createAndAddCard(evt.getWindowTitle());
+            if (evt.getEventType() == KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED) {
+                createAndAddCard(evt.getWindowTitle());
+            }
         };
         eventBus.subscribe(KL_TOPIC, KLEditorWindowCreatedOrRemovedEvent.class, windowCreatedSubscriber);
 
@@ -99,6 +102,12 @@ public class KlLandingPageController {
         editorWindows.remove(windowTitle);
 
         klEditorAppPreferences.putList(KL_EDITOR_WINDOWS, editorWindows);
+
+        try {
+            klEditorAppPreferences.flush();
+        } catch (BackingStoreException e) {
+            LOG.error("Error deleting  KL Editor Window from preferences", e);
+        }
 
         // fire card remove event
         eventBus.publish(KL_TOPIC,
