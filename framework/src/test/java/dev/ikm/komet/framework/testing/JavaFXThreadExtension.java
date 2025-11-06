@@ -93,6 +93,12 @@ public class JavaFXThreadExtension implements InvocationInterceptor, BeforeAllCa
             return;
         }
 
+
+        // Use longer timeout when debugging
+        if (isDebuggerAttached()) {
+            timeout = Math.max(timeout, 3600); // At least 1 hour when debugging
+        }
+
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Throwable> exceptionRef = new AtomicReference<>();
 
@@ -117,5 +123,10 @@ public class JavaFXThreadExtension implements InvocationInterceptor, BeforeAllCa
         if (exception != null) {
             throw exception;
         }
+    }
+
+    private boolean isDebuggerAttached() {
+        return java.lang.management.ManagementFactory.getRuntimeMXBean()
+                .getInputArguments().toString().contains("-agentlib:jdwp");
     }
 }
