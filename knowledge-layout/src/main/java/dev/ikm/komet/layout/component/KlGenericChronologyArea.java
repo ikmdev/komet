@@ -18,10 +18,10 @@ import javafx.scene.layout.Pane;
  * @param <FX> the type of JavaFX {@code Pane} associated with this component area
  * @see KlChronologyArea
  */
-public non-sealed interface KlGenericChronologyArea<FX extends Pane>
-        extends KlChronologyArea<ObservableEntity<ObservableVersion<?>>, ObservableVersion<?>, FX> {
+public non-sealed interface KlGenericChronologyArea<FX extends Pane, OE extends ObservableEntity<ObservableVersion<OE, ?>>>
+        extends KlChronologyArea<OE, ObservableVersion<OE, ?>, FX> {
 
-    non-sealed interface Factory<FX extends Pane, KL extends KlGenericChronologyArea<FX>>
-            extends KlChronologyArea.Factory<FX, ObservableEntity<ObservableVersion<?>>, ObservableVersion<?>, KL> {
+    non-sealed interface Factory<FX extends Pane, OE extends ObservableEntity<ObservableVersion<OE, ?>>, KL extends KlGenericChronologyArea<FX, OE>>
+            extends KlChronologyArea.Factory<FX, OE, ObservableVersion<OE, ?>, KL> {
     }
  }

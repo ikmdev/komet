@@ -17,7 +17,7 @@ import java.util.Objects;
  * @param <FX> the type of JavaFX region associated with this area, extending {@code Region}
  */
 public non-sealed interface KlAreaForListOfVersions<FX extends Region>
-        extends KlAreaForListOfFeatures<ObservableVersion<?>, FX> {
+        extends KlAreaForListOfFeatures<ObservableVersion<?, ?>, FX> {
     /**
      * A record that encapsulates information about observable versions and the subset
      * of those versions currently selected. This record holds immutable lists so that
@@ -31,8 +31,8 @@ public non-sealed interface KlAreaForListOfVersions<FX extends Region>
      * @param selectedVersions  the subset of {@code ObservableVersion} instances currently
      *                          selected or highlighted from the complete list
      */
-    record VersionsAndSelection(ImmutableList<ObservableVersion<?>> versions,
-                                ImmutableList<ObservableVersion<?>> selectedVersions) {
+    record VersionsAndSelection(ImmutableList<ObservableVersion<?, ?>> versions,
+                                ImmutableList<ObservableVersion<?, ?>> selectedVersions) {
 
         public VersionsAndSelection {
             Objects.requireNonNull(versions, "versions list cannot be null");
@@ -46,8 +46,8 @@ public non-sealed interface KlAreaForListOfVersions<FX extends Region>
          * @param observableSelectedVersions the observable list of selected versions
          * @throws NullPointerException if either parameter is null
          */
-        public VersionsAndSelection(ObservableList<ObservableVersion<?>> observableVersions,
-                                    ObservableList<ObservableVersion<?>> observableSelectedVersions) {
+        public VersionsAndSelection(ObservableList<ObservableVersion<?, ?>> observableVersions,
+                                    ObservableList<ObservableVersion<?, ?>> observableSelectedVersions) {
             this(Lists.immutable.withAll(Objects.requireNonNull(observableVersions, "observableVersions cannot be null")),
                  Lists.immutable.withAll(Objects.requireNonNull(observableSelectedVersions, "observableSelectedVersions cannot be null")));
         }
@@ -79,7 +79,7 @@ public non-sealed interface KlAreaForListOfVersions<FX extends Region>
      * @param <FX> the type of JavaFX region associated with the list area, extending {@code Region}.
      */
     interface Factory<FX extends Region>
-            extends KlAreaForListOfFeatures.Factory<ObservableVersion<?>, FX, KlAreaForListOfVersions<FX>> {
+            extends KlAreaForListOfFeatures.Factory<ObservableVersion<?, ?>, FX, KlAreaForListOfVersions<FX>> {
 
 
     }

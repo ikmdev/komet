@@ -43,7 +43,7 @@ public final class ObservableEditableSemanticVersion
     private final MutableList<ObservableEditableField<?>> editableFields;
     private final ObservableList<ObservableEditableField<?>> unmodifiableFieldList;
 
-    ObservableEditableSemanticVersion(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, StampEntity editStamp) {
+    ObservableEditableSemanticVersion(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, ObservableStamp editStamp) {
         super(observableSemantic, observableVersion, editStamp);
 
         // Create editable fields wrapping the read-only fields
@@ -96,7 +96,7 @@ public final class ObservableEditableSemanticVersion
      * @param editStamp the ObservableStamp (typically identifying the author)
      * @return the canonical editable semantic version for this stamp
      */
-    public static ObservableEditableSemanticVersion getOrCreate(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, StampEntity editStamp) {
+    public static ObservableEditableSemanticVersion getOrCreate(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, ObservableStamp editStamp) {
         return ObservableEditableVersion.getOrCreate(observableSemantic, observableVersion, editStamp, ObservableEditableSemanticVersion::new);
     }
 

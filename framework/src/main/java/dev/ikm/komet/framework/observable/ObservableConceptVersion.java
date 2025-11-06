@@ -18,7 +18,6 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
-import dev.ikm.tinkar.entity.StampEntity;
 import org.eclipse.collections.api.list.MutableList;
 
 public final class ObservableConceptVersion extends ObservableVersion<ObservableConcept, ConceptVersionRecord> implements ConceptEntityVersion {
@@ -54,7 +53,7 @@ public final class ObservableConceptVersion extends ObservableVersion<Observable
     }
 
     @Override
-    public ObservableEditableConceptVersion getEditableVersion(StampEntity editStamp) {
+    public ObservableEditableConceptVersion getEditableVersion(ObservableStamp editStamp) {
         return ObservableEditableConceptVersion.getOrCreate(getObservableEntity(), this, editStamp);
     }
 }

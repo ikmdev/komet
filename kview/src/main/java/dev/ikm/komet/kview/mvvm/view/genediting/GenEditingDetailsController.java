@@ -496,6 +496,7 @@ public class GenEditingDetailsController {
         ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
 
         composer = ObservableComposer.create(
+            getViewProperties().calculator(),
             State.ACTIVE,
             author,
             module,

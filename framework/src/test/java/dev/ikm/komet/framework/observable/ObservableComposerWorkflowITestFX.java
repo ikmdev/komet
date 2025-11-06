@@ -42,9 +42,9 @@ import static dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXT
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ExtendWith(JavaFXThreadExtension.class)
-class ObservableComposerWorkflowIT {
+class ObservableComposerWorkflowITestFX {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ObservableComposerWorkflowIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ObservableComposerWorkflowITestFX.class);
     private static final File TEST_DATA_DIR = new File("target/data");
     private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "tinkar-starter-data-reasoned-pb.zip");
 

@@ -16,7 +16,6 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.komet.framework.observable.binding.Binding;
-import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampVersionRecord;
 import org.eclipse.collections.api.list.MutableList;
 
@@ -159,7 +158,7 @@ public final class ObservableStampVersion
     }
 
     @Override
-    public ObservableEditableStampVersion getEditableVersion(StampEntity editStamp) {
+    public ObservableEditableStampVersion getEditableVersion(ObservableStamp editStamp) {
         return ObservableEditableStampVersion.getOrCreate(getObservableEntity(), this, editStamp);
     }
 }

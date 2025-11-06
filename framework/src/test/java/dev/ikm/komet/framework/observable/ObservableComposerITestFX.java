@@ -18,8 +18,6 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.service.ServiceKeys;
-import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
@@ -45,9 +43,9 @@ import static dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXT
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ExtendWith(JavaFXThreadExtension.class)
-class ObservableComposerIT {
+class ObservableComposerITestFX {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ObservableComposerIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ObservableComposerITestFX.class);
     private static final File TEST_DATA_DIR = new File("target/data");
     private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "tinkar-starter-data-reasoned-pb.zip");
 

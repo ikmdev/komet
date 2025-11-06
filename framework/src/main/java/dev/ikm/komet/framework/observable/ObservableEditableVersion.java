@@ -81,14 +81,14 @@ public abstract sealed class ObservableEditableVersion<OE extends ObservableEnti
 
     protected final OE observableEntity;
     protected final OV observableVersion;
-    protected final StampEntity editStamp;
+    protected final ObservableStamp editStamp;
     protected V workingVersion;
     protected Transaction transaction;
 
     /**
      * Package-private constructor. Use ObservableVersion.getEditableVersion(stamp) to create instances.
      */
-    ObservableEditableVersion(OE observableEntity, OV observableVersion, StampEntity editStamp) {
+    ObservableEditableVersion(OE observableEntity, OV observableVersion, ObservableStamp editStamp) {
         this.observableEntity = observableEntity;
         this.observableVersion = observableVersion;
         this.editStamp = editStamp;
@@ -117,7 +117,7 @@ public abstract sealed class ObservableEditableVersion<OE extends ObservableEnti
     @SuppressWarnings("unchecked")
     static <OE extends ObservableEntity<OV>, OV extends ObservableVersion<OE, V>, V extends EntityVersion, OEV extends ObservableEditableVersion<OE, OV, V>>
 
-    OEV getOrCreate(OE observableEntity, OV observableVersion, StampEntity editStamp, EditableVersionFactory<OE, OV, V, OEV> factory) {
+    OEV getOrCreate(OE observableEntity, OV observableVersion, ObservableStamp editStamp, EditableVersionFactory<OE, OV, V, OEV> factory) {
         // Create composite key using the component's nid (not version nid - versions don't have their own nid)
         EditableVersionKey key = new EditableVersionKey(observableVersion.nid(), editStamp.nid());
 
@@ -138,7 +138,7 @@ public abstract sealed class ObservableEditableVersion<OE extends ObservableEnti
      * Returns the observable edit stamp for this editable version.
      * The stamp may change from uncommitted to committed during the editing lifecycle.
      */
-    public StampEntity getEditStamp() {
+    public ObservableStamp getEditStamp() {
         return editStamp;
     }
 
@@ -242,6 +242,6 @@ public abstract sealed class ObservableEditableVersion<OE extends ObservableEnti
     @FunctionalInterface
     interface EditableVersionFactory<OE extends ObservableEntity<OV>, OV extends ObservableVersion<OE, V>,
             V extends EntityVersion, OEV extends ObservableEditableVersion<OE, OV, V>> {
-        OEV create(OE observableEntity, OV observableVersion, StampEntity editStamp);
+        OEV create(OE observableEntity, OV observableVersion, ObservableStamp editStamp);
     }
 }

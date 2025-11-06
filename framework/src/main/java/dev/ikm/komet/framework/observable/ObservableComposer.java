@@ -681,7 +681,7 @@ public final class ObservableComposer {
     /**
      * Creates or retrieves an observable stamp for the current author/module/path/state.
      */
-    StampEntity createStamp(State state, Entity<?> entity) {
+    ObservableStamp createStamp(State state, Entity<?> entity) {
         StampEntity stampEntity = transaction.getStamp(state,
                 getAuthorNid(),
                 getModuleNid(),
@@ -689,7 +689,7 @@ public final class ObservableComposer {
         if (entity != null) {
             transaction.addComponent(entity);
         }
-        return stampEntity;
+        return ObservableEntity.packagePrivateGetStamp(stampEntity);
     }
 
     /**
@@ -959,7 +959,7 @@ public final class ObservableComposer {
         private ObservableEditableConceptVersion editableVersion;
         private ObservableConcept observableConcept;
         private ConceptRecord conceptRecord;
-        private StampEntity stampEntity;
+        private ObservableStamp stampEntity;
 
         private ObservableConceptBuilder(ObservableComposer composer) {
             super(composer);
@@ -1127,7 +1127,7 @@ public final class ObservableComposer {
         private ObservableEditableSemanticVersion editableVersion;
         private ObservableSemantic observableSemantic;
         private SemanticRecord semanticRecord;
-        private StampEntity stampEntity;
+        private ObservableStamp stampEntity;
 
         private ObservableSemanticBuilder(ObservableComposer composer, int referencedComponentNid, int patternNid) {
             super(composer);
@@ -1177,7 +1177,7 @@ public final class ObservableComposer {
             }
         }
 
-        private void makeEmptyVersion(SemanticRecord semanticRecord, StampEntity stampEntity, RecordListBuilder versions) {
+        private void makeEmptyVersion(SemanticRecord semanticRecord, ObservableStamp stampEntity, RecordListBuilder versions) {
             Latest<PatternEntityVersion> latestPattern = ObservableComposer.this.stampCalculator.latestPatternEntityVersion(this.pattern);
             latestPattern.ifPresentOrElse(version -> {
                int fieldCount = version.fieldDefinitions().size();
@@ -1277,7 +1277,7 @@ public final class ObservableComposer {
         private ObservableEditablePatternVersion editableVersion; // Strong reference to ensure it's not GC'd
         private ObservablePattern observablePattern; // Strong reference to avoid GC
         private PatternRecord patternRecord;
-        private StampEntity stampEntity;
+        private ObservableStamp stampEntity;
 
         private ObservablePatternBuilder(ObservableComposer composer) {
             super(composer);
@@ -1353,7 +1353,7 @@ public final class ObservableComposer {
             }
         }
 
-        private void makeEmptyVersion(PatternRecord patternRecord, StampEntity stampEntity, RecordListBuilder versions) {
+        private void makeEmptyVersion(PatternRecord patternRecord, ObservableStamp stampEntity, RecordListBuilder versions) {
             PatternVersionRecord patternVersionRecord = new PatternVersionRecord(patternRecord, stampEntity.nid(),
             TinkarTerm.PURPOSE.nid(), TinkarTerm.MEANING.nid(),
                     versions);
@@ -1469,7 +1469,7 @@ public final class ObservableComposer {
         public ObservableEditableConceptVersion getEditableVersion() {
             if (editableVersion == null) {
                 // Create editable version with composer's stamp
-                StampEntity stamp = composer.createStamp(composer.getDefaultState(), concept.entity());
+                ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), concept.entity());
                 ObservableConceptVersion latestVersion = concept.versions().getLast();
                 editableVersion = latestVersion.getEditableVersion(stamp);
                 composer.trackEditable(editableVersion);
@@ -1585,7 +1585,7 @@ public final class ObservableComposer {
          */
         public ObservableEditableSemanticVersion getEditableVersion() {
             if (editableVersion == null) {
-                StampEntity stamp = composer.createStamp(composer.getDefaultState(), semantic.entity());
+                ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), semantic.entity());
                 ObservableSemanticVersion latestVersion = semantic.versions().getLast();
                 editableVersion = latestVersion.getEditableVersion(stamp);
                 composer.trackEditable(editableVersion);
@@ -1653,7 +1653,7 @@ public final class ObservableComposer {
          */
         public ObservableEditablePatternVersion getEditableVersion() {
             if (editableVersion == null) {
-                StampEntity stamp = composer.createStamp(composer.getDefaultState(), pattern.entity());
+                ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), pattern.entity());
                 ObservablePatternVersion latestVersion = pattern.versions().getLast();
                 editableVersion = latestVersion.getEditableVersion(stamp);
                 composer.trackEditable(editableVersion);

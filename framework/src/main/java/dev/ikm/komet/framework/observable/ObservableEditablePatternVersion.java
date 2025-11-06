@@ -31,7 +31,7 @@ public final class ObservableEditablePatternVersion
     private final SimpleObjectProperty<EntityFacade> editablePurposeProperty;
     private final SimpleObjectProperty<EntityFacade> editableMeaningProperty;
 
-    ObservableEditablePatternVersion(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, StampEntity editStamp) {
+    ObservableEditablePatternVersion(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, ObservableStamp editStamp) {
         super(observablePattern, observableVersion, editStamp);
 
         // Initialize editable properties
@@ -72,7 +72,7 @@ public final class ObservableEditablePatternVersion
      * @param editStamp the ObservableStamp (typically identifying the author)
      * @return the canonical editable pattern version for this stamp
      */
-    public static ObservableEditablePatternVersion getOrCreate(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, StampEntity editStamp) {
+    public static ObservableEditablePatternVersion getOrCreate(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, ObservableStamp editStamp) {
         return ObservableEditableVersion.getOrCreate(observablePattern, observableVersion, editStamp, ObservableEditablePatternVersion::new);
     }
 

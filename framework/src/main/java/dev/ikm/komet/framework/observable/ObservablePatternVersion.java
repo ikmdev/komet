@@ -197,7 +197,7 @@ public final class ObservablePatternVersion
     }
 
     @Override
-    public ObservableEditablePatternVersion getEditableVersion(StampEntity editStamp) {
+    public ObservableEditablePatternVersion getEditableVersion(ObservableStamp editStamp) {
         return ObservableEditablePatternVersion.getOrCreate(getObservableEntity(), this, editStamp);
     }
 }

@@ -154,7 +154,7 @@ public class SemanticFieldsController {
         ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
         ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
 
-        composer = ObservableComposer.create(
+        composer = ObservableComposer.create(getStampCalculator(),
             State.ACTIVE,
             author,
             module,

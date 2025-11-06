@@ -229,5 +229,5 @@ public abstract sealed class ObservableVersion<OE extends ObservableEntity<?>, V
      * @param editStamp the observable stamp to use for this editable version (typically identifies the author)
      * @return the canonical editable version for this stamp
      */
-    public abstract ObservableEditableVersion<?, ?, ?> getEditableVersion(StampEntity editStamp);
+    public abstract ObservableEditableVersion<?, ?, ?> getEditableVersion(ObservableStamp editStamp);
 }

@@ -66,7 +66,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.10.0</tinkar-composer.version>
-        <tinkar-core.version>1.126.1-kl-merge-SNAPSHOT</tinkar-core.version>
+        <tinkar-core.version>1.126.2-kl-merge-SNAPSHOT</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -673,6 +673,27 @@
                     <groupId>one.jpro</groupId>
                     <artifactId>jpro-maven-plugin</artifactId>
                     <version>${jpro.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <additionalOptions>
+                            <additionalOption>--enable-preview</additionalOption>
+                        </additionalOptions>
+                        <additionalJOptions>
+                            <additionalJOption>--enable-preview</additionalJOption>
+                        </additionalJOptions>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

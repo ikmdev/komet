@@ -38,7 +38,7 @@ import javafx.scene.layout.Pane;
  * @see KlStampArea
  */
 public sealed interface KlChronologyArea<OE extends ObservableEntity<OV>,
-        OV extends ObservableVersion<?>, FX extends Pane>
+        OV extends ObservableVersion<?, ?>, FX extends Pane>
         extends KlArea<FX>
         permits KlConceptArea, KlGenericChronologyArea, KlPatternArea, KlSemanticArea, KlStampArea {
 
@@ -76,7 +76,7 @@ public sealed interface KlChronologyArea<OE extends ObservableEntity<OV>,
 
     sealed interface Factory<FX extends Pane,
                              OE extends ObservableEntity<OV>,
-                             OV extends ObservableVersion<?>,
+                             OV extends ObservableVersion<OE, ?>,
                              KL extends KlChronologyArea<OE, OV, FX>>
             extends KlArea.Factory<FX, KL>
             permits KlConceptArea.Factory,

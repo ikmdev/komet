@@ -17,8 +17,6 @@ package dev.ikm.komet.framework.observable;
 
 import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.PatternFacade;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -107,7 +105,7 @@ public final class ObservableSemanticVersion
     }
 
     @Override
-    public ObservableEditableSemanticVersion getEditableVersion(StampEntity editStamp) {
+    public ObservableEditableSemanticVersion getEditableVersion(ObservableStamp editStamp) {
         return ObservableEditableSemanticVersion.getOrCreate(getObservableEntity(), this, editStamp);
     }
 }

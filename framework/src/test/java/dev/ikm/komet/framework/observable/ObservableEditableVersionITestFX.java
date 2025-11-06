@@ -40,9 +40,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ExtendWith(JavaFXThreadExtension.class)
-class ObservableEditableVersionIT {
+class ObservableEditableVersionITestFX {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ObservableEditableVersionIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ObservableEditableVersionITestFX.class);
     private static final File TEST_DATA_DIR = new File("target/data");
     private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "tinkar-starter-data-reasoned-pb.zip");
 

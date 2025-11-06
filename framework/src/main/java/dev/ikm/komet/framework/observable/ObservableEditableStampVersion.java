@@ -36,7 +36,7 @@ public final class ObservableEditableStampVersion
     private final SimpleObjectProperty<ConceptFacade> editableModuleProperty;
     private final SimpleObjectProperty<ConceptFacade> editablePathProperty;
 
-    ObservableEditableStampVersion(ObservableStamp observableStamp, ObservableStampVersion observableVersion, StampEntity editStamp) {
+    ObservableEditableStampVersion(ObservableStamp observableStamp, ObservableStampVersion observableVersion, ObservableStamp editStamp) {
         super(observableStamp, observableVersion, editStamp);
 
         // Initialize editable properties
@@ -91,7 +91,7 @@ public final class ObservableEditableStampVersion
      * @param editStamp the ObservableStamp (typically identifying the author)
      * @return the canonical editable stamp version for this stamp
      */
-    public static ObservableEditableStampVersion getOrCreate(ObservableStamp observableStamp, ObservableStampVersion observableVersion, StampEntity editStamp) {
+    public static ObservableEditableStampVersion getOrCreate(ObservableStamp observableStamp, ObservableStampVersion observableVersion, ObservableStamp editStamp) {
         return ObservableEditableVersion.getOrCreate(observableStamp, observableVersion, editStamp, ObservableEditableStampVersion::new);
     }
 

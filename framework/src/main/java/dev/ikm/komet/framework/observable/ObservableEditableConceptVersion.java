@@ -29,7 +29,7 @@ import dev.ikm.tinkar.entity.StampEntity;
 public final class ObservableEditableConceptVersion
         extends ObservableEditableVersion<ObservableConcept, ObservableConceptVersion, ConceptVersionRecord> {
 
-    ObservableEditableConceptVersion(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, StampEntity editStamp) {
+    ObservableEditableConceptVersion(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, ObservableStamp editStamp) {
         super(observableConcept, observableVersion, editStamp);
     }
 
@@ -43,7 +43,7 @@ public final class ObservableEditableConceptVersion
      * @param editStamp the ObservableStamp (typically identifying the author)
      * @return the canonical editable concept version for this stamp
      */
-    public static ObservableEditableConceptVersion getOrCreate(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, StampEntity editStamp) {
+    public static ObservableEditableConceptVersion getOrCreate(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, ObservableStamp editStamp) {
         return ObservableEditableVersion.getOrCreate(observableConcept, observableVersion, editStamp, ObservableEditableConceptVersion::new);
     }
 
