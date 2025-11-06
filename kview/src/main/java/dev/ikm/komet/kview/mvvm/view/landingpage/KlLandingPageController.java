@@ -103,10 +103,18 @@ public class KlLandingPageController {
 
         klEditorAppPreferences.putList(KL_EDITOR_WINDOWS, editorWindows);
 
+        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
         try {
+            editorWindowPreferences.removeNode();
+        } catch (BackingStoreException e) {
+            LOG.error("Error deleting KL Editor Window node from preferences", e);
+        }
+
+        try {
+            editorWindowPreferences.flush();
             klEditorAppPreferences.flush();
         } catch (BackingStoreException e) {
-            LOG.error("Error deleting  KL Editor Window from preferences", e);
+            LOG.error("Error deleting  KL Editor Window in preferences", e);
         }
 
         // fire card remove event
