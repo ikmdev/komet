@@ -14,7 +14,7 @@ import org.eclipse.collections.impl.factory.primitive.LongLists;
  * <p>This implementation provides significant advantages over using {@code ObservableList<Long>}
  * with boxed {@code Long} objects from standard Java Collections:</p>
  *
- * <h3>Memory Efficiency</h3>
+ * <p><b>Memory Efficiency</b>
  * <ul>
  *   <li><strong>Object Overhead Elimination:</strong> Each boxed {@code Long} object in a standard
  *       {@code List<Long>} requires approximately 24-32 bytes of memory (12-16 bytes for object
@@ -35,7 +35,7 @@ import org.eclipse.collections.impl.factory.primitive.LongLists;
  *   </li>
  * </ul>
  *
- * <h3>Garbage Collection Benefits</h3>
+ * <p><b>Garbage Collection Benefits</b>
  * <ul>
  *   <li><strong>Reduced GC Pressure:</strong> Boxing operations create temporary {@code Long} objects
  *       that become garbage immediately after use. For frequently accessed or modified lists, this creates
@@ -49,7 +49,7 @@ import org.eclipse.collections.impl.factory.primitive.LongLists;
  *       rate and young generation pressure.</li>
  * </ul>
  *
- * <h3>Performance Characteristics</h3>
+ * <p><b>Performance Characteristics</b>
  * <ul>
  *   <li><strong>CPU Cache Efficiency:</strong> Primitive arrays have excellent spatial locality, allowing
  *       CPUs to prefetch and cache data more effectively compared to pointer-chasing through boxed objects.</li>
@@ -61,7 +61,7 @@ import org.eclipse.collections.impl.factory.primitive.LongLists;
  *       bulk operations (forEach, select, collect, etc.) that operate directly on primitive arrays.</li>
  * </ul>
  *
- * <h3>Use Cases</h3>
+ * <p><b>Use Cases</b>
  * <p>This implementation is particularly beneficial for:</p>
  * <ul>
  *   <li>Large collections of numeric identifiers, timestamps, or 64-bit keys</li>
@@ -260,7 +260,7 @@ public class ObservableLongList extends ModifiableObservableListBase<Long> {
      * This method operates directly on primitive values without boxing, providing better performance
      * and eliminating garbage collection pressure compared to {@code remove(Long.valueOf(value))}.
      *
-     * <h3>Performance Benefits</h3>
+     * <p><b>Performance Benefits</b>
      * <ul>
      *   <li><strong>No Boxing:</strong> Avoids creating a temporary {@code Long} object for comparison</li>
      *   <li><strong>Direct Comparison:</strong> Uses primitive {@code ==} comparison instead of {@code equals()}</li>

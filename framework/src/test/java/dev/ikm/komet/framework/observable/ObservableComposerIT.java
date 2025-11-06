@@ -27,18 +27,16 @@ import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.application.Platform;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXThread;
 
 /**
  * Integration tests for ObservableComposer using loaded entity data.
@@ -70,6 +68,7 @@ class ObservableComposerIT {
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(1)
     void loadTestData() {
         if (PB_STARTER_DATA.exists()) {
@@ -86,245 +85,245 @@ class ObservableComposerIT {
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(2)
-    void testCreateComposerWithLoadedEntities() throws Exception {
-        runOnJavaFXThread(() -> {
-            ObservableComposer composer = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.ACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH,
-                    "Integration test transaction"
-            );
+    void testCreateComposerWithLoadedEntities() {
 
-            assertNotNull(composer);
-            assertEquals(State.ACTIVE, composer.getDefaultState());
-            assertEquals(TinkarTerm.USER.nid(), composer.getAuthorNid());
-            assertEquals(TinkarTerm.PRIMORDIAL_MODULE.nid(), composer.getModuleNid());
-            assertEquals(TinkarTerm.DEVELOPMENT_PATH.nid(), composer.getPathNid());
+    ObservableComposer composer = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.ACTIVE,
+            TinkarTerm.USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH,
+            "Integration test transaction"
+    );
 
-            LOG.info("Created composer with loaded entity context");
-        });
+    assertNotNull(composer);
+    assertEquals(State.ACTIVE, composer.getDefaultState());
+    assertEquals(TinkarTerm.USER.nid(), composer.getAuthorNid());
+    assertEquals(TinkarTerm.PRIMORDIAL_MODULE.nid(), composer.getModuleNid());
+    assertEquals(TinkarTerm.DEVELOPMENT_PATH.nid(), composer.getPathNid());
+
+    LOG.info("Created composer with loaded entity context");
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(3)
-    void testTransactionCreationWithRealEntities() throws Exception {
-        runOnJavaFXThread(() -> {
-            ObservableComposer composer = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.ACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH
-            );
+    void testTransactionCreationWithRealEntities() {
 
-            assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
+    ObservableComposer composer = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.ACTIVE,
+            TinkarTerm.USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH
+    );
 
-            Transaction transaction = composer.getOrCreateTransaction();
+    assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
 
-            assertNotNull(transaction);
-            assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer.getTransactionState());
+    Transaction transaction = composer.getOrCreateTransaction();
 
-            LOG.info("Transaction created successfully with real entity store");
-        });
+    assertNotNull(transaction);
+    assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer.getTransactionState());
+
+    LOG.info("Transaction created successfully with real entity store");
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(4)
-    void testTransactionLifecycleWithDatabase() throws Exception {
-        runOnJavaFXThread(() -> {
-            ObservableComposer composer = ObservableComposer.builder()
-                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
-                    .author(TinkarTerm.USER)
-                    .module(TinkarTerm.PRIMORDIAL_MODULE)
-                    .path(TinkarTerm.DEVELOPMENT_PATH)
-                    .defaultState(State.ACTIVE)
-                    .transactionComment("Lifecycle test")
-                    .build();
+    void testTransactionLifecycleWithDatabase() {
 
-            // Initial state
-            assertNull(composer.getTransaction());
-            assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
-            assertFalse(composer.hasUncommittedChanges());
+    ObservableComposer composer = ObservableComposer.builder()
+            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .author(TinkarTerm.USER)
+            .module(TinkarTerm.PRIMORDIAL_MODULE)
+            .path(TinkarTerm.DEVELOPMENT_PATH)
+            .defaultState(State.ACTIVE)
+            .transactionComment("Lifecycle test")
+            .build();
 
-            // Create transaction
-            Transaction transaction1 = composer.getOrCreateTransaction();
-            assertNotNull(transaction1);
-            assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer.getTransactionState());
+    // Initial state
+    assertNull(composer.getTransaction());
+    assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
+    assertFalse(composer.hasUncommittedChanges());
 
-            // Verify same transaction on repeated calls
-            Transaction transaction2 = composer.getOrCreateTransaction();
-            assertSame(transaction1, transaction2);
+    // Create transaction
+    Transaction transaction1 = composer.getOrCreateTransaction();
+    assertNotNull(transaction1);
+    assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer.getTransactionState());
 
-            // Cancel transaction
-            composer.cancel();
-            assertNull(composer.getTransaction());
-            assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
+    // Verify same transaction on repeated calls
+    Transaction transaction2 = composer.getOrCreateTransaction();
+    assertSame(transaction1, transaction2);
 
-            LOG.info("Transaction lifecycle completed successfully");
-        });
+    // Cancel transaction
+    composer.cancel();
+    assertNull(composer.getTransaction());
+    assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
+
+    LOG.info("Transaction lifecycle completed successfully");
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(5)
-    void testMultipleComposersIndependence() throws Exception {
-        runOnJavaFXThread(() -> {
-            ObservableComposer composer1 = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.ACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH,
-                    "Composer 1"
-            );
+    void testMultipleComposersIndependence() {
 
-            ObservableComposer composer2 = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.INACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH,
-                    "Composer 2"
-            );
+    ObservableComposer composer1 = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.ACTIVE,
+            TinkarTerm.USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH,
+            "Composer 1"
+    );
 
-            // Create transactions independently
-            Transaction tx1 = composer1.getOrCreateTransaction();
-            Transaction tx2 = composer2.getOrCreateTransaction();
+    ObservableComposer composer2 = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.INACTIVE,
+            TinkarTerm.USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH,
+            "Composer 2"
+    );
 
-            assertNotNull(tx1);
-            assertNotNull(tx2);
-            assertNotSame(tx1, tx2, "Each composer should have independent transactions");
+    // Create transactions independently
+    Transaction tx1 = composer1.getOrCreateTransaction();
+    Transaction tx2 = composer2.getOrCreateTransaction();
 
-            assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer1.getTransactionState());
-            assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer2.getTransactionState());
+    assertNotNull(tx1);
+    assertNotNull(tx2);
+    assertNotSame(tx1, tx2, "Each composer should have independent transactions");
 
-            // Cancel one should not affect the other
-            composer1.cancel();
-            assertEquals(ObservableComposer.TransactionState.NONE, composer1.getTransactionState());
-            assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer2.getTransactionState());
+    assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer1.getTransactionState());
+    assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer2.getTransactionState());
 
-            composer2.cancel();
+    // Cancel one should not affect the other
+    composer1.cancel();
+    assertEquals(ObservableComposer.TransactionState.NONE, composer1.getTransactionState());
+    assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer2.getTransactionState());
 
-            LOG.info("Multiple composers maintain independence");
-        });
+    composer2.cancel();
+
+    LOG.info("Multiple composers maintain independence");
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(6)
-    void testComposerWithDifferentStates() throws Exception {
-        runOnJavaFXThread(() -> {
-            State[] states = {State.ACTIVE, State.INACTIVE, State.CANCELED, State.PRIMORDIAL, State.WITHDRAWN};
+    void testComposerWithDifferentStates() {
 
-            for (State state : states) {
-                ObservableComposer composer = ObservableComposer.create(
-                        Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                        state,
-                        TinkarTerm.USER,
-                        TinkarTerm.PRIMORDIAL_MODULE,
-                        TinkarTerm.DEVELOPMENT_PATH
-                );
+    State[] states = {State.ACTIVE, State.INACTIVE, State.CANCELED, State.PRIMORDIAL, State.WITHDRAWN};
 
-                assertEquals(state, composer.getDefaultState());
-                assertNotNull(composer.getOrCreateTransaction());
+    for (State state : states) {
+        ObservableComposer composer = ObservableComposer.create(
+                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                state,
+                TinkarTerm.USER,
+                TinkarTerm.PRIMORDIAL_MODULE,
+                TinkarTerm.DEVELOPMENT_PATH
+        );
 
-                composer.cancel();
+        assertEquals(state, composer.getDefaultState());
+        assertNotNull(composer.getOrCreateTransaction());
 
-                LOG.info("Composer created with state: {}", state);
-            }
-        });
+        composer.cancel();
+
+        LOG.info("Composer created with state: {}", state);
+    }
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(7)
-    void testPropertyNotificationsWithDatabase() throws Exception {
-        runOnJavaFXThread(() -> {
-            ObservableComposer composer = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.ACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH
-            );
+    void testPropertyNotificationsWithDatabase() {
 
-            AtomicReference<ObservableComposer.TransactionState> capturedState = new AtomicReference<>();
-            AtomicReference<Boolean> capturedHasChanges = new AtomicReference<>();
+    ObservableComposer composer = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.ACTIVE,
+            TinkarTerm.USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH
+    );
 
-            composer.transactionStateProperty().addListener((obs, oldVal, newVal) -> {
-                capturedState.set(newVal);
-                LOG.debug("Transaction state changed: {} -> {}", oldVal, newVal);
-            });
+    AtomicReference<ObservableComposer.TransactionState> capturedState = new AtomicReference<>();
+    AtomicReference<Boolean> capturedHasChanges = new AtomicReference<>();
 
-            composer.hasUncommittedChangesProperty().addListener((obs, oldVal, newVal) -> {
-                capturedHasChanges.set(newVal);
-                LOG.debug("Has uncommitted changes: {} -> {}", oldVal, newVal);
-            });
+    composer.transactionStateProperty().addListener((obs, oldVal, newVal) -> {
+        capturedState.set(newVal);
+        LOG.debug("Transaction state changed: {} -> {}", oldVal, newVal);
+    });
 
-            // Trigger state changes
-            composer.getOrCreateTransaction();
-            assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, capturedState.get());
+    composer.hasUncommittedChangesProperty().addListener((obs, oldVal, newVal) -> {
+        capturedHasChanges.set(newVal);
+        LOG.debug("Has uncommitted changes: {} -> {}", oldVal, newVal);
+    });
 
-            composer.cancel();
-            assertEquals(ObservableComposer.TransactionState.NONE, capturedState.get());
+    // Trigger state changes
+    composer.getOrCreateTransaction();
+    assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, capturedState.get());
 
-            LOG.info("Property notifications working correctly with database");
-        });
+    composer.cancel();
+    assertEquals(ObservableComposer.TransactionState.NONE, capturedState.get());
+
+    LOG.info("Property notifications working correctly with database");
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(8)
-    void testComposerWithDifferentAuthors() throws Exception {
-        runOnJavaFXThread(() -> {
-            // Test with different author entities
-            EntityProxy[] authors = {TinkarTerm.USER, TinkarTerm.KOMET_USER};
+    void testComposerWithDifferentAuthors() {
 
-            for (EntityProxy author : authors) {
-                ObservableComposer composer = ObservableComposer.builder()
-                        .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
-                        .author(author)
-                        .module(TinkarTerm.PRIMORDIAL_MODULE)
-                        .path(TinkarTerm.DEVELOPMENT_PATH)
-                        .build();
+    // Test with different author entities
+    EntityProxy[] authors = {TinkarTerm.USER, TinkarTerm.KOMET_USER};
 
-                assertNotNull(composer);
-                assertEquals(author.nid(), composer.getAuthorNid());
+    for (EntityProxy author : authors) {
+        ObservableComposer composer = ObservableComposer.builder()
+                .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .author(author)
+                .module(TinkarTerm.PRIMORDIAL_MODULE)
+                .path(TinkarTerm.DEVELOPMENT_PATH)
+                .build();
 
-                Transaction tx = composer.getOrCreateTransaction();
-                assertNotNull(tx);
+        assertNotNull(composer);
+        assertEquals(author.nid(), composer.getAuthorNid());
 
-                composer.cancel();
+        Transaction tx = composer.getOrCreateTransaction();
+        assertNotNull(tx);
 
-                LOG.info("Composer created with author: {} (nid: {})", author, author.nid());
-            }
-        });
+        composer.cancel();
+
+        LOG.info("Composer created with author: {} (nid: {})", author, author.nid());
+    }
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(9)
-    void testConcurrentTransactionCreation() throws Exception {
-        runOnJavaFXThread(() -> {
-            ObservableComposer composer = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.ACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH
-            );
+    void testConcurrentTransactionCreation() {
 
-            // Call getOrCreateTransaction multiple times rapidly
-            Transaction tx1 = composer.getOrCreateTransaction();
-            Transaction tx2 = composer.getOrCreateTransaction();
-            Transaction tx3 = composer.getOrCreateTransaction();
+    ObservableComposer composer = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.ACTIVE,
+            TinkarTerm.USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH
+    );
 
-            // All should return the same transaction instance
-            assertSame(tx1, tx2);
-            assertSame(tx2, tx3);
+    // Call getOrCreateTransaction multiple times rapidly
+    Transaction tx1 = composer.getOrCreateTransaction();
+    Transaction tx2 = composer.getOrCreateTransaction();
+    Transaction tx3 = composer.getOrCreateTransaction();
 
-            composer.cancel();
+    // All should return the same transaction instance
+    assertSame(tx1, tx2);
+    assertSame(tx2, tx3);
 
-            LOG.info("Concurrent transaction creation handled correctly");
-        });
+    composer.cancel();
+
+    LOG.info("Concurrent transaction creation handled correctly");
     }
 
     @AfterAll
@@ -334,27 +333,4 @@ class ObservableComposerIT {
         LOG.info("PrimitiveData stopped");
     }
 
-    /**
-     * Helper method to run code on JavaFX thread and wait for completion.
-     */
-    private void runOnJavaFXThread(Runnable runnable) throws Exception {
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<Exception> exception = new AtomicReference<>();
-
-        Platform.runLater(() -> {
-            try {
-                runnable.run();
-            } catch (Exception e) {
-                exception.set(e);
-            } finally {
-                latch.countDown();
-            }
-        });
-
-        assertTrue(latch.await(10, TimeUnit.SECONDS), "Test timed out");
-
-        if (exception.get() != null) {
-            throw exception.get();
-        }
-    }
 }

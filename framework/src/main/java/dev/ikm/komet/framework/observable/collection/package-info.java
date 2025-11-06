@@ -16,11 +16,11 @@
  * This design, while flexible, introduces significant overhead in memory-intensive or performance-critical
  * applications:</p>
  *
- * <h3>1. Memory Overhead Problem</h3>
+ * <p><b>1. Memory Overhead Problem</b>
  *
  * <p>Every boxed primitive object carries substantial memory overhead beyond its actual value:</p>
  *
- * <table border="1" cellpadding="5" cellspacing="0">
+ * <table style="border: 1px solid black; border-collapse: collapse;">
  *   <caption><b>Memory Comparison: Boxed vs. Primitive Storage</b></caption>
  *   <thead>
  *     <tr>
@@ -59,7 +59,7 @@
  *   <li><b>Memory savings: 83-87%</b></li>
  * </ul>
  *
- * <h3>2. Garbage Collection Pressure</h3>
+ * <p><b>2. Garbage Collection Pressure</b>
  *
  * <p>Boxing creates temporary objects that quickly become garbage, especially in tight loops
  * or during bulk operations. Consider a simple operation like filtering a list:</p>
@@ -87,7 +87,7 @@
  * <p><b>Impact:</b> Reduced GC frequency, shorter GC pauses, and more predictable application performance,
  * especially critical for real-time or interactive applications.</p>
  *
- * <h3>3. CPU Cache Performance</h3>
+ * <p><b>3. CPU Cache Performance</b>
  *
  * <p>Modern CPUs rely heavily on cache hierarchies (L1/L2/L3). Primitive arrays offer superior
  * cache performance due to memory layout:</p>
@@ -110,7 +110,7 @@
  * <p><b>Result:</b> Primitive collections can be 2-10x faster for sequential operations like iteration,
  * searching, and filtering, depending on data size and access patterns.</p>
  *
- * <h3>4. Autoboxing Hidden Costs</h3>
+ * <p><b>4. Autoboxing Hidden Costs</b>
  *
  * <p>Java's autoboxing feature makes wrapper classes convenient but hides performance costs:</p>
  *
@@ -130,7 +130,7 @@
  * });
  * }</pre>
  *
- * <h3>5. Integration with Eclipse Collections</h3>
+ * <p><b>5. Integration with Eclipse Collections</b>
  *
  * <p>By using Eclipse Collections as the backing store, these observable collections gain access to
  * highly optimized primitive-aware operations:</p>
@@ -198,7 +198,7 @@
  *
  * <h2>Usage Patterns</h2>
  *
- * <h3>Basic Operations</h3>
+ * <p><b>Basic Operations</b>
  * <pre>{@code
  * // Creating observable primitive lists
  * ObservableIntList ids = new ObservableIntList();
@@ -212,7 +212,7 @@
  * ListView<Integer> listView = new ListView<>(ids);
  * }</pre>
  *
- * <h3>Performance-Critical Paths</h3>
+ * <p><b>Performance-Critical Paths</b>
  * <pre>{@code
  * // Use primitive methods for performance-critical code
  * ObservableIntList largeDataset = new ObservableIntList(1_000_000);
@@ -229,7 +229,7 @@
  *     .collectInt(id -> id * 2);
  * }</pre>
  *
- * <h3>JavaFX Integration</h3>
+ * <p><b>JavaFX Integration</b>
  * <pre>{@code
  * // Observable collections work seamlessly with JavaFX bindings
  * ObservableLongList timestamps = new ObservableLongList();

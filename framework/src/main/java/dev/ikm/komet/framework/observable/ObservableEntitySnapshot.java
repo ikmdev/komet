@@ -100,7 +100,7 @@ import java.util.function.Predicate;
  * <p>
  * Each version in the snapshot is categorized by {@link #getVersionCategory(EntityVersion)}:
  *
- * <table border="1" cellpadding="5">
+ * <table style="border: 1px solid black; border-collapse: collapse;">
  * <caption>Version Category Meanings</caption>
  * <tr>
  *   <th>Category</th>
@@ -131,7 +131,7 @@ import java.util.function.Predicate;
  *
  * <h2>Common Usage Patterns</h2>
  *
- * <h3>Pattern 1: Display Current State</h3>
+ * <p><b>Pattern 1: Display Current State</b>
  * <pre>{@code
  * ObservableConceptSnapshot snapshot = 
  *     ObservableEntityHandle.getConceptSnapshotOrThrow(nid, viewCalc);
@@ -147,7 +147,7 @@ import java.util.function.Predicate;
  * }
  * }</pre>
  *
- * <h3>Pattern 2: Show Version History ("Time Travel")</h3>
+ * <p><b>Pattern 2: Show Version History ("Time Travel")</b>
  * <pre>{@code
  * ObservableConceptSnapshot snapshot = 
  *     ObservableEntityHandle.getConceptSnapshotOrThrow(nid, viewCalc);
@@ -162,7 +162,7 @@ import java.util.function.Predicate;
  * }
  * }</pre>
  *
- * <h3>Pattern 3: Process Versions with Filtering</h3>
+ * <p><b>Pattern 3: Process Versions with Filtering</b>
  * <pre>{@code
  * ObservableConceptSnapshot snapshot = 
  *     ObservableEntityHandle.getConceptSnapshotOrThrow(nid, viewCalc);
@@ -184,7 +184,7 @@ import java.util.function.Predicate;
  * }
  * }</pre>
  *
- * <h3>Pattern 4: Handle Uncommitted Changes</h3>
+ * <p><b>Pattern 4: Handle Uncommitted Changes</b>
  * <pre>{@code
  * ObservableConceptSnapshot snapshot = 
  *     ObservableEntityHandle.getConceptSnapshotOrThrow(nid, viewCalc);
@@ -234,7 +234,7 @@ import java.util.function.Predicate;
  * are the <b>exact same canonical instances</b> from the underlying {@link ObservableEntity}'s
  * {@code versionPropertyMap()}.
  *
- * <h3>Why This Matters</h3>
+ * <p><b>Why This Matters</b>
  * <p>
  * Because snapshots return canonical version instances, you can <b>reliably bind UI properties</b> to
  * versions extracted from a snapshot, and <b>all observers will receive change notifications</b>:
@@ -265,21 +265,21 @@ import java.util.function.Predicate;
  * }
  * }</pre>
  *
- * <h3>Implementation Detail</h3>
+ * <p><b>Implementation Detail</b>
  * <p>
  * The snapshot constructor iterates over the {@code observableEntity.versionPropertyMap().values()},
  * which contains the canonical {@link ObservableVersion} instances managed by the
  * {@link ObservableEntity#CANONICAL_INSTANCES} pool. The snapshot does not create copies - it
  * categorizes and stores <i>references</i> to the canonical versions.
  *
- * <h3>Contrast with Immutable Entity Versions</h3>
+ * <p><b>Contrast with Immutable Entity Versions</b>
  * <p>
  * Unlike immutable {@link dev.ikm.tinkar.entity.EntityVersion} instances (which can have multiple
  * copies in memory with the same data), {@link ObservableVersion} instances follow the "canonical
  * instance" pattern - exactly one instance per (entity NID, stamp NID) combination exists in memory
  * while referenced. This is what makes property binding and change notification reliable.
  *
- * <h3>What This Means for Multi-Snapshot Scenarios</h3>
+ * <p><b>What This Means for Multi-Snapshot Scenarios</b>
  * <pre>{@code
  * // Creating two snapshots from the same entity
  * ObservableConceptSnapshot snapshot1 = 

@@ -65,7 +65,7 @@ import java.util.Objects;
  * </ul>
  *
  * <h2>Advantages Over Traditional Composer Approaches</h2>
- * <table border="1" cellpadding="5">
+ * <table style="border: 1px solid black; border-collapse: collapse;">
  * <caption>ObservableComposer vs Traditional Composer Comparison</caption>
  * <tr>
  *   <th>Feature</th>
@@ -153,7 +153,7 @@ import java.util.Objects;
  *
  * <h2>Usage Patterns</h2>
  *
- * <h3>Pattern 1: Creating New Entities with UI Binding</h3>
+ * <p><b>Pattern 1: Creating New Entities with UI Binding</b>
  * <pre>{@code
  * // Create a new concept with observable properties
  * ObservableComposer composer = ObservableComposer.builder()
@@ -187,7 +187,7 @@ import java.util.Objects;
  * // UI automatically updates to show committed state
  * }</pre>
  *
- * <h3>Pattern 2: Editing Existing Entities</h3>
+ * <p><b>Pattern 2: Editing Existing Entities</b>
  * <pre>{@code
  * // Get an existing observable entity
  * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(conceptNid);
@@ -216,7 +216,7 @@ import java.util.Objects;
  * composer.commit();
  * }</pre>
  *
- * <h3>Pattern 3: Building Semantics with Fields</h3>
+ * <p><b>Pattern 3: Building Semantics with Fields</b>
  * <pre>{@code
  * ObservableComposer composer = ObservableComposer.builder()
  *     .author(TinkarTerm.USER)
@@ -258,7 +258,7 @@ import java.util.Objects;
  * composer.commit();
  * }</pre>
  *
- * <h3>Pattern 4: Transaction State Monitoring</h3>
+ * <p><b>Pattern 4: Transaction State Monitoring</b>
  * <pre>{@code
  * ObservableComposer composer = ObservableComposer.builder()
  *     .author(TinkarTerm.USER)
@@ -907,13 +907,13 @@ public final class ObservableComposer {
      * Use this when you need to create a brand new concept from scratch. The builder provides
      * a fluent API for configuring the concept before it's saved to the database.
      *
-     * <h3>When to Use Builder vs Editor</h3>
+     * <p><b>When to Use Builder vs Editor</b>
      * <ul>
      *   <li><b>Use Builder</b> - When creating a NEW entity that doesn't exist yet</li>
      *   <li><b>Use Editor</b> - When modifying an EXISTING entity you already have</li>
      * </ul>
      *
-     * <h3>Unified API</h3>
+     * <p><b>Unified API</b>
      * Both Builder and Editor provide the same core methods for consistency:
      * <ul>
      *   <li>{@link #getEditableVersion()} - Access editable version for UI binding</li>
@@ -922,7 +922,7 @@ public final class ObservableComposer {
      *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
      * </ul>
      *
-     * <h3>Example Usage</h3>
+     * <p><b>Example Usage</b>
      * <pre>{@code
      * ObservableComposer composer = ObservableComposer.builder()
      *     .author(TinkarTerm.USER)
@@ -1068,13 +1068,13 @@ public final class ObservableComposer {
      * Use this when you need to create a new semantic annotation on an existing entity.
      * Semantics attach meaning to entities through patterns with typed fields.
      *
-     * <h3>When to Use Builder vs Editor</h3>
+     * <p><b>When to Use Builder vs Editor</b>
      * <ul>
      *   <li><b>Use Builder</b> - When creating a NEW semantic that doesn't exist yet</li>
      *   <li><b>Use Editor</b> - When modifying an EXISTING semantic you already have</li>
      * </ul>
      *
-     * <h3>Unified API</h3>
+     * <p><b>Unified API</b>
      * Both Builder and Editor provide the same core methods for consistency:
      * <ul>
      *   <li>{@link #getEditableVersion()} - Access editable version for UI binding</li>
@@ -1084,7 +1084,7 @@ public final class ObservableComposer {
      *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
      * </ul>
      *
-     * <h3>Example Usage</h3>
+     * <p><b>Example Usage</b>
      * <pre>{@code
      * // Create a description semantic on a concept
      * ObservableSemanticBuilder builder = composer.createSemanticBuilder(
@@ -1408,13 +1408,13 @@ public final class ObservableComposer {
      * The editor creates a new editable version with the composer's STAMP coordinates,
      * allowing you to modify the entity while tracking changes.
      *
-     * <h3>When to Use Editor vs Builder</h3>
+     * <p><b>When to Use Editor vs Builder</b>
      * <ul>
      *   <li><b>Use Builder</b> - When creating a NEW entity that doesn't exist yet</li>
      *   <li><b>Use Editor</b> - When modifying an EXISTING entity you already have</li>
      * </ul>
      *
-     * <h3>Unified API</h3>
+     * <p><b>Unified API</b>
      * Both Builder and Editor provide the same core methods for consistency:
      * <ul>
      *   <li>{@link #getEditableVersion()} - Access editable version for UI binding</li>
@@ -1423,7 +1423,7 @@ public final class ObservableComposer {
      *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
      * </ul>
      *
-     * <h3>Example Usage</h3>
+     * <p><b>Example Usage</b>
      * <pre>{@code
      * // Get an existing concept
      * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(conceptNid);
@@ -1518,13 +1518,13 @@ public final class ObservableComposer {
      * The editor creates a new editable version with the composer's STAMP coordinates,
      * providing access to editable fields for UI binding and modification.
      *
-     * <h3>When to Use Editor vs Builder</h3>
+     * <p><b>When to Use Editor vs Builder</b>
      * <ul>
      *   <li><b>Use Builder</b> - When creating a NEW semantic that doesn't exist yet</li>
      *   <li><b>Use Editor</b> - When modifying an EXISTING semantic you already have</li>
      * </ul>
      *
-     * <h3>Unified API</h3>
+     * <p><b>Unified API</b>
      * Both Builder and Editor provide the same core methods for consistency:
      * <ul>
      *   <li>{@link #getEditableVersion()} - Access editable version for UI binding</li>
@@ -1534,7 +1534,7 @@ public final class ObservableComposer {
      *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
      * </ul>
      *
-     * <h3>Example Usage</h3>
+     * <p><b>Example Usage</b>
      * <pre>{@code
      * // Get an existing semantic (e.g., a description)
      * ObservableSemantic semantic = ObservableEntityHandle.getSemanticOrThrow(semanticNid);

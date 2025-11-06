@@ -34,8 +34,8 @@ import java.util.function.Supplier;
  *       version analysis.</li>
  * </ol>
  *
- * <h3>Quick Decision Guide</h3>
- * <table border="1" cellpadding="5">
+ * <p><b>Quick Decision Guide</b>
+ * <table style="border: 1px solid black; border-collapse: collapse;">
  * <caption>Which Class to Use When</caption>
  * <tr>
  *   <th>I Need To...</th>
@@ -88,7 +88,7 @@ import java.util.function.Supplier;
  * Observable entities can be accessed using three different identifier types, providing flexibility
  * across different contexts and API boundaries:
  *
- * <table border="1" cellpadding="5">
+ * <table style="border: 1px solid black; border-collapse: collapse;">
  * <caption>Entity Access Methods</caption>
  * <tr>
  *   <th>Identifier Type</th>
@@ -164,7 +164,7 @@ import java.util.function.Supplier;
  * and Stamp variants), they have fundamentally different characteristics that make a parallel interface design
  * more appropriate than extending {@code EntityHandle}:
  *
- * <table border="1" cellpadding="5">
+ * <table style="border: 1px solid black; border-collapse: collapse;">
  * <caption>Comparison: Entity vs ObservableEntity</caption>
  * <tr>
  *   <th>Characteristic</th>
@@ -214,7 +214,7 @@ import java.util.function.Supplier;
  * Like {@code EntityHandle}, this interface provides three complementary patterns for type-safe entity processing
  * without manual instanceof checks or casts. Choose the right pattern based on your use case.
  *
- * <table border="1" cellpadding="5">
+ * <table style="border: 1px solid black; border-collapse: collapse;">
  * <caption>Observable Entity Access Patterns</caption>
  * <tr>
  *   <th>Pattern</th>
@@ -362,7 +362,7 @@ import java.util.function.Supplier;
  * according to a {@link ViewCalculator}'s coordinate configuration. Snapshots include latest, uncommitted,
  * and historic versions. Snapshot methods follow the same three patterns as entity access:
  *
- * <h3>Snapshot Pattern 1: Side Effects with {@code ifXxxGetSnapshot()}</h3>
+ * <p><b>Snapshot Pattern 1: Side Effects with {@code ifXxxGetSnapshot()}</b>
  * <pre>{@code
  * ViewCalculator calculator = viewCoordinateRecord.calculator();
  *
@@ -379,7 +379,7 @@ import java.util.function.Supplier;
  *     .ifSemanticGetSnapshot(calculator, s -> processSemanticSnapshot(s));
  * }</pre>
  *
- * <h3>Snapshot Pattern 2: Safe Extraction with {@code asXxxSnapshot()}</h3>
+ * <p><b>Snapshot Pattern 2: Safe Extraction with {@code asXxxSnapshot()}</b>
  * <pre>{@code
  * // Extract snapshot if concept, with Optional handling
  * Optional<ObservableConceptSnapshot> maybeSnapshot =
@@ -397,7 +397,7 @@ import java.util.function.Supplier;
  *     .toList();
  * }</pre>
  *
- * <h3>Snapshot Pattern 3: Direct Access with {@code getXxxSnapshotOrThrow()}</h3>
+ * <p><b>Snapshot Pattern 3: Direct Access with {@code getXxxSnapshotOrThrow()}</b>
  * <pre>{@code
  * // Single-call snapshot retrieval (nid + calculator → snapshot)
  * ObservableConceptSnapshot conceptSnapshot =
@@ -452,7 +452,7 @@ import java.util.function.Supplier;
  *
  * <h2>Choosing the Right Pattern</h2>
  *
- * <h3>Ask yourself:</h3>
+ * <p><b>Ask yourself:</b>
  * <ol>
  *   <li><b>Am I binding to UI or registering listeners?</b>
  *     <ul>
@@ -560,7 +560,7 @@ public interface ObservableEntityHandle {
      * with the {@code asXxx()} pattern used for type-specific extraction. Use this when you
      * want Optional-based extraction of the entity regardless of type.
      *
-     * <h3>Usage Examples:</h3>
+     * <p><b>Usage Examples:</b>
      * <pre>{@code
      * // Extract entity with Optional chaining
      * Optional<ObservableEntity<?>> maybeEntity = ObservableEntityHandle.get(nid).asEntity();
@@ -896,7 +896,7 @@ public interface ObservableEntityHandle {
      * <p>
      * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * ObservableEntityHandle.get(nid)
      *     .ifConceptGetSnapshot(calculator, snapshot ->
@@ -954,7 +954,7 @@ public interface ObservableEntityHandle {
      * Most stamps have a single version with no contradictions. Historic versions are rare and
      * typically indicate metadata corrections after creation.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * ObservableEntityHandle.get(stampNid)
      *     .ifStampGetSnapshot(calculator, snapshot -> {
@@ -986,7 +986,7 @@ public interface ObservableEntityHandle {
      * Historic versions are rare and indicate metadata corrections. Uncommitted stamp versions
      * would only exist if stamp metadata was being edited but not yet persisted (very unusual).
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * ObservableEntityHandle.get(nid)
      *     .asStampSnapshot(calculator)
@@ -1024,7 +1024,7 @@ public interface ObservableEntityHandle {
      *   <li>Uncommitted versions would only exist during active metadata editing (very unusual)</li>
      * </ul>
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * ViewCalculator calculator = viewCoordinateRecord.calculator();
      * ObservableStampSnapshot snapshot =
@@ -1064,7 +1064,7 @@ public interface ObservableEntityHandle {
      * <p>
      * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * PublicId stampPublicId = PublicIds.of(uuid);
      * ObservableStampSnapshot snapshot =
@@ -1087,7 +1087,7 @@ public interface ObservableEntityHandle {
      * <p>
      * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * EntityFacade stampFacade = EntityProxy.make(stampNid);
      * ObservableStampSnapshot snapshot =
@@ -1124,7 +1124,7 @@ public interface ObservableEntityHandle {
      * {@link #getSemanticSnapshotOrThrow}, {@link #getPatternSnapshotOrThrow}, {@link #getStampSnapshotOrThrow})
      * which provide better type safety and clearer semantics.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * // When entity type is unknown (user input, generic processing)
      * Optional<ObservableEntitySnapshot<?, ?>> maybeSnapshot =
@@ -1166,7 +1166,7 @@ public interface ObservableEntityHandle {
      * <p>
      * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * ObservableEntityHandle.get(nid)
      *     .asConceptSnapshot(calculator)
@@ -1211,7 +1211,7 @@ public interface ObservableEntityHandle {
      * <p>
      * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * ViewCalculator calculator = viewCoordinateRecord.calculator();
      * ObservableConceptSnapshot snapshot =
@@ -1263,7 +1263,7 @@ public interface ObservableEntityHandle {
      * <p>
      * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * ObservableSemanticSnapshot snapshot =
      *     ObservableEntityHandle.getSemanticSnapshotOrThrow(semanticNid, calculator);
@@ -1314,7 +1314,7 @@ public interface ObservableEntityHandle {
      * <p>
      * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * ObservablePatternSnapshot snapshot =
      *     ObservableEntityHandle.getPatternSnapshotOrThrow(patternNid, calculator);
@@ -1553,7 +1553,7 @@ public interface ObservableEntityHandle {
      * Use this method when you need to extract and return the concept, or when you
      * want to apply transformations using {@link Optional#map(java.util.function.Function)}.
      *
-     * <h3>Usage Examples:</h3>
+     * <p><b>Usage Examples:</b>
      * <pre>{@code
      * // Extract concept or return null
      * ObservableConcept concept = ObservableEntityHandle.get(nid)
@@ -1587,7 +1587,7 @@ public interface ObservableEntityHandle {
      * Use this method when you need to extract and return the semantic, or when you
      * want to apply transformations using {@link Optional#map(java.util.function.Function)}.
      *
-     * <h3>Usage Examples:</h3>
+     * <p><b>Usage Examples:</b>
      * <pre>{@code
      * // Extract semantic with default
      * ObservableSemantic semantic = ObservableEntityHandle.get(nid)
@@ -1615,7 +1615,7 @@ public interface ObservableEntityHandle {
      * Use this method when you need to extract and return the pattern, or when you
      * want to apply transformations using {@link Optional#map(java.util.function.Function)}.
      *
-     * <h3>Usage Examples:</h3>
+     * <p><b>Usage Examples:</b>
      * <pre>{@code
      * // Extract pattern
      * Optional<ObservablePattern> pattern = ObservableEntityHandle.get(nid).asPattern();
@@ -1642,7 +1642,7 @@ public interface ObservableEntityHandle {
      * Use this method when you need to extract and return the stamp, or when you
      * want to apply transformations using {@link Optional#map(java.util.function.Function)}.
      *
-     * <h3>Usage Examples:</h3>
+     * <p><b>Usage Examples:</b>
      * <pre>{@code
      * // Extract stamp
      * ObservableStamp stamp = ObservableEntityHandle.get(nid)
@@ -1672,14 +1672,14 @@ public interface ObservableEntityHandle {
      * <b>Use this method when:</b> Entity type is guaranteed by your data model. Wrong type indicates
      * data corruption or programming error, not a legitimate alternative case.
      *
-     * <h3>Common Use Cases:</h3>
+     * <p><b>Common Use Cases:</b>
      * <ul>
      *   <li>Field definitions where meaning/datatype/purpose are always concepts</li>
      *   <li>UI controllers that require specific entity types</li>
      *   <li>Data binding scenarios where type is known at compile time</li>
      * </ul>
      *
-     * <h3>Usage Examples:</h3>
+     * <p><b>Usage Examples:</b>
      * <pre>{@code
      * // Field definition - meaning is ALWAYS a concept per data model
      * public ObservableConcept observableMeaning(int meaningNid) {
@@ -1711,7 +1711,7 @@ public interface ObservableEntityHandle {
      * <p>
      * Use this variant when you want to provide domain-specific error context.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * public ObservableConcept dataType() {
      *     return ObservableEntityHandle.get(dataTypeNid())
@@ -1732,7 +1732,7 @@ public interface ObservableEntityHandle {
      * <p>
      * <b>Use this method when:</b> Entity type is guaranteed by your data model.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * public ObservableSemantic getDefinition(int semanticNid) {
      *     return ObservableEntityHandle.get(semanticNid).expectSemantic();
@@ -1769,7 +1769,7 @@ public interface ObservableEntityHandle {
      * <p>
      * <b>Use this method when:</b> Entity type is guaranteed by your data model.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * public ObservablePattern getPatternForSemantic(int patternNid) {
      *     return ObservableEntityHandle.get(patternNid).expectPattern();
@@ -1806,7 +1806,7 @@ public interface ObservableEntityHandle {
      * <p>
      * <b>Use this method when:</b> Entity type is guaranteed by your data model.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * public ObservableStamp getVersionStamp(int stampNid) {
      *     return ObservableEntityHandle.get(stampNid).expectStamp();

@@ -23,19 +23,17 @@ import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.application.Platform;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXThread;
 
 /**
  * Integration tests for complete ObservableComposer workflows.
@@ -66,6 +64,7 @@ class ObservableComposerWorkflowIT {
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(1)
     void loadTestData() {
         assertTrue(PB_STARTER_DATA.exists(),
@@ -81,358 +80,358 @@ class ObservableComposerWorkflowIT {
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(2)
-    void testCompleteCreateConceptWorkflow() throws Exception {
-        runOnJavaFXThread(() -> {
-            LOG.info("=== Testing Complete Create Concept Workflow ===");
+    void testCompleteCreateConceptWorkflow() {
 
-            // 1. Create composer
-            ObservableComposer composer = ObservableComposer.builder()
-                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
-                    .author(TinkarTerm.USER)
-                    .module(TinkarTerm.PRIMORDIAL_MODULE)
-                    .path(TinkarTerm.DEVELOPMENT_PATH)
-                    .defaultState(State.ACTIVE)
-                    .transactionComment("Create concept workflow test")
-                    .build();
+    LOG.info("=== Testing Complete Create Concept Workflow ===");
 
-            assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
+    // 1. Create composer
+    ObservableComposer composer = ObservableComposer.builder()
+            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .author(TinkarTerm.USER)
+            .module(TinkarTerm.PRIMORDIAL_MODULE)
+            .path(TinkarTerm.DEVELOPMENT_PATH)
+            .defaultState(State.ACTIVE)
+            .transactionComment("Create concept workflow test")
+            .build();
 
-            // 2. Create a concept using the composer
-            ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
-                    composer.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
-            ObservableConcept observableConcept = conceptComposer.getEntity();
+    assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
 
-            assertNotNull(observableConcept);
-            LOG.info("Step 1: Created concept with nid: {}", observableConcept.nid());
+    // 2. Create a concept using the composer
+    ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+            composer.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
+    ObservableConcept observableConcept = conceptComposer.getEntity();
 
-            // 3. Get the editable version
-            ObservableEditableConceptVersion editableVersion = conceptComposer.getEditableVersion();
+    assertNotNull(observableConcept);
+    LOG.info("Step 1: Created concept with nid: {}", observableConcept.nid());
 
-            assertNotNull(editableVersion);
-            LOG.info("Step 2: Created editable version");
+    // 3. Get the editable version
+    ObservableEditableConceptVersion editableVersion = conceptComposer.getEditableVersion();
 
-            // 4. Verify transaction state
-            assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer.getTransactionState());
-            LOG.info("Step 3: Transaction state is UNCOMMITTED");
+    assertNotNull(editableVersion);
+    LOG.info("Step 2: Created editable version");
 
-            // 5. Clean up
-            composer.cancel();
-            assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
-            LOG.info("Step 4: Transaction cancelled, state is NONE");
+    // 4. Verify transaction state
+    assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer.getTransactionState());
+    LOG.info("Step 3: Transaction state is UNCOMMITTED");
 
-            LOG.info("=== Create Concept Workflow Complete ===\n");
-        });
+    // 5. Clean up
+    composer.cancel();
+    assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
+    LOG.info("Step 4: Transaction cancelled, state is NONE");
+
+    LOG.info("=== Create Concept Workflow Complete ===\n");
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(3)
-    void testCompleteEditSemanticWorkflow() throws Exception {
-        runOnJavaFXThread(() -> {
-            LOG.info("=== Testing Complete Edit Semantic Workflow ===");
+    void testCompleteEditSemanticWorkflow() {
 
-            // 1. Create a concept first using composer
-            ObservableComposer composer1 = ObservableComposer.builder()
-                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
-                    .author(TinkarTerm.USER)
-                    .module(TinkarTerm.PRIMORDIAL_MODULE)
-                    .path(TinkarTerm.DEVELOPMENT_PATH)
-                    .defaultState(State.ACTIVE)
-                    .transactionComment("Create concept for semantic test")
-                    .build();
+    LOG.info("=== Testing Complete Edit Semantic Workflow ===");
 
-            ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
-                    composer1.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
-            conceptComposer.getEditableVersion().save();
-            composer1.commit();
-            ObservableConcept observableConcept = conceptComposer.getEntity();
-            LOG.info("Step 1: Created concept with nid: {}", observableConcept.nid());
+    // 1. Create a concept first using composer
+    ObservableComposer composer1 = ObservableComposer.builder()
+            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .author(TinkarTerm.USER)
+            .module(TinkarTerm.PRIMORDIAL_MODULE)
+            .path(TinkarTerm.DEVELOPMENT_PATH)
+            .defaultState(State.ACTIVE)
+            .transactionComment("Create concept for semantic test")
+            .build();
 
-            // 2. Create a semantic on the concept using composer
-            ObservableComposer composer2 = ObservableComposer.builder()
-                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
-                    .author(TinkarTerm.USER)
-                    .module(TinkarTerm.PRIMORDIAL_MODULE)
-                    .path(TinkarTerm.DEVELOPMENT_PATH)
-                    .defaultState(State.ACTIVE)
-                    .transactionComment("Create semantic for test")
-                    .build();
+    ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+            composer1.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
+    conceptComposer.getEditableVersion().save();
+    composer1.commit();
+    ObservableConcept observableConcept = conceptComposer.getEntity();
+    LOG.info("Step 1: Created concept with nid: {}", observableConcept.nid());
 
-            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticComposer =
-                    composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
-            ObservableEditableSemanticVersion semanticVersion = semanticComposer.getEditableVersion();
+    // 2. Create a semantic on the concept using composer
+    ObservableComposer composer2 = ObservableComposer.builder()
+            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .author(TinkarTerm.USER)
+            .module(TinkarTerm.PRIMORDIAL_MODULE)
+            .path(TinkarTerm.DEVELOPMENT_PATH)
+            .defaultState(State.ACTIVE)
+            .transactionComment("Create semantic for test")
+            .build();
 
-            // Set field values
-            javafx.collections.ObservableList<ObservableEditableField<?>> fields = semanticVersion.getEditableFields();
-            if (fields.size() >= 3) {
-                ((ObservableEditableField<String>) fields.get(0)).setValue("Original description");
-                ((ObservableEditableField<Object>) fields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
-                ((ObservableEditableField<Object>) fields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
-            }
+    ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticComposer =
+            composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
+    ObservableEditableSemanticVersion semanticVersion = semanticComposer.getEditableVersion();
 
-            semanticVersion.save();
-            composer2.commit();
-            ObservableSemantic observableSemantic = semanticComposer.getEntity();
-            LOG.info("Step 2: Created semantic with nid: {}", observableSemantic.nid());
+    // Set field values
+    javafx.collections.ObservableList<ObservableEditableField<?>> fields = semanticVersion.getEditableFields();
+    if (fields.size() >= 3) {
+        ((ObservableEditableField<String>) fields.get(0)).setValue("Original description");
+        ((ObservableEditableField<Object>) fields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
+        ((ObservableEditableField<Object>) fields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+    }
 
-            // 3. Create composer and edit semantic
-            ObservableComposer composer3 = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.ACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH,
-                    "Edit semantic workflow test"
-            );
+    semanticVersion.save();
+    composer2.commit();
+    ObservableSemantic observableSemantic = semanticComposer.getEntity();
+    LOG.info("Step 2: Created semantic with nid: {}", observableSemantic.nid());
 
-            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
-                    composer3.composeSemantic(observableSemantic.publicId(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
-            ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
-            LOG.info("Step 3: Created editable semantic version");
+    // 3. Create composer and edit semantic
+    ObservableComposer composer3 = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.ACTIVE,
+            TinkarTerm.USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH,
+            "Edit semantic workflow test"
+    );
 
-            // 4. Get and verify editable fields
-            javafx.collections.ObservableList<ObservableEditableField<?>> editableFields = editableVersion.getEditableFields();
-            assertTrue(editableFields.size() > 0, "Should have editable fields");
-            LOG.info("Step 4: Editable semantic has {} fields", editableFields.size());
+    ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+            composer3.composeSemantic(observableSemantic.publicId(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
+    ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
+    LOG.info("Step 3: Created editable semantic version");
 
-            // 5. Verify first field (description text)
-            if (editableFields.size() > 0) {
-                ObservableEditableField<?> firstField = editableFields.get(0);
-                assertNotNull(firstField.getValue());
-                LOG.info("Step 5: First field value: {}", firstField.getValue());
-            }
+    // 4. Get and verify editable fields
+    javafx.collections.ObservableList<ObservableEditableField<?>> editableFields = editableVersion.getEditableFields();
+    assertTrue(editableFields.size() > 0, "Should have editable fields");
+    LOG.info("Step 4: Editable semantic has {} fields", editableFields.size());
 
-            // 6. Verify not dirty initially
-            assertFalse(editableVersion.isDirty(), "Should not be dirty initially");
-            LOG.info("Step 6: Editable version is not dirty");
+    // 5. Verify first field (description text)
+    if (editableFields.size() > 0) {
+        ObservableEditableField<?> firstField = editableFields.get(0);
+        assertNotNull(firstField.getValue());
+        LOG.info("Step 5: First field value: {}", firstField.getValue());
+    }
 
-            // 7. Clean up
-            composer3.cancel();
-            LOG.info("Step 7: Transaction cancelled");
+    // 6. Verify not dirty initially
+    assertFalse(editableVersion.isDirty(), "Should not be dirty initially");
+    LOG.info("Step 6: Editable version is not dirty");
 
-            LOG.info("=== Edit Semantic Workflow Complete ===\n");
-        });
+    // 7. Clean up
+    composer3.cancel();
+    LOG.info("Step 7: Transaction cancelled");
+
+    LOG.info("=== Edit Semantic Workflow Complete ===\n");
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(4)
-    void testPropertyNotificationWorkflow() throws Exception {
-        runOnJavaFXThread(() -> {
-            LOG.info("=== Testing Property Notification Workflow ===");
+    void testPropertyNotificationWorkflow() {
 
-            ObservableComposer composer = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.ACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH,
-                    "Property notification test"
-            );
+    LOG.info("=== Testing Property Notification Workflow ===");
 
-            // Track notifications
-            AtomicInteger stateChangeCount = new AtomicInteger(0);
-            AtomicInteger hasChangesCount = new AtomicInteger(0);
+    ObservableComposer composer = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.ACTIVE,
+            TinkarTerm.USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH,
+            "Property notification test"
+    );
 
-            composer.transactionStateProperty().addListener((obs, oldVal, newVal) -> {
-                stateChangeCount.incrementAndGet();
-                LOG.info("State changed: {} → {}", oldVal, newVal);
-            });
+    // Track notifications
+    AtomicInteger stateChangeCount = new AtomicInteger(0);
+    AtomicInteger hasChangesCount = new AtomicInteger(0);
 
-            composer.hasUncommittedChangesProperty().addListener((obs, oldVal, newVal) -> {
-                hasChangesCount.incrementAndGet();
-                LOG.info("Has changes: {} → {}", oldVal, newVal);
-            });
+    composer.transactionStateProperty().addListener((obs, oldVal, newVal) -> {
+        stateChangeCount.incrementAndGet();
+        LOG.info("State changed: {} → {}", oldVal, newVal);
+    });
 
-            // Trigger notifications
-            composer.getOrCreateTransaction();
-            assertTrue(stateChangeCount.get() > 0, "Should have state change notifications");
+    composer.hasUncommittedChangesProperty().addListener((obs, oldVal, newVal) -> {
+        hasChangesCount.incrementAndGet();
+        LOG.info("Has changes: {} → {}", oldVal, newVal);
+    });
 
-            composer.cancel();
-            assertTrue(stateChangeCount.get() >= 2, "Should have multiple state changes");
+    // Trigger notifications
+    composer.getOrCreateTransaction();
+    assertTrue(stateChangeCount.get() > 0, "Should have state change notifications");
 
-            LOG.info("Total state changes: {}", stateChangeCount.get());
-            LOG.info("=== Property Notification Workflow Complete ===\n");
-        });
+    composer.cancel();
+    assertTrue(stateChangeCount.get() >= 2, "Should have multiple state changes");
+
+    LOG.info("Total state changes: {}", stateChangeCount.get());
+    LOG.info("=== Property Notification Workflow Complete ===\n");
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(5)
-    void testMultipleComposersWorkflow() throws Exception {
-        runOnJavaFXThread(() -> {
-            LOG.info("=== Testing Multiple Composers Workflow ===");
+    void testMultipleComposersWorkflow() {
 
-            // Create multiple composers for different tasks
-            ObservableComposer composer1 = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.ACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH,
-                    "Composer 1 - User edits"
-            );
+    LOG.info("=== Testing Multiple Composers Workflow ===");
 
-            ObservableComposer composer2 = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.ACTIVE,
-                    TinkarTerm.KOMET_USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH,
-                    "Composer 2 - System edits"
-            );
+    // Create multiple composers for different tasks
+    ObservableComposer composer1 = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.ACTIVE,
+            TinkarTerm.USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH,
+            "Composer 1 - User edits"
+    );
 
-            composer1.getOrCreateTransaction();
-            composer2.getOrCreateTransaction();
+    ObservableComposer composer2 = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.ACTIVE,
+            TinkarTerm.KOMET_USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH,
+            "Composer 2 - System edits"
+    );
 
-            assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer1.getTransactionState());
-            assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer2.getTransactionState());
+    composer1.getOrCreateTransaction();
+    composer2.getOrCreateTransaction();
 
-            LOG.info("Both composers have independent transactions");
+    assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer1.getTransactionState());
+    assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer2.getTransactionState());
 
-            // Cancel first composer
-            composer1.cancel();
-            assertEquals(ObservableComposer.TransactionState.NONE, composer1.getTransactionState());
-            assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer2.getTransactionState());
+    LOG.info("Both composers have independent transactions");
 
-            LOG.info("Composer 1 cancelled, Composer 2 still active");
+    // Cancel first composer
+    composer1.cancel();
+    assertEquals(ObservableComposer.TransactionState.NONE, composer1.getTransactionState());
+    assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer2.getTransactionState());
 
-            // Cancel second composer
-            composer2.cancel();
-            assertEquals(ObservableComposer.TransactionState.NONE, composer2.getTransactionState());
+    LOG.info("Composer 1 cancelled, Composer 2 still active");
 
-            LOG.info("Both composers cancelled");
-            LOG.info("=== Multiple Composers Workflow Complete ===\n");
-        });
+    // Cancel second composer
+    composer2.cancel();
+    assertEquals(ObservableComposer.TransactionState.NONE, composer2.getTransactionState());
+
+    LOG.info("Both composers cancelled");
+    LOG.info("=== Multiple Composers Workflow Complete ===\n");
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(6)
-    void testEditableFieldModificationWorkflow() throws Exception {
-        runOnJavaFXThread(() -> {
-            LOG.info("=== Testing Editable Field Modification Workflow ===");
+    void testEditableFieldModificationWorkflow() {
 
-            // Create entities using composer
-            ObservableComposer composer1 = ObservableComposer.builder()
-                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
-                    .author(TinkarTerm.USER)
-                    .module(TinkarTerm.PRIMORDIAL_MODULE)
-                    .path(TinkarTerm.DEVELOPMENT_PATH)
-                    .defaultState(State.ACTIVE)
-                    .transactionComment("Create entities for field modification test")
-                    .build();
+    LOG.info("=== Testing Editable Field Modification Workflow ===");
 
-            ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
-                    composer1.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
-            conceptComposer.getEditableVersion().save();
-            composer1.commit();
-            ObservableConcept observableConcept = conceptComposer.getEntity();
+    // Create entities using composer
+    ObservableComposer composer1 = ObservableComposer.builder()
+            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .author(TinkarTerm.USER)
+            .module(TinkarTerm.PRIMORDIAL_MODULE)
+            .path(TinkarTerm.DEVELOPMENT_PATH)
+            .defaultState(State.ACTIVE)
+            .transactionComment("Create entities for field modification test")
+            .build();
 
-            ObservableComposer composer2 = ObservableComposer.builder()
-                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
-                    .author(TinkarTerm.USER)
-                    .module(TinkarTerm.PRIMORDIAL_MODULE)
-                    .path(TinkarTerm.DEVELOPMENT_PATH)
-                    .defaultState(State.ACTIVE)
-                    .transactionComment("Create semantic for field modification test")
-                    .build();
+    ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+            composer1.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
+    conceptComposer.getEditableVersion().save();
+    composer1.commit();
+    ObservableConcept observableConcept = conceptComposer.getEntity();
 
-            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticComposer =
-                    composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
-            ObservableEditableSemanticVersion semanticVersion = semanticComposer.getEditableVersion();
+    ObservableComposer composer2 = ObservableComposer.builder()
+            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .author(TinkarTerm.USER)
+            .module(TinkarTerm.PRIMORDIAL_MODULE)
+            .path(TinkarTerm.DEVELOPMENT_PATH)
+            .defaultState(State.ACTIVE)
+            .transactionComment("Create semantic for field modification test")
+            .build();
 
-            // Set field values
-            javafx.collections.ObservableList<ObservableEditableField<?>> initialFields = semanticVersion.getEditableFields();
-            if (initialFields.size() >= 3) {
-                ((ObservableEditableField<String>) initialFields.get(0)).setValue("Test description");
-                ((ObservableEditableField<Object>) initialFields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
-                ((ObservableEditableField<Object>) initialFields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
-            }
+    ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticComposer =
+            composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
+    ObservableEditableSemanticVersion semanticVersion = semanticComposer.getEditableVersion();
 
-            semanticVersion.save();
-            composer2.commit();
-            ObservableSemantic observableSemantic = semanticComposer.getEntity();
+    // Set field values
+    javafx.collections.ObservableList<ObservableEditableField<?>> initialFields = semanticVersion.getEditableFields();
+    if (initialFields.size() >= 3) {
+        ((ObservableEditableField<String>) initialFields.get(0)).setValue("Test description");
+        ((ObservableEditableField<Object>) initialFields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
+        ((ObservableEditableField<Object>) initialFields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+    }
 
-            // Edit semantic
-            ObservableComposer composer = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.ACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH
-            );
+    semanticVersion.save();
+    composer2.commit();
+    ObservableSemantic observableSemantic = semanticComposer.getEntity();
 
-            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
-                    composer.composeSemantic(observableSemantic.publicId(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
-            ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
-            javafx.collections.ObservableList<ObservableEditableField<?>> fields = editableVersion.getEditableFields();
+    // Edit semantic
+    ObservableComposer composer = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.ACTIVE,
+            TinkarTerm.USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH
+    );
 
-            if (fields.size() > 0 && fields.get(0).getValue() instanceof String) {
-                ObservableEditableField<String> field = (ObservableEditableField<String>) fields.get(0);
-                String originalValue = field.getValue();
-                LOG.info("Original value: {}", originalValue);
+    ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+            composer.composeSemantic(observableSemantic.publicId(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
+    ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
+    javafx.collections.ObservableList<ObservableEditableField<?>> fields = editableVersion.getEditableFields();
 
-                // Track field changes
-                AtomicInteger changeCount = new AtomicInteger(0);
-                field.editableValueProperty().addListener((obs, oldVal, newVal) -> {
-                    changeCount.incrementAndGet();
-                    LOG.info("Field changed: {} → {}", oldVal, newVal);
-                });
+    if (fields.size() > 0 && fields.get(0).getValue() instanceof String) {
+        ObservableEditableField<String> field = (ObservableEditableField<String>) fields.get(0);
+        String originalValue = field.getValue();
+        LOG.info("Original value: {}", originalValue);
 
-                // Modify field
-                field.setValue("Modified description");
-                assertEquals(1, changeCount.get(), "Should have one change notification");
-                assertTrue(editableVersion.isDirty(), "Version should be dirty after change");
-
-                // Reset field
-                editableVersion.reset();
-                assertEquals(originalValue, field.getValue(), "Value should be restored");
-                assertFalse(editableVersion.isDirty(), "Version should not be dirty after reset");
-
-                LOG.info("Field modification and reset successful");
-            }
-
-            composer.cancel();
-            LOG.info("=== Editable Field Modification Workflow Complete ===\n");
+        // Track field changes
+        AtomicInteger changeCount = new AtomicInteger(0);
+        field.editableValueProperty().addListener((obs, oldVal, newVal) -> {
+            changeCount.incrementAndGet();
+            LOG.info("Field changed: {} → {}", oldVal, newVal);
         });
+
+        // Modify field
+        field.setValue("Modified description");
+        assertEquals(1, changeCount.get(), "Should have one change notification");
+        assertTrue(editableVersion.isDirty(), "Version should be dirty after change");
+
+        // Reset field
+        editableVersion.reset();
+        assertEquals(originalValue, field.getValue(), "Value should be restored");
+        assertFalse(editableVersion.isDirty(), "Version should not be dirty after reset");
+
+        LOG.info("Field modification and reset successful");
+    }
+
+    composer.cancel();
+    LOG.info("=== Editable Field Modification Workflow Complete ===\n");
     }
 
     @Test
+    @RunOnJavaFXThread
     @Order(7)
-    void testTransactionStateTransitions() throws Exception {
-        runOnJavaFXThread(() -> {
-            LOG.info("=== Testing Transaction State Transitions ===");
+    void testTransactionStateTransitions() {
 
-            ObservableComposer composer = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
-                    State.ACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH
-            );
+    LOG.info("=== Testing Transaction State Transitions ===");
 
-            // Track all state transitions
-            AtomicReference<String> transitions = new AtomicReference<>("");
-            composer.transactionStateProperty().addListener((obs, oldVal, newVal) -> {
-                String transition = oldVal + " → " + newVal;
-                transitions.updateAndGet(s -> s.isEmpty() ? transition : s + ", " + transition);
-            });
+    ObservableComposer composer = ObservableComposer.create(
+            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            State.ACTIVE,
+            TinkarTerm.USER,
+            TinkarTerm.PRIMORDIAL_MODULE,
+            TinkarTerm.DEVELOPMENT_PATH
+    );
 
-            // State 1: NONE
-            assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
+    // Track all state transitions
+    AtomicReference<String> transitions = new AtomicReference<>("");
+    composer.transactionStateProperty().addListener((obs, oldVal, newVal) -> {
+        String transition = oldVal + " → " + newVal;
+        transitions.updateAndGet(s -> s.isEmpty() ? transition : s + ", " + transition);
+    });
 
-            // Transition: NONE → UNCOMMITTED
-            composer.getOrCreateTransaction();
-            assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer.getTransactionState());
+    // State 1: NONE
+    assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
 
-            // Transition: UNCOMMITTED → NONE
-            composer.cancel();
-            assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
+    // Transition: NONE → UNCOMMITTED
+    composer.getOrCreateTransaction();
+    assertEquals(ObservableComposer.TransactionState.UNCOMMITTED, composer.getTransactionState());
 
-            LOG.info("State transitions: {}", transitions.get());
-            assertTrue(transitions.get().contains("NONE → UNCOMMITTED"), "Should have NONE → UNCOMMITTED transition");
-            assertTrue(transitions.get().contains("UNCOMMITTED → NONE"), "Should have UNCOMMITTED → NONE transition");
+    // Transition: UNCOMMITTED → NONE
+    composer.cancel();
+    assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
 
-            LOG.info("=== Transaction State Transitions Complete ===\n");
-        });
+    LOG.info("State transitions: {}", transitions.get());
+    assertTrue(transitions.get().contains("NONE → UNCOMMITTED"), "Should have NONE → UNCOMMITTED transition");
+    assertTrue(transitions.get().contains("UNCOMMITTED → NONE"), "Should have UNCOMMITTED → NONE transition");
+
+    LOG.info("=== Transaction State Transitions Complete ===\n");
     }
 
     @AfterAll
@@ -442,27 +441,4 @@ class ObservableComposerWorkflowIT {
         LOG.info("PrimitiveData stopped");
     }
 
-    /**
-     * Helper method to run code on JavaFX thread and wait for completion.
-     */
-    private void runOnJavaFXThread(Runnable runnable) throws Exception {
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<Exception> exception = new AtomicReference<>();
-
-        Platform.runLater(() -> {
-            try {
-                runnable.run();
-            } catch (Exception e) {
-                exception.set(e);
-            } finally {
-                latch.countDown();
-            }
-        });
-
-        assertTrue(latch.await(10, TimeUnit.SECONDS), "Test timed out");
-
-        if (exception.get() != null) {
-            throw exception.get();
-        }
-    }
 }

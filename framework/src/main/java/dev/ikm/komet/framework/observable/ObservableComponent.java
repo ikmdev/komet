@@ -12,15 +12,17 @@ import org.eclipse.collections.api.list.ImmutableList;
  * as a common type for observing and interacting with various system-level
  * components, managing their versioning, state, and observable behaviors.
  * <p>
- * <p>Permitted subtypes:
- *<p> - ObservableEntity: Represents an observable construct associated
- *   with an entity, which includes fields and versions for observation.
- *<p> - ObservableVersion: Represents an observable version of an entity,
- *   equipped with properties like state, time, and author.
- *<p> - ObservableField: Represents an observable field within a system,
- *   capable of handling changes and maintaining field properties.
- *<p> - ObservableFieldDefinition: Defines an observable definition
- *   for fields, including metadata such as data type and purpose.
+ * Permitted subtypes:
+ * <ul>
+ * <li>ObservableEntity: Represents an observable construct associated
+ *   with an entity, which includes fields and versions for observation.</li>
+ * <li>ObservableVersion: Represents an observable version of an entity,
+ *   equipped with properties like state, time, and author.</li>
+ * <li>ObservableField: Represents an observable field within a system,
+ *   capable of handling changes and maintaining field properties.</li>
+ * <li>ObservableFieldDefinition: Defines an observable definition
+ *   for fields, including metadata such as data type and purpose.</li>
+ * </ul>
  * <p>
  * This interface enables consistent handling and interaction with
  * observable components across the system, leveraging its extensions

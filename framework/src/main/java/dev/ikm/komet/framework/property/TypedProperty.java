@@ -90,7 +90,7 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
  * }</pre>
  *
  * <h2>When to Use TypedProperty vs Alternatives</h2>
- * <table border="1" cellpadding="5">
+ * <table style="border: 1px solid black; border-collapse: collapse;">
  * <caption>Choosing the Right Property Type</caption>
  * <tr>
  *   <th>Situation</th>
@@ -180,7 +180,7 @@ public final class TypedProperty<T> {
      * This is the primary factory method for creating TypedProperty instances.
      * Typically used to define property constants in a dedicated class.
      *
-     * <h3>Example:</h3>
+     * <p><b>Example:</b>
      * <pre>{@code
      * public static final TypedProperty<ObservableConcept> MODULE =
      *     TypedProperty.of("MODULE", ObservableConcept.class);
@@ -202,7 +202,7 @@ public final class TypedProperty<T> {
      * Returns the value with compile-time type safety. Performs a runtime type check
      * and throws ClassCastException if the stored value doesn't match the expected type.
      *
-     * <h3>Example:</h3>
+     * <p><b>Example:</b>
      * <pre>{@code
      * ObservableConcept module = MODULE.getFrom(this);
      * }</pre>
@@ -228,7 +228,7 @@ public final class TypedProperty<T> {
      * Provides compile-time type safety through generic parameter. Performs runtime
      * validation to ensure type correctness before storing.
      *
-     * <h3>Example:</h3>
+     * <p><b>Example:</b>
      * <pre>{@code
      * MODULE.setTo(this, observableConcept);
      * }</pre>

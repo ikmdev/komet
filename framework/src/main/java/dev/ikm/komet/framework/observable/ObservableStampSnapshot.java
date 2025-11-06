@@ -51,7 +51,7 @@ import java.util.function.Predicate;
  *
  * <h2>Common Usage Patterns</h2>
  *
- * <h3>Pattern 1: Display Stamp Metadata</h3>
+ * <p><b>Pattern 1: Display Stamp Metadata</b>
  * <pre>{@code
  * ObservableStampSnapshot snapshot =
  *     ObservableEntityHandle.getStampSnapshotOrThrow(stampNid, viewCalc);
@@ -66,7 +66,7 @@ import java.util.function.Predicate;
  * }
  * }</pre>
  *
- * <h3>Pattern 2: Check for Metadata Corrections</h3>
+ * <p><b>Pattern 2: Check for Metadata Corrections</b>
  * <pre>{@code
  * ObservableStampSnapshot snapshot =
  *     ObservableEntityHandle.getStampSnapshotOrThrow(stampNid, viewCalc);
@@ -83,7 +83,7 @@ import java.util.function.Predicate;
  * }
  * }</pre>
  *
- * <h3>Pattern 3: Access Stamp Fields</h3>
+ * <p><b>Pattern 3: Access Stamp Fields</b>
  * <pre>{@code
  * ObservableStampSnapshot snapshot =
  *     ObservableEntityHandle.getStampSnapshotOrThrow(stampNid, viewCalc);
@@ -239,7 +239,7 @@ public final class ObservableStampSnapshot
      * Contradictions would only occur if metadata corrections were made on different
      * development paths and not yet merged.
      *
-     * <h3>Usage Example:</h3>
+     * <p><b>Usage Example:</b>
      * <pre>{@code
      * Latest<ObservableStampVersion> latest = snapshot.getLatestVersion();
      * if (latest.contradictions().isEmpty()) {

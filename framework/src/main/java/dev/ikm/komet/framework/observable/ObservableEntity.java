@@ -92,7 +92,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * will be made module-internal in a future release. Instead, use {@link ObservableEntityHandle}, which
  * provides a fluent, type-safe API for accessing observable entities.
  *
- * <h3>Why Use ObservableEntityHandle?</h3>
+ * <p><b>Why Use ObservableEntityHandle?</b>
  * <ul>
  *   <li><b>Type Safety:</b> Compile-time checks ensure you're working with the correct entity type
  *       (Concept, Semantic, Pattern, or Stamp)</li>
@@ -103,7 +103,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *       or direct assertion ({@code expectXxx}) - choose the right pattern for your use case</li>
  * </ul>
  *
- * <h3>Correct Usage Examples</h3>
+ * <p><b>Correct Usage Examples</b>
  * <pre>{@code
  * // ✅ CORRECT: Use ObservableEntityHandle for type-safe access
  * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(conceptNid);
@@ -128,7 +128,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * }</pre>
  *
  * <h2>When to Use ObservableEntity vs Entity</h2>
- * <table border="1" cellpadding="5">
+ * <table style="border: 1px solid black; border-collapse: collapse;">
  * <caption>ObservableEntity vs Entity Comparison</caption>
  * <tr>
  *   <th>Use Case</th>
@@ -204,7 +204,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * paths, in certain modules, or at a specific point in time. This is where {@link ObservableEntitySnapshot}
  * becomes essential.
  *
- * <h3>What Are Snapshots?</h3>
+ * <p><b>What Are Snapshots?</b>
  * <p>
  * An {@link ObservableEntitySnapshot} is a view-specific projection that:
  * <ul>
@@ -214,7 +214,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *   <li><b>Provides processing tools</b> - filter, sort, and analyze versions within the view context</li>
  * </ul>
  *
- * <h3>Why Use Snapshots?</h3>
+ * <p><b>Why Use Snapshots?</b>
  * <p>
  * <b>Problem:</b> Directly using {@code ObservableEntity} gives you all versions, but you need to determine
  * which ones are "current" for a specific user's view, which are historic, and which represent conflicts.
@@ -228,7 +228,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *   <li>Uncommitted local changes not yet saved</li>
  * </ul>
  *
- * <h3>Creating Snapshots via ObservableEntityHandle</h3>
+ * <p><b>Creating Snapshots via ObservableEntityHandle</b>
  * <p>
  * Always create snapshots using {@link ObservableEntityHandle}, never by calling deprecated methods or
  * constructing directly:
@@ -260,8 +260,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * }
  * }</pre>
  *
- * <h3>Observable Entity vs Snapshot Decision Guide</h3>
- * <table border="1" cellpadding="5">
+ * <p><b>Observable Entity vs Snapshot Decision Guide</b>
+ * <table style="border: 1px solid black; border-collapse: collapse;">
  * <caption>When to Use ObservableEntity vs ObservableEntitySnapshot</caption>
  * <tr>
  *   <th>Scenario</th>
@@ -324,13 +324,13 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
      * all changes are visible to all observers. Weak references allow automatic cleanup when
      * no observers hold the entity anymore.
      *
-     * <h3>Migration from SOFT to WEAK References</h3>
+     * <p><b>Migration from SOFT to WEAK References</b>
      * <p>
      * <b>Previous Implementation:</b> Used SOFT references via {@code ConcurrentReferenceHashMap}.
      * <p>
      * <b>Current Implementation:</b> Uses WEAK references via Caffeine cache with {@code weakValues()}.
      *
-     * <h3>Why WEAK is Superior for This Use Case</h3>
+     * <p><b>Why WEAK is Superior for This Use Case</b>
      * <ul>
      *   <li><b>Immediate Cleanup:</b> Entities are GC'd as soon as all observers release them
      *       (no strong references remain). This prevents memory buildup from unused entities.</li>
@@ -340,7 +340,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
      *       for memory pressure. Memory is reclaimed promptly when observers are done.</li>
      * </ul>
      *
-     * <h3>Why NOT SOFT References</h3>
+     * <p><b>Why NOT SOFT References</b>
      * <ul>
      *   <li><b>SOFT references persist too long:</b> They're only cleared when the JVM is
      *       under memory pressure, which may not occur even when entities are no longer needed.</li>
@@ -350,14 +350,14 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
      *       than actual usage, making behavior less deterministic.</li>
      * </ul>
      *
-     * <h3>Behavior Guarantee</h3>
+     * <p><b>Behavior Guarantee</b>
      * <p>
      * While any code holds a strong reference to an {@code ObservableEntity} (e.g., stored in
      * a variable, bound to UI, registered as listener), the entity remains in the cache and all
      * code accessing the same nid receives the same instance. When all strong references are
      * released, GC can collect the entity and the cache entry is automatically cleared.
      *
-     * <h3>Implementation Notes</h3>
+     * <p><b>Implementation Notes</b>
      * <p>
      * Migrated from legacy {@code ConcurrentReferenceHashMap} (2600 lines, pre-Java 8
      * segment-based locking) to modern Caffeine cache (actively maintained, optimized for

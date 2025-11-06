@@ -16,7 +16,7 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.tinkar.coordinate.Coordinates;
-import dev.ikm.tinkar.integration.TinkarProviderExtension;
+import dev.ikm.tinkar.integration.NewEphemeralKeyValueProvider;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Unit tests for ObservableComposer transaction state management.
  * Tests transaction lifecycle, state transitions, and property notifications.
  */
-@ExtendWith({JavaFXThreadExtension.class, TinkarProviderExtension.class})
+@ExtendWith({JavaFXThreadExtension.class, NewEphemeralKeyValueProvider.class})
 @RunOnJavaFXThread
 class ObservableComposerTransactionTest {
 
