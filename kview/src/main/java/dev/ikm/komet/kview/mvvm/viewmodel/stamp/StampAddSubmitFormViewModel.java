@@ -69,7 +69,7 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
         switch (observableEntity) {
             case ObservableConcept concept -> {
                 // Create editable concept version through ObservableComposer unified API
-                ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> editor =
+                ObservableComposer.EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> editor =
                         composer.composeConcept(concept.publicId());
 
                 // Save creates uncommitted version with new stamp coordinates
@@ -77,7 +77,7 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
             }
             case ObservablePattern pattern -> {
                 // Create editable pattern version through ObservableComposer unified API
-                ObservableComposer.EntityComposer<ObservableEditablePatternVersion, ObservablePattern> editor =
+                ObservableComposer.EntityComposer<ObservablePatternVersion.Editable, ObservablePattern> editor =
                         composer.composePattern(pattern.publicId());
 
                 // Save creates uncommitted version with new stamp coordinates
@@ -88,7 +88,7 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
                 // Get referenced component and pattern from the semantic
                 ObservableEntity referencedComponent = ObservableEntityHandle.get(semantic.referencedComponentNid()).expectEntity();
                 ObservablePattern patternFacade = ObservableEntityHandle.get(semantic.patternNid()).expectPattern();
-                ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+                ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
                         composer.composeSemantic(semantic.publicId(), referencedComponent, patternFacade);
 
                 // Save creates uncommitted version with new stamp coordinates

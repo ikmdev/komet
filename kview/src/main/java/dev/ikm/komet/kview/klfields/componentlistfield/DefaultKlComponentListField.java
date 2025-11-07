@@ -3,7 +3,7 @@ package dev.ikm.komet.kview.klfields.componentlistfield;
 import static dev.ikm.komet.kview.controls.KLComponentControlFactory.createTypeAheadComponentListControl;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.observable.ObservableEditableField;
+import dev.ikm.komet.framework.observable.ObservableField.Editable;
 import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.layout.version.field.KlComponentListField;
@@ -32,18 +32,18 @@ import java.util.function.Consumer;
 /**
  * Component list field implementation supporting both read-only and editable patterns.
  * <p>
- * <b>Editable Pattern (Recommended):</b> Use with {@link ObservableEditableField} for
+ * <b>Editable Pattern (Recommended):</b> Use with {@link ObservableField.Editable} for
  * transaction management, dirty tracking, and save/commit/rollback capabilities.
  * <p>
  * <b>Legacy Pattern:</b> Use with {@link ObservableField} for immediate write-through.
  * <p>
- * When using the editable pattern, changes are cached in the {@link ObservableEditableField}
- * and do not persist to the database until the parent {@link dev.ikm.komet.framework.observable.ObservableEditableSemanticVersion}
+ * When using the editable pattern, changes are cached in the {@link ObservableField.Editable}
+ * and do not persist to the database until the parent {@link dev.ikm.komet.framework.observable.ObservableSemanticVersion.Editable}
  * is saved and committed via {@link dev.ikm.komet.framework.observable.ObservableComposer}.
  */
 public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> implements KlComponentListField {
 
-    private final ObservableEditableField<IntIdList> editableField;
+    private final ObservableField.Editable<IntIdList> editableField;
 
     /**
      * Constructor using the editable pattern (recommended).
@@ -51,13 +51,13 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
      * Provides transaction management, dirty tracking, and cached editing.
      * Changes do not persist until the editable version is saved and committed.
      *
-     * @param editableField the editable field from an ObservableEditableSemanticVersion
+     * @param editableField the editable field from an ObservableSemanticVersion.Editable
      * @param observableView the view context
      * @param stamp4field the stamp for UI state determination
      * @param journalTopic used for summoning the concept window in the specific workspace
      */
     public DefaultKlComponentListField(
-            ObservableEditableField<IntIdList> editableField,
+            ObservableField.Editable<IntIdList> editableField,
             ObservableView observableView,
             ObservableStamp stamp4field,
             UUID journalTopic) {
@@ -93,8 +93,8 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
      * @param observableView the view context
      * @param stamp4field the stamp for UI state determination
      * @param journalTopic used for summoning the concept window in the specific workspace
-     * @deprecated Use {@link #DefaultKlComponentListField(ObservableEditableField, ObservableView, ObservableStamp, UUID)}
-     *             with ObservableEditableField for transaction management
+     * @deprecated Use {@link #DefaultKlComponentListField(ObservableField.Editable, ObservableView, ObservableStamp, UUID)}
+     *             with ObservableField.Editable for transaction management
      */
     @Deprecated(since = "1.0", forRemoval = false)
     public DefaultKlComponentListField(
@@ -126,10 +126,10 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
 
     /**
      * Sets up bidirectional binding between editable field and component list control.
-     * Uses the ObservableEditableField pattern for cached editing.
+     * Uses the ObservableField.Editable pattern for cached editing.
      */
     private void setupEditableBinding(
-            ObservableEditableField<IntIdList> editableField,
+            ObservableField.Editable<IntIdList> editableField,
             KLComponentCollectionControl control) {
 
         // Bind control to editable field's editable property (cached changes)
@@ -190,7 +190,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
      *
      * @return the editable field, or null if using legacy pattern
      */
-    public ObservableEditableField<IntIdList> getEditableField() {
+    public ObservableField.Editable<IntIdList> getEditableField() {
         return editableField;
     }
 

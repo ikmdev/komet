@@ -25,8 +25,7 @@ import org.controlsfx.property.editor.PropertyEditor;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
-import dev.ikm.komet.framework.observable.ObservableEditableField;
-import dev.ikm.komet.framework.observable.ObservableEditableSemanticVersion;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.panel.axiom.AxiomView;
 import dev.ikm.komet.framework.propsheet.editor.IntIdListEditor;
@@ -238,19 +237,19 @@ public class SheetItem<T> implements PropertySheet.Item {
     }
 
     // ========== EDITABLE PROPERTY FACTORY METHODS ==========
-    // These methods create SheetItems that bind to ObservableEditableField from ObservableEditableSemanticVersion
+    // These methods create SheetItems that bind to ObservableField.Editable from ObservableSemanticVersion.Editable
     // rather than read-only ObservableField.
 
     /**
-     * Creates a SheetItem for an editable field from ObservableEditableSemanticVersion.
+     * Creates a SheetItem for an editable field from ObservableSemanticVersion.Editable.
      * <p>
      * This is used when you want to edit a semantic field with changes cached in the
-     * ObservableEditableSemanticVersion until save() or commit() is called.
+     * ObservableSemanticVersion.Editable until save() or commit() is called.
      * <p>
      * <b>API Symmetry:</b>
      * <ul>
      *   <li>{@link #make(ObservableField, ViewProperties)} - read-only field</li>
-     *   <li>{@link #makeEditable(ObservableEditableSemanticVersion, int, ViewProperties)} - editable field</li>
+     *   <li>{@link #makeEditable(ObservableSemanticVersion.Editable, int, ViewProperties)} - editable field</li>
      * </ul>
      *
      * @param editableVersion the editable version containing editable fields
@@ -259,14 +258,14 @@ public class SheetItem<T> implements PropertySheet.Item {
      * @return a SheetItem bound to the editable field
      */
     public static <T> SheetItem<T> makeEditable(
-            ObservableEditableSemanticVersion editableVersion,
+            ObservableSemanticVersion.Editable editableVersion,
             int fieldIndex,
             ViewProperties viewProperties) {
         return makeEditable(editableVersion, fieldIndex, null, viewProperties);
     }
 
     /**
-     * Creates a SheetItem directly from an ObservableEditableField.
+     * Creates a SheetItem directly from an ObservableField.Editable.
      * <p>
      * Symmetric to {@link #make(ObservableField, ViewProperties)}.
      *
@@ -275,16 +274,16 @@ public class SheetItem<T> implements PropertySheet.Item {
      * @return a SheetItem bound to the editable field
      */
     public static <T> SheetItem<T> makeEditable(
-            ObservableEditableField<?> editableField,
+            ObservableField.Editable<?> editableField,
             ViewProperties viewProperties) {
         return makeEditable(editableField, null, viewProperties);
     }
 
     /**
-     * Creates a SheetItem for an editable field from ObservableEditableSemanticVersion with a category.
+     * Creates a SheetItem for an editable field from ObservableSemanticVersion.Editable with a category.
      * <p>
      * This is used when you want to edit a semantic field with changes cached in the
-     * ObservableEditableSemanticVersion until save() or commit() is called.
+     * ObservableSemanticVersion.Editable until save() or commit() is called.
      *
      * @param editableVersion the editable version containing editable fields
      * @param fieldIndex the index of the field in the semantic version
@@ -293,13 +292,13 @@ public class SheetItem<T> implements PropertySheet.Item {
      * @return a SheetItem bound to the editable field
      */
     public static <T> SheetItem<T> makeEditable(
-            ObservableEditableSemanticVersion editableVersion,
+            ObservableSemanticVersion.Editable editableVersion,
             int fieldIndex,
             String category,
             ViewProperties viewProperties) {
 
         // Get the editable field from the editable version
-        ObservableEditableField<?> editableField = editableVersion.getEditableField(fieldIndex);
+        ObservableField.Editable<?> editableField = editableVersion.getEditableField(fieldIndex);
         return makeEditable(editableField, category, viewProperties);
     }
 
@@ -314,7 +313,7 @@ public class SheetItem<T> implements PropertySheet.Item {
      * @return a SheetItem bound to the editable field
      */
     public static <T> SheetItem<T> makeEditable(
-            ObservableEditableField<?> editableField,
+            ObservableField.Editable<?> editableField,
             String category,
             ViewProperties viewProperties) {
 

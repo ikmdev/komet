@@ -93,9 +93,9 @@ class ObservableEditableVersionITestFX {
                     .build();
 
             // Create a test concept using the composer
-            ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+            ObservableComposer.EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> conceptComposer =
                     composer.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
-            ObservableEditableConceptVersion conceptVersion = conceptComposer.getEditableVersion();
+            ObservableConceptVersion.Editable conceptVersion = conceptComposer.getEditableVersion();
 
             conceptVersion.save();
             composer.commit();
@@ -115,17 +115,17 @@ class ObservableEditableVersionITestFX {
                     .build();
 
             // Create a test semantic on the concept using the composer
-            ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticComposer =
+            ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticComposer =
                     composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
-            ObservableEditableSemanticVersion semanticVersion = semanticComposer.getEditableVersion();
+            ObservableSemanticVersion.Editable semanticVersion = semanticComposer.getEditableVersion();
 
             // Set field values for the description semantic
-            javafx.collections.ObservableList<ObservableEditableField<?>> fields = semanticVersion.getEditableFields();
+            javafx.collections.ObservableList<ObservableField.Editable<?>> fields = semanticVersion.getEditableFields();
             if (fields.size() >= 3) {
-                ((ObservableEditableField<String>) fields.get(0)).setValue("Test semantic description");
-                ((ObservableEditableField<Object>) fields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
-                ((ObservableEditableField<Object>) fields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
-                ((ObservableEditableField<Object>) fields.get(3)).setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+                ((ObservableField.Editable<String>) fields.get(0)).setValue("Test semantic description");
+                ((ObservableField.Editable<Object>) fields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
+                ((ObservableField.Editable<Object>) fields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+                ((ObservableField.Editable<Object>) fields.get(3)).setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
             }
 
             semanticVersion.save();
@@ -163,11 +163,11 @@ class ObservableEditableVersionITestFX {
                 "Test editable concept version"
         );
 
-        ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> editor =
+        ObservableComposer.EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> editor =
                 composer.composeConcept(testConcept.publicId());
         assertNotNull(editor);
 
-        ObservableEditableConceptVersion editableVersion = editor.getEditableVersion();
+        ObservableConceptVersion.Editable editableVersion = editor.getEditableVersion();
         assertNotNull(editableVersion);
         assertNotNull(editableVersion.getEditStamp());
 
@@ -205,11 +205,11 @@ class ObservableEditableVersionITestFX {
                 "Test editable semantic version"
         );
 
-        ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
                 composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
         assertNotNull(editor);
 
-        ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
+        ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
         assertNotNull(editableVersion);
         assertNotNull(editableVersion.getEditStamp());
 
@@ -232,12 +232,12 @@ class ObservableEditableVersionITestFX {
                 TinkarTerm.DEVELOPMENT_PATH
         );
 
-        ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
                 composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
-        ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
+        ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
 
         // Get editable fields
-        javafx.collections.ObservableList<ObservableEditableField<?>> fields = editableVersion.getEditableFields();
+        javafx.collections.ObservableList<ObservableField.Editable<?>> fields = editableVersion.getEditableFields();
         assertNotNull(fields);
         assertTrue(fields.size() > 0, "Should have editable fields");
 
@@ -245,7 +245,7 @@ class ObservableEditableVersionITestFX {
 
         // Test accessing individual fields
         for (int i = 0; i < fields.size(); i++) {
-            ObservableEditableField<?> field = fields.get(i);
+            ObservableField.Editable<?> field = fields.get(i);
             assertNotNull(field);
             assertEquals(i, field.getFieldIndex());
             assertNotNull(field.editableValueProperty());
@@ -270,14 +270,14 @@ class ObservableEditableVersionITestFX {
                 TinkarTerm.DEVELOPMENT_PATH
         );
 
-        ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
                 composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
-        ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
+        ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
 
-        javafx.collections.ObservableList<ObservableEditableField<?>> fields = editableVersion.getEditableFields();
+        javafx.collections.ObservableList<ObservableField.Editable<?>> fields = editableVersion.getEditableFields();
 
         if (fields.size() > 0) {
-            ObservableEditableField<?> firstField = fields.get(0);
+            ObservableField.Editable<?> firstField = fields.get(0);
             Object originalValue = firstField.getValue();
 
             // Create a bound property
@@ -307,17 +307,17 @@ class ObservableEditableVersionITestFX {
                 TinkarTerm.DEVELOPMENT_PATH
         );
 
-        ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
                 composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
-        ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
+        ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
 
         // Initially should not be dirty
         assertFalse(editableVersion.isDirty(), "New editable version should not be dirty");
 
         // Modify a field
-        javafx.collections.ObservableList<ObservableEditableField<?>> fields = editableVersion.getEditableFields();
+        javafx.collections.ObservableList<ObservableField.Editable<?>> fields = editableVersion.getEditableFields();
         if (fields.size() > 0 && fields.get(0).getValue() instanceof String) {
-            ObservableEditableField<String> field = (ObservableEditableField<String>) fields.get(0);
+            ObservableField.Editable<String> field = (ObservableField.Editable<String>) fields.get(0);
             String originalValue = field.getValue();
             field.setValue("Modified value");
 
@@ -359,13 +359,13 @@ class ObservableEditableVersionITestFX {
                 "Composer 2"
         );
 
-        ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> editor1 =
+        ObservableComposer.EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> editor1 =
                 composer1.composeConcept(testConcept.publicId());
-        ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> editor2 =
+        ObservableComposer.EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> editor2 =
                 composer2.composeConcept(testConcept.publicId());
 
-        ObservableEditableConceptVersion editable1 = editor1.getEditableVersion();
-        ObservableEditableConceptVersion editable2 = editor2.getEditableVersion();
+        ObservableConceptVersion.Editable editable1 = editor1.getEditableVersion();
+        ObservableConceptVersion.Editable editable2 = editor2.getEditableVersion();
 
         assertNotNull(editable1);
         assertNotNull(editable2);

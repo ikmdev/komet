@@ -16,7 +16,11 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.komet.framework.observable.binding.Binding;
-import dev.ikm.tinkar.entity.StampVersionRecord;
+import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.State;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import org.eclipse.collections.api.list.MutableList;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -158,7 +162,141 @@ public final class ObservableStampVersion
     }
 
     @Override
-    public ObservableEditableStampVersion getEditableVersion(ObservableStamp editStamp) {
-        return ObservableEditableStampVersion.getOrCreate(getObservableEntity(), this, editStamp);
+    public Editable getEditableVersion(ObservableStamp editStamp) {
+        return Editable.getOrCreate(getObservableEntity(), this, editStamp);
+    }
+
+    /**
+     * Editable version wrapper for ObservableStampVersion.
+     * <p>
+     * Provides editable properties for stamp fields (state, time, author, module, path)
+     * that can be bound to GUI components. Changes are cached until save() or commit() is called.
+     */
+    public static final class Editable
+            extends ObservableVersion.Editable<ObservableStamp, ObservableStampVersion, StampVersionRecord> {
+
+        private final SimpleObjectProperty<State> editableStateProperty;
+        private final SimpleLongProperty editableTimeProperty;
+        private final SimpleObjectProperty<ConceptFacade> editableAuthorProperty;
+        private final SimpleObjectProperty<ConceptFacade> editableModuleProperty;
+        private final SimpleObjectProperty<ConceptFacade> editablePathProperty;
+
+        private Editable(ObservableStamp observableStamp, ObservableStampVersion observableVersion, ObservableStamp editStamp) {
+            super(observableStamp, observableVersion, editStamp);
+
+            // Initialize editable properties
+            StampVersionRecord version = observableVersion.version();
+
+            this.editableStateProperty = new SimpleObjectProperty<>(this, "state", version.state());
+            this.editableTimeProperty = new SimpleLongProperty(this, "time", version.time());
+            this.editableAuthorProperty = new SimpleObjectProperty<>(this, "author",
+                    EntityHandle.getConceptOrThrow(version.authorNid()));
+            this.editableModuleProperty = new SimpleObjectProperty<>(this, "module",
+                    EntityHandle.getConceptOrThrow(version.moduleNid()));
+            this.editablePathProperty = new SimpleObjectProperty<>(this, "path",
+                    EntityHandle.getConceptOrThrow(version.pathNid()));
+
+            // Add listeners to update working version when properties change
+            editableStateProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withStateNid(newValue.nid());
+                }
+            });
+
+            editableTimeProperty.addListener((obs, oldValue, newValue) -> {
+                workingVersion = workingVersion.withTime(newValue.longValue());
+            });
+
+            editableAuthorProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withAuthorNid(newValue.nid());
+                }
+            });
+
+            editableModuleProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withModuleNid(newValue.nid());
+                }
+            });
+
+            editablePathProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withPathNid(newValue.nid());
+                }
+            });
+        }
+
+        /**
+         * Gets or creates the canonical editable stamp version for the given stamp.
+         * <p>
+         * Returns the exact same instance for multiple calls with the same stamp, ensuring
+         * a single canonical editable version per ObservableStamp.
+         *
+         * @param observableVersion the ObservableStampVersion to edit
+         * @param editStamp the ObservableStamp (typically identifying the author)
+         * @return the canonical editable stamp version for this stamp
+         */
+        public static Editable getOrCreate(ObservableStamp observableStamp, ObservableStampVersion observableVersion, ObservableStamp editStamp) {
+            return ObservableVersion.Editable.getOrCreate(observableStamp, observableVersion, editStamp, Editable::new);
+        }
+
+        /**
+         * Returns the editable state property for GUI binding.
+         */
+        public SimpleObjectProperty<State> getStateProperty() {
+            return editableStateProperty;
+        }
+
+        /**
+         * Returns the editable time property for GUI binding.
+         */
+        public SimpleLongProperty getTimeProperty() {
+            return editableTimeProperty;
+        }
+
+        /**
+         * Returns the editable author property for GUI binding.
+         */
+        public SimpleObjectProperty<ConceptFacade> getAuthorProperty() {
+            return editableAuthorProperty;
+        }
+
+        /**
+         * Returns the editable module property for GUI binding.
+         */
+        public SimpleObjectProperty<ConceptFacade> getModuleProperty() {
+            return editableModuleProperty;
+        }
+
+        /**
+         * Returns the editable path property for GUI binding.
+         */
+        public SimpleObjectProperty<ConceptFacade> getPathProperty() {
+            return editablePathProperty;
+        }
+
+        @Override
+        protected StampVersionRecord createVersionWithStamp(StampVersionRecord version, int stampNid) {
+            // Stamps don't have a separate stamp field - they are self-describing
+            // Return the version as-is
+            return version;
+        }
+
+        @Override
+        protected Entity<?> createAnalogue(StampVersionRecord version) {
+            return version.chronology().with(version).build();
+        }
+
+        @Override
+        public void reset() {
+            super.reset();
+            // Reset properties to original values
+            StampVersionRecord version = observableVersion.version();
+            editableStateProperty.set(version.state());
+            editableTimeProperty.set(version.time());
+            editableAuthorProperty.set(EntityHandle.getConceptOrThrow(version.authorNid()));
+            editableModuleProperty.set(EntityHandle.getConceptOrThrow(version.moduleNid()));
+            editablePathProperty.set(EntityHandle.getConceptOrThrow(version.pathNid()));
+        }
     }
 }

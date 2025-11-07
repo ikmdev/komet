@@ -99,9 +99,9 @@ public class SemanticFieldsController {
 
     // ObservableComposer integration for proper transaction management
     private ObservableComposer composer;
-    private ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticEditor;
-    private ObservableEditableSemanticVersion editableVersion;
-    private List<ObservableEditableField<?>> editableFields = new ArrayList<>();
+    private ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor;
+    private ObservableSemanticVersion.Editable editableVersion;
+    private List<ObservableField.Editable<?>> editableFields = new ArrayList<>();
     private ObservableStamp currentEditStamp;
 
     private List<Node> nodes = new ArrayList<>();
@@ -121,7 +121,7 @@ public class SemanticFieldsController {
      */
     private List<ObservableField<?>> getObservableFields() {
         List<ObservableField<?>> observableFields = new ArrayList<>();
-        for (ObservableEditableField<?> editableField : editableFields) {
+        for (ObservableField.Editable<?> editableField : editableFields) {
             observableFields.add(editableField.getObservableFeature());
         }
         return observableFields;
@@ -172,7 +172,7 @@ public class SemanticFieldsController {
     private boolean checkForEmptyFields() {
         AtomicBoolean invalid = new AtomicBoolean(false);
 
-        for (ObservableEditableField<?> editableField : editableFields) {
+        for (ObservableField.Editable<?> editableField : editableFields) {
             ObservableField<?> observableField = editableField.getObservableFeature();
             FeatureDefinition fieldDefinition = observableField.definition(getStampCalculator());
             if (fieldDefinition.dataTypeNid() == IMAGE_FIELD.nid()) {
@@ -270,10 +270,10 @@ public class SemanticFieldsController {
                         && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
                     ImmutableList<Object> values = semanticVersionRecord.fieldValues();
                     for (int i = 0; i< values.size(); i++) {
-                        ObservableEditableField<?> editableField = editableFields.get(i);
+                        ObservableField.Editable<?> editableField = editableFields.get(i);
                         // Update via editable field's cached property
                         @SuppressWarnings("unchecked")
-                        ObservableEditableField<Object> uncheckedField = (ObservableEditableField<Object>) editableField;
+                        ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
                         uncheckedField.setValue(values.get(i));
                     }
                 }
@@ -350,11 +350,11 @@ public class SemanticFieldsController {
             editableFields.addAll(editableVersion.getEditableFields());
 
             // Generate UI nodes from editable fields
-            for (ObservableEditableField<?> editableField : editableFields) {
+            for (ObservableField.Editable<?> editableField : editableFields) {
                 if (genEditingViewModel.getPropertyValue(MODE) == CREATE && editableField.getValue() instanceof EntityProxy) {
                     // Set default blank concept for new semantics
                     @SuppressWarnings("unchecked")
-                    ObservableEditableField<EntityProxy> proxyField = (ObservableEditableField<EntityProxy>) editableField;
+                    ObservableField.Editable<EntityProxy> proxyField = (ObservableField.Editable<EntityProxy>) editableField;
                     proxyField.setValue(BLANK_CONCEPT);
                 }
 
@@ -438,10 +438,10 @@ public class SemanticFieldsController {
                 };
                 ImmutableList<Object> fieldValues = createDefaultFieldValues(patternForEntity, getViewProperties());
                 for (int i = 0; i < fieldValues.size(); i++) {
-                    ObservableEditableField<?> editableField = editableFields.get(i);
+                    ObservableField.Editable<?> editableField = editableFields.get(i);
                     // Use setValue() to update via editable field
                     @SuppressWarnings("unchecked")
-                    ObservableEditableField<Object> uncheckedField = (ObservableEditableField<Object>) editableField;
+                    ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
                     uncheckedField.setValue(fieldValues.get(i));
                 }
             });
@@ -458,10 +458,10 @@ public class SemanticFieldsController {
         if (entityVersion instanceof SemanticEntityVersion semanticEntityVersion) {
             for(int i = 0; i < semanticEntityVersion.fieldValues().size(); i++){
                 Object object = semanticEntityVersion.fieldValues().get(i);
-                ObservableEditableField<?> editableField = editableFields.get(i);
+                ObservableField.Editable<?> editableField = editableFields.get(i);
                 // Use setValue() to update via editable field
                 @SuppressWarnings("unchecked")
-                ObservableEditableField<Object> uncheckedField = (ObservableEditableField<Object>) editableField;
+                ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
                 uncheckedField.setValue(object);
             }
         }
@@ -478,7 +478,7 @@ public class SemanticFieldsController {
         try {
             // Create list of current values for event publishing
             List<Object> list = new ArrayList<>(editableFields.size());
-            for (ObservableEditableField<?> editableField : editableFields) {
+            for (ObservableField.Editable<?> editableField : editableFields) {
                 list.add(editableField.getValue());
             }
 

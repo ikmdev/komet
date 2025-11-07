@@ -18,6 +18,7 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
+import dev.ikm.tinkar.entity.Entity;
 import org.eclipse.collections.api.list.MutableList;
 
 public final class ObservableConceptVersion extends ObservableVersion<ObservableConcept, ConceptVersionRecord> implements ConceptEntityVersion {
@@ -53,7 +54,45 @@ public final class ObservableConceptVersion extends ObservableVersion<Observable
     }
 
     @Override
-    public ObservableEditableConceptVersion getEditableVersion(ObservableStamp editStamp) {
-        return ObservableEditableConceptVersion.getOrCreate(getObservableEntity(), this, editStamp);
+    public Editable getEditableVersion(ObservableStamp editStamp) {
+        return Editable.getOrCreate(getObservableEntity(), this, editStamp);
+    }
+
+    /**
+     * Editable version wrapper for ObservableConceptVersion.
+     * <p>
+     * Concepts have minimal fields (just stamp fields), so this class mainly
+     * provides the infrastructure for saving and committing concept versions.
+     */
+    public static final class Editable
+            extends ObservableVersion.Editable<ObservableConcept, ObservableConceptVersion, ConceptVersionRecord> {
+
+        private Editable(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, ObservableStamp editStamp) {
+            super(observableConcept, observableVersion, editStamp);
+        }
+
+        /**
+         * Gets or creates the canonical editable concept version for the given stamp.
+         * <p>
+         * Returns the exact same instance for multiple calls with the same stamp, ensuring
+         * a single canonical editable version per ObservableStamp.
+         *
+         * @param observableVersion the ObservableConceptVersion to edit
+         * @param editStamp the ObservableStamp (typically identifying the author)
+         * @return the canonical editable concept version for this stamp
+         */
+        public static Editable getOrCreate(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, ObservableStamp editStamp) {
+            return ObservableVersion.Editable.getOrCreate(observableConcept, observableVersion, editStamp, Editable::new);
+        }
+
+        @Override
+        protected ConceptVersionRecord createVersionWithStamp(ConceptVersionRecord version, int stampNid) {
+            return version.withStampNid(stampNid);
+        }
+
+        @Override
+        protected Entity<?> createAnalogue(ConceptVersionRecord version) {
+            return version.chronology().with(version).build();
+        }
     }
 }

@@ -206,9 +206,9 @@ public class GenEditingDetailsController {
 
     // ObservableComposer integration for proper transaction management
     private ObservableComposer composer;
-    private ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticEditor;
-    private ObservableEditableSemanticVersion editableVersion;
-    private List<ObservableEditableField<?>> editableFields = new ArrayList<>();
+    private ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor;
+    private ObservableSemanticVersion.Editable editableVersion;
+    private List<ObservableField.Editable<?>> editableFields = new ArrayList<>();
     private ObservableStamp currentEditStamp;
 
     private final List<Node> nodes = new ArrayList<>();
@@ -426,14 +426,14 @@ public class GenEditingDetailsController {
                     updateUIStamp(stampFormViewModelBase);
                 }
 
-                // Update editable field values using ObservableEditableFields
+                // Update editable field values using ObservableField.Editables
                 for (int i = 0; i < evt.getList().size(); i++) {
-                    ObservableEditableField<?> editableField = editableFields.get(i);
+                    ObservableField.Editable<?> editableField = editableFields.get(i);
                     Object updatedField = evt.getList().get(i);
                     if (updatedField != null && editableField != null) {
                         // Update via editable field's cached property
                         @SuppressWarnings("unchecked")
-                        ObservableEditableField<Object> uncheckedField = (ObservableEditableField<Object>) editableField;
+                        ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
                         Runnable setValue = () -> uncheckedField.setValue(updatedField);
                         if (!Platform.isFxApplicationThread()) {
                             Platform.runLater(setValue);
@@ -509,7 +509,7 @@ public class GenEditingDetailsController {
 
     /**
      * Refactored to use ObservableComposer pattern for proper transaction management.
-     * Creates ObservableSemanticEditor and gets ObservableEditableFields for UI binding.
+     * Creates ObservableSemanticEditor and gets ObservableField.Editables for UI binding.
      */
     private void populateSemanticDetails() {
         nodes.clear();
@@ -555,7 +555,7 @@ public class GenEditingDetailsController {
 
         // Generate UI nodes from editable fields
         int index = 0;
-        for(ObservableEditableField<?> editableField : editableFields){
+        for(ObservableField.Editable<?> editableField : editableFields){
             Field<?> field = editableField.field();
 
             // Generate node using the underlying ObservableField (read-only view)
@@ -722,7 +722,7 @@ public class GenEditingDetailsController {
             // Get current field values from editable fields
             List<Object> fieldValues = new ArrayList<>();
             if (editableVersion != null) {
-                for (ObservableEditableField<?> field : editableFields) {
+                for (ObservableField.Editable<?> field : editableFields) {
                     fieldValues.add(field.getValue());
                 }
             }

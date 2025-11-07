@@ -99,7 +99,7 @@ class ObservableComposerWorkflowITestFX {
     assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
 
     // 2. Create a concept using the composer
-    ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+    ObservableComposer.EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> conceptComposer =
             composer.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
     ObservableConcept observableConcept = conceptComposer.getEntity();
 
@@ -107,7 +107,7 @@ class ObservableComposerWorkflowITestFX {
     LOG.info("Step 1: Created concept with nid: {}", observableConcept.nid());
 
     // 3. Get the editable version
-    ObservableEditableConceptVersion editableVersion = conceptComposer.getEditableVersion();
+    ObservableConceptVersion.Editable editableVersion = conceptComposer.getEditableVersion();
 
     assertNotNull(editableVersion);
     LOG.info("Step 2: Created editable version");
@@ -141,7 +141,7 @@ class ObservableComposerWorkflowITestFX {
             .transactionComment("Create concept for semantic test")
             .build();
 
-    ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+    ObservableComposer.EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> conceptComposer =
             composer1.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
     conceptComposer.getEditableVersion().save();
     composer1.commit();
@@ -158,16 +158,16 @@ class ObservableComposerWorkflowITestFX {
             .transactionComment("Create semantic for test")
             .build();
 
-    ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticComposer =
+    ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticComposer =
             composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
-    ObservableEditableSemanticVersion semanticVersion = semanticComposer.getEditableVersion();
+    ObservableSemanticVersion.Editable semanticVersion = semanticComposer.getEditableVersion();
 
     // Set field values
-    javafx.collections.ObservableList<ObservableEditableField<?>> fields = semanticVersion.getEditableFields();
+    javafx.collections.ObservableList<ObservableField.Editable<?>> fields = semanticVersion.getEditableFields();
     if (fields.size() >= 3) {
-        ((ObservableEditableField<String>) fields.get(0)).setValue("Original description");
-        ((ObservableEditableField<Object>) fields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
-        ((ObservableEditableField<Object>) fields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        ((ObservableField.Editable<String>) fields.get(0)).setValue("Original description");
+        ((ObservableField.Editable<Object>) fields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
+        ((ObservableField.Editable<Object>) fields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
     }
 
     semanticVersion.save();
@@ -185,19 +185,19 @@ class ObservableComposerWorkflowITestFX {
             "Edit semantic workflow test"
     );
 
-    ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+    ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
             composer3.composeSemantic(observableSemantic.publicId(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
-    ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
+    ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
     LOG.info("Step 3: Created editable semantic version");
 
     // 4. Get and verify editable fields
-    javafx.collections.ObservableList<ObservableEditableField<?>> editableFields = editableVersion.getEditableFields();
+    javafx.collections.ObservableList<ObservableField.Editable<?>> editableFields = editableVersion.getEditableFields();
     assertTrue(editableFields.size() > 0, "Should have editable fields");
     LOG.info("Step 4: Editable semantic has {} fields", editableFields.size());
 
     // 5. Verify first field (description text)
     if (editableFields.size() > 0) {
-        ObservableEditableField<?> firstField = editableFields.get(0);
+        ObservableField.Editable<?> firstField = editableFields.get(0);
         assertNotNull(firstField.getValue());
         LOG.info("Step 5: First field value: {}", firstField.getValue());
     }
@@ -320,7 +320,7 @@ class ObservableComposerWorkflowITestFX {
             .transactionComment("Create entities for field modification test")
             .build();
 
-    ObservableComposer.EntityComposer<ObservableEditableConceptVersion, ObservableConcept> conceptComposer =
+    ObservableComposer.EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> conceptComposer =
             composer1.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
     conceptComposer.getEditableVersion().save();
     composer1.commit();
@@ -335,16 +335,16 @@ class ObservableComposerWorkflowITestFX {
             .transactionComment("Create semantic for field modification test")
             .build();
 
-    ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> semanticComposer =
+    ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticComposer =
             composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
-    ObservableEditableSemanticVersion semanticVersion = semanticComposer.getEditableVersion();
+    ObservableSemanticVersion.Editable semanticVersion = semanticComposer.getEditableVersion();
 
     // Set field values
-    javafx.collections.ObservableList<ObservableEditableField<?>> initialFields = semanticVersion.getEditableFields();
+    javafx.collections.ObservableList<ObservableField.Editable<?>> initialFields = semanticVersion.getEditableFields();
     if (initialFields.size() >= 3) {
-        ((ObservableEditableField<String>) initialFields.get(0)).setValue("Test description");
-        ((ObservableEditableField<Object>) initialFields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
-        ((ObservableEditableField<Object>) initialFields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        ((ObservableField.Editable<String>) initialFields.get(0)).setValue("Test description");
+        ((ObservableField.Editable<Object>) initialFields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
+        ((ObservableField.Editable<Object>) initialFields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
     }
 
     semanticVersion.save();
@@ -360,13 +360,13 @@ class ObservableComposerWorkflowITestFX {
             TinkarTerm.DEVELOPMENT_PATH
     );
 
-    ObservableComposer.EntityComposer<ObservableEditableSemanticVersion, ObservableSemantic> editor =
+    ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
             composer.composeSemantic(observableSemantic.publicId(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
-    ObservableEditableSemanticVersion editableVersion = editor.getEditableVersion();
-    javafx.collections.ObservableList<ObservableEditableField<?>> fields = editableVersion.getEditableFields();
+    ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
+    javafx.collections.ObservableList<ObservableField.Editable<?>> fields = editableVersion.getEditableFields();
 
     if (fields.size() > 0 && fields.get(0).getValue() instanceof String) {
-        ObservableEditableField<String> field = (ObservableEditableField<String>) fields.get(0);
+        ObservableField.Editable<String> field = (ObservableField.Editable<String>) fields.get(0);
         String originalValue = field.getValue();
         LOG.info("Original value: {}", originalValue);
 

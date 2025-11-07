@@ -197,7 +197,97 @@ public final class ObservablePatternVersion
     }
 
     @Override
-    public ObservableEditablePatternVersion getEditableVersion(ObservableStamp editStamp) {
-        return ObservableEditablePatternVersion.getOrCreate(getObservableEntity(), this, editStamp);
+    public Editable getEditableVersion(ObservableStamp editStamp) {
+        return Editable.getOrCreate(getObservableEntity(), this, editStamp);
+    }
+
+    /**
+     * Editable version wrapper for ObservablePatternVersion.
+     * <p>
+     * Provides editable properties for pattern purpose and meaning that can be
+     * bound to GUI components. Changes are cached until save() or commit() is called.
+     */
+    public static final class Editable
+            extends ObservableVersion.Editable<ObservablePattern, ObservablePatternVersion, PatternVersionRecord> {
+
+        private final SimpleObjectProperty<EntityFacade> editablePurposeProperty;
+        private final SimpleObjectProperty<EntityFacade> editableMeaningProperty;
+
+        private Editable(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, ObservableStamp editStamp) {
+            super(observablePattern, observableVersion, editStamp);
+
+            // Initialize editable properties
+            this.editablePurposeProperty = new SimpleObjectProperty<>(
+                    this,
+                    "purpose",
+                    EntityHandle.getConceptOrThrow(observableVersion.semanticPurposeNid())
+            );
+
+            this.editableMeaningProperty = new SimpleObjectProperty<>(
+                    this,
+                    "meaning",
+                    EntityHandle.getConceptOrThrow(observableVersion.semanticMeaningNid())
+            );
+
+            // Add listeners to update working version when properties change
+            editablePurposeProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withSemanticPurposeNid(newValue.nid());
+                }
+            });
+
+            editableMeaningProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withSemanticMeaningNid(newValue.nid());
+                }
+            });
+        }
+
+        /**
+         * Gets or creates the canonical editable pattern version for the given stamp.
+         * <p>
+         * Returns the exact same instance for multiple calls with the same stamp, ensuring
+         * a single canonical editable version per ObservableStamp.
+         *
+         * @param observablePattern the ObservablePattern to edit
+         * @param observableVersion the ObservablePatternVersion to edit
+         * @param editStamp the ObservableStamp (typically identifying the author)
+         * @return the canonical editable pattern version for this stamp
+         */
+        public static Editable getOrCreate(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, ObservableStamp editStamp) {
+            return ObservableVersion.Editable.getOrCreate(observablePattern, observableVersion, editStamp, Editable::new);
+        }
+
+        /**
+         * Returns the editable purpose property for GUI binding.
+         */
+        public SimpleObjectProperty<EntityFacade> getPurposeProperty() {
+            return editablePurposeProperty;
+        }
+
+        /**
+         * Returns the editable meaning property for GUI binding.
+         */
+        public SimpleObjectProperty<EntityFacade> getMeaningProperty() {
+            return editableMeaningProperty;
+        }
+
+        @Override
+        protected PatternVersionRecord createVersionWithStamp(PatternVersionRecord version, int stampNid) {
+            return version.withStampNid(stampNid);
+        }
+
+        @Override
+        protected Entity<?> createAnalogue(PatternVersionRecord version) {
+            return version.chronology().with(version).build();
+        }
+
+        @Override
+        public void reset() {
+            super.reset();
+            // Reset properties to original values
+            editablePurposeProperty.set(EntityHandle.getConceptOrThrow(observableVersion.semanticPurposeNid()));
+            editableMeaningProperty.set(EntityHandle.getConceptOrThrow(observableVersion.semanticMeaningNid()));
+        }
     }
 }

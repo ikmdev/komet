@@ -16,244 +16,500 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
-import dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXThread;
-import org.junit.jupiter.api.Test;
+import dev.ikm.tinkar.common.service.CachingService;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.Coordinates;
+import dev.ikm.tinkar.entity.EntityCountSummary;
+import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ObservableList;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXThread;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for ObservableEditableField behavior.
- * Tests field value editing, property binding, and change tracking.
+ * Integration tests for ObservableField.Editable behavior.
+ * <p>
+ * Tests the editable field functionality within the Observable framework,
+ * including property binding, change tracking, value modification, and
+ * integration with semantic version editing.
+ * <p>
+ * Uses real Tinkar entities loaded from test data to ensure the Observable
+ * framework works correctly with actual database operations.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ExtendWith(JavaFXThreadExtension.class)
 class ObservableEditableFieldTestFX {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ObservableEditableFieldTestFX.class);
+    private static final File TEST_DATA_DIR = new File("target/data");
+    private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "tinkar-starter-data-reasoned-pb.zip");
+
+    private EntityCountSummary loadedEntitiesSummary;
+    private ObservableConcept testConcept;
+    private ObservableSemantic testSemantic;
+    private ObservableComposer testComposer;
+
+    @BeforeAll
+    void setupDatabase() {
+        LOG.info("Setting up integration test environment for ObservableField.Editable");
+
+        // Setup ephemeral data store
+        CachingService.clearAll();
+        LOG.info("Cleared caches");
+
+        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.start();
+        LOG.info("Started PrimitiveData with ephemeral store");
+    }
+
     @Test
+    @Order(1)
+    void loadTestData() {
+        assertTrue(PB_STARTER_DATA.exists(),
+                "Test data file not found at: " + PB_STARTER_DATA.getAbsolutePath() +
+                ". Ensure maven-dependency-plugin has downloaded tinkar-starter-data.");
+
+        LOG.info("Loading test data from: {}", PB_STARTER_DATA.getAbsolutePath());
+        LoadEntitiesFromProtobufFile loadProto = new LoadEntitiesFromProtobufFile(PB_STARTER_DATA);
+        loadedEntitiesSummary = loadProto.compute();
+        LOG.info("{} entities loaded: {}", loadedEntitiesSummary.getTotalCount(), loadProto.summarize());
+
+        assertTrue(loadedEntitiesSummary.getTotalCount() > 0, "Should load entities from protobuf file");
+    }
+
+    @Test
+    @Order(2)
+    @RunOnJavaFXThread
+    void createTestSemanticWithFields() {
+        // Create a composer for entity creation
+        testComposer = ObservableComposer.builder()
+                .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .author(TinkarTerm.USER)
+                .module(TinkarTerm.PRIMORDIAL_MODULE)
+                .path(TinkarTerm.DEVELOPMENT_PATH)
+                .defaultState(State.ACTIVE)
+                .transactionComment("Create test semantic for field testing")
+                .build();
+
+        // Create a test concept
+        ObservableComposer.EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> conceptComposer =
+                testComposer.composeConcept(dev.ikm.tinkar.common.id.PublicIds.newRandom());
+        conceptComposer.save();
+        testConcept = conceptComposer.getEntity();
+        assertNotNull(testConcept);
+        LOG.info("Created test concept with nid: {}", testConcept.nid());
+
+        // Create a test semantic with multiple fields (using description pattern)
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticComposer =
+                testComposer.composeSemantic(
+                        dev.ikm.tinkar.common.id.PublicIds.newRandom(),
+                        testConcept,
+                        TinkarTerm.DESCRIPTION_PATTERN
+                );
+
+        // Get editable fields and set initial values
+        ObservableSemanticVersion.Editable editableVersion = semanticComposer.getEditableVersion();
+        ObservableList<ObservableField.Editable<?>> fields = editableVersion.getEditableFields();
+
+        LOG.info("Created semantic with {} editable fields", fields.size());
+        assertTrue(fields.size() >= 4, "Description pattern should have at least 4 fields");
+
+        // Initialize field values
+        ((ObservableField.Editable<String>) fields.get(0)).setValue("Initial description text");
+        ((ObservableField.Editable<Object>) fields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
+        ((ObservableField.Editable<Object>) fields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        ((ObservableField.Editable<Object>) fields.get(3)).setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+
+        semanticComposer.save();
+        testComposer.commit();
+
+        testSemantic = semanticComposer.getEntity();
+        assertNotNull(testSemantic);
+        LOG.info("Created test semantic with nid: {}", testSemantic.nid());
+    }
+
+    @Test
+    @Order(3)
     @RunOnJavaFXThread
     void testFieldIndexTracking() {
-        TestObservableEditableField<String> field = new TestObservableEditableField<>("value", 3);
+        assertNotNull(testSemantic, "Test semantic should be created");
 
-        assertEquals(3, field.getFieldIndex());
+        ObservableComposer composer = createComposer("Test field index tracking");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
+                composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
+
+        ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
+
+        // Verify field indices match their positions
+        for (int i = 0; i < fields.size(); i++) {
+            ObservableField.Editable<?> field = fields.get(i);
+            assertEquals(i, field.getFieldIndex(), "Field index should match position in list");
+            LOG.debug("Field {} has index {}", i, field.getFieldIndex());
+        }
+
+        LOG.info("✓ Field index tracking working correctly");
+        composer.cancel();
     }
 
     @Test
+    @Order(4)
     @RunOnJavaFXThread
-    void testValuePropertyNotNull() {
-        TestObservableEditableField<String> field = new TestObservableEditableField<>("test", 0);
+    void testEditableValuePropertyNotNull() {
+        assertNotNull(testSemantic, "Test semantic should be created");
 
-        assertNotNull(field.editableValueProperty());
+        ObservableComposer composer = createComposer("Test editable value property");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
+                composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
+
+        ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
+
+        for (ObservableField.Editable<?> field : fields) {
+            assertNotNull(field.editableValueProperty(), "Editable value property should not be null");
+            assertNotNull(field.getObservableFeature(), "Observable feature reference should not be null");
+        }
+
+        LOG.info("✓ Editable value properties properly initialized");
+        composer.cancel();
     }
 
     @Test
+    @Order(5)
     @RunOnJavaFXThread
-    void testInitialValue() {
-        TestObservableEditableField<String> field = new TestObservableEditableField<>("initial", 0);
+    void testGetAndSetValue() {
+        assertNotNull(testSemantic, "Test semantic should be created");
 
-        assertEquals("initial", field.getValue());
+        ObservableComposer composer = createComposer("Test get and set value");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
+                composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
+
+        ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
+
+        // Test string field (index 0 - description text)
+        ObservableField.Editable<String> textField = (ObservableField.Editable<String>) fields.get(0);
+        String originalValue = textField.getValue();
+        assertNotNull(originalValue, "Initial value should not be null");
+
+        String newValue = "Modified description text for testing";
+        textField.setValue(newValue);
+
+        assertEquals(newValue, textField.getValue(), "Value should be updated");
+        assertNotEquals(originalValue, textField.getValue(), "Value should have changed");
+
+        LOG.info("✓ Get and set value working correctly");
+        composer.cancel();
     }
 
     @Test
+    @Order(6)
     @RunOnJavaFXThread
-    void testSetAndGetValue() {
-        TestObservableEditableField<String> field = new TestObservableEditableField<>("start", 0);
+    void testPropertyChangeListener() {
+        assertNotNull(testSemantic, "Test semantic should be created");
 
-        field.setValue("updated");
+        ObservableComposer composer = createComposer("Test property change listener");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
+                composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
 
-        assertEquals("updated", field.getValue());
-    }
+        ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
+        ObservableField.Editable<String> textField = (ObservableField.Editable<String>) fields.get(0);
 
-    @Test
-    @RunOnJavaFXThread
-    void testIntegerFieldValues() {
-        TestObservableEditableField<Integer> field = new TestObservableEditableField<>(42, 0);
-
-        assertEquals(42, field.getValue());
-
-        field.setValue(100);
-
-        assertEquals(100, field.getValue());
-    }
-
-    @Test
-    @RunOnJavaFXThread
-    void testBooleanFieldValues() {
-        TestObservableEditableField<Boolean> field = new TestObservableEditableField<>(true, 0);
-
-        assertTrue(field.getValue());
-
-        field.setValue(false);
-
-        assertFalse(field.getValue());
-    }
-
-    @Test
-    @RunOnJavaFXThread
-    void testNullValueHandling() {
-        TestObservableEditableField<String> field = new TestObservableEditableField<>(null, 0);
-
-        assertNull(field.getValue());
-
-        field.setValue("not null");
-
-        assertEquals("not null", field.getValue());
-
-        field.setValue(null);
-
-        assertNull(field.getValue());
-    }
-
-    @Test
-    @RunOnJavaFXThread
-    void testPropertyListener() {
-        TestObservableEditableField<String> field = new TestObservableEditableField<>("initial", 0);
-
+        // Setup listener
         AtomicInteger listenerCallCount = new AtomicInteger(0);
+        AtomicReference<String> capturedOldValue = new AtomicReference<>();
         AtomicReference<String> capturedNewValue = new AtomicReference<>();
 
-        field.editableValueProperty().addListener((obs, oldVal, newVal) -> {
+        textField.editableValueProperty().addListener((obs, oldVal, newVal) -> {
             listenerCallCount.incrementAndGet();
+            capturedOldValue.set(oldVal);
             capturedNewValue.set(newVal);
+            LOG.debug("Listener fired: {} -> {}", oldVal, newVal);
         });
 
-        field.setValue("changed");
+        String originalValue = textField.getValue();
+        String newValue = "Updated value to test listener";
 
-        assertEquals(1, listenerCallCount.get());
-        assertEquals("changed", capturedNewValue.get());
+        textField.setValue(newValue);
+
+        assertEquals(1, listenerCallCount.get(), "Listener should be called once");
+        assertEquals(originalValue, capturedOldValue.get(), "Old value should match original");
+        assertEquals(newValue, capturedNewValue.get(), "New value should match set value");
+
+        LOG.info("✓ Property change listener working correctly");
+        composer.cancel();
     }
 
     @Test
+    @Order(7)
     @RunOnJavaFXThread
     void testMultipleValueChanges() {
-        TestObservableEditableField<Integer> field = new TestObservableEditableField<>(0, 0);
+        assertNotNull(testSemantic, "Test semantic should be created");
+
+        ObservableComposer composer = createComposer("Test multiple value changes");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
+                composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
+
+        ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
+        ObservableField.Editable<String> textField = (ObservableField.Editable<String>) fields.get(0);
 
         AtomicInteger listenerCallCount = new AtomicInteger(0);
-
-        field.editableValueProperty().addListener((obs, oldVal, newVal) -> {
+        textField.editableValueProperty().addListener((obs, oldVal, newVal) -> {
             listenerCallCount.incrementAndGet();
         });
 
-        field.setValue(1);
-        field.setValue(2);
-        field.setValue(3);
+        textField.setValue("Change 1");
+        textField.setValue("Change 2");
+        textField.setValue("Change 3");
+        textField.setValue("Change 4");
 
-        assertEquals(3, listenerCallCount.get());
-        assertEquals(3, field.getValue());
+        assertEquals(4, listenerCallCount.get(), "Listener should be called for each change");
+        assertEquals("Change 4", textField.getValue(), "Final value should be the last set value");
+
+        LOG.info("✓ Multiple value changes tracked correctly");
+        composer.cancel();
     }
 
     @Test
+    @Order(8)
     @RunOnJavaFXThread
     void testBidirectionalPropertyBinding() {
-        TestObservableEditableField<String> field = new TestObservableEditableField<>("field", 0);
+        assertNotNull(testSemantic, "Test semantic should be created");
 
-        javafx.beans.property.SimpleObjectProperty<String> externalProperty =
-                new javafx.beans.property.SimpleObjectProperty<>("external");
+        ObservableComposer composer = createComposer("Test bidirectional binding");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
+                composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
 
-        field.editableValueProperty().bindBidirectional(externalProperty);
+        ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
+        ObservableField.Editable<String> textField = (ObservableField.Editable<String>) fields.get(0);
 
-        // Field should have external property's value
-        assertEquals("external", field.getValue());
+        // Create external property and bind bidirectionally
+        SimpleObjectProperty<String> externalProperty = new SimpleObjectProperty<>("external value");
+        textField.editableValueProperty().bindBidirectional(externalProperty);
 
-        // Changing field updates external
-        field.setValue("from field");
+        // Field should adopt external property's value
+        assertEquals("external value", textField.getValue());
+
+        // Changing field updates external property
+        textField.setValue("from field");
         assertEquals("from field", externalProperty.get());
 
-        // Changing external updates field
+        // Changing external property updates field
         externalProperty.set("from external");
-        assertEquals("from external", field.getValue());
+        assertEquals("from external", textField.getValue());
+
+        LOG.info("✓ Bidirectional property binding working correctly");
+        composer.cancel();
     }
 
     @Test
+    @Order(9)
     @RunOnJavaFXThread
     void testUnidirectionalPropertyBinding() {
-        TestObservableEditableField<String> field = new TestObservableEditableField<>("field", 0);
+        assertNotNull(testSemantic, "Test semantic should be created");
 
-        javafx.beans.property.SimpleObjectProperty<String> sourceProperty =
-                new javafx.beans.property.SimpleObjectProperty<>("source");
+        ObservableComposer composer = createComposer("Test unidirectional binding");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
+                composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
 
-        field.editableValueProperty().bind(sourceProperty);
+        ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
+        ObservableField.Editable<String> textField = (ObservableField.Editable<String>) fields.get(0);
 
-        assertEquals("source", field.getValue());
+        // Create source property and bind unidirectionally
+        SimpleObjectProperty<String> sourceProperty = new SimpleObjectProperty<>("source value");
+        textField.editableValueProperty().bind(sourceProperty);
 
-        sourceProperty.set("updated");
+        assertEquals("source value", textField.getValue());
 
-        assertEquals("updated", field.getValue());
+        // Changing source updates field
+        sourceProperty.set("updated source");
+        assertEquals("updated source", textField.getValue());
+
+        LOG.info("✓ Unidirectional property binding working correctly");
+        composer.cancel();
     }
 
     @Test
+    @Order(10)
     @RunOnJavaFXThread
-    void testFieldWithComplexObject() {
-        ComplexValue initial = new ComplexValue("initial", 1);
-        TestObservableEditableField<ComplexValue> field = new TestObservableEditableField<>(initial, 0);
+    void testFieldIsDirty() {
+        assertNotNull(testSemantic, "Test semantic should be created");
 
-        assertEquals("initial", field.getValue().name);
-        assertEquals(1, field.getValue().id);
+        ObservableComposer composer = createComposer("Test field isDirty");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
+                composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
 
-        ComplexValue updated = new ComplexValue("updated", 2);
-        field.setValue(updated);
+        ObservableField.Editable<String> textField =
+                (ObservableField.Editable<String>) editor.getEditableVersion().getEditableFields().get(0);
 
-        assertEquals("updated", field.getValue().name);
-        assertEquals(2, field.getValue().id);
+        String originalValue = textField.getValue();
+
+        // Initially should not be dirty
+        assertFalse(textField.isDirty(), "Field should not be dirty initially");
+
+        // Modify the value
+        textField.setValue("Modified value");
+        assertTrue(textField.isDirty(), "Field should be dirty after modification");
+
+        // Reset to original
+        textField.reset();
+        assertFalse(textField.isDirty(), "Field should not be dirty after reset");
+        assertEquals(originalValue, textField.getValue(), "Value should be restored after reset");
+
+        LOG.info("✓ Field isDirty and reset working correctly");
+        composer.cancel();
     }
 
     @Test
+    @Order(11)
     @RunOnJavaFXThread
-    void testMultipleFields() {
-        TestObservableEditableField<String> field0 = new TestObservableEditableField<>("field0", 0);
-        TestObservableEditableField<String> field1 = new TestObservableEditableField<>("field1", 1);
-        TestObservableEditableField<String> field2 = new TestObservableEditableField<>("field2", 2);
+    void testFieldReset() {
+        assertNotNull(testSemantic, "Test semantic should be created");
 
-        assertEquals(0, field0.getFieldIndex());
-        assertEquals(1, field1.getFieldIndex());
-        assertEquals(2, field2.getFieldIndex());
+        ObservableComposer composer = createComposer("Test field reset");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
+                composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
 
-        assertEquals("field0", field0.getValue());
-        assertEquals("field1", field1.getValue());
-        assertEquals("field2", field2.getValue());
+        ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
+        ObservableField.Editable<String> textField = (ObservableField.Editable<String>) fields.get(0);
+
+        String originalValue = textField.getValue();
+
+        // Make multiple changes
+        textField.setValue("Change 1");
+        textField.setValue("Change 2");
+        textField.setValue("Change 3");
+
+        assertNotEquals(originalValue, textField.getValue());
+
+        // Reset should restore original
+        textField.reset();
+        assertEquals(originalValue, textField.getValue(), "Reset should restore original value");
+
+        LOG.info("✓ Field reset working correctly");
+        composer.cancel();
+    }
+
+    @Test
+    @Order(12)
+    @RunOnJavaFXThread
+    void testMultipleFieldsIndependence() {
+        assertNotNull(testSemantic, "Test semantic should be created");
+
+        ObservableComposer composer = createComposer("Test multiple fields independence");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
+                composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
+
+        ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
+
+        // Get multiple fields
+        ObservableField.Editable<String> field0 = (ObservableField.Editable<String>) fields.get(0);
+        ObservableField.Editable<?> field1 = fields.get(1);
+        ObservableField.Editable<?> field2 = fields.get(2);
+
+        String original0 = field0.getValue();
+        Object original1 = field1.getValue();
+        Object original2 = field2.getValue();
+
+        // Modify field 0
+        field0.setValue("Modified field 0");
+
+        // Other fields should be unchanged
+        assertEquals(original1, field1.getValue(), "Field 1 should be unchanged");
+        assertEquals(original2, field2.getValue(), "Field 2 should be unchanged");
+
+        // Field 0 should be dirty, others should not
+        assertTrue(field0.isDirty(), "Modified field should be dirty");
+        assertFalse(field1.isDirty(), "Unmodified field should not be dirty");
+        assertFalse(field2.isDirty(), "Unmodified field should not be dirty");
+
+        LOG.info("✓ Multiple fields maintain independence");
+        composer.cancel();
+    }
+
+    @Test
+    @Order(13)
+    @RunOnJavaFXThread
+    void testFieldGetObservableFeature() {
+        assertNotNull(testSemantic, "Test semantic should be created");
+
+        ObservableComposer composer = createComposer("Test getObservableFeature");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
+                composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
+
+        ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
+
+        for (ObservableField.Editable<?> editableField : fields) {
+            ObservableField<?> observableField = editableField.getObservableFeature();
+            assertNotNull(observableField, "Should have reference to observable field");
+            assertNotNull(observableField.field(), "Observable field should have underlying field data");
+        }
+
+        LOG.info("✓ getObservableFeature() returns valid references");
+        composer.cancel();
+    }
+
+    @Test
+    @Order(14)
+    @RunOnJavaFXThread
+    void testFieldValuePersistence() {
+        assertNotNull(testSemantic, "Test semantic should be created");
+
+        // Create first composer and modify a field
+        ObservableComposer composer1 = createComposer("Test field persistence - modify");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor1 =
+                composer1.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
+
+        ObservableField.Editable<String> field1 =
+                (ObservableField.Editable<String>) editor1.getEditableVersion().getEditableFields().get(0);
+
+        String newValue = "Persisted value test " + System.currentTimeMillis();
+        field1.setValue(newValue);
+
+        editor1.save();
+        composer1.commit();
+
+        // Create second composer and verify the value persisted
+        ObservableComposer composer2 = createComposer("Test field persistence - verify");
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor2 =
+                composer2.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
+
+        ObservableField.Editable<String> field2 =
+                (ObservableField.Editable<String>) editor2.getEditableVersion().getEditableFields().get(0);
+
+        assertEquals(newValue, field2.getValue(), "Field value should persist across composer instances");
+
+        LOG.info("✓ Field value persistence working correctly");
+        composer2.cancel();
     }
 
     /**
-     * Test implementation mimicking ObservableEditableField behavior.
+     * Helper method to create a composer with standard test configuration.
      */
-    private static class TestObservableEditableField<DT> {
-        private final javafx.beans.property.SimpleObjectProperty<DT> editableValueProperty;
-        private final int fieldIndex;
-
-        TestObservableEditableField(DT initialValue, int fieldIndex) {
-            this.fieldIndex = fieldIndex;
-            this.editableValueProperty = new javafx.beans.property.SimpleObjectProperty<>(this, "value", initialValue);
-        }
-
-        public javafx.beans.property.SimpleObjectProperty<DT> editableValueProperty() {
-            return editableValueProperty;
-        }
-
-        public DT getValue() {
-            return editableValueProperty.get();
-        }
-
-        public void setValue(DT value) {
-            editableValueProperty.set(value);
-        }
-
-        public int getFieldIndex() {
-            return fieldIndex;
-        }
+    private ObservableComposer createComposer(String transactionComment) {
+        return ObservableComposer.builder()
+                .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .author(TinkarTerm.USER)
+                .module(TinkarTerm.PRIMORDIAL_MODULE)
+                .path(TinkarTerm.DEVELOPMENT_PATH)
+                .defaultState(State.ACTIVE)
+                .transactionComment(transactionComment)
+                .build();
     }
 
-    /**
-     * Complex value class for testing object-typed fields.
-     */
-    private static class ComplexValue {
-        final String name;
-        final int id;
-
-        ComplexValue(String name, int id) {
-            this.name = name;
-            this.id = id;
-        }
+    @AfterAll
+    void tearDownDatabase() {
+        LOG.info("Tearing down integration test environment");
+        PrimitiveData.stop();
+        LOG.info("PrimitiveData stopped");
     }
 }

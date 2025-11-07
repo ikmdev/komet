@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.klfields.imagefield;
 
-import dev.ikm.komet.framework.observable.ObservableEditableField;
+import dev.ikm.komet.framework.observable.ObservableField.Editable;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
@@ -15,18 +15,18 @@ import java.io.ByteArrayOutputStream;
 /**
  * Image field implementation supporting both read-only and editable patterns.
  * <p>
- * <b>Editable Pattern (Recommended):</b> Use with {@link ObservableEditableField} for
+ * <b>Editable Pattern (Recommended):</b> Use with {@link ObservableField.Editable} for
  * transaction management, dirty tracking, and save/commit/rollback capabilities.
  * <p>
  * <b>Legacy Pattern:</b> Use with {@link ObservableField} for immediate write-through.
  * <p>
- * When using the editable pattern, changes are cached in the {@link ObservableEditableField}
- * and do not persist to the database until the parent {@link dev.ikm.komet.framework.observable.ObservableEditableSemanticVersion}
+ * When using the editable pattern, changes are cached in the {@link ObservableField.Editable}
+ * and do not persist to the database until the parent {@link dev.ikm.komet.framework.observable.ObservableSemanticVersion.Editable}
  * is saved and committed via {@link dev.ikm.komet.framework.observable.ObservableComposer}.
  */
 public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
 
-    private final ObservableEditableField<byte[]> editableField;
+    private final ObservableField.Editable<byte[]> editableField;
     private boolean isUpdatingImageControl = false;
     private boolean isUpdatingProperty = false;
 
@@ -36,12 +36,12 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
      * Provides transaction management, dirty tracking, and cached editing.
      * Changes do not persist until the editable version is saved and committed.
      *
-     * @param editableField the editable field from an ObservableEditableSemanticVersion
+     * @param editableField the editable field from an ObservableSemanticVersion.Editable
      * @param observableView the view context
      * @param stamp4field the stamp for UI state determination
      */
     public DefaultKlImageField(
-            ObservableEditableField<byte[]> editableField,
+            ObservableField.Editable<byte[]> editableField,
             ObservableView observableView,
             ObservableStamp stamp4field) {
 
@@ -75,8 +75,8 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
      * @param observableImageField the observable field
      * @param observableView the view context
      * @param stamp4field the stamp for UI state determination
-     * @deprecated Use {@link #DefaultKlImageField(ObservableEditableField, ObservableView, ObservableStamp)}
-     *             with ObservableEditableField for transaction management
+     * @deprecated Use {@link #DefaultKlImageField(ObservableField.Editable, ObservableView, ObservableStamp)}
+     *             with ObservableField.Editable for transaction management
      */
     @Deprecated(since = "1.0", forRemoval = false)
     public DefaultKlImageField(ObservableField<byte[]> observableImageField, ObservableView observableView, ObservableStamp stamp4field) {
@@ -102,10 +102,10 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
 
     /**
      * Sets up bidirectional binding between editable field and image control.
-     * Uses the ObservableEditableField pattern for cached editing.
+     * Uses the ObservableField.Editable pattern for cached editing.
      */
     private void setupEditableBinding(
-            ObservableEditableField<byte[]> editableField,
+            ObservableField.Editable<byte[]> editableField,
             KLImageControl imageControl) {
 
         // Editable field → Image control
@@ -198,7 +198,7 @@ public class DefaultKlImageField extends BaseDefaultKlField<byte[]> {
      *
      * @return the editable field, or null if using legacy pattern
      */
-    public ObservableEditableField<byte[]> getEditableField() {
+    public ObservableField.Editable<byte[]> getEditableField() {
         return editableField;
     }
 

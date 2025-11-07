@@ -27,11 +27,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for ObservableEditableFeature.
+ * Unit tests for ObservableFeature.Editable.
  * Tests the base editable feature functionality.
  */
 @ExtendWith(JavaFXThreadExtension.class)
-class ObservableEditableFeatureTestFX {
+class ObservableFeatureEditableTestFX {
 
     @Test
     @RunOnJavaFXThread
@@ -177,7 +177,7 @@ class ObservableEditableFeatureTestFX {
     }
 
     /**
-     * Test implementation of ObservableEditableFeature for testing purposes.
+     * Test implementation of ObservableFeature.Editable for testing purposes.
      */
     private static class TestEditableFeature {
         private final SimpleObjectProperty<String> editableValueProperty;
