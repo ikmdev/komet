@@ -29,12 +29,8 @@ import javafx.scene.layout.BorderPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.prefs.BackingStoreException;
-
 import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
-import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
 
 public class KLEditorMainScreenController {
     private static final Logger LOG = LoggerFactory.getLogger(KLEditorMainScreenController.class);
@@ -60,27 +56,28 @@ public class KLEditorMainScreenController {
     private KLEditorWindowController klEditorWindowController;
 
     private WindowSettings windowSettings;
-    private KometPreferences nodePreferences;
+    private KometPreferences klEditorAppPreferences;
 
     private ObservableViewNoOverride windowView;
 
     private ViewCalculator viewCalculator;
     private ObservableList<Entity<EntityVersion>> patterns;
 
-    public void init(KometPreferences nodePreferences, WindowSettings windowSettings, String windowToLoad) {
-        this.nodePreferences = nodePreferences;
+    public void init(KometPreferences klEditorAppPreferences, WindowSettings windowSettings, String windowToLoad) {
+        this.klEditorAppPreferences = klEditorAppPreferences;
         this.windowSettings = windowSettings;
 
         this.windowView = windowSettings.getView();
 
-        ViewCalculator viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
+        viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
 
         initPatternsList(viewCalculator);
 
-        setupWindow(windowToLoad);
-
-        // Init KLEditorWindow
+        // Init KLEditorWindow Controller
         klEditorWindowController.init(viewCalculator);
+
+        // Init Window
+        initWindow(windowToLoad);
 
         // Columns ComboBox
         for (int i = 1 ; i <= 4 ; ++i) {
@@ -107,15 +104,26 @@ public class KLEditorMainScreenController {
         patternBrowserListView.setItems(patterns);
     }
 
-    private void setupWindow(String windowTitle) {
+    private void initWindow(String windowTitle) {
         WindowModel windowModel = WindowModel.instance();
 
-        windowModel.setTitle(windowTitle);
+        if (windowTitle != null) {
+            loadWindow(windowTitle);
+        }
+
         titleTextField.textProperty().bindBidirectional(windowModel.titleProperty());
 
         // sections
-        SectionModel sectionModel = windowModel.getSections().getFirst();
+        SectionModel sectionModel = windowModel.getMainSection();
         sectionNameTextField.textProperty().bindBidirectional(sectionModel.nameProperty());
+    }
+
+    private void loadWindow(String windowTitle) {
+        WindowModel windowModel = WindowModel.instance();
+
+        windowModel.setTitle(windowTitle);
+
+        windowModel.load(klEditorAppPreferences, viewCalculator);
     }
 
     @FXML
@@ -124,28 +132,12 @@ public class KLEditorMainScreenController {
 
     @FXML
     private void onSave(ActionEvent actionEvent) {
-        String windowTitle = titleTextField.getText();
-
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
-        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
 
-        List<String> editorWindows = klEditorAppPreferences.getList(KL_EDITOR_WINDOWS);
-        if (!editorWindows.contains(windowTitle)) {
-            editorWindows.add(windowTitle);
-        }
+        WindowModel.instance().save(klEditorAppPreferences);
 
-        klEditorAppPreferences.putList(KL_EDITOR_WINDOWS, editorWindows);
-
-        int numberColumns = columnsComboBox.getItems().indexOf(columnsComboBox.getSelectionModel().getSelectedItem()) + 1;
-        editorWindowPreferences.putInt("COLUMNS", numberColumns);
-
-        try {
-            editorWindowPreferences.flush();
-            klEditorAppPreferences.flush();
-        } catch (BackingStoreException e) {
-            LOG.error("Error writing KL Editor Window flag to preferences", e);
-        }
+        String windowTitle = WindowModel.instance().getTitle();
 
         eventBus.publish(KL_TOPIC,
                 new KLEditorWindowCreatedOrRemovedEvent(actionEvent, KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED, windowTitle));

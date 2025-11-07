@@ -40,10 +40,11 @@ module dev.ikm.komet.kleditorapp {
     requires dev.ikm.komet.framework;
     requires dev.ikm.komet.preferences;
     requires org.eclipse.collections.api;
+    requires java.prefs;
+    requires dev.ikm.tinkar.schema;
 
     exports dev.ikm.komet.kleditorapp.view;
     opens dev.ikm.komet.kleditorapp.view to javafx.fxml, dev.ikm.komet.application;
 
-//    uses EvtBus;
     uses EntityKlWindowFactory;
 }

@@ -55,6 +55,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.JOURNAL_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
 import static javafx.scene.layout.Region.USE_COMPUTED_SIZE;
 
 public class AppPages {
@@ -336,8 +337,8 @@ public class AppPages {
         Objects.requireNonNull(klWindowSettings, "klWindowSettings cannot be null");
 
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
-        final WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+        final WindowSettings windowSettings = new WindowSettings(klEditorAppPreferences);
 
 //        final UUID klTopic = klWindowSettings.getValue(KL_TOPIC);
 //        Objects.requireNonNull(klTopic, "klTopic cannot be null");
@@ -354,7 +355,7 @@ public class AppPages {
         }
         KLEditorMainScreenController klEditorMainScreenController = loader.getController();
 
-        klEditorMainScreenController.init(windowPreferences, windowSettings, windowToLoad);
+        klEditorMainScreenController.init(klEditorAppPreferences, windowSettings, windowToLoad);
 
         Scene sourceScene = new Scene(root, DEFAULT_JOURNAL_WIDTH, DEFAULT_JOURNAL_HEIGHT);
         addStylesheets(sourceScene, KLEDITOR_CSS, KLCORE_CSS, KLEDITOR_WINDOW_CSS, ICONS);
