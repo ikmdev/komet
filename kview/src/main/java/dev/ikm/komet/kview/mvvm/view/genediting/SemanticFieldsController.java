@@ -154,7 +154,7 @@ public class SemanticFieldsController {
         ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
         ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
 
-        composer = ObservableComposer.create(getStampCalculator(),
+        composer = ObservableComposer.create(getViewProperties().calculator(),
             State.ACTIVE,
             author,
             module,
@@ -196,7 +196,7 @@ public class SemanticFieldsController {
         //Get the latest version
         Latest<ObservableVersion> latestObservableVersion = observableEntitySnapshot.getLatestVersion();
         latestObservableVersion.ifPresent(observableVersion -> { // if latest version present
-            if (observableVersion.committed()) {
+            if (observableVersion instanceof ObservableEntityVersion<?,?> oev && oev.committed()) {
                 if (observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot) {
                     immutableList.set(observableSemanticSnapshot.getLatestFields().get());
                 }

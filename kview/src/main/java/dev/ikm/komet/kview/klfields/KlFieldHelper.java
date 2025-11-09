@@ -290,9 +290,9 @@ public class KlFieldHelper {
         //Get list of previously committed data sorted in latest at the top.
         ImmutableList<ObservableVersion> historicVersions = observableEntitySnapshot.getHistoricVersions();
         // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
-        Optional<ObservableVersion> optionalObservableVersion = historicVersions.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
+        Optional<ObservableVersion> optionalObservableVersion = historicVersions.stream().filter(p -> p.getVersionRecord().time() != Long.MAX_VALUE).findFirst();
         optionalObservableVersion.ifPresentOrElse((p) -> {
-            entityVersionLatest.set(new Latest<>(p));
+            entityVersionLatest.set(new Latest<>(p.getVersionRecord()));
         }, () -> {entityVersionLatest.set(new Latest<>());});
         return entityVersionLatest.get();
     }

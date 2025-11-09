@@ -52,7 +52,7 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
 
         // -----------  Create ObservableComposer for STAMP management --------------
         ObservableComposer composer = ObservableComposer.create(
-                getViewProperties().calculator().stampCalculator(),
+                getViewProperties().calculator(),
                 status,
                 author,
                 module,
