@@ -313,7 +313,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @see ObservableStamp
  * @see Entity
  */
-public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
+public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion<?,?>>
         implements Entity<OV>, ObservableComponent
         permits ObservableConcept, ObservablePattern, ObservableSemantic, ObservableStamp {
 
@@ -382,6 +382,10 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
 
     final private AtomicReference<Entity<?>> entityReference;
 
+
+    ReadOnlyObjectWrapper<Feature<ObservableChronology>> featureProperty =
+            new ReadOnlyObjectWrapper<>(null, this.getClass().getSimpleName() + " as Feature Wrapper",  (ObservableChronology) this);
+
     /**
      * Saves the uncommited entity version to the DB and fires event (VERSION_UPDATED).
      * it also adds the version to the versionProperty list.
@@ -418,6 +422,10 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
         }
     }
 
+    public ReadOnlyProperty<Feature<ObservableChronology>> featureProperty() {
+        return featureProperty.getReadOnlyProperty();
+    }
+
     protected abstract OV wrap(EntityVersion version);
 
     /**
@@ -443,7 +451,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
      * @see ObservableEntityHandle#getPatternSnapshotOrThrow(int, ViewCalculator)
      */
     @Deprecated(since = "Current", forRemoval = true)
-    public static <OE extends ObservableEntity<OV>, OV extends ObservableVersion<?, EV>, EV extends EntityVersion>
+    public static <OE extends ObservableEntity<OV>, OV extends ObservableEntityVersion<?,EV>, EV extends EntityVersion>
     ObservableEntitySnapshot<OE, OV> getSnapshot(int nid, ViewCalculator calculator) {
         return packagePrivateGetSnapshot(nid, calculator);
     }
@@ -452,7 +460,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
      * Package-private method for internal use by ObservableEntityHandle.
      * External code should use {@link ObservableEntityHandle#getSnapshot(int, ViewCalculator)}.
      */
-    static <OE extends ObservableEntity<OV>, OV extends ObservableVersion<?, EV>, EV extends EntityVersion>
+    static <OE extends ObservableEntity<OV>, OV extends ObservableEntityVersion<?,EV>, EV extends EntityVersion>
     ObservableEntitySnapshot<OE, OV> packagePrivateGetSnapshot(int nid, ViewCalculator calculator) {
         return packagePrivateGet(Entity.packagePrivateGetFast(nid)).getSnapshot(calculator);
     }
@@ -543,14 +551,12 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
                     OV newWrappedVersion = wrap(newVersion);
                     versionPropertyMap.put(newVersion.stampNid(), newWrappedVersion);
                     versionSetAsList.add(newWrappedVersion);
-                } else if (oldVersion.version().time() == Long.MAX_VALUE) {
+                } else if (oldVersion.getVersionRecord().time() == Long.MAX_VALUE) {
                     // Uncommitted version being updated - update in place via setVersionInternal
                     changed.set(true);
-                    // Safe cast: oldVersion wraps the same version type as newVersion
-                    @SuppressWarnings("unchecked")
-                    var typedOldVersion = (ObservableVersion<?, EntityVersion>) oldVersion;
+                    OV typedOldVersion = oldVersion;
                     typedOldVersion.setVersionInternal(newVersion);
-                } else if (newVersion.time() != oldVersion.version().time()) {
+                } else if (newVersion.time() != oldVersion.getVersionRecord().time()) {
                     if (newVersion.time() == Long.MAX_VALUE ) {
                         changed.set(true);
                         // We should rewrap the old value? This seems an odd state...
@@ -562,7 +568,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
                         LOG.error(errorBuilder.toString());
                         throw new IllegalStateException(errorBuilder.toString());
                     } else {
-                        throw new IllegalStateException("Version time mismatch: " + newVersion.time() + " != " + oldVersion.version().time());
+                        throw new IllegalStateException("Version time mismatch: " + newVersion.time() + " != " + oldVersion.getVersionRecord().time());
                     }
                 }
             }
@@ -680,10 +686,10 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
     }
 
     @Override
-    public final ImmutableList<Feature> getFeatures() {
+    public final ImmutableList<Feature<?>> getFeatures() {
         // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature lists.
         // TODO: Handle changes in StampCalculator.
-        MutableList<Feature> features = Lists.mutable.empty();
+        MutableList<Feature<?>> features = Lists.mutable.empty();
 
         // Public ID:
         features.add(getPublicIdFeature());
@@ -699,68 +705,13 @@ public abstract sealed class ObservableEntity<OV extends ObservableVersion<?,?>>
         return features.toImmutable();
     }
 
-    protected abstract void addAdditionalChronologyFeatures(MutableList<Feature> features);
+    protected abstract void addAdditionalChronologyFeatures(MutableList<Feature<?>> features);
 
     public Feature<?> getFeature(FeatureKey featureKey) {
         return switch (featureKey) {
             case FeatureKey.ChronologyFeature chronologyFeatureKey -> getFeatures().select(feature -> chronologyFeatureKey.match(feature.featureKey())).getOnly();
             case FeatureKey.VersionFeature versionFeatureKey -> getVersion(versionFeatureKey.stampNid()).get().getFeature(versionFeatureKey);
         };
-    }
-
-    public final class EntityFeature implements Feature<ObservableEntity<OV>> {
-
-        private EntityFeature() {
-        }
-
-        @Override
-        public ReadOnlyProperty<? extends Feature<ObservableEntity<OV>>> featureProperty() {
-            return entityFeatureWrapper;
-        }
-
-        @Override
-        public FeatureKey featureKey() {
-            return FeatureKey.Entity.Object(ObservableEntity.this.nid());
-        }
-
-        @Override
-        public ObservableComponent containingComponent() {
-            return ObservableEntity.this;
-        }
-
-        @Override
-        public int patternNid() {
-            return switch (ObservableEntity.this) {
-                case ObservableConcept _-> Binding.Concept.pattern().nid();
-                case ObservablePattern _-> Binding.Pattern.pattern().nid();
-                case ObservableSemantic _-> Binding.Semantic.pattern().nid();
-                case ObservableStamp _-> Binding.Stamp.pattern().nid();
-            };
-        }
-
-        @Override
-        public int indexInPattern() {
-            // TODO: replace with a new index after adding a new field for the meaning and purpose of the entity class
-            return 0;
-        }
-
-        @Override
-        public String toString() {
-            return ObservableEntity.this.getClass().getSimpleName() + " Feature<" + nid() + "> " + PrimitiveData.text(nid());
-        }
-
-    }
-
-    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
-    private final ReadOnlyObjectProperty<? extends Feature<ObservableEntity<OV>>> entityFeatureWrapper =
-            new ReadOnlyObjectWrapper<>(this, this.getClass().getSimpleName(), new ObservableEntity<OV>.EntityFeature()).getReadOnlyProperty();
-
-    private ReadOnlyProperty<? extends Feature<ObservableEntity<OV>>> featureProperty() {
-        return entityFeatureWrapper;
-    }
-
-    public Feature<ObservableEntity<OV>> asFeature() {
-        return entityFeatureWrapper.getValue();
     }
 
     private static class EntityChangeSubscriber implements Subscriber<Integer> {

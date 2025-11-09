@@ -25,16 +25,17 @@ import org.eclipse.collections.api.list.MutableList;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Concrete observable semantic version - fully type-reified, no generic parameters.
+ * <p>
+ * This is Layer 3 (Concrete) of the MGC pattern for semantic versions.
+ */
 public final class ObservableSemanticVersion
-        extends ObservableVersion<ObservableSemantic, SemanticVersionRecord>
-        implements SemanticEntityVersion {
+        extends ObservableEntityVersion<ObservableSemantic, SemanticVersionRecord>
+        implements SemanticEntityVersion, ObservableVersion {
+
     ObservableSemanticVersion(ObservableSemantic observableSemantic, SemanticVersionRecord semanticVersionRecord) {
         super(observableSemantic, semanticVersionRecord);
-    }
-
-    @Override
-    protected SemanticVersionRecord withStampNid(int stampNid) {
-        return version().withStampNid(stampNid);
     }
 
     @Override
@@ -99,7 +100,7 @@ public final class ObservableSemanticVersion
     }
 
     @Override
-    protected void addAdditionalVersionFeatures(MutableList<Feature> features) {
+    protected void addAdditionalVersionFeatures(MutableList<Feature<?>> features) {
         features.add(getFieldListFeature());
         for (ObservableField field : fields()) {
             features.add(field);
@@ -112,19 +113,42 @@ public final class ObservableSemanticVersion
     }
 
     /**
+     * Type-safe accessor for the containing semantic entity.
+     */
+    public ObservableSemantic getObservableSemantic() {
+        return getObservableEntity();
+    }
+
+    /**
      * Editable version wrapper for ObservableSemanticVersion.
      * <p>
-     * Provides editable fields ({@link ObservableField.Editable}) that can be bound to GUI components.
-     * Changes are cached until save() or commit() is called.
+     * Implements {@link EditableVersion} marker
+     * interface through the base {@link ObservableEntityVersion.Editable} class.
      * <p>
-     * Symmetric counterpart to {@link ObservableSemanticVersion}:
-     * <ul>
-     *   <li>ObservableSemanticVersion → has {@link ObservableField} (read-only)</li>
-     *   <li>ObservableSemanticVersion.Editable → has {@link ObservableField.Editable} (editable)</li>
-     * </ul>
+     * Provides field-level editing for semantic versions with proper validation
+     * and type safety.
+     * 
+     * <h2>Semantic Field Editing</h2>
+     * <p>Semantic versions have dynamic fields defined by their pattern. Use
+     * {@link dev.ikm.komet.framework.propsheet.SheetItem#makeEditable} to create property sheet items for individual
+     * fields:
+     * <pre>{@code
+     * EditableVersion editable = semanticVersion.getEditableVersion(editStamp);
+     * 
+     * if (editable instanceof ObservableSemanticVersion.Editable se) {
+     *     // Create editable sheet items for each field
+     *     for (int i = 0; i < pattern.fieldCount(); i++) {
+     *         SheetItem<?> item = SheetItem.makeEditable(
+     *             se, i, viewProperties);
+     *         propertySheet.getItems().add(item);
+     *     }
+     * }
+     * }</pre>
      */
     public static final class Editable
-            extends ObservableVersion.Editable<ObservableSemantic, ObservableSemanticVersion, SemanticVersionRecord> {
+            extends ObservableEntityVersion.Editable<ObservableSemantic, ObservableSemanticVersion, SemanticVersionRecord>
+            implements EditableVersion {
+        // Already implements EditableVersion and EditableChronology via parent!
 
         private final MutableList<ObservableField.Editable<?>> editableFields;
         private final ObservableList<ObservableField.Editable<?>> unmodifiableFieldList;
@@ -183,7 +207,7 @@ public final class ObservableSemanticVersion
          * @return the canonical editable semantic version for this stamp
          */
         public static Editable getOrCreate(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, ObservableStamp editStamp) {
-            return ObservableVersion.Editable.getOrCreate(observableSemantic, observableVersion, editStamp, Editable::new);
+            return ObservableEntityVersion.getOrCreate(observableSemantic, observableVersion, editStamp, Editable::new);
         }
 
         /**

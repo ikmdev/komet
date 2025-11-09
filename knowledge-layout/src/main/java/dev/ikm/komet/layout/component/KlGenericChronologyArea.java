@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout.component;
 
+import dev.ikm.komet.framework.observable.ObservableChronology;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableVersion;
 import javafx.scene.layout.Pane;
@@ -18,10 +19,13 @@ import javafx.scene.layout.Pane;
  * @param <FX> the type of JavaFX {@code Pane} associated with this component area
  * @see KlChronologyArea
  */
-public non-sealed interface KlGenericChronologyArea<FX extends Pane, OE extends ObservableEntity<ObservableVersion<OE, ?>>>
-        extends KlChronologyArea<OE, ObservableVersion<OE, ?>, FX> {
+public non-sealed interface KlGenericChronologyArea<FX extends Pane,
+        OE extends ObservableChronology>
+        extends KlChronologyArea<OE, ObservableVersion, FX> {
 
-    non-sealed interface Factory<FX extends Pane, OE extends ObservableEntity<ObservableVersion<OE, ?>>, KL extends KlGenericChronologyArea<FX, OE>>
-            extends KlChronologyArea.Factory<FX, OE, ObservableVersion<OE, ?>, KL> {
+    non-sealed interface Factory<FX extends Pane,
+            OE extends ObservableChronology,
+            KL extends KlGenericChronologyArea<FX, OE>>
+            extends KlChronologyArea.Factory<FX, OE, ObservableVersion, KL> {
     }
- }
+}

@@ -168,7 +168,7 @@ public sealed class ObservableFeature<DT> implements Feature<DT>, Field<DT>
      * Base class for editable features that cache field changes for GUI editing.
      * <p>
      * Provides the same symmetric API as {@link ObservableFeature}, but for editable scenarios
-     * where changes are cached in an {@link ObservableVersion.Editable} until save() or commit().
+     * where changes are cached in an {@link EditableVersion} until save() or commit().
      * <p>
      * <b>Symmetry with ObservableFeature:</b>
      * <ul>

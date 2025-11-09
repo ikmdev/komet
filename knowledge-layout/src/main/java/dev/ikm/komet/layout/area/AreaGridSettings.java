@@ -119,7 +119,7 @@ public record AreaGridSettings(
         );
     }
 
-    public KlArea makeAndAddToParent(KlParent parentView) {
+    public KlArea makeAndAddToParent(KlParent<?> parentView) {
         KlArea.Factory factory = makeAreaFactory();
         LOG.debug("Adding {} to {}", factory.productClass().getSimpleName(), parentView.getClass().getSimpleName());
         return factory.createAndAddToParent(this, parentView);

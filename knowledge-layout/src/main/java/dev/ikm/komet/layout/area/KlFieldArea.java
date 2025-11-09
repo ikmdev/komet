@@ -9,7 +9,7 @@ import javafx.scene.layout.Region;
 /**
  * Represents a sealed interface in the Knowledge Layout framework for managing
  * field areas associated with specific data types and their corresponding observable
- * fields and JavaFX regions. This interface extends {@link KlAreaForProperty} and serves
+ * fields and JavaFX regions. This interface extends {@link KlAreaForFeature} and serves
  * as a foundational component for defining and interacting with various concrete
  * field area implementations.
  *
@@ -19,7 +19,6 @@ import javafx.scene.layout.Region;
  * field data while maintaining a modular and extensible architecture.
  *
  * @param <DT> The data type associated with this field area.
- * @param <OF> The observable field type that monitors and reflects changes to the data type {@code DT}.
  * @param <FX> The type of JavaFX {@link Region} associated with this field area for displaying or managing the field.
  */
 @FullyQualifiedName("Knowledge layout field area")

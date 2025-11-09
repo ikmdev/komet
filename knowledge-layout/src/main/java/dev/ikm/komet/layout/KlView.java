@@ -47,11 +47,11 @@ public sealed interface KlView<FX>
     Logger LOG = LoggerFactory.getLogger(KlView.class);
     default void addChild(KlView view) {
         switch (this) {
-            case KlParent parent
+            case KlParent<?> parent
                     when view instanceof KlArea<?> area -> parent.gridPaneForChildren().getChildren().add(area.fxObject());
             case KlRenderView renderView
                     when view instanceof KlArea<?> area -> renderView.setKlRootArea(area);
-            case KlTopView topView
+            case KlTopView<?> topView
                     when view instanceof KlRenderView renderView -> topView.setKlRenderView(renderView);
             default -> throw new IllegalStateException("Can't add " + view.getClass().getSimpleName() + " to parent: " + this.getClass().getSimpleName());
         }

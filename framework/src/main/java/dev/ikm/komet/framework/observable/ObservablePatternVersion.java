@@ -29,9 +29,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Concrete observable pattern version - fully type-reified, no generic parameters.
+ * <p>
+ * This is Layer 3 (Concrete) of the MGC pattern for pattern versions.
+ */
 public final class ObservablePatternVersion
-        extends ObservableVersion<ObservablePattern, PatternVersionRecord>
-        implements PatternEntityVersion {
+        extends ObservableEntityVersion<ObservablePattern, PatternVersionRecord>
+        implements PatternEntityVersion, ObservableVersion {
+
     private static final Logger LOG = LoggerFactory.getLogger(ObservablePatternVersion.class);
 
     final SimpleObjectProperty<EntityFacade> purposeProperty = new SimpleObjectProperty<>(this, "Pattern purpose");
@@ -116,11 +122,6 @@ public final class ObservablePatternVersion
     }
 
     @Override
-    protected PatternVersionRecord withStampNid(int stampNid) {
-        return version().withStampNid(stampNid);
-    }
-
-    @Override
     public PatternVersionRecord getVersionRecord() {
         return version();
     }
@@ -182,7 +183,7 @@ public final class ObservablePatternVersion
     }
 
     @Override
-    protected void addAdditionalVersionFeatures(MutableList<Feature> features) {
+    protected void addAdditionalVersionFeatures(MutableList<Feature<?>> features) {
         // Pattern purpose
         features.add(getPatternPurpose());
         // Pattern meaning
@@ -198,22 +199,58 @@ public final class ObservablePatternVersion
 
     @Override
     public Editable getEditableVersion(ObservableStamp editStamp) {
-        return Editable.getOrCreate(getObservableEntity(), this, editStamp);
+        return ObservableEntityVersion.getOrCreate(getObservableEntity(), this, editStamp, Editable::new);
     }
-
+    /**
+     * Type-safe accessor for the containing pattern entity.
+     */
+    public ObservablePattern getObservablePattern() {
+        return getObservableEntity();
+    }
     /**
      * Editable version wrapper for ObservablePatternVersion.
      * <p>
+     * Implements {@link EditableVersion} marker
+     * interface through the base {@link ObservableEntityVersion.Editable} class.
+     * <p>
      * Provides editable properties for pattern purpose and meaning that can be
      * bound to GUI components. Changes are cached until save() or commit() is called.
+     * 
+     * <h2>Pattern-Specific Editable Properties</h2>
+     * <p>In addition to the standard {@link EditableVersion} operations, this class
+     * provides pattern-specific editable properties:
+     * <ul>
+     *   <li>{@link #getPurposeProperty()} - Editable semantic purpose</li>
+     *   <li>{@link #getMeaningProperty()} - Editable semantic meaning</li>
+     * </ul>
+     * 
+     * <h2>Usage Example</h2>
+     * <pre>{@code
+     * // Get editable - implements EditableVersion marker
+     * EditableVersion editable = patternVersion.getEditableVersion(editStamp);
+     * 
+     * // Pattern matching to access pattern-specific properties
+     * switch (editable) {
+     *     case ObservablePatternVersion.Editable pe -> {
+     *         // Bind pattern-specific fields
+     *         purposeComboBox.valueProperty().bindBidirectional(
+     *             pe.getPurposeProperty());
+     *         meaningComboBox.valueProperty().bindBidirectional(
+     *             pe.getMeaningProperty());
+     *     }
+     *     default -> bindGenericFields(editable);
+     * }
+     * }</pre>
      */
     public static final class Editable
-            extends ObservableVersion.Editable<ObservablePattern, ObservablePatternVersion, PatternVersionRecord> {
-
+            extends ObservableEntityVersion.Editable<ObservablePattern, ObservablePatternVersion, PatternVersionRecord>
+            implements EditableVersion {
+        // Already implements EditableVersion and EditableChronology via parent!
+        
         private final SimpleObjectProperty<EntityFacade> editablePurposeProperty;
         private final SimpleObjectProperty<EntityFacade> editableMeaningProperty;
 
-        private Editable(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, ObservableStamp editStamp) {
+        Editable(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, ObservableStamp editStamp) {
             super(observablePattern, observableVersion, editStamp);
 
             // Initialize editable properties
@@ -244,33 +281,26 @@ public final class ObservablePatternVersion
         }
 
         /**
-         * Gets or creates the canonical editable pattern version for the given stamp.
-         * <p>
-         * Returns the exact same instance for multiple calls with the same stamp, ensuring
-         * a single canonical editable version per ObservableStamp.
-         *
-         * @param observablePattern the ObservablePattern to edit
-         * @param observableVersion the ObservablePatternVersion to edit
-         * @param editStamp the ObservableStamp (typically identifying the author)
-         * @return the canonical editable pattern version for this stamp
-         */
-        public static Editable getOrCreate(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, ObservableStamp editStamp) {
-            return ObservableVersion.Editable.getOrCreate(observablePattern, observableVersion, editStamp, Editable::new);
-        }
-
-        /**
          * Returns the editable purpose property for GUI binding.
+         * <p>
+         * This property is specific to pattern versions and provides direct
+         * bidirectional binding support for UI controls.
          */
         public SimpleObjectProperty<EntityFacade> getPurposeProperty() {
             return editablePurposeProperty;
         }
-
+        
         /**
          * Returns the editable meaning property for GUI binding.
+         * <p>
+         * This property is specific to pattern versions and provides direct
+         * bidirectional binding support for UI controls.
          */
         public SimpleObjectProperty<EntityFacade> getMeaningProperty() {
             return editableMeaningProperty;
         }
+        
+        // ... rest of existing implementation ...
 
         @Override
         protected PatternVersionRecord createVersionWithStamp(PatternVersionRecord version, int stampNid) {

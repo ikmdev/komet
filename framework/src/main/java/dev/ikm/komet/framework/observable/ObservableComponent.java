@@ -29,7 +29,7 @@ import org.eclipse.collections.api.list.ImmutableList;
  * for specific component behaviors.
  */
 public sealed interface ObservableComponent
-        permits ObservableEntity, ObservableVersion {
+        permits ObservableChronology, ObservableEntity, ObservableEntityVersion, ObservableVersion {
     /**
      * Retrieves an immutable list of features associated with this observable component
      * based on the provided stamp calculator. The list represents the attributes or
@@ -37,7 +37,7 @@ public sealed interface ObservableComponent
      *
      * @return an {@code ImmutableList} of {@code Feature} objects associated with this component.
      */
-    ImmutableList<Feature> getFeatures();
+    ImmutableList<Feature<?>> getFeatures();
 
     /**
      * Retrieves the native identifier (nid) of the observable component.

@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout.component;
 
+import dev.ikm.komet.framework.observable.ObservableChronology;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.layout.KlArea;
@@ -37,8 +38,8 @@ import javafx.scene.layout.Pane;
  * @see KlSemanticArea
  * @see KlStampArea
  */
-public sealed interface KlChronologyArea<OE extends ObservableEntity<OV>,
-        OV extends ObservableVersion<?, ?>, FX extends Pane>
+public sealed interface KlChronologyArea<OE extends ObservableChronology,
+        OV extends ObservableVersion, FX extends Pane>
         extends KlArea<FX>
         permits KlConceptArea, KlGenericChronologyArea, KlPatternArea, KlSemanticArea, KlStampArea {
 
@@ -75,8 +76,8 @@ public sealed interface KlChronologyArea<OE extends ObservableEntity<OV>,
     ObservableList<OV> selectedVersions();
 
     sealed interface Factory<FX extends Pane,
-                             OE extends ObservableEntity<OV>,
-                             OV extends ObservableVersion<OE, ?>,
+                             OE extends ObservableChronology,
+                             OV extends ObservableVersion,
                              KL extends KlChronologyArea<OE, OV, FX>>
             extends KlArea.Factory<FX, KL>
             permits KlConceptArea.Factory,

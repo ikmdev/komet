@@ -26,7 +26,7 @@ import org.eclipse.collections.api.map.MutableMap;
 
 public final class ObservablePattern
         extends ObservableEntity<ObservablePatternVersion>
-        implements PatternEntity<ObservablePatternVersion> {
+        implements PatternEntity<ObservablePatternVersion>, ObservableChronology {
     ObservablePattern(PatternEntity<PatternVersionRecord> patternEntity) {
         super(patternEntity);
     }
@@ -42,7 +42,7 @@ public final class ObservablePattern
     }
 
     @Override
-    protected void addAdditionalChronologyFeatures(MutableList<Feature> features) {
+    protected void addAdditionalChronologyFeatures(MutableList<Feature<?>> features) {
         // Nothing to add.
     }
 }

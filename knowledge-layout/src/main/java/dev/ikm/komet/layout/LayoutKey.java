@@ -30,7 +30,7 @@ public sealed interface LayoutKey extends Encodable {
     /**
      * Generates the first level key of a layout hierarchy using a specified root layout.
      *
-     * @param rootLayout the root layout that defines the structure from which the first level key is derived
+     * @param rootLayoutClass the root layout that defines the structure from which the first level key is derived
      * @return an instance of {@link ForArea} representing the first level key of the layout
      */
     static ForArea makeTopArea(Class<? extends KnowledgeLayout> rootLayoutClass) {

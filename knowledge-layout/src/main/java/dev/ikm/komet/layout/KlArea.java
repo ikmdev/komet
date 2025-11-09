@@ -294,7 +294,7 @@ public sealed interface KlArea<FX extends Region>
          */
         KL create(KlPreferencesFactory preferencesFactory, AreaGridSettings areaGridSettings);
 
-        default KL createAndAddToParent(AreaGridSettings areaGridSettings, KlParent parentArea) {
+        default KL createAndAddToParent(AreaGridSettings areaGridSettings, KlParent<?> parentArea) {
             Objects.requireNonNull(areaGridSettings, "areaLayout is null");
             Objects.requireNonNull(parentArea, "parentArea is null");
 
@@ -306,7 +306,7 @@ public sealed interface KlArea<FX extends Region>
             return klView;
         }
 
-        default KL createAndAddToParent(KlParent parentArea) {
+        default KL createAndAddToParent(KlParent<?> parentArea) {
             Objects.requireNonNull(parentArea, "parentArea is null");
 
             KlPreferencesFactory preferencesFactory =

@@ -13,7 +13,7 @@ import javafx.scene.layout.Pane;
  *
  * @see ObservableVersion
  */
-public sealed interface KlAreaForVersion<OV extends ObservableVersion<?, ?>, FX extends Pane> extends KlArea<FX>, KlParent<FX>
+public sealed interface KlAreaForVersion<OV extends ObservableVersion, FX extends Pane> extends KlArea<FX>, KlParent<FX>
         permits KlAreaForConceptVersion, KlAreaForGenericVersion, KlAreaForPatternVersion, KlAreaForSemanticVersion, KlAreaForStampVersion {
     /**
      * Returns the version of the observable entity associated with this pane.
@@ -31,7 +31,7 @@ public sealed interface KlAreaForVersion<OV extends ObservableVersion<?, ?>, FX 
      */
     ReadOnlyProperty<OV> versionProperty();
 
-    sealed interface Factory<FX extends Pane, OV extends ObservableVersion<?, ?>,
+    sealed interface Factory<FX extends Pane, OV extends ObservableVersion,
             KL extends KlAreaForVersion<OV, FX>>
             extends KlArea.Factory<FX, KL>
             permits KlAreaForConceptVersion.Factory, KlAreaForGenericVersion.Factory, KlAreaForPatternVersion.Factory,

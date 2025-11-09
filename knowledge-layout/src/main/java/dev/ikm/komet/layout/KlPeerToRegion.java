@@ -43,14 +43,14 @@ public interface KlPeerToRegion<FX extends Region> extends KlRestorable {
     FX fxObject();
 
     /**
-     * Performs a recursive depth-first search to collect KlArea objects from the given node (which are
-     * identified by the KL_PEER property) and its children. If the given node does not contain a KlArea, the
+     * Performs a recursive depth-first search to collect {@code KlArea} objects from the given node (which are
+     * identified by the {@code KL_PEER} property) and its children. If the given node does not contain a {@code KlArea}, the
      * node's descendants are searched in a depth-first manner. Each branch of the DFS is terminated when
-     * a node with a @{code KL_PEER} property is encountered, and the @{code KL_PEER} value object is added
-     * to the klChildren list.
+     * a node with a {@code KL_PEER} property is encountered, and the {@code KL_PEER} value object is added
+     * to the {@code klChildren} list.
      *
      * @param node        the current node to be processed in the search
-     * @param klChildren  a mutable list to collect KlArea nodes found during the search
+     * @param klChildren  a mutable list to collect {@code KlArea} nodes found during the search
      */
     private void dfsKlNodes(Node node, MutableList<KlArea<?>> klChildren) {
         if (node.hasProperties() && node.getProperties().containsKey(KL_PEER)) {
@@ -64,13 +64,13 @@ public interface KlPeerToRegion<FX extends Region> extends KlRestorable {
 
 
     /**
-     * Performs a depth-first search to retrieve all child nodes of type KlArea<?>
+     * Performs a depth-first search to retrieve all child nodes of type {@code KlArea<?>}
      * starting from the given parent area.
      *
-     * @param parentArea the parent KlArea from which to start traversing the child nodes.
+     * @param parentArea the parent {@code KlArea} from which to start traversing the child nodes.
      *                   Must not be null.
      *
-     * @return an immutable list containing all discovered KlArea child nodes
+     * @return an immutable list containing all discovered {@code KlArea} child nodes
      *         encountered during the traversal.
      */
     default ImmutableList<KlArea<?>> dfsKlChildrenNodes(KlArea<?> parentArea) {

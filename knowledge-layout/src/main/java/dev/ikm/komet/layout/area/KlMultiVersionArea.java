@@ -17,7 +17,7 @@ import javafx.scene.layout.Pane;
  * @see KlArea
  * @see ObservableVersion
  */
-public non-sealed interface KlMultiVersionArea<OV extends ObservableVersion<?, EntityVersion>, FX extends Pane>
+public non-sealed interface KlMultiVersionArea<OV extends ObservableVersion, FX extends Pane>
         extends KlArea<FX> {
 
     /**
@@ -40,7 +40,7 @@ public non-sealed interface KlMultiVersionArea<OV extends ObservableVersion<?, E
      */
     ObservableList<KlAreaForVersion<OV, FX>> klVersionAreas();
 
-    non-sealed interface Factory<FX extends Pane, OV extends ObservableVersion<?, EntityVersion>, KL extends KlMultiVersionArea<OV, FX>>
+    non-sealed interface Factory<FX extends Pane, OV extends ObservableVersion, KL extends KlMultiVersionArea<OV, FX>>
             extends KlArea.Factory<FX, KL> {
     }
 

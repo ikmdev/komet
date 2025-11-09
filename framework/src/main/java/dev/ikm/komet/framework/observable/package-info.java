@@ -15,7 +15,7 @@
  */
 
 /**
- * <h1>Observable Framework for JavaFX-Native Tinkar Entity Management</h1>
+ * <h2>Observable Framework for JavaFX-Native Tinkar Entity Management</h2>
  *
  * <p>The Observable package provides a comprehensive JavaFX-native framework for working with Tinkar
  * entities, offering real-time UI binding, automatic change notifications, and transactional editing
@@ -29,7 +29,7 @@
  * <pre>
  * ┌─────────────────────────────────────────────────────────────────┐
  * │                    Application Layer                            │
- * │              (JavaFX UI Controls & Controllers)                 │
+ * │              (JavaFX UI Controls &amp; Controllers)                 │
  * └─────────────────────────────────────────────────────────────────┘
  *                            ↕ Binding
  * ┌─────────────────────────────────────────────────────────────────┐
@@ -86,7 +86,7 @@
  * <h3>3. Editable Versions (Inner Classes)</h3>
  * <p>Editable versions cache changes for transactional editing with save/commit/rollback semantics:
  * <ul>
- *   <li>{@link dev.ikm.komet.framework.observable.ObservableVersion.Editable} - Base editable version</li>
+ *   <li>{@link dev.ikm.komet.framework.observable.ObservableEntityVersion.Editable} - Base editable version</li>
  *   <li>{@link dev.ikm.komet.framework.observable.ObservableConceptVersion.Editable}</li>
  *   <li>{@link dev.ikm.komet.framework.observable.ObservableSemanticVersion.Editable}</li>
  *   <li>{@link dev.ikm.komet.framework.observable.ObservablePatternVersion.Editable}</li>
@@ -301,7 +301,7 @@
  *   <li><b>JavaFX Native:</b> All properties are JavaFX observables for seamless UI integration</li>
  *   <li><b>Weak Caching:</b> Automatic memory management without manual lifecycle tracking</li>
  *   <li><b>Thread Confinement:</b> JavaFX thread-only model simplifies reasoning about state</li>
- *   <li><b>Event Bus Integration:</b> Changes propagate through {@link dev.ikm.tinkar.common.service.EvtBus}</li>
+ *   <li><b>Event Bus Integration:</b> Changes propagate through {@link dev.ikm.tinkar.events.EvtBus}</li>
  * </ol>
  *
  * <h2>Best Practices</h2>

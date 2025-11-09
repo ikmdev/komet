@@ -44,7 +44,7 @@ import java.util.Objects;
  * ObservableComposer simplifies the creation and editing of Tinkar entities by providing a fluent,
  * type-safe API that integrates seamlessly with JavaFX properties and the Observable framework.
  * Unlike traditional composers that work with immutable entities, ObservableComposer leverages
- * {@link ObservableEntity}, {@link ObservableVersion.Editable}, {@link ObservableField.Editable},
+ * {@link ObservableEntity}, {@link ObservableEntityVersion.Editable}, {@link ObservableField.Editable},
  * and {@link ObservableStamp} to provide real-time UI binding, change notifications, and
  * transaction management.
  *
@@ -60,7 +60,7 @@ import java.util.Objects;
  *       runtime errors</li>
  *   <li><b>Observable Stamp Integration:</b> Uses {@link ObservableStamp} for automatic
  *       UI updates when stamps transition from uncommitted to committed</li>
- *   <li><b>Editable Version Support:</b> Works with {@link ObservableVersion.Editable} for
+ *   <li><b>Editable Version Support:</b> Works with {@link ObservableEntityVersion.Editable} for
  *       cached editing with save/commit/rollback capabilities</li>
  * </ul>
  *
@@ -90,7 +90,7 @@ import java.util.Objects;
  * <tr>
  *   <td><b>Editing Experience</b></td>
  *   <td>⚠️ Immediate writes or manual buffering</td>
- *   <td>✅ {@link ObservableVersion.Editable} with save/commit</td>
+ *   <td>✅ {@link ObservableEntityVersion.Editable} with save/commit</td>
  * </tr>
  * <tr>
  *   <td><b>Stamp Lifecycle</b></td>
@@ -308,7 +308,7 @@ import java.util.Objects;
  * to state changes automatically.
  *
  * @see ObservableEntity
- * @see ObservableVersion.Editable
+ * @see ObservableEntityVersion.Editable
  * @see ObservableField.Editable
  * @see ObservableStamp
  * @see ObservableEntityHandle
@@ -326,7 +326,7 @@ public final class ObservableComposer {
     private final String transactionComment;
 
     private Transaction transaction;
-    private final List<ObservableVersion.Editable<?, ?, ?>> trackedEditables = new ArrayList<>();
+    private final List<ObservableEntityVersion.Editable<?, ?, ?>> trackedEditables = new ArrayList<>();
 
     private final ReadOnlyObjectWrapper<TransactionState> transactionStateProperty =
             new ReadOnlyObjectWrapper<>(this, "transactionState", TransactionState.NONE);
@@ -617,7 +617,7 @@ public final class ObservableComposer {
         }
 
         // Commit all tracked editable versions first
-        for (ObservableVersion.Editable<?, ?, ?> editable : trackedEditables) {
+        for (ObservableEntityVersion.Editable<?, ?, ?> editable : trackedEditables) {
             if (editable.isDirty()) {
                 editable.save();
             }
@@ -638,7 +638,7 @@ public final class ObservableComposer {
 
     /**
      * Rolls back the current transaction, discarding all uncommitted changes.
-     * All {@link ObservableVersion.Editable} instances are reset to their original state.
+     * All {@link ObservableEntityVersion.Editable} instances are reset to their original state.
      */
     public void rollback() {
         requireJavaFXThread();
@@ -647,7 +647,7 @@ public final class ObservableComposer {
         }
 
         // Reset all tracked editable versions
-        for (ObservableVersion.Editable<?, ?, ?> editable : trackedEditables) {
+        for (ObservableEntityVersion.Editable<?, ?, ?> editable : trackedEditables) {
             editable.reset();
         }
 
@@ -695,7 +695,7 @@ public final class ObservableComposer {
     /**
      * Tracks an editable version for automatic commit/rollback management.
      */
-    void trackEditable(ObservableVersion.Editable<?, ?, ?> editable) {
+    void trackEditable(ObservableEntityVersion.Editable<?, ?, ?> editable) {
         trackedEditables.add(editable);
         hasUncommittedChangesProperty.set(true);
     }
@@ -847,7 +847,7 @@ public final class ObservableComposer {
      * @param <V> the type of editable version (e.g., ObservableConceptVersion.Editable)
      * @param <E> the type of observable entity (e.g., ObservableConcept)
      */
-    public interface EntityComposer<V extends ObservableVersion.Editable<?, ?, ?>, E extends ObservableEntity<?>> {
+    public interface EntityComposer<V extends ObservableEntityVersion.Editable<?, ?, ?>, E extends ObservableEntity<?>> {
         /**
          * Returns the editable version for UI binding.
          */

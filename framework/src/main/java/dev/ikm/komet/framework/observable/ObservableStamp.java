@@ -25,7 +25,7 @@ import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 
 public final class ObservableStamp
-        extends ObservableEntity<ObservableStampVersion> {
+        extends ObservableEntity<ObservableStampVersion> implements ObservableChronology {
     ObservableStamp(StampEntity<StampVersionRecord> stampEntity) {
         super(stampEntity);
     }
@@ -72,7 +72,7 @@ public final class ObservableStamp
     }
 
     @Override
-    protected void addAdditionalChronologyFeatures(MutableList<Feature> features) {
+    protected void addAdditionalChronologyFeatures(MutableList<Feature<?>> features) {
         // Nothing to add...
     }
 }

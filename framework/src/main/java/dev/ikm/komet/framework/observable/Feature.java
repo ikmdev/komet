@@ -16,7 +16,9 @@ Always has a value?
 
  */
 public sealed interface Feature<DT>
-        permits FeatureList, FeatureWrapper, ObservableEntity.EntityFeature, ObservableFeature, ObservableFeatureDefinition, ObservableVersion {
+        permits FeatureList, FeatureWrapper, ObservableChronology,
+        ObservableFeature, ObservableFeatureDefinition,
+        ObservableVersion  {
 
     /*
     If I just implement ObservableFeature as:
@@ -55,29 +57,31 @@ Field<LocatableField>
     int indexInPattern();
 
     default FeatureDefinition definition(StampCalculator stampCalculator) {
-        Latest<ObservablePatternVersion> patternVersion = stampCalculator.latest(ObservableEntity.get(this.patternNid()));
+        ObservablePattern observablePattern = ObservableEntityHandle.getPatternOrThrow(this.patternNid());
+        Latest<ObservablePatternVersion> patternVersion = stampCalculator.latest(observablePattern);
         if (patternVersion.isPresent()) {
             return patternVersion.get().fieldDefinitions().get(this.indexInPattern());
         } else {
             throw new RuntimeException("Pattern version not found for " + this +
-                    " in " + ObservableEntity.get(this.patternNid()));
+                    " in " + observablePattern);
         }
     }
 
     ReadOnlyProperty<? extends Feature<DT>> featureProperty();
 
 
+    // @TODO delete default implementation.
     default DT value() {
         // TODO: This is a hack to get around a few problems. Needs to be rethought.
         return switch (this) {
             case FeatureList<?> featureList -> (DT) featureList;
-            case FeatureWrapper<DT> wrapper -> wrapper.value();
-            case ObservableEntity.EntityFeature entityFeature -> (DT) entityFeature.value();
             case ObservableFeature<DT> observableFeature -> observableFeature.value();
+            case FeatureWrapper<DT> wrapper -> wrapper.value();
+
+            case ObservableChronology chronologyFeature -> (DT) chronologyFeature.value();
             case ObservableFeatureDefinition observableFeatureDefinition -> (DT) observableFeatureDefinition;
             case ObservableVersion observableVersion -> (DT) observableVersion;
         };
-
     }
 
 }

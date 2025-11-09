@@ -19,14 +19,7 @@ import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionRecord;
-import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
@@ -38,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public final class ObservableSemantic
         extends ObservableEntity<ObservableSemanticVersion>
-        implements SemanticEntity<ObservableSemanticVersion> {
+        implements SemanticEntity<ObservableSemanticVersion>, ObservableChronology {
     ObservableSemantic(SemanticEntity<SemanticVersionRecord> semanticEntity) {
         super(semanticEntity);
     }
@@ -61,6 +54,11 @@ public final class ObservableSemantic
     @Override
     public int patternNid() {
         return ((SemanticEntity) entity()).patternNid();
+    }
+
+    @Override
+    public PatternEntity pattern() {
+        return ((SemanticEntity) entity()).pattern();
     }
 
     public static ObservableSemanticSnapshot getSemanticSnapshot(int semanticNid, ViewCalculator calculator) {
@@ -127,7 +125,7 @@ public final class ObservableSemantic
     }
 
     @Override
-    protected void addAdditionalChronologyFeatures(MutableList<Feature> features) {
+    protected void addAdditionalChronologyFeatures(MutableList<Feature<?>> features) {
         // Pattern for semantic
         features.add(getPatternForSemanticFeature());
 

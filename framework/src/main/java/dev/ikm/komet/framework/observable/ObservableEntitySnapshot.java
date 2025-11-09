@@ -328,7 +328,7 @@ import java.util.function.Predicate;
  * @see Latest
  */
 public abstract sealed class ObservableEntitySnapshot<OE extends ObservableEntity<OV>,
-        OV extends ObservableVersion<?, ?>>
+        OV extends ObservableEntityVersion<?,?>>
         permits ObservableConceptSnapshot, ObservablePatternSnapshot, ObservableSemanticSnapshot, ObservableStampSnapshot {
     protected final Latest<OV> latestVersion;
     protected final IntIdCollection latestStampIds;

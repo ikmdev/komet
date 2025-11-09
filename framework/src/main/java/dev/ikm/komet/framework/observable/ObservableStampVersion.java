@@ -1,18 +1,3 @@
-/*
- * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.komet.framework.observable.binding.Binding;
@@ -25,8 +10,14 @@ import org.eclipse.collections.api.list.MutableList;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Concrete observable stamp version - fully type-reified, no generic parameters.
+ * <p>
+ * This is Layer 3 (Concrete) of the MGC pattern for stamp versions.
+ */
 public final class ObservableStampVersion
-        extends ObservableVersion<ObservableStamp, StampVersionRecord> {
+        extends ObservableEntityVersion<ObservableStamp, StampVersionRecord>
+        implements StampEntityVersion, ObservableVersion {
 
     ObservableStampVersion(ObservableStamp observableStamp, StampVersionRecord stampVersion) {
         super(observableStamp, stampVersion);
@@ -53,11 +44,6 @@ public final class ObservableStampVersion
         pathProperty().addListener((observable, oldValue, newValue) -> {
             versionProperty.set(version().withPathNid(newValue.nid()));
         });
-    }
-
-    @Override
-    protected StampVersionRecord withStampNid(int stampNid) {
-        throw new UnsupportedOperationException();
     }
 
 
@@ -144,7 +130,7 @@ public final class ObservableStampVersion
     }
 
     @Override
-    protected void addAdditionalVersionFeatures(MutableList<Feature> features) {
+    protected void addAdditionalVersionFeatures(MutableList<Feature<?>> features) {
         // Status
         features.add(getVersionStatusField());
 
@@ -160,20 +146,57 @@ public final class ObservableStampVersion
         // Path
         features.add(getVersionPathField());
     }
+    /**
+     * Type-safe accessor for the containing stamp entity.
+     */
+    public ObservableStamp getObservableStamp() {
+        return getObservableEntity();
+    }
 
     @Override
     public Editable getEditableVersion(ObservableStamp editStamp) {
         return Editable.getOrCreate(getObservableEntity(), this, editStamp);
     }
 
+    @Override
+    public int stateNid() {
+        return getVersionRecord().stateNid();
+    }
+
+    @Override
+    public long time() {
+        return getVersionRecord().time();
+    }
+
+    @Override
+    public int authorNid() {
+        return getVersionRecord().authorNid();
+    }
+
+    @Override
+    public int moduleNid() {
+        return getVersionRecord().moduleNid();
+    }
+
+    @Override
+    public int pathNid() {
+        return getVersionRecord().pathNid();
+    }
+
     /**
      * Editable version wrapper for ObservableStampVersion.
      * <p>
-     * Provides editable properties for stamp fields (state, time, author, module, path)
-     * that can be bound to GUI components. Changes are cached until save() or commit() is called.
+     * Implements {@link EditableVersion} marker
+     * interfaces through the base {@link ObservableEntityVersion.Editable} class.
+     * <p>
+     * <b>Note:</b> Stamp editing is typically restricted as stamps represent
+     * metadata about changes (who, when, where). This editable is provided for
+     * completeness and special administrative operations.
      */
     public static final class Editable
-            extends ObservableVersion.Editable<ObservableStamp, ObservableStampVersion, StampVersionRecord> {
+            extends ObservableEntityVersion.Editable<ObservableStamp, ObservableStampVersion, StampVersionRecord>
+            implements EditableVersion {
+        // Already implements EditableVersion and EditableChronology via parent!
 
         private final SimpleObjectProperty<State> editableStateProperty;
         private final SimpleLongProperty editableTimeProperty;
@@ -237,7 +260,7 @@ public final class ObservableStampVersion
          * @return the canonical editable stamp version for this stamp
          */
         public static Editable getOrCreate(ObservableStamp observableStamp, ObservableStampVersion observableVersion, ObservableStamp editStamp) {
-            return ObservableVersion.Editable.getOrCreate(observableStamp, observableVersion, editStamp, Editable::new);
+            return ObservableEntityVersion.getOrCreate(observableStamp, observableVersion, editStamp, Editable::new);
         }
 
         /**

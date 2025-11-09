@@ -11,7 +11,8 @@ import dev.ikm.tinkar.common.id.IntIdSet;
  * manage and interact with a collection of versioned component entities
  * in the context of knowledge layout.
  *
- * @TODO should we have separate list and set types, or should they be combined into one component that can be constrained to prohibit addition of duplicates?
+ * <p><b>TODO:</b> should we have separate list and set types, or should they be
+ * combined into one component that can be constrained to prohibit addition of duplicates?
  *
  */
 @RegularName("Component Set Field")

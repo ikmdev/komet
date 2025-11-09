@@ -19,11 +19,13 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import dev.ikm.tinkar.entity.EntityVersion;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyProperty;
 import org.eclipse.collections.api.list.MutableList;
 
 public final class ObservableConcept
         extends ObservableEntity<ObservableConceptVersion>
-        implements ConceptEntity<ObservableConceptVersion> {
+        implements ConceptEntity<ObservableConceptVersion>, ObservableChronology {
     ObservableConcept(ConceptEntity<ConceptVersionRecord> conceptEntity) {
         super(conceptEntity);
     }
@@ -39,7 +41,7 @@ public final class ObservableConcept
     }
 
     @Override
-    protected void addAdditionalChronologyFeatures(MutableList<Feature> features) {
+    protected void addAdditionalChronologyFeatures(MutableList<Feature<?>> features) {
         // Nothing to add.
     }
 }

@@ -283,7 +283,7 @@ public class KlFieldHelper {
         }
         AtomicReference<Latest<EntityVersion>> entityVersionLatest = new AtomicReference<>();
         ObservableVersion observableVersion = (ObservableVersion) observableEntitySnapshot.getLatestVersion().get();
-        EntityVersion entityVersion = observableVersion.version();
+        EntityVersion entityVersion = observableVersion.getVersionRecord();
         if(entityVersion.committed()){
             return new Latest<>(entityVersion);
         }
