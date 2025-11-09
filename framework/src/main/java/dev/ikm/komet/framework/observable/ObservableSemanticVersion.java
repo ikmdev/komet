@@ -64,11 +64,6 @@ public final class ObservableSemanticVersion
     }
 
     @Override
-    public int indexInPattern() {
-        return Binding.Semantic.versionItemDefinitionIndex();
-    }
-
-    @Override
     public ImmutableList<Object> fieldValues() {
         return version().fieldValues();
     }

@@ -50,17 +50,6 @@ public final class ObservableConceptVersion
 
 
     @Override
-    public int patternNid() {
-        return Binding.Concept.pattern().nid();
-    }
-
-    @Override
-    public int indexInPattern() {
-        return Binding.Concept.versionItemPatternIndex();
-    }
-
-
-    @Override
     protected void addAdditionalVersionFeatures(MutableList<Feature<?>> features) {
         // Nothing to add.
     }

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.integration.NewEphemeralKeyValueProvider;
 import dev.ikm.tinkar.terms.State;
@@ -41,7 +42,7 @@ class ObservableComposer2TestFX {
     @Test
     void testCreateComposerWithStaticFactory() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -58,7 +59,7 @@ class ObservableComposer2TestFX {
     @Test
     void testCreateComposerWithComment() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -73,7 +74,7 @@ class ObservableComposer2TestFX {
     @Test
     void testBuilderPattern() {
         ObservableComposer composer = ObservableComposer.builder()
-                .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .viewCalculator(Calculators.View.Default())
                 .author(TinkarTerm.USER)
                 .module(TinkarTerm.PRIMORDIAL_MODULE)
                 .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -164,7 +165,7 @@ class ObservableComposer2TestFX {
     @Test
     void testInitialTransactionState() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -178,7 +179,7 @@ class ObservableComposer2TestFX {
     @Test
     void testTransactionCreatedLazily() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -197,7 +198,7 @@ class ObservableComposer2TestFX {
     @Test
     void testCancelTransaction() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -217,7 +218,7 @@ class ObservableComposer2TestFX {
     @Test
     void testCancelWithoutTransaction() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -234,7 +235,7 @@ class ObservableComposer2TestFX {
     @Test
     void testTransactionStateProperty() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -254,7 +255,7 @@ class ObservableComposer2TestFX {
     @Test
     void testHasUncommittedChangesPropertyInitiallyFalse() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -268,7 +269,7 @@ class ObservableComposer2TestFX {
     @Test
     void testTransactionStatePropertyReadOnly() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -283,7 +284,7 @@ class ObservableComposer2TestFX {
     @Test
     void testHasUncommittedChangesPropertyReadOnly() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -305,7 +306,7 @@ class ObservableComposer2TestFX {
         Thread thread = new Thread(() -> {
             try {
                 ObservableComposer.create(
-                        Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                        Calculators.View.Default(),
                         State.ACTIVE,
                         TinkarTerm.USER,
                         TinkarTerm.PRIMORDIAL_MODULE,
@@ -328,7 +329,7 @@ class ObservableComposer2TestFX {
     @Test
     void testBuilderDefaultState() {
         ObservableComposer composer = ObservableComposer.builder()
-                .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .viewCalculator(Calculators.View.Default())
                 .author(TinkarTerm.USER)
                 .module(TinkarTerm.PRIMORDIAL_MODULE)
                 .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -341,7 +342,7 @@ class ObservableComposer2TestFX {
     @Test
     void testBuilderNullTransactionComment() {
         ObservableComposer composer = ObservableComposer.builder()
-                .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .viewCalculator(Calculators.View.Default())
                 .author(TinkarTerm.USER)
                 .module(TinkarTerm.PRIMORDIAL_MODULE)
                 .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -354,7 +355,7 @@ class ObservableComposer2TestFX {
     @Test
     void testStaticFactoryNullTransactionComment() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -368,7 +369,7 @@ class ObservableComposer2TestFX {
     @Test
     void testMultipleTransactionCreations() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -385,7 +386,7 @@ class ObservableComposer2TestFX {
     @Test
     void testStatePropertyBindable() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -406,7 +407,7 @@ class ObservableComposer2TestFX {
     @Test
     void testInactiveStateComposer() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.INACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -419,7 +420,7 @@ class ObservableComposer2TestFX {
     @Test
     void testCanceledStateComposer() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.CANCELED,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -432,7 +433,7 @@ class ObservableComposer2TestFX {
     @Test
     void testPrimordialStateComposer() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.PRIMORDIAL,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -445,7 +446,7 @@ class ObservableComposer2TestFX {
     @Test
     void testWithdrawnStateComposer() {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.WITHDRAWN,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,

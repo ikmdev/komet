@@ -18,6 +18,7 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
@@ -88,7 +89,7 @@ class ObservableComposerITestFX {
     void testCreateComposerWithLoadedEntities() {
 
     ObservableComposer composer = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.ACTIVE,
             TinkarTerm.USER,
             TinkarTerm.PRIMORDIAL_MODULE,
@@ -111,7 +112,7 @@ class ObservableComposerITestFX {
     void testTransactionCreationWithRealEntities() {
 
     ObservableComposer composer = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.ACTIVE,
             TinkarTerm.USER,
             TinkarTerm.PRIMORDIAL_MODULE,
@@ -134,7 +135,7 @@ class ObservableComposerITestFX {
     void testTransactionLifecycleWithDatabase() {
 
     ObservableComposer composer = ObservableComposer.builder()
-            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Calculators.View.Default())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -170,7 +171,7 @@ class ObservableComposerITestFX {
     void testMultipleComposersIndependence() {
 
     ObservableComposer composer1 = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.ACTIVE,
             TinkarTerm.USER,
             TinkarTerm.PRIMORDIAL_MODULE,
@@ -179,7 +180,7 @@ class ObservableComposerITestFX {
     );
 
     ObservableComposer composer2 = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.INACTIVE,
             TinkarTerm.USER,
             TinkarTerm.PRIMORDIAL_MODULE,
@@ -217,7 +218,7 @@ class ObservableComposerITestFX {
 
     for (State state : states) {
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 state,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -239,7 +240,7 @@ class ObservableComposerITestFX {
     void testPropertyNotificationsWithDatabase() {
 
     ObservableComposer composer = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.ACTIVE,
             TinkarTerm.USER,
             TinkarTerm.PRIMORDIAL_MODULE,
@@ -279,7 +280,7 @@ class ObservableComposerITestFX {
 
     for (EntityProxy author : authors) {
         ObservableComposer composer = ObservableComposer.builder()
-                .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .viewCalculator(Calculators.View.Default())
                 .author(author)
                 .module(TinkarTerm.PRIMORDIAL_MODULE)
                 .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -303,7 +304,7 @@ class ObservableComposerITestFX {
     void testConcurrentTransactionCreation() {
 
     ObservableComposer composer = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.ACTIVE,
             TinkarTerm.USER,
             TinkarTerm.PRIMORDIAL_MODULE,

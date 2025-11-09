@@ -18,6 +18,7 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
@@ -84,7 +85,7 @@ class ObservableEditableVersionITestFX {
     void testCreateTestEntities() {
         // Create composer for entity creation
             ObservableComposer composer = ObservableComposer.builder()
-                    .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                    .viewCalculator(Calculators.View.Default())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -106,7 +107,7 @@ class ObservableEditableVersionITestFX {
 
             // Create a new composer for the semantic
             ObservableComposer composer2 = ObservableComposer.builder()
-                    .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                    .viewCalculator(Calculators.View.Default())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -155,7 +156,7 @@ class ObservableEditableVersionITestFX {
         assertNotNull(testConcept, "Test concept should be created");
 
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -197,7 +198,7 @@ class ObservableEditableVersionITestFX {
         assertNotNull(testSemantic, "Test semantic should be created");
 
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -225,7 +226,7 @@ class ObservableEditableVersionITestFX {
         assertNotNull(testSemantic, "Test semantic should be created");
 
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -263,7 +264,7 @@ class ObservableEditableVersionITestFX {
         assertNotNull(testSemantic, "Test semantic should be created");
 
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -300,7 +301,7 @@ class ObservableEditableVersionITestFX {
         assertNotNull(testSemantic, "Test semantic should be created");
 
         ObservableComposer composer = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -342,7 +343,7 @@ class ObservableEditableVersionITestFX {
         assertNotNull(testConcept, "Test concept should be created");
 
         ObservableComposer composer1 = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,
@@ -351,7 +352,7 @@ class ObservableEditableVersionITestFX {
         );
 
         ObservableComposer composer2 = ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.KOMET_USER,
                 TinkarTerm.PRIMORDIAL_MODULE,

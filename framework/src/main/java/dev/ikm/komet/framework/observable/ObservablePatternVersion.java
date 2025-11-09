@@ -53,19 +53,9 @@ public final class ObservablePatternVersion
         MutableList<ObservableFeatureDefinition> mutableFieldDefinitions = Lists.mutable.ofInitialCapacity(patternVersionRecord.fieldDefinitions().size());
         for (FieldDefinitionRecord fieldDefinition : patternVersionRecord.fieldDefinitions()) {
             mutableFieldDefinitions.add(new ObservableFeatureDefinition(fieldDefinition, this,
-                    FeatureKey.Version.PatternFieldDefinitionListItem(nid(), indexInPattern(), patternNid(), stampNid())));
+                    FeatureKey.Version.PatternFieldDefinitionListItem(nid(), fieldDefinition.indexInPattern(), fieldDefinition.patternNid(), stampNid())));
         }
         this.observableFieldDefinitions = mutableFieldDefinitions.toImmutable();
-    }
-
-    @Override
-    public int patternNid() {
-        return Binding.Pattern.pattern().nid();
-    }
-
-    @Override
-    public int indexInPattern() {
-        return Binding.Pattern.versionItemDefinitionIndex();
     }
 
     private void purposeChanged(ObservableValue<? extends EntityFacade> observableValue, EntityFacade oldValue, EntityFacade newValue) {

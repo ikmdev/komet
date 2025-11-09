@@ -51,7 +51,7 @@ import org.eclipse.collections.api.list.ImmutableList;
  * @see ObservableSemanticVersion
  * @see ObservableStampVersion
  */
-public sealed interface ObservableVersion
+public sealed interface ObservableVersion extends ObservableComponent, Feature<ObservableVersion>
         permits ObservableConceptVersion, ObservableEntityVersion, ObservablePatternVersion, ObservableSemanticVersion, ObservableStampVersion {
     // Marker interface - intentionally empty
     
@@ -64,4 +64,26 @@ public sealed interface ObservableVersion
      * Returns the underlying entity version record.
      */
     EntityVersion getVersionRecord();
+
+
+    @Override
+    default int indexInPattern() {
+        return switch (this) {
+            case ObservableConceptVersion cv -> cv.indexInPattern();
+            case ObservablePatternVersion pv -> pv.indexInPattern();
+            case ObservableSemanticVersion sv -> sv.indexInPattern();
+            case ObservableStampVersion sv -> sv.indexInPattern();
+        };
+    }
+
+    @Override
+    default int patternNid() {
+        return switch (this) {
+            case ObservableConceptVersion cv -> cv.patternNid();
+            case ObservablePatternVersion pv -> pv.patternNid();
+            case ObservableSemanticVersion sv -> sv.patternNid();
+            case ObservableStampVersion sv -> sv.patternNid();
+        };
+    }
+
 }

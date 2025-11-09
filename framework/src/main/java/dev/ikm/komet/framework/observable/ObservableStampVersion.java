@@ -45,18 +45,7 @@ public final class ObservableStampVersion
             versionProperty.set(version().withPathNid(newValue.nid()));
         });
     }
-
-
-    @Override
-    public int patternNid() {
-        return Binding.Stamp.pattern().nid();
-    }
-
-    @Override
-    public int indexInPattern() {
-        return Binding.Stamp.versionItemDefinitionIndex();
-    }
-
+    
     @Override
     public StampVersionRecord getVersionRecord() {
         return version();

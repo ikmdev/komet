@@ -18,6 +18,7 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
@@ -95,7 +96,7 @@ class ObservableEditableFieldTestFX {
     void createTestSemanticWithFields() {
         // Create a composer for entity creation
         testComposer = ObservableComposer.builder()
-                .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .viewCalculator(Calculators.View.Default())
                 .author(TinkarTerm.USER)
                 .module(TinkarTerm.PRIMORDIAL_MODULE)
                 .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -497,7 +498,7 @@ class ObservableEditableFieldTestFX {
      */
     private ObservableComposer createComposer(String transactionComment) {
         return ObservableComposer.builder()
-                .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .viewCalculator(Calculators.View.Default())
                 .author(TinkarTerm.USER)
                 .module(TinkarTerm.PRIMORDIAL_MODULE)
                 .path(TinkarTerm.DEVELOPMENT_PATH)

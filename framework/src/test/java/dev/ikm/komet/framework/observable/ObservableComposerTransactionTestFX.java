@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.integration.NewEphemeralKeyValueProvider;
 import dev.ikm.tinkar.terms.State;
@@ -164,7 +165,7 @@ class ObservableComposerTransactionTestFX {
     void testTransactionCommentWithStaticFactory() {
             String comment = "Test transaction comment";
             ObservableComposer composer = ObservableComposer.create(
-                    Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                    Calculators.View.Default(),
                     State.ACTIVE,
                     TinkarTerm.USER,
                     TinkarTerm.PRIMORDIAL_MODULE,
@@ -183,7 +184,7 @@ class ObservableComposerTransactionTestFX {
     void testTransactionCommentWithBuilder() {
             String comment = "Builder transaction comment";
             ObservableComposer composer = ObservableComposer.builder()
-                    .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                    .viewCalculator(Calculators.View.Default())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -199,7 +200,7 @@ class ObservableComposerTransactionTestFX {
     @RunOnJavaFXThread
     void testEmptyTransactionComment() {
             ObservableComposer composer = ObservableComposer.builder()
-                    .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                    .viewCalculator(Calculators.View.Default())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -303,7 +304,7 @@ class ObservableComposerTransactionTestFX {
      */
     private ObservableComposer createComposer() {
         return ObservableComposer.create(
-                Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+                Calculators.View.Default(),
                 State.ACTIVE,
                 TinkarTerm.USER,
                 TinkarTerm.PRIMORDIAL_MODULE,

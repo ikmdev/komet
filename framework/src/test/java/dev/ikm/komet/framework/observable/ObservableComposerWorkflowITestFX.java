@@ -18,6 +18,7 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
@@ -88,7 +89,7 @@ class ObservableComposerWorkflowITestFX {
 
     // 1. Create composer
     ObservableComposer composer = ObservableComposer.builder()
-            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Calculators.View.Default())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -133,7 +134,7 @@ class ObservableComposerWorkflowITestFX {
 
     // 1. Create a concept first using composer
     ObservableComposer composer1 = ObservableComposer.builder()
-            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Calculators.View.Default())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -150,7 +151,7 @@ class ObservableComposerWorkflowITestFX {
 
     // 2. Create a semantic on the concept using composer
     ObservableComposer composer2 = ObservableComposer.builder()
-            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Calculators.View.Default())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -177,7 +178,7 @@ class ObservableComposerWorkflowITestFX {
 
     // 3. Create composer and edit semantic
     ObservableComposer composer3 = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.ACTIVE,
             TinkarTerm.USER,
             TinkarTerm.PRIMORDIAL_MODULE,
@@ -221,7 +222,7 @@ class ObservableComposerWorkflowITestFX {
     LOG.info("=== Testing Property Notification Workflow ===");
 
     ObservableComposer composer = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.ACTIVE,
             TinkarTerm.USER,
             TinkarTerm.PRIMORDIAL_MODULE,
@@ -263,7 +264,7 @@ class ObservableComposerWorkflowITestFX {
 
     // Create multiple composers for different tasks
     ObservableComposer composer1 = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.ACTIVE,
             TinkarTerm.USER,
             TinkarTerm.PRIMORDIAL_MODULE,
@@ -272,7 +273,7 @@ class ObservableComposerWorkflowITestFX {
     );
 
     ObservableComposer composer2 = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.ACTIVE,
             TinkarTerm.KOMET_USER,
             TinkarTerm.PRIMORDIAL_MODULE,
@@ -312,7 +313,7 @@ class ObservableComposerWorkflowITestFX {
 
     // Create entities using composer
     ObservableComposer composer1 = ObservableComposer.builder()
-            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Calculators.View.Default())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -327,7 +328,7 @@ class ObservableComposerWorkflowITestFX {
     ObservableConcept observableConcept = conceptComposer.getEntity();
 
     ObservableComposer composer2 = ObservableComposer.builder()
-            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Calculators.View.Default())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -353,7 +354,7 @@ class ObservableComposerWorkflowITestFX {
 
     // Edit semantic
     ObservableComposer composer = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.ACTIVE,
             TinkarTerm.USER,
             TinkarTerm.PRIMORDIAL_MODULE,
@@ -402,7 +403,7 @@ class ObservableComposerWorkflowITestFX {
     LOG.info("=== Testing Transaction State Transitions ===");
 
     ObservableComposer composer = ObservableComposer.create(
-            Coordinates.Stamp.DevelopmentLatest().stampCalculator(),
+            Calculators.View.Default(),
             State.ACTIVE,
             TinkarTerm.USER,
             TinkarTerm.PRIMORDIAL_MODULE,

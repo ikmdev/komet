@@ -47,8 +47,39 @@ package dev.ikm.komet.framework.observable;
  * @see ObservableSemantic
  * @see ObservableStamp
  */
-public sealed interface ObservableChronology
+public sealed interface ObservableChronology extends ObservableComponent, Feature<ObservableChronology>
         permits ObservableConcept, ObservablePattern, ObservableSemantic, ObservableStamp {
     // Marker interface - intentionally empty
+
+
+    @Override
+    default int indexInPattern() {
+        return switch (this) {
+            case ObservableConcept concept -> concept.indexInPattern();
+            case ObservablePattern pattern -> pattern.indexInPattern();
+            case ObservableSemantic semantic -> semantic.indexInPattern();
+            case ObservableStamp stamp -> stamp.indexInPattern();
+         };
+    }
+
+    @Override
+    default int patternNid() {
+       return switch (this) {
+           case ObservableConcept concept -> concept.patternNid();
+           case ObservablePattern pattern -> pattern.patternNid();
+           case ObservableSemantic semantic -> semantic.patternNid();
+           case ObservableStamp stamp -> stamp.patternNid();
+       };
+    }
+
+    @Override
+    default ObservableComponent containingComponent() {
+        return this;
+    }
+
+    @Override
+    default FeatureKey featureKey() {
+        return FeatureKey.ChronologyFeature.Chronology.Entity.Object(nid());
+     }
 }
 
