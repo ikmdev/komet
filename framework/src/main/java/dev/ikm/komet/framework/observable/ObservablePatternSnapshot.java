@@ -36,7 +36,7 @@ import java.util.function.Predicate;
  * <h2>Pattern Snapshot Characteristics</h2>
  * <ul>
  *   <li><b>Structural Definition:</b> Patterns define field structures for semantic records</li>
- *   <li><b>Purpose & Meaning:</b> Each pattern version has semantic purpose and meaning concepts</li>
+ *   <li><b>Purpose &amp; Meaning:</b> Each pattern version has semantic purpose and meaning concepts</li>
  *   <li><b>Field Definitions:</b> Field definition lists can evolve across versions</li>
  *   <li><b>Breaking Changes:</b> Field definition changes may be incompatible across versions</li>
  * </ul>

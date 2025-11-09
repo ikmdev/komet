@@ -345,7 +345,7 @@ class ObservableEditableFieldTestFX {
     void testFieldIsDirty() {
         assertNotNull(testSemantic, "Test semantic should be created");
 
-        ObservableComposer composer = createComposer("Test field isDirty");
+        ObservableComposer composer = createComposer("Test field hasUnsavedChanges");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
                 composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
 
@@ -355,18 +355,18 @@ class ObservableEditableFieldTestFX {
         String originalValue = textField.getValue();
 
         // Initially should not be dirty
-        assertFalse(textField.isDirty(), "Field should not be dirty initially");
+        assertFalse(textField.hasUnsavedChanges(), "Field should not be dirty initially");
 
         // Modify the value
         textField.setValue("Modified value");
-        assertTrue(textField.isDirty(), "Field should be dirty after modification");
+        assertTrue(textField.hasUnsavedChanges(), "Field should be dirty after modification");
 
         // Reset to original
         textField.reset();
-        assertFalse(textField.isDirty(), "Field should not be dirty after reset");
+        assertFalse(textField.hasUnsavedChanges(), "Field should not be dirty after reset");
         assertEquals(originalValue, textField.getValue(), "Value should be restored after reset");
 
-        LOG.info("✓ Field isDirty and reset working correctly");
+        LOG.info("✓ Field hasUnsavedChanges and reset working correctly");
         composer.cancel();
     }
 
@@ -429,9 +429,9 @@ class ObservableEditableFieldTestFX {
         assertEquals(original2, field2.getValue(), "Field 2 should be unchanged");
 
         // Field 0 should be dirty, others should not
-        assertTrue(field0.isDirty(), "Modified field should be dirty");
-        assertFalse(field1.isDirty(), "Unmodified field should not be dirty");
-        assertFalse(field2.isDirty(), "Unmodified field should not be dirty");
+        assertTrue(field0.hasUnsavedChanges(), "Modified field should be dirty");
+        assertFalse(field1.hasUnsavedChanges(), "Unmodified field should not be dirty");
+        assertFalse(field2.hasUnsavedChanges(), "Unmodified field should not be dirty");
 
         LOG.info("✓ Multiple fields maintain independence");
         composer.cancel();

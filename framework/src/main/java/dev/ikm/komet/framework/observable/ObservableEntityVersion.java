@@ -11,6 +11,8 @@ import javafx.beans.property.*;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -247,9 +249,10 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
      * </ul>
      *
      * @param editStamp the observable stamp to use for this editable version (typically identifies the author)
+     * @param transaction the transaction to use for managing uncommitted changes
      * @return the canonical editable version for this stamp
      */
-    public abstract EditableVersion getEditableVersion(ObservableStamp editStamp);
+    public abstract EditableVersion getEditableVersion(ObservableStamp editStamp, Transaction transaction);
 
     /**
      * Base class for editable versions that cache field changes for GUI editing.
@@ -267,21 +270,23 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
             permits ObservableConceptVersion.Editable, ObservablePatternVersion.Editable,
             ObservableSemanticVersion.Editable, ObservableStampVersion.Editable {
 
+        private static final Logger LOG = LoggerFactory.getLogger(Editable.class);
+
         protected final OE observableEntity;
         protected final OV observableVersion;
         protected final ObservableStamp editStamp;
         protected V workingVersion;
-        protected Transaction transaction;
+        private final Transaction transaction; // Make it final
 
         /**
          * Package-private constructor. Use ObservableVersion.getEditableVersion(stamp) to create instances.
          */
-        Editable(OE observableEntity, OV observableVersion, ObservableStamp editStamp) {
-            this.observableEntity = observableEntity;
-            this.observableVersion = observableVersion;
-            this.editStamp = editStamp;
+        Editable(OE observableEntity, OV observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            this.observableEntity = Objects.requireNonNull(observableEntity, "Observable entity cannot be null");;
+            this.observableVersion = Objects.requireNonNull(observableVersion, "Observable version cannot be null");
+            this.editStamp = Objects.requireNonNull(editStamp, "Observable stamp cannot be null");
             this.workingVersion = (V) observableVersion.getVersionRecord();
-            this.transaction = null;
+            this.transaction = Objects.requireNonNull(transaction, "Transaction cannot be null"); // Set from constructor
         }
 
         /**
@@ -316,11 +321,21 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
         /**
          * Returns whether this editable version has unsaved changes.
          * <p>
-         * Implements {@link EditableVersion#isDirty()}.
+         * Implements {@link EditableVersion#hasUnsavedChanges()}.
          */
         @Override
-        public boolean isDirty() {
-            return !workingVersion.equals(observableVersion.getVersionRecord());
+        public boolean hasUnsavedChanges() {
+            boolean hasChanges = !workingVersion.equals(observableVersion.getVersionRecord());
+            LOG.info("hasUnsavedChanges() called: {}", hasChanges);
+            LOG.info("  workingVersion: {}", workingVersion);
+            LOG.info("  observableVersion.getVersionRecord(): {}", observableVersion.getVersionRecord());
+            if (workingVersion instanceof SemanticVersionRecord semanticWorking) {
+                LOG.info("  workingVersion.fieldValues(): {}", semanticWorking.fieldValues());
+            }
+            if (observableVersion.getVersionRecord() instanceof SemanticVersionRecord semanticObservable) {
+                LOG.info("  observableVersion.fieldValues(): {}", semanticObservable.fieldValues());
+            }
+            return hasChanges;
         }
 
         /**
@@ -330,15 +345,14 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
          */
         @Override
         public void save() {
-            if (!isDirty()) {
+            LOG.info("save() called");
+            if (!hasUnsavedChanges()) {
+                LOG.info("save(): No unsaved changes, returning early");
                 return;
             }
+            LOG.info("save(): Has unsaved changes, proceeding with save");
 
             // Create uncommitted stamp if needed
-            if (transaction == null) {
-                transaction = Transaction.make();
-            }
-
             // Get or create uncommitted stamp
             StampEntity uncommittedStamp = transaction.getStampForEntities(
                     editStamp.lastVersion().state(),
@@ -354,7 +368,14 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
             // Save to database - this will trigger update back to observable entity
             V oldVersion = (V) observableVersion.getVersionRecord();
-            observableEntity.saveToDB(analogue, newVersion, oldVersion);
+            try {
+                LOG.info("save(): Saving uncommitted version to database: entity: \n{}" +
+                        "\n\n new version: {}, \n\n old version: {}", analogue, newVersion, oldVersion);
+                observableEntity.saveToDB(analogue, newVersion, oldVersion);
+            } catch (Exception e) {
+                LOG.error("Error saving uncommitted version to database: ", e);
+                throw new RuntimeException(e);
+            }
 
             // Update working version
             workingVersion = newVersion;
@@ -367,21 +388,18 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
          */
         @Override
         public void commit() {
-            if (transaction != null) {
-                transaction.commit();
+            transaction.commit();
 
-                // After commit, create committed version
-                StampEntity committedStamp = Entity.getStamp(editStamp.nid());
-                V committedVersion = createVersionWithStamp(workingVersion, committedStamp.nid());
-                Entity<?> analogue = createAnalogue(committedVersion);
+            // After commit, create committed version
+            StampEntity committedStamp = Entity.getStamp(editStamp.nid());
+            V committedVersion = createVersionWithStamp(workingVersion, committedStamp.nid());
+            Entity<?> analogue = createAnalogue(committedVersion);
 
-                // Save committed version
-                V oldVersion = workingVersion;
-                observableEntity.saveToDB(analogue, committedVersion, oldVersion);
+            // Save committed version
+            V oldVersion = workingVersion;
+            observableEntity.saveToDB(analogue, committedVersion, oldVersion);
 
-                workingVersion = committedVersion;
-                transaction = null;
-            }
+            workingVersion = committedVersion;
         }
 
         /**
@@ -392,10 +410,6 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
         @Override
         public void reset() {
             workingVersion = (V) observableVersion.getVersionRecord();
-            if (transaction != null) {
-                transaction.cancel();
-                transaction = null;
-            }
         }
 
         /**
@@ -429,7 +443,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
                 OV extends ObservableEntityVersion,
                 V extends EntityVersion,
                 OEV extends ObservableEntityVersion.Editable<OC, OV, V>> {
-            OEV create(OC observableChronology, OV observableVersion, ObservableStamp editStamp);
+            OEV create(OC observableChronology, OV observableVersion, ObservableStamp editStamp, Transaction transaction);
         }
     }
 
@@ -486,13 +500,13 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
     OEV getOrCreate(OE observableEntity,
                     OV observableVersion,
                     ObservableStamp editStamp,
+                    Transaction transaction,
                     Editable.EditableVersionFactory<OE, OV, V, OEV> mappingFunction) {
         // Create a composite key using the component's nid (not version nid - versions don't have their own nid)
         // Caffeine's get() with mapping function is atomic and thread-safe
         // If the key exists, returns the existing value
         // If the key doesn't exist, calls the mappingFunction function exactly once and caches the result
         return (OEV) EDITABLE_VERSION_CACHE.get(new EditableVersionKey(observableVersion.nid(), editStamp.nid()),
-                k -> mappingFunction.create(observableEntity, observableVersion, editStamp));
+                k -> mappingFunction.create(observableEntity, observableVersion, editStamp, transaction));
     }
 }
-

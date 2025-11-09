@@ -278,8 +278,10 @@ public sealed class ObservableSemanticField<DT> implements Feature<DT>, Field<DT
 
         /**
          * Returns whether this editable feature has unsaved changes.
+         *
+         * @return true if there are modifications that have not been saved, false otherwise
          */
-        public boolean isDirty() {
+        public boolean hasUnsavedChanges() {
             DT currentValue = editableValueProperty.get();
             DT originalValue = observableSemanticField.value();
 

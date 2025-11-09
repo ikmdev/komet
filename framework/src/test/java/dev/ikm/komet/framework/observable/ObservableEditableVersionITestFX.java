@@ -19,7 +19,6 @@ import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.Calculators;
-import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.terms.State;
@@ -297,7 +296,7 @@ class ObservableEditableVersionITestFX {
     @Test
     @Order(9)
     @RunOnJavaFXThread
-    void testEditableVersionIsDirty() {
+    void testEditableVersionIsChanged() {
         assertNotNull(testSemantic, "Test semantic should be created");
 
         ObservableComposer composer = ObservableComposer.create(
@@ -312,8 +311,8 @@ class ObservableEditableVersionITestFX {
                 composer.composeSemantic(testSemantic.publicId(), testConcept, TinkarTerm.DESCRIPTION_PATTERN);
         ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
 
-        // Initially should not be dirty
-        assertFalse(editableVersion.isDirty(), "New editable version should not be dirty");
+        // Initially should not be changed
+        assertFalse(editableVersion.hasUnsavedChanges(), "New editable version should not be changed");
 
         // Modify a field
         javafx.collections.ObservableList<ObservableField.Editable<?>> fields = editableVersion.getEditableFields();
@@ -322,15 +321,15 @@ class ObservableEditableVersionITestFX {
             String originalValue = field.getValue();
             field.setValue("Modified value");
 
-            // Now should be dirty
-            assertTrue(editableVersion.isDirty(), "Editable version should be dirty after modification");
+            // Now should be changed
+            assertTrue(editableVersion.hasUnsavedChanges(), "Editable version should be have unsaved after modification");
 
-            // Reset should make it not dirty again
+            // Reset should make it not changed again
             editableVersion.reset();
-            assertFalse(editableVersion.isDirty(), "Editable version should not be dirty after reset");
+            assertFalse(editableVersion.hasUnsavedChanges(), "Editable version should not have unsaved changes after reset");
             assertEquals(originalValue, field.getValue(), "Value should be restored after reset");
 
-            LOG.info("isDirty() and reset() working correctly");
+            LOG.info("hasUnsavedChanges() and reset() working correctly");
         }
 
         composer.cancel();

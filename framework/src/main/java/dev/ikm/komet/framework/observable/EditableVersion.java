@@ -21,7 +21,7 @@ package dev.ikm.komet.framework.observable;
  *                        ↓                       ↓
  *                   Cached Changes      Written to DB
  *                        ↓                       ↓
- *                   isDirty()?              Committed
+ *              hasUnsavedChanges()?        Committed
  *                        ↓
  *                   reset() ← Cancel Changes
  * </pre>
@@ -85,8 +85,10 @@ public sealed interface EditableVersion
     
     /**
      * Returns whether this editable version has unsaved changes.
+     *
+     * @return true if there are modifications that have not been saved, false otherwise
      */
-    boolean isDirty();
+    boolean hasUnsavedChanges();
     
     /**
      * Saves the current working version as an uncommitted version to the database.

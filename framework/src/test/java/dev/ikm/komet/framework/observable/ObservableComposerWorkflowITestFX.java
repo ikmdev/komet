@@ -163,14 +163,42 @@ class ObservableComposerWorkflowITestFX {
             composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
     ObservableSemanticVersion.Editable semanticVersion = semanticComposer.getEditableVersion();
 
-    // Set field values
+    // Set ALL field values according to DESCRIPTION_PATTERN specification:
+    // Field 0: Language (Component)
+    // Field 1: Description text (String)
+    // Field 2: Text case significance (Component)
+    // Field 3: Description type (Component)
     javafx.collections.ObservableList<ObservableField.Editable<?>> fields = semanticVersion.getEditableFields();
-    if (fields.size() >= 3) {
-        ((ObservableField.Editable<String>) fields.get(0)).setValue("Original description");
-        ((ObservableField.Editable<Object>) fields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
-        ((ObservableField.Editable<Object>) fields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
-    }
+    assertEquals(4, fields.size(), "DESCRIPTION_PATTERN should have exactly 4 fields");
 
+    LOG.info("===========================================");
+    LOG.info("TEST: Starting to set field values");
+    LOG.info("===========================================");
+
+    LOG.info("TEST: Setting field 0 to ENGLISH_LANGUAGE");
+    ((ObservableField.Editable<Object>) fields.get(0)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
+    LOG.info("TEST: Field 0 getValue() returns: {}", fields.get(0).getValue());
+
+    LOG.info("TEST: Setting field 1 to 'Original description'");
+    ((ObservableField.Editable<String>) fields.get(1)).setValue("Original description");
+    LOG.info("TEST: Field 1 getValue() returns: {}", fields.get(1).getValue());
+
+    LOG.info("TEST: Setting field 2 to DESCRIPTION_NOT_CASE_SENSITIVE");
+    ((ObservableField.Editable<Object>) fields.get(2)).setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+    LOG.info("TEST: Field 2 getValue() returns: {}", fields.get(2).getValue());
+
+    LOG.info("TEST: Setting field 3 to FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE");
+    ((ObservableField.Editable<Object>) fields.get(3)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+    LOG.info("TEST: Field 3 getValue() returns: {}", fields.get(3).getValue());
+
+    LOG.info("===========================================");
+    LOG.info("TEST: All fields set, checking hasUnsavedChanges()");
+    LOG.info("===========================================");
+    LOG.info("TEST: hasUnsavedChanges? {}", semanticVersion.hasUnsavedChanges());
+
+    LOG.info("===========================================");
+    LOG.info("TEST: Calling save()");
+    LOG.info("===========================================");
     semanticVersion.save();
     composer2.commit();
     ObservableSemantic observableSemantic = semanticComposer.getEntity();
@@ -204,7 +232,7 @@ class ObservableComposerWorkflowITestFX {
     }
 
     // 6. Verify not dirty initially
-    assertFalse(editableVersion.isDirty(), "Should not be dirty initially");
+    assertFalse(editableVersion.hasUnsavedChanges(), "Should not be dirty initially");
     LOG.info("Step 6: Editable version is not dirty");
 
     // 7. Clean up
@@ -340,13 +368,18 @@ class ObservableComposerWorkflowITestFX {
             composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), observableConcept, TinkarTerm.DESCRIPTION_PATTERN);
     ObservableSemanticVersion.Editable semanticVersion = semanticComposer.getEditableVersion();
 
-    // Set field values
+    // Set ALL field values according to DESCRIPTION_PATTERN specification:
+    // Field 0: Language (Component)
+    // Field 1: Description text (String)
+    // Field 2: Text case significance (Component)
+    // Field 3: Description type (Component)
     javafx.collections.ObservableList<ObservableField.Editable<?>> initialFields = semanticVersion.getEditableFields();
-    if (initialFields.size() >= 3) {
-        ((ObservableField.Editable<String>) initialFields.get(0)).setValue("Test description");
-        ((ObservableField.Editable<Object>) initialFields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
-        ((ObservableField.Editable<Object>) initialFields.get(2)).setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
-    }
+    assertEquals(4, initialFields.size(), "DESCRIPTION_PATTERN should have exactly 4 fields");
+
+    ((ObservableField.Editable<Object>) initialFields.get(0)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
+    ((ObservableField.Editable<String>) initialFields.get(1)).setValue("Test description");
+    ((ObservableField.Editable<Object>) initialFields.get(2)).setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+    ((ObservableField.Editable<Object>) initialFields.get(3)).setValue(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
 
     semanticVersion.save();
     composer2.commit();
@@ -366,8 +399,9 @@ class ObservableComposerWorkflowITestFX {
     ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
     javafx.collections.ObservableList<ObservableField.Editable<?>> fields = editableVersion.getEditableFields();
 
-    if (fields.size() > 0 && fields.get(0).getValue() instanceof String) {
-        ObservableField.Editable<String> field = (ObservableField.Editable<String>) fields.get(0);
+    // Field 1 contains the description text (String)
+    if (fields.size() > 1 && fields.get(1).getValue() instanceof String) {
+        ObservableField.Editable<String> field = (ObservableField.Editable<String>) fields.get(1);
         String originalValue = field.getValue();
         LOG.info("Original value: {}", originalValue);
 
@@ -381,12 +415,12 @@ class ObservableComposerWorkflowITestFX {
         // Modify field
         field.setValue("Modified description");
         assertEquals(1, changeCount.get(), "Should have one change notification");
-        assertTrue(editableVersion.isDirty(), "Version should be dirty after change");
+        assertTrue(editableVersion.hasUnsavedChanges(), "Version should be dirty after change");
 
         // Reset field
         editableVersion.reset();
         assertEquals(originalValue, field.getValue(), "Value should be restored");
-        assertFalse(editableVersion.isDirty(), "Version should not be dirty after reset");
+        assertFalse(editableVersion.hasUnsavedChanges(), "Version should not be dirty after reset");
 
         LOG.info("Field modification and reset successful");
     }

@@ -2,6 +2,7 @@ package dev.ikm.komet.framework.observable;
 
 import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.SimpleLongProperty;
@@ -143,8 +144,8 @@ public final class ObservableStampVersion
     }
 
     @Override
-    public Editable getEditableVersion(ObservableStamp editStamp) {
-        return Editable.getOrCreate(getObservableEntity(), this, editStamp);
+    public Editable getEditableVersion(ObservableStamp editStamp, Transaction transaction) {
+        return Editable.getOrCreate(getObservableEntity(), this, editStamp, transaction);
     }
 
     @Override
@@ -193,8 +194,8 @@ public final class ObservableStampVersion
         private final SimpleObjectProperty<ConceptFacade> editableModuleProperty;
         private final SimpleObjectProperty<ConceptFacade> editablePathProperty;
 
-        private Editable(ObservableStamp observableStamp, ObservableStampVersion observableVersion, ObservableStamp editStamp) {
-            super(observableStamp, observableVersion, editStamp);
+        private Editable(ObservableStamp observableStamp, ObservableStampVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            super(observableStamp, observableVersion, editStamp, transaction);
 
             // Initialize editable properties
             StampVersionRecord version = observableVersion.version();
@@ -248,8 +249,8 @@ public final class ObservableStampVersion
          * @param editStamp the ObservableStamp (typically identifying the author)
          * @return the canonical editable stamp version for this stamp
          */
-        public static Editable getOrCreate(ObservableStamp observableStamp, ObservableStampVersion observableVersion, ObservableStamp editStamp) {
-            return ObservableEntityVersion.getOrCreate(observableStamp, observableVersion, editStamp, Editable::new);
+        public static Editable getOrCreate(ObservableStamp observableStamp, ObservableStampVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            return ObservableEntityVersion.getOrCreate(observableStamp, observableVersion, editStamp, transaction, Editable::new);
         }
 
         /**

@@ -19,6 +19,7 @@ import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import org.eclipse.collections.api.list.MutableList;
 
 
@@ -64,8 +65,8 @@ public final class ObservableConceptVersion
     }
 
     @Override
-    public Editable getEditableVersion(ObservableStamp editStamp) {
-        return Editable.getOrCreate(getObservableEntity(), this, editStamp);
+    public Editable getEditableVersion(ObservableStamp editStamp, Transaction transaction) {
+        return Editable.getOrCreate(getObservableEntity(), this, editStamp, transaction);
     }
 
     /**
@@ -98,8 +99,8 @@ public final class ObservableConceptVersion
             extends ObservableEntityVersion.Editable<ObservableConcept, ObservableConceptVersion, ConceptVersionRecord> implements EditableVersion {
         // Already implements EditableVersion and EditableChronology via parent!
 
-        private Editable(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, ObservableStamp editStamp) {
-            super(observableConcept, observableVersion, editStamp);
+        private Editable(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            super(observableConcept, observableVersion, editStamp, transaction);
         }
 
         /**
@@ -112,8 +113,8 @@ public final class ObservableConceptVersion
          * @param editStamp the ObservableStamp (typically identifying the author)
          * @return the canonical editable concept version for this stamp
          */
-        public static Editable getOrCreate(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, ObservableStamp editStamp) {
-            return ObservableEntityVersion.getOrCreate(observableConcept, observableVersion, editStamp, Editable::new);
+        public static Editable getOrCreate(ObservableConcept observableConcept, ObservableConceptVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            return ObservableEntityVersion.getOrCreate(observableConcept, observableVersion, editStamp, transaction, Editable::new);
         }
 
         @Override

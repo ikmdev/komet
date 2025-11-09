@@ -188,8 +188,8 @@ public final class ObservablePatternVersion
     }
 
     @Override
-    public Editable getEditableVersion(ObservableStamp editStamp) {
-        return ObservableEntityVersion.getOrCreate(getObservableEntity(), this, editStamp, Editable::new);
+    public Editable getEditableVersion(ObservableStamp editStamp, Transaction transaction) {
+        return ObservableEntityVersion.getOrCreate(getObservableEntity(), this, editStamp, transaction, Editable::new);
     }
     /**
      * Type-safe accessor for the containing pattern entity.
@@ -240,8 +240,8 @@ public final class ObservablePatternVersion
         private final SimpleObjectProperty<EntityFacade> editablePurposeProperty;
         private final SimpleObjectProperty<EntityFacade> editableMeaningProperty;
 
-        Editable(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, ObservableStamp editStamp) {
-            super(observablePattern, observableVersion, editStamp);
+        Editable(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            super(observablePattern, observableVersion, editStamp, transaction);
 
             // Initialize editable properties
             this.editablePurposeProperty = new SimpleObjectProperty<>(

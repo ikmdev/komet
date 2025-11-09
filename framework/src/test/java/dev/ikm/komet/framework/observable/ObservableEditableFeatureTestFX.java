@@ -67,7 +67,7 @@ class ObservableSemanticFieldEditableTestFX {
     void testIsDirtyWhenUnchanged() {
         TestEditableFeature feature = new TestEditableFeature("value");
 
-        assertFalse(feature.isDirty());
+        assertFalse(feature.hasUnsavedChanges());
     }
 
     @Test
@@ -77,7 +77,7 @@ class ObservableSemanticFieldEditableTestFX {
 
         feature.setValue("changed");
 
-        assertTrue(feature.isDirty());
+        assertTrue(feature.hasUnsavedChanges());
     }
 
     @Test
@@ -85,11 +85,11 @@ class ObservableSemanticFieldEditableTestFX {
     void testIsDirtyWithNullInitialValue() {
         TestEditableFeature feature = new TestEditableFeature(null);
 
-        assertFalse(feature.isDirty());
+        assertFalse(feature.hasUnsavedChanges());
 
         feature.setValue("not null");
 
-        assertTrue(feature.isDirty());
+        assertTrue(feature.hasUnsavedChanges());
     }
 
     @Test
@@ -99,7 +99,7 @@ class ObservableSemanticFieldEditableTestFX {
 
         feature.setValue(null);
 
-        assertTrue(feature.isDirty());
+        assertTrue(feature.hasUnsavedChanges());
     }
 
     @Test
@@ -108,11 +108,11 @@ class ObservableSemanticFieldEditableTestFX {
         TestEditableFeature feature = new TestEditableFeature("original");
 
         feature.setValue("modified");
-        assertTrue(feature.isDirty());
+        assertTrue(feature.hasUnsavedChanges());
 
         feature.reset();
 
-        assertFalse(feature.isDirty());
+        assertFalse(feature.hasUnsavedChanges());
         assertEquals("original", feature.getValue());
     }
 
@@ -206,7 +206,7 @@ class ObservableSemanticFieldEditableTestFX {
             editableValueProperty.set(value);
         }
 
-        public boolean isDirty() {
+        public boolean hasUnsavedChanges() {
             String currentValue = editableValueProperty.get();
 
             if (currentValue == null && originalValue == null) {

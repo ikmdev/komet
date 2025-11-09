@@ -17,11 +17,14 @@ package dev.ikm.komet.framework.observable;
 
 import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -103,8 +106,8 @@ public final class ObservableSemanticVersion
     }
 
     @Override
-    public Editable getEditableVersion(ObservableStamp editStamp) {
-        return Editable.getOrCreate(getObservableEntity(), this, editStamp);
+    public Editable getEditableVersion(ObservableStamp editStamp, Transaction transaction) {
+        return Editable.getOrCreate(getObservableEntity(), this, editStamp, transaction);
     }
 
     /**
@@ -145,31 +148,43 @@ public final class ObservableSemanticVersion
             implements EditableVersion {
         // Already implements EditableVersion and EditableChronology via parent!
 
+        private static final Logger LOG = LoggerFactory.getLogger(Editable.class);
+
         private final MutableList<ObservableField.Editable<?>> editableFields;
         private final ObservableList<ObservableField.Editable<?>> unmodifiableFieldList;
 
-        private Editable(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, ObservableStamp editStamp) {
-            super(observableSemantic, observableVersion, editStamp);
+        private Editable(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            super(observableSemantic, observableVersion, editStamp, transaction);
 
             // Create editable fields wrapping the read-only fields
             ImmutableList<ObservableField> fields = observableVersion.fields();
             this.editableFields = Lists.mutable.ofInitialCapacity(fields.size());
 
+            LOG.info("Creating editable fields for {} fields", fields.size());
             for (int i = 0; i < fields.size(); i++) {
                 ObservableField<?> observableField = fields.get(i);
                 Object initialValue = observableVersion.fieldValues().get(i);
+                LOG.info("  Field {}: initialValue={}", i, initialValue);
 
                 // Create editable field
                 ObservableField.Editable<?> editableField = createEditableField(observableField, initialValue, i);
+                LOG.info("  Field {}: created editableField, property={}", i, editableField.editableValueProperty());
 
                 // Add listener to update working version when field changes
                 int fieldIndex = i;
+                LOG.info("  Field {}: adding property change listener", fieldIndex);
                 editableField.editableValueProperty().addListener((obs, oldValue, newValue) -> {
+                    LOG.info(">>> LISTENER FIRED: field {} changed from '{}' to '{}'", fieldIndex, oldValue, newValue);
+                    LOG.info("    Observable: {}", obs);
+                    LOG.info("    Property current value: {}", ((javafx.beans.property.Property<?>) obs).getValue());
                     updateFieldValue(fieldIndex, newValue);
+                    LOG.info("<<< LISTENER COMPLETED for field {}", fieldIndex);
                 });
+                LOG.info("  Field {}: listener added successfully", fieldIndex);
 
                 editableFields.add(editableField);
             }
+            LOG.info("Finished creating {} editable fields", editableFields.size());
 
             // Wrap as unmodifiable ObservableList for JavaFX integration
             // The list structure is immutable - fields cannot be added or removed during semantic editing.
@@ -201,8 +216,8 @@ public final class ObservableSemanticVersion
          * @param editStamp the ObservableStamp (typically identifying the author)
          * @return the canonical editable semantic version for this stamp
          */
-        public static Editable getOrCreate(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, ObservableStamp editStamp) {
-            return ObservableEntityVersion.getOrCreate(observableSemantic, observableVersion, editStamp, Editable::new);
+        public static Editable getOrCreate(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            return ObservableEntityVersion.getOrCreate(observableSemantic, observableVersion, editStamp, transaction, Editable::new);
         }
 
         /**
@@ -291,10 +306,25 @@ public final class ObservableSemanticVersion
          * Updates a field value and rebuilds the working version.
          */
         private void updateFieldValue(int fieldIndex, Object newValue) {
-            MutableList<Object> newFieldValues = Lists.mutable.ofAll(workingVersion.fieldValues());
-            newFieldValues.set(fieldIndex, newValue);
+            LOG.info("=== updateFieldValue START ===");
+            LOG.info("  fieldIndex: {}", fieldIndex);
+            LOG.info("  newValue: {} (type: {})", newValue, newValue != null ? newValue.getClass().getSimpleName() : "null");
+            LOG.info("  workingVersion BEFORE: {}", workingVersion);
+            LOG.info("  workingVersion.fieldValues() BEFORE: {}", workingVersion.fieldValues());
 
+            MutableList<Object> newFieldValues = Lists.mutable.ofAll(workingVersion.fieldValues());
+            LOG.info("  Created mutable copy of field values, size: {}", newFieldValues.size());
+
+            newFieldValues.set(fieldIndex, newValue);
+            LOG.info("  Updated mutable list at index {}, new list: {}", fieldIndex, newFieldValues);
+
+            SemanticVersionRecord oldWorkingVersion = workingVersion;
             workingVersion = workingVersion.withFieldValues(newFieldValues.toImmutable());
+            LOG.info("  workingVersion AFTER: {}", workingVersion);
+            LOG.info("  workingVersion.fieldValues() AFTER: {}", workingVersion.fieldValues());
+            LOG.info("  workingVersion changed? {}", oldWorkingVersion != workingVersion);
+            LOG.info("  workingVersion.equals(old)? {}", workingVersion.equals(oldWorkingVersion));
+            LOG.info("=== updateFieldValue END ===");
         }
 
         @Override
@@ -309,11 +339,13 @@ public final class ObservableSemanticVersion
 
         @Override
         public void reset() {
-            super.reset();
-            // Reset all editable fields to original values
+            // Reset all editable fields to original values FIRST
+            // This will trigger listeners that update workingVersion
             for (ObservableField.Editable<?> editableField : editableFields) {
                 editableField.reset();
             }
+            // Then reset workingVersion as the final step
+            super.reset();
         }
     }
 }

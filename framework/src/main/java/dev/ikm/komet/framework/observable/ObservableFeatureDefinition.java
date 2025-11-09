@@ -322,8 +322,10 @@ public final class ObservableFeatureDefinition
 
         /**
          * Returns whether this editable feature definition has unsaved changes.
+         *
+         * @return true if there are modifications that have not been saved, false otherwise
          */
-        public boolean isDirty() {
+        public boolean hasUnsavedChanges() {
             ObservableFeatureDefinition currentValue = editableValueProperty.get();
             ObservableFeatureDefinition originalValue = observableFeatureDefinition;
 

@@ -210,7 +210,7 @@ import java.util.Optional;
  * stateField.textProperty().bind(editable.editableStateProperty().asString());
  *
  * // Check if dirty
- * saveButton.disableProperty().bind(editable.isDirtyProperty().not());
+ * saveButton.disableProperty().bind(editable.hasUnsavedChangesProperty().not());
  *
  * // Save and commit
  * editor.save();
@@ -674,7 +674,7 @@ public final class ObservableComposer {
 
         // Commit all tracked editable versions first
         for (ObservableEntityVersion.Editable<?, ?, ?> editable : trackedEditables) {
-            if (editable.isDirty()) {
+            if (editable.hasUnsavedChanges()) {
                 editable.save();
             }
             editable.commit();
@@ -738,15 +738,15 @@ public final class ObservableComposer {
      * Creates or retrieves an observable stamp for the current author/module/path/state.
      */
     ObservableStamp createStamp(State state, Entity<?> entity) {
-        StampEntity stampEntity = transaction.getStamp(state,
-                getAuthorNid(),
-                getModuleNid(),
-                getPathNid());
-        if (entity != null) {
-            transaction.addComponent(entity);
-        }
-        return ObservableEntity.packagePrivateGetStamp(stampEntity);
-    }
+    StampEntity stampEntity = transaction.getStampForEntities(
+        state,
+        getAuthorNid(),
+        getModuleNid(),
+        getPathNid(),
+        entity  // Pass the entity to ensure canonical stamp
+    );
+    return ObservableEntity.packagePrivateGetStamp(stampEntity);
+}
 
     /**
      * Tracks an editable version for automatic commit/rollback management.
@@ -922,7 +922,7 @@ public final class ObservableComposer {
         /**
          * Checks if there are unsaved changes.
          */
-        boolean isDirty();
+        boolean hasUnsavedChanges();
     }
 
     /**
@@ -975,7 +975,7 @@ public final class ObservableComposer {
      *   <li>{@link #getEditableVersion()} - Access editable version for UI binding</li>
      *   <li>{@link #getObservableConcept()} - Access the observable concept (after save/build)</li>
      *   <li>{@link #save()} - Save changes as uncommitted</li>
-     *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
+     *   <li>{@link #hasUnsavedChanges()} - Check if there are unsaved changes</li>
      * </ul>
      *
      * <p><b>Example Usage</b>
@@ -1050,7 +1050,8 @@ public final class ObservableComposer {
                 editableVersion = ObservableConceptVersion.Editable.getOrCreate(
                         observableConcept,
                         observableConcept.versions().getFirst(),
-                        stampEntity
+                        stampEntity,
+                        composer.getOrCreateTransaction()
                 );
 
                 // Track for commit/rollback management
@@ -1095,8 +1096,8 @@ public final class ObservableComposer {
          * Checks if the editable version has unsaved changes.
          */
         @Override
-        public boolean isDirty() {
-            return editableVersion != null && editableVersion.isDirty();
+        public boolean hasUnsavedChanges() {
+            return editableVersion != null && editableVersion.hasUnsavedChanges();
         }
 
         @Override
@@ -1110,7 +1111,7 @@ public final class ObservableComposer {
             ensureInitialized();
             // Persist the concept record and stage components in the transaction
             Entity.provider().putEntity(this.conceptRecord);
-            if (editableVersion.isDirty()) {
+            if (editableVersion.hasUnsavedChanges()) {
                 editableVersion.save();
             }
             composer.getTransaction().addComponent(stampEntity);
@@ -1137,7 +1138,7 @@ public final class ObservableComposer {
      *   <li>{@link #getEditableFields()} - Access editable fields for UI binding</li>
      *   <li>{@link #getObservableSemantic()} - Access the observable semantic (after save/build)</li>
      *   <li>{@link #save()} - Save changes as uncommitted</li>
-     *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
+     *   <li>{@link #hasUnsavedChanges()} - Check if there are unsaved changes</li>
      * </ul>
      *
      * <p><b>Example Usage</b>
@@ -1165,7 +1166,7 @@ public final class ObservableComposer {
      * ((ObservableField.Editable<Object>) fields.get(1)).setValue(TinkarTerm.ENGLISH_LANGUAGE);
      *
      * // Check for changes
-     * if (builder.isDirty()) {
+     * if (builder.hasUnsavedChanges()) {
      *     builder.save();
      * }
      *
@@ -1224,7 +1225,7 @@ public final class ObservableComposer {
                 // Create editable version for current stamp
                 editableVersion = observableSemantic.getVersion(this.stampEntity)
                         .orElseThrow(() -> new IllegalStateException("New semantic missing version for stamp nid " + this.stampEntity.nid()))
-                        .getEditableVersion(this.stampEntity);
+                        .getEditableVersion(this.stampEntity, composer.getOrCreateTransaction());
 
                 // Track for commit/rollback management
                 composer.getTransaction().addComponent(this.stampEntity);
@@ -1238,6 +1239,8 @@ public final class ObservableComposer {
             latestPattern.ifPresentOrElse(version -> {
                int fieldCount = version.fieldDefinitions().size();
                Object[] fieldValues = new Object[fieldCount];
+               // Fields are initialized as null - applications MUST set all field values before saving
+               // Attempting to save with null fields will throw IllegalArgumentException
                SemanticVersion semanticVersion = new SemanticVersionRecord(semanticRecord, stampEntity.nid(), Lists.immutable.of(fieldValues));
                versions.add(semanticVersion);
             }, () -> {
@@ -1303,8 +1306,8 @@ public final class ObservableComposer {
          * Checks if the editable version has unsaved changes.
          */
         @Override
-        public boolean isDirty() {
-            return editableVersion != null && editableVersion.isDirty();
+        public boolean hasUnsavedChanges() {
+            return editableVersion != null && editableVersion.hasUnsavedChanges();
         }
 
         @Override
@@ -1317,7 +1320,7 @@ public final class ObservableComposer {
             ensureInitialized();
             // Persist the semantic record; versions may have null fields until authored
             Entity.provider().putEntity(this.semanticRecord);
-            if (editableVersion.isDirty()) {
+            if (editableVersion.hasUnsavedChanges()) {
                 editableVersion.save();
             }
             // Components already added to transaction during initialization
@@ -1402,7 +1405,7 @@ public final class ObservableComposer {
                 }
                 // Update the observable pattern
                 observablePattern = ObservableEntity.packagePrivateGet(patternRecord);
-                editableVersion = observablePattern.getVersion(stampEntity).get().getEditableVersion(stampEntity);
+                editableVersion = observablePattern.getVersion(stampEntity).get().getEditableVersion(stampEntity, composer.getOrCreateTransaction());
                 composer.getTransaction().addComponent(stampEntity);
                 composer.getTransaction().addComponent(observablePattern);
                 composer.trackEditable(editableVersion);
@@ -1436,8 +1439,8 @@ public final class ObservableComposer {
          * Checks if the editable version has unsaved changes.
          */
         @Override
-        public boolean isDirty() {
-            return editableVersion != null && editableVersion.isDirty();
+        public boolean hasUnsavedChanges() {
+            return editableVersion != null && editableVersion.hasUnsavedChanges();
         }
 
         @Override
@@ -1450,7 +1453,7 @@ public final class ObservableComposer {
             ensureInitialized();
             // Persist the pattern record; definitions may be incomplete until authored
             Entity.provider().putEntity(this.patternRecord);
-            if (editableVersion.isDirty()) {
+            if (editableVersion.hasUnsavedChanges()) {
                 editableVersion.save();
             }
             // Components already added to transaction during initialization
@@ -1476,7 +1479,7 @@ public final class ObservableComposer {
      *   <li>{@link #getEditableVersion()} - Access editable version for UI binding</li>
      *   <li>{@link #getConcept()} - Access the observable concept being edited</li>
      *   <li>{@link #save()} - Save changes as uncommitted</li>
-     *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
+     *   <li>{@link #hasUnsavedChanges()} - Check if there are unsaved changes</li>
      * </ul>
      *
      * <p><b>Example Usage</b>
@@ -1498,7 +1501,7 @@ public final class ObservableComposer {
      * editable.editableStateProperty().set(State.INACTIVE);
      *
      * // Check for changes before saving
-     * if (editor.isDirty()) {
+     * if (editor.hasUnsavedChanges()) {
      *     editor.save();
      * }
      *
@@ -1527,7 +1530,7 @@ public final class ObservableComposer {
                 // Create editable version with composer's stamp
                 ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), concept.entity());
                 ObservableConceptVersion latestVersion = concept.versions().getLast();
-                editableVersion = latestVersion.getEditableVersion(stamp);
+                editableVersion = latestVersion.getEditableVersion(stamp, composer.getOrCreateTransaction());
                 composer.trackEditable(editableVersion);
             }
             return editableVersion;
@@ -1538,7 +1541,7 @@ public final class ObservableComposer {
          */
         @Override
         public void save() {
-            if (editableVersion != null && editableVersion.isDirty()) {
+            if (editableVersion != null && editableVersion.hasUnsavedChanges()) {
                 editableVersion.save();
             }
         }
@@ -1562,8 +1565,8 @@ public final class ObservableComposer {
          * Checks if the editable version has unsaved changes.
          */
         @Override
-        public boolean isDirty() {
-            return editableVersion != null && editableVersion.isDirty();
+        public boolean hasUnsavedChanges() {
+            return editableVersion != null && editableVersion.hasUnsavedChanges();
         }
     }
 
@@ -1587,7 +1590,7 @@ public final class ObservableComposer {
      *   <li>{@link #getEditableFields()} - Access editable fields for UI binding</li>
      *   <li>{@link #getSemantic()} - Access the observable semantic being edited</li>
      *   <li>{@link #save()} - Save changes as uncommitted</li>
-     *   <li>{@link #isDirty()} - Check if there are unsaved changes</li>
+     *   <li>{@link #hasUnsavedChanges()} - Check if there are unsaved changes</li>
      * </ul>
      *
      * <p><b>Example Usage</b>
@@ -1615,7 +1618,7 @@ public final class ObservableComposer {
      * textField.setValue("Updated description text");
      *
      * // Check for changes and save
-     * if (editor.isDirty()) {
+     * if (editor.hasUnsavedChanges()) {
      *     editor.save();
      * }
      *
@@ -1643,7 +1646,7 @@ public final class ObservableComposer {
             if (editableVersion == null) {
                 ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), semantic.entity());
                 ObservableSemanticVersion latestVersion = semantic.versions().getLast();
-                editableVersion = latestVersion.getEditableVersion(stamp);
+                editableVersion = latestVersion.getEditableVersion(stamp, composer.getOrCreateTransaction());
                 composer.trackEditable(editableVersion);
             }
             return editableVersion;
@@ -1661,7 +1664,7 @@ public final class ObservableComposer {
          */
         @Override
         public void save() {
-            if (editableVersion != null && editableVersion.isDirty()) {
+            if (editableVersion != null && editableVersion.hasUnsavedChanges()) {
                 editableVersion.save();
             }
         }
@@ -1685,8 +1688,8 @@ public final class ObservableComposer {
          * Checks if the editable version has unsaved changes.
          */
         @Override
-        public boolean isDirty() {
-            return editableVersion != null && editableVersion.isDirty();
+        public boolean hasUnsavedChanges() {
+            return editableVersion != null && editableVersion.hasUnsavedChanges();
         }
     }
 
@@ -1711,7 +1714,7 @@ public final class ObservableComposer {
             if (editableVersion == null) {
                 ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), pattern.entity());
                 ObservablePatternVersion latestVersion = pattern.versions().getLast();
-                editableVersion = latestVersion.getEditableVersion(stamp);
+                editableVersion = latestVersion.getEditableVersion(stamp, composer.getOrCreateTransaction());
                 composer.trackEditable(editableVersion);
             }
             return editableVersion;
@@ -1722,7 +1725,7 @@ public final class ObservableComposer {
          */
         @Override
         public void save() {
-            if (editableVersion != null && editableVersion.isDirty()) {
+            if (editableVersion != null && editableVersion.hasUnsavedChanges()) {
                 editableVersion.save();
             }
         }
@@ -1746,8 +1749,8 @@ public final class ObservableComposer {
          * Checks if the editable version has unsaved changes.
          */
         @Override
-        public boolean isDirty() {
-            return editableVersion != null && editableVersion.isDirty();
+        public boolean hasUnsavedChanges() {
+            return editableVersion != null && editableVersion.hasUnsavedChanges();
         }
     }
 }

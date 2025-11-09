@@ -195,13 +195,13 @@
  * // Check for changes
  * saveButton.disableProperty().bind(
  *     Bindings.createBooleanBinding(
- *         () -> !semanticComposer.isDirty(),
+ *         () -> !semanticComposer.hasUnsavedChanges(),
  *         textField.editableValueProperty()
  *     )
  * );
  *
  * // Save and commit
- * if (semanticComposer.isDirty()) {
+ * if (semanticComposer.hasUnsavedChanges()) {
  *     semanticComposer.save();
  * }
  * composer.commit();
@@ -312,7 +312,7 @@
  *   <li><b>Use {@link dev.ikm.komet.framework.observable.ObservableComposer}:</b>
  *       For transactional entity creation and editing with unified API</li>
  *   <li><b>Bind, Don't Poll:</b> Use JavaFX property binding instead of manual synchronization</li>
- *   <li><b>Check isDirty():</b> Before saving to avoid unnecessary database writes</li>
+ *   <li><b>Check hasUnsavedChanges():</b> Before saving to avoid unnecessary database writes</li>
  *   <li><b>Commit Explicitly:</b> Call {@code composer.commit()} to finalize transactions</li>
  *   <li><b>Handle Uncommitted State:</b> UI should show visual indicators for uncommitted changes</li>
  * </ul>
