@@ -1126,6 +1126,59 @@ graph TD
 * **Type-Safe Relationships:** Entities create their corresponding versions with compile-time safety
 * **Clean APIs:** Both hierarchies provide generic-free marker interfaces for consumers
 
+
+
+== Nested Classes in MGC Pattern
+
+=== When to Nest vs Separate
+
+The MGC pattern works with both top-level and nested classes. Use nesting when:
+
+* **Strong conceptual coupling**: The nested class is meaningless without its parent
+* **Lifecycle dependency**: The nested class instance lifetime depends on the parent
+* **Namespace clarity**: Nesting prevents namespace pollution
+
+=== Example: Editable Versions
+
+ObservableEntityVersion uses nested Editable classes:
+
+[source,java]
+----
+// Layer 2 (Generic) - Abstract base
+public abstract sealed class ObservableEntityVersion<OE, V>
+        implements ObservableVersion {
+    
+    public abstract EditableVersion getEditableVersion(ObservableStamp stamp);
+    
+    // Layer 2 (Generic) - Nested editable base
+    public abstract static sealed class Editable<OE, OV, V>
+            implements EditableVersion {
+        // Generic cached editing logic
+    }
+}
+
+// Layer 3 (Concrete) - Concept version
+public final class ObservableConceptVersion
+        extends ObservableEntityVersion<ObservableConcept, ConceptVersionRecord> {
+    
+    // Layer 3 (Concrete) - Nested editable concept
+    public static final class Editable
+            extends ObservableEntityVersion.Editable<
+                ObservableConcept,
+                ObservableConceptVersion,
+                ConceptVersionRecord> {
+        // Concept-specific editing
+    }
+}
+----
+
+**Benefits of Nesting:**
+
+* Clear relationship: `ObservableConceptVersion.Editable` is obviously related to `ObservableConceptVersion`
+* Simpler names: Just `Editable` instead of `EditableObservableConceptVersion`
+* Reduced namespace pollution: One top-level class instead of two
+* Natural organization: Related classes grouped together
+
 == References
 
 === Related Patterns
@@ -1145,6 +1198,6 @@ graph TD
 
 ---
 
-_Document Version: 1.0_ +
-_Last Updated: 2025-11-07_ +  // ← Should be today's date
+_Document Version: 1.1_ +
+_Last Updated: 2025-11-08_ +
 _Pattern Origin: Komet Framework Development_

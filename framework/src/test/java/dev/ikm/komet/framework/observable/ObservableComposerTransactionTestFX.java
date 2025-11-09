@@ -183,7 +183,7 @@ class ObservableComposerTransactionTestFX {
     void testTransactionCommentWithBuilder() {
             String comment = "Builder transaction comment";
             ObservableComposer composer = ObservableComposer.builder()
-                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                    .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -199,7 +199,7 @@ class ObservableComposerTransactionTestFX {
     @RunOnJavaFXThread
     void testEmptyTransactionComment() {
             ObservableComposer composer = ObservableComposer.builder()
-                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                    .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)

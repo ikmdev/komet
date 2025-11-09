@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tests the base editable feature functionality.
  */
 @ExtendWith(JavaFXThreadExtension.class)
-class ObservableFeatureEditableTestFX {
+class ObservableSemanticFieldEditableTestFX {
 
     @Test
     @RunOnJavaFXThread

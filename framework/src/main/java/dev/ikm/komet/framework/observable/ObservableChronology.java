@@ -1,52 +1,54 @@
 
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.komet.framework.observable.binding.Binding;
-import dev.ikm.tinkar.terms.EntityFacade;
-
 /**
- * Marker interface for observable entities that represent chronologies (versioned entities).
+ * Marker interface for observable chronologies (versioned entities).
  * <p>
- * This sealed interface simplifies generic signatures in downstream code by providing a
- * type-level alias for "observable entity with observable versions" without requiring
- * explicit version type parameters.
+ * Provides a generic-free type for working with observable entities without
+ * exposing version type parameters. This is Layer 1 (Marker) of the MGC pattern
+ * for observable entities.
  *
- * <p><b>Purpose:</b> Enables simpler generic constraints like:
+ * <h2>MGC Pattern Layers for Observable Entities</h2>
+ * <ul>
+ *   <li><b>Layer 1:</b> {@code ObservableChronology} - Marker interface (this interface)</li>
+ *   <li><b>Layer 2:</b> {@link ObservableEntity} - Generic abstract class</li>
+ *   <li><b>Layer 3:</b> {@link ObservableConcept}, {@link ObservablePattern},
+ *       {@link ObservableSemantic}, {@link ObservableStamp} - Concrete final classes</li>
+ * </ul>
+ *
+ * <h2>Usage</h2>
+ * <p>
+ * Use this marker interface for method parameters and return types when you don't
+ * need to know the specific version type:
+ *
  * <pre>{@code
- * // Before:
- * class MyClass<OE extends ObservableEntity<ObservableVersion<OE, ?>>>
+ * // Clean signature without generics
+ * public void process(ObservableChronology chronology) {
+ *     // Pattern matching for specifics
+ *     switch (chronology) {
+ *         case ObservableConcept concept -> handleConcept(concept);
+ *         case ObservableSemantic semantic -> handleSemantic(semantic);
+ *         case ObservablePattern pattern -> handlePattern(pattern);
+ *         case ObservableStamp stamp -> handleStamp(stamp);
+ *     }
+ * }
  *
- * // After:
- * class MyClass<OE extends ObservableChronology>
+ * // Simple collections
+ * List<ObservableChronology> entities = new ArrayList<>();
  * }</pre>
  *
+ * <h2>Thread Safety</h2>
+ * <p>
+ * All observable chronologies must be accessed from the JavaFX application thread.
+ *
  * @see ObservableEntity
+ * @see ObservableConcept
+ * @see ObservablePattern
+ * @see ObservableSemantic
+ * @see ObservableStamp
  */
 public sealed interface ObservableChronology
-        extends EntityFacade, ObservableComponent, Feature<ObservableChronology>
         permits ObservableConcept, ObservablePattern, ObservableSemantic, ObservableStamp {
-
-    default int patternNid() {
-        return switch (ObservableChronology.this) {
-            case ObservableConcept _-> Binding.Concept.pattern().nid();
-            case ObservablePattern _-> Binding.Pattern.pattern().nid();
-            case ObservableSemantic _-> Binding.Semantic.pattern().nid();
-            case ObservableStamp _-> Binding.Stamp.pattern().nid();
-        };
-    }
-
-    default int indexInPattern() {
-        // TODO: replace with a new index after adding a new field for the meaning and purpose of the entity class
-        return 0;
-    }
-
-    default ObservableComponent containingComponent() {
-        return this;
-    }
-
-    default FeatureKey featureKey() {
-        return FeatureKey.Entity.Object(nid());
-    }
-
+    // Marker interface - intentionally empty
 }
 

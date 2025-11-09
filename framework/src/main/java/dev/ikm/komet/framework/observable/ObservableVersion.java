@@ -4,70 +4,64 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import org.eclipse.collections.api.list.ImmutableList;
 
 /**
- * Marker interface for observable versions.
+ * Marker interface for observable entity versions.
  * <p>
- * Simplifies downstream signatures by eliminating generic parameters.
- * Enables clean, generic-free APIs for version handling in UI and business logic.
+ * Provides a generic-free type for working with observable versions without
+ * exposing entity and version record type parameters. This is Layer 1 (Marker)
+ * of the MGC pattern for observable versions.
  *
- * <p>This sealed interface follows the Marker-Generic-Concrete (MGC) pattern,
- * where this marker interface (Layer 1) provides a simple type alias,
- * {@link ObservableEntityVersion} (Layer 2) provides generic type safety,
- * and concrete classes (Layer 3) provide full type reification.
+ * <h2>MGC Pattern Layers for Observable Versions</h2>
+ * <ul>
+ *   <li><b>Layer 1:</b> {@code ObservableVersion} - Marker interface (this interface)</li>
+ *   <li><b>Layer 2:</b> {@link ObservableEntityVersion} - Generic abstract class</li>
+ *   <li><b>Layer 3:</b> {@link ObservableConceptVersion}, {@link ObservablePatternVersion},
+ *       {@link ObservableSemanticVersion}, {@link ObservableStampVersion} - Concrete final classes</li>
+ * </ul>
  *
- * <h2>Pattern Symmetry</h2>
- * <p>This interface mirrors {@link ObservableChronology} to maintain consistent
- * structure across the tightly-coupled entity/version hierarchies:
- * <pre>
- * Chronology Side:              Version Side:
- * ObservableChronology    ←→    ObservableVersion
- * ObservableEntity        ←→    ObservableEntityVersion
- * ObservableConcept       ←→    ObservableConceptVersion
- * </pre>
+ * <h2>Relationship to EditableVersion</h2>
+ * <p>
+ * {@code ObservableVersion} represents read-only versions with JavaFX properties for UI binding.
+ * {@link EditableVersion} represents editable versions with cached changes.
  *
- * <h2>Usage in Consumer APIs</h2>
  * <pre>{@code
- * // Clean, generic-free signatures
- * public void processVersion(ObservableVersion version) {
- *     // Work with any version type
- * }
+ * ObservableVersion ←→ EditableVersion
+ *        │                    │
+ *   Read-only             Editable
+ *   Properties            Cached changes
+ *   Immediate updates     save()/commit()
+ * }</pre>
  *
- * // Pattern matching on concrete types
- * switch (version) {
- *     case ObservableConceptVersion cv -> handleConcept(cv);
- *     case ObservablePatternVersion pv -> handlePattern(pv);
- *     case ObservableSemanticVersion sv -> handleSemantic(sv);
- *     case ObservableStampVersion stv -> handleStamp(stv);
+ * <h2>Usage</h2>
+ * <pre>{@code
+ * // Clean method signature
+ * public void displayVersion(ObservableVersion version) {
+ *     // Pattern matching for specific types
+ *     switch (version) {
+ *         case ObservableConceptVersion cv -> displayConcept(cv);
+ *         case ObservableSemanticVersion sv -> displaySemantic(sv);
+ *         default -> displayGeneric(version);
+ *     }
  * }
- *
- * // Collections without wildcards
- * ObservableList<ObservableVersion> versions = FXCollections.observableArrayList();
  * }</pre>
  *
  * @see ObservableEntityVersion
- * @see ObservableChronology
- * @see ObservableEntity
+ * @see EditableVersion
+ * @see ObservableConceptVersion
+ * @see ObservablePatternVersion
+ * @see ObservableSemanticVersion
+ * @see ObservableStampVersion
  */
 public sealed interface ObservableVersion
-        extends EntityVersion, ObservableComponent, Feature<ObservableVersion>
-        permits ObservableConceptVersion, ObservableEntityVersion,
-                ObservablePatternVersion, ObservableSemanticVersion, ObservableStampVersion {
-
-     EntityVersion getVersionRecord();
-
+        permits ObservableConceptVersion, ObservableEntityVersion, ObservablePatternVersion, ObservableSemanticVersion, ObservableStampVersion {
+    // Marker interface - intentionally empty
+    
     /**
-     * Returns the observable entity (chronology) that contains this version.
-     * <p>
-     * Returns the marker interface type for maximum flexibility in consumer code.
+     * Returns the observable entity (chronology) containing this version.
      */
     ObservableChronology getObservableEntity();
-
-    @Override
-    default int nid() {
-        return getVersionRecord().nid();
-    }
-
-    @Override
-    default int stampNid() {
-        return getVersionRecord().stampNid();
-    }
+    
+    /**
+     * Returns the underlying entity version record.
+     */
+    EntityVersion getVersionRecord();
 }

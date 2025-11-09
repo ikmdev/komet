@@ -88,7 +88,7 @@ class ObservableComposerWorkflowITestFX {
 
     // 1. Create composer
     ObservableComposer composer = ObservableComposer.builder()
-            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -133,7 +133,7 @@ class ObservableComposerWorkflowITestFX {
 
     // 1. Create a concept first using composer
     ObservableComposer composer1 = ObservableComposer.builder()
-            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -150,7 +150,7 @@ class ObservableComposerWorkflowITestFX {
 
     // 2. Create a semantic on the concept using composer
     ObservableComposer composer2 = ObservableComposer.builder()
-            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -312,7 +312,7 @@ class ObservableComposerWorkflowITestFX {
 
     // Create entities using composer
     ObservableComposer composer1 = ObservableComposer.builder()
-            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -327,7 +327,7 @@ class ObservableComposerWorkflowITestFX {
     ObservableConcept observableConcept = conceptComposer.getEntity();
 
     ObservableComposer composer2 = ObservableComposer.builder()
-            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)

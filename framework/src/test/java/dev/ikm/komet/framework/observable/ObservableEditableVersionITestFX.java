@@ -84,7 +84,7 @@ class ObservableEditableVersionITestFX {
     void testCreateTestEntities() {
         // Create composer for entity creation
             ObservableComposer composer = ObservableComposer.builder()
-                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                    .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -106,7 +106,7 @@ class ObservableEditableVersionITestFX {
 
             // Create a new composer for the semantic
             ObservableComposer composer2 = ObservableComposer.builder()
-                    .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                    .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                     .author(TinkarTerm.USER)
                     .module(TinkarTerm.PRIMORDIAL_MODULE)
                     .path(TinkarTerm.DEVELOPMENT_PATH)

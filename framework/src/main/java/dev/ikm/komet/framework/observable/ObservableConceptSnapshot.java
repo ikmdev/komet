@@ -23,6 +23,76 @@ import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import java.util.Comparator;
 import java.util.function.Predicate;
 
+/**
+ * View-specific projection of an {@link ObservableConcept} providing access to concept versions
+ * categorized by their temporal and coordination state.
+ * <p>
+ * Concepts are the foundational building blocks representing clinical or business ideas.
+ * This snapshot filters concept versions according to view coordinates, providing access to
+ * current, historic, and uncommitted versions.
+ *
+ * <h2>Concept Snapshot Characteristics</h2>
+ * <ul>
+ *   <li><b>Simple Structure:</b> Concepts typically have minimal version data (just stamp fields)</li>
+ *   <li><b>Foundation Role:</b> Concepts are referenced by patterns, semantics, and other entities</li>
+ *   <li><b>Evolution:</b> Concept versions track lifecycle changes (active/inactive status changes)</li>
+ *   <li><b>Common Operations:</b> Checking current status, viewing status history</li>
+ * </ul>
+ *
+ * <h2>⚠️ How to Create: Use ObservableEntityHandle</h2>
+ * <p>
+ * <b>DO NOT</b> construct {@code ObservableConceptSnapshot} instances directly. Instead,
+ * use {@link ObservableEntityHandle} for type-safe snapshot creation:
+ *
+ * <pre>{@code
+ * // ✅ CORRECT: Use ObservableEntityHandle
+ * ViewCalculator viewCalc = // ... from ViewCoordinateRecord
+ * ObservableConceptSnapshot snapshot =
+ *     ObservableEntityHandle.getConceptSnapshotOrThrow(conceptNid, viewCalc);
+ *
+ * // ✅ CORRECT: Fluent API with optional handling
+ * ObservableEntityHandle.get(nid)
+ *     .ifConceptGetSnapshot(viewCalc, snapshot -> {
+ *         Latest<ObservableConceptVersion> latest = snapshot.getLatestVersion();
+ *         displayConceptStatus(latest);
+ *     });
+ * }</pre>
+ *
+ * <h2>Common Usage Patterns</h2>
+ *
+ * <p><b>Pattern 1: Check Current Status</b>
+ * <pre>{@code
+ * ObservableConceptSnapshot snapshot =
+ *     ObservableEntityHandle.getConceptSnapshotOrThrow(conceptNid, viewCalc);
+ *
+ * Latest<ObservableConceptVersion> latest = snapshot.getLatestVersion();
+ * if (latest.isPresent()) {
+ *     State currentState = latest.get().state();
+ *     boolean isActive = currentState == State.ACTIVE;
+ *     statusLabel.setText(isActive ? "Active" : "Inactive");
+ * }
+ * }</pre>
+ *
+ * <p><b>Pattern 2: Show Status History</b>
+ * <pre>{@code
+ * ObservableConceptSnapshot snapshot =
+ *     ObservableEntityHandle.getConceptSnapshotOrThrow(conceptNid, viewCalc);
+ *
+ * // Show current status
+ * displayVersion(snapshot.getLatestVersion().get(), "Current");
+ *
+ * // Show historic status changes
+ * for (ObservableConceptVersion historic : snapshot.getHistoricVersions()) {
+ *     displayVersion(historic, "Historic");
+ * }
+ * }</pre>
+ *
+ * @see ObservableEntityHandle
+ * @see ObservableConcept
+ * @see ObservableConceptVersion
+ * @see ObservableEntitySnapshot
+ * @see ViewCalculator
+ */
 public final class ObservableConceptSnapshot
         extends ObservableEntitySnapshot<ObservableConcept, ObservableConceptVersion> {
 

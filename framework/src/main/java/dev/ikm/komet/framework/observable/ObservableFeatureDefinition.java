@@ -18,7 +18,6 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.tinkar.component.FieldDataType;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.ConceptToDataType;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -33,7 +32,7 @@ import org.eclipse.collections.api.list.MutableList;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class ObservableFeatureDefinition
-        implements FieldDefinitionForEntity, Feature<ObservableFeatureDefinition> {
+        implements FieldDefinitionForEntity, Feature<ObservableFeatureDefinition>, ObservableFeature {
     final ObservableComponent containingComponent;
     final FeatureKey locator;
     final AtomicReference<FieldDefinitionRecord> fieldDefinitionReference;
@@ -244,9 +243,9 @@ public final class ObservableFeatureDefinition
      * implementation since pattern field definitions are typically edited as complete metadata units
      * rather than individual field values.
      * <p>
-     * <b>Design Note:</b> Unlike {@link ObservableField.Editable} which extends {@link ObservableFeature.Editable},
+     * <b>Design Note:</b> Unlike {@link ObservableField.Editable} which extends {@link ObservableSemanticField.Editable},
      * this class is standalone because {@link ObservableFeatureDefinition} does not extend
-     * {@link ObservableFeature} - it directly implements the Feature interface. This maintains
+     * {@link ObservableSemanticField} - it directly implements the Feature interface. This maintains
      * architectural consistency while providing API symmetry.
      * <p>
      * <b>Usage Context:</b> For pattern editing, the purpose and meaning are typically edited through
@@ -265,7 +264,7 @@ public final class ObservableFeatureDefinition
      *
      * @see ObservableFeatureDefinition
      * @see ObservablePatternVersion.Editable
-     * @see ObservableFeature.Editable
+     * @see ObservableSemanticField.Editable
      */
     public static final class Editable {
 

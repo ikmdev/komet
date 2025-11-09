@@ -17,7 +17,7 @@ Always has a value?
  */
 public sealed interface Feature<DT>
         permits FeatureList, FeatureWrapper, ObservableChronology,
-        ObservableFeature, ObservableFeatureDefinition,
+        ObservableSemanticField, ObservableFeatureDefinition,
         ObservableVersion  {
 
     /*
@@ -75,7 +75,7 @@ Field<LocatableField>
         // TODO: This is a hack to get around a few problems. Needs to be rethought.
         return switch (this) {
             case FeatureList<?> featureList -> (DT) featureList;
-            case ObservableFeature<DT> observableFeature -> observableFeature.value();
+            case ObservableSemanticField<DT> observableSemanticField -> observableSemanticField.value();
             case FeatureWrapper<DT> wrapper -> wrapper.value();
 
             case ObservableChronology chronologyFeature -> (DT) chronologyFeature.value();

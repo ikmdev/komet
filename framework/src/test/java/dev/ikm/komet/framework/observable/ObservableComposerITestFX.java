@@ -134,7 +134,7 @@ class ObservableComposerITestFX {
     void testTransactionLifecycleWithDatabase() {
 
     ObservableComposer composer = ObservableComposer.builder()
-            .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+            .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
             .author(TinkarTerm.USER)
             .module(TinkarTerm.PRIMORDIAL_MODULE)
             .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -279,7 +279,7 @@ class ObservableComposerITestFX {
 
     for (EntityProxy author : authors) {
         ObservableComposer composer = ObservableComposer.builder()
-                .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                 .author(author)
                 .module(TinkarTerm.PRIMORDIAL_MODULE)
                 .path(TinkarTerm.DEVELOPMENT_PATH)

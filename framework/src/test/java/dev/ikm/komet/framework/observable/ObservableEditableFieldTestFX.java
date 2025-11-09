@@ -95,7 +95,7 @@ class ObservableEditableFieldTestFX {
     void createTestSemanticWithFields() {
         // Create a composer for entity creation
         testComposer = ObservableComposer.builder()
-                .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                 .author(TinkarTerm.USER)
                 .module(TinkarTerm.PRIMORDIAL_MODULE)
                 .path(TinkarTerm.DEVELOPMENT_PATH)
@@ -497,7 +497,7 @@ class ObservableEditableFieldTestFX {
      */
     private ObservableComposer createComposer(String transactionComment) {
         return ObservableComposer.builder()
-                .stampCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
+                .viewCalculator(Coordinates.Stamp.DevelopmentLatest().stampCalculator())
                 .author(TinkarTerm.USER)
                 .module(TinkarTerm.PRIMORDIAL_MODULE)
                 .path(TinkarTerm.DEVELOPMENT_PATH)

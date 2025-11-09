@@ -20,7 +20,7 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.component.SemanticVersion;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.*;
@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * JavaFX-native composer for building and managing observable entities with full UI binding support.
@@ -318,7 +319,7 @@ public final class ObservableComposer {
 
     private static final Logger LOG = LoggerFactory.getLogger(ObservableComposer.class);
 
-    private final StampCalculator stampCalculator;
+    private final ViewCalculator viewCalculator;
     private final int authorNid;
     private final int moduleNid;
     private final int pathNid;
@@ -351,16 +352,16 @@ public final class ObservableComposer {
     /**
      * Initializes a new instance of the ObservableComposer with specific STAMP coordinates and transaction comment.
      *
-     * @param stampCalculator the StampCalculator instance used for calculations; must not be null
+     * @param viewCalculator the StampCalculator instance used for calculations; must not be null
      * @param authorNid the NID of the author; identifies the author for the transaction
      * @param moduleNid the NID of the module; identifies the module for the transaction
      * @param pathNid the NID of the path; identifies the path for the transaction
      * @param defaultState the default state for entities (typically State.ACTIVE); must not be null
      * @param transactionComment an optional descriptive comment for the transaction
      */
-    private ObservableComposer(StampCalculator stampCalculator, int authorNid, int moduleNid, int pathNid, State defaultState, String transactionComment) {
+    private ObservableComposer(ViewCalculator viewCalculator, int authorNid, int moduleNid, int pathNid, State defaultState, String transactionComment) {
         requireJavaFXThread();
-        this.stampCalculator = Objects.requireNonNull(stampCalculator, "stampCalculator cannot be null");
+        this.viewCalculator = Objects.requireNonNull(viewCalculator, "stampCalculator cannot be null");
         this.authorNid = Nid.validate(authorNid);
         this.moduleNid = Nid.validate(moduleNid);
         this.pathNid = Nid.validate(pathNid);
@@ -374,15 +375,16 @@ public final class ObservableComposer {
      * This static factory method provides a convenient way to create a composer without
      * needing to extract NIDs from EntityFacades manually.
      *
-     * @param state the default state for entities (typically State.ACTIVE)
-     * @param author the author entity (use EntityHandle for canonical reference)
-     * @param module the module entity (use EntityHandle for canonical reference)
-     * @param path the path entity (use EntityHandle for canonical reference)
+     * @param viewCalculator
+     * @param state          the default state for entities (typically State.ACTIVE)
+     * @param author         the author entity (use EntityHandle for canonical reference)
+     * @param module         the module entity (use EntityHandle for canonical reference)
+     * @param path           the path entity (use EntityHandle for canonical reference)
      * @return a new ObservableComposer instance
      * @throws NullPointerException if any parameter is null
      */
-    public static ObservableComposer create(StampCalculator stampCalculator, State state, EntityFacade author, EntityFacade module, EntityFacade path) {
-        return create(stampCalculator, state, author, module, path, "");
+    public static ObservableComposer create(ViewCalculator viewCalculator, State state, EntityFacade author, EntityFacade module, EntityFacade path) {
+        return create(viewCalculator, state, author, module, path, "");
     }
 
     /**
@@ -390,17 +392,18 @@ public final class ObservableComposer {
      * <p>
      * The transaction comment is used to identify the transaction for debugging and logging purposes.
      *
-     * @param state the default state for entities (typically State.ACTIVE)
-     * @param author the author entity (use EntityHandle for canonical reference)
-     * @param module the module entity (use EntityHandle for canonical reference)
-     * @param path the path entity (use EntityHandle for canonical reference)
+     * @param viewCalculator
+     * @param state              the default state for entities (typically State.ACTIVE)
+     * @param author             the author entity (use EntityHandle for canonical reference)
+     * @param module             the module entity (use EntityHandle for canonical reference)
+     * @param path               the path entity (use EntityHandle for canonical reference)
      * @param transactionComment optional descriptive comment for the transaction
      * @return a new ObservableComposer instance
      * @throws NullPointerException if any parameter except transactionComment is null
      */
-    public static ObservableComposer create(StampCalculator stampCalculator, State state, EntityFacade author, EntityFacade module, EntityFacade path, String transactionComment) {
+    public static ObservableComposer create(ViewCalculator viewCalculator, State state, EntityFacade author, EntityFacade module, EntityFacade path, String transactionComment) {
         return new ObservableComposer(
-                stampCalculator,
+                viewCalculator,
                 author.nid(),
                 module.nid(),
                 path.nid(),
@@ -410,9 +413,62 @@ public final class ObservableComposer {
     }
 
     /**
+     * Creates a snapshot of the specified entity using the composer's view calculator.
+     * <p>
+     * Convenience method that eliminates the need to extract the view calculator separately.
+     *
+     * @param entity the observable entity to snapshot
+     * @return view-specific snapshot of the entity
+     */
+    public ObservableConceptSnapshot snapshot(ObservableConcept entity) {
+        return new ObservableConceptSnapshot(viewCalculator, entity);
+    }
+
+    /**
+     * Creates a snapshot of the specified semantic entity.
+     */
+    public ObservableSemanticSnapshot snapshot(ObservableSemantic entity) {
+        return new ObservableSemanticSnapshot(viewCalculator, entity);
+    }
+
+    /**
+     * Creates a snapshot of the specified pattern entity.
+     */
+    public ObservablePatternSnapshot snapshot(ObservablePattern entity) {
+        return new ObservablePatternSnapshot(viewCalculator, entity);
+    }
+
+    /**
+     * Creates a snapshot of the specified pattern entity.
+     */
+    public ObservableStampSnapshot snapshot(ObservableStamp entity) {
+        return new ObservableStampSnapshot(viewCalculator, entity);
+    }
+    /**
+     * Creates a snapshot by NID, automatically determining entity type.
+     * <p>
+     * Uses {@link ObservableEntityHandle} internally for type-safe snapshot creation.
+     *
+     * @param nid the NID of the entity to snapshot
+     * @return snapshot of the entity, or empty if entity doesn't exist
+     */
+    public Optional<? extends ObservableEntitySnapshot<?, ?>> snapshot(int nid) {
+        ObservableEntityHandle handle = ObservableEntityHandle.get(nid);
+        if (handle.isPresent()) {
+            return Optional.of(switch (handle.expectEntity()) {
+                case ObservableConcept concept -> snapshot(concept);
+                case ObservableSemantic semantic -> snapshot(semantic);
+                case ObservablePattern pattern -> snapshot(pattern);
+                case ObservableStamp stamp -> snapshot(stamp);
+            });
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Creates a new builder for ObservableComposer.
      * <p>
-     * Note: Consider using the static factory methods {@link #create(StampCalculator, State, EntityFacade, EntityFacade, EntityFacade)}
+     * Note: Consider using the static factory methods {@link #create(ViewCalculator, State, EntityFacade, EntityFacade, EntityFacade)}
      * for a more concise API.
      */
     public static Builder builder() {
@@ -755,7 +811,7 @@ public final class ObservableComposer {
      * Builder for ObservableComposer instances.
      */
     public static final class Builder {
-        private StampCalculator stampCalculator;
+        private ViewCalculator builderViewCalc;
         private EntityFacade author;
         private EntityFacade module;
         private EntityFacade path;
@@ -767,8 +823,8 @@ public final class ObservableComposer {
         /**
          * Sets the author for all entities created by this composer.
          */
-        public Builder stampCalculator(StampCalculator stampCalculator) {
-            this.stampCalculator = Objects.requireNonNull(stampCalculator, "StampCalculator cannot be null");
+        public Builder viewCalculator(ViewCalculator viewCalculator) {
+            this.builderViewCalc = Objects.requireNonNull(viewCalculator, "StampCalculator cannot be null");
             return this;
         }
 
@@ -822,13 +878,13 @@ public final class ObservableComposer {
          * Builds the ObservableComposer instance.
          */
         public ObservableComposer build() {
-            Objects.requireNonNull(stampCalculator, "stampCalculator must be set");
+            Objects.requireNonNull(builderViewCalc, "stampCalculator must be set");
             Objects.requireNonNull(author, "author must be set");
             Objects.requireNonNull(module, "module must be set");
             Objects.requireNonNull(path, "path must be set");
 
             return new ObservableComposer(
-                    stampCalculator,
+                    builderViewCalc,
                     author.nid(),
                     module.nid(),
                     path.nid(),
@@ -1145,7 +1201,7 @@ public final class ObservableComposer {
             if (observableSemantic == null) {
                 // Generate publicId if not provided
                 if (publicId == null) {
-                    publicId = dev.ikm.tinkar.common.id.PublicIds.newRandom();
+                    publicId = PublicIds.newRandom();
                 }
 
                 // Create the stamp first
@@ -1178,7 +1234,7 @@ public final class ObservableComposer {
         }
 
         private void makeEmptyVersion(SemanticRecord semanticRecord, ObservableStamp stampEntity, RecordListBuilder versions) {
-            Latest<PatternEntityVersion> latestPattern = ObservableComposer.this.stampCalculator.latestPatternEntityVersion(this.pattern);
+            Latest<PatternEntityVersion> latestPattern = ObservableComposer.this.viewCalculator.latestPatternEntityVersion(this.pattern);
             latestPattern.ifPresentOrElse(version -> {
                int fieldCount = version.fieldDefinitions().size();
                Object[] fieldValues = new Object[fieldCount];
@@ -1186,7 +1242,7 @@ public final class ObservableComposer {
                versions.add(semanticVersion);
             }, () -> {
                 String errorString = "Pattern latest version not found: \n" +
-                        this.pattern + " \n\n For coordinate: " + stampCalculator.stampCoordinate() + "\n\n";
+                        this.pattern + " \n\n For coordinate: " + viewCalculator.stampCoordinate() + "\n\n";
                 LOG.error(errorString);
                 throw new IllegalStateException(errorString);
             });
@@ -1303,7 +1359,7 @@ public final class ObservableComposer {
             if (observablePattern == null) {
                 // Generate publicId if not provided
                 if (publicId == null) {
-                    publicId = dev.ikm.tinkar.common.id.PublicIds.newRandom();
+                    publicId = PublicIds.newRandom();
                 }
 
                 // Create the stamp first (in-memory)
@@ -1325,7 +1381,7 @@ public final class ObservableComposer {
                     // Is there a version matching the stamp already? If so, we are done.
                     if (!observablePattern.getVersion(stampEntity.nid()).isPresent()) {
                         // No match, so we need to create a new one and will populate it with the latest version
-                        ObservableComposer.this.stampCalculator.latestPatternEntityVersion(observablePattern).ifPresentOrElse(version -> {
+                        ObservableComposer.this.viewCalculator.latestPatternEntityVersion(observablePattern).ifPresentOrElse(version -> {
                             int definitionCount = version.fieldDefinitions().size();
                             FieldDefinitionRecord[] definitions = new FieldDefinitionRecord[definitionCount];
                             for (int i = 0; i < definitionCount; i++) {

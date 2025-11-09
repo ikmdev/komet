@@ -99,14 +99,14 @@
  * <h3>4. Observable Features and Fields</h3>
  * <p>Features represent individual data points within versions:
  * <ul>
- *   <li>{@link dev.ikm.komet.framework.observable.ObservableFeature} - Base class for features</li>
+ *   <li>{@link dev.ikm.komet.framework.observable.ObservableSemanticField} - Base class for features</li>
  *   <li>{@link dev.ikm.komet.framework.observable.ObservableField} - Semantic field values</li>
  *   <li>{@link dev.ikm.komet.framework.observable.ObservableFeatureDefinition} - Pattern field definitions</li>
  * </ul>
  *
  * <p>Corresponding editable features (also as inner classes):
  * <ul>
- *   <li>{@link dev.ikm.komet.framework.observable.ObservableFeature.Editable}</li>
+ *   <li>{@link dev.ikm.komet.framework.observable.ObservableSemanticField.Editable}</li>
  *   <li>{@link dev.ikm.komet.framework.observable.ObservableField.Editable}</li>
  *   <li>{@link dev.ikm.komet.framework.observable.ObservableFeatureDefinition.Editable}</li>
  * </ul>

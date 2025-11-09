@@ -372,6 +372,9 @@ public abstract sealed class ObservableEntitySnapshot<OE extends ObservableEntit
     //~--- methods -------------------------------------------------------------
 
 
+    /**
+     *
+     */
     public ImmutableList<OV> getProcessedVersions() {
         return processedVersions.toImmutable();
     }

@@ -15,24 +15,9 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.component.FieldDataType;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.Field;
-import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.SemanticRecord;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.StampRecord;
-import dev.ikm.tinkar.entity.transaction.Transaction;
-import javafx.beans.InvalidationListener;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 
-public final class ObservableField<DT> extends ObservableFeature<DT> {
+public final class ObservableField<DT> extends ObservableSemanticField<DT> {
 
     public ObservableField(FeatureKey featureKey, Field<DT> attribute, ObservableSemanticVersion containingVersion, boolean writeOnEveryChange) {
         super(featureKey, attribute, containingVersion, writeOnEveryChange);
@@ -57,7 +42,7 @@ public final class ObservableField<DT> extends ObservableFeature<DT> {
      *
      * @param <DT> the data type of the field value
      */
-    public static final class Editable<DT> extends ObservableFeature.Editable<DT> {
+    public static final class Editable<DT> extends ObservableSemanticField.Editable<DT> {
 
         /**
          * Package-private constructor. Use {@link ObservableSemanticVersion.Editable#getEditableFields()}.
