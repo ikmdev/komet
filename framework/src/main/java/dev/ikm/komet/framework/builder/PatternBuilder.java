@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.builder;
 
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
@@ -107,8 +108,11 @@ public class PatternBuilder {
 
             RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();
             UUID descriptionSemanticUUID = UUID.randomUUID();
+
+            int semanticNid = Entity.nidForSemantic(TinkarTerm.DESCRIPTION_PATTERN.nid(), PublicIds.of(descriptionSemanticUUID));
+
             SemanticRecord semanticRecord = SemanticRecordBuilder.builder()
-                    .nid(EntityService.get().nidForUuids(descriptionSemanticUUID))
+                    .nid(semanticNid)
                     .leastSignificantBits(descriptionSemanticUUID.getLeastSignificantBits())
                     .mostSignificantBits(descriptionSemanticUUID.getMostSignificantBits())
                     .additionalUuidLongs(null)

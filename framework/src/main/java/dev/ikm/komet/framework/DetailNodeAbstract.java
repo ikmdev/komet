@@ -16,6 +16,7 @@
 package dev.ikm.komet.framework;
 
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
+import dev.ikm.tinkar.entity.EntityHandle;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
@@ -55,7 +56,7 @@ public abstract class DetailNodeAbstract extends ExplorationNodeAbstract {
             if (entityFocusProperty.get() != null && entityFocusProperty.get().nid() == nid) {
                 // component has changed, need to update.
                 Platform.runLater(() -> entityFocusProperty.set(null));
-                Platform.runLater(() -> entityFocusProperty.set(Entity.provider().getEntityFast(nid)));
+                EntityHandle.get(nid).ifPresent(entity -> Platform.runLater(() -> entityFocusProperty.set(entity)));
             }
         });
     }

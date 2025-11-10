@@ -1,21 +1,26 @@
 package dev.ikm.komet.layout.window;
 
-import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.layout.KlStateCommands;
+import dev.ikm.komet.layout.KlTopView;
+import dev.ikm.komet.layout.KlView;
 import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.layout.context.KlContextProvider;
-import dev.ikm.komet.layout.context.KnowledgeBaseContext;
-import javafx.scene.Node;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+
 
 /**
  * Placeholder for now.
  */
-public non-sealed interface KlJournalWindow<FX extends Node> extends KlStateCommands, KlContextProvider, KlGadget<FX> {
+public non-sealed interface KlJournalWindow
+        extends KlStateCommands, KlContextProvider, KlTopView<Pane> {
     @Override
     default KlContext context() {
-        if (this.fxGadget() instanceof Node node) {
-            return KlGadget.context(node);
-        }
-        return KnowledgeBaseContext.INSTANCE.context();
+        return KlView.context(fxObject());
     }
+
+    non-sealed interface Factory<KL extends KlTopView<Region>> extends KlTopView.Factory<Region, KL> {
+
+    }
+
 }

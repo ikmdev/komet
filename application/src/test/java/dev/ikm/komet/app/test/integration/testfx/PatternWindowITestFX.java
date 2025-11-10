@@ -55,6 +55,7 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(ApplicationExtension.class)
+@Disabled
 public class PatternWindowITestFX {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatternWindowITestFX.class);

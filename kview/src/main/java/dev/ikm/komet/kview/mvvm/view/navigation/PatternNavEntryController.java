@@ -6,6 +6,7 @@ import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -183,15 +184,31 @@ public class PatternNavEntryController {
         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
 
         // generate the display name in the format of "Reference Component in Pattern"
-        Function<Integer, String> fetchDescription = (semanticNid -> {
-            SemanticEntity semanticEntity = (SemanticEntity) EntityService.get().getEntity(semanticNid).get();
-            EntityFacade refComponent = EntityService.get().getEntity(semanticEntity.referencedComponentNid()).get();
-            String refComponentName = viewProperties.calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(refComponent.nid());
-            return refComponentName + " in " + retriveDisplayName(instancesViewModel.getPropertyValue(PATTERN_FACADE));
+        // TODO: This is a candidate for a general purpose description function, rather than a one-off in this class.
+        Function<Integer, String> fetchDescriptionFunction = (semanticNid -> {
+            StringBuilder sb = new StringBuilder();
+            ViewCalculator viewCalculator = viewProperties.calculator();
+            EntityHandle.get(semanticNid).ifSemantic(semanticEntity -> {
+                        EntityHandle.get(semanticEntity.referencedComponentNid()).ifPresent(referencedComponent -> {
+                            sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(referencedComponent)).append(" in ");
+                        }).ifAbsent(() -> {
+                            LOG.error("Unable to find entity for referencedComponent '{}' for Semantic {}: ",
+                                    semanticEntity.referencedComponentNid(), semanticEntity);
+                            sb.append(" missing referenced component " + semanticEntity.referencedComponentNid());
+                        });
+                        sb.append(retriveDisplayName(instancesViewModel.getPropertyValue(PATTERN_FACADE)));
+                    }).ifStamp(stampEntity -> {
+                        sb.append(viewCalculator.getTextForStamp(stampEntity));
+                    }).ifConcept(conceptEntity -> {
+                        sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(conceptEntity));
+                    }).ifPattern(patternEntity -> {
+                        sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(patternEntity));
+                    }).ifAbsent(() -> LOG.error("Unable to find entity for nid: " + semanticNid));
+            return sb.toString();
         });
 
         // set the cell factory for each pattern's instance list
-        patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescription, viewProperties));
+        patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescriptionFunction, viewProperties));
 
         // display each row (ListCell) of this ListView
         Platform.runLater(() ->{

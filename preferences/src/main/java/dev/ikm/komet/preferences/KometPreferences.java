@@ -75,7 +75,9 @@ public interface KometPreferences {
             recursiveAdd(existingChild, newChild);
         }
     }
-
+    default int delegateHash() {
+        return this.hashCode();
+    }
     /**
      * Associates the specified value with the specified entity key in this map.
      *

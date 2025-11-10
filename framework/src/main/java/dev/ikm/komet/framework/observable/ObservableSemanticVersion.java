@@ -15,46 +15,30 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.coordinate.Coordinates;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculatorWithCache;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
-import dev.ikm.tinkar.entity.FieldDefinitionRecord;
-import dev.ikm.tinkar.entity.FieldRecord;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntity;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.SemanticVersionRecord;
-import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.entity.StampRecord;
+import dev.ikm.komet.framework.observable.binding.Binding;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.beans.InvalidationListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.ImmutableMap;
-import org.eclipse.collections.api.map.MutableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Concrete observable semantic version - fully type-reified, no generic parameters.
+ * <p>
+ * This is Layer 3 (Concrete) of the MGC pattern for semantic versions.
+ */
 public final class ObservableSemanticVersion
-        extends ObservableVersion<SemanticVersionRecord>
-        implements SemanticEntityVersion {
+        extends ObservableEntityVersion<ObservableSemantic, SemanticVersionRecord>
+        implements SemanticEntityVersion, ObservableVersion {
 
-    ObservableSemanticVersion(SemanticVersionRecord semanticVersionRecord) {
-        super(semanticVersionRecord);
-        // fields and their index.
-        // loop and create changelistners
-    }
-
-    @Override
-    protected SemanticVersionRecord withStampNid(int stampNid) {
-        return version().withStampNid(stampNid);
+    ObservableSemanticVersion(ObservableSemantic observableSemantic, SemanticVersionRecord semanticVersionRecord) {
+        super(observableSemantic, semanticVersionRecord);
     }
 
     @Override
@@ -73,218 +57,295 @@ public final class ObservableSemanticVersion
     }
 
     @Override
+    public PatternEntity pattern() {
+        return EntityHandle.getPatternOrThrow(patternNid());
+    }
+
+    @Override
+    public int patternNid() {
+        return version().patternNid();
+    }
+
+    @Override
     public ImmutableList<Object> fieldValues() {
         return version().fieldValues();
     }
 
     @Override
-    public ImmutableList<ObservableField> fields(PatternEntityVersion patternVersion){
-        return fields(patternVersion, true);
-    }
-
-    public ImmutableList<ObservableField> fields(PatternEntityVersion patternVersion, boolean writeOnEveryChange) {
+    public ImmutableList<ObservableField> fields() {
         ObservableField[] fieldArray = new ObservableField[fieldValues().size()];
         for (int indexInPattern = 0; indexInPattern < fieldArray.length; indexInPattern++) {
             Object value = fieldValues().get(indexInPattern);
-            FieldDefinitionForEntity fieldDef = patternVersion.fieldDefinitions().get(indexInPattern);
-            FieldDefinitionRecord fieldDefinitionRecord = new FieldDefinitionRecord(fieldDef.dataTypeNid(),
-                    fieldDef.purposeNid(), fieldDef.meaningNid(), patternVersion.stampNid(), patternVersion.nid(), indexInPattern);
-            ObservableField<?> observableField = new ObservableField<>(new FieldRecord<>(value, this.nid(), this.stampNid(), fieldDefinitionRecord), writeOnEveryChange);
 
-            int index = indexInPattern;
+            FeatureKey.VersionFeature.Semantic.FieldListItem featureKey =
+                    FeatureKey.Version.SemanticFieldListItem(nid(), indexInPattern, patternNid(), stampNid());
 
-            // create a change listener
-            InvalidationListener autoSave = (observableValue) -> {
-                if (observableField.value() != null) {
-                    // Create a version only when new value is not null.
-                    // Creating uncommitted version records. e.g., (c)hello, (u)hello1, (u)hello12, (u)hello123
-                    autoSaveSematicVersion(observableField.value(), index);
-                }
-            };
-            observableField.setAutoSaveChangeListener(autoSave);
-            fieldArray[indexInPattern] = observableField;
+            fieldArray[indexInPattern] = new ObservableField(featureKey, new FieldRecord(value, featureKey.nid(), featureKey.stampNid(), featureKey.patternNid(), featureKey.index()), this);
         }
-
-       //TODO POC this is a temp workaround remove call to handleUncommittedVersionTransactionStatus()?
-       // handleUncommittedVersionTransactionStatus();
         return Lists.immutable.of(fieldArray);
     }
 
-    /**
-     * TODO POC this is a temp workaround Should be removed later?
-     * This method will create a transaction if a version is uncommitted and transaction for that version does not exist.
-     */
-    private void handleUncommittedVersionTransactionStatus() {
-        if(version().uncommitted() && Transaction.forVersion(version()).isEmpty()){
-            SemanticVersionRecord version = version();
-            StampRecord stamp = Entity.getStamp(version.stampNid());
-            Transaction t = Transaction.make();
-            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), stamp.authorNid(), stamp.moduleNid(), stamp.pathNid(), entity());
-            versionProperty.set(version.with().stampNid(newStamp.nid()).build());
-        }
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    private AtomicReference<Feature> fieldListReference = new AtomicReference<>();
+    private Feature getFieldListFeature() {
+        return fieldListReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makeFieldListFeature());
     }
-
-    /**
-     * Create a new version and transaction if the current version is for committed.
-     * Updates the existing version if uncommitted.
-     * @param value
-     * @param index
-     */
-    private void autoSaveSematicVersion(Object value, int index) {
-        SemanticVersionRecord newVersion = null;
-        SemanticVersionRecord version = version();
-        MutableList<Object> fieldsForNewVersion = org.eclipse.collections.impl.factory.Lists.mutable.of(version.fieldValues().toArray());
-        StampRecord stamp = Entity.getStamp(version.stampNid());
-        fieldsForNewVersion.set(index, value);
-
-        if (version.committed()) {
-            Transaction t = Transaction.make();
-            // newStamp already written to the entity store.
-            StampEntity<?> newStamp = t.getStampForEntities(stamp.state(), getAuthorForChanges().nid(), stamp.moduleNid(), stamp.pathNid(), entity());
-            // Create new version...
-            newVersion = version.with().fieldValues(fieldsForNewVersion.toImmutable()).stampNid(newStamp.nid()).build();
-
-        } else {
-            newVersion = version.withFieldValues(fieldsForNewVersion.toImmutable());
-        }
-        versionProperty.set(newVersion);
+    private Feature makeFieldListFeature() {
+        FeatureKey locator = FeatureKey.Version.SemanticFieldList(this.nid(), stampNid());
+        return FeatureList.makeWithBackingList(this.fields(), locator, Binding.Semantic.Version.pattern(), Binding.Semantic.Version.semanticFieldsDefinitionIndex(), this);
     }
 
     @Override
-    public ImmutableMap<FieldCategory, ObservableField> getObservableFields() {
-        MutableMap<FieldCategory, ObservableField> fieldMap = Maps.mutable.empty();
-
-        int firstStamp = StampCalculator.firstStampTimeOnly(this.entity().stampNids());
-
-        for (FieldCategory field : FieldCategorySet.semanticVersionFields()) {
-            switch (field) {
-                case PUBLIC_ID_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.publicId();
-                    int dataTypeNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    int purposeNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    int meaningNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    Entity<EntityVersion> idPattern = Entity.getFast(TinkarTerm.IDENTIFIER_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(idPattern.stampNids());
-                    int patternNid = TinkarTerm.IDENTIFIER_PATTERN.nid();
-                    int indexInPattern = 0;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
-                }
-                case STATUS_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.state();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.COMPONENT_FOR_SEMANTIC.nid();
-                    int meaningNid = TinkarTerm.COMPONENT_FOR_SEMANTIC.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 0;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
-                }
-                case TIME_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.time();
-                    int dataTypeNid = TinkarTerm.LONG_FIELD.nid();
-                    int purposeNid = TinkarTerm.TIME_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.TIME_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 1;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
-                }
-                case AUTHOR_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.authorNid();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.AUTHOR_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.AUTHOR_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 2;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
-
-                }
-                case MODULE_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.moduleNid();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.MODULE_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.MODULE_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 3;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
-                }
-                case PATH_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.pathNid();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.PATH_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.PATH_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 4;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
-                }
-
-                case SEMANTIC_FIELD_LIST -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    StampCalculatorWithCache calculator =
-                            StampCalculatorWithCache.getCalculator(Coordinates.Stamp.DevelopmentLatest());
-                    Latest<PatternEntityVersion> latestPattern = calculator.latestPatternEntityVersion(this.patternNid());
-                    Object value = this.fields(latestPattern.get());
-                    int dataTypeNid = TinkarTerm.POLYMORPHIC_FIELD.nid();
-                    int purposeNid = TinkarTerm.SEMANTIC_FIELDS_ASSEMBLAGE.nid();
-                    int meaningNid = TinkarTerm.SEMANTIC_FIELDS_ASSEMBLAGE.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 4;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, fdr)));
-                }
-            }
+    protected void addAdditionalVersionFeatures(MutableList<Feature<?>> features) {
+        features.add(getFieldListFeature());
+        for (ObservableField field : fields()) {
+            features.add(field);
         }
-        return fieldMap.toImmutable();
     }
 
+    @Override
+    public Editable getEditableVersion(ObservableStamp editStamp, Transaction transaction) {
+        return Editable.getOrCreate(getObservableEntity(), this, editStamp, transaction);
+    }
+
+    /**
+     * Type-safe accessor for the containing semantic entity.
+     */
+    public ObservableSemantic getObservableSemantic() {
+        return getObservableEntity();
+    }
+
+    /**
+     * Editable version wrapper for ObservableSemanticVersion.
+     * <p>
+     * Implements {@link EditableVersion} marker
+     * interface through the base {@link ObservableEntityVersion.Editable} class.
+     * <p>
+     * Provides field-level editing for semantic versions with proper validation
+     * and type safety.
+     * 
+     * <h2>Semantic Field Editing</h2>
+     * <p>Semantic versions have dynamic fields defined by their pattern. Use
+     * {@link dev.ikm.komet.framework.propsheet.SheetItem#makeEditable} to create property sheet items for individual
+     * fields:
+     * <pre>{@code
+     * EditableVersion editable = semanticVersion.getEditableVersion(editStamp);
+     * 
+     * if (editable instanceof ObservableSemanticVersion.Editable se) {
+     *     // Create editable sheet items for each field
+     *     for (int i = 0; i < pattern.fieldCount(); i++) {
+     *         SheetItem<?> item = SheetItem.makeEditable(
+     *             se, i, viewProperties);
+     *         propertySheet.getItems().add(item);
+     *     }
+     * }
+     * }</pre>
+     */
+    public static final class Editable
+            extends ObservableEntityVersion.Editable<ObservableSemantic, ObservableSemanticVersion, SemanticVersionRecord>
+            implements EditableVersion {
+        // Already implements EditableVersion and EditableChronology via parent!
+
+        private static final Logger LOG = LoggerFactory.getLogger(Editable.class);
+
+        private final MutableList<ObservableField.Editable<?>> editableFields;
+        private final ObservableList<ObservableField.Editable<?>> unmodifiableFieldList;
+
+        private Editable(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            super(observableSemantic, observableVersion, editStamp, transaction);
+
+            // Create editable fields wrapping the read-only fields
+            ImmutableList<ObservableField> fields = observableVersion.fields();
+            this.editableFields = Lists.mutable.ofInitialCapacity(fields.size());
+
+            LOG.info("Creating editable fields for {} fields", fields.size());
+            for (int i = 0; i < fields.size(); i++) {
+                ObservableField<?> observableField = fields.get(i);
+                Object initialValue = observableVersion.fieldValues().get(i);
+                LOG.info("  Field {}: initialValue={}", i, initialValue);
+
+                // Create editable field
+                ObservableField.Editable<?> editableField = createEditableField(observableField, initialValue, i);
+                LOG.info("  Field {}: created editableField, property={}", i, editableField.editableValueProperty());
+
+                // Add listener to update working version when field changes
+                int fieldIndex = i;
+                LOG.info("  Field {}: adding property change listener", fieldIndex);
+                editableField.editableValueProperty().addListener((obs, oldValue, newValue) -> {
+                    LOG.info(">>> LISTENER FIRED: field {} changed from '{}' to '{}'", fieldIndex, oldValue, newValue);
+                    LOG.info("    Observable: {}", obs);
+                    LOG.info("    Property current value: {}", ((javafx.beans.property.Property<?>) obs).getValue());
+                    updateFieldValue(fieldIndex, newValue);
+                    LOG.info("<<< LISTENER COMPLETED for field {}", fieldIndex);
+                });
+                LOG.info("  Field {}: listener added successfully", fieldIndex);
+
+                editableFields.add(editableField);
+            }
+            LOG.info("Finished creating {} editable fields", editableFields.size());
+
+            // Wrap as unmodifiable ObservableList for JavaFX integration
+            // The list structure is immutable - fields cannot be added or removed during semantic editing.
+            // Only field VALUES are editable via each ObservableField.Editable's properties.
+            this.unmodifiableFieldList = FXCollections.unmodifiableObservableList(
+                FXCollections.observableArrayList(editableFields)
+            );
+        }
+
+        @SuppressWarnings("unchecked")
+        private <DT> ObservableField.Editable<DT> createEditableField(
+                ObservableField<?> observableField,
+                Object initialValue,
+                int fieldIndex) {
+            return new ObservableField.Editable<>(
+                    (ObservableField<DT>) observableField,
+                    (DT) initialValue,
+                    fieldIndex
+            );
+        }
+
+        /**
+         * Gets or creates the canonical editable semantic version for the given stamp.
+         * <p>
+         * Returns the exact same instance for multiple calls with the same stamp, ensuring
+         * a single canonical editable version per ObservableStamp.
+         *
+         * @param observableVersion the ObservableSemanticVersion to edit
+         * @param editStamp the ObservableStamp (typically identifying the author)
+         * @return the canonical editable semantic version for this stamp
+         */
+        public static Editable getOrCreate(ObservableSemantic observableSemantic, ObservableSemanticVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            return ObservableEntityVersion.getOrCreate(observableSemantic, observableVersion, editStamp, transaction, Editable::new);
+        }
+
+        /**
+         * Returns the editable fields for JavaFX UI binding and display.
+         * <p>
+         * <b>List Structure Immutability:</b> The returned list has a fixed structure - fields cannot be
+         * added or removed. This is by design: new fields can only be added by editing a {@link ObservablePattern},
+         * not by editing individual semantic versions. Attempting to call {@code add()}, {@code remove()}, or
+         * similar mutation operations on the returned list will throw {@link UnsupportedOperationException}.
+         * <p>
+         * <b>Field Value Mutability:</b> While the list structure is immutable, each {@link ObservableField.Editable}
+         * within the list contains observable properties that are fully editable. These properties can be bound
+         * bidirectionally to UI controls for editing field values.
+         * <p>
+         * <b>Usage Patterns:</b>
+         * <pre>{@code
+         * // Pattern 1: Display in ListView/TableView
+         * ObservableList<ObservableField.Editable<?>> fields = editableVersion.getEditableFields();
+         * fieldListView.setItems(fields); // List is observable for JavaFX controls
+         *
+         * // Pattern 2: Iterate and bind individual field properties
+         * for (int i = 0; i < fields.size(); i++) {
+         *     ObservableField.Editable<?> field = fields.get(i);
+         *     TextField textField = textFields.get(i);
+         *
+         *     // Bidirectional binding to field value property
+         *     textField.textProperty().bindBidirectional(
+         *         (Property<String>) field.editableValueProperty()
+         *     );
+         * }
+         *
+         * // Pattern 3: Indexed access (preferred for performance)
+         * ObservableField.Editable<?> field = editableVersion.getEditableField(0);
+         * textField.textProperty().bind(field.editableValueProperty().asString());
+         * }</pre>
+         * <p>
+         * <b>Return Type Rationale:</b> Returns {@link ObservableList} (rather than Eclipse Collections
+         * {@link ImmutableList}) to provide seamless JavaFX integration. This allows the list to be used
+         * directly with JavaFX controls like {@link javafx.scene.control.ListView} and
+         * {@link javafx.scene.control.TableView}. The unmodifiable wrapper ensures structural immutability
+         * while maintaining JavaFX observability for UI updates.
+         * <p>
+         * <b>Performance Note:</b> The returned list is created once during construction and cached.
+         * Multiple calls to this method return the same canonical list instance.
+         * <p>
+         * <b>Thread Safety:</b> Must be called from the JavaFX application thread, consistent with
+         * the Observable framework's threading requirements.
+         * <p>
+         * Symmetric to {@link ObservableSemanticVersion#fields()}, which returns read-only fields.
+         *
+         * @return an unmodifiable {@link ObservableList} of editable fields. The list structure is
+         *         immutable (fixed size), but each field's value properties are observable and editable.
+         * @see #getEditableField(int) for indexed field access
+         * @see ObservableField.Editable#editableValueProperty() for binding to individual field values
+         * @see ObservableComposer for transaction management and commit workflow
+         */
+        public ObservableList<ObservableField.Editable<?>> getEditableFields() {
+            return unmodifiableFieldList;
+        }
+
+        /**
+         * Gets the editable field at a specific index.
+         *
+         * @param index the field index
+         * @return the editable field
+         */
+        public ObservableField.Editable<?> getEditableField(int index) {
+            return editableFields.get(index);
+        }
+
+        /**
+         * Gets the editable property for a specific field index (convenience method).
+         * <p>
+         * Equivalent to {@code getEditableField(index).editableValueProperty()}.
+         *
+         * @param index the field index
+         * @return the editable property for that field
+         * @deprecated Use {@link #getEditableField(int)} for better API symmetry
+         */
+        @Deprecated(forRemoval = true)
+        public javafx.beans.property.SimpleObjectProperty<Object> getFieldProperty(int index) {
+            return (javafx.beans.property.SimpleObjectProperty<Object>) editableFields.get(index).editableValueProperty();
+        }
+
+        /**
+         * Updates a field value and rebuilds the working version.
+         */
+        private void updateFieldValue(int fieldIndex, Object newValue) {
+            LOG.info("=== updateFieldValue START ===");
+            LOG.info("  fieldIndex: {}", fieldIndex);
+            LOG.info("  newValue: {} (type: {})", newValue, newValue != null ? newValue.getClass().getSimpleName() : "null");
+            LOG.info("  workingVersion BEFORE: {}", workingVersion);
+            LOG.info("  workingVersion.fieldValues() BEFORE: {}", workingVersion.fieldValues());
+
+            MutableList<Object> newFieldValues = Lists.mutable.ofAll(workingVersion.fieldValues());
+            LOG.info("  Created mutable copy of field values, size: {}", newFieldValues.size());
+
+            newFieldValues.set(fieldIndex, newValue);
+            LOG.info("  Updated mutable list at index {}, new list: {}", fieldIndex, newFieldValues);
+
+            SemanticVersionRecord oldWorkingVersion = workingVersion;
+            workingVersion = workingVersion.withFieldValues(newFieldValues.toImmutable());
+            LOG.info("  workingVersion AFTER: {}", workingVersion);
+            LOG.info("  workingVersion.fieldValues() AFTER: {}", workingVersion.fieldValues());
+            LOG.info("  workingVersion changed? {}", oldWorkingVersion != workingVersion);
+            LOG.info("  workingVersion.equals(old)? {}", workingVersion.equals(oldWorkingVersion));
+            LOG.info("=== updateFieldValue END ===");
+        }
+
+        @Override
+        protected SemanticVersionRecord createVersionWithStamp(SemanticVersionRecord version, int stampNid) {
+            return version.withStampNid(stampNid);
+        }
+
+        @Override
+        protected Entity<?> createAnalogue(SemanticVersionRecord version) {
+            return version.chronology().with(version).build();
+        }
+
+        @Override
+        public void reset() {
+            // Reset all editable fields to original values FIRST
+            // This will trigger listeners that update workingVersion
+            for (ObservableField.Editable<?> editableField : editableFields) {
+                editableField.reset();
+            }
+            // Then reset workingVersion as the final step
+            super.reset();
+        }
+    }
 }

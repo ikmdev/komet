@@ -1,13 +1,12 @@
 package dev.ikm.komet.layout.window;
 
-import dev.ikm.komet.layout.KlContextSensitiveComponent;
-import dev.ikm.komet.layout.KlGadget;
-import dev.ikm.komet.layout.KlStateCommands;
+import dev.ikm.komet.layout.*;
 import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.layout.context.KlContextProvider;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
 import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Parent;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 
 /**
@@ -18,7 +17,7 @@ import javafx.stage.Window;
  * The {@code KlView} peer is the root {@code Node} of the stage.
  *
  */
-public non-sealed interface KlFxWindow extends KlGadget<Window>, KlStateCommands, KlContextProvider {
+public non-sealed interface KlFxWindow extends KlStateCommands, KlContextProvider, KlTopView<Stage> {
 
     /**
      * Enumerates preference keys for managing the properties and default configuration states
@@ -133,7 +132,9 @@ public non-sealed interface KlFxWindow extends KlGadget<Window>, KlStateCommands
      * If the window is currently hidden or not rendered, invoking this method
      * will ensure it is rendered and brought into view.
      */
-    void show();
+    default void show() {
+        this.fxObject().show();
+    }
 
     /**
      * Hides the top-level window, making it invisible to the user.
@@ -143,7 +144,9 @@ public non-sealed interface KlFxWindow extends KlGadget<Window>, KlStateCommands
      * This method does not permanently dispose of the window or its resources, allowing
      * it to be shown again later through appropriate operations.
      */
-    void hide();
+    default void hide() {
+        this.fxObject().hide();
+    }
     /**
      * Saves the current state of the window or layout with the specified name.
      * This method is typically used to persist the configuration, positioning, and other
@@ -162,6 +165,32 @@ public non-sealed interface KlFxWindow extends KlGadget<Window>, KlStateCommands
      * @return the {@link KlContext} instance representing the current context
      */
     default KlContext context() {
-        return KlGadget.super.context();
+        return KlTopView.super.context();
     }
+
+    /**
+     * Sets the title of the window if it is a {@link Stage}.
+     *
+     * This method operates based on the encapsulated JavaFX object associated with the instance.
+     * If the object is a {@code Stage}, the title is updated to the specified value.
+     * If the object is a {@code Window} that does not support titles, no operation is performed.
+     *
+     * @param title The new title to be set for the window. This value is applied only if the
+     *              associated FX object is a {@code Stage}.
+     */
+    default void setTitle(String title) {
+        this.fxObject().setTitle(title);
+    }
+    default String getTitle() {
+        return this.fxObject().getTitle();
+    }
+
+    static <KL extends KlFxWindow> KL restore(KometPreferences preferences) {
+        return KlView.restore(preferences);
+    }
+
+    non-sealed interface Factory extends KlTopView.Factory<Stage, KlFxWindow> {
+
+    }
+
 }

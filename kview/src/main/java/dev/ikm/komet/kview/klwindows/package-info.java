@@ -82,7 +82,7 @@
  *       method patterns</li>
  * </ul>
  * <p>
- * <h3>Adding a New Window Type</h3>
+ * <p><b>Adding a New Window Type</b>
  * The process to add a new window type requires minimal code and follows these steps:
  * <p>
  * <ol>

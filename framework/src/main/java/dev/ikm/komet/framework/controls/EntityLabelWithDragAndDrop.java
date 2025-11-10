@@ -16,6 +16,7 @@
 package dev.ikm.komet.framework.controls;
 
 
+import dev.ikm.tinkar.entity.EntityHandle;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -220,28 +221,23 @@ public class EntityLabelWithDragAndDrop
     }
 
     private void setPseudoClasses() {
-        EntityFacade entityFacade = getValue();
-        // Get the actual entity to get accurate type...
-        if (entityFacade != null) {
-            entityFacade = Entity.getFast(entityFacade);
-        }
-        if (entityFacade == null) {
+        EntityHandle.get(getValue()).ifAbsent(() -> {
             this.pseudoClassStateChanged(PseudoClasses.CONCEPT_PSEUDO_CLASS, false);
             this.pseudoClassStateChanged(PseudoClasses.SEMANTIC_PSEUDO_CLASS, false);
             this.pseudoClassStateChanged(PseudoClasses.PATTERN_PSEUDO_CLASS, false);
-        } else if (entityFacade instanceof Concept) {
+        }).ifConcept(_ -> {
             this.pseudoClassStateChanged(PseudoClasses.CONCEPT_PSEUDO_CLASS, true);
             this.pseudoClassStateChanged(PseudoClasses.SEMANTIC_PSEUDO_CLASS, false);
             this.pseudoClassStateChanged(PseudoClasses.PATTERN_PSEUDO_CLASS, false);
-        } else if (entityFacade instanceof Pattern) {
+        }).ifSemantic(_ -> {
+            this.pseudoClassStateChanged(PseudoClasses.CONCEPT_PSEUDO_CLASS, false);
+            this.pseudoClassStateChanged(PseudoClasses.SEMANTIC_PSEUDO_CLASS, true);
+            this.pseudoClassStateChanged(PseudoClasses.PATTERN_PSEUDO_CLASS, false);
+        }).ifPattern(_ -> {
             this.pseudoClassStateChanged(PseudoClasses.CONCEPT_PSEUDO_CLASS, false);
             this.pseudoClassStateChanged(PseudoClasses.SEMANTIC_PSEUDO_CLASS, false);
             this.pseudoClassStateChanged(PseudoClasses.PATTERN_PSEUDO_CLASS, true);
-        } else if (entityFacade instanceof Semantic) {
-            this.pseudoClassStateChanged(PseudoClasses.CONCEPT_PSEUDO_CLASS, false);
-            this.pseudoClassStateChanged(PseudoClasses.SEMANTIC_PSEUDO_CLASS, false);
-            this.pseudoClassStateChanged(PseudoClasses.PATTERN_PSEUDO_CLASS, true);
-        }
+        });
     }
 
     @Override

@@ -45,7 +45,7 @@ import java.util.Collections;
 import static dev.ikm.komet.framework.StyleClasses.MULTI_PARENT_TREE_CELL;
 
 /**
- * A {@link TreeCell} for rendering {@link ConceptEntity < ConceptEntityVersion >} objects.
+ * A {@link TreeCell} for rendering {@link ConceptEntity} objects.
  */
 final public class MultiParentGraphCell
         extends TreeCell<ConceptFacade>

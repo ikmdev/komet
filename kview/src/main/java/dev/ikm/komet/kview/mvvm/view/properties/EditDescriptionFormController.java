@@ -36,14 +36,7 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -347,8 +340,12 @@ public class EditDescriptionFormController implements BasicController {
             // populate all case significance choices
             IntIdSet caseSenseDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
             Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
-                    .mapToObj(caseNid -> (ConceptEntity) Entity.getFast(caseNid))
+                    .mapToObj(caseNid -> EntityHandle.getConceptOrThrow(caseNid))
                     .collect(Collectors.toSet());
+
+//            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+//                    .mapToObj(caseNid -> EntityHandle.get(caseNid) (ConceptEntity) Entity.getFast(caseNid))
+//                    .collect(Collectors.toSet());
             setupComboBox(caseSignificanceComboBox, allCaseDescendents);
 
             // get case concept's case sensitivity (e.g. 'Case insensitive')

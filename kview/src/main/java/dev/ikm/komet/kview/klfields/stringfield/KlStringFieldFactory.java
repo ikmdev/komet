@@ -1,16 +1,17 @@
 package dev.ikm.komet.kview.klfields.stringfield;
 
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.layout.component.version.field.KlField;
-import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
-import dev.ikm.komet.layout.component.version.field.KlStringField;
+import dev.ikm.komet.layout.version.field.KlField;
+import dev.ikm.komet.layout.version.field.KlFieldFactory;
+import dev.ikm.komet.layout.version.field.KlStringField;
 
 public class KlStringFieldFactory implements KlFieldFactory<String> {
 
     @Override
-    public KlField<String> create(ObservableField<String> observableField, ObservableView observableView, boolean editable) {
-        return new DefaultKlStringField(observableField, observableView, editable);
+    public KlField<String> create(ObservableField<String> observableField, ObservableView observableView, ObservableStamp stamp4field) {
+        return new DefaultKlStringField(observableField, observableView, stamp4field);
     }
 
     @Override

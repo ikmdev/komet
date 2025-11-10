@@ -112,36 +112,37 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
         ContextMenu contextMenu = new ContextMenu();
 
         contextMenu.getStyleClass().add("klcontext-menu");
+        if (componentItem != null) {
+            // Populate Concept
+            MenuItem populateMenuItem = createMenuItem(POPULATE_CONCEPT_MENU_ITEM_LABEL, KometIcon.IconValue.POPULATE,
+                    actionEvent -> this.fireOnPopulateAction(actionEvent, componentItem.getNid()));
 
-        // Populate Concept
-        MenuItem populateMenuItem = createMenuItem(POPULATE_CONCEPT_MENU_ITEM_LABEL, KometIcon.IconValue.POPULATE,
-                actionEvent -> this.fireOnPopulateAction(actionEvent, componentItem.getNid()));
+            // Populate and Edit
+            contextMenu.getItems().addAll(
+                    populateMenuItem,
+                    createMenuItem(getEditMenuItemLabel(), KometIcon.IconValue.PENCIL, this::fireOnEditAction)
+            );
 
-        // Populate and Edit
-        contextMenu.getItems().addAll(
-                populateMenuItem,
-                createMenuItem(getEditMenuItemLabel(), KometIcon.IconValue.PENCIL, this::fireOnEditAction)
-        );
+            // Remove
+            MenuItem removeMenuItem = createMenuItem("Remove", KometIcon.IconValue.TRASH,
+                    actionEvent -> this.fireOnRemoveAction(actionEvent, componentItem));
 
-        // Remove
-        MenuItem removeMenuItem = createMenuItem("Remove", KometIcon.IconValue.TRASH,
-                actionEvent -> this.fireOnRemoveAction(actionEvent, componentItem));
-
-        contextMenu.getItems().addAll(
-                new SeparatorMenuItem(),
-                removeMenuItem
-        );
-        if (componentItem == null) {
-            removeMenuItem.setDisable(true);
-        }
-
-        contextMenu.showingProperty().addListener(observable -> {
-            if (!contextMenu.isShowing() && !wasEditActionFired) {
-                control.setEditMode(false);
-            } else if (!contextMenu.isShowing() && wasEditActionFired){
-                control.setEditMode(true);
+            contextMenu.getItems().addAll(
+                    new SeparatorMenuItem(),
+                    removeMenuItem
+            );
+            if (componentItem == null) {
+                removeMenuItem.setDisable(true);
             }
-        });
+
+            contextMenu.showingProperty().addListener(observable -> {
+                if (!contextMenu.isShowing() && !wasEditActionFired) {
+                    control.setEditMode(false);
+                } else if (!contextMenu.isShowing() && wasEditActionFired){
+                    control.setEditMode(true);
+                }
+            });
+        }
 
         return contextMenu;
     }

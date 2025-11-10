@@ -91,16 +91,11 @@ public class KometClipboard
     }
 
     private void addEntity(EntityFacade entityFacade) {
-        if (entityFacade instanceof ConceptEntity conceptEntity) {
-            this.put(KOMET_CONCEPT_PROXY, conceptEntity.toXmlFragment());
-        } else if (entityFacade instanceof PatternEntity patternEntity) {
-            this.put(KOMET_PATTERN_PROXY, patternEntity.toXmlFragment());
-        } else if (entityFacade instanceof SemanticEntity semanticEntity) {
-            this.put(KOMET_SEMANTIC_PROXY, semanticEntity.toXmlFragment());
-        } else {
-            Entity<?> entity = Entity.getFast(entityFacade);
-            addEntity(entity);
-        }
+        EntityHandle.get(entityFacade)
+                .ifConcept(concept -> this.put(KOMET_CONCEPT_PROXY, concept.toXmlFragment()))
+                .ifPattern(pattern -> this.put(KOMET_PATTERN_PROXY, pattern.toXmlFragment()))
+                .ifSemantic(semantic -> this.put(KOMET_SEMANTIC_PROXY, semantic.toXmlFragment()))
+                .ifStamp(stamp -> addEntity(stamp));
     }
 
     //~--- methods -------------------------------------------------------------

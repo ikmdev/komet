@@ -1,13 +1,11 @@
 package dev.ikm.komet.layout.context;
 
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.layout.KlGadget;
-import dev.ikm.komet.layout.KlObject;
+import dev.ikm.komet.layout.KlPeerable;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import javafx.scene.Node;
-import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.Optional;
 
@@ -61,7 +59,7 @@ public interface KlContext {
      *
      * @return the {@code KlObject} peer associated with this {@code KlContext}.
      */
-    KlObject klPeer();
+    KlPeerable klPeer();
 
 
     /*

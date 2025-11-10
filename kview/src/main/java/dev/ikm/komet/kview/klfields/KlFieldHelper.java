@@ -24,14 +24,8 @@ import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.UUID_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
-import dev.ikm.komet.framework.observable.ObservableEntity;
-import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
-import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
-import dev.ikm.komet.framework.observable.ObservablePatternVersion;
-import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
-import dev.ikm.komet.framework.observable.ObservableVersion;
+
+import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
@@ -49,7 +43,9 @@ import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.*;
 import javafx.embed.swing.SwingFXUtils;
@@ -162,57 +158,58 @@ public class KlFieldHelper {
      * @param viewProperties
      * @return
      */
-    public static Node generateNode(FieldRecord fieldRecord, ObservableField observableField, ViewProperties viewProperties, boolean editable, UUID journalTopic) {
+    public static Node generateNode(final FieldRecord fieldRecord, ObservableField observableField, ViewProperties viewProperties, ObservableStamp stamp4field, UUID journalTopic) {
 
         Node node = null;
         ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
-        int dataTypeNid = fieldRecord.dataType().nid();
+        final FeatureDefinition featureDef = fieldRecord.fieldDefinition(viewProperties.calculator());
+        final int dataTypeNid = featureDef.dataTypeNid();
 
         //TODO use service loader instead of factories
 
         if (dataTypeNid == COMPONENT_FIELD.nid()) {
             // load a read-only component
             KlComponentFieldFactory componentFieldFactory = new KlComponentFieldFactory();
-            node = componentFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+            node = componentFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
         } else if (dataTypeNid == CONCEPT_FIELD.nid()) {
             // TODO: Create validation error message to the user to only allow concepts into this field.
             //       This will be a read-only component field for now (editable = false).
             KlComponentFieldFactory componentFieldFactory = new KlComponentFieldFactory();
-            node = componentFieldFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
-        } else if (dataTypeNid == STRING_FIELD.nid() || fieldRecord.dataType().nid() == STRING.nid()) {
+            node = componentFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
+        } else if (dataTypeNid == STRING_FIELD.nid() || dataTypeNid == STRING.nid()) {
             KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
-            node = stringFieldTextFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+            node = stringFieldTextFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
         } else if (dataTypeNid == COMPONENT_ID_SET_FIELD.nid()) {
             KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
-            node = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), editable, journalTopic).klWidget();
+            node = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field, journalTopic).fxObject();
         } else if (dataTypeNid == COMPONENT_ID_LIST_FIELD.nid()) {
             KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
-            node = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), editable, journalTopic).klWidget();
-        } else if (dataTypeNid == FLOAT_FIELD.nid() || fieldRecord.dataType().nid() == FLOAT.nid()) {
+            node = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field, journalTopic).fxObject();
+        } else if (dataTypeNid == FLOAT_FIELD.nid() || dataTypeNid == FLOAT.nid()) {
             KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
-            node = klFloatFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+            node = klFloatFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
         } else if (dataTypeNid == INTEGER_FIELD.nid()) {
             KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
-            node = klIntegerFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+            node = klIntegerFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
         } else if (dataTypeNid == BOOLEAN_FIELD.nid()) {
             KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
-            node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+            node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
         } else if (dataTypeNid == IMAGE_FIELD.nid()) {
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
-            node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+            node = imageFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
         } else if (dataTypeNid == BYTE_ARRAY_FIELD.nid()) {
             //TODO: We're using BYTE_ARRAY for the moment for Image data type
             //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
             //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
             KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
-            node = imageFieldFactory.create(observableField, viewProperties.nodeView(), editable).klWidget();
+            node = imageFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
         } else {
             // This fixes the exceptions the user experiences when a semantic (GenEditWindow) is summoned. The exception
             // happens when a datatype field that doesn't have a JavaFX custom control created yet.
             // The else is a catchall for any datatypes we do not support to be shown as read-only.
             // For example if a digraph or ditree the toString() would show text represented as OWL notation.
             KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
-            node = stringFieldTextFactory.create(observableField, viewProperties.nodeView(), false).klWidget();
+            node = stringFieldTextFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
         }
         return node;
     }
@@ -286,16 +283,16 @@ public class KlFieldHelper {
         }
         AtomicReference<Latest<EntityVersion>> entityVersionLatest = new AtomicReference<>();
         ObservableVersion observableVersion = (ObservableVersion) observableEntitySnapshot.getLatestVersion().get();
-        EntityVersion entityVersion = observableVersion.getEntityVersion();
+        EntityVersion entityVersion = observableVersion.getVersionRecord();
         if(entityVersion.committed()){
             return new Latest<>(entityVersion);
         }
         //Get list of previously committed data sorted in latest at the top.
         ImmutableList<ObservableVersion> historicVersions = observableEntitySnapshot.getHistoricVersions();
         // Filter out Uncommitted data. Data whose time stamp parameter is Long.MAX_VALUE. and get the 1st available.
-        Optional<ObservableVersion> optionalObservableVersion = historicVersions.stream().filter(p -> p.stamp().time() != Long.MAX_VALUE).findFirst();
+        Optional<ObservableVersion> optionalObservableVersion = historicVersions.stream().filter(p -> p.getVersionRecord().time() != Long.MAX_VALUE).findFirst();
         optionalObservableVersion.ifPresentOrElse((p) -> {
-            entityVersionLatest.set(new Latest<>(p));
+            entityVersionLatest.set(new Latest<>(p.getVersionRecord()));
         }, () -> {entityVersionLatest.set(new Latest<>());});
         return entityVersionLatest.get();
     }
@@ -309,10 +306,11 @@ public class KlFieldHelper {
      *  During create (new Semantic) the user can change the reference component.
      *  the hash is stating any change. By default a reference component during created would be TinkarTerms.ANONOUMOUS_CONCEPT (I can't remember).
      */
-    public static int calculateHashValue(List<ObservableField<?>> observableFieldsList ) {
+    public static int calculateHashValue(List<ObservableField<?>> observableFieldsList, StampCalculator stampCalculator) {
         StringBuilder stringBuilder = new StringBuilder();
         observableFieldsList.forEach(observableField -> {
-            if (observableField.dataTypeNid() == IMAGE_FIELD.nid() || observableField.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
+            FeatureDefinition definition = observableField.definition(stampCalculator);
+            if (definition.dataTypeNid() == IMAGE_FIELD.nid() || definition.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
                 // need to handle byte array to ensure that the same image is not getting uploaded and resaved. This is to enable/disable submit button.
                 byte [] byteArray = (byte[]) observableField.valueProperty().get();
                 String str = new String(byteArray, java.nio.charset.StandardCharsets.UTF_8);

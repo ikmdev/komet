@@ -15,10 +15,10 @@
  */
 package dev.ikm.komet.framework.panel.pattern;
 
+import dev.ikm.komet.framework.observable.ObservableFeatureDefinition;
 import javafx.scene.Node;
 import org.controlsfx.control.PropertySheet;
 import dev.ikm.komet.framework.PseudoClasses;
-import dev.ikm.komet.framework.observable.ObservableFieldDefinition;
 import dev.ikm.komet.framework.observable.ObservablePatternVersion;
 import dev.ikm.komet.framework.panel.ComponentVersionIsFinalPanel;
 import dev.ikm.komet.framework.propsheet.FieldDefinitionRecord;
@@ -52,7 +52,7 @@ public class PatternVersionPanel extends ComponentVersionIsFinalPanel<Observable
         // Add the field definitions.
 
         int i = 1;
-        for (ObservableFieldDefinition fieldDef : version.fieldDefinitions()) {
+        for (ObservableFeatureDefinition fieldDef : version.fieldDefinitions()) {
             String categoryName = "Field " + i + ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(fieldDef.meaning());
 
             FieldDefinitionRecord fieldDataTypeField = new FieldDefinitionRecord(fieldDef.dataTypeProperty(),

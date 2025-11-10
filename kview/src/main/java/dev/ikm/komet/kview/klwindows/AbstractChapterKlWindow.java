@@ -16,13 +16,16 @@
 package dev.ikm.komet.kview.klwindows;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.layout.window.KlRenderView;
 import dev.ikm.komet.preferences.KometPreferences;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.PROPERTY_PANEL_OPEN;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.SELECTED_PROPERTY_PANEL;
@@ -39,7 +42,7 @@ import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.SELECTED_PROPERT
  *
  * @param <T> A JavaFX {@link Node} subclass that serves as the root container for this window's content.
  */
-public abstract class AbstractChapterKlWindow<T extends Node> implements ChapterKlWindow<T> {
+public abstract class AbstractChapterKlWindow<T extends Pane> implements ChapterKlWindow<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractChapterKlWindow.class);
 
@@ -68,6 +71,40 @@ public abstract class AbstractChapterKlWindow<T extends Node> implements Chapter
     public AbstractChapterKlWindow(ViewProperties viewProperties, KometPreferences preferences) {
         this.viewProperties = viewProperties;
         this.preferences = preferences;
+    }
+
+    @Override
+    public void knowledgeLayoutBind() {
+        LOG.info("Binding knowledge layout for not implemented {}", getWindowTopic());
+    }
+
+    @Override
+    public void knowledgeLayoutUnbind() {
+        LOG.info("Unbinding knowledge layout for not implemented {}", getWindowTopic());
+    }
+
+    @Override
+    public void restoreFromPreferencesOrDefaults() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    /**
+     * Temporary Unsupported Method during migration.
+     * @return
+     */
+    @Override
+    public KlRenderView getKlRenderView() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    /**
+     * Temporary Unsupported Method during migration.
+     *
+     * @param renderView the render view to set
+     */
+    @Override
+    public void setKlRenderView(KlRenderView renderView) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     /**
@@ -179,7 +216,7 @@ public abstract class AbstractChapterKlWindow<T extends Node> implements Chapter
     }
 
     @Override
-    public T fxGadget() {
+    public Pane fxObject() {
         return paneWindow;
     }
 
@@ -206,15 +243,15 @@ public abstract class AbstractChapterKlWindow<T extends Node> implements Chapter
                 .property(PROPERTY_PANEL_OPEN, isPropertyPanelOpen())
                 .property(SELECTED_PROPERTY_PANEL, (String) selectedPropertyPanel());
 
-        final T gadget = fxGadget();
-        if (gadget != null) {
-            builder.position(gadget.getLayoutX(), gadget.getLayoutY());
+        final T fxObject = (T) fxObject();
+        if (fxObject != null) {
+            builder.position(fxObject.getLayoutX(), fxObject.getLayoutY());
 
             // Save size if applicable
-            if (gadget instanceof Pane pane) {
+            if (fxObject instanceof Pane pane) {
                 builder.size(pane.getWidth(), pane.getHeight());
             } else {
-                builder.size(gadget.prefWidth(-1), gadget.prefHeight(-1));
+                builder.size(fxObject.prefWidth(-1), fxObject.prefHeight(-1));
             }
         }
 
@@ -242,14 +279,14 @@ public abstract class AbstractChapterKlWindow<T extends Node> implements Chapter
             return false;
         }
 
-        final T gadget = fxGadget();
-        if (gadget != null) {
+        final T fxObject = (T) fxObject();
+        if (fxObject != null) {
             // Apply position
-            gadget.setLayoutX(state.getXPos());
-            gadget.setLayoutY(state.getYPos());
+            fxObject.setLayoutX(state.getXPos());
+            fxObject.setLayoutY(state.getYPos());
 
             // Apply size if applicable
-            if (gadget instanceof Pane pane) {
+            if (fxObject instanceof Pane pane) {
                 pane.setPrefWidth(state.getWidth());
                 pane.setPrefHeight(state.getHeight());
             }

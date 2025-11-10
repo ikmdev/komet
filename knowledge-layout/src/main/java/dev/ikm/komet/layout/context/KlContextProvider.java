@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.context;
 
-import dev.ikm.komet.layout.KlObject;
+import dev.ikm.komet.layout.KlPeerable;
 
 /**
  * Provides an interface for obtaining a {@link KlContext}, which represents
@@ -22,8 +22,8 @@ public interface KlContextProvider {
      * @return the {@code KlObject} instance representing a gadget configuration or functionality
      *         within the broader knowledge layout orchestration context
      */
-    default KlObject klObject() {
-        return (KlObject) this;
+    default KlPeerable klObject() {
+        return (KlPeerable) this;
     }
 
 }

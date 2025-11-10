@@ -17,10 +17,7 @@ package dev.ikm.komet.kview.klwindows.concept;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
-import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
-import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
-import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
-import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
+import dev.ikm.komet.kview.klwindows.*;
 import dev.ikm.komet.layout.context.KlContextFactory;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -63,12 +60,6 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    @Override
-    public ConceptKlWindow createWithContext(KlPreferencesFactory preferencesFactory, KlContextFactory contextFactory) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Override
     public ConceptKlWindow restore(WindowSettings windowSettings, KometPreferences preferences) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
         try {
@@ -109,16 +100,6 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
     }
 
     @Override
-    public Class<ConceptKlWindow> klImplementationClass() {
-        return ConceptKlWindow.class;
-    }
-
-    @Override
-    public String klDescription() {
-        return "Concept Details Chapter Window are displayed inside of the Journal Window desktop workspace";
-    }
-
-    @Override
     public EntityKlWindowType getWindowType() {
         return EntityKlWindowTypes.CONCEPT;
     }
@@ -143,5 +124,10 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
             // For other types, just return the entity directly
             return Entity.getFast(entityNid);
         }
+    }
+
+    @Override
+    public AbstractEntityChapterKlWindow restore(KometPreferences preferences) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }
