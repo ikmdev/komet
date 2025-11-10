@@ -24,6 +24,12 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
                     observableView.calculator());
             case false -> new KLReadOnlyComponentControl();
         };
+/*
+TODO: Carl to review behaviour with new editing paradigm.
+The issue is that DefaultKlComponentField should always return a read-only control when used in this context. The switch logic at line 22-26 in DefaultKlComponentField.java should be removed or the condition should be changed to always create a read-only control for this use case.
+Looking at the code in GenEditingDetailsController.java:509-571, the populateSemanticDetails() method is specifically creating read-only views that become editable via the properties panel, not inline editable controls.
+The fix: Change DefaultKlComponentField.java to always create KLReadOnlyComponentControl instead of conditionally creating KLComponentControl:
+ */
         super(observableComponentField, observableView, stamp4field, node);
 
         FeatureDefinition fieldDefinition = field().definition(observableView.calculator());

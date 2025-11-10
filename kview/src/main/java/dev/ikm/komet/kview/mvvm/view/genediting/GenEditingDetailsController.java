@@ -559,7 +559,8 @@ public class GenEditingDetailsController {
             Field<?> field = editableField.field();
 
             // Generate node using the underlying ObservableField (read-only view)
-            KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) KlFieldHelper.generateNode(
+            // This was throwing a cast exception, expecting KLReadOnlyBaseControl.
+            Node baseControl = KlFieldHelper.generateNode(
                 (FieldRecord<?>) field,
                 editableField.getObservableFeature(), // Use underlying ObservableField for display
                 getViewProperties(),
@@ -567,9 +568,13 @@ public class GenEditingDetailsController {
                 genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC)
             );
 
-            nodes.add(klReadOnlyBaseControl);
-            klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
-            semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
+            nodes.add(baseControl);
+
+            // Eliminated unsafe cast here...
+            if (baseControl instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
+                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
+                semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
+            }
         }
 
         LOG.info("Populated semantic details with {} editable fields using ObservableComposer", editableFields.size());
