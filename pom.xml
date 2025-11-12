@@ -59,6 +59,7 @@
         <module>kview</module>
         <module>sync</module>
         <module>application</module>
+        <module>dev</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -80,7 +81,7 @@
         <jsr305.version>3.0.2-r7</jsr305.version>
 
         <!-- JPRO Variables -->
-        <jpro.version>2025.2.0</jpro.version>
+        <jpro.version>2025.3.1</jpro.version>
         <jpro-platform.version>0.5.7</jpro-platform.version>
 
         <!-- TestFX Variables -->
@@ -234,6 +235,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>sync</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>application</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

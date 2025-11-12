@@ -41,6 +41,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.app.App.*;
@@ -65,6 +67,8 @@ public class AppMenu {
     public AppMenu(App app) {
         this.app = app;
     }
+
+    public static Function<Parent, Menu> devMenuFactory = null;
 
     /**
      * create the menu for windows used on a journal window (ie no vbox at the top of a border pane)
@@ -128,7 +132,10 @@ public class AppMenu {
         menuBar.getMenus().add(fileMenu);
         menuBar.getMenus().add(editMenu);
         menuBar.getMenus().add(windowMenu);
-        //menuBar.getMenus().add(createDevMenu(kometRoot));
+        if (devMenuFactory != null) {
+            menuBar.getMenus().add(devMenuFactory.apply(kometRoot));
+        }
+
         if (topBarVBox != null) {
             // add MS Windows menu to the classic komet menu
             Platform.runLater(() -> topBarVBox.getChildren().addFirst(menuBar));
@@ -151,28 +158,6 @@ public class AppMenu {
         exchangeMenu.getItems().addAll(infoMenuItem, pullMenuItem, pushMenuItem);
         return exchangeMenu;
     }
-
-    /*
-    // This can be used to add a developer menu with Scenic View
-    // This is very useful for debugging JavaFX applications.
-    // Therefore this comment shouldn't be deleted
-    Menu createDevMenu(Parent node) {
-        Menu devMenu = new Menu("Dev");
-
-        MenuItem reloadMenuItem = new MenuItem("Scenic View");
-        reloadMenuItem.setOnAction(actionEvent -> {
-            var stage2 = new Stage();
-            if(WebAPI.isBrowser()) {
-                WebAPI.getWebAPI(node.getScene()).openStageAsPopup(stage2);
-            }
-            ScenicView.show(node, stage2);
-        });
-        // Add shortcut Ctrl+Shift+S to open Scenic View
-        KeyCombination scenicViewKeyCombo = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
-        reloadMenuItem.setAccelerator(scenicViewKeyCombo);
-        devMenu.getItems().add(reloadMenuItem);
-        return devMenu;
-    }*/
 
     public void showAboutDialog() {
         AboutDialog aboutDialog = new AboutDialog();
@@ -215,7 +200,9 @@ public class AppMenu {
         menuBar.getMenus().add(viewMenu);
         menuBar.getMenus().add(windowMenu);
         menuBar.getMenus().add(exchangeMenu);
-        //menuBar.getMenus().add(createDevMenu(landingPageRoot));
+        if(devMenuFactory!=null){
+            menuBar.getMenus().add(devMenuFactory.apply(landingPageRoot));
+        }
         landingPageRoot.setTop(menuBar);
     }
 
@@ -290,7 +277,9 @@ public class AppMenu {
         Menu helpMenu = createHelpMenu();
         menuBar.getMenus().add(helpMenu);
 
-       // menuBar.getMenus().add(createDevMenu(parent));
+        if (devMenuFactory != null) {
+            menuBar.getMenus().add(devMenuFactory.apply(parent));
+        }
     }
 
     private Menu createFileMenu() {

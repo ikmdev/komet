@@ -7,28 +7,7 @@
         <version>1.58.0-SNAPSHOT</version>
     </parent>
     <artifactId>application</artifactId>
-    <!-- Required for ScenicView. -->
-    <!--
-    <repositories>
-        <repository>
-            <id>jpro-repository</id>
-            <url>https://sandec.jfrog.io/artifactory/repo</url>
-        </repository>
-    </repositories>-->
     <dependencies>
-
-        <!-- THE FORK has a small change, to allow opening it in JPro as a popup -->
-
-        <!--
-        <dependency>
-            <groupId>org.scenic-view</groupId>
-            <artifactId>scenic-view</artifactId>
-            <version>11.0.3-SNAPSHOT-FORK</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-web</artifactId>
-        </dependency>-->
         <dependency>
             <groupId>de.jangassen</groupId>
             <artifactId>nsmenufx</artifactId>
@@ -222,9 +201,9 @@
                         <id>default-cli</id>
                         <phase>package</phase>
                         <!-- <phase>none</phase> -->
-                        <goals>
+                        <!--<goals>
                             <goal>jlink</goal>
-                        </goals>
+                        </goals>-->
                         <configuration>
                             <launcher>launchKomet</launcher>
                             <jlinkImageName>kometRuntimeImage</jlinkImageName>
@@ -239,61 +218,6 @@
                                 <option>--add-exports</option>
                                 <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
                                 <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
-                            </options>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <!-- Configuration for debugging -->
-                        <id>debug</id>
-                        <phase>package</phase>
-                        <!--                        <phase>none</phase>-->
-                        <goals>
-                            <goal>jlink</goal>
-                        </goals>
-                        <configuration>
-                            <launcher>debugKomet</launcher>
-                            <jlinkImageName>kometDebugRuntimeImage</jlinkImageName>
-                            <jlinkVerbose>true</jlinkVerbose>
-                            <jlinkZipName>kometDebugJlink</jlinkZipName>
-                            <options>
-                                <option>--add-opens</option>
-                                <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
-                                <option>--add-exports</option>
-                                <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
-                                </option>
-                                <option>
-                                    -Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer
-                                </option>
-                                <option>
-                                    -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8000
-                                </option>
-                            </options>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <!-- Configuration for profiling -->
-                        <id>profile</id>
-                        <phase>package</phase>
-                        <!--                        <phase>none</phase>-->
-                        <goals>
-                            <goal>jlink</goal>
-                        </goals>
-                        <configuration>
-                            <launcher>profileKomet</launcher>
-                            <jlinkImageName>kometProfileRuntimeImage</jlinkImageName>
-                            <jlinkVerbose>true</jlinkVerbose>
-                            <jlinkZipName>kometProfileJlink</jlinkZipName>
-                            <options>
-                                <option>--add-opens</option>
-                                <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
-                                <option>--add-exports</option>
-                                <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
-                                <option>--add-exports</option>
-                                <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
-                                <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
-                                <option>
-                                    -agentpath:/Applications/JProfiler.app/Contents/Resources/app/bin/macos/libjprofilerti.jnilib=port=8849
-                                </option>
                             </options>
                         </configuration>
                     </execution>
@@ -338,29 +262,6 @@
         </plugins>
     </build>
     <profiles>
-        <profile>
-            <id>scenic-view</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <dependencies>
-                <!-- https://mvnrepository.com/artifact/net.raumzeitfalle.fx/scenic-view -->
-                <dependency>
-                    <groupId>net.raumzeitfalle.fx</groupId>
-                    <artifactId>scenic-view</artifactId>
-                </dependency>
-                <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-web -->
-                <dependency>
-                    <groupId>org.openjfx</groupId>
-                    <artifactId>javafx-web</artifactId>
-                </dependency>
-                <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-swing -->
-                <dependency>
-                    <groupId>org.openjfx</groupId>
-                    <artifactId>javafx-swing</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
         <!-- Profile to run JPackage to create installer(s), this profile can only be run with release versions-->
         <profile>
             <id>create-installer</id>
@@ -571,6 +472,7 @@
                             <releaseName>komet</releaseName>
                             <releasePlatforms>
                                 <!-- Sets the platforms to be included in the zip generated via jpro:release -->
+                                <releasePlatform>current</releasePlatform>
                                 <releasePlatform>linux</releasePlatform> <!-- includes linux x64 builds -->
                                 <releasePlatform>linux-aarch64</releasePlatform> <!-- includes linux aarch64 builds -->
                             </releasePlatforms>
