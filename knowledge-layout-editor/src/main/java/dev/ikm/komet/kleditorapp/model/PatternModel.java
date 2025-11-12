@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 
-import static dev.ikm.komet.kleditorapp.model.PatternModel.PatternListKey.PATTERN_LIST;
+import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_LIST;
 
 public class PatternModel {
     private static final Logger LOG = LoggerFactory.getLogger(PatternModel.class);
@@ -64,10 +64,6 @@ public class PatternModel {
 
         return patternModels;
     }
-
-    enum PatternListKey {
-        PATTERN_LIST
-    };
 
     public void save(KometPreferences sectionPreferences) {
         List<PatternFacade> patterns = sectionPreferences.getPatternList(PATTERN_LIST);

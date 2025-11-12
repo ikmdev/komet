@@ -25,4 +25,11 @@ public class KLEditorPreferences {
      * Root of KL Editor 'App' preferences.
      */
     public static final String KL_EDITOR_APP = "kl-editor-app";
+
+    public enum PatternKey {
+        /**
+         * List of Patterns in a Section
+         */
+        PATTERN_LIST
+    };
 }

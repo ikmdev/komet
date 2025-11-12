@@ -140,6 +140,9 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.pattern to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.events.pattern;
 
+    exports dev.ikm.komet.kview.mvvm.view.genpurpose;
+    opens dev.ikm.komet.kview.mvvm.view.genpurpose to javafx.fxml, org.carlfx.cognitive;
+
     exports dev.ikm.komet.kview.mvvm.view.navigation;
     opens dev.ikm.komet.kview.mvvm.view.navigation to javafx.fxml, org.carlfx.cognitive;
 
@@ -174,7 +177,8 @@ module dev.ikm.komet.kview {
             dev.ikm.komet.kview.klwindows.concept.ConceptKlWindowFactory,
             dev.ikm.komet.kview.klwindows.pattern.PatternKlWindowFactory,
             dev.ikm.komet.kview.klwindows.lidr.LidrKlWindowFactory,
-            dev.ikm.komet.kview.klwindows.genediting.GenEditingKlWindowFactory;
+            dev.ikm.komet.kview.klwindows.genediting.GenEditingKlWindowFactory,
+            dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindowFactory;
 
     uses dev.ikm.tinkar.events.EvtBus;
     uses EntityKlWindowFactory;

@@ -491,6 +491,8 @@ public class JournalController {
             windowTitleToMenuItem.put(windowTitle, windowMenuItem);
             addContextMenu.getItems().add(windowMenuItem);
 
+            windowMenuItem.setOnAction(actionEvent -> newCreateGenPurposeKLWindow(actionEvent, windowTitle));
+
             windowTitleToMenuItem.put(windowTitle, windowMenuItem);
         }
     }
@@ -1142,6 +1144,19 @@ public class JournalController {
         setupWorkspaceWindow(chapterKlWindow);
     }
 
+    private void createGenPurposeKLWindow(ConceptFacade conceptFacade,
+                                          KometPreferences preferences) {
+//        if (preferences != null) {
+//            preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
+//        }
+
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.createGenPurposeKLWindow");
+
+        AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.GEN_PURPOSE_KL,
+                journalTopic, conceptFacade, viewProperties, preferences);
+        setupWorkspaceWindow(chapterKlWindow);
+    }
+
     /**
      * Creates and displays a pattern window for the given pattern using default settings.
      * <p>
@@ -1634,6 +1649,15 @@ public class JournalController {
     @FXML
     public void newCreateConceptWindow(ActionEvent actionEvent) {
         createConceptWindow(null, NID_TEXT, null);
+    }
+
+    public void newCreateGenPurposeKLWindow(ActionEvent actionEvent, String windowTitle) {
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+
+        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+
+        createGenPurposeKLWindow(null, editorWindowPreferences);
     }
 
     /**
