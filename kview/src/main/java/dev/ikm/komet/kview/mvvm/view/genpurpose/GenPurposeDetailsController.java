@@ -21,6 +21,13 @@ import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
@@ -40,6 +47,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +55,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
@@ -113,6 +122,7 @@ public class GenPurposeDetailsController {
     private boolean isUpdatingStampSelection = false;
 
     private final Tooltip publishTooltip = new Tooltip();
+    private ViewProperties viewProperties;
 
     public GenPurposeDetailsController() {}
 
@@ -248,7 +258,7 @@ public class GenPurposeDetailsController {
 
     public ViewProperties getViewProperties() {
 //        return getPatternViewModel().getPropertyValue(VIEW_PROPERTIES);
-        return null;
+        return viewProperties;
     }
 
     private Consumer<GenPurposeDetailsController> onCloseConceptWindow;
@@ -321,7 +331,11 @@ public class GenPurposeDetailsController {
         return event -> tooltip.hide();
     }
 
-    public void setWindowPreferences(KometPreferences editorWindowPreferences) {
+    public void init(KometPreferences editorWindowPreferences, ViewProperties viewProperties) {
+        this.viewProperties = viewProperties;
+
+        final ViewCalculator viewCalculator = viewProperties.calculator();
+
         String absolutePath = editorWindowPreferences.absolutePath();
         Path path = Paths.get(absolutePath);
         String lastDirName = path.getFileName().toString();
@@ -340,6 +354,23 @@ public class GenPurposeDetailsController {
 
                 Label patternTitle = new Label(patternFacade.description());
                 mainSectionContent.getChildren().add(patternTitle);
+
+                // -- add fields if they exist
+                Entity<EntityVersion> entity = EntityService.get().getEntityFast(patternFacade);
+                Latest<EntityVersion> optionalLatest = viewCalculator.latest(entity);
+
+                AtomicInteger i = new AtomicInteger(1);
+                optionalLatest.ifPresent(latest -> {
+                    PatternVersionRecord patternVersionRecord = (PatternVersionRecord) latest;
+                    ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = patternVersionRecord.fieldDefinitions();
+
+                    fieldDefinitionRecords.stream().forEachOrdered(fieldDefinitionForEntity -> {
+                        String fieldMeaning = fieldDefinitionForEntity.meaning().description();
+                        Label fieldLabel = new Label("     Field " + i + ": " + fieldMeaning);
+                        mainSectionContent.getChildren().add(fieldLabel);
+                        i.incrementAndGet();
+                    });
+                });
             }
         }, () -> {
             throw new RuntimeException("Can't load section (main section) from preferences");

@@ -47,7 +47,7 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
             // TODO more clean up such as view models and listeners just in case (memory).
         });
 
-        jfxNode.controller().setWindowPreferences(preferences);
+        jfxNode.controller().init(preferences, viewProperties);
     }
 
     /**
