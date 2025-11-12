@@ -19,6 +19,7 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EntityVersionChangeEvent;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
@@ -161,7 +162,6 @@ public class SemanticFieldsController {
             path,
             "Edit Semantic Fields"
         );
-
         LOG.info("ObservableComposer initialized for semantic fields editing");
     }
 
@@ -238,6 +238,7 @@ public class SemanticFieldsController {
             //Change the button name to RESET FORM in EDIT MODE
             clearOrResetFormButton.setText("RESET FORM");
             setupEditSemanticDetails();
+            submitButton.setDisable(false);
         }
         genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
             if(mode == EDIT){
@@ -360,7 +361,7 @@ public class SemanticFieldsController {
 
                 Field<?> field = editableField.field();
                 // Generate node using the underlying ObservableField (read-only view)
-                nodes.add(generateNode(
+                nodes.add(createEditableKlField(
                     (FieldRecord<?>) field,
                     editableField.getObservableFeature(),
                     getViewProperties(),
@@ -487,11 +488,13 @@ public class SemanticFieldsController {
 
             // Save editable version (creates uncommitted version)
             semanticEditor.save();
-            LOG.info("Saved editable semantic version");
+            LOG.info("Saved editable semantic version ");
 
             try {
+                Transaction transaction = composer.getOrCreateTransaction();
+
                 composer.commit();
-                LOG.info("Committed semantic changes successfully");
+                LOG.info("Committed semantic changes successfully ");
                 // Refresh observable handles and snapshots
                 observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
                 if (observableEntityHandle.isPresent()) {

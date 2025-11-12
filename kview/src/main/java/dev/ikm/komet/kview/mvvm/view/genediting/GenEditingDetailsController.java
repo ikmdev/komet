@@ -532,7 +532,8 @@ public class GenEditingDetailsController {
         editableVersion = semanticEditor.getEditableVersion();
 
         // Get the edit stamp for UI generation
-        currentEditStamp = editableVersion.getEditStamp();
+//        currentEditStamp = editableVersion.getEditStamp();
+        currentEditStamp = ObservableEntityHandle.get(semanticEntityVersionLatest.get().stampNid()).expectStamp();
 
         // Get editable fields from the editable version
         editableFields.addAll(editableVersion.getEditableFields());
@@ -560,7 +561,7 @@ public class GenEditingDetailsController {
 
             // Generate node using the underlying ObservableField (read-only view)
             // This was throwing a cast exception, expecting KLReadOnlyBaseControl.
-            Node baseControl = KlFieldHelper.generateNode(
+            Node baseControl = KlFieldHelper.createReadOnlyKlField(
                 (FieldRecord<?>) field,
                 editableField.getObservableFeature(), // Use underlying ObservableField for display
                 getViewProperties(),

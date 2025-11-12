@@ -36,6 +36,9 @@ public interface KlFieldFactory<DT> {
      *         {@link ObservableField}.
      */
     KlField<DT> create(ObservableField<DT> observableField, ObservableView observableView, ObservableStamp editStamp);
+    default KlField<DT> create(ObservableField.Editable<?> observableField, ObservableView observableView, ObservableStamp editStamp) {
+        throw new UnsupportedOperationException("Not implemented in this factory: " + this.getClass());
+    }
     /**
      * Retrieves the class type of the attribute interface produced by the factory.
      * This class type extends {@link KlField} and indicates the specific
