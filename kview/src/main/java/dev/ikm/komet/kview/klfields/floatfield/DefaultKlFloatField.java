@@ -31,4 +31,9 @@ public class DefaultKlFloatField extends BaseDefaultKlField<Float> implements Kl
             default -> throw new IllegalStateException("Unexpected value: " + node);
         }
     }
+
+    @Override
+    public ObservableField.Editable<Float> fieldEditable() {
+        return null;
+    }
 }

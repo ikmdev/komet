@@ -15,6 +15,11 @@ public class KlEditableComponentFieldFactory implements KlFieldFactory<EntityPro
     }
 
     @Override
+    public KlField<EntityProxy> create(ObservableField.Editable<EntityProxy> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        return new KlEditableComponentField(observableFieldEditable, observableView, stamp4field);
+    }
+
+    @Override
     public Class<? extends KlField<EntityProxy>> getFieldInterface() {
         return null;
     }

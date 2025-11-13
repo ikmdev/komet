@@ -30,7 +30,6 @@ import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
-import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -363,7 +362,7 @@ public class SemanticFieldsController {
                 // Generate node using the underlying ObservableField (read-only view)
                 nodes.add(createEditableKlField(
                     (FieldRecord<?>) field,
-                    editableField.getObservableFeature(),
+                    editableField,
                     getViewProperties(),
                     currentEditStamp,
                     genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC)
@@ -492,6 +491,7 @@ public class SemanticFieldsController {
 
             try {
                 Transaction transaction = composer.getOrCreateTransaction();
+
 
                 composer.commit();
                 LOG.info("Committed semantic changes successfully ");

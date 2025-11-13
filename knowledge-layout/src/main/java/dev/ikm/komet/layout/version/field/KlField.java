@@ -22,4 +22,5 @@ import javafx.scene.layout.Region;
         parentPublicId = @PublicIdAnnotation(@UuidAnnotation("b3d1cdf6-27a5-502d-8f16-ed026a7b9d15")))
 public non-sealed interface KlField<DT> extends KlArea<Region>, ClassConceptBinding {
     ObservableField<DT> field();
+    ObservableField.Editable<DT> fieldEditable();
 }

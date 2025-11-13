@@ -22,6 +22,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
+import dev.ikm.komet.kview.controls.KLReadOnlyBaseSingleValueControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
@@ -402,6 +403,22 @@ public class GenEditingDetailsController {
             }
             if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
                 observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+                // populate the semantic and its observable fields once saved
+                semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
+                // go through each editable field and update its value
+                for(int i=0; i<editableFields.size(); i++) {
+
+//                    editableFields.get(i).
+//                    KLReadOnlyBaseSingleValueControl klReadOnlyBaseControl = (KLReadOnlyBaseSingleValueControl) nodes.get(i);
+//                    klReadOnlyBaseControl.valueProperty().unbind();
+//                    Object fieldValue = evt.getList().get(i);
+//                    Runnable setValue = () -> klReadOnlyBaseControl.setValue(fieldValue);
+//                    if (!Platform.isFxApplicationThread()) {
+//                        Platform.runLater(setValue);
+//                    } else {
+//                        setValue.run();
+//                    }
+                }
             }
             // TODO update identicon and identifier fields.
             EntityFacade finalSemantic = semanticProperty.get();

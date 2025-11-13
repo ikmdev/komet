@@ -236,6 +236,7 @@ public class KlFieldHelper {
         }
         return node;
     }
+
     /**
      * A function to return the correct editable custom ui control node given the semantic entity and field information.
      * @param fieldRecord a field record containing field definition and field value.
@@ -300,6 +301,29 @@ public class KlFieldHelper {
             node = factory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
         }
         return node;
+    }
+
+    public static Region createEditableKlField(final FieldRecord fieldRecord,
+                                               ObservableField.Editable observableFieldEditable,
+                                               ViewProperties viewProperties,
+                                               ObservableStamp stamp4field,
+                                               UUID journalTopic) {
+        final FeatureDefinition featureDef = fieldRecord.fieldDefinition(viewProperties.calculator());
+        final int dataTypeNid = featureDef.dataTypeNid();
+
+        if (dataTypeNid == COMPONENT_FIELD.nid()) {
+            // load a read-only component
+            KlEditableComponentFieldFactory factory = new KlEditableComponentFieldFactory();
+            return factory.create(observableFieldEditable, viewProperties.nodeView(), stamp4field).fxObject();
+
+        } else if (dataTypeNid == STRING_FIELD.nid() || dataTypeNid == STRING.nid()) {
+            KlEditableStringFieldFactory factory = new KlEditableStringFieldFactory();
+            return factory.create(observableFieldEditable, viewProperties.nodeView(), stamp4field).fxObject();
+        }
+
+
+        return createEditableKlField(fieldRecord, observableFieldEditable.getObservableFeature(), viewProperties, stamp4field, journalTopic);
+
     }
     /**
      * function to return the correct node given the semantic entity and field information

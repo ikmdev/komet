@@ -25,6 +25,11 @@ public class KlEditableStringFieldFactory implements KlFieldFactory<String> {
     }
 
     @Override
+    public KlField<String> create(ObservableField.Editable<String> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        return new KlEditableStringField(observableFieldEditable, observableView, stamp4field);
+    }
+
+    @Override
     public Class<? extends KlField<String>> getFieldInterface() {
         return KlStringField.class;
     }

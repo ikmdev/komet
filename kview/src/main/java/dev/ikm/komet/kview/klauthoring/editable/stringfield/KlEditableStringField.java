@@ -16,4 +16,17 @@ public class KlEditableStringField extends BaseDefaultKlField<String> implements
         node.textProperty().bindBidirectional(observableStringField.editableValueProperty());
         node.setTitle(getTitle());
     }
+    public KlEditableStringField(ObservableField.Editable<String> observableStringFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        final KLStringControl node = new KLStringControl();
+        super(observableStringFieldEditable, observableView, stamp4field, node);
+
+
+        node.textProperty().bindBidirectional(observableStringFieldEditable.editableValueProperty());
+        node.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                observableStringFieldEditable.setValue(newValue);
+            }
+        });
+        node.setTitle(getTitle());
+    }
 }

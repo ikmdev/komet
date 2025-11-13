@@ -13,6 +13,7 @@ import javafx.scene.layout.Region;
 
 public abstract class BaseDefaultKlField<T> implements KlField<T> {
     protected final ObservableField<T> observableField;
+    protected final ObservableField.Editable<T> observableFieldEditable;
     protected final ObservableView observableView;
 
     protected final Region fxObject;
@@ -26,6 +27,24 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
     public BaseDefaultKlField(ObservableField<T> observableField, ObservableView observableView,
                               ObservableStamp stamp4field, Region fxObject) {
         this.observableField = observableField;
+        this.observableFieldEditable = null;
+        this.observableView = observableView;
+        this.stamp4field = stamp4field;
+        this.fxObject = fxObject;
+
+        FeatureDefinition featureDefinition = field().definition(observableView.calculator());
+
+        title = observableView.getDescriptionTextOrNid(featureDefinition.meaningNid()) + ":";
+
+        setFxPeer(fxObject);
+
+        tooltip.setText(observableView.getDescriptionTextOrNid(featureDefinition.purposeNid()));
+    }
+
+    public BaseDefaultKlField(ObservableField.Editable<T> observableFieldEditable, ObservableView observableView,
+                              ObservableStamp stamp4field, Region fxObject) {
+        this.observableField = observableFieldEditable.getObservableFeature();
+        this.observableFieldEditable = observableFieldEditable;
         this.observableView = observableView;
         this.stamp4field = stamp4field;
         this.fxObject = fxObject;
@@ -53,6 +72,11 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
     @Override
     public ObservableField<T> field() {
         return observableField;
+    }
+
+    @Override
+    public ObservableField.Editable<T> fieldEditable() {
+        return observableFieldEditable;
     }
 
     // -- title
