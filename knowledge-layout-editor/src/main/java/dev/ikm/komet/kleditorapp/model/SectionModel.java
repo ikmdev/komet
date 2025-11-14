@@ -87,6 +87,12 @@ public class SectionModel {
     public StringProperty nameProperty() { return name; }
     public void setName(String name) { this.name.set(name);}
 
+    // -- tag text
+    private final StringProperty tagText = new SimpleStringProperty();
+    public String getTagText() { return tagText.get(); }
+    public StringProperty tagTextProperty() { return tagText; }
+    public void setTagText(String text) { tagText.set(text); }
+
     // -- patterns
     private final ObservableList<PatternModel> patterns = FXCollections.observableArrayList();
     public ObservableList<PatternModel> getPatterns() { return patterns; }

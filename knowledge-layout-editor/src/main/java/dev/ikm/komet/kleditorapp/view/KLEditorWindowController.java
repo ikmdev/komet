@@ -6,28 +6,31 @@ import dev.ikm.komet.kleditorapp.model.WindowModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.TitledPane;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-import static dev.ikm.komet.kleditorapp.view.PatternBrowserCell.KL_EDITOR_VERSION_PROXY;
+import java.util.HashMap;
 
 public class KLEditorWindowController {
 
     @FXML
-    private TitledPane section1TitledPane;
-
-    @FXML
-    private VBox windowContent;
+    private VBox sectionContainer;
 
     @FXML
     private Label titleLabel;
 
+    @FXML
+    private SectionViewControl mainSectionView;
+
     private ViewCalculator viewCalculator;
+
+    private final HashMap<SectionViewControl, SectionModel> sectionViewToModel = new HashMap<>();
+    private final HashMap<SectionModel, SectionViewControl> sectionModelToView = new HashMap<>();
+
+    private int currentSectionCount = 1;
 
     public void initialize() {
     }
@@ -38,17 +41,51 @@ public class KLEditorWindowController {
         WindowModel windowModel = WindowModel.instance();
         titleLabel.textProperty().bind(windowModel.titleProperty());
 
-        // We only have 1 section for now
-        SectionModel mainSection = windowModel.getMainSection();
-        section1TitledPane.textProperty().bindBidirectional(mainSection.nameProperty());
+        setupMainSection(windowModel);
 
-        // Listen to changes on Main Section
-        mainSection.getPatterns().addListener(this::onMainSectionPatternsChanged);
-
-        setupDragAndDrop();
+        windowModel.getAditionalSections().addListener(this::onAdditionalSectionsChanged);
     }
 
-    private void onMainSectionPatternsChanged(ListChangeListener.Change<? extends PatternModel> change) {
+    /**
+     * Setups the main section which will always need to exist (we always need to have at least 1 Section).
+     *
+     * @param windowModel the WindowModel object
+     */
+    private void setupMainSection(WindowModel windowModel) {
+        SectionModel mainSection = windowModel.getMainSection();
+
+        mainSectionView.nameProperty().bindBidirectional(mainSection.nameProperty());
+        mainSectionView.setTagText("Section 1");
+
+        sectionViewToModel.put(mainSectionView, mainSection);
+        sectionModelToView.put(mainSection, mainSectionView);
+
+        setupDragAndDrop(mainSectionView);
+    }
+
+
+    private void onAdditionalSectionsChanged(ListChangeListener.Change<? extends SectionModel> change) {
+        while (change.next()) {
+            if (change.wasAdded()) {
+                for (SectionModel sectionModel : change.getAddedSubList()) {
+                    SectionViewControl sectionViewControl = new SectionViewControl();
+                    sectionViewControl.nameProperty().bind(sectionModel.nameProperty());
+                    sectionViewControl.tagTextProperty().bind(sectionModel.tagTextProperty());
+
+                    sectionViewToModel.put(sectionViewControl, sectionModel);
+                    sectionModelToView.put(sectionModel, sectionViewControl);
+
+                    setupDragAndDrop(sectionViewControl);
+
+                    VBox.setVgrow(sectionViewControl, Priority.ALWAYS);
+                    sectionContainer.getChildren().add(sectionViewControl);
+                }
+            }
+        }
+
+    }
+
+    private void onSectionPatternsChanged(SectionModel sectionModel, ListChangeListener.Change<? extends PatternModel> change) {
         while(change.next()) {
             if (change.wasAdded()) {
                 for (PatternModel patternModel : change.getAddedSubList()) {
@@ -56,44 +93,36 @@ public class KLEditorWindowController {
                     patternViewControl.titleProperty().bind(patternModel.titleProperty());
                     Bindings.bindContent(patternViewControl.getFields(), patternModel.getFields());
 
-                    windowContent.getChildren().add(patternViewControl);
+                    SectionViewControl sectionViewControl = sectionModelToView.get(sectionModel);
+                    sectionViewControl.getItems().add(patternViewControl);
                 }
             }
         }
     }
 
-    private void setupDragAndDrop() {
-        windowContent.setOnDragOver(event -> {
-            if (event.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)) {
-                event.acceptTransferModes(TransferMode.COPY);
-            }
+    private void setupDragAndDrop(SectionViewControl sectionViewControl) {
+        SectionModel sectionModel = sectionViewToModel.get(sectionViewControl);
 
+        sectionViewControl.setOnPatternDropped((event, patternNid) -> {
+            PatternModel patternModel = new PatternModel(viewCalculator, patternNid);
+            sectionModel.getPatterns().add(patternModel);
+
+            event.setDropCompleted(true);
             event.consume();
         });
 
-        windowContent.setOnDragDropped(event -> {
-            if (!event.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)) {
-                event.setDropCompleted(false);
-                event.consume();
-                return;
-            }
-
-            doPatternDrop(event);
-        });
+        // Listen to changes on Section Patterns
+        sectionModel.getPatterns().addListener((ListChangeListener<? super PatternModel>) change -> onSectionPatternsChanged(sectionModel, change));
     }
 
-    private void doPatternDrop(DragEvent event) {
-        Dragboard dragboard = event.getDragboard();
+    @FXML
+    private void onAddSectionAction(ActionEvent actionEvent) {
+        WindowModel windowModel = WindowModel.instance();
 
-        Integer patternNid = (Integer) dragboard.getContent(KL_EDITOR_VERSION_PROXY);
+        SectionModel sectionModel = new SectionModel();
+        sectionModel.setTagText("Section " + ++currentSectionCount);
+        sectionModel.setName("Untitled");
 
-        PatternModel patternModel = new PatternModel(viewCalculator, patternNid);
-
-        SectionModel sectionModel = WindowModel.instance().getMainSection();
-        sectionModel.getPatterns().add(patternModel);
-
-        event.setDropCompleted(true);
-
-        event.consume();
+        windowModel.getAditionalSections().add(sectionModel);
     }
 }

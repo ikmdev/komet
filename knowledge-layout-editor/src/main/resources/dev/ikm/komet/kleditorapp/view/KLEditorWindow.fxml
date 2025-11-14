@@ -14,6 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
 
+<?import dev.ikm.komet.kleditorapp.view.SectionViewControl?>
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="window" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kleditorapp.view.KLEditorWindowController">
    <children>
       <BorderPane styleClass="window-header-container">
@@ -133,26 +134,10 @@
             <StackPane prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
          </center>
       </BorderPane>
-      <BorderPane styleClass="content-container" VBox.vgrow="ALWAYS">
-         <top>
-            <StackPane styleClass="title-container" BorderPane.alignment="CENTER">
-               <children>
-                  <Label text="Section 1" />
-               </children>
-            </StackPane>
-         </top>
-         <center>
-            <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
-               <children>
-                  <TitledPane fx:id="section1TitledPane" animated="false" maxHeight="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" text="untitled" VBox.vgrow="ALWAYS">
-                     <content>
-                        <VBox fx:id="windowContent" prefHeight="200.0" prefWidth="100.0" styleClass="content" />
-                     </content>
-                  </TitledPane>
-               </children></VBox>
-         </center>
-      </BorderPane>
-      <Button mnemonicParsing="false" styleClass="add-section" text="ADD SECTION">
+       <VBox fx:id="sectionContainer" VBox.vgrow="ALWAYS">
+           <SectionViewControl name="Section 1" fx:id="mainSectionView" VBox.vgrow="ALWAYS"/>
+       </VBox>
+      <Button mnemonicParsing="false" styleClass="add-section" onAction="#onAddSectionAction" text="ADD SECTION">
          <graphic>
             <Region>
                <styleClass>
