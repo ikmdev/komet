@@ -16,4 +16,17 @@ public class KlEditableFloatField extends BaseDefaultKlField<Float> implements K
         node.valueProperty().bindBidirectional(observableFloatField.editableValueProperty());
         node.setTitle(getTitle());
     }
+    public KlEditableFloatField(ObservableField.Editable<Float> observableFloatFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        final KLFloatControl node = new KLFloatControl();
+        super(observableFloatFieldEditable, observableView, stamp4field, node);
+        node.valueProperty().bindBidirectional(observableFloatFieldEditable.editableValueProperty());
+        node.setTitle(getTitle());
+        observableFloatFieldEditable
+                .editableValueProperty()
+                .addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                observableFloatFieldEditable.setValue(newValue);
+            }
+        });
+    }
 }

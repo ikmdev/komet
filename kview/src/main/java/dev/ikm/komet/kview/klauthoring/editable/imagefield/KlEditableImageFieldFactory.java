@@ -14,6 +14,11 @@ public class KlEditableImageFieldFactory implements KlFieldFactory<byte[]> {
     }
 
     @Override
+    public KlField<byte[]> create(ObservableField.Editable<byte[]> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        return new KlEditableImageField(observableFieldEditable, observableView, stamp4field);
+    }
+
+    @Override
     public Class<? extends KlField<byte[]>> getFieldInterface() {
         return null;
     }

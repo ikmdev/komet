@@ -38,4 +38,19 @@ public class KlEditableComponentSetField extends BaseDefaultKlField<IntIdSet> im
 
     }
 
+    public KlEditableComponentSetField(ObservableField.Editable<IntIdSet> observableComponentSetFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        final KLComponentCollectionControl node = KLComponentControlFactory.createTypeAheadComponentListControl(observableView.calculator());
+        super(observableComponentSetFieldEditable, observableView, stamp4field, node);
+        node.setTitle(getTitle());
+        node.valueProperty().bindBidirectional(observableComponentSetFieldEditable.editableValueProperty());
+        // Listen for changes in the control and update the observable field (is this the right way to do this?)
+        observableComponentSetFieldEditable
+                .editableValueProperty()
+                .addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                observableComponentSetFieldEditable.setValue(newValue);
+            }
+        });
+    }
+
 }

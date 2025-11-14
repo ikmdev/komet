@@ -30,13 +30,15 @@ public interface KlFieldFactory<DT> {
      *                        by the created {@link KlField}.
      * @param observableView the observable view that provides context for how the created
      *                       {@link KlField} will be integrated and interacted with.
-     * @param editStamp the observable stamp used to handle editing timestamps and changes
+     * @param stamp4field the observable stamp used to handle editing timestamps and changes
      *                  associated with the state of the {@link KlField}.
      * @return a new {@link KlField} instance parameterized with the same type as the provided
      *         {@link ObservableField}.
      */
-    KlField<DT> create(ObservableField<DT> observableField, ObservableView observableView, ObservableStamp editStamp);
-    default KlField<DT> create(ObservableField.Editable<DT> observableFieldEditable, ObservableView observableView, ObservableStamp editStamp) {
+    default KlField<DT> create(ObservableField<DT> observableField, ObservableView observableView, ObservableStamp stamp4field) {
+        throw new UnsupportedOperationException("Not implemented in this factory: " + this.getClass());
+    }
+    default KlField<DT> create(ObservableField.Editable<DT> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         throw new UnsupportedOperationException("Not implemented in this factory: " + this.getClass());
     }
     /**

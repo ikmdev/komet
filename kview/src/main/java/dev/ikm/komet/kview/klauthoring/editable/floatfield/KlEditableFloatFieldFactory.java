@@ -15,6 +15,11 @@ public class KlEditableFloatFieldFactory implements KlFieldFactory<Float> {
     }
 
     @Override
+    public KlField<Float> create(ObservableField.Editable<Float> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        return new KlEditableFloatField(observableFieldEditable, observableView, stamp4field);
+    }
+
+    @Override
     public Class<? extends KlField<Float>> getFieldInterface() {
         return KlFloatField.class;
     }

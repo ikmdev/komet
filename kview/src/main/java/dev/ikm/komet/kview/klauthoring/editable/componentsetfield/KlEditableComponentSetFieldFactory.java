@@ -22,7 +22,9 @@ public class KlEditableComponentSetFieldFactory {
     public KlField<IntIdSet> create(ObservableField<IntIdSet> observableField, ObservableView observableView, ObservableStamp stamp4field) {
         return new KlEditableComponentSetField(observableField, observableView, stamp4field);
     }
-
+    public KlField<IntIdSet> create(ObservableField.Editable<IntIdSet> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        return new KlEditableComponentSetField(observableFieldEditable, observableView, stamp4field);
+    }
     /**
      * Retrieves the class type of the field interface produced by the factory.
      * This class type extends {@link KlField} and indicates the specific

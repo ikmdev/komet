@@ -15,4 +15,17 @@ public class KlEditableBooleanField extends BaseDefaultKlField<Boolean> implemen
         node.valueProperty().bindBidirectional(observableBooleanField.editableValueProperty());
         node.setTitle(getTitle());
     }
+    public KlEditableBooleanField(ObservableField.Editable<Boolean> observableBooleanField, ObservableView observableView, ObservableStamp stamp4field) {
+        KLBooleanControl node = new KLBooleanControl();
+        super(observableBooleanField, observableView, stamp4field, node);
+        node.valueProperty().bindBidirectional(observableBooleanField.editableValueProperty());
+        node.setTitle(getTitle());
+        observableBooleanField
+                .editableValueProperty()
+                .addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                observableBooleanField.setValue(newValue);
+            }
+        });
+    }
 }

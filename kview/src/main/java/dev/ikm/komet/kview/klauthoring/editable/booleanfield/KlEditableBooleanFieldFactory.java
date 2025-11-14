@@ -12,6 +12,12 @@ public class KlEditableBooleanFieldFactory implements KlFieldFactory<Boolean> {
     public KlField<Boolean> create(ObservableField observableField, ObservableView observableView, ObservableStamp stamp4field) {
         return new KlEditableBooleanField(observableField, observableView, stamp4field);
     }
+
+    @Override
+    public KlField<Boolean> create(ObservableField.Editable<Boolean> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        return new KlEditableBooleanField(observableFieldEditable, observableView, stamp4field);
+    }
+
     @Override
     public Class<? extends KlField<Boolean>> getFieldInterface() {
         return KlBooleanField.class;

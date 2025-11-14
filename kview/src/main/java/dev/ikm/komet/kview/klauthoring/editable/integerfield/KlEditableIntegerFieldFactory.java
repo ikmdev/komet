@@ -15,6 +15,11 @@ public class KlEditableIntegerFieldFactory implements KlFieldFactory<Integer> {
     }
 
     @Override
+    public KlField<Integer> create(ObservableField.Editable<Integer> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        return new KlEditableIntegerField(observableFieldEditable, observableView, stamp4field);
+    }
+
+    @Override
     public Class<? extends KlField<Integer>> getFieldInterface() {
         return KlIntegerField.class;
     }

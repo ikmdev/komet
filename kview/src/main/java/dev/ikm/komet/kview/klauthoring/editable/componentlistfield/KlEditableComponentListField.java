@@ -35,7 +35,6 @@ import java.util.function.*;
  */
 public class KlEditableComponentListField extends BaseDefaultKlField<IntIdList> implements KlComponentListField {
 
-    private final Editable<IntIdList> editableField;
 
     /**
      * Constructor using the editable pattern (recommended).
@@ -55,8 +54,7 @@ public class KlEditableComponentListField extends BaseDefaultKlField<IntIdList> 
             UUID journalTopic) {
 
         KLComponentCollectionControl node = createTypeAheadComponentListControl(observableView.calculator());
-        super(editableField.getObservableFeature(), observableView, stamp4field, node);
-        this.editableField = editableField;
+        super(editableField, observableView, stamp4field, node);
         node.setTitle(getTitle());
         setupEditableBinding(editableField, node);
     }
@@ -80,7 +78,6 @@ public class KlEditableComponentListField extends BaseDefaultKlField<IntIdList> 
         KLComponentCollectionControl node = createTypeAheadComponentListControl(observableView.calculator());
 
         super(observableComponentListField, observableView, stamp4field, node);
-        this.editableField = null;
 
         node.setTitle(getTitle());
         setupLegacyBinding(observableComponentListField, node);
@@ -96,6 +93,13 @@ public class KlEditableComponentListField extends BaseDefaultKlField<IntIdList> 
 
         // Bind control to editable field's editable property (cached changes)
         control.valueProperty().bindBidirectional(editableField.editableValueProperty());
+        editableField
+                .editableValueProperty()
+                .addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                editableField.setValue(newValue);
+            }
+        });
     }
 
     /**
@@ -109,22 +113,5 @@ public class KlEditableComponentListField extends BaseDefaultKlField<IntIdList> 
 
         // Bind control to observable field's editable property (immediate DB write)
         control.valueProperty().bindBidirectional(observableField.editableValueProperty());
-    }
-
-
-    /**
-     * Returns the editable field if using the editable pattern.
-     *
-     * @return the editable field, or null if using legacy pattern
-     */
-    public Editable<IntIdList> getEditableField() {
-        return editableField;
-    }
-
-    /**
-     * Returns whether this field is using the editable pattern.
-     */
-    public boolean isUsingEditablePattern() {
-        return editableField != null;
     }
 }

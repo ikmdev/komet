@@ -17,4 +17,16 @@ public class KlEditableIntegerField extends BaseDefaultKlField<Integer> implemen
         node.valueProperty().bindBidirectional(observableIntegerField.editableValueProperty());
         node.setTitle(getTitle());
     }
+    public KlEditableIntegerField(ObservableField.Editable<Integer> observableIntegerFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        final KLIntegerControl node = new KLIntegerControl();
+        super(observableIntegerFieldEditable, observableView, stamp4field, node);
+        node.valueProperty().bindBidirectional(observableIntegerFieldEditable.editableValueProperty());
+        node.setTitle(getTitle());
+        observableIntegerFieldEditable.editableValueProperty()
+                .addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                observableIntegerFieldEditable.setValue(newValue);
+            }
+        });
+    }
 }

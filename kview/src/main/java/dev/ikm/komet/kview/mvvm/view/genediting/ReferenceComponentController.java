@@ -109,14 +109,14 @@ public class ReferenceComponentController {
 
     @FXML
     public void confirm(ActionEvent actionEvent) {
-        EntityFacade semantic = createUncommitedSemanticRecord();
-        if (semantic == null) {
-            // prevent user from continuing
-            confirmButton.disableProperty().unbind();
-            confirmButton.setDisable(true);
-            return; // error, one of the field value's default value is null.
-        }
-        genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
+//        EntityFacade semantic = createUncommitedSemanticRecord();
+//        if (semantic == null) {
+//            // prevent user from continuing
+//            confirmButton.disableProperty().unbind();
+//            confirmButton.setDisable(true);
+//            return; // error, one of the field value's default value is null.
+//        }
+//        genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), CONFIRM_REFERENCE_COMPONENT));
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         actionEvent.consume();

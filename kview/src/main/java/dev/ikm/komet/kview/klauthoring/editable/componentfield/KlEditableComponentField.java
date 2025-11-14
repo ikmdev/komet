@@ -44,7 +44,10 @@ public class KlEditableComponentField extends BaseDefaultKlField<EntityProxy> {
         node.entityProperty().bindBidirectional(observableComponentFieldEditable.getObservableFeature().editableValueProperty());
 
         // Listen for changes in the control and update the observable field (is this the right way to do this?)
-        node.entityProperty().addListener((observable, oldValue, newValue) -> {
+        observableComponentFieldEditable
+                .getObservableFeature()
+                .editableValueProperty()
+                .addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 observableComponentFieldEditable.setValue(newValue);
             }

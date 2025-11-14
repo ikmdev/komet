@@ -22,7 +22,9 @@ public class KlEditableStringField extends BaseDefaultKlField<String> implements
 
 
         node.textProperty().bindBidirectional(observableStringFieldEditable.editableValueProperty());
-        node.textProperty().addListener((observable, oldValue, newValue) -> {
+        observableStringFieldEditable
+                .editableValueProperty()
+                .addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 observableStringFieldEditable.setValue(newValue);
             }

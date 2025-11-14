@@ -13,7 +13,9 @@ public class KlEditableComponentListFieldFactory {
     public KlField<IntIdList> create(ObservableField<IntIdList> observableField, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
         return new KlEditableComponentListField(observableField, observableView, stamp4field, journalTopic);
     }
-
+    public KlField<IntIdList> create(ObservableField.Editable<IntIdList> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
+        return new KlEditableComponentListField(observableFieldEditable, observableView, stamp4field, journalTopic);
+    }
     public Class<? extends KlField<IntIdList>> getFieldInterface() {
         return null;
     }

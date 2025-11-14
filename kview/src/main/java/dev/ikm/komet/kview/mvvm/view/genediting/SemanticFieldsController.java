@@ -17,6 +17,9 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 
 import dev.ikm.komet.framework.view.ObservableViewWithOverride;
+import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.transaction.Transaction;
@@ -36,9 +39,11 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityBinding;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -56,6 +61,13 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
@@ -149,10 +161,19 @@ public class SemanticFieldsController {
         if (composer != null) {
             return; // Already initialized
         }
-
-        ConceptFacade author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
-        ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
-        ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
+        ConceptFacade author;
+        ConceptFacade module;
+        ConceptFacade path;
+        if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
+            StampFormViewModelBase stampFormViewModel = genEditingViewModel.getPropertyValue(STAMP_VIEW_MODEL);
+            author = stampFormViewModel.getPropertyValue(AUTHOR);
+            module = stampFormViewModel.getPropertyValue(MODULE);
+            path = stampFormViewModel.getPropertyValue(PATH);
+        } else {
+            author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+            module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
+            path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
+        }
 
         composer = ObservableComposer.create(getViewProperties().calculator(),
             State.ACTIVE,
@@ -161,6 +182,10 @@ public class SemanticFieldsController {
             path,
             "Edit Semantic Fields"
         );
+//        // EDIT MODE: Start a transaction for editing (Adding new semantic version).
+//        if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
+//            composer.getOrCreateTransaction();
+//        }
         LOG.info("ObservableComposer initialized for semantic fields editing");
     }
 
@@ -225,13 +250,35 @@ public class SemanticFieldsController {
         // clear all semantic details.
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
-        submitButton.setDisable(true);
+        submitButton.setDisable(false);
         genEditingViewModel.save();
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         reloadPatternNavigator = true;
         ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
         // listen if the semantic property is updated during Create mode.
         semanticProperty.addListener( _ -> setupEditSemanticDetails());
+
+        // Create a transaction and uncommitted semantic when reference component is confirmed.
+        Subscriber<GenEditingEvent> createUncommittedSemanticSubscriber = evt -> {
+            // After confirming stamp and reference component create
+            if (evt.getEventType() == GenEditingEvent.CONFIRM_REFERENCE_COMPONENT) {
+                EntityFacade referencedComponentFacade = genEditingViewModel.getPropertyValue(REF_COMPONENT);
+                EntityFacade patternFacade = genEditingViewModel.getPropertyValue(PATTERN);
+                ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referencedComponentFacade.nid()).expectEntity();
+                ObservablePattern observablePattern = ObservableEntityHandle.get(patternFacade.nid()).expectPattern();
+
+                initializeComposer();
+                semanticEditor = composer.composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
+                editableVersion = semanticEditor.getEditableVersion();
+
+
+                semanticEditor.save(); // Save to create uncommitted version
+                EntityHandle.get(semanticEditor.getEntity().nid()).asSemantic().ifPresent(semanticEntity ->
+                        genEditingViewModel.setPropertyValue(SEMANTIC, semanticEntity));
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                GenEditingEvent.class, createUncommittedSemanticSubscriber);
 
         if (semantic != null && genEditingViewModel.getPropertyValue(MODE) == EDIT) {
             //Change the button name to RESET FORM in EDIT MODE
@@ -283,7 +330,7 @@ public class SemanticFieldsController {
                             new PatternSavedEvent(this, PatternSavedEvent.PATTERN_CREATION_EVENT));
                     reloadPatternNavigator = false;
                 }
-                enableDisableButtons();
+//                enableDisableButtons();
             };
 
             EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
@@ -320,12 +367,10 @@ public class SemanticFieldsController {
     private void loadUIData() {
         nodes.clear();
         editableFields.clear();
-
         if (observableEntitySnapshot == null) {
             return;
         }
-
-        if (!(observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot)) {
+        if (!(observableEntitySnapshot instanceof ObservableSemanticSnapshot)) {
             return;
         }
 
@@ -373,7 +418,7 @@ public class SemanticFieldsController {
         });
 
         //Set the hascode for the committed values.
-        enableDisableButtons();
+//        enableDisableButtons();
         loadVBox();
     }
 
@@ -490,8 +535,6 @@ public class SemanticFieldsController {
             LOG.info("Saved editable semantic version ");
 
             try {
-                Transaction transaction = composer.getOrCreateTransaction();
-
 
                 composer.commit();
                 LOG.info("Committed semantic changes successfully ");
@@ -502,9 +545,9 @@ public class SemanticFieldsController {
                             .getSnapshot(getViewProperties().calculator());
                 }
 
-                // Recalculate committed hash for dirty tracking
+                // Recalculate committed hash for dirty trackingGenEditingEvent
                 processCommittedValues();
-                enableDisableButtons();
+//                enableDisableButtons();
 
                 // Publish event to refresh details area
                 EvtBusFactory.getDefaultEvtBus().publish(
@@ -514,9 +557,14 @@ public class SemanticFieldsController {
 
                 // Show success message
                 String submitMessage = "Semantic Details %s Successfully!"
-                        .formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Editing" : "Added");
+                        .formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Edited" : "Added");
                 toast().withUndoAction(undoActionEvent -> LOG.info("undo called"))
                         .show(Toast.Status.SUCCESS, submitMessage);
+
+                // Cleanup and reset
+                genEditingViewModel.setPropertyValue(MODE, EDIT);
+                composer = null;
+                initializeComposer();
             } catch (Exception e) {
                 LOG.error("Error committing semantic changes", e);
                 Platform.runLater(() -> {

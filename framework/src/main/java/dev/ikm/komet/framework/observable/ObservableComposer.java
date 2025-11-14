@@ -15,6 +15,18 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
+import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
+import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.Nid;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -31,9 +43,11 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.ObservableList;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -616,10 +630,77 @@ public final class ObservableComposer {
         ObservableEntityHandle entityHandle = ObservableEntityHandle.get(publicId);
         if (entityHandle.isAbsent()) {
             return createSemanticBuilder(referencedComponent, pattern).publicId(publicId);
+
+
+//            ObservableSemanticBuilder semanticBuilder = createSemanticBuilder(referencedComponent, pattern).publicId(publicId);
+//
+//            ObservablePattern observablePattern = ObservableEntityHandle.get(pattern.nid()).expectPattern();
+//            ObservablePatternSnapshot observablePatternSnapshot = observablePattern.getSnapshot(viewCalculator);
+//            ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
+//            List<Object> fieldValues = generateDefaultFieldValues(observablePatternVersion);
+//            for(int i = 0; i < fieldValues.size(); i++){
+//                semanticBuilder.setFieldValue(i, fieldValues.get(i));
+//
+////                ObservableField.Editable<?> editableField = editableVersion.getEditableFields().get(i);
+////                // Use setValue() to update via editable field
+////                @SuppressWarnings("unchecked")
+////                ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
+////                uncheckedField.setValue(fieldValues.get(i));
+//            }
+//
+////            PatternEntity patternEntity = EntityHandle.get(pattern.nid()).asPattern().orElseThrow();
+////            patternEntity
+//
+////            return createSemanticBuilder(referencedComponent, pattern).publicId(publicId);
+//            return semanticBuilder;
         }
         ObservableSemantic semantic = entityHandle.asSemantic()
                 .orElseThrow(() -> new IllegalArgumentException("PublicId does not correspond to a semantic"));
         return editSemantic(semantic);
+    }
+
+    /**
+     * Returns a list of field values.
+     * @param patternVersion Pattern Version containing the field definitions
+     * @return Returns a list of default values.
+     * @param <T> T is of type List
+     */
+    public static <T extends List<Object>> T generateDefaultFieldValues(PatternEntityVersion patternVersion) {
+        MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(patternVersion.fieldDefinitions().size());
+        patternVersion.fieldDefinitions().forEach(f -> {
+            if (f.dataTypeNid() == COMPONENT_FIELD.nid()) {
+                fieldsValues.add(BLANK_CONCEPT);
+            } else if (f.dataTypeNid() == STRING_FIELD.nid()
+                    || f.dataTypeNid() == STRING.nid()) {
+                fieldsValues.add("");
+            } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
+                fieldsValues.add(0);
+            } else if (f.dataTypeNid() == FLOAT_FIELD.nid()) {
+                fieldsValues.add(0.0F);
+            } else if (f.dataTypeNid() == BOOLEAN_FIELD.nid()) {
+                fieldsValues.add(false);
+            } else if (f.dataTypeNid() == COMPONENT_ID_LIST_FIELD.nid()) {
+                fieldsValues.add(IntIds.list.empty());
+            } else if (f.dataTypeNid() == COMPONENT_ID_SET_FIELD.nid()) {
+                fieldsValues.add(IntIds.set.empty());
+            } else if (f.dataTypeNid() == IMAGE_FIELD.nid()) {
+                // create empty byte array to save in DB implies blank image
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                byte [] ba = bos.toByteArray();
+                fieldsValues.add(ba);
+            } else if (f.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
+                //TODO: We're using BYTE_ARRAY for the moment for Image data type
+                //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
+                //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
+                // The NULL value will not work since the object requires to be NON-NULL
+                fieldsValues.add(null);
+            } else {
+                // Any unsupported fields will be null value in the list. This will keep things aligned where the ui
+                // controls and values would be the same number.
+                fieldsValues.add(null);
+            }
+        });
+        return (T) fieldsValues;
     }
 
     /**
@@ -738,15 +819,26 @@ public final class ObservableComposer {
      * Creates or retrieves an observable stamp for the current author/module/path/state.
      */
     ObservableStamp createStamp(State state, Entity<?> entity) {
-    StampEntity stampEntity = transaction.getStampForEntities(
-        state,
-        getAuthorNid(),
-        getModuleNid(),
-        getPathNid(),
-        entity  // Pass the entity to ensure canonical stamp
-    );
-    return ObservableEntity.packagePrivateGetStamp(stampEntity);
-}
+//        Optional<EntityVersion> existingUncommitedVersion = entity.versions().stream()
+//                .filter(v -> v.uncommitted()
+//                    && v.state() == state
+//                    && v.stamp().authorNid() == getAuthorNid()
+//                    && v.stamp().moduleNid() == getModuleNid()
+//                    && v.stamp().pathNid() == getPathNid())
+//                .findFirst();
+//        if (existingUncommitedVersion.isPresent()) {
+//            Transaction.forVersion(existingUncommitedVersion.get());
+//        } else {
+//        }
+        StampEntity stampEntity = transaction.getStampForEntities(
+            state,
+            getAuthorNid(),
+            getModuleNid(),
+            getPathNid(),
+            entity  // Pass the entity to ensure canonical stamp
+        );
+        return ObservableEntity.packagePrivateGetStamp(stampEntity);
+    }
 
     /**
      * Tracks an editable version for automatic commit/rollback management.
@@ -1238,8 +1330,12 @@ public final class ObservableComposer {
             Latest<PatternEntityVersion> latestPattern = ObservableComposer.this.viewCalculator.latestPatternEntityVersion(this.pattern);
             latestPattern.ifPresentOrElse(version -> {
                int fieldCount = version.fieldDefinitions().size();
-               Object[] fieldValues = new Object[fieldCount];
-               // Fields are initialized as null - applications MUST set all field values before saving
+//               Object[] fieldValues = new Object[fieldCount];
+                ObservablePattern observablePattern = ObservableEntityHandle.get(pattern.nid()).expectPattern();
+                ObservablePatternSnapshot observablePatternSnapshot = observablePattern.getSnapshot(viewCalculator);
+                ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
+                Object[] fieldValues = generateDefaultFieldValues(observablePatternVersion).toArray();
+               // Fields are NOT initialized as null - applications DO NOT NEED TO set all field values before saving
                // Attempting to save with null fields will throw IllegalArgumentException
                SemanticVersion semanticVersion = new SemanticVersionRecord(semanticRecord, stampEntity.nid(), Lists.immutable.of(fieldValues));
                versions.add(semanticVersion);
@@ -1645,6 +1741,17 @@ public final class ObservableComposer {
         public ObservableSemanticVersion.Editable getEditableVersion() {
             if (editableVersion == null) {
                 ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), semantic.entity());
+
+//                ObservableStamp stamp;
+//                if (semantic.uncommitted() && semantic.versions().size() == 1) {
+//                    stamp = new ObservableStamp(semantic.versions().get(0).stamp());
+//                } else {
+//                    stamp = composer.createStamp(composer.getDefaultState(), semantic.entity());
+//                }
+                if (semantic.versions().isEmpty()) {
+
+                }
+                LOG.info("### SEMANTIC VERSION LIST: {}", semantic.versions());
                 ObservableSemanticVersion latestVersion = semantic.versions().getLast();
                 editableVersion = latestVersion.getEditableVersion(stamp, composer.getOrCreateTransaction());
                 composer.trackEditable(editableVersion);

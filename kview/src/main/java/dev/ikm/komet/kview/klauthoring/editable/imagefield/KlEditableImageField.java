@@ -26,7 +26,6 @@ import java.io.ByteArrayOutputStream;
  */
 public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
 
-    private final Editable<byte[]> editableField;
     private boolean isUpdatingImageControl = false;
     private boolean isUpdatingProperty = false;
 
@@ -47,8 +46,7 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
 
         final KLImageControl node = new KLImageControl();
 
-        super(editableField.getObservableFeature(), observableView, stamp4field, node);
-        this.editableField = editableField;
+        super(editableField, observableView, stamp4field, node);
         node.setTitle(getTitle());
         setupEditableBinding(editableField, node);
     }
@@ -72,7 +70,6 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
             case false -> new KLReadOnlyImageControl();
         };
         super(observableImageField, observableView, stamp4field, node);
-        this.editableField = null;
 
         switch (node) {
             case KLImageControl imageControl -> {
@@ -178,21 +175,5 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
         // Set initial value
         byte[] imageBytes = observableField.value();
         readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(imageBytes));
-    }
-
-    /**
-     * Returns the editable field if using the editable pattern.
-     *
-     * @return the editable field, or null if using legacy pattern
-     */
-    public Editable<byte[]> getEditableField() {
-        return editableField;
-    }
-
-    /**
-     * Returns whether this field is using the editable pattern.
-     */
-    public boolean isUsingEditablePattern() {
-        return editableField != null;
     }
 }

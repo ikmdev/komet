@@ -548,9 +548,11 @@ public class GenEditingDetailsController {
         // Get editable version with cached editing capabilities
         editableVersion = semanticEditor.getEditableVersion();
 
-        // Get the edit stamp for UI generation
-//        currentEditStamp = editableVersion.getEditStamp();
-        currentEditStamp = ObservableEntityHandle.get(semanticEntityVersionLatest.get().stampNid()).expectStamp();
+
+//        if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
+            // In creation mode, use the composer stamp for display
+//            currentEditStamp = editableVersion.getEditStamp();
+//        }
 
         // Get editable fields from the editable version
         editableFields.addAll(editableVersion.getEditableFields());
