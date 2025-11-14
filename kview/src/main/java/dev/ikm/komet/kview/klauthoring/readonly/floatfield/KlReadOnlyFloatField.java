@@ -14,7 +14,7 @@ public class KlReadOnlyFloatField extends BaseDefaultKlField<Float> implements K
     public KlReadOnlyFloatField(ObservableField<Float> observableFloatField, ObservableView observableView, ObservableStamp stamp4field) {
         final KLReadOnlyDataTypeControl node = new KLReadOnlyDataTypeControl<>(Float.class);
         super(observableFloatField, observableView, stamp4field, node);
-        node.valueProperty().bind(observableFloatField.valueProperty());
+        node.valueProperty().bind(observableFloatField.editableValueProperty());
         node.setTitle(getTitle());
     }
 }

@@ -23,9 +23,9 @@ public class KlReadOnlyComponentField extends BaseDefaultKlField<EntityProxy> {
         String title = observableView.calculator().getDescriptionText(fieldDefinition.meaningNid()).orElse("Blank Title");
         node.setTitle(title);
         // value
-        updateControlValue(observableComponentField.valueProperty().get(), node);
+        updateControlValue(observableComponentField.editableValueProperty().get(), node);
         // Listen and update when EntityProxy changes
-        observableComponentField.valueProperty().subscribe(newEntity -> {
+        observableComponentField.editableValueProperty().subscribe(newEntity -> {
             updateControlValue(newEntity, node);
         });
     }

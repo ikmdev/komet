@@ -14,7 +14,7 @@ public class KlReadOnlyIntegerField extends BaseDefaultKlField<Integer> implemen
     public KlReadOnlyIntegerField(ObservableField<Integer> observableIntegerField, ObservableView observableView, ObservableStamp stamp4field) {
         final KLReadOnlyDataTypeControl node = new KLReadOnlyDataTypeControl<>(Integer.class);
         super(observableIntegerField, observableView, stamp4field, node);
-        node.valueProperty().bind(observableIntegerField.valueProperty());
+        node.valueProperty().bind(observableIntegerField.editableValueProperty());
         node.setTitle(getTitle());
     }
 }

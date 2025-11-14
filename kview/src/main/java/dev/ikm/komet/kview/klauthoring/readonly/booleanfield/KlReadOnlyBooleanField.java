@@ -13,7 +13,7 @@ public class KlReadOnlyBooleanField extends BaseDefaultKlField<Boolean> implemen
     public KlReadOnlyBooleanField(ObservableField<Boolean> observableBooleanField, ObservableView observableView, ObservableStamp stamp4field) {
         KLReadOnlyDataTypeControl node = new KLReadOnlyDataTypeControl<>(Boolean.class);
         super(observableBooleanField, observableView, stamp4field, node);
-        node.valueProperty().bind(observableBooleanField.valueProperty());
+        node.valueProperty().bind(observableBooleanField.editableValueProperty());
         node.setTitle(getTitle());
     }
 }

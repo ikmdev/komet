@@ -61,6 +61,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CONFIRM_REFERENCE_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
@@ -261,7 +262,7 @@ public class SemanticFieldsController {
         // Create a transaction and uncommitted semantic when reference component is confirmed.
         Subscriber<GenEditingEvent> createUncommittedSemanticSubscriber = evt -> {
             // After confirming stamp and reference component create
-            if (evt.getEventType() == GenEditingEvent.CONFIRM_REFERENCE_COMPONENT) {
+            if (evt.getEventType() == CONFIRM_REFERENCE_COMPONENT) {
                 EntityFacade referencedComponentFacade = genEditingViewModel.getPropertyValue(REF_COMPONENT);
                 EntityFacade patternFacade = genEditingViewModel.getPropertyValue(PATTERN);
                 ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referencedComponentFacade.nid()).expectEntity();
@@ -551,7 +552,7 @@ public class SemanticFieldsController {
 
                 // Publish event to refresh details area
                 EvtBusFactory.getDefaultEvtBus().publish(
-                        genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
                         new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid())
                 );
 

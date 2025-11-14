@@ -209,7 +209,7 @@ public class GenEditingDetailsController {
     private ObservableComposer composer;
     private ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor;
     private ObservableSemanticVersion.Editable editableVersion;
-    private List<ObservableField.Editable<?>> editableFields = new ArrayList<>();
+    private List<ObservableField.Editable> editableFields = new ArrayList<>();
     private ObservableStamp currentEditStamp;
 
     private final List<Node> nodes = new ArrayList<>();
@@ -405,20 +405,6 @@ public class GenEditingDetailsController {
                 observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
                 // populate the semantic and its observable fields once saved
                 semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
-                // go through each editable field and update its value
-                for(int i=0; i<editableFields.size(); i++) {
-
-//                    editableFields.get(i).
-//                    KLReadOnlyBaseSingleValueControl klReadOnlyBaseControl = (KLReadOnlyBaseSingleValueControl) nodes.get(i);
-//                    klReadOnlyBaseControl.valueProperty().unbind();
-//                    Object fieldValue = evt.getList().get(i);
-//                    Runnable setValue = () -> klReadOnlyBaseControl.setValue(fieldValue);
-//                    if (!Platform.isFxApplicationThread()) {
-//                        Platform.runLater(setValue);
-//                    } else {
-//                        setValue.run();
-//                    }
-                }
             }
             // TODO update identicon and identifier fields.
             EntityFacade finalSemantic = semanticProperty.get();
@@ -451,7 +437,7 @@ public class GenEditingDetailsController {
                         // Update via editable field's cached property
                         @SuppressWarnings("unchecked")
                         ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
-                        Runnable setValue = () -> uncheckedField.setValue(updatedField);
+                        Runnable setValue = () -> uncheckedField.getObservableFeature().editableValueProperty().setValue(updatedField);
                         if (!Platform.isFxApplicationThread()) {
                             Platform.runLater(setValue);
                         } else {
@@ -468,7 +454,7 @@ public class GenEditingDetailsController {
             });
         };
         subscriberList.add(refreshSubscriber);
-        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
     }
 

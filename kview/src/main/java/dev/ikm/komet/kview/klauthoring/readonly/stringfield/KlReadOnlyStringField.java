@@ -13,7 +13,7 @@ public class KlReadOnlyStringField extends BaseDefaultKlField<String> implements
     public KlReadOnlyStringField(ObservableField<String> observableStringField, ObservableView observableView, ObservableStamp stamp4field) {
         final KLReadOnlyDataTypeControl node = new KLReadOnlyDataTypeControl<>(String.class);
         super(observableStringField, observableView, stamp4field, node);
-        node.valueProperty().bind(observableStringField.valueProperty());
+        node.valueProperty().bind(observableStringField.editableValueProperty());
         node.setTitle(getTitle());
     }
 }
