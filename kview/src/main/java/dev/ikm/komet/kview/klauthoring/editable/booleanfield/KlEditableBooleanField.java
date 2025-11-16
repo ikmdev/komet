@@ -8,23 +8,16 @@ import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.version.field.KlBooleanField;
 
 public class KlEditableBooleanField extends BaseDefaultKlField<Boolean> implements KlBooleanField {
-
-    public KlEditableBooleanField(ObservableField<Boolean> observableBooleanField, ObservableView observableView, ObservableStamp stamp4field) {
+    public KlEditableBooleanField(ObservableField.Editable<Boolean> observableBooleanFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         KLBooleanControl node = new KLBooleanControl();
-        super(observableBooleanField, observableView, stamp4field, node);
-        node.valueProperty().bindBidirectional(observableBooleanField.editableValueProperty());
+        super(observableBooleanFieldEditable, observableView, stamp4field, node);
+        node.valueProperty().bindBidirectional(observableBooleanFieldEditable.editableValueProperty());
         node.setTitle(getTitle());
-    }
-    public KlEditableBooleanField(ObservableField.Editable<Boolean> observableBooleanField, ObservableView observableView, ObservableStamp stamp4field) {
-        KLBooleanControl node = new KLBooleanControl();
-        super(observableBooleanField, observableView, stamp4field, node);
-        node.valueProperty().bindBidirectional(observableBooleanField.editableValueProperty());
-        node.setTitle(getTitle());
-        observableBooleanField
+        observableBooleanFieldEditable
                 .editableValueProperty()
-                .addListener((observable, oldValue, newValue) -> {
+                .subscribe(newValue -> {
             if (newValue != null) {
-                observableBooleanField.setValue(newValue);
+                observableBooleanFieldEditable.setValue(newValue);
             }
         });
     }

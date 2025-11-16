@@ -36,8 +36,9 @@ public class KlReadOnlyComponentSetField extends BaseDefaultKlField<IntIdSet> im
         super(observableComponentSetField, observableView, stamp4field, node);
         node.setTitle(getTitle());
 
-        observableComponentSetField.valueProperty().addListener(observable ->
+        observableComponentSetField.editableValueProperty().addListener(observable ->
                 updateReadOnlyIntIdSet(node, observableComponentSetField.editableValueProperty().get(), observableView.calculator()));
+
         updateReadOnlyIntIdSet(node, observableComponentSetField.valueProperty().get(), observableView.calculator());
         Consumer<Integer> itemConsumer= (nid) -> {
             EntityHandle.get(nid).ifConcept(conceptEntity -> {

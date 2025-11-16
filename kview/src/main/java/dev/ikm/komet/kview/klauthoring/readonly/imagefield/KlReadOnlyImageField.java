@@ -21,33 +21,8 @@ import dev.ikm.komet.kview.klfields.KlFieldHelper;
  * is saved and committed via {@link dev.ikm.komet.framework.observable.ObservableComposer}.
  */
 public class KlReadOnlyImageField extends BaseDefaultKlField<byte[]> {
-
-    private final Editable<byte[]> editableField;
     private boolean isUpdatingImageControl = false;
     private boolean isUpdatingProperty = false;
-
-    /**
-     * Constructor using the editable pattern (recommended).
-     * <p>
-     * Provides transaction management, dirty tracking, and cached editing.
-     * Changes do not persist until the editable version is saved and committed.
-     *
-     * @param editableField the editable field from an ObservableSemanticVersion.Editable
-     * @param observableView the view context
-     * @param stamp4field the stamp for UI state determination
-     */
-    public KlReadOnlyImageField(
-            Editable<byte[]> editableField,
-            ObservableView observableView,
-            ObservableStamp stamp4field) {
-
-        final KLReadOnlyImageControl node = new KLReadOnlyImageControl();
-
-        super(editableField.getObservableFeature(), observableView, stamp4field, node);
-        this.editableField = editableField;
-        node.setTitle(getTitle());
-        setupReadOnlyBinding(editableField.getObservableFeature(), node);
-    }
 
     /**
      * Constructor using the legacy pattern (for backward compatibility).
@@ -58,17 +33,15 @@ public class KlReadOnlyImageField extends BaseDefaultKlField<byte[]> {
      * @param observableImageField the observable field
      * @param observableView the view context
      * @param stamp4field the stamp for UI state determination
-     * @deprecated Use {@link #KlReadOnlyImageField(Editable, ObservableView, ObservableStamp)}
-     *             with ObservableField.Editable for transaction management
+     *             with ObservableField.
      */
-    @Deprecated(since = "1.0", forRemoval = false)
     public KlReadOnlyImageField(ObservableField<byte[]> observableImageField, ObservableView observableView, ObservableStamp stamp4field) {
         final KLReadOnlyImageControl node = new KLReadOnlyImageControl();
 
         super(observableImageField, observableView, stamp4field, node);
-        this.editableField = null;
+
         node.setTitle(getTitle());
-        setupReadOnlyBinding(editableField.getObservableFeature(), node);
+        setupReadOnlyBinding(observableImageField, node);
     }
 
     /**
@@ -79,28 +52,13 @@ public class KlReadOnlyImageField extends BaseDefaultKlField<byte[]> {
             KLReadOnlyImageControl readOnlyImageControl) {
 
         // Observable field → Read-only control
-        observableField.valueProperty().subscribe(newByteArray -> {
-            readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(newByteArray));
+        observableField.editableValueProperty().subscribe(newByteArray -> {
+            if (newByteArray != null) {
+                readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(newByteArray));
+            }
         });
-
         // Set initial value
         byte[] imageBytes = observableField.value();
         readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(imageBytes));
-    }
-
-    /**
-     * Returns the editable field if using the editable pattern.
-     *
-     * @return the editable field, or null if using legacy pattern
-     */
-    public Editable<byte[]> getEditableField() {
-        return editableField;
-    }
-
-    /**
-     * Returns whether this field is using the editable pattern.
-     */
-    public boolean isUsingEditablePattern() {
-        return editableField != null;
     }
 }

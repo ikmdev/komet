@@ -4,24 +4,12 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.version.field.KlField;
+import dev.ikm.komet.layout.version.field.KlFieldFactory;
 import dev.ikm.tinkar.common.id.IntIdSet;
 
-public class KlEditableComponentSetFieldFactory {
+public class KlEditableComponentSetFieldFactory implements KlFieldFactory<IntIdSet> {
 
-    /**
-     * Creates a new instance of {@link KlField} associated with the provided observable data
-     * and view context. The method uses the {@link ObservableView} to determine how to display the
-     * field (compute preferred or fully qualified names for components, and similar),
-     * enabling dynamic updates and integrations according to the factory's specifications.
-     *
-     * @param observableField the observable field that holds the data to be represented by the created {@link KlField}.
-     * @param observableView  the observable view that defines the context in which the created {@link KlField} operates.
-     * @param stamp4field        flag to determine if the UI control is editable
-     * @return a new {@link KlField} instance parameterized with the same type as the provided {@link ObservableField}.
-     */
-    public KlField<IntIdSet> create(ObservableField<IntIdSet> observableField, ObservableView observableView, ObservableStamp stamp4field) {
-        return new KlEditableComponentSetField(observableField, observableView, stamp4field);
-    }
+    @Override
     public KlField<IntIdSet> create(ObservableField.Editable<IntIdSet> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         return new KlEditableComponentSetField(observableFieldEditable, observableView, stamp4field);
     }

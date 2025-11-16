@@ -10,11 +10,6 @@ import dev.ikm.komet.layout.version.field.KlFloatField;
 public class KlEditableFloatFieldFactory implements KlFieldFactory<Float> {
 
     @Override
-    public KlField<Float> create(ObservableField<Float> observableField, ObservableView observableView, ObservableStamp stamp4field) {
-        return new KlEditableFloatField(observableField, observableView, stamp4field);
-    }
-
-    @Override
     public KlField<Float> create(ObservableField.Editable<Float> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         return new KlEditableFloatField(observableFieldEditable, observableView, stamp4field);
     }

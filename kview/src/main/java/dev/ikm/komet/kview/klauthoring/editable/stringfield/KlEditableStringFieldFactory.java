@@ -14,16 +14,11 @@ public class KlEditableStringFieldFactory implements KlFieldFactory<String> {
 
     /**
      * Creates an instance of KlEditableStringField.
-     * @param observableField The observable field containing String data
+     * @param observableFieldEditable The observable field containing String data
      * @param observableView The observable view context
      * @param stamp4field The observable stamp providing versioning information
      * @return An instance of KlField<String>
      */
-    @Override
-    public KlField<String> create(ObservableField<String> observableField, ObservableView observableView, ObservableStamp stamp4field) {
-        return new KlEditableStringField(observableField, observableView, stamp4field);
-    }
-
     @Override
     public KlField<String> create(ObservableField.Editable<String> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         return new KlEditableStringField(observableFieldEditable, observableView, stamp4field);

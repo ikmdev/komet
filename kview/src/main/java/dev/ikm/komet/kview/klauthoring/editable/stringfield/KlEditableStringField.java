@@ -10,12 +10,6 @@ import dev.ikm.komet.layout.version.field.KlStringField;
 
 public class KlEditableStringField extends BaseDefaultKlField<String> implements KlStringField {
 
-    public KlEditableStringField(ObservableField<String> observableStringField, ObservableView observableView, ObservableStamp stamp4field) {
-        final KLStringControl node = new KLStringControl();
-        super(observableStringField, observableView, stamp4field, node);
-        node.textProperty().bindBidirectional(observableStringField.editableValueProperty());
-        node.setTitle(getTitle());
-    }
     public KlEditableStringField(ObservableField.Editable<String> observableStringFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         final KLStringControl node = new KLStringControl();
         super(observableStringFieldEditable, observableView, stamp4field, node);
@@ -24,7 +18,7 @@ public class KlEditableStringField extends BaseDefaultKlField<String> implements
         node.textProperty().bindBidirectional(observableStringFieldEditable.editableValueProperty());
         observableStringFieldEditable
                 .editableValueProperty()
-                .addListener((observable, oldValue, newValue) -> {
+                .subscribe(newValue -> {
             if (newValue != null) {
                 observableStringFieldEditable.setValue(newValue);
             }

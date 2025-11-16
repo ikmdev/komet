@@ -5,10 +5,9 @@ import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.tinkar.common.id.IntIdList;
-
 import java.util.*;
 
-public class KlReadOnlyComponentListFieldFactory {
+public class KlReadOnlyComponentListFieldFactory  {
 
     public KlField<IntIdList> create(ObservableField<IntIdList> observableField, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
         return new KlReadOnlyComponentListField(observableField, observableView, stamp4field, journalTopic);

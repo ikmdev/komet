@@ -4,11 +4,12 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.version.field.KlField;
+import dev.ikm.komet.layout.version.field.KlFieldFactory;
 import dev.ikm.tinkar.common.id.IntIdSet;
 
 import java.util.*;
 
-public class KlReadOnlyComponentSetFieldFactory {
+public class KlReadOnlyComponentSetFieldFactory implements KlFieldFactory<IntIdSet> {
 
     /**
      * Creates a new instance of {@link KlField} associated with the provided observable data

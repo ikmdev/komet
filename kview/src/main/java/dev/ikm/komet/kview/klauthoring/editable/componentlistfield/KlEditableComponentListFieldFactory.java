@@ -4,17 +4,14 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.version.field.KlField;
+import dev.ikm.komet.layout.version.field.KlFieldFactory;
 import dev.ikm.tinkar.common.id.IntIdList;
 
-import java.util.*;
+public class KlEditableComponentListFieldFactory implements KlFieldFactory<IntIdList> {
 
-public class KlEditableComponentListFieldFactory {
-
-    public KlField<IntIdList> create(ObservableField<IntIdList> observableField, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
-        return new KlEditableComponentListField(observableField, observableView, stamp4field, journalTopic);
-    }
-    public KlField<IntIdList> create(ObservableField.Editable<IntIdList> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
-        return new KlEditableComponentListField(observableFieldEditable, observableView, stamp4field, journalTopic);
+    @Override
+    public KlField<IntIdList> create(ObservableField.Editable<IntIdList> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        return new KlEditableComponentListField(observableFieldEditable, observableView, stamp4field);
     }
     public Class<? extends KlField<IntIdList>> getFieldInterface() {
         return null;

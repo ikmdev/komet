@@ -5,10 +5,8 @@ import dev.ikm.komet.framework.observable.ObservableField.Editable;
 import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.KLImageControl;
-import dev.ikm.komet.kview.controls.KLReadOnlyImageControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
-import javafx.scene.layout.Region;
 
 import java.io.ByteArrayOutputStream;
 
@@ -52,39 +50,6 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
     }
 
     /**
-     * Constructor using the legacy pattern (for backward compatibility).
-     * <p>
-     * Changes write through immediately to the ObservableField.
-     * Use the editable constructor for better transaction management.
-     *
-     * @param observableImageField the observable field
-     * @param observableView the view context
-     * @param stamp4field the stamp for UI state determination
-     * @deprecated Use {@link #KlEditableImageField(Editable, ObservableView, ObservableStamp)}
-     *             with ObservableField.Editable for transaction management
-     */
-    @Deprecated(since = "1.0", forRemoval = false)
-    public KlEditableImageField(ObservableField<byte[]> observableImageField, ObservableView observableView, ObservableStamp stamp4field) {
-        final Region node = switch (stamp4field.lastVersion().uncommitted()) {
-            case true -> new KLImageControl();
-            case false -> new KLReadOnlyImageControl();
-        };
-        super(observableImageField, observableView, stamp4field, node);
-
-        switch (node) {
-            case KLImageControl imageControl -> {
-                imageControl.setTitle(getTitle());
-                setupLegacyBinding(observableImageField, imageControl);
-            }
-            case KLReadOnlyImageControl readOnlyImageControl -> {
-                readOnlyImageControl.setTitle(getTitle());
-                setupReadOnlyBinding(observableImageField, readOnlyImageControl);
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + node);
-        }
-    }
-
-    /**
      * Sets up bidirectional binding between editable field and image control.
      * Uses the ObservableField.Editable pattern for cached editing.
      */
@@ -119,61 +84,5 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
 
         // Set initial value
         imageControl.setImage(KlFieldHelper.newImageFromByteArray(editableField.getValue()));
-    }
-
-    /**
-     * Sets up bidirectional binding using legacy pattern.
-     * Changes write through immediately to ObservableField via editableValueProperty().
-     * Display reads from the read-only valueProperty().
-     */
-    private void setupLegacyBinding(
-            ObservableField<byte[]> observableField,
-            KLImageControl imageControl) {
-
-        // Observable field (read-only) → Image control
-        observableField.valueProperty().subscribe(newByteArray -> {
-            if (isUpdatingProperty) {
-                return;
-            }
-            isUpdatingImageControl = true;
-            imageControl.setImage(KlFieldHelper.newImageFromByteArray(newByteArray));
-            isUpdatingImageControl = false;
-        });
-
-        // Image control → Observable field (write to editable property, triggers DB write)
-        imageControl.imageProperty().subscribe(() -> {
-            if (isUpdatingImageControl) {
-                return;
-            }
-            isUpdatingProperty = true;
-
-            byte[] newByteArray = imageControl.getImage() == null
-                ? new ByteArrayOutputStream().toByteArray()
-                : KlFieldHelper.newByteArrayFromImage(imageControl.getImage());
-
-            // Write to editableValueProperty which triggers database write
-            observableField.editableValueProperty().set(newByteArray);
-            isUpdatingProperty = false;
-        });
-
-        // Set initial value from read-only property
-        imageControl.setImage(KlFieldHelper.newImageFromByteArray(observableField.value()));
-    }
-
-    /**
-     * Sets up one-way binding for read-only controls.
-     */
-    private void setupReadOnlyBinding(
-            ObservableField<byte[]> observableField,
-            KLReadOnlyImageControl readOnlyImageControl) {
-
-        // Observable field → Read-only control
-        observableField.valueProperty().subscribe(newByteArray -> {
-            readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(newByteArray));
-        });
-
-        // Set initial value
-        byte[] imageBytes = observableField.value();
-        readOnlyImageControl.setValue(KlFieldHelper.newImageFromByteArray(imageBytes));
     }
 }

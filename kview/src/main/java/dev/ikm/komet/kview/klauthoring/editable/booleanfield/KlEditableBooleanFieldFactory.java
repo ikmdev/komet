@@ -8,10 +8,6 @@ import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.komet.layout.version.field.KlFieldFactory;
 
 public class KlEditableBooleanFieldFactory implements KlFieldFactory<Boolean> {
-    @Override
-    public KlField<Boolean> create(ObservableField observableField, ObservableView observableView, ObservableStamp stamp4field) {
-        return new KlEditableBooleanField(observableField, observableView, stamp4field);
-    }
 
     @Override
     public KlField<Boolean> create(ObservableField.Editable<Boolean> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {

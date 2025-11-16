@@ -9,11 +9,6 @@ import dev.ikm.komet.layout.version.field.KlFieldFactory;
 public class KlEditableImageFieldFactory implements KlFieldFactory<byte[]> {
 
     @Override
-    public KlField<byte[]> create(ObservableField<byte[]> observableField, ObservableView observableView, ObservableStamp stamp4field) {
-        return new KlEditableImageField(observableField, observableView, stamp4field);
-    }
-
-    @Override
     public KlField<byte[]> create(ObservableField.Editable<byte[]> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         return new KlEditableImageField(observableFieldEditable, observableView, stamp4field);
     }
