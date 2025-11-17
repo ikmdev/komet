@@ -18,6 +18,14 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.KL_ADDITIONAL_SECTIO
 public class SectionModel {
     private static final Logger LOG = LoggerFactory.getLogger(SectionModel.class);
 
+    public static final String UNTITLED_SECTION_NAME = "Untitled";
+
+    /*******************************************************************************
+     *                                                                             *
+     * Public API                                                                  *
+     *                                                                             *
+     ******************************************************************************/
+
     public static List<SectionModel> load(KometPreferences editorWindowPreferences, ViewCalculator viewCalculator) {
         List<SectionModel> sectionModels = new ArrayList<>();
 
@@ -42,15 +50,6 @@ public class SectionModel {
     }
 
     public void save(KometPreferences editorWindowPreferences) {
-        String sectionName = getName();
-
-        List<String> sections = editorWindowPreferences.getList(KL_ADDITIONAL_SECTIONS);
-        if (!sections.contains(sectionName)) {
-            sections.add(sectionName);
-        }
-
-        editorWindowPreferences.putList(KL_ADDITIONAL_SECTIONS, sections);
-
         saveSectionDetails(editorWindowPreferences);
 
         try {
@@ -82,7 +81,7 @@ public class SectionModel {
      ******************************************************************************/
 
     // -- name
-    private final StringProperty name = new SimpleStringProperty("Untitled");
+    private final StringProperty name = new SimpleStringProperty(UNTITLED_SECTION_NAME);
     public String getName() { return name.get(); }
     public StringProperty nameProperty() { return name; }
     public void setName(String name) { this.name.set(name);}

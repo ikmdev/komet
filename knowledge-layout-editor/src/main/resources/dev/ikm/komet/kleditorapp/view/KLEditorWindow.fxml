@@ -134,9 +134,7 @@
             <StackPane prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
          </center>
       </BorderPane>
-       <VBox fx:id="sectionContainer" VBox.vgrow="ALWAYS">
-           <SectionViewControl name="Section 1" fx:id="mainSectionView" VBox.vgrow="ALWAYS"/>
-       </VBox>
+      <VBox fx:id="sectionContainer" VBox.vgrow="ALWAYS" />
       <Button mnemonicParsing="false" styleClass="add-section" onAction="#onAddSectionAction" text="ADD SECTION">
          <graphic>
             <Region>

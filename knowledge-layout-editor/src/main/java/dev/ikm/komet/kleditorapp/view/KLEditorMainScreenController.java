@@ -89,6 +89,10 @@ public class KLEditorMainScreenController {
         KLToastManager.initParent(klEditorMainContainer);
     }
 
+    public void shutdown() {
+        klEditorWindowController.shutdown();
+    }
+
     private void initPatternsList(ViewCalculator viewCalculator) {
         patterns = FXCollections.observableArrayList();
         PrimitiveData.get().forEachPatternNid(patternNid -> {
@@ -124,10 +128,6 @@ public class KLEditorMainScreenController {
         windowModel.setTitle(windowTitle);
 
         windowModel.load(klEditorAppPreferences, viewCalculator);
-    }
-
-    @FXML
-    public void initialize() {
     }
 
     @FXML

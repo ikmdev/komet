@@ -13,6 +13,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class KLEditorWindowController {
 
@@ -30,11 +31,6 @@ public class KLEditorWindowController {
     private final HashMap<SectionViewControl, SectionModel> sectionViewToModel = new HashMap<>();
     private final HashMap<SectionModel, SectionViewControl> sectionModelToView = new HashMap<>();
 
-    private int currentSectionCount = 1;
-
-    public void initialize() {
-    }
-
     public void init(ViewCalculator viewCalculator) {
         this.viewCalculator = viewCalculator;
 
@@ -43,7 +39,7 @@ public class KLEditorWindowController {
 
         setupMainSection(windowModel);
 
-        windowModel.getAditionalSections().addListener(this::onAdditionalSectionsChanged);
+        windowModel.getAdditionalSections().addListener(this::onAdditionalSectionsChanged);
     }
 
     /**
@@ -54,13 +50,7 @@ public class KLEditorWindowController {
     private void setupMainSection(WindowModel windowModel) {
         SectionModel mainSection = windowModel.getMainSection();
 
-        mainSectionView.nameProperty().bindBidirectional(mainSection.nameProperty());
-        mainSectionView.setTagText("Section 1");
-
-        sectionViewToModel.put(mainSectionView, mainSection);
-        sectionModelToView.put(mainSection, mainSectionView);
-
-        setupDragAndDrop(mainSectionView);
+        addSectionView(mainSection);
     }
 
 
@@ -68,35 +58,44 @@ public class KLEditorWindowController {
         while (change.next()) {
             if (change.wasAdded()) {
                 for (SectionModel sectionModel : change.getAddedSubList()) {
-                    SectionViewControl sectionViewControl = new SectionViewControl();
-                    sectionViewControl.nameProperty().bind(sectionModel.nameProperty());
-                    sectionViewControl.tagTextProperty().bind(sectionModel.tagTextProperty());
-
-                    sectionViewToModel.put(sectionViewControl, sectionModel);
-                    sectionModelToView.put(sectionModel, sectionViewControl);
-
-                    setupDragAndDrop(sectionViewControl);
-
-                    VBox.setVgrow(sectionViewControl, Priority.ALWAYS);
-                    sectionContainer.getChildren().add(sectionViewControl);
+                    addSectionView(sectionModel);
+                    addPatternViews(sectionModel, sectionModel.getPatterns());
                 }
             }
         }
+    }
 
+    private void addSectionView(SectionModel sectionModel) {
+        SectionViewControl sectionViewControl = new SectionViewControl();
+
+        sectionViewControl.nameProperty().bind(sectionModel.nameProperty());
+        sectionViewControl.tagTextProperty().bind(sectionModel.tagTextProperty());
+
+        sectionViewToModel.put(sectionViewControl, sectionModel);
+        sectionModelToView.put(sectionModel, sectionViewControl);
+
+        setupDragAndDrop(sectionViewControl);
+
+        VBox.setVgrow(sectionViewControl, Priority.ALWAYS);
+        sectionContainer.getChildren().add(sectionViewControl);
     }
 
     private void onSectionPatternsChanged(SectionModel sectionModel, ListChangeListener.Change<? extends PatternModel> change) {
         while(change.next()) {
             if (change.wasAdded()) {
-                for (PatternModel patternModel : change.getAddedSubList()) {
-                    PatternViewControl patternViewControl = new PatternViewControl();
-                    patternViewControl.titleProperty().bind(patternModel.titleProperty());
-                    Bindings.bindContent(patternViewControl.getFields(), patternModel.getFields());
-
-                    SectionViewControl sectionViewControl = sectionModelToView.get(sectionModel);
-                    sectionViewControl.getItems().add(patternViewControl);
-                }
+                addPatternViews(sectionModel, change.getAddedSubList());
             }
+        }
+    }
+
+    private void addPatternViews(SectionModel sectionModel, List<? extends PatternModel> patternModels) {
+        for (PatternModel patternModel : patternModels) {
+            PatternViewControl patternViewControl = new PatternViewControl();
+            patternViewControl.titleProperty().bind(patternModel.titleProperty());
+            Bindings.bindContent(patternViewControl.getFields(), patternModel.getFields());
+
+            SectionViewControl sectionViewControl = sectionModelToView.get(sectionModel);
+            sectionViewControl.getItems().add(patternViewControl);
         }
     }
 
@@ -118,11 +117,11 @@ public class KLEditorWindowController {
     @FXML
     private void onAddSectionAction(ActionEvent actionEvent) {
         WindowModel windowModel = WindowModel.instance();
-
         SectionModel sectionModel = new SectionModel();
-        sectionModel.setTagText("Section " + ++currentSectionCount);
-        sectionModel.setName("Untitled");
+        windowModel.getAdditionalSections().add(sectionModel);
+    }
 
-        windowModel.getAditionalSections().add(sectionModel);
+    public void shutdown() {
+        WindowModel.instance().reset();
     }
 }

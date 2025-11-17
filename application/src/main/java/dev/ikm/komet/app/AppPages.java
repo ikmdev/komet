@@ -392,6 +392,7 @@ public class AppPages {
         klEditorWindowStage.setMaximized(true);
 
         klEditorWindowStage.setOnHidden(windowEvent -> {
+            klEditorMainScreenController.shutdown();
 //            app.saveJournalWindowsToPreferences();
 //            journalController.shutdown();
 //            app.journalControllersList.remove(journalController);
