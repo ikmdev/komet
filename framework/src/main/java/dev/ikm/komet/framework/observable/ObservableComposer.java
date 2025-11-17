@@ -16,6 +16,7 @@
 package dev.ikm.komet.framework.observable;
 
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import static dev.ikm.tinkar.common.service.PrimitiveData.SCOPED_PATTERN_PUBLICID_FOR_NID;
 import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
@@ -26,10 +27,13 @@ import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
+
+import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.Nid;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.component.SemanticVersion;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -591,6 +595,10 @@ public final class ObservableComposer {
         requireJavaFXThread();
         ensureTransaction();
         Objects.requireNonNull(publicId, "publicId cannot be null");
+        // Ensure we generate a nid using the Concept's Pattern public ID.
+        // Required for the RocksDB approach
+        ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, Binding.Concept.pattern().publicId())
+                .call(() -> PrimitiveData.nid(publicId));
 
         ObservableEntityHandle entityHandle = ObservableEntityHandle.get(publicId);
         if (entityHandle.isAbsent()) {
@@ -626,33 +634,17 @@ public final class ObservableComposer {
         requireJavaFXThread();
         ensureTransaction();
         Objects.requireNonNull(publicId, "publicId cannot be null");
+        Objects.requireNonNull(referencedComponent, "referencedComponent cannot be null");
+        Objects.requireNonNull(pattern, "pattern cannot be null");
+
+        // Ensure we generate a semantic nid using the pattern public ID.
+        // Required for the RocksDB approach
+        ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, pattern.publicId())
+                    .call(() -> PrimitiveData.nid(publicId));
 
         ObservableEntityHandle entityHandle = ObservableEntityHandle.get(publicId);
         if (entityHandle.isAbsent()) {
             return createSemanticBuilder(referencedComponent, pattern).publicId(publicId);
-
-
-//            ObservableSemanticBuilder semanticBuilder = createSemanticBuilder(referencedComponent, pattern).publicId(publicId);
-//
-//            ObservablePattern observablePattern = ObservableEntityHandle.get(pattern.nid()).expectPattern();
-//            ObservablePatternSnapshot observablePatternSnapshot = observablePattern.getSnapshot(viewCalculator);
-//            ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
-//            List<Object> fieldValues = generateDefaultFieldValues(observablePatternVersion);
-//            for(int i = 0; i < fieldValues.size(); i++){
-//                semanticBuilder.setFieldValue(i, fieldValues.get(i));
-//
-////                ObservableField.Editable<?> editableField = editableVersion.getEditableFields().get(i);
-////                // Use setValue() to update via editable field
-////                @SuppressWarnings("unchecked")
-////                ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
-////                uncheckedField.setValue(fieldValues.get(i));
-//            }
-//
-////            PatternEntity patternEntity = EntityHandle.get(pattern.nid()).asPattern().orElseThrow();
-////            patternEntity
-//
-////            return createSemanticBuilder(referencedComponent, pattern).publicId(publicId);
-//            return semanticBuilder;
         }
         ObservableSemantic semantic = entityHandle.asSemantic()
                 .orElseThrow(() -> new IllegalArgumentException("PublicId does not correspond to a semantic"));
@@ -725,6 +717,10 @@ public final class ObservableComposer {
         requireJavaFXThread();
         ensureTransaction();
         Objects.requireNonNull(publicId, "publicId cannot be null");
+        // Ensure we generate a nid using the Pattern's Pattern public ID.
+        // Required for the RocksDB approach
+        ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, Binding.Pattern.pattern().publicId())
+                    .call(() -> PrimitiveData.nid(publicId));
 
         ObservableEntityHandle entityHandle = ObservableEntityHandle.get(publicId);
         if (entityHandle.isAbsent()) {
@@ -1120,6 +1116,8 @@ public final class ObservableComposer {
                 // Generate PublicId if not provided
                 if (publicId == null) {
                     publicId = PublicIds.newRandom();
+                    ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Concept.pattern())
+                            .call(() -> PrimitiveData.nid(publicId));
                 }
 
                 // Create the stamp first
@@ -1157,6 +1155,8 @@ public final class ObservableComposer {
          */
         public ObservableConceptBuilder publicId(PublicId publicId) {
             this.publicId = publicId;
+            ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Concept.pattern())
+                    .call(() -> PrimitiveData.nid(publicId));
             return this;
         }
 
@@ -1295,6 +1295,10 @@ public final class ObservableComposer {
                 // Generate publicId if not provided
                 if (publicId == null) {
                     publicId = PublicIds.newRandom();
+                    // Ensure we generate a nid using the Pattern's Pattern public ID.
+                    // Required for the RocksDB approach
+                    ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, this.pattern)
+                            .call(() -> PrimitiveData.nid(publicId));
                 }
 
                 // Create the stamp first
@@ -1352,6 +1356,11 @@ public final class ObservableComposer {
          */
         public ObservableSemanticBuilder publicId(PublicId publicId) {
             this.publicId = publicId;
+            // Ensure we generate a nid using the Pattern's Pattern public ID.
+            // Required for the RocksDB approach
+            ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, pattern)
+                    .call(() -> PrimitiveData.nid(publicId));
+
             return this;
         }
 
@@ -1443,6 +1452,8 @@ public final class ObservableComposer {
          */
         public ObservablePatternBuilder publicId(PublicId publicId) {
             this.publicId = publicId;
+            ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Pattern.pattern())
+                    .call(() -> PrimitiveData.nid(publicId));
             return this;
         }
 
@@ -1459,6 +1470,8 @@ public final class ObservableComposer {
                 // Generate publicId if not provided
                 if (publicId == null) {
                     publicId = PublicIds.newRandom();
+                    ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Pattern.pattern())
+                            .call(() -> PrimitiveData.nid(publicId));
                 }
 
                 // Create the stamp first (in-memory)
