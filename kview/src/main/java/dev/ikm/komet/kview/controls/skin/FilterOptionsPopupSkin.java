@@ -538,6 +538,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                                 .map(LangFilterTitledPane::getOrdinal)
                                 .findFirst()
                                 .ifPresent(i -> {
+                                    currentFilterOptionsProperty.get().removeLanguageCoordinates(i);
                                     updateLangPanes(pane -> {
                                         if (pane.getOrdinal() > i) {
                                             pane.setOrdinal(pane.getOrdinal() - 1);
