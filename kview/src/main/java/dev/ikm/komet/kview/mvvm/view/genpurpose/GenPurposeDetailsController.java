@@ -34,6 +34,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
+import javafx.geometry.NodeOrientation;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
@@ -59,6 +60,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_ADDITIONAL_SECTIONS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_MAIN_SECTION;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_LIST;
 
@@ -67,7 +69,7 @@ public class GenPurposeDetailsController {
     private static final Logger LOG = LoggerFactory.getLogger(GenPurposeDetailsController.class);
 
     @FXML
-    private VBox mainSectionContent;
+    private VBox mainContent;
 
     @FXML
     private BorderPane detailsOuterBorderPane;
@@ -102,9 +104,6 @@ public class GenPurposeDetailsController {
     StampViewControl stampViewControl;
 
     @FXML
-    private TitledPane mainSectionTitledPane;
-
-    @FXML
     private Button savePatternButton;
 
     @FXML
@@ -123,8 +122,6 @@ public class GenPurposeDetailsController {
 
     private final Tooltip publishTooltip = new Tooltip();
     private ViewProperties viewProperties;
-
-    public GenPurposeDetailsController() {}
 
     @FXML
     private void initialize() {
@@ -277,7 +274,8 @@ public class GenPurposeDetailsController {
     }
 
     @FXML
-    private void saveConceptKL(ActionEvent actionEvent) { }
+    private void saveConceptKL(ActionEvent actionEvent) {
+    }
 
     private void setupTooltipForDisabledButton(Button button) {
 
@@ -345,7 +343,10 @@ public class GenPurposeDetailsController {
         Optional<String> mainSectionName = editorWindowPreferences.get(KL_MAIN_SECTION);
         mainSectionName.ifPresentOrElse(sectionName -> {
 
-            mainSectionTitledPane.setText(sectionName);
+            TitledPane mainTitledPane = createTitledPane(sectionName);
+            VBox content = new VBox();
+            mainTitledPane.setContent(content);
+
             final KometPreferences sectionPreferences = editorWindowPreferences.node(sectionName);
 
             List<PatternFacade> patternFacades = sectionPreferences.getPatternList(PATTERN_LIST);
@@ -353,7 +354,7 @@ public class GenPurposeDetailsController {
             for (PatternFacade patternFacade : patternFacades) {
 
                 Label patternTitle = new Label(patternFacade.description());
-                mainSectionContent.getChildren().add(patternTitle);
+                content.getChildren().add(patternTitle);
 
                 // -- add fields if they exist
                 Entity<EntityVersion> entity = EntityService.get().getEntityFast(patternFacade);
@@ -367,13 +368,66 @@ public class GenPurposeDetailsController {
                     fieldDefinitionRecords.stream().forEachOrdered(fieldDefinitionForEntity -> {
                         String fieldMeaning = fieldDefinitionForEntity.meaning().description();
                         Label fieldLabel = new Label("     Field " + i + ": " + fieldMeaning);
-                        mainSectionContent.getChildren().add(fieldLabel);
+                        content.getChildren().add(fieldLabel);
                         i.incrementAndGet();
                     });
                 });
             }
+            mainContent.getChildren().add(mainTitledPane);
+
+
         }, () -> {
             throw new RuntimeException("Can't load section (main section) from preferences");
         });
+
+
+        List<String> additionalSections = editorWindowPreferences.getList(KL_ADDITIONAL_SECTIONS);
+
+        for (String additionalSection : additionalSections) {
+            TitledPane titledPane = createTitledPane(additionalSection);
+            VBox content = new VBox();
+            titledPane.setContent(content);
+
+            final KometPreferences sectionPreferences = editorWindowPreferences.node(additionalSection);
+
+            List<PatternFacade> patternFacades = sectionPreferences.getPatternList(PATTERN_LIST);
+
+            for (PatternFacade patternFacade : patternFacades) {
+
+                Label patternTitle = new Label(patternFacade.description());
+                content.getChildren().add(patternTitle);
+
+                // -- add fields if they exist
+                Entity<EntityVersion> entity = EntityService.get().getEntityFast(patternFacade);
+                Latest<EntityVersion> optionalLatest = viewCalculator.latest(entity);
+
+                AtomicInteger i = new AtomicInteger(1);
+                optionalLatest.ifPresent(latest -> {
+                    PatternVersionRecord patternVersionRecord = (PatternVersionRecord) latest;
+                    ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = patternVersionRecord.fieldDefinitions();
+
+                    fieldDefinitionRecords.stream().forEachOrdered(fieldDefinitionForEntity -> {
+                        String fieldMeaning = fieldDefinitionForEntity.meaning().description();
+                        Label fieldLabel = new Label("     Field " + i + ": " + fieldMeaning);
+                        content.getChildren().add(fieldLabel);
+                        i.incrementAndGet();
+                    });
+                });
+            }
+            mainContent.getChildren().add(titledPane);
+        }
+    }
+
+    private TitledPane createTitledPane(String title) {
+        TitledPane titledPane = new TitledPane();
+        titledPane.setText(title);
+
+        titledPane.setMaxHeight(Double.MAX_VALUE);
+        titledPane.setMaxWidth(Double.MAX_VALUE);
+
+        titledPane.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
+        titledPane.getStyleClass().add("pattern-titled-pane");
+
+        return titledPane;
     }
 }
