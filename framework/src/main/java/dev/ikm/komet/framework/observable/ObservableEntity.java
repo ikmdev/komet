@@ -617,6 +617,15 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
         return packagePrivateGet(nid);
     }
 
+    /**
+     * Retrieves the entity associated with this {@code ObservableEntity}.
+     *
+     * This method accesses the entity reference field and retrieves the associated
+     * entity. It provides a way for subclasses or other components within the
+     * package to obtain the primary entity linked to this {@code ObservableEntity}.
+     *
+     * @return the entity associated with this {@code ObservableEntity}, or null if the entity reference is not set
+     */
     protected Entity<?> entity() {
         return entityReference.get();
     }

@@ -36,6 +36,18 @@ public final class ObservablePattern
         return new ObservablePatternVersion(this, (PatternVersionRecord) version);
     }
 
+    /**
+     * Retrieves the associated {@code PatternRecord} entity for the {@code ObservablePattern}.
+     *
+     * This method casts the result of the parent class's {@link ObservableEntity#entity()} method
+     * to a {@code PatternRecord}, providing the specific type of entity associated with this
+     * {@code ObservablePattern}.
+     *
+     * @return the {@code PatternRecord} instance associated with this {@code ObservablePattern}
+     */
+    public PatternRecord entity() {
+        return (PatternRecord) super.entity();
+    }
     @Override
     public ObservablePatternSnapshot getSnapshot(ViewCalculator calculator) {
         return new ObservablePatternSnapshot(calculator, this);

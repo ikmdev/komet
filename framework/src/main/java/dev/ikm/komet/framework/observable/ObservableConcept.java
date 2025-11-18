@@ -16,9 +16,7 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.ConceptVersionRecord;
-import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.*;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyProperty;
 import org.eclipse.collections.api.list.MutableList;
@@ -33,6 +31,20 @@ public final class ObservableConcept
     @Override
     protected ObservableConceptVersion wrap(EntityVersion version) {
         return new ObservableConceptVersion(this, (ConceptVersionRecord) version);
+    }
+
+
+    /**
+     * Retrieves the {@code ConceptRecord} associated with this {@code ObservableConcept}.
+     *
+     * This method overrides the {@code entity} method in the superclass to provide
+     * the specific {@code ConceptRecord} type associated with this {@code ObservableConcept}.
+     * It allows access to the detailed record containing concept-specific information.
+     *
+     * @return the {@code ConceptRecord} associated with this {@code ObservableConcept}
+     */
+    public ConceptRecord entity() {
+        return (ConceptRecord) super.entity();
     }
 
     @Override

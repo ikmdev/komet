@@ -41,6 +41,15 @@ public final class ObservableSemantic
         return new ObservableSemanticVersion(this, (SemanticVersionRecord) version);
     }
 
+    /**
+     * Retrieves the {@link SemanticRecord} associated with this {@code ObservableSemantic} instance.
+     *
+     * @return the {@link SemanticRecord} representation of the observable semantic.
+     */
+    public SemanticRecord entity() {
+        return (SemanticRecord) super.entity();
+    }
+
     @Override
     public ObservableSemanticSnapshot getSnapshot(ViewCalculator calculator) {
         return new ObservableSemanticSnapshot(calculator, this);

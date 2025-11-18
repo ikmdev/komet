@@ -35,6 +35,17 @@ public final class ObservableStamp
         return new ObservableStampVersion(this, (StampVersionRecord) version);
     }
 
+    /**
+     * Retrieves the {@link StampRecord} entity associated with this observable stamp.
+     * This method casts the entity retrieved from the superclass as a {@link StampRecord}.
+     *
+     * @return the {@link StampRecord} entity associated with this observable stamp.
+     */
+    public StampRecord entity() {
+        return (StampRecord) super.entity();
+    }
+
+
     @Override
     public ObservableStampSnapshot getSnapshot(ViewCalculator calculator) {
         return new ObservableStampSnapshot(calculator, this);
