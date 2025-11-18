@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.mvvm.viewmodel.stamp;
 import dev.ikm.komet.framework.observable.ObservableConcept;
 import dev.ikm.komet.framework.property.TypedProperty;
 import dev.ikm.tinkar.component.Stamp;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.State;
 
 import java.util.List;
@@ -175,8 +176,8 @@ public final class StampProperties {
      * Represents the user or system that created this entity version.
      * Always an {@link ObservableConcept} representing the author.
      */
-    public static final TypedProperty<ObservableConcept> AUTHOR =
-            (TypedProperty<ObservableConcept>) Keys.AUTHOR.property();
+    public static final TypedProperty<ConceptEntity<?>> AUTHOR =
+            (TypedProperty<ConceptEntity<?>>) Keys.AUTHOR.property();
 
     /**
      * The module component of the STAMP - organizational context.
@@ -184,8 +185,8 @@ public final class StampProperties {
      * Represents the module or organizational unit responsible for this change.
      * Always an {@link ObservableConcept} that is a descendant of TinkarTerm.MODULE.
      */
-    public static final TypedProperty<ObservableConcept> MODULE =
-            (TypedProperty<ObservableConcept>) Keys.MODULE.property();
+    public static final TypedProperty<ConceptEntity<?>> MODULE =
+            (TypedProperty<ConceptEntity<?>>) Keys.MODULE.property();
 
     /**
      * The path component of the STAMP - development/classification context.
@@ -193,8 +194,8 @@ public final class StampProperties {
      * Represents the development path or classification branch for this change.
      * Always an {@link ObservableConcept} that is a descendant of TinkarTerm.PATH.
      */
-    public static final TypedProperty<ObservableConcept> PATH =
-            (TypedProperty<ObservableConcept>) Keys.PATH.property();
+    public static final TypedProperty<ConceptEntity<?>> PATH =
+            (TypedProperty<ConceptEntity<?>>) Keys.PATH.property();
 
     /**
      * The time component of the STAMP - when the change was made.

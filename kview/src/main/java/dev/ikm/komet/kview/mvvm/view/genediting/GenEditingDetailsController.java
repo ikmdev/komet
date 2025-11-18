@@ -44,10 +44,7 @@ import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.PatternFacade;
-import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
@@ -465,8 +462,8 @@ public class GenEditingDetailsController {
             ObservablePatternSnapshot observablePatternSnapshot = observablePattern.getSnapshot(getViewProperties().calculator());
             ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
             PatternEntityVersion patternEntityVersion = observablePatternVersion.getVersionRecord();
-            String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No Description");
-            String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No Description");
+            String meaning = languageCalculator.getDescriptionText(patternEntityVersion.semanticMeaningNid()).orElse("No description for meaning");
+            String purpose = languageCalculator.getDescriptionText(patternEntityVersion.semanticPurposeNid()).orElse("No description for purpose");
             semanticMeaningText.setText(meaning);
             semanticPurposeText.setText(purpose);
             String patternFQN = getViewProperties().calculator().languageCalculator()
@@ -474,10 +471,12 @@ public class GenEditingDetailsController {
             semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
 
             ObjectProperty<EntityFacade> refComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
-            if(refComponentProp != null){
+            if (refComponentProp != null) {
                 EntityFacade refComponent = refComponentProp.get();
-                if(refComponent != null) {
-                    String refComponentTitle = getViewProperties().calculator().languageCalculator().getDescriptionText(refComponent.nid()).get();
+                if (refComponent != null) {
+                    String refComponentTitle = getViewProperties().calculator().languageCalculator()
+                            .getDescriptionText(refComponent.nid())
+                            .orElse("No description for referenced component " + refComponent.publicId());
                     //TODO in the future we can internationalize the word "in" (and other labels and text) for the preferred language
                     semanticTitleText.setText(refComponentTitle + " in " + patternFQN);
                 }
@@ -649,7 +648,14 @@ public class GenEditingDetailsController {
 
         //Disable the  edit the Reference Component of an existing semantic once submitted
         Consumer<EntityFacade> updateRefComponentInfo = (refComponent2) -> {
-            Entity<? extends EntityVersion> entity = EntityHandle.getConceptOrThrow(refComponent2);
+            Entity<? extends EntityVersion> entity = switch (refComponent) {
+                case null -> null;
+                case SemanticFacade semanticFacade -> EntityHandle.getSemanticOrThrow(semanticFacade);
+                case ConceptFacade conceptFacade -> EntityHandle.getConceptOrThrow(conceptFacade);
+                case PatternFacade patternFacade -> EntityHandle.getPatternOrThrow(patternFacade);
+                default -> throw new IllegalStateException("Stamps can't be editable referenced components: " + refComponent);
+            };
+
             // update items
 
             String refType = "Unknown";
@@ -667,6 +673,10 @@ public class GenEditingDetailsController {
                 }
                 case PatternEntity ignored -> {
                     refType= "Pattern";
+                    description = refComponent2.description();
+                }
+                case null -> {
+                    refType = "Unknown";
                     description = refComponent2.description();
                 }
                 default ->  {

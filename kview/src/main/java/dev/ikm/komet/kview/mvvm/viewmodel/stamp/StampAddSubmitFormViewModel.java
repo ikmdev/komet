@@ -18,8 +18,8 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
 
     protected void showSucessToast() {
         State status = getValue(STATUS);
-        ObservableConcept module = StampProperties.MODULE.getFrom(this);
-        ObservableConcept path = StampProperties.PATH.getFrom(this);
+        ConceptEntity<?> module = StampProperties.MODULE.getFrom(this);
+        ConceptEntity<?> path = StampProperties.PATH.getFrom(this);
 
         String statusString = getViewProperties().calculator().getDescriptionTextOrNid(status.nid());
         String moduleString = getViewProperties().calculator().getDescriptionTextOrNid(module.nid());
@@ -46,9 +46,9 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
 
         // -----------  Get type-safe canonical observable entities from properties ------------
         State status = getValue(STATUS);
-        ObservableConcept module = StampProperties.MODULE.getFrom(this);
-        ObservableConcept path = StampProperties.PATH.getFrom(this);
-        ObservableConcept author = StampProperties.AUTHOR.getFrom(this);
+        ConceptEntity<?> module = StampProperties.MODULE.getFrom(this);
+        ConceptEntity<?> path = StampProperties.PATH.getFrom(this);
+        ConceptEntity<?> author = StampProperties.AUTHOR.getFrom(this);
 
         // -----------  Create ObservableComposer for STAMP management --------------
         ObservableComposer composer = ObservableComposer.create(
