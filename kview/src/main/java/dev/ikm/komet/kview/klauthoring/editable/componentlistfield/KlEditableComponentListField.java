@@ -9,8 +9,6 @@ import dev.ikm.komet.kview.controls.KLComponentCollectionControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.version.field.KlComponentListField;
 import dev.ikm.tinkar.common.id.IntIdList;
-import java.util.*;
-import java.util.function.*;
 
 /**
  * Component list field implementation supporting both read-only and editable patterns.
@@ -33,36 +31,43 @@ public class KlEditableComponentListField extends BaseDefaultKlField<IntIdList> 
      * Provides transaction management, dirty tracking, and cached editing.
      * Changes do not persist until the editable version is saved and committed.
      *
-     * @param editableField the editable field from an ObservableSemanticVersion.Editable
+     * @param observableFieldEditable the editable field from an ObservableSemanticVersion.Editable
      * @param observableView the view context
      * @param stamp4field the stamp for UI state determination
      */
     public KlEditableComponentListField(
-            Editable<IntIdList> editableField,
+            Editable<IntIdList> observableFieldEditable,
             ObservableView observableView,
             ObservableStamp stamp4field) {
 
         KLComponentCollectionControl node = createTypeAheadComponentListControl(observableView.calculator());
-        super(editableField, observableView, stamp4field, node);
+        super(observableFieldEditable, observableView, stamp4field, node);
         node.setTitle(getTitle());
-        setupEditableBinding(editableField, node);
-    }
-    /**
-     * Sets up bidirectional binding between editable field and component list control.
-     * Uses the ObservableField.Editable pattern for cached editing.
-     */
-    private void setupEditableBinding(
-            Editable<IntIdList> editableField,
-            KLComponentCollectionControl control) {
+        //setupEditableBinding(editableField, node);
+        // bi directionally bind editable UI control to the Editable.editableValueProperty().
+        rebindValueProperty(node.valueProperty(), observableFieldEditable);
 
-        // Bind control to editable field's editable property (cached changes)
-        control.valueProperty().bindBidirectional(editableField.editableValueProperty());
-        editableField
-                .editableValueProperty()
-                .subscribe(newValue -> {
-            if (newValue != null) {
-                editableField.setValue(newValue);
-            }
-        });
+        // set title
+        node.setTitle(getTitle());
+    }
+
+    /**
+     * Unbinds UI control's and the prior ObservableField.Editable. Next, rebinds and updates
+     * properties with new JavaFX subscriptions (change listeners).
+     *
+     * @param newFieldEditable A new ObservableField.Editable instance.
+     */
+    @Override
+    public void rebind(ObservableField.Editable<IntIdList> newFieldEditable) {
+        // Obtain UI control
+        KLComponentCollectionControl uiControl = (KLComponentCollectionControl) fxObject();
+
+        // Unbind both directions editValueProperty <-> uiControl.entityValueProperty
+        // Assign new observable field and unsubscribe all previous subscriptions.
+        // Rebind bi-directionally UI Control <-> editableValueProperty.
+        // Re-add new subscription (change listeners on property changes)
+        // based on fieldEditable().editableValueProperty()
+        // bi directionally bind editable UI control to the Editable.editableValueProperty().
+        rebindValueProperty(uiControl.valueProperty(), newFieldEditable);
     }
 }

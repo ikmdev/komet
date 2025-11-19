@@ -37,7 +37,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPI
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
-import static dev.ikm.tinkar.common.service.PrimitiveData.SCOPED_PATTERN_PUBLICID_FOR_NID;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
@@ -63,9 +62,8 @@ import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
-import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -86,7 +84,10 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -134,12 +135,17 @@ public class SemanticFieldsController {
     private ObservableComposer composer;
     private ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor;
     private ObservableSemanticVersion.Editable editableVersion;
-    private List<ObservableField.Editable<?>> editableFields = new ArrayList<>();
+//    private List<ObservableField.Editable<?>> editableFields = new ArrayList<>();
     private ObservableStamp currentEditStamp;
 
-    private List<Node> nodes = new ArrayList<>();
+    private final List<Node> nodes = new ArrayList<>();
+    private final List<KlField> klFields = new ArrayList<>();
 
     private int committedHash;
+    /**
+     * Flag to indicate if any field has changed. Reset upon submit.
+     */
+    private BooleanProperty readyToEditVersion = new SimpleBooleanProperty(false);
 
     ObservableEntityHandle observableEntityHandle;
 
@@ -149,20 +155,9 @@ public class SemanticFieldsController {
 
     private boolean reloadPatternNavigator;
 
-    /**
-     * Helper method to get ObservableFields from EditableFields for compatibility.
-     */
-    private List<ObservableField<?>> getObservableFields() {
-        List<ObservableField<?>> observableFields = new ArrayList<>();
-        for (ObservableField.Editable<?> editableField : editableFields) {
-            observableFields.add(editableField.getObservableFeature());
-        }
-        return observableFields;
-    }
-
     private void enableDisableButtons() {
         boolean emptyFields = checkForEmptyFields();
-        int uncommittedHash = calculateHashValue(getObservableFields(), getStampCalculator());
+        int uncommittedHash = calculateHashValue(getObservableEditables(), getStampCalculator());
         boolean fieldsHaveNotChanged = committedHash == uncommittedHash;
 
         submitButton.setDisable(emptyFields || fieldsHaveNotChanged);
@@ -231,7 +226,7 @@ public class SemanticFieldsController {
     private boolean checkForEmptyFields() {
         AtomicBoolean invalid = new AtomicBoolean(false);
 
-        for (ObservableField.Editable<?> editableField : editableFields) {
+        for (ObservableField.Editable<?> editableField : getObservableEditables()) {
             ObservableField<?> observableField = editableField.getObservableFeature();
             FeatureDefinition fieldDefinition = observableField.definition(getStampCalculator());
             if (fieldDefinition.dataTypeNid() == IMAGE_FIELD.nid()) {
@@ -275,7 +270,7 @@ public class SemanticFieldsController {
         });
         if (immutableList.get() != null) {
             List<ObservableField<?>> observableFieldsList = new ArrayList<>((Collection) immutableList.get());
-            committedHash = calculateHashValue(observableFieldsList, getStampCalculator());  // and calculate the hashValue for commited data.
+            committedHash = calculateHashValue(getObservableEditables(), getStampCalculator());  // and calculate the hashValue for commited data.
         }
 
     }
@@ -285,7 +280,7 @@ public class SemanticFieldsController {
         // clear all semantic details.
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
-        submitButton.setDisable(false);
+        submitButton.setDisable(true); // disable submit until fields changed.
         genEditingViewModel.save();
         EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
         reloadPatternNavigator = true;
@@ -328,6 +323,14 @@ public class SemanticFieldsController {
                 clearOrResetFormButton.setText("CLEAR FORM");
             }
         });
+
+        readyToEditVersion.set(true); // initial load of fields.
+        // This will reconstitute the editable fields when any field changes.
+        readyToEditVersion.subscribe( (oldVal, changed) -> {
+            if (changed && !oldVal.equals(changed)) {
+                rebindNewEditableVersion();
+            }
+        });
     }
 
     private void setupEditSemanticDetails() {
@@ -352,7 +355,7 @@ public class SemanticFieldsController {
                         && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
                     ImmutableList<Object> values = semanticVersionRecord.fieldValues();
                     for (int i = 0; i< values.size(); i++) {
-                        ObservableField.Editable<?> editableField = editableFields.get(i);
+                        ObservableField.Editable<?> editableField = getKlFields().get(i).fieldEditable();
                         // Update via editable field's cached property
                         @SuppressWarnings("unchecked")
                         ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
@@ -400,8 +403,9 @@ public class SemanticFieldsController {
      * Refactored to use ObservableComposer pattern for proper transaction management.
      */
     private void loadUIData() {
-        nodes.clear();
-        editableFields.clear();
+//        Not sure if the following is needed.
+//        nodes.clear();
+//        editableFields.clear();
         if (observableEntitySnapshot == null) {
             return;
         }
@@ -426,11 +430,13 @@ public class SemanticFieldsController {
             // Get the edit stamp for UI generation
             currentEditStamp = editableVersion.getEditStamp();
 
-            // Get editable fields from the editable version
-            editableFields.addAll(editableVersion.getEditableFields());
-
+//            // Get editable fields from the editable version
+//            // hold KlFields.
+//            editableFields.addAll(editableVersion.getEditableFields());
+            getKlFields().clear();
+            ObservableList<ObservableField.Editable<?>> editables =  editableVersion.getEditableFields();
             // Generate UI nodes from editable fields
-            for (ObservableField.Editable<?> editableField : editableFields) {
+            for (ObservableField.Editable editableField : editables) {
                 if (genEditingViewModel.getPropertyValue(MODE) == CREATE && editableField.getValue() instanceof EntityProxy) {
                     // Set default blank concept for new semantics
                     @SuppressWarnings("unchecked")
@@ -438,16 +444,28 @@ public class SemanticFieldsController {
                     proxyField.setValue(BLANK_CONCEPT);
                 }
 
-                Field<?> field = editableField.field();
+                Field field = editableField.field();
+                KlField<?> klField = createEditableKlField(
+                        (FieldRecord<?>) field,
+                        editableField,
+                        getViewProperties(),
+                        currentEditStamp);
+                // detect changes to rebind fields if the semantic version changes.
+                klField.doOnEditableValuePropertyChange(newValueOpt -> {
+                    //reConstituteEditableFields();
+                    // Do a simple flag to indicate that values have changed.
+                    // if changes reconstituteEditableFields() to be rebound to new version.
+                    // once submit button pressed reset the flag.
+                    submitButton.setDisable(false);
+                    readyToEditVersion.set(true); // indicate changes present. see listeners to change observable version.
+                    System.out.println("readyToEditVersion = %s, Field value changed: %s %n".formatted(readyToEditVersion.get(), newValueOpt.orElse(null)));
+                });
+                getKlFields().add(klField);
                 // Generate node using the underlying ObservableField (read-only view)
-                nodes.add(createEditableKlField(
-                    (FieldRecord<?>) field,
-                    editableField,
-                    getViewProperties(),
-                    currentEditStamp));
+                nodes.add(klField.fxObject());
             }
 
-            LOG.info("Loaded UI with {} editable fields using ObservableComposer", editableFields.size());
+            LOG.info("Loaded UI with {} editable fields using ObservableComposer", getKlFields().size());
         });
 
         //Set the hascode for the committed values.
@@ -455,6 +473,52 @@ public class SemanticFieldsController {
         loadVBox();
     }
 
+    /**
+     * Reconstitutes the editable fields by rebinding them to the current observable semantic version.
+     */
+    private void rebindNewEditableVersion() {
+        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+        this.observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
+        this.observableEntityHandle.ifSemantic(observableSemantic -> {
+            observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+            // Initialize composer if not already done
+            initializeComposer();
+
+            // Create semantic editor using composer unified API
+            // Get referenced component and pattern from the semantic
+            ObservableEntity referencedComponent = ObservableEntityHandle.get(observableSemantic.referencedComponentNid()).expectEntity();
+            ObservablePattern pattern = ObservableEntityHandle.get(observableSemantic.patternNid()).expectPattern();
+            semanticEditor = getObservableComposer().composeSemantic(observableSemantic.publicId(), referencedComponent, pattern);
+
+            // Get editable version with cached editing capabilities
+            editableVersion = semanticEditor.getEditableVersion();
+
+            // Get the edit stamp for UI generation
+            currentEditStamp = editableVersion.getEditStamp();
+
+            // Get editable fields from the editable version
+            // hold KlFields.
+            ObservableList<ObservableField.Editable<?>> editables =  editableVersion.getEditableFields();
+            // Generate UI nodes from editable fields
+            for (int i = 0; i < getKlFields().size(); i++) {
+                // Rebind each KlField to the new ObservableField.Editable
+                KlField klField = getKlFields().get(i);
+                ObservableField.Editable<?> newEditableField = editables.get(i);
+                klField.rebind(newEditableField);
+                // detect changes to rebind fields if the semantic version changes.
+                klField.doOnEditableValuePropertyChange(newValueOpt -> {
+                    // Do a simple flag to indicate that values have changed.
+                    // if changes reconstituteEditableFields() to be rebound to new version.
+                    // once submit button pressed reset the flag.
+                    submitButton.setDisable(false);
+                    readyToEditVersion.set(true); // indicate changes present. see listeners to change observable version.
+                    System.out.printf("isEditableVersion = %s, Field value changed: %s %n", readyToEditVersion.get(), newValueOpt);
+                });
+            }
+            LOG.info("Reconstituted {} editable fields using ObservableComposer", getKlFields().size());
+        });
+
+    }
     private static Separator createSeparator() {
         Separator separator = new Separator();
         separator.getStyleClass().add("field-separator");
@@ -516,7 +580,7 @@ public class SemanticFieldsController {
                 };
                 ImmutableList<Object> fieldValues = createDefaultFieldValues(patternForEntity, getViewProperties());
                 for (int i = 0; i < fieldValues.size(); i++) {
-                    ObservableField.Editable<?> editableField = editableFields.get(i);
+                    ObservableField.Editable<?> editableField = getKlFields().get(i).fieldEditable();
                     // Use setValue() to update via editable field
                     @SuppressWarnings("unchecked")
                     ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
@@ -524,7 +588,8 @@ public class SemanticFieldsController {
                 }
             });
         } else {
-            editableFields.clear();
+//              not sure if this is needed
+//            editableFields.clear();
         }
     }
 
@@ -536,7 +601,7 @@ public class SemanticFieldsController {
         if (entityVersion instanceof SemanticEntityVersion semanticEntityVersion) {
             for(int i = 0; i < semanticEntityVersion.fieldValues().size(); i++){
                 Object object = semanticEntityVersion.fieldValues().get(i);
-                ObservableField.Editable<?> editableField = editableFields.get(i);
+                ObservableField.Editable<?> editableField = getKlFields().get(i).fieldEditable();
                 // Use setValue() to update via editable field
                 @SuppressWarnings("unchecked")
                 ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
@@ -546,19 +611,33 @@ public class SemanticFieldsController {
     }
 
     /**
+     * Returns KlFields used to rebind {@link ObservableField.Editable} objects.
+     * @return Returns klFields used to rebind {@link ObservableField.Editable} objects.
+     */
+    private List<KlField> getKlFields() {
+        return klFields;
+    }
+    private List<ObservableField.Editable> getObservableEditables() {
+        return getKlFields()
+                .stream()
+                .map(KlField::fieldEditable).toList();
+    }
+    /**
      * Refactored submit using ObservableComposer pattern.
      * Saves editable version and commits the transaction.
      */
     @FXML
     public void submit(ActionEvent actionEvent) {
+        submitButton.setDisable(true);
         cancelButton.requestFocus();
 
         try {
             // Create list of current values for event publishing
-            List<Object> list = new ArrayList<>(editableFields.size());
-            for (ObservableField.Editable<?> editableField : editableFields) {
-                list.add(editableField.getValue());
-            }
+            List<Object> fieldValues = getKlFields()
+                    .stream()
+                    .map(KlField::fieldEditable)
+                    .map(ObservableField.Editable::getValue)
+                    .toList();
 
             // Get the semantic for event publishing
             EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
@@ -585,7 +664,7 @@ public class SemanticFieldsController {
                 // Publish event to refresh details area
                 EvtBusFactory.getDefaultEvtBus().publish(
                         genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new GenEditingEvent(actionEvent.getSource(), PUBLISH, list, semantic.nid())
+                        new GenEditingEvent(actionEvent.getSource(), PUBLISH, fieldValues, semantic.nid())
                 );
 
                 // Show success message
@@ -598,6 +677,7 @@ public class SemanticFieldsController {
                 genEditingViewModel.setPropertyValue(MODE, EDIT);
                 composer = null;
                 initializeComposer();
+                readyToEditVersion.set(false); // reset change flag when user types older listener will trigger rebind.
             } catch (Exception e) {
                 LOG.error("Error committing semantic changes", e);
                 Platform.runLater(() -> {

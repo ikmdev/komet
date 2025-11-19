@@ -8,17 +8,32 @@ import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.version.field.KlBooleanField;
 
 public class KlEditableBooleanField extends BaseDefaultKlField<Boolean> implements KlBooleanField {
-    public KlEditableBooleanField(ObservableField.Editable<Boolean> observableBooleanFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+
+    public KlEditableBooleanField(ObservableField.Editable<Boolean> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         KLBooleanControl node = new KLBooleanControl();
-        super(observableBooleanFieldEditable, observableView, stamp4field, node);
-        node.valueProperty().bindBidirectional(observableBooleanFieldEditable.editableValueProperty());
+        super(observableFieldEditable, observableView, stamp4field, node);
         node.setTitle(getTitle());
-        observableBooleanFieldEditable
-                .editableValueProperty()
-                .subscribe(newValue -> {
-            if (newValue != null) {
-                observableBooleanFieldEditable.setValue(newValue);
-            }
-        });
+
+        // bind bidirectionally the ui control and editableValueProperty.
+        rebindValueProperty(node.valueProperty(), observableFieldEditable);
+    }
+
+    /**
+     * Unbinds UI control's and prior ObservableField.Editable. Next, rebinds and updates
+     * properties with new JavaFX subscriptions (change listeners).
+     * @param newFieldEditable
+     */
+    @Override
+    public void rebind(ObservableField.Editable<Boolean> newFieldEditable) {
+        // Obtain UI control
+        KLBooleanControl uiControl = (KLBooleanControl) fxObject();
+
+        // Unbind both directions editValueProperty <-> uiControl.entityValueProperty
+        // Assign new observable field and unsubscribe all previous subscriptions.
+        // Rebind bi-directionally UI Control <-> editableValueProperty.
+        // Re-add new subscription (change listeners on property changes)
+        // based on fieldEditable().editableValueProperty()
+        // bi directionally bind editable UI control to the Editable.editableValueProperty().
+        rebindValueProperty(uiControl.valueProperty(), newFieldEditable);
     }
 }

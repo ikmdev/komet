@@ -12,31 +12,38 @@ import dev.ikm.tinkar.terms.EntityProxy;
 public class KlEditableComponentField extends BaseDefaultKlField<EntityProxy> {
     /**
      * Constructor for KlEditableComponentField
-     * @param observableComponentFieldEditable observable component editable field
+     * @param observableFieldEditable observable component editable field
      * @param observableView observable view
      * @param stamp4field observable stamp for field
      */
-    public KlEditableComponentField(ObservableField.Editable<EntityProxy> observableComponentFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+    public KlEditableComponentField(ObservableField.Editable<EntityProxy> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         KLComponentControl node = KLComponentControlFactory.createTypeAheadComponentControl(observableView.calculator());
-        super(observableComponentFieldEditable, observableView, stamp4field, node);
+        super(observableFieldEditable, observableView, stamp4field, node);
 
         FeatureDefinition fieldDefinition = field().definition(observableView.calculator());
         // title
         String title = observableView.calculator().getDescriptionText(fieldDefinition.meaningNid()).orElse("Blank Title");
         node.setTitle(title);
 
-        // entity
-        node.entityProperty().bindBidirectional(observableComponentFieldEditable.getObservableFeature().editableValueProperty());
+        // bi directionally bind editable UI control to the Editable.editableValueProperty().
+        rebindValueProperty(node.entityProperty(), observableFieldEditable);
+    }
 
-        // Listen for changes in the control and update the observable field (is this the right way to do this?)
-        observableComponentFieldEditable
-                .getObservableFeature()
-                .editableValueProperty()
-                .subscribe(newValue -> {
-            if (newValue != null) {
-                observableComponentFieldEditable.setValue(newValue);
-            }
-        });
-
+    /**
+     * Unbinds UI control's and prior ObservableField.Editable. Next, rebinds and updates
+     * properties with new JavaFX subscriptions (change listeners).
+     * @param newFieldEditable A new field editable to rebind with an editable UI control.
+     */
+    @Override
+    public void rebind(ObservableField.Editable<EntityProxy> newFieldEditable) {
+        // Obtain UI control
+        KLComponentControl uiControl = (KLComponentControl) fxObject();
+        // Unbind both directions editValueProperty <-> uiControl.entityValueProperty
+        // Assign new observable field and unsubscribe all previous subscriptions.
+        // Rebind bi-directionally UI Control <-> editableValueProperty.
+        // Re-add new subscription (change listeners on property changes)
+        // based on fieldEditable().editableValueProperty()
+        // bi directionally bind editable UI control to the Editable.editableValueProperty().
+        rebindValueProperty(uiControl.entityProperty(), newFieldEditable);
     }
 }

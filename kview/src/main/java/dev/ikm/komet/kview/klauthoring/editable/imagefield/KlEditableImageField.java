@@ -7,6 +7,7 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.KLImageControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import javafx.util.Subscription;
 
 import java.io.ByteArrayOutputStream;
 
@@ -33,32 +34,34 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
      * Provides transaction management, dirty tracking, and cached editing.
      * Changes do not persist until the editable version is saved and committed.
      *
-     * @param editableField the editable field from an ObservableSemanticVersion.Editable
+     * @param observableFieldEditable the editable field from an ObservableSemanticVersion.Editable
      * @param observableView the view context
      * @param stamp4field the stamp for UI state determination
      */
     public KlEditableImageField(
-            Editable<byte[]> editableField,
+            Editable<byte[]> observableFieldEditable,
             ObservableView observableView,
             ObservableStamp stamp4field) {
 
         final KLImageControl node = new KLImageControl();
 
-        super(editableField, observableView, stamp4field, node);
+        super(observableFieldEditable, observableView, stamp4field, node);
         node.setTitle(getTitle());
-        setupEditableBinding(editableField, node);
+
+        rebind(observableFieldEditable);
     }
 
     /**
      * Sets up bidirectional binding between editable field and image control.
      * Uses the ObservableField.Editable pattern for cached editing.
+     * @deprecated Use rebind() method instead.
      */
     private void setupEditableBinding(
             Editable<byte[]> editableField,
             KLImageControl imageControl) {
 
         // Editable field → Image control
-        editableField.editableValueProperty().subscribe(newByteArray -> {
+        Subscription editableSub = editableField.editableValueProperty().subscribe(newByteArray -> {
             if (isUpdatingProperty) {
                 return;
             }
@@ -66,9 +69,10 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
             imageControl.setImage(KlFieldHelper.newImageFromByteArray(newByteArray));
             isUpdatingImageControl = false;
         });
+        getFieldEditableSubscriptions().add(editableSub);
 
         // Image control → Editable field
-        imageControl.imageProperty().subscribe(() -> {
+        Subscription imageSub = imageControl.imageProperty().subscribe(() -> {
             if (isUpdatingImageControl) {
                 return;
             }
@@ -81,8 +85,47 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
             editableField.setValue(newByteArray);
             isUpdatingProperty = false;
         });
+        getFieldEditableSubscriptions().add(imageSub);
 
         // Set initial value
         imageControl.setImage(KlFieldHelper.newImageFromByteArray(editableField.getValue()));
+    }
+
+    @Override
+    public void rebind(ObservableField.Editable<byte[]> newFieldEditable) {
+        KLImageControl imageControl = (KLImageControl) fxObject();
+        // if already the same ignore.
+        replaceObservableFieldEditable(newFieldEditable);
+
+
+        // Add new subscription (change listeners on property changes)
+        // based on fieldEditable().editableValueProperty().
+        doOnEditableValuePropertyChange(newValueOpt ->
+                newValueOpt.ifPresent(newValue -> {
+                    if (isUpdatingProperty) {
+                        return;
+                    }
+                    isUpdatingImageControl = true;
+                    imageControl.setImage(KlFieldHelper.newImageFromByteArray(newValue));
+                    isUpdatingImageControl = false;
+                })
+        );
+        // Image control → Editable field
+        Subscription imageSub = imageControl.imageProperty().subscribe(() -> {
+            if (isUpdatingImageControl) {
+                return;
+            }
+            isUpdatingProperty = true;
+
+            byte[] newByteArray = imageControl.getImage() == null
+                    ? new ByteArrayOutputStream().toByteArray()
+                    : KlFieldHelper.newByteArrayFromImage(imageControl.getImage());
+
+            fieldEditable().setValue(newByteArray);
+            isUpdatingProperty = false;
+        });
+        getFieldEditableSubscriptions().add(imageSub);
+        // Set initial value
+        imageControl.setImage(KlFieldHelper.newImageFromByteArray(newFieldEditable.getValue()));
     }
 }

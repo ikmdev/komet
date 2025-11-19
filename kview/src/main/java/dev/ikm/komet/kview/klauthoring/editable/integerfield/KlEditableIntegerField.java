@@ -9,16 +9,33 @@ import dev.ikm.komet.layout.version.field.KlIntegerField;
 
 public class KlEditableIntegerField extends BaseDefaultKlField<Integer> implements KlIntegerField {
 
-    public KlEditableIntegerField(ObservableField.Editable<Integer> observableIntegerFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+    public KlEditableIntegerField(ObservableField.Editable<Integer> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         final KLIntegerControl node = new KLIntegerControl();
-        super(observableIntegerFieldEditable, observableView, stamp4field, node);
-        node.valueProperty().bindBidirectional(observableIntegerFieldEditable.editableValueProperty());
+        super(observableFieldEditable, observableView, stamp4field, node);
+
+        // bi directionally bind editable UI control to the Editable.editableValueProperty().
+        rebindValueProperty(node.valueProperty(), observableFieldEditable);
+
+        // set title
         node.setTitle(getTitle());
-        observableIntegerFieldEditable.editableValueProperty()
-                .subscribe(newValue -> {
-            if (newValue != null) {
-                observableIntegerFieldEditable.setValue(newValue);
-            }
-        });
+    }
+
+    /**
+     * Unbinds UI control's and the prior ObservableField.Editable. Next, rebinds and updates
+     * properties with new JavaFX subscriptions (change listeners).
+     * @param newFieldEditable A new ObservableField.Editable instance.
+     */
+    @Override
+    public void rebind(ObservableField.Editable<Integer> newFieldEditable) {
+        // Obtain UI control
+        KLIntegerControl uiControl = (KLIntegerControl) fxObject();
+
+        // Unbind both directions editValueProperty <-> uiControl.entityValueProperty
+        // Assign new observable field and unsubscribe all previous subscriptions.
+        // Rebind bi-directionally UI Control <-> editableValueProperty.
+        // Re-add new subscription (change listeners on property changes)
+        // based on fieldEditable().editableValueProperty()
+        // bi directionally bind editable UI control to the Editable.editableValueProperty().
+        rebindValueProperty(uiControl.valueProperty(), newFieldEditable);
     }
 }
