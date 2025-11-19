@@ -100,7 +100,7 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
 
         // Add new subscription (change listeners on property changes)
         // based on fieldEditable().editableValueProperty().
-        doOnEditableValuePropertyChange(newValueOpt ->
+        doOnEditableValuePropertyChange((_, newValueOpt) ->
                 newValueOpt.ifPresent(newValue -> {
                     if (isUpdatingProperty) {
                         return;

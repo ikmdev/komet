@@ -135,7 +135,6 @@ public class SemanticFieldsController {
     private ObservableComposer composer;
     private ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor;
     private ObservableSemanticVersion.Editable editableVersion;
-//    private List<ObservableField.Editable<?>> editableFields = new ArrayList<>();
     private ObservableStamp currentEditStamp;
 
     private final List<Node> nodes = new ArrayList<>();
@@ -314,7 +313,6 @@ public class SemanticFieldsController {
             //Change the button name to RESET FORM in EDIT MODE
             clearOrResetFormButton.setText("RESET FORM");
             setupEditSemanticDetails();
-            submitButton.setDisable(false);
         }
         genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
             if(mode == EDIT){
@@ -345,8 +343,8 @@ public class SemanticFieldsController {
             if (observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot) {
                 observableSemanticSnapshot.getLatestVersion().get().setAuthorForChanges(authorForChanges);
             }
-
-            processCommittedValues();
+              // Not sure this is needed and needs to be revisted
+//            processCommittedValues();
             loadUIData(); // And populates Nodes and Observable fields.
             entityVersionChangeEventSubscriber = evt -> {
                 LOG.info("Version has been updated: " + evt.getEventType());
@@ -403,9 +401,6 @@ public class SemanticFieldsController {
      * Refactored to use ObservableComposer pattern for proper transaction management.
      */
     private void loadUIData() {
-//        Not sure if the following is needed.
-//        nodes.clear();
-//        editableFields.clear();
         if (observableEntitySnapshot == null) {
             return;
         }
@@ -430,10 +425,6 @@ public class SemanticFieldsController {
             // Get the edit stamp for UI generation
             currentEditStamp = editableVersion.getEditStamp();
 
-//            // Get editable fields from the editable version
-//            // hold KlFields.
-//            editableFields.addAll(editableVersion.getEditableFields());
-            getKlFields().clear();
             ObservableList<ObservableField.Editable<?>> editables =  editableVersion.getEditableFields();
             // Generate UI nodes from editable fields
             for (ObservableField.Editable editableField : editables) {
@@ -451,20 +442,18 @@ public class SemanticFieldsController {
                         getViewProperties(),
                         currentEditStamp);
                 // detect changes to rebind fields if the semantic version changes.
-                klField.doOnEditableValuePropertyChange(newValueOpt -> {
-                    //reConstituteEditableFields();
-                    // Do a simple flag to indicate that values have changed.
-                    // if changes reconstituteEditableFields() to be rebound to new version.
-                    // once submit button pressed reset the flag.
+                klField.doOnEditableValuePropertyChange(()-> {
+                    // Enable submit button and set flag to rebind if changes occur.
                     submitButton.setDisable(false);
                     readyToEditVersion.set(true); // indicate changes present. see listeners to change observable version.
-                    System.out.println("readyToEditVersion = %s, Field value changed: %s %n".formatted(readyToEditVersion.get(), newValueOpt.orElse(null)));
+                    LOG.info("readyToEditVersion = {}, submit button disable = {} %n",
+                            readyToEditVersion.get(), submitButton.disableProperty().get());
                 });
                 getKlFields().add(klField);
                 // Generate node using the underlying ObservableField (read-only view)
                 nodes.add(klField.fxObject());
             }
-
+            submitButton.setDisable(true);
             LOG.info("Loaded UI with {} editable fields using ObservableComposer", getKlFields().size());
         });
 
@@ -506,13 +495,12 @@ public class SemanticFieldsController {
                 ObservableField.Editable<?> newEditableField = editables.get(i);
                 klField.rebind(newEditableField);
                 // detect changes to rebind fields if the semantic version changes.
-                klField.doOnEditableValuePropertyChange(newValueOpt -> {
-                    // Do a simple flag to indicate that values have changed.
-                    // if changes reconstituteEditableFields() to be rebound to new version.
-                    // once submit button pressed reset the flag.
+                klField.doOnEditableValuePropertyChange( () -> {
+                    // Enable submit button and set flag to rebind if changes occur.
                     submitButton.setDisable(false);
                     readyToEditVersion.set(true); // indicate changes present. see listeners to change observable version.
-                    System.out.printf("isEditableVersion = %s, Field value changed: %s %n", readyToEditVersion.get(), newValueOpt);
+                    LOG.info("readyToEditVersion = {}, submit button disable = {} %n",
+                            readyToEditVersion.get(), submitButton.disableProperty().get());
                 });
             }
             LOG.info("Reconstituted {} editable fields using ObservableComposer", getKlFields().size());
@@ -657,8 +645,9 @@ public class SemanticFieldsController {
                             .getSnapshot(getViewProperties().calculator());
                 }
 
-                // Recalculate committed hash for dirty trackingGenEditingEvent
-                processCommittedValues();
+                // TODO: The following needs to be revisited.
+//                 Recalculate committed hash for dirty trackingGenEditingEvent
+//                processCommittedValues();
 //                enableDisableButtons();
 
                 // Publish event to refresh details area

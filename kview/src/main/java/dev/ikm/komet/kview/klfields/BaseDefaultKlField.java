@@ -141,15 +141,35 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
         }
     }
 
-    /**
-     * A convenience method to perform an action when the fieldEditable().editableValueProperty() is changed.
-     * A JavaFX Subscription is added to a list to be later unsubscribed.
-     * @param newValueConsumer - Callers code block to perform action on change.
-     * @return A Subscription or change listener when field value changes.
-     */
+//    /**
+//     * A convenience method to perform an action when the fieldEditable().editableValueProperty() is changed.
+//     * A JavaFX Subscription is added to a list to be later unsubscribed.
+//     * Warning: According to JavaFX docs, when using subscribe
+//     * with the Consumer parameter, the listener is invoked. Other subscribe methods are also available won't invoke
+//     * listeners (BiConsumer and Runnable do not get invoked initially) .
+//     * @param newValueConsumer - Callers code block to perform action on change.
+//     * @return A Subscription or change listener when field value changes.
+//     */
+//    @Override
+//    public Subscription doOnEditableValuePropertyChange(Consumer<Optional<T>> newValueConsumer) {
+//        Subscription subscription = KlField.super.doOnEditableValuePropertyChange(newValueConsumer);
+//        // Add to list of subscriptions.
+//        getFieldEditableSubscriptions().add(subscription);
+//        return subscription;
+//    }
+
     @Override
-    public Subscription doOnEditableValuePropertyChange(Consumer<Optional<T>> newValueConsumer) {
-        Subscription subscription = KlField.super.doOnEditableValuePropertyChange(newValueConsumer);
+    public Subscription doOnEditableValuePropertyChange(BiConsumer<Optional<T>, Optional<T>> changeValueConsumer) {
+        Subscription subscription = KlField.super.doOnEditableValuePropertyChange(changeValueConsumer);
+
+        // Add to list of subscriptions.
+        getFieldEditableSubscriptions().add(subscription);
+        return subscription;
+    }
+
+    @Override
+    public Subscription doOnEditableValuePropertyChange(Runnable codeBlock) {
+        Subscription subscription = KlField.super.doOnEditableValuePropertyChange(codeBlock);
 
         // Add to list of subscriptions.
         getFieldEditableSubscriptions().add(subscription);
@@ -188,7 +208,7 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
 
         // Add new subscription (change listeners on property changes)
         // based on fieldEditable().editableValueProperty().
-        doOnEditableValuePropertyChange(newValueOpt ->
+        doOnEditableValuePropertyChange((_, newValueOpt) ->
                 newValueOpt.ifPresent(newValue ->
                         fieldEditable().setValue(newValue)));
     }

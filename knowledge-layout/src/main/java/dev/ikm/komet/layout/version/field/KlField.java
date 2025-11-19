@@ -29,17 +29,55 @@ public non-sealed interface KlField<DT> extends KlArea, ClassConceptBinding {
 
     /**
      * A convenience method to perform an action when the fieldEditable().editableValueProperty() is changed.
-     * A JavaFX Subscription returned for later to be unsubscribed.
-     * @param newValueConsumer - Callers code block to perform action on change.
+     * A JavaFX Subscription is added to a list to be later unsubscribed.
+     * It is an equivalent method to perform action on change with old and new values of the editable value property.
+     * {@snippet :
+     *   Subscription subscription = fieldEditable()
+     *                 .editableValueProperty()
+     *                 .subscribe( (oldValue, newValue) -> {
+     *                   // Callers code block to perform action on change.
+     *                 });
+     * }
+     *
+     * When rebinding occurs the Subscription can be unsubscribed and reapplied to a new ObservableField.Editable instance.
+     *
+     * Tech Note: According to JavaFX docs, when using subscribe with the single Consumer parameter, the listener will
+     * be invoked initially. The other subscribe() methods (BiConsumer and Runnable) available will not invoke the
+     * listeners initially.
+     *
+     * Here is a summary of the behaviors when using the different subscribe() methods:
+     * <ul>
+     *   <li>Consumer will invoke handler code initially. Creates a Change Listener.</li>
+     *   <li>BiConsumer will not invoke handler code. Creates a Change Listener.</li>
+     *   <li>Runnable will not invoke handler code. Creates an Invalidation Listener.</li>
+     * </ul>
+     * Invalidation listeners are more lightweight than Change Listeners, but they do not provide old and new values.
+     * Choose the appropriate listener type based on your requirements.
+     *
+     * @param changeValueConsumer - Callers code block to perform action on change.
+     *
      * @return A Subscription or change listener when field value changes.
      */
-    default Subscription doOnEditableValuePropertyChange(Consumer<Optional<DT>> newValueConsumer) {
+    default Subscription doOnEditableValuePropertyChange(BiConsumer<Optional<DT>, Optional<DT>> changeValueConsumer) {
         Subscription subscription = fieldEditable()
                 .editableValueProperty()
-                .subscribe( newValue ->
-                        newValueConsumer.accept(Optional.ofNullable(newValue)));
+                .subscribe( (oldValue, newValue) ->
+                        changeValueConsumer.accept(Optional.ofNullable(oldValue), Optional.ofNullable(newValue)));
         return subscription;
     }
+
+    /**
+     * A convenience method to perform an action when the fieldEditable().editableValueProperty() is changed.
+     * @param codeBlock - Callers code block to perform action on change.
+     * @return A Subscription or change listener when field value changes.
+     */
+    default Subscription doOnEditableValuePropertyChange(Runnable codeBlock) {
+        Subscription subscription = fieldEditable()
+                .editableValueProperty()
+                .subscribe(codeBlock);
+        return subscription;
+    }
+
     /**
      * This method throws an UnsupportedOperationException if it is not overridden by a Kl Editable type control.
      * A derived class should implement/override the method to allow editable UI Controls to be able to unbind
