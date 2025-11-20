@@ -87,6 +87,10 @@
             <artifactId>executor</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>knowledge-layout-editor</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${tinkar-core.groupId}</groupId>
             <artifactId>entity</artifactId>
         </dependency>

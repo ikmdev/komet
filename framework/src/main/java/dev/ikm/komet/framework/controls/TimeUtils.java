@@ -29,6 +29,10 @@ public class TimeUtils {
             .withLocale(Locale.getDefault())
             .withZone(ZoneId.systemDefault());
 
+    private final static DateTimeFormatter SHORT_DATE_TIME_FORMATTER = DateTimeFormatter
+            .ofPattern("dd-MM-yyyy")
+            .withLocale(Locale.getDefault())
+            .withZone(ZoneId.systemDefault());
     /**
      * utility method to give a readable phrase to a last edited timestamp
      * @param pastTime
@@ -64,12 +68,28 @@ public class TimeUtils {
      * Converts a date represented using a long to a human readable String.
      *
      * @param stampTime the time represented as long
-     * @return a human readable String
+     * @return a human-readable String
      */
     public static String toDateString(long stampTime) {
         if (!(stampTime == PREMUNDANE_TIME)) {
             Instant stampInstance = Instant.ofEpochSecond(stampTime / 1000);
             return DATE_TIME_FORMATTER.format(stampInstance);
+        } else {
+            return PREMUNDANE;
+        }
+    }
+
+    /**
+     * Converts a date represented using a long to a human readable String.
+     * The date returned is in a short String.
+     *
+     * @param stampTime the time represented as long
+     * @return a human-readable String
+     */
+    public static String toShortDateString(long stampTime) {
+        if (!(stampTime == PREMUNDANE_TIME)) {
+            Instant stampInstance = Instant.ofEpochSecond(stampTime / 1000);
+            return SHORT_DATE_TIME_FORMATTER.format(stampInstance);
         } else {
             return PREMUNDANE;
         }

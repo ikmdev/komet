@@ -45,6 +45,33 @@ public enum CssFile {
             "dev.ikm.komet.kview",
             "dev/ikm/komet/kview/mvvm/view/",
             Paths.get("kview", "src", "main", "resources")
+    ),
+
+    /*************  KL Editor CSS Files  **********/
+    KLEDITOR_CSS(
+            "kl-editor.css",
+            "dev.ikm.komet.kleditorapp",
+            "dev/ikm/komet/kleditorapp/view/",
+            Paths.get("knowledge-layout-editor", "src", "main", "resources")
+    ),
+
+    KLCORE_CSS(
+            "kl-core.css",
+                    "dev.ikm.komet.kleditorapp",
+                    "dev/ikm/komet/kleditorapp/view/",
+            Paths.get("knowledge-layout-editor", "src", "main", "resources")
+    ),
+    KLEDITOR_WINDOW_CSS(
+            "kl-editor-window.css",
+            "dev.ikm.komet.kleditorapp",
+            "dev/ikm/komet/kleditorapp/view/",
+            Paths.get("knowledge-layout-editor", "src", "main", "resources")
+    ),
+
+    ICONS("icons.css",
+          "dev.ikm.komet.kleditorapp",
+          "dev/ikm/komet/kleditorapp/view/",
+          Paths.get("knowledge-layout-editor", "src", "main", "resources")
     );
 
     /**
