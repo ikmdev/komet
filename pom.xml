@@ -5,13 +5,13 @@
     <parent>
         <groupId>dev.ikm.build</groupId>
         <artifactId>java-parent</artifactId>
-        <version>1.64.0</version>
+        <version>1.69.0</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
     <name>KOMET</name>
-    <version>1.58.0-SNAPSHOT</version>
+    <version>1.58.0-miin-fix-SNAPSHOT</version>
     <packaging>pom</packaging>
     <inceptionYear>2015</inceptionYear>
     <licenses>
@@ -66,7 +66,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.10.0</tinkar-composer.version>
-        <tinkar-core.version>1.125.0</tinkar-core.version>
+        <tinkar-core.version>1.126.1-SNAPSHOT</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -84,6 +84,8 @@
         <jpro-platform.version>0.5.7</jpro-platform.version>
 
         <!-- TestFX Variables -->
+        <!-- TODO: duplicate for tinkar-starter-? -->
+        <tinkar-starter-data.version>1.1.2</tinkar-starter-data.version>
         <tinkar-starter-data-reasoned.version>1.0.0</tinkar-starter-data-reasoned.version>
         <testfx.version>4.0.18-jpms</testfx.version>
         <openjfx-monocle.version>21.0.2-jpms</openjfx-monocle.version>
@@ -252,6 +254,12 @@
                 <groupId>${tinkar-core.groupId}</groupId>
                 <artifactId>entity-provider</artifactId>
                 <version>${tinkar-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${tinkar-core.groupId}</groupId>
+                <artifactId>integration</artifactId>
+                <version>${tinkar-core.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>${tinkar-core.groupId}</groupId>
@@ -667,6 +675,27 @@
                     <artifactId>jpro-maven-plugin</artifactId>
                     <version>${jpro.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <additionalOptions>
+                            <additionalOption>--enable-preview</additionalOption>
+                        </additionalOptions>
+                        <additionalJOptions>
+                            <additionalJOption>--enable-preview</additionalJOption>
+                        </additionalJOptions>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -680,6 +709,7 @@
                     <release>${java.version}</release>
                     <compilerArgs>
                         <arg>-parameters</arg>
+                        <arg>--enable-preview</arg>
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <annotationProcessorPath>
@@ -722,6 +752,7 @@
                                         <include>**/*ITestFX.java</include>
                                     </includes>
                                     <argLine>
+                                        --enable-preview
                                         ${commonTestFXArgs}
                                     </argLine>
                                     <forkCount>1</forkCount>
@@ -767,6 +798,7 @@
                                         <include>**/*UTestFX.java</include>
                                     </includes>
                                     <argLine>
+                                        --enable-preview
                                         ${commonTestFXArgs}
                                     </argLine>
                                 </configuration>

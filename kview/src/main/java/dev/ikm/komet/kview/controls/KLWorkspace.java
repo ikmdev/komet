@@ -146,9 +146,7 @@ public class KLWorkspace extends Control {
     // Horizontal gap
     // -----------------------------------------------------------------------------------------
 
-    /**
-     * A property representing the horizontal gap between windows.
-     */
+    /* A property representing the horizontal gap between windows. */
     private DoubleProperty horizontalGap;
 
     /**
@@ -201,9 +199,7 @@ public class KLWorkspace extends Control {
     // Vertical gap
     // -----------------------------------------------------------------------------------------
 
-    /**
-     * A property representing the vertical gap between windows.
-     */
+    /* A property representing the vertical gap between windows. */
     private DoubleProperty verticalGap;
 
     /**
@@ -256,9 +252,7 @@ public class KLWorkspace extends Control {
     // Windows property
     // -----------------------------------------------------------------------------------------
 
-    /**
-     * A property that holds the list of windows in the workspace.
-     */
+    /* A property that holds the list of windows in the workspace. */
     private ObjectProperty<ObservableList<ChapterKlWindow<Pane>>> windows;
 
     /**

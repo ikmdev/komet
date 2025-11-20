@@ -21,11 +21,7 @@ import static dev.ikm.komet.framework.StyleClasses.EDIT_COMPONENT_BUTTON;
 import static dev.ikm.komet.framework.StyleClasses.STAMP_LABEL;
 import dev.ikm.komet.framework.PseudoClasses;
 import dev.ikm.komet.framework.graphics.Icon;
-import dev.ikm.komet.framework.observable.ObservableConceptVersion;
-import dev.ikm.komet.framework.observable.ObservablePatternVersion;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
-import dev.ikm.komet.framework.observable.ObservableStampVersion;
-import dev.ikm.komet.framework.observable.ObservableVersion;
+import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.performance.Measures;
 import dev.ikm.komet.framework.performance.Topic;
 import dev.ikm.komet.framework.performance.impl.ObservationRecord;
@@ -67,7 +63,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.concurrent.Future;
 
-public abstract class ComponentVersionIsFinalPanel<OV extends ObservableVersion> {
+public abstract class ComponentVersionIsFinalPanel<OV extends ObservableEntityVersion> {
 	private static final Logger LOG = LoggerFactory.getLogger(ComponentVersionIsFinalPanel.class);
 	protected final BorderPane versionDetailsPane = new BorderPane();
 	protected final TitledPane collapsiblePane = new TitledPane("version", versionDetailsPane);
@@ -225,7 +221,7 @@ public abstract class ComponentVersionIsFinalPanel<OV extends ObservableVersion>
 	private static void surrogateTransactionForCommit(ObservableVersion version) {
 		LOG.warn("No transaction for version: " + version + ". Will create surrogate for commit. ");
 		Transaction transaction = Transaction.make("Surrogate to commit missing transaction");
-		transaction.addComponent(version.entity());
+		transaction.addComponent(version.getVersionRecord().entity());
 		commitTransactionTask(transaction);
 	}
 
@@ -256,7 +252,7 @@ public abstract class ComponentVersionIsFinalPanel<OV extends ObservableVersion>
 	private static void createSurrogateTransactionToCancel(ObservableVersion version) {
 		LOG.warn("No transaction for version: " + version + ". Will create surrogate. ");
 		Transaction transaction = Transaction.make("Surrogate to cancel missing transaction");
-		transaction.addComponent(version.entity());
+		transaction.addComponent(version.getVersionRecord().entity());
 		cancelTransactionTask(transaction);
 	}
 

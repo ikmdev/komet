@@ -6,6 +6,7 @@ import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
+import dev.ikm.tinkar.component.FieldDefinition;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculatorWithCache;
@@ -14,6 +15,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculatorWithCache;
 import dev.ikm.tinkar.entity.*;
 import javafx.application.Platform;
+import org.apache.maven.surefire.shared.compress.harmony.pack200.AttributeDefinitionBands;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
@@ -79,7 +81,7 @@ public class GenericEditingTest {
                         PatternEntityVersion patternEntityVersion = patternEntityVersionLatest.get();
                         fieldRecords = fieldRecords(semanticEntityVersion, patternEntityVersion);
                         String semanticDetails = semanticDetails(semanticEntityVersion, patternEntityVersion);
-                        String semanticFieldsDetails = semanticFieldsDetails(fieldRecords);
+                        String semanticFieldsDetails = semanticFieldsDetails(fieldRecords, stampCalculator);
                         System.out.println(semanticDetails);
                         System.out.println(semanticFieldsDetails);
                     }
@@ -106,12 +108,14 @@ public class GenericEditingTest {
                 .toString();
     }
 
-    private static String semanticFieldsDetails(List<FieldRecord<Object>> fieldRecords) {
+    private static String semanticFieldsDetails(List<FieldRecord<Object>> fieldRecords, StampCalculator stampCalculator) {
         StringBuilder sb = new StringBuilder();
-        fieldRecords.forEach(fieldRecord ->
-                sb.append("---Field Detail---").append("\n")
-                        .append(text(fieldRecord.meaningNid())).append(": ").append(fieldRecord.value().toString()).append("\n")
-                        .append("Hover Over: ").append(text(fieldRecord.purposeNid())).append("\n\n")
+        fieldRecords.forEach(fieldRecord -> {
+            FieldDefinition definition = fieldRecord.fieldDefinition(stampCalculator);
+            sb.append("---Field Detail---").append("\n")
+                    .append(text(definition.meaningNid())).append(": ").append(fieldRecord.value().toString()).append("\n")
+                    .append("Hover Over: ").append(text(definition.purposeNid())).append("\n\n");
+                }
         );
         return sb.toString();
     }
@@ -124,7 +128,8 @@ public class GenericEditingTest {
                     semanticEntityVersion.fieldValues().get(i),
                     semanticEntityVersion.nid(),
                     semanticEntityVersion.stampNid(),
-                    fieldDefinitionForEntities.get(i))
+                    fieldDefinitionForEntities.get(i).patternNid(),
+                    fieldDefinitionForEntities.get(i).indexInPattern())
             );
         }
         return fieldRecords;
