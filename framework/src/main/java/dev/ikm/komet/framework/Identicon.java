@@ -18,19 +18,37 @@ package dev.ikm.komet.framework;
 import com.sparrowwallet.toucan.LifeHash;
 import com.sparrowwallet.toucan.LifeHashVersion;
 import dev.ikm.tinkar.common.id.PublicId;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import javafx.scene.image.PixelReader;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
-public class Identicon {
-    /*
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+public class Identicon {
+    
+    // Limit concurrency to avoid CPU thrashing during rapid scrolling
+    private static final ExecutorService generationExecutor = Executors.newFixedThreadPool(
+            Math.max(2, Runtime.getRuntime().availableProcessors() - 1), 
+            r -> {
+                Thread t = new Thread(r);
+                t.setDaemon(true);
+                t.setName("Identicon-Generator");
+                return t;
+            }
+    );
+
+    /*
     https://github.com/bryc/code/wiki/Identicons
 
     https://barro.github.io/2018/02/avatars-identicons-and-hash-visualization/
@@ -56,14 +74,6 @@ public class Identicon {
         Image identicon = generateIdenticonImage(publicId);
 
         ImageView finalImageView = new ImageView(identicon);
-        //Scale image to the size you want
-        double width = identicon.getWidth();
-        double height = identicon.getHeight();
-
-//        Affine at = new Affine();
-//        Scale scale = at.scale(image_width / width, image_height / height);
-//        finalImageView.getTransforms().add(scale);
-
         finalImageView.setFitWidth(image_width);
         finalImageView.setFitHeight(image_height);
 
@@ -71,50 +81,50 @@ public class Identicon {
     }
 
     /**
-     * Generates an identicon based on a publicID using the Lifehash algorithm.
-     *
-     * @param publicId the public id which would be the basis for generating the identicon. Different public ids will generate different identicons.
-     * @return the generated Identicon image.
+     * Generates an identicon asynchronously using a bounded thread pool. 
+     * Returns a placeholder WritableImage immediately.
      */
     public static Image generateIdenticonImage(PublicId publicId) {
-        return generateIdenticonImageLifeHash(publicId, LifeHashVersion.VERSION2);
-    }
+         // 1. Target size for the progressive image
+         int size = 128; 
+         
+         // 2. Create a transparent placeholder
+         WritableImage progressiveImage = new WritableImage(size, size);
+         
+         // 3. Run generation in our bounded pool
+         CompletableFuture.runAsync(() -> {
+             // Generate the full data (heavy CPU work)
+             Image result = generateIdenticonImageLifeHash(publicId, LifeHashVersion.VERSION2);
+             
+             int w = (int) result.getWidth();
+             int h = (int) result.getHeight();
 
-    private static Image generateIdenticonImageOldVersion(PublicId publicId) {
-        int width = 5;
-        int height = 5;
+             // Prepare a buffer for the target 128x128 image
+             int[] scaledPixels = new int[size * size];
 
-        int publicIdHash = publicId.publicIdHash();
-        int redHash = (byte) Math.abs((byte) (publicIdHash >> 24));
-        int greenHash = (byte) Math.abs((byte) (publicIdHash >> 16));
-        int blueHash = (byte) Math.abs((byte) (publicIdHash >> 8));
-        byte[] hash2 = new byte[]{(byte) Math.abs((byte) (publicIdHash >> 24)),
-                (byte) Math.abs((byte) (publicIdHash >> 16)),
-                (byte) Math.abs((byte) (publicIdHash >> 8))};
-        redHash = redHash < 0 ? (byte) redHash & 0xff : redHash;
-        greenHash = greenHash < 0 ? (byte) greenHash & 0xff : greenHash;
-        blueHash = blueHash < 0 ? (byte) blueHash & 0xff : blueHash;
+             // Perform simple Nearest-Neighbor scaling in the background
+             PixelReader reader = result.getPixelReader();
+             // Reading all pixels at once is faster than getArgb in a loop if possible, 
+             // but for simplicity and robustness with arbitrary Image types, we scan:
+             for (int y = 0; y < size; y++) {
+                 int sourceY = Math.min(y * h / size, h - 1);
+                 for (int x = 0; x < size; x++) {
+                     int sourceX = Math.min(x * w / size, w - 1);
+                     scaledPixels[y * size + x] = reader.getArgb(sourceX, sourceY);
+                 }
+             }
 
-        WritableImage identicon = new WritableImage(width, height);
-        PixelWriter raster = identicon.getPixelWriter();
-
-        Color background = Color.rgb(255, 255, 255, 0);
-        Color foreground = Color.rgb(redHash, greenHash, blueHash, 1);
-
-        for (int x = 0; x < width; x++) {
-            //Enforce horizontal symmetry
-            int i = x < 3 ? x : 4 - x;
-            for (int y = 0; y < height; y++) {
-                Color pixelColor;
-                //toggle pixels based on bit being on/off
-                if ((hash2[i] >> y & 1) == 1)
-                    pixelColor = foreground;
-                else
-                    pixelColor = background;
-                raster.setColor(x, y, pixelColor);
-            }
-        }
-        return identicon;
+             // 4. Update the placeholder on UI thread with the FULLY SCALED image
+             Platform.runLater(() -> {
+                 progressiveImage.getPixelWriter().setPixels(
+                     0, 0, size, size,
+                     PixelFormat.getIntArgbInstance(),
+                     scaledPixels, 0, size
+                 );
+             });
+         }, generationExecutor); 
+         
+         return progressiveImage;
     }
 
     /**
@@ -146,213 +156,4 @@ public class Identicon {
         }
         return writableImage;
     }
-
-    // use 10 x 10 squares...
-
-    Shape shape1(double x, double y, Color fill) {
-        Rectangle rectangle = new Rectangle(x, y, 10, 5);
-        rectangle.setFill(fill);
-        rectangle.setStroke(Color.BLACK);
-        return rectangle;
-    }
-
-    Shape shape2(double x, double y, Color fill) {
-        Rectangle rectangle = new Rectangle(x, y, 10, 10);
-        rectangle.setFill(fill);
-        rectangle.setStroke(Color.BLACK);
-        return rectangle;
-    }
-
-    Shape shape3(double x, double y, Color fill) {
-        Polygon polygon = new Polygon();
-        polygon.setFill(fill);
-        polygon.setStroke(Color.BLACK);
-        polygon.getPoints().addAll(new Double[]{
-                x + 0.0, y + 0.0,
-                x + 10.0, y + 10.0,
-                x + 10.0, y + 0.0,
-                x + 0.0, y + 0.0,
-        });
-        return polygon;
-    }
-
-    Shape shape4(double x, double y, Color fill) {
-        Polygon polygon = new Polygon();
-        polygon.setFill(fill);
-        polygon.setStroke(Color.BLACK);
-        polygon.getPoints().addAll(new Double[]{
-                x + 0.0, y + 5.0,
-                x + 10.0, y + 0.0,
-                x + 10.0, y + 10.0,
-                x + 0.0, y + 5.0,
-        });
-        return polygon;
-    }
-
-    Shape shape5(double x, double y, Color fill) {
-        Polygon polygon = new Polygon();
-        polygon.setFill(fill);
-        polygon.setStroke(Color.BLACK);
-        polygon.getPoints().addAll(new Double[]{
-                x + 0.0, y + 5.0,
-                x + 5.0, y + 0.0,
-                x + 10.0, y + 5.0,
-                x + 5.0, y + 10.0,
-                x + 0.0, y + 5.0,
-        });
-        return polygon;
-    }
-
-    Shape shape6(double x, double y, Color fill) {
-        Polygon polygon = new Polygon();
-        polygon.setFill(fill);
-        polygon.setStroke(Color.BLACK);
-        polygon.getPoints().addAll(new Double[]{
-                x + 0.0, y + 0.0,
-                x + 10.0, y + 5.0,
-                x + 10.0, y + 10.0,
-                x + 5.0, y + 10.0,
-                x + 0.0, y + 0.0,
-        });
-        return polygon;
-    }
-
-    Group shape7(double x, double y, Color fill) {
-        Polygon polygon1 = new Polygon();
-        polygon1.setFill(fill);
-        polygon1.setStroke(Color.BLACK);
-        polygon1.getPoints().addAll(new Double[]{
-                x + 0.0, y + 5.0,
-                x + 5.0, y + 2.5,
-                x + 5.0, y + 7.5,
-                x + 0.0, y + 5.0,
-        });
-
-        Polygon polygon2 = new Polygon();
-        polygon2.setFill(fill);
-        polygon2.setStroke(Color.BLACK);
-        polygon2.getPoints().addAll(new Double[]{
-                x + 5.0, y + 2.5,
-                x + 10.0, y + 0,
-                x + 10, y + 5,
-                x + 5.0, y + 2.5,
-        });
-
-        Polygon polygon3 = new Polygon();
-        polygon3.setFill(fill);
-        polygon3.setStroke(Color.BLACK);
-        polygon3.getPoints().addAll(new Double[]{
-                x + 5.0, y + 7.5,
-                x + 10.0, y + 5.0,
-                x + 10, y + 10.0,
-                x + 5.0, y + 7.5,
-        });
-        Group group = new Group(polygon1, polygon2, polygon3);
-
-        return group;
-    }
-
-    Shape shape8(double x, double y, Color fill) {
-        Polygon polygon = new Polygon();
-        polygon.setFill(fill);
-        polygon.setStroke(Color.BLACK);
-        polygon.getPoints().addAll(new Double[]{
-                x + 0.0, y + 0.0,
-                x + 10.0, y + 5.0,
-                x + 5.0, y + 10.0,
-                x + 0.0, y + 0.0,
-        });
-        return polygon;
-    }
-
-    Shape shape9(double x, double y, Color fill) {
-        Rectangle rectangle = new Rectangle(x + 2.5, y + 2.5, 5, 5);
-        rectangle.setFill(fill);
-        rectangle.setStroke(Color.BLACK);
-        return rectangle;
-    }
-
-    Group shape10(double x, double y, Color fill) {
-        Polygon polygon1 = new Polygon();
-        polygon1.setFill(fill);
-        polygon1.setStroke(Color.BLACK);
-        polygon1.getPoints().addAll(new Double[]{
-                x + 5.0, y + 0.0,
-                x + 10.0, y + 0.0,
-                x + 5.0, y + 5.0,
-                x + 5.0, y + 0.0,
-        });
-
-        Polygon polygon2 = new Polygon();
-        polygon2.setFill(fill);
-        polygon2.setStroke(Color.BLACK);
-        polygon2.getPoints().addAll(new Double[]{
-                x + 0.0, y + 5.0,
-                x + 5.0, y + 5.0,
-                x + 10.0, y + 0.0,
-                x + 0.0, y + 5.0,
-        });
-        Group group = new Group(polygon1, polygon2);
-        return group;
-    }
-
-    Shape shape11(double x, double y, Color fill) {
-        Rectangle rectangle = new Rectangle(x, y, 5, 5);
-        rectangle.setFill(fill);
-        rectangle.setStroke(Color.BLACK);
-        return rectangle;
-    }
-
-    Shape shape12(double x, double y, Color fill) {
-        Polygon polygon = new Polygon();
-        polygon.setFill(fill);
-        polygon.setStroke(Color.BLACK);
-        polygon.getPoints().addAll(new Double[]{
-                x + 0.0, y + 0.0,
-                x + 5.0, y + 5.0,
-                x + 10.0, y + 0.0,
-                x + 0.0, y + 0.0,
-        });
-        return polygon;
-    }
-
-    Shape shape13(double x, double y, Color fill) {
-        Polygon polygon = new Polygon();
-        polygon.setFill(fill);
-        polygon.setStroke(Color.BLACK);
-        polygon.getPoints().addAll(new Double[]{
-                x + 5.0, y + 5.0,
-                x + 10.0, y + 0.0,
-                x + 10.0, y + 10.0,
-                x + 5.0, y + 5.0,
-        });
-        return polygon;
-    }
-
-    Shape shape14(double x, double y, Color fill) {
-        Polygon polygon = new Polygon();
-        polygon.setFill(fill);
-        polygon.setStroke(Color.BLACK);
-        polygon.getPoints().addAll(new Double[]{
-                x + 5.0, y + 0.0,
-                x + 5.0, y + 5.0,
-                x + 0.0, y + 5.0,
-                x + 5.0, y + 0.0,
-        });
-        return polygon;
-    }
-
-    Shape shape15(double x, double y, Color fill) {
-        Polygon polygon = new Polygon();
-        polygon.setFill(fill);
-        polygon.setStroke(Color.BLACK);
-        polygon.getPoints().addAll(new Double[]{
-                x + 0.0, y + 0.0,
-                x + 5.0, y + 0.0,
-                x + 0.0, y + 5.0,
-                x + 0.0, y + 0.0,
-        });
-        return polygon;
-    }
-
 }
