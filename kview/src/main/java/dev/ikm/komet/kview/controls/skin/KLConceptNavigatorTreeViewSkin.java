@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
@@ -63,6 +64,8 @@ import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Scale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -102,6 +105,8 @@ import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.PS_STATE;
  * <p>Two context menus are created, based on single or multiple selection.</p>
  */
 public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(KLConceptNavigatorTreeViewSkin.class);
 
     private static final PseudoClass MULTIPLE_SELECTION_PSEUDO_CLASS = PseudoClass.getPseudoClass("multiple");
 
@@ -186,7 +191,10 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                         model.setHighlighted(false);
                         getCellForTreeItem(model).ifPresent(cell -> {
                             if (cell.getGraphic() instanceof ConceptTile tile) {
-                                imageMap.put(model, ConceptNavigatorUtils.getTileSnapshot(tile));
+                                WritableImage image = ConceptNavigatorUtils.getTileSnapshot(tile);
+                                if (image != null) {
+                                    imageMap.put(model, image);
+                                }
                             }
                         });
                     }
@@ -918,16 +926,17 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             // if possible
             flowSubscriber = new FlowSubscriber<>(nid -> {
 
+                EntityHandle conceptHandle = EntityHandle.get(nid);
                 try {
-                    if (modifiedEntityProperty.get() == null && Entity.provider().getEntityFast(nid) instanceof ConceptFacade cf) {
-                        modifiedEntityProperty.set(cf);
+                    if (modifiedEntityProperty.get() == null && conceptHandle.isConcept()) {
+                        modifiedEntityProperty.set(conceptHandle.expectConcept());
                     }
                 } catch (Exception e) {
-
+                    LOG.error("Error processing modified entity event", e);
                 }
 
                 if (modifiedEntityProperty.get() != null && modifiedEntityProperty.get().nid() == nid) {
-                    Platform.runLater(() -> modifiedEntityProperty.set(Entity.provider().getEntityFast(nid)));
+                    Platform.runLater(() -> modifiedEntityProperty.set(conceptHandle.expectConcept()));
                 }
             });
 

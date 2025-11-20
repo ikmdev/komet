@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.framework.controls;
 
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
+
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -22,6 +24,10 @@ import java.util.Locale;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 
+/**
+ * @deprecated Use {@link DateTimeUtil} instead
+ */
+@Deprecated
 public class TimeUtils {
 
     private final static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
@@ -38,7 +44,9 @@ public class TimeUtils {
      * @param pastTime
      * @param zone
      * @return the formatted recent timestamp in "X duration ago"
+     * @deprecated Use {@link DateTimeUtil} instead
      */
+    @Deprecated
     public static String calculateTimeAgoWithPeriodAndDuration(LocalDateTime pastTime, ZoneId zone) {
         Period period = Period.between(pastTime.toLocalDate(), getCurrentTimeByTimeZone(zone).toLocalDate());
         Duration duration = Duration.between(pastTime, getCurrentTimeByTimeZone(zone));
@@ -59,6 +67,13 @@ public class TimeUtils {
         }
     }
 
+    /**
+     *
+     * @param zone
+     * @return
+     * @deprecated Use {@link DateTimeUtil} instead
+     */
+    @Deprecated
     private static OffsetDateTime getCurrentTimeByTimeZone(ZoneId zone) {
         OffsetDateTime offsetdatetime = OffsetDateTime.now();
         return offsetdatetime;
@@ -68,8 +83,10 @@ public class TimeUtils {
      * Converts a date represented using a long to a human readable String.
      *
      * @param stampTime the time represented as long
-     * @return a human-readable String
+     * @return a human readable String
+     * @deprecated Use {@link DateTimeUtil} instead
      */
+    @Deprecated
     public static String toDateString(long stampTime) {
         if (!(stampTime == PREMUNDANE_TIME)) {
             Instant stampInstance = Instant.ofEpochSecond(stampTime / 1000);

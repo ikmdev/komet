@@ -15,24 +15,36 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.terms.TinkarTerm;
-import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.map.ImmutableMap;
-import org.eclipse.collections.api.map.MutableMap;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyProperty;
+import org.eclipse.collections.api.list.MutableList;
 
 public final class ObservableConcept
-        extends ObservableEntity<ObservableConceptVersion, ConceptVersionRecord>
-        implements ConceptEntity<ObservableConceptVersion> {
+        extends ObservableEntity<ObservableConceptVersion>
+        implements ConceptEntity<ObservableConceptVersion>, ObservableChronology {
     ObservableConcept(ConceptEntity<ConceptVersionRecord> conceptEntity) {
         super(conceptEntity);
     }
 
     @Override
-    protected ObservableConceptVersion wrap(ConceptVersionRecord version) {
-        return new ObservableConceptVersion(version);
+    protected ObservableConceptVersion wrap(EntityVersion version) {
+        return new ObservableConceptVersion(this, (ConceptVersionRecord) version);
+    }
+
+
+    /**
+     * Retrieves the {@code ConceptRecord} associated with this {@code ObservableConcept}.
+     *
+     * This method overrides the {@code entity} method in the superclass to provide
+     * the specific {@code ConceptRecord} type associated with this {@code ObservableConcept}.
+     * It allows access to the detailed record containing concept-specific information.
+     *
+     * @return the {@code ConceptRecord} associated with this {@code ObservableConcept}
+     */
+    public ConceptRecord entity() {
+        return (ConceptRecord) super.entity();
     }
 
     @Override
@@ -41,50 +53,7 @@ public final class ObservableConcept
     }
 
     @Override
-    public ImmutableMap<FieldCategory, ObservableField> getObservableFields() {
-        MutableMap<FieldCategory, ObservableField> fieldMap = Maps.mutable.empty();
-
-        int firstStamp = StampCalculator.firstStampTimeOnly(this.entity().stampNids());
-
-        for (FieldCategory field: FieldCategorySet.conceptFields()) {
-            switch (field) {
-                case PUBLIC_ID_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.publicId();
-                    int dataTypeNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    int purposeNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    int meaningNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    Entity<EntityVersion> idPattern = Entity.getFast(TinkarTerm.IDENTIFIER_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(idPattern.stampNids());
-                    int patternNid = TinkarTerm.IDENTIFIER_PATTERN.nid();
-                    int indexInPattern = 0;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid,  indexInPattern);
-
-                   fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-                case COMPONENT_VERSIONS_LIST -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.versions();
-                    int dataTypeNid = TinkarTerm.VERSION_LIST_FOR_CHRONICLE.nid();
-                    int purposeNid = TinkarTerm.VERSION_LIST_FOR_CHRONICLE.nid();
-                    int meaningNid = TinkarTerm.VERSION_LIST_FOR_CHRONICLE.nid();
-                    Entity<EntityVersion> idPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(idPattern.stampNids());
-                    int patternNid = TinkarTerm.IDENTIFIER_PATTERN.nid();
-                    int indexInPattern = 0;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid,  indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-            }
-        }
-
-        return fieldMap.toImmutable();
+    protected void addAdditionalChronologyFeatures(MutableList<Feature<?>> features) {
+        // Nothing to add.
     }
 }

@@ -2,46 +2,57 @@ package dev.ikm.komet.kview.klfields.componentfield;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
+import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.Parent;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Region;
 
 public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
 
-    public DefaultKlComponentField(ObservableField<EntityProxy> observableComponentField, ObservableView observableView, boolean isEditable) {
-        super(observableComponentField, observableView, isEditable);
-
-        Parent node;
-        if (isEditable) {
-            KLComponentControl componentControl = KLComponentControlFactory.createTypeAheadComponentControl(
+    public DefaultKlComponentField(ObservableField<EntityProxy> observableComponentField, ObservableView observableView, ObservableStamp stamp4field) {
+        Region node = switch (stamp4field.lastVersion().uncommitted()) {
+            case true -> KLComponentControlFactory.createTypeAheadComponentControl(
                     observableView.calculator());
-            // title
-            componentControl.setTitle(field().meaning().description());
-           // entity
-            componentControl.entityProperty().bindBidirectional(observableComponentField.valueProperty());
-            node = componentControl;
-        } else {
-            KLReadOnlyComponentControl readOnlyComponentControl = new KLReadOnlyComponentControl();
-            ObjectProperty<EntityProxy> valueProperty = observableComponentField.valueProperty();
-            // title
-            String title = observableView.calculator().languageCalculator().getDescriptionText(observableComponentField.meaningNid()).orElse("Blank Title");
-            readOnlyComponentControl.setTitle(title);
-            // value
-            updateControlValue(valueProperty.get(), readOnlyComponentControl);
-            // Listen and update when EntityProxy changes
-            valueProperty.subscribe(newEntity -> {
-                updateControlValue(newEntity, readOnlyComponentControl);
-            });
-            node = readOnlyComponentControl;
+            case false -> new KLReadOnlyComponentControl();
+        };
+/*
+TODO: Carl to review behaviour with new editing paradigm.
+The issue is that DefaultKlComponentField should always return a read-only control when used in this context. The switch logic at line 22-26 in DefaultKlComponentField.java should be removed or the condition should be changed to always create a read-only control for this use case.
+Looking at the code in GenEditingDetailsController.java:509-571, the populateSemanticDetails() method is specifically creating read-only views that become editable via the properties panel, not inline editable controls.
+The fix: Change DefaultKlComponentField.java to always create KLReadOnlyComponentControl instead of conditionally creating KLComponentControl:
+ */
+        super(observableComponentField, observableView, stamp4field, node);
+
+        FeatureDefinition fieldDefinition = field().definition(observableView.calculator());
+        switch (node) {
+            case KLComponentControl componentControl -> {
+                // title
+                componentControl.setTitle(calculatorForContext().getDescriptionTextOrNid(fieldDefinition.meaningNid()));
+                // entity
+                componentControl.entityProperty().bindBidirectional(observableComponentField.editableValueProperty());
+            }
+            case KLReadOnlyComponentControl readOnlyComponentControl -> {
+                // title
+                String title = observableView.calculator().getDescriptionText(fieldDefinition.meaningNid()).orElse("Blank Title");
+                readOnlyComponentControl.setTitle(title);
+                // value
+                updateControlValue(observableComponentField.valueProperty().get(), readOnlyComponentControl);
+                // Listen and update when EntityProxy changes
+                observableComponentField.valueProperty().subscribe(newEntity -> {
+                    updateControlValue(newEntity, readOnlyComponentControl);
+                });
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + node);
         }
-        setKlWidget(node);
     }
 
     private void updateControlValue(EntityProxy entityProxy, KLReadOnlyComponentControl klReadOnlyComponentControl) {

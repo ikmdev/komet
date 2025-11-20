@@ -37,7 +37,7 @@ public class ViewCoordinateHelper {
     }
 
     /**
-     * Create a new View Calculator based on the current datetime + 24 hours with an updated view coordinate & view calculator.
+     * Create a new View Calculator based on the current datetime + 24 hours with an updated view coordinate {@literal &} view calculator.
      * Note: This appears to work however the records returned could be uncommitted records as they have a larger latest date.
      * @param viewProperties A given view property
      */
@@ -46,9 +46,9 @@ public class ViewCoordinateHelper {
     }
 
     /**
-     * Create a new View Calculator based on a time with an updated view coordinate & view calculator.
+     * Create a new View Calculator based on a time with an updated view coordinate {@literal &} view calculator.
      * @param viewProperties A given view property
-     * @oaran time milliseconds since Epoch time.
+     * @param time milliseconds since Epoch time.
      */
     public static ViewCalculatorWithCache createViewCalculatorLatestByTime(ViewProperties viewProperties, long time) {
         ViewCalculator existingViewCalculator = viewProperties.calculator();
@@ -59,7 +59,7 @@ public class ViewCoordinateHelper {
 
 
     /**
-     * Create a new View Calculator with stated navigation with an updated view coordinate & view calculator.
+     * Create a new View Calculator with stated navigation with an updated view coordinate {@literal &} view calculator.
      * @param viewProperties A given view property
      * @return newViewCalculatorWithCache
      */

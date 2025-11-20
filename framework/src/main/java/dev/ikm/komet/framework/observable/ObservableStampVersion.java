@@ -1,244 +1,315 @@
-/*
- * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
+import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.ImmutableList;
+import dev.ikm.tinkar.terms.State;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.ImmutableMap;
-import org.eclipse.collections.api.map.MutableMap;
 
+import java.util.concurrent.atomic.AtomicReference;
+
+/**
+ * Concrete observable stamp version - fully type-reified, no generic parameters.
+ * <p>
+ * This is Layer 3 (Concrete) of the MGC pattern for stamp versions.
+ */
 public final class ObservableStampVersion
-        extends ObservableVersion<StampVersionRecord> {
+        extends ObservableEntityVersion<ObservableStamp, StampVersionRecord>
+        implements StampEntityVersion, ObservableVersion {
 
-    enum StampField {
-        STATE(TinkarTerm.STATUS_FOR_VERSION.nid(), TinkarTerm.STATUS_VALUE.nid(), TinkarTerm.CONCEPT_TYPE.nid()),
-        TIME(TinkarTerm.TIME_FOR_VERSION.nid(), TinkarTerm.TIMING.nid(), TinkarTerm.LONG.nid()),
-        AUTHOR(TinkarTerm.AUTHOR_FOR_VERSION.nid(), TinkarTerm.AUTHOR_FOR_VERSION.nid(), TinkarTerm.CONCEPT_TYPE.nid()),
-        MODULE(TinkarTerm.MODULE_FOR_VERSION.nid(), TinkarTerm.MODULE_FOR_VERSION.nid(), TinkarTerm.CONCEPT_TYPE.nid()),
-        PATH(TinkarTerm.PATH_FOR_VERSION.nid(), TinkarTerm.PATH_FOR_VERSION.nid(), TinkarTerm.CONCEPT_TYPE.nid());
-
-        int meaningNid;
-        int purposeNid;
-        int dataTypeNid;
-
-        StampField(int meaningNid, int purposeNid, int dataTypeNid) {
-            this.meaningNid = meaningNid;
-            this.purposeNid = purposeNid;
-            this.dataTypeNid = dataTypeNid;
-        }
-
-        FieldDefinitionRecord fieldDefinitionRecord() {
-            PatternEntity<PatternEntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-            return new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid, stampPattern.versions().get(0).stampNid(),
-            TinkarTerm.STAMP_PATTERN.nid(), this.ordinal());
-        }
-    }
-
-    ObservableStampVersion(StampVersionRecord stampVersion) {
-        super(stampVersion);
+    ObservableStampVersion(ObservableStamp observableStamp, StampVersionRecord stampVersion) {
+        super(observableStamp, stampVersion);
     }
 
     protected void addListeners() {
-        stateProperty.addListener((observable, oldValue, newValue) -> {
+        stateProperty().addListener((observable, oldValue, newValue) -> {
             versionProperty.set(version().withStateNid(newValue.nid()));
         });
 
-        timeProperty.addListener((observable, oldValue, newValue) -> {
+        timeProperty().addListener((observable, oldValue, newValue) -> {
             // TODO when to update the chronology with new record? At commit time? Automatically with reactive stream for commits?
             versionProperty.set(version().withTime(newValue.longValue()));
         });
 
-        authorProperty.addListener((observable, oldValue, newValue) -> {
+        authorProperty().addListener((observable, oldValue, newValue) -> {
             versionProperty.set(version().withAuthorNid(newValue.nid()));
         });
 
-        moduleProperty.addListener((observable, oldValue, newValue) -> {
+        moduleProperty().addListener((observable, oldValue, newValue) -> {
             versionProperty.set(version().withModuleNid(newValue.nid()));
         });
 
-        pathProperty.addListener((observable, oldValue, newValue) -> {
+        pathProperty().addListener((observable, oldValue, newValue) -> {
             versionProperty.set(version().withPathNid(newValue.nid()));
         });
     }
-
-    @Override
-    protected StampVersionRecord withStampNid(int stampNid) {
-        throw new UnsupportedOperationException();
-    }
-
+    
     @Override
     public StampVersionRecord getVersionRecord() {
         return version();
     }
 
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    private AtomicReference<FeatureWrapper> versionStatusFieldReference = new AtomicReference<>();
+    private FeatureWrapper getVersionStatusField() {
+        return versionStatusFieldReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makeVersionStatusField());
+    }
+    private FeatureWrapper makeVersionStatusField() {
+        FeatureKey locator = FeatureKey.Version.StampStatus(this.nid());
+        return new FeatureWrapper(this.stateProperty(), Binding.Stamp.Version.pattern().nid(),
+                Binding.Stamp.Version.statusFieldDefinitionIndex(),this, locator);
+    }
 
+
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    private AtomicReference<FeatureWrapper> versionTimeFieldReference = new AtomicReference<>();
+    private FeatureWrapper getVersionTimeField() {
+        return versionTimeFieldReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makeVersionTimeField());
+    }
+    private FeatureWrapper makeVersionTimeField() {
+        FeatureKey locator = FeatureKey.Version.StampTime(nid());
+        return new FeatureWrapper(this.timeProperty(), Binding.Stamp.Version.pattern().nid(),
+                Binding.Stamp.Version.timeFieldDefinitionIndex(), this, locator);
+    }
+
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    private AtomicReference<FeatureWrapper> versionAuthorFieldReference = new AtomicReference<>();
+    private FeatureWrapper getVersionAuthorFeature() {
+        return versionAuthorFieldReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makeVersionAuthorFeature());
+    }
+    private FeatureWrapper makeVersionAuthorFeature() {
+        FeatureKey locator = FeatureKey.Version.StampAuthor(this.nid());
+        return new FeatureWrapper(this.authorProperty(), Binding.Stamp.Version.pattern().nid(),
+                Binding.Stamp.Version.authorFieldDefinitionIndex(),this, locator);
+    }
+
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    private AtomicReference<FeatureWrapper> versionModuleFieldReference = new AtomicReference<>();
+    private FeatureWrapper getVersionModuleFeature() {
+        return versionModuleFieldReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makeVersionModuleFeature());
+    }
+    private FeatureWrapper makeVersionModuleFeature() {
+        FeatureKey locator = FeatureKey.Version.StampModule(this.nid());
+        return new FeatureWrapper(this.moduleProperty(), Binding.Stamp.Version.pattern().nid(),
+                Binding.Stamp.Version.moduleFieldDefinitionIndex(),this, locator);
+    }
+
+
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    private AtomicReference<FeatureWrapper> versionPathFieldReference = new AtomicReference<>();
+    private FeatureWrapper getVersionPathField() {
+        return versionPathFieldReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makeVersionPathField());
+    }
+    private FeatureWrapper makeVersionPathField() {
+        FeatureKey locator = FeatureKey.Version.StampPath(this.nid());
+        return new FeatureWrapper(this.pathProperty(), Binding.Stamp.Version.pattern().nid(),
+                Binding.Stamp.Version.pathFieldDefinitionIndex(),this, locator);
+    }
+
+    @Override
+    protected void addAdditionalVersionFeatures(MutableList<Feature<?>> features) {
+        // Status
+        features.add(getVersionStatusField());
+
+        // Time
+        features.add(getVersionTimeField());
+
+        // Author
+        features.add(getVersionAuthorFeature());
+
+        // Module
+        features.add(getVersionModuleFeature());
+
+        // Path
+        features.add(getVersionPathField());
+    }
+    /**
+     * Type-safe accessor for the containing stamp entity.
+     */
+    public ObservableStamp getObservableStamp() {
+        return getObservableEntity();
+    }
+
+    @Override
+    public Editable getEditableVersion(ObservableStamp editStamp, Transaction transaction) {
+        return Editable.getOrCreate(getObservableEntity(), this, editStamp, transaction);
+    }
+
+    @Override
+    public int stateNid() {
+        return getVersionRecord().stateNid();
+    }
+
+    @Override
+    public long time() {
+        return getVersionRecord().time();
+    }
+
+    @Override
+    public int authorNid() {
+        return getVersionRecord().authorNid();
+    }
+
+    @Override
+    public int moduleNid() {
+        return getVersionRecord().moduleNid();
+    }
+
+    @Override
+    public int pathNid() {
+        return getVersionRecord().pathNid();
+    }
 
     /**
-     * Constructs an immutable list containing the field values of the object.
-     * The field values include state, time, author, module, and path as represented
-     * by their respective concept facade objects or corresponding properties.
-     *
-     * @return An immutable list of field values for the object.
+     * Editable version wrapper for ObservableStampVersion.
+     * <p>
+     * Implements {@link EditableVersion} marker
+     * interfaces through the base {@link ObservableEntityVersion.Editable} class.
+     * <p>
+     * <b>Note:</b> Stamp editing is typically restricted as stamps represent
+     * metadata about changes (who, when, where). This editable is provided for
+     * completeness and special administrative operations.
      */
-    public ImmutableList<Object> fieldValues() {
-        MutableList<Object> fieldValues = Lists.mutable.of();
-        fieldValues.add(ConceptFacade.make(this.state().nid()));
-        fieldValues.add(this.time());
-        fieldValues.add(ConceptFacade.make(this.author().nid()));
-        fieldValues.add(ConceptFacade.make(this.module().nid()));
-        fieldValues.add(ConceptFacade.make(this.path().nid()));
-        return fieldValues.toImmutable();
-    }
+    public static final class Editable
+            extends ObservableEntityVersion.Editable<ObservableStamp, ObservableStampVersion, StampVersionRecord>
+            implements EditableVersion {
+        // Already implements EditableVersion and EditableChronology via parent!
 
+        private final SimpleObjectProperty<State> editableStateProperty;
+        private final SimpleLongProperty editableTimeProperty;
+        private final SimpleObjectProperty<ConceptFacade> editableAuthorProperty;
+        private final SimpleObjectProperty<ConceptFacade> editableModuleProperty;
+        private final SimpleObjectProperty<ConceptFacade> editablePathProperty;
 
-    public ImmutableList<ObservableField> fields() {
-        // TODO: Get this to work with a STAMP pattern in the starter set...
-        // TODO: Note the stamp pattern exists, but is not correct in all cases.
-        // TODO: Validate fixes then update.
-        ObservableField[] fieldArray = new ObservableField[fieldValues().size()];
-        for (int indexInPattern = 0; indexInPattern < fieldArray.length; indexInPattern++) {
-            StampField currentField = StampField.values()[indexInPattern];
-            FieldDefinitionRecord fieldDefinitionRecord = currentField.fieldDefinitionRecord();
-            Object value = fieldValues().get(indexInPattern);
-            fieldArray[indexInPattern] =
-                    new ObservableField(new FieldRecord(value, this.nid(), this.stampNid(), fieldDefinitionRecord.patternNid(), indexInPattern));
-        }
-        return Lists.immutable.of(fieldArray);
-    }
-    @Override
-    public ImmutableMap<FieldCategory, ObservableField> getObservableFields() {
-        MutableMap<FieldCategory, ObservableField> fieldMap = Maps.mutable.empty();
+        private Editable(ObservableStamp observableStamp, ObservableStampVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            super(observableStamp, observableVersion, editStamp, transaction);
 
-        int firstStamp = StampCalculator.firstStampTimeOnly(this.entity().stampNids());
+            // Initialize editable properties
+            StampVersionRecord version = observableVersion.version();
 
-        for (FieldCategory field : FieldCategorySet.stampVersionFields()) {
-            switch (field) {
-                case PUBLIC_ID_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.publicId();
-                    int dataTypeNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    int purposeNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    int meaningNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    Entity<EntityVersion> idPattern = Entity.getFast(TinkarTerm.IDENTIFIER_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(idPattern.stampNids());
-                    int patternNid = TinkarTerm.IDENTIFIER_PATTERN.nid();
-                    int indexInPattern = 0;
+            this.editableStateProperty = new SimpleObjectProperty<>(this, "state", version.state());
+            this.editableTimeProperty = new SimpleLongProperty(this, "time", version.time());
+            this.editableAuthorProperty = new SimpleObjectProperty<>(this, "author",
+                    EntityHandle.getConceptOrThrow(version.authorNid()));
+            this.editableModuleProperty = new SimpleObjectProperty<>(this, "module",
+                    EntityHandle.getConceptOrThrow(version.moduleNid()));
+            this.editablePathProperty = new SimpleObjectProperty<>(this, "path",
+                    EntityHandle.getConceptOrThrow(version.pathNid()));
 
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
+            // Add listeners to update working version when properties change
+            editableStateProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withStateNid(newValue.nid());
                 }
-                case STATUS_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.state();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.COMPONENT_FOR_SEMANTIC.nid();
-                    int meaningNid = TinkarTerm.COMPONENT_FOR_SEMANTIC.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 0;
+            });
 
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
+            editableTimeProperty.addListener((obs, oldValue, newValue) -> {
+                workingVersion = workingVersion.withTime(newValue.longValue());
+            });
 
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
+            editableAuthorProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withAuthorNid(newValue.nid());
                 }
-                case TIME_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.time();
-                    int dataTypeNid = TinkarTerm.LONG_FIELD.nid();
-                    int purposeNid = TinkarTerm.TIME_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.TIME_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 1;
+            });
 
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
+            editableModuleProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withModuleNid(newValue.nid());
                 }
-                case AUTHOR_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.authorNid();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.AUTHOR_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.AUTHOR_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 2;
+            });
 
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-
+            editablePathProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withPathNid(newValue.nid());
                 }
-                case MODULE_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.moduleNid();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.MODULE_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.MODULE_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 3;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-                case PATH_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.pathNid();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.PATH_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.PATH_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 4;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-            }
+            });
         }
 
-        return fieldMap.toImmutable();
-    }
+        /**
+         * Gets or creates the canonical editable stamp version for the given stamp.
+         * <p>
+         * Returns the exact same instance for multiple calls with the same stamp, ensuring
+         * a single canonical editable version per ObservableStamp.
+         *
+         * @param observableVersion the ObservableStampVersion to edit
+         * @param editStamp the ObservableStamp (typically identifying the author)
+         * @return the canonical editable stamp version for this stamp
+         */
+        public static Editable getOrCreate(ObservableStamp observableStamp, ObservableStampVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            return ObservableEntityVersion.getOrCreate(observableStamp, observableVersion, editStamp, transaction, Editable::new);
+        }
 
+        /**
+         * Returns the editable state property for GUI binding.
+         */
+        public SimpleObjectProperty<State> getStateProperty() {
+            return editableStateProperty;
+        }
+
+        /**
+         * Returns the editable time property for GUI binding.
+         */
+        public SimpleLongProperty getTimeProperty() {
+            return editableTimeProperty;
+        }
+
+        /**
+         * Returns the editable author property for GUI binding.
+         */
+        public SimpleObjectProperty<ConceptFacade> getAuthorProperty() {
+            return editableAuthorProperty;
+        }
+
+        /**
+         * Returns the editable module property for GUI binding.
+         */
+        public SimpleObjectProperty<ConceptFacade> getModuleProperty() {
+            return editableModuleProperty;
+        }
+
+        /**
+         * Returns the editable path property for GUI binding.
+         */
+        public SimpleObjectProperty<ConceptFacade> getPathProperty() {
+            return editablePathProperty;
+        }
+
+        @Override
+        protected StampVersionRecord createVersionWithStamp(StampVersionRecord version, int stampNid) {
+            // Stamps don't have a separate stamp field - they are self-describing
+            // Return the version as-is
+            return version;
+        }
+
+        @Override
+        protected Entity<?> createAnalogue(StampVersionRecord version) {
+            return version.chronology().with(version).build();
+        }
+
+        @Override
+        public void reset() {
+            super.reset();
+            // Reset properties to original values
+            StampVersionRecord version = observableVersion.version();
+            editableStateProperty.set(version.state());
+            editableTimeProperty.set(version.time());
+            editableAuthorProperty.set(EntityHandle.getConceptOrThrow(version.authorNid()));
+            editableModuleProperty.set(EntityHandle.getConceptOrThrow(version.moduleNid()));
+            editablePathProperty.set(EntityHandle.getConceptOrThrow(version.pathNid()));
+        }
+    }
 }

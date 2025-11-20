@@ -15,36 +15,45 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
+import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
-import org.eclipse.collections.api.map.ImmutableMap;
-import org.eclipse.collections.api.map.MutableMap;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicReference;
+
+/**
+ * Concrete observable pattern version - fully type-reified, no generic parameters.
+ * <p>
+ * This is Layer 3 (Concrete) of the MGC pattern for pattern versions.
+ */
 public final class ObservablePatternVersion
-        extends ObservableVersion<PatternVersionRecord>
-        implements PatternEntityVersion {
+        extends ObservableEntityVersion<ObservablePattern, PatternVersionRecord>
+        implements PatternEntityVersion, ObservableVersion {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ObservablePatternVersion.class);
+
     final SimpleObjectProperty<EntityFacade> purposeProperty = new SimpleObjectProperty<>(this, "Pattern purpose");
     final SimpleObjectProperty<EntityFacade> meaningProperty = new SimpleObjectProperty<>(this, "Pattern meaning");
-    final ImmutableList<ObservableFieldDefinition> observableFieldDefinitions;
+    final ImmutableList<ObservableFeatureDefinition> observableFieldDefinitions;
 
-    ObservablePatternVersion(PatternVersionRecord patternVersionRecord) {
-        super(patternVersionRecord);
-        purposeProperty.set(Entity.getFast(patternVersionRecord.semanticPurposeNid()));
+    ObservablePatternVersion(ObservablePattern observablePattern, PatternVersionRecord patternVersionRecord) {
+        super(observablePattern, patternVersionRecord);
+        purposeProperty.set(EntityHandle.getConceptOrThrow(patternVersionRecord.semanticPurposeNid()));
         purposeProperty.addListener(this::purposeChanged);
-        meaningProperty.set(Entity.getFast(patternVersionRecord.semanticMeaningNid()));
+        meaningProperty.set(EntityHandle.getConceptOrThrow(patternVersionRecord.semanticMeaningNid()));
         meaningProperty.addListener(this::meaningChanged);
-        MutableList<ObservableFieldDefinition> mutableFieldDefinitions = Lists.mutable.ofInitialCapacity(patternVersionRecord.fieldDefinitions().size());
+        MutableList<ObservableFeatureDefinition> mutableFieldDefinitions = Lists.mutable.ofInitialCapacity(patternVersionRecord.fieldDefinitions().size());
         for (FieldDefinitionRecord fieldDefinition : patternVersionRecord.fieldDefinitions()) {
-            mutableFieldDefinitions.add(new ObservableFieldDefinition(fieldDefinition));
+            mutableFieldDefinitions.add(new ObservableFeatureDefinition(fieldDefinition, this,
+                    FeatureKey.Version.PatternFieldDefinitionListItem(nid(), fieldDefinition.indexInPattern(), fieldDefinition.patternNid(), stampNid())));
         }
         this.observableFieldDefinitions = mutableFieldDefinitions.toImmutable();
     }
@@ -103,17 +112,12 @@ public final class ObservablePatternVersion
     }
 
     @Override
-    protected PatternVersionRecord withStampNid(int stampNid) {
-        return version().withStampNid(stampNid);
-    }
-
-    @Override
     public PatternVersionRecord getVersionRecord() {
         return version();
     }
 
     @Override
-    public ImmutableList<ObservableFieldDefinition> fieldDefinitions() {
+    public ImmutableList<ObservableFeatureDefinition> fieldDefinitions() {
         return this.observableFieldDefinitions;
     }
 
@@ -130,139 +134,180 @@ public final class ObservablePatternVersion
     enum FIELDS {PURPOSE, MEANING}
 
 
-    @Override
-    public ImmutableMap<FieldCategory, ObservableField> getObservableFields() {
-        MutableMap<FieldCategory, ObservableField> fieldMap = Maps.mutable.empty();
-
-        int firstStamp = StampCalculator.firstStampTimeOnly(this.entity().stampNids());
-
-        for (FieldCategory field : FieldCategorySet.patternVersionFields()) {
-            switch (field) {
-                case PUBLIC_ID_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.publicId();
-                    int dataTypeNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    int purposeNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    int meaningNid = TinkarTerm.IDENTIFIER_VALUE.nid();
-                    Entity<EntityVersion> idPattern = Entity.getFast(TinkarTerm.IDENTIFIER_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(idPattern.stampNids());
-                    int patternNid = TinkarTerm.IDENTIFIER_PATTERN.nid();
-                    int indexInPattern = 0;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-                case STATUS_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.state();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.COMPONENT_FOR_SEMANTIC.nid();
-                    int meaningNid = TinkarTerm.COMPONENT_FOR_SEMANTIC.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 0;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-                case TIME_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.time();
-                    int dataTypeNid = TinkarTerm.LONG_FIELD.nid();
-                    int purposeNid = TinkarTerm.TIME_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.TIME_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 1;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-                case AUTHOR_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.authorNid();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.AUTHOR_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.AUTHOR_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 2;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-
-                }
-                case MODULE_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.moduleNid();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.MODULE_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.MODULE_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 3;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-                case PATH_FIELD -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.pathNid();
-                    int dataTypeNid = TinkarTerm.COMPONENT_FIELD.nid();
-                    int purposeNid = TinkarTerm.PATH_FOR_VERSION.nid();
-                    int meaningNid = TinkarTerm.PATH_FOR_VERSION.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 4;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-
-                case PATTERN_FIELD_DEFINITION_LIST -> {
-                    //TODO temporary until we get a pattern for concept fields...
-                    //TODO get right starter set entities. Temporary incorrect codes for now.
-                    Object value = this.observableFieldDefinitions;
-                    int dataTypeNid = TinkarTerm.POLYMORPHIC_FIELD.nid();
-                    int purposeNid = TinkarTerm.DEFINITION_DESCRIPTION_TYPE.nid();
-                    int meaningNid = TinkarTerm.DEFINITION_DESCRIPTION_TYPE.nid();
-                    Entity<EntityVersion> stampPattern = Entity.getFast(TinkarTerm.STAMP_PATTERN.nid());
-                    int patternVersionStampNid = StampCalculator.firstStampTimeOnly(stampPattern.stampNids());
-                    int patternNid = TinkarTerm.STAMP_PATTERN.nid();
-                    int indexInPattern = 4;
-
-                    FieldDefinitionRecord fdr = new FieldDefinitionRecord(dataTypeNid, purposeNid, meaningNid,
-                            patternVersionStampNid, patternNid, indexInPattern);
-
-                    fieldMap.put(field, new ObservableField(new FieldRecord(value, this.nid(), firstStamp, patternNid, indexInPattern)));
-                }
-            }
-        }
-
-        return fieldMap.toImmutable();
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    private AtomicReference<Feature> patternMeaningFieldReference = new AtomicReference<>();
+    private Feature getPatternMeaningFeature() {
+        return patternMeaningFieldReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makePatternMeaningFeature());
+    }
+    private Feature makePatternMeaningFeature() {
+        FeatureKey locator = FeatureKey.Version.PatternMeaning(this.nid(), this.stampNid());
+        return new FeatureWrapper(this.meaningProperty, Binding.Pattern.Version.pattern().nid(),
+                Binding.Pattern.Version.patternMeaningFieldDefinitionIndex(), this, locator);
     }
 
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    private AtomicReference<Feature> patternPurposeFieldReference = new AtomicReference<>();
+    private Feature getPatternPurpose() {
+        return patternPurposeFieldReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makePatternPurposeFeature());
+    }
+    private Feature makePatternPurposeFeature() {
+        FeatureKey locator = FeatureKey.Version.PatternPurpose(this.nid(), this.stampNid()) ;
+        return new FeatureWrapper(this.purposeProperty, Binding.Pattern.Version.pattern().nid(),
+                Binding.Pattern.Version.patternPurposeFieldDefinitionIndex(),this, locator);
+    }
+
+    // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
+    private AtomicReference<Feature> fieldDefinitionListReference = new AtomicReference<>();
+    private Feature getFieldDefinitionListFeature() {
+        return fieldDefinitionListReference.updateAndGet(currentValue -> currentValue != null
+                ? currentValue
+                : makeFieldDefinitionListFeature());
+    }
+    private Feature makeFieldDefinitionListFeature() {
+        FeatureKey locator = FeatureKey.Version.PatternFieldDefinitionList(this.nid(), this.stampNid()) ;
+        return FeatureList.makeWithBackingList(this.observableFieldDefinitions, locator, Binding.Pattern.Version.pattern(), Binding.Pattern.Version.fieldDefinitionListFieldDefinitionIndex(), this);
+    }
+
+    @Override
+    protected void addAdditionalVersionFeatures(MutableList<Feature<?>> features) {
+        // Pattern purpose
+        features.add(getPatternPurpose());
+        // Pattern meaning
+        features.add(getPatternMeaningFeature());
+        // Pattern FieldDefinitionList
+        features.add(getFieldDefinitionListFeature());
+        // Pattern FieldDefinitionListItems
+
+        for (ObservableFeatureDefinition featureDefinition : observableFieldDefinitions) {
+            features.add(featureDefinition);
+        }
+    }
+
+    @Override
+    public Editable getEditableVersion(ObservableStamp editStamp, Transaction transaction) {
+        return ObservableEntityVersion.getOrCreate(getObservableEntity(), this, editStamp, transaction, Editable::new);
+    }
+    /**
+     * Type-safe accessor for the containing pattern entity.
+     */
+    public ObservablePattern getObservablePattern() {
+        return getObservableEntity();
+    }
+    /**
+     * Editable version wrapper for ObservablePatternVersion.
+     * <p>
+     * Implements {@link EditableVersion} marker
+     * interface through the base {@link ObservableEntityVersion.Editable} class.
+     * <p>
+     * Provides editable properties for pattern purpose and meaning that can be
+     * bound to GUI components. Changes are cached until save() or commit() is called.
+     * 
+     * <h2>Pattern-Specific Editable Properties</h2>
+     * <p>In addition to the standard {@link EditableVersion} operations, this class
+     * provides pattern-specific editable properties:
+     * <ul>
+     *   <li>{@link #getPurposeProperty()} - Editable semantic purpose</li>
+     *   <li>{@link #getMeaningProperty()} - Editable semantic meaning</li>
+     * </ul>
+     * 
+     * <h2>Usage Example</h2>
+     * <pre>{@code
+     * // Get editable - implements EditableVersion marker
+     * EditableVersion editable = patternVersion.getEditableVersion(editStamp);
+     * 
+     * // Pattern matching to access pattern-specific properties
+     * switch (editable) {
+     *     case ObservablePatternVersion.Editable pe -> {
+     *         // Bind pattern-specific fields
+     *         purposeComboBox.valueProperty().bindBidirectional(
+     *             pe.getPurposeProperty());
+     *         meaningComboBox.valueProperty().bindBidirectional(
+     *             pe.getMeaningProperty());
+     *     }
+     *     default -> bindGenericFields(editable);
+     * }
+     * }</pre>
+     */
+    public static final class Editable
+            extends ObservableEntityVersion.Editable<ObservablePattern, ObservablePatternVersion, PatternVersionRecord>
+            implements EditableVersion {
+        // Already implements EditableVersion and EditableChronology via parent!
+        
+        private final SimpleObjectProperty<EntityFacade> editablePurposeProperty;
+        private final SimpleObjectProperty<EntityFacade> editableMeaningProperty;
+
+        Editable(ObservablePattern observablePattern, ObservablePatternVersion observableVersion, ObservableStamp editStamp, Transaction transaction) {
+            super(observablePattern, observableVersion, editStamp, transaction);
+
+            // Initialize editable properties
+            this.editablePurposeProperty = new SimpleObjectProperty<>(
+                    this,
+                    "purpose",
+                    EntityHandle.getConceptOrThrow(observableVersion.semanticPurposeNid())
+            );
+
+            this.editableMeaningProperty = new SimpleObjectProperty<>(
+                    this,
+                    "meaning",
+                    EntityHandle.getConceptOrThrow(observableVersion.semanticMeaningNid())
+            );
+
+            // Add listeners to update working version when properties change
+            editablePurposeProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withSemanticPurposeNid(newValue.nid());
+                }
+            });
+
+            editableMeaningProperty.addListener((obs, oldValue, newValue) -> {
+                if (newValue != null) {
+                    workingVersion = workingVersion.withSemanticMeaningNid(newValue.nid());
+                }
+            });
+        }
+
+        /**
+         * Returns the editable purpose property for GUI binding.
+         * <p>
+         * This property is specific to pattern versions and provides direct
+         * bidirectional binding support for UI controls.
+         */
+        public SimpleObjectProperty<EntityFacade> getPurposeProperty() {
+            return editablePurposeProperty;
+        }
+        
+        /**
+         * Returns the editable meaning property for GUI binding.
+         * <p>
+         * This property is specific to pattern versions and provides direct
+         * bidirectional binding support for UI controls.
+         */
+        public SimpleObjectProperty<EntityFacade> getMeaningProperty() {
+            return editableMeaningProperty;
+        }
+        
+        // ... rest of existing implementation ...
+
+        @Override
+        protected PatternVersionRecord createVersionWithStamp(PatternVersionRecord version, int stampNid) {
+            return version.withStampNid(stampNid);
+        }
+
+        @Override
+        protected Entity<?> createAnalogue(PatternVersionRecord version) {
+            return version.chronology().with(version).build();
+        }
+
+        @Override
+        public void reset() {
+            super.reset();
+            // Reset properties to original values
+            editablePurposeProperty.set(EntityHandle.getConceptOrThrow(observableVersion.semanticPurposeNid()));
+            editableMeaningProperty.set(EntityHandle.getConceptOrThrow(observableVersion.semanticMeaningNid()));
+        }
+    }
 }

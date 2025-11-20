@@ -1,16 +1,17 @@
 package dev.ikm.komet.kview.klfields.componentfield;
 
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.layout.component.version.field.KlField;
-import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
+import dev.ikm.komet.layout.version.field.KlField;
+import dev.ikm.komet.layout.version.field.KlFieldFactory;
 import dev.ikm.tinkar.terms.EntityProxy;
 
 public class KlComponentFieldFactory implements KlFieldFactory<EntityProxy> {
 
     @Override
-    public KlField<EntityProxy> create(ObservableField<EntityProxy> observableField, ObservableView observableView, boolean editable) {
-        return new DefaultKlComponentField(observableField, observableView, editable);
+    public KlField<EntityProxy> create(ObservableField<EntityProxy> observableField, ObservableView observableView, ObservableStamp stamp4field) {
+        return new DefaultKlComponentField(observableField, observableView, stamp4field);
     }
 
     @Override

@@ -2,6 +2,8 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.common.alert.*;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLComponentControl;
@@ -107,14 +109,14 @@ public class ReferenceComponentController {
 
     @FXML
     public void confirm(ActionEvent actionEvent) {
-        EntityFacade semantic = createUncommitedSemanticRecord();
-        if (semantic == null) {
-            // prevent user from continuing
-            confirmButton.disableProperty().unbind();
-            confirmButton.setDisable(true);
-            return; // error, one of the field value's default value is null.
-        }
-        genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
+//        EntityFacade semantic = createUncommitedSemanticRecord();
+//        if (semantic == null) {
+//            // prevent user from continuing
+//            confirmButton.disableProperty().unbind();
+//            confirmButton.setDisable(true);
+//            return; // error, one of the field value's default value is null.
+//        }
+//        genEditingViewModel.setPropertyValue(SEMANTIC, semantic);
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new GenEditingEvent(actionEvent.getSource(), CONFIRM_REFERENCE_COMPONENT));
         EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         actionEvent.consume();
@@ -134,8 +136,10 @@ public class ReferenceComponentController {
         UUID semanticUUID = UUID.randomUUID();
         EntityProxy referencedComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
 
+        int semanticNid = Entity.nidForSemantic(patternFacade, PublicIds.of(semanticUUID));
+
         SemanticRecord semanticRecord = SemanticRecordBuilder.builder()
-                .nid(EntityService.get().nidForUuids(semanticUUID))
+                .nid(semanticNid)
                 .leastSignificantBits(semanticUUID.getLeastSignificantBits())
                 .mostSignificantBits(semanticUUID.getMostSignificantBits())
                 .additionalUuidLongs(null)
