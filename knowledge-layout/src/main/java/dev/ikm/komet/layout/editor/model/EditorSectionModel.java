@@ -1,4 +1,4 @@
-package dev.ikm.komet.kleditorapp.model;
+package dev.ikm.komet.layout.editor.model;
 
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -15,8 +15,8 @@ import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_ADDITIONAL_SECTIONS;
 
-public class SectionModel {
-    private static final Logger LOG = LoggerFactory.getLogger(SectionModel.class);
+public class EditorSectionModel {
+    private static final Logger LOG = LoggerFactory.getLogger(EditorSectionModel.class);
 
     public static final String UNTITLED_SECTION_NAME = "Untitled";
 
@@ -26,27 +26,27 @@ public class SectionModel {
      *                                                                             *
      ******************************************************************************/
 
-    public static List<SectionModel> load(KometPreferences editorWindowPreferences, ViewCalculator viewCalculator) {
-        List<SectionModel> sectionModels = new ArrayList<>();
+    public static List<EditorSectionModel> load(KometPreferences editorWindowPreferences, ViewCalculator viewCalculator) {
+        List<EditorSectionModel> editorSectionModels = new ArrayList<>();
 
         List<String> sectionNames = editorWindowPreferences.getList(KL_ADDITIONAL_SECTIONS);
 
         for (String sectionName : sectionNames) {
-            SectionModel sectionModel = new SectionModel();
-            sectionModel.setName(sectionName);
+            EditorSectionModel editorSectionModel = new EditorSectionModel();
+            editorSectionModel.setName(sectionName);
 
             final KometPreferences sectionPreferences = editorWindowPreferences.node(sectionName);
-            sectionModel.loadSectionDetails(sectionPreferences, viewCalculator);
+            editorSectionModel.loadSectionDetails(sectionPreferences, viewCalculator);
 
-            sectionModels.add(sectionModel);
+            editorSectionModels.add(editorSectionModel);
         }
 
-        return sectionModels;
+        return editorSectionModels;
     }
 
     public void loadSectionDetails(KometPreferences sectionPreferences, ViewCalculator viewCalculator) {
-        List<PatternModel> patternModels = PatternModel.load(sectionPreferences, viewCalculator);
-        getPatterns().setAll(patternModels);
+        List<EditorPatternModel> editorPatternModels = EditorPatternModel.load(sectionPreferences, viewCalculator);
+        getPatterns().setAll(editorPatternModels);
     }
 
     public void save(KometPreferences editorWindowPreferences) {
@@ -63,8 +63,8 @@ public class SectionModel {
     public void saveSectionDetails(KometPreferences editorWindowPreferences) {
         final KometPreferences sectionPreferences = editorWindowPreferences.node(getName());
 
-        for (PatternModel patternModel : getPatterns()) {
-            patternModel.save(sectionPreferences);
+        for (EditorPatternModel editorPatternModel : getPatterns()) {
+            editorPatternModel.save(sectionPreferences);
         }
 
         try {
@@ -93,7 +93,7 @@ public class SectionModel {
     public void setTagText(String text) { tagText.set(text); }
 
     // -- patterns
-    private final ObservableList<PatternModel> patterns = FXCollections.observableArrayList();
-    public ObservableList<PatternModel> getPatterns() { return patterns; }
+    private final ObservableList<EditorPatternModel> patterns = FXCollections.observableArrayList();
+    public ObservableList<EditorPatternModel> getPatterns() { return patterns; }
 
 }

@@ -20,16 +20,14 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
+import dev.ikm.komet.layout.editor.EditorWindowManager;
+import dev.ikm.komet.layout.editor.model.EditorPatternModel;
+import dev.ikm.komet.layout.editor.model.EditorSectionModel;
+import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.FieldDefinitionRecord;
-import dev.ikm.tinkar.entity.PatternVersionRecord;
-import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.binding.Bindings;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -48,21 +46,17 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.preferences.KLEditorPreferences.KL_ADDITIONAL_SECTIONS;
-import static dev.ikm.komet.preferences.KLEditorPreferences.KL_MAIN_SECTION;
-import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_LIST;
 
 public class GenPurposeDetailsController {
 
@@ -116,7 +110,11 @@ public class GenPurposeDetailsController {
     private HBox conceptHeaderControlToolBarHbox;
 
     @FXML
-    private Text windowTitle;
+    private Text windowTitleLabel;
+
+    private final HashMap<EditorSectionModel, TitledPane> sectionModelToTitledPane = new HashMap<>();
+
+    private EditorWindowModel editorWindowModel;
 
     private boolean isUpdatingStampSelection = false;
 
@@ -337,90 +335,32 @@ public class GenPurposeDetailsController {
         String absolutePath = editorWindowPreferences.absolutePath();
         Path path = Paths.get(absolutePath);
         String lastDirName = path.getFileName().toString();
+        String windowTitle = lastDirName;
+        windowTitleLabel.setText(lastDirName.substring(0, 1).toUpperCase() + lastDirName.substring(1));
 
-        windowTitle.setText(lastDirName.substring(0, 1).toUpperCase() + lastDirName.substring(1));
+        editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences, viewCalculator, windowTitle);
 
-        Optional<String> mainSectionName = editorWindowPreferences.get(KL_MAIN_SECTION);
-        mainSectionName.ifPresentOrElse(sectionName -> {
+        EditorSectionModel mainSection = editorWindowModel.getMainSection();
 
-            TitledPane mainTitledPane = createTitledPane(sectionName);
-            VBox content = new VBox();
-            mainTitledPane.setContent(content);
+        // Main TitledPane
+        TitledPane mainTitledPane = createTitledPane(mainSection);
+        addPatternViews(mainSection, mainSection.getPatterns());
+        mainContent.getChildren().add(mainTitledPane);
 
-            final KometPreferences sectionPreferences = editorWindowPreferences.node(sectionName);
+        mainSection.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) change -> onSectionPatternsChanged(mainSection, change));
 
-            List<PatternFacade> patternFacades = sectionPreferences.getPatternList(PATTERN_LIST);
-
-            for (PatternFacade patternFacade : patternFacades) {
-
-                Label patternTitle = new Label(patternFacade.description());
-                content.getChildren().add(patternTitle);
-
-                // -- add fields if they exist
-                Entity<EntityVersion> entity = EntityService.get().getEntityFast(patternFacade);
-                Latest<EntityVersion> optionalLatest = viewCalculator.latest(entity);
-
-                AtomicInteger i = new AtomicInteger(1);
-                optionalLatest.ifPresent(latest -> {
-                    PatternVersionRecord patternVersionRecord = (PatternVersionRecord) latest;
-                    ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = patternVersionRecord.fieldDefinitions();
-
-                    fieldDefinitionRecords.stream().forEachOrdered(fieldDefinitionForEntity -> {
-                        String fieldMeaning = fieldDefinitionForEntity.meaning().description();
-                        Label fieldLabel = new Label("     Field " + i + ": " + fieldMeaning);
-                        content.getChildren().add(fieldLabel);
-                        i.incrementAndGet();
-                    });
-                });
-            }
-            mainContent.getChildren().add(mainTitledPane);
-
-
-        }, () -> {
-            throw new RuntimeException("Can't load section (main section) from preferences");
-        });
-
-
-        List<String> additionalSections = editorWindowPreferences.getList(KL_ADDITIONAL_SECTIONS);
-
-        for (String additionalSection : additionalSections) {
-            TitledPane titledPane = createTitledPane(additionalSection);
-            VBox content = new VBox();
-            titledPane.setContent(content);
-
-            final KometPreferences sectionPreferences = editorWindowPreferences.node(additionalSection);
-
-            List<PatternFacade> patternFacades = sectionPreferences.getPatternList(PATTERN_LIST);
-
-            for (PatternFacade patternFacade : patternFacades) {
-
-                Label patternTitle = new Label(patternFacade.description());
-                content.getChildren().add(patternTitle);
-
-                // -- add fields if they exist
-                Entity<EntityVersion> entity = EntityService.get().getEntityFast(patternFacade);
-                Latest<EntityVersion> optionalLatest = viewCalculator.latest(entity);
-
-                AtomicInteger i = new AtomicInteger(1);
-                optionalLatest.ifPresent(latest -> {
-                    PatternVersionRecord patternVersionRecord = (PatternVersionRecord) latest;
-                    ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = patternVersionRecord.fieldDefinitions();
-
-                    fieldDefinitionRecords.stream().forEachOrdered(fieldDefinitionForEntity -> {
-                        String fieldMeaning = fieldDefinitionForEntity.meaning().description();
-                        Label fieldLabel = new Label("     Field " + i + ": " + fieldMeaning);
-                        content.getChildren().add(fieldLabel);
-                        i.incrementAndGet();
-                    });
-                });
-            }
+        // Additional Sections
+        editorWindowModel.getAdditionalSections().forEach(section -> {
+            TitledPane titledPane = createTitledPane(section);
+            addPatternViews(section, section.getPatterns());
             mainContent.getChildren().add(titledPane);
-        }
+        });
+        editorWindowModel.getAdditionalSections().addListener(this::onAdditionalSectionsChanged);
     }
 
-    private TitledPane createTitledPane(String title) {
+    private TitledPane createTitledPane(EditorSectionModel sectionModel) {
         TitledPane titledPane = new TitledPane();
-        titledPane.setText(title);
+        titledPane.textProperty().bind(sectionModel.nameProperty());
 
         titledPane.setMaxHeight(Double.MAX_VALUE);
         titledPane.setMaxWidth(Double.MAX_VALUE);
@@ -428,6 +368,49 @@ public class GenPurposeDetailsController {
         titledPane.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
         titledPane.getStyleClass().add("pattern-titled-pane");
 
+        VBox titledPaneContent = new VBox();
+        titledPane.setContent(titledPaneContent);
+
+        sectionModelToTitledPane.put(sectionModel, titledPane);
+
         return titledPane;
+    }
+
+    private void addPatternViews(EditorSectionModel sectionModel, List<? extends EditorPatternModel> patternModels) {
+        VBox content = (VBox) sectionModelToTitledPane.get(sectionModel).getContent();
+        for (EditorPatternModel editorPatternModel : patternModels) {
+            Label patternTitle = new Label(editorPatternModel.getTitle());
+            content.getChildren().add(patternTitle);
+
+            // -- add fields if they exist
+            AtomicInteger i = new AtomicInteger(1);
+            editorPatternModel.getFields().forEach(field -> {
+                Label fieldLabel = new Label("     Field " + i + ": " + field);
+                content.getChildren().add(fieldLabel);
+            });
+        }
+    }
+
+    private void onSectionPatternsChanged(EditorSectionModel editorSectionModel, ListChangeListener.Change<? extends EditorPatternModel> change) {
+        while(change.next()) {
+            if (change.wasAdded()) {
+                addPatternViews(editorSectionModel, change.getAddedSubList());
+            }
+        }
+    }
+
+    private void onAdditionalSectionsChanged(ListChangeListener.Change<? extends EditorSectionModel> change) {
+        while(change.next()) {
+            if (change.wasAdded()) {
+                for (EditorSectionModel additionalSectionModel : change.getAddedSubList()) {
+                    TitledPane titledPane = createTitledPane(additionalSectionModel);
+                    addPatternViews(additionalSectionModel, additionalSectionModel.getPatterns());
+                    additionalSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>)
+                            patternsChange -> onSectionPatternsChanged(additionalSectionModel, patternsChange));
+
+                    mainContent.getChildren().add(titledPane);
+                }
+            }
+        }
     }
 }

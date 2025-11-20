@@ -2,8 +2,9 @@ package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
-import dev.ikm.komet.kleditorapp.model.SectionModel;
-import dev.ikm.komet.kleditorapp.model.WindowModel;
+import dev.ikm.komet.layout.editor.EditorWindowManager;
+import dev.ikm.komet.layout.editor.model.EditorSectionModel;
+import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.KLEditorWindowCreatedOrRemovedEvent;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -55,6 +56,8 @@ public class KLEditorMainScreenController {
     @FXML
     private KLEditorWindowController klEditorWindowController;
 
+    private EditorWindowModel editorWindowModel;
+
     private WindowSettings windowSettings;
     private KometPreferences klEditorAppPreferences;
 
@@ -73,11 +76,11 @@ public class KLEditorMainScreenController {
 
         initPatternsList(viewCalculator);
 
-        // Init KLEditorWindow Controller
-        klEditorWindowController.init(viewCalculator);
-
         // Init Window
         initWindow(windowToLoad);
+
+        // Init KLEditorWindow Controller
+        klEditorWindowController.init(viewCalculator, editorWindowModel);
 
         // Columns ComboBox
         for (int i = 1 ; i <= 4 ; ++i) {
@@ -109,25 +112,22 @@ public class KLEditorMainScreenController {
     }
 
     private void initWindow(String windowTitle) {
-        WindowModel windowModel = WindowModel.instance();
+        loadWindow(windowTitle);
 
-        if (windowTitle != null) {
-            loadWindow(windowTitle);
-        }
-
-        titleTextField.textProperty().bindBidirectional(windowModel.titleProperty());
+        titleTextField.textProperty().bindBidirectional(editorWindowModel.titleProperty());
 
         // sections
-        SectionModel sectionModel = windowModel.getMainSection();
-        sectionNameTextField.textProperty().bindBidirectional(sectionModel.nameProperty());
+        EditorSectionModel editorSectionModel = editorWindowModel.getMainSection();
+        sectionNameTextField.textProperty().bindBidirectional(editorSectionModel.nameProperty());
     }
 
     private void loadWindow(String windowTitle) {
-        WindowModel windowModel = WindowModel.instance();
-
-        windowModel.setTitle(windowTitle);
-
-        windowModel.load(klEditorAppPreferences, viewCalculator);
+        if (windowTitle != null) {
+            final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+            editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences, viewCalculator, windowTitle);
+        } else {
+            editorWindowModel = EditorWindowManager.loadWindowModel(null, viewCalculator, null);
+        }
     }
 
     @FXML
@@ -135,12 +135,10 @@ public class KLEditorMainScreenController {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
 
-        WindowModel.instance().save(klEditorAppPreferences);
-
-        String windowTitle = WindowModel.instance().getTitle();
+        EditorWindowManager.save(klEditorAppPreferences, editorWindowModel);
 
         eventBus.publish(KL_TOPIC,
-                new KLEditorWindowCreatedOrRemovedEvent(actionEvent, KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED, windowTitle));
+                new KLEditorWindowCreatedOrRemovedEvent(actionEvent, KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED, editorWindowModel.getTitle()));
 
         KLToastManager.toast().show(Toast.Status.SUCCESS, "Window saved successfully");
     }

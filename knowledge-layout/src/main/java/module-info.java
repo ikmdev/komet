@@ -19,9 +19,10 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout.selection;
     exports dev.ikm.komet.layout.selection.element;
     exports dev.ikm.komet.layout.window;
+    exports dev.ikm.komet.layout.editor.model;
+    exports dev.ikm.komet.layout.editor;
 
     opens dev.ikm.komet.layout to javafx.fxml;
     opens dev.ikm.layout.app to javafx.fxml;
     exports dev.ikm.komet.layout.component.field;
-
 }

@@ -1,4 +1,4 @@
-package dev.ikm.komet.kleditorapp.model;
+package dev.ikm.komet.layout.editor.model;
 
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -24,14 +24,14 @@ import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_LIST;
 
-public class PatternModel {
-    private static final Logger LOG = LoggerFactory.getLogger(PatternModel.class);
+public class EditorPatternModel {
+    private static final Logger LOG = LoggerFactory.getLogger(EditorPatternModel.class);
 
     private final ViewCalculator viewCalculator;
     private final PatternFacade patternFacade;
     private final int nid;
 
-    public PatternModel(ViewCalculator viewCalculator, int patternNid) {
+    public EditorPatternModel(ViewCalculator viewCalculator, int patternNid) {
         this.viewCalculator = viewCalculator;
         this.nid = patternNid;
         patternFacade = PatternFacade.make(patternNid);
@@ -52,17 +52,17 @@ public class PatternModel {
 
     }
 
-    public static List<PatternModel> load(KometPreferences sectionPreferences, ViewCalculator viewCalculator) {
-        List<PatternModel> patternModels = new ArrayList<>();
+    public static List<EditorPatternModel> load(KometPreferences sectionPreferences, ViewCalculator viewCalculator) {
+        List<EditorPatternModel> editorPatternModels = new ArrayList<>();
 
         List<PatternFacade> patternFacades = sectionPreferences.getPatternList(PATTERN_LIST);
 
         for (PatternFacade patternFacade : patternFacades) {
-            PatternModel patternModel = new PatternModel(viewCalculator, patternFacade.nid());
-            patternModels.add(patternModel);
+            EditorPatternModel editorPatternModel = new EditorPatternModel(viewCalculator, patternFacade.nid());
+            editorPatternModels.add(editorPatternModel);
         }
 
-        return patternModels;
+        return editorPatternModels;
     }
 
     public void save(KometPreferences sectionPreferences) {

@@ -50,7 +50,7 @@
                                     </styleClass>
                                     <children>
                                         <Region prefHeight="12.0" prefWidth="8.4" styleClass="nine-dots-icon"/>
-                                        <Text fx:id="windowTitle" strokeType="OUTSIDE" strokeWidth="0.0"
+                                        <Text fx:id="windowTitleLabel" strokeType="OUTSIDE" strokeWidth="0.0"
                                               styleClass="lidr-tab-text"/>
                                     </children>
                                     <cursor>
