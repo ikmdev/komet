@@ -42,7 +42,7 @@ public class SemanticVersionPanel extends ComponentVersionIsFinalPanel<Observabl
         propertySheet.pseudoClassStateChanged(PseudoClasses.UNCOMMITTED_PSEUDO_CLASS, version.uncommitted());
         Latest<PatternEntityVersion> latestPatternEntityVersion = viewProperties.calculator().latestPatternEntityVersion(version.patternNid());
         latestPatternEntityVersion.ifPresent(patternEntityVersion -> {
-            ImmutableList<ObservableField> fields = version.fields(patternEntityVersion);
+            ImmutableList<ObservableField> fields = version.fields();
             if (fields.isEmpty()) {
                 collapsiblePane.setExpanded(false);
                 collapsiblePane.setContent(null);

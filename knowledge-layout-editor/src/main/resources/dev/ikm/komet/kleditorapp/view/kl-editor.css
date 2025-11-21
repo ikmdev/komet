@@ -1,0 +1,369 @@
+@import "kl-core.css";
+@import "icons.css";
+
+/*******************************************************************************
+ *                                                                             *
+ * App Header                                                                  *
+ *                                                                             *
+ ******************************************************************************/
+
+.app-header {
+    height: 38px;
+
+    -fx-background-color: #9050d0;
+    -fx-padding: 0 12 0 12;
+
+    -fx-pref-height: height;
+    -fx-min-height: height;
+    -fx-max-height: height;
+}
+
+.app-title {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-letter-spacing: 0.8px;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Top Toolbar                                                                 *
+ *                                                                             *
+ ******************************************************************************/
+
+.top-toolbar,
+.pattern-browser .header {
+    height: 40px;
+
+    -fx-pref-height: height;
+    -fx-min-height: height;
+    -fx-max-height: height;
+}
+
+.top-toolbar {
+    -fx-background-color: -Grey-11;
+    -fx-padding: 0 8px 0 8px;
+}
+
+.top-toolbar .label {
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+}
+
+.top-toolbar .text-field {
+    -fx-background-color: -Grey-9;
+    -fx-padding: 0.416667em 0.583em 0.416667em 0.583em; /* 4 7 4 7 */
+}
+
+.top-toolbar .separator:vertical .line {
+     -fx-border-color: transparent transparent transparent transparent,
+         transparent transparent transparent #555;
+     -fx-border-width: 3, 2;
+     -fx-border-insets: 0, 8 0 8 1;
+ }
+
+.top-toolbar .button.light .icon {
+    -fx-background-color: white;
+
+    -fx-pref-width: 16px;
+    -fx-pref-height: 16px;
+
+    -fx-scale-shape: false;
+}
+
+.top-toolbar .title-name-field {
+    -fx-pref-width: 260;
+
+    -fx-text-fill: #eee;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Side Bar                                                                    *
+ *                                                                             *
+ ******************************************************************************/
+
+.side-bar {
+
+    -default-button-height: 56px;
+
+    -fx-background-insets: 0;
+    -fx-background-color: -Grey-11;
+    -fx-border-insets: 0 0 0 0;
+    -fx-border-style: solid;
+    -fx-border-width: 1;
+    -fx-border-color: -Grey-10;
+}
+
+.side-bar .button,
+.side-bar .toggle-button  {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-text-fill: -Grey-3;
+
+    -fx-border-width: 0;
+}
+
+/* Home Button */
+.side-bar .button {
+    -fx-padding: 16px 12 0 12;
+}
+
+/* Other buttons in the sidebar */
+.side-bar .toggle-button  {
+    -fx-padding: 16px 12 16 12;
+}
+
+.side-bar .button .icon,
+.side-bar .toggle-button .icon {
+    -fx-background-color: -icon-paint;
+    -fx-scale-shape: false;
+}
+
+.side-bar .toggle-button .icon,
+.side-bar .button .icon {
+    width: 20;
+    -fx-min-width: width;
+    -fx-pref-width: width;
+    -fx-max-width: width;
+
+    -fx-alignment: center;
+    -fx-position-shape: true;
+}
+
+.side-bar .separator:horizontal .line {
+    -fx-border-color: #555 transparent transparent transparent,
+        transparent transparent transparent transparent;
+    -fx-border-insets: 0 6 0 6, 1 0 0 0;
+}
+
+/* Toggle Button - Selected */
+.side-bar .toggle-button:selected {
+    -fx-background-color: -Primary-03;
+}
+
+.side-bar .toggle-button:selected .icon {
+    -fx-background-color: #111;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Pattern Browser                                                             *
+ *                                                                             *
+ ******************************************************************************/
+
+.pattern-browser {
+    -fx-pref-width: 360px;
+}
+
+.pattern-browser .header {
+    -fx-background-color: #44495d;
+}
+
+.pattern-browser .header .label {
+    -fx-text-fill: white;
+
+    -fx-font-size: 13px;
+}
+
+.pattern-browser .header .clear-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+
+    -fx-text-fill: white;
+
+    -fx-padding: 0 5 0 5;
+}
+
+.pattern-browser > .content-container {
+    -fx-background-color: #545d72;
+    -fx-padding: 0 7px 0 7px;
+}
+
+.pattern-browser .content-container .search-container {
+    -fx-background-color: #545d72;
+    -fx-padding: 10px 0px 10px 0px;
+}
+
+.pattern-browser .content-container .search-container .text-field {
+    -fx-background-color: -Grey-8;
+    -fx-background-radius: 4px;
+
+    -fx-border-color: #4f4f4f ;
+    -fx-border-radius: 4px;
+
+}
+
+.pattern-browser .content-container .label {
+    -fx-text-fill: #eee;
+}
+
+/*******************************************************************************
+ * Pattern Browser ListView                                                    *
+ ******************************************************************************/
+
+.pattern-browser .list-view {
+    -fx-background-color: transparent;
+}
+
+.pattern-browser .list-view .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 2px 0 0 0;
+}
+
+.pattern-browser .list-view .scroll-bar:vertical .increment-button,
+.pattern-browser .list-view .scroll-bar:vertical .decrement-button,
+.pattern-browser .list-view .scroll-bar:vertical .increment-arrow,
+.pattern-browser .list-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0 0 0 2;
+}
+
+.pattern-browser .list-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #888888;
+    -fx-background-insets: 3 0 3 3;
+    -fx-background-radius: 16px;
+}
+
+/* Horizontal scrollbars */
+.pattern-browser .list-view .scroll-bar:horizontal .increment-arrow,
+.pattern-browser .list-view .scroll-bar:horizontal .decrement-arrow,
+.pattern-browser .list-view .scroll-bar:horizontal .increment-button,
+.pattern-browser .list-view.scroll-bar:horizontal .decrement-button {
+    -fx-padding: 0;
+}
+
+/**********************************  Cells  **********************************/
+
+.pattern-browser .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+
+    -fx-padding: 0 0px 5px 0px;
+    -fx-effect: dropshadow(gaussian , rgba(0, 0, 0, 0.7), 2, 0, 0 , 2 );
+}
+
+.pattern-browser .list-view .list-cell > .main-container {
+    -fx-background-color: white;
+    -fx-background-radius: 2px;
+
+    -fx-fill-height: false;
+
+    -fx-alignment: center-left;
+
+    -fx-padding: 3px 10px 3px 8px;
+}
+
+.pattern-browser .list-view .list-cell:selected > .main-container {
+    -fx-background-color: #cfcfcf;
+}
+
+.pattern-browser .list-view .list-cell:hover > .main-container {
+    -fx-background-color: #eee;
+}
+
+.pattern-browser .list-view .list-cell:selected:hover  > .main-container {
+    -fx-background-color: #ddd;
+}
+
+.pattern-browser .list-view .list-cell:empty > .main-container {
+    -fx-background-color: transparent;
+}
+
+.pattern-browser .list-view .list-cell > .main-container > .content-container {
+   -fx-padding: 0 0 0 8px;
+   -fx-spacing: 1px;
+}
+
+.pattern-browser .list-view .list-cell > .main-container > .content-container,
+.pattern-browser .list-view .list-cell > .main-container > .content-container > .sub-content-container {
+   -fx-background-color: transparent;
+}
+
+.pattern-browser .list-view .list-cell > .main-container .title-label {
+    -fx-text-fill: #111;
+    -fx-font-size: 12px;
+}
+
+.pattern-browser .list-view .list-cell > .main-container .image-view {
+    -fx-fit-width: 20px;
+    -fx-fit-height: 20px;
+}
+
+.pattern-browser .list-view .list-cell > .main-container .status-label {
+    -fx-text-fill: #555;
+    -fx-font-size: 10px;
+}
+
+.pattern-browser .list-view .list-cell > .main-container .last-updated-container {
+
+}
+.pattern-browser .list-view .list-cell > .main-container .last-updated-container > .label {
+    -fx-text-fill: #666666;
+    -fx-font-size: 10px;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Canvas                                                                      *
+ *                                                                             *
+ ******************************************************************************/
+
+.canvas {
+    -fx-background-image: url("dot-grid-40px-25.png");
+    -fx-background-size: 12px 12px;
+    -fx-background-color: transparent;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * Right Pane                                                                  *
+ *                                                                             *
+ ******************************************************************************/
+
+.right-pane {
+    -fx-pref-width: 400px;
+
+    -fx-background-color: #f1f3f8;
+
+    -fx-border-color: #6e7989;
+    -fx-border-width: 0 0 0 1px;
+    -fx-padding: 20px 15px 20px 15px;
+
+    -fx-spacing: 10px;
+}
+
+.right-pane .title {
+    -fx-font-size: 18px;
+
+    -fx-padding: 0 0 10px 0;
+
+    -fx-font-family: "Noto Sans SemiBold";
+}
+
+.right-pane .section-name-container {
+    -fx-spacing: 3px;
+    -fx-font-size: 13px;
+}
+
+.right-pane GridPane > .label {
+    -fx-padding: 0 5 0 0;
+}
+
+.right-pane .separator:horizontal .line {
+    -fx-border-color: #aaa transparent transparent transparent,
+    transparent transparent transparent transparent;
+    -fx-border-insets: 0 0 0 0, 1 0 0 0;
+}
+
+.right-pane .group-title {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 14px;
+}
+
+
+

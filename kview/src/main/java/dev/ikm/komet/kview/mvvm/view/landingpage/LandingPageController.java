@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
 import static dev.ikm.komet.framework.controls.TimeUtils.calculateTimeAgoWithPeriodAndDuration;
+import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
@@ -44,6 +45,7 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
+
 import dev.ikm.tinkar.events.Evt;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -68,11 +70,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -119,6 +123,10 @@ import java.util.regex.Pattern;
 public class LandingPageController implements BasicController {
 
     private static final Logger LOG = LoggerFactory.getLogger(LandingPageController.class);
+    @FXML
+    private SplitPane homePage;
+
+    private Parent klLandingPage;
 
     @FXML
     private Label welcomeTitleLabel;
@@ -153,6 +161,9 @@ public class LandingPageController implements BasicController {
     @FXML
     ComboBox<String> notificationTypeFilterComboBox;
 
+    @FXML
+    private Label knowledgeLayoutButtonLabel;
+
     public static final String DEMO_AUTHOR = "David";
     public static final String LANDING_PAGE_SOURCE = "LANDING_PAGE_SOURCE";
 
@@ -170,6 +181,8 @@ public class LandingPageController implements BasicController {
     @Override
     public void initialize() {
         clearView();
+
+        knowledgeLayoutButtonLabel.setText("Knowledge\nLayout Editor");
 
         notificationTypeFilterComboBox.getItems().addAll("All types");
         notificationTypeFilterComboBox.getSelectionModel().selectFirst();
@@ -622,5 +635,25 @@ public class LandingPageController implements BasicController {
     @FXML
     private void openImport(ActionEvent event) {
         EvtBusFactory.getDefaultEvtBus().publish(IMPORT_TOPIC, new Evt(LANDING_PAGE_SOURCE, Evt.ANY));
+    }
+
+    @FXML
+    private void showHomeLandingPage(ActionEvent event) {
+        landingPageBorderPane.setCenter(homePage);
+    }
+
+    @FXML
+    private void showKlEditorLandingPage(ActionEvent event) {
+        if (klLandingPage == null) {
+            FXMLLoader loader = new FXMLLoader(LandingPageController.class.getResource("kl-landing-page.fxml"));
+            Parent root = null;
+            try {
+                root = loader.load();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            klLandingPage = root;
+        }
+        landingPageBorderPane.setCenter(klLandingPage);
     }
 }

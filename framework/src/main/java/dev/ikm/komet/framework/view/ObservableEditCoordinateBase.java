@@ -144,7 +144,7 @@ public abstract class ObservableEditCoordinateBase extends ObservableCoordinateA
         this.setValue(EditCoordinateRecord.make(newAuthorConcept.nid(),
                 getDefaultModuleNid(),
                 getDestinationModuleNid(),
-                getDefaultModuleNid(),
+                getDefaultPathNid(),
                 getPromotionPathNid()
         ));
     }
@@ -155,7 +155,7 @@ public abstract class ObservableEditCoordinateBase extends ObservableCoordinateA
         this.setValue(EditCoordinateRecord.make(getAuthorNidForChanges(),
                 newModuleConcept.nid(),
                 getDestinationModuleNid(),
-                getDefaultModuleNid(),
+                getDefaultPathNid(),
                 getPromotionPathNid()
         ));
     }
@@ -166,7 +166,7 @@ public abstract class ObservableEditCoordinateBase extends ObservableCoordinateA
         this.setValue(EditCoordinateRecord.make(getAuthorNidForChanges(),
                 getDefaultModuleNid(),
                 newModuleConcept.nid(),
-                getDefaultModuleNid(),
+                getDefaultPathNid(),
                 getPromotionPathNid()
         ));
     }

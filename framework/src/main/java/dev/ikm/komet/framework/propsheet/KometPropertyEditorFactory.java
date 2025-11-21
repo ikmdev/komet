@@ -186,7 +186,7 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                     //TODO add stated/inferred to root property?
                     DiTree<EntityVertex> axiomTree = (DiTree<EntityVertex>) property.getValue();
                     PremiseType premiseType = PremiseType.STATED;
-                    if (property.getObservableField().meaningNid() == TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
+                    if (property.getObservableField().definition(viewProperties.calculator()).meaningNid() == TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
                         premiseType = PremiseType.INFERRED;
                     }
                     int semanticNid = property.observableField.field().nid();

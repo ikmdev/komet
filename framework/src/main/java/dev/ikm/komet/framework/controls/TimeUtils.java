@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.framework.controls;
 
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
+
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -22,6 +24,10 @@ import java.util.Locale;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 
+/**
+ * @deprecated Use {@link DateTimeUtil} instead
+ */
+@Deprecated
 public class TimeUtils {
 
     private final static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
@@ -29,12 +35,18 @@ public class TimeUtils {
             .withLocale(Locale.getDefault())
             .withZone(ZoneId.systemDefault());
 
+    private final static DateTimeFormatter SHORT_DATE_TIME_FORMATTER = DateTimeFormatter
+            .ofPattern("dd-MM-yyyy")
+            .withLocale(Locale.getDefault())
+            .withZone(ZoneId.systemDefault());
     /**
      * utility method to give a readable phrase to a last edited timestamp
      * @param pastTime
      * @param zone
      * @return the formatted recent timestamp in "X duration ago"
+     * @deprecated Use {@link DateTimeUtil} instead
      */
+    @Deprecated
     public static String calculateTimeAgoWithPeriodAndDuration(LocalDateTime pastTime, ZoneId zone) {
         Period period = Period.between(pastTime.toLocalDate(), getCurrentTimeByTimeZone(zone).toLocalDate());
         Duration duration = Duration.between(pastTime, getCurrentTimeByTimeZone(zone));
@@ -55,6 +67,13 @@ public class TimeUtils {
         }
     }
 
+    /**
+     *
+     * @param zone
+     * @return
+     * @deprecated Use {@link DateTimeUtil} instead
+     */
+    @Deprecated
     private static OffsetDateTime getCurrentTimeByTimeZone(ZoneId zone) {
         OffsetDateTime offsetdatetime = OffsetDateTime.now();
         return offsetdatetime;
@@ -65,11 +84,29 @@ public class TimeUtils {
      *
      * @param stampTime the time represented as long
      * @return a human readable String
+     * @deprecated Use {@link DateTimeUtil} instead
      */
+    @Deprecated
     public static String toDateString(long stampTime) {
         if (!(stampTime == PREMUNDANE_TIME)) {
             Instant stampInstance = Instant.ofEpochSecond(stampTime / 1000);
             return DATE_TIME_FORMATTER.format(stampInstance);
+        } else {
+            return PREMUNDANE;
+        }
+    }
+
+    /**
+     * Converts a date represented using a long to a human readable String.
+     * The date returned is in a short String.
+     *
+     * @param stampTime the time represented as long
+     * @return a human-readable String
+     */
+    public static String toShortDateString(long stampTime) {
+        if (!(stampTime == PREMUNDANE_TIME)) {
+            Instant stampInstance = Instant.ofEpochSecond(stampTime / 1000);
+            return SHORT_DATE_TIME_FORMATTER.format(stampInstance);
         } else {
             return PREMUNDANE;
         }

@@ -79,7 +79,7 @@ import java.util.function.Function;
  * private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid, int parentNid) {
  *     ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(getNavigator(), nid, parentNid);
  *     conceptNavigatorTreeItem.expandedProperty().subscribe((_, expanded) -&gt; {
- *             if (expanded && conceptNavigatorTreeItem.getChildren().isEmpty()) {
+ *             if (expanded &amp;&amp; conceptNavigatorTreeItem.getChildren().isEmpty()) {
  *                 conceptNavigatorTreeItem.getChildren().addAll(getChildren(nid));
  *             }
  *         });

@@ -30,7 +30,6 @@ import dev.ikm.komet.framework.context.AddToContextMenu;
 import dev.ikm.komet.framework.docbook.DocBook;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +70,7 @@ public class MenuSupplierForFocusedEntity implements AddToContextMenu {
         LOG.warn("Port method from old project");
     }
 
-    public static Menu makeCopyMenuItem(Optional<Entity<EntityVersion>> concept, ViewProperties viewProperties) {
+    public static Menu makeCopyMenuItem(Optional<Entity<?>> concept, ViewProperties viewProperties) {
         Menu copyMenu = new Menu("copy");
         MenuItem conceptLoincCodeMenuItem = new MenuItemWithText("Concept LOINC code");
         copyMenu.getItems().add(conceptLoincCodeMenuItem);

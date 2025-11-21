@@ -43,9 +43,9 @@ import static dev.ikm.komet.framework.StyleClasses.COMPONENT_COLLAPSIBLE_PANEL;
  * @param <OV>
  * @param <EV>
  */
-public class ComponentIsFinalPanel<ES extends ObservableEntitySnapshot<OE, OV, EV>,
-        OE extends ObservableEntity<OV, EV>,
-        OV extends ObservableVersion<EV>,
+public class ComponentIsFinalPanel<ES extends ObservableEntitySnapshot<OE, OV>,
+        OE extends ObservableEntity<OV>,
+        OV extends ObservableEntityVersion<?,?>,
         EV extends EntityVersion> extends ComponentPanelAbstract {
     protected final TitledPane collapsiblePane = new TitledPane("Component", componentDetailPane);
     private final ES component;
