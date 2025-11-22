@@ -2,6 +2,8 @@ package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
+import dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
@@ -53,8 +55,10 @@ public class KLEditorMainScreenController {
     @FXML
     private ListView patternBrowserListView;
 
-    @FXML
     private KLEditorWindowController klEditorWindowController;
+
+    @FXML
+    private EditorWindowControl editorWindowControl;
 
     private EditorWindowModel editorWindowModel;
 
@@ -80,7 +84,7 @@ public class KLEditorMainScreenController {
         initWindow(windowToLoad);
 
         // Init KLEditorWindow Controller
-        klEditorWindowController.init(viewCalculator, editorWindowModel);
+        klEditorWindowController = new KLEditorWindowController(editorWindowModel, editorWindowControl, viewCalculator);
 
         // Columns ComboBox
         for (int i = 1 ; i <= 4 ; ++i) {

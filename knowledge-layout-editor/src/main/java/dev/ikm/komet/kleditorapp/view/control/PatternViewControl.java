@@ -1,4 +1,4 @@
-package dev.ikm.komet.kleditorapp.view;
+package dev.ikm.komet.kleditorapp.view.control;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;

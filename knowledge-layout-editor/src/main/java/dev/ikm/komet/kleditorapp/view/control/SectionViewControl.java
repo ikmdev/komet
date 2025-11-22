@@ -1,4 +1,4 @@
-package dev.ikm.komet.kleditorapp.view;
+package dev.ikm.komet.kleditorapp.view.control;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -20,7 +20,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.function.BiConsumer;
 
-import static dev.ikm.komet.kleditorapp.view.PatternBrowserCell.KL_EDITOR_VERSION_PROXY;
+import static dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell.KL_EDITOR_VERSION_PROXY;
 
 public class SectionViewControl extends Region {
     private final BorderPane mainContainer = new BorderPane();

@@ -45,6 +45,8 @@ module dev.ikm.komet.kleditorapp {
 
     exports dev.ikm.komet.kleditorapp.view;
     opens dev.ikm.komet.kleditorapp.view to javafx.fxml, dev.ikm.komet.application;
+    exports dev.ikm.komet.kleditorapp.view.control;
+    opens dev.ikm.komet.kleditorapp.view.control to dev.ikm.komet.application, javafx.fxml;
 
     uses EntityKlWindowFactory;
 }
