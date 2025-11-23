@@ -35,8 +35,8 @@ public class LoadDataTask extends TrackingCallable<ReasonerService> {
 
 	@Override
 	protected ReasonerService compute() throws Exception {
-		reasonerService.extractData();
-		reasonerService.loadData();
+		reasonerService.extractData(this);
+		reasonerService.loadData(this);
 		String msg = "Load in " + durationString();
 		updateMessage(msg);
 		LOG.info(msg);

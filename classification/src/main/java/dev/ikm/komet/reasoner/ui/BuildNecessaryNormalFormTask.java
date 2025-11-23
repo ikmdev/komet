@@ -36,7 +36,7 @@ public class BuildNecessaryNormalFormTask extends TrackingCallable<ReasonerServi
 
     @Override
     protected ReasonerService compute() throws Exception {
-        reasonerService.buildNecessaryNormalForm();
+        reasonerService.buildNecessaryNormalForm(this);
         String msg = "Built necessary normal form in "+ durationString();
         updateMessage(msg);
         LOG.info(msg);

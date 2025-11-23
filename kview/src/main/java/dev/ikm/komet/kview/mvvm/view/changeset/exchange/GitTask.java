@@ -968,9 +968,6 @@ public class GitTask extends TrackingCallable<Boolean> {
 
             rs.init(Calculators.View.Default(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
 
-            // Use this task as the progress updater
-            rs.setProgressUpdater(this);
-
             try {
                 // Extract
                 updateMessage("Extracting data for reasoning...");
@@ -989,12 +986,12 @@ public class GitTask extends TrackingCallable<Boolean> {
 
                 // Build NNF
                 updateMessage("Building necessary normal form...");
-                rs.buildNecessaryNormalForm();
+                rs.buildNecessaryNormalForm(this);
                 updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.9);
 
                 // Write inferred results
                 updateMessage("Writing inferred results...");
-                ClassifierResults results = rs.writeInferredResults();
+                ClassifierResults results = rs.writeInferredResults(this);
                 updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 1.0);
 
                 LOG.info("After Size of ConceptSet: {}", rs.getReasonerConceptSet().size());
