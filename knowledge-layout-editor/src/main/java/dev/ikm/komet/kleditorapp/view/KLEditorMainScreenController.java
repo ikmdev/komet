@@ -86,6 +86,9 @@ public class KLEditorMainScreenController {
         // Init KLEditorWindow Controller
         klEditorWindowController = new KLEditorWindowController(editorWindowModel, editorWindowControl, viewCalculator);
 
+        // Selection Manager
+        SelectionManager selectionManager = new SelectionManager(editorWindowControl);
+
         // Columns ComboBox
         for (int i = 1 ; i <= 4 ; ++i) {
             columnsComboBox.getItems().add(i + " column");

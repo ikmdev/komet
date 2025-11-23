@@ -91,7 +91,7 @@ public class KLEditorWindowController {
             Bindings.bindContent(patternViewControl.getFields(), editorPatternModel.getFields());
 
             SectionViewControl sectionViewControl = sectionModelToView.get(editorSectionModel);
-            sectionViewControl.getItems().add(patternViewControl);
+            sectionViewControl.getPatterns().add(patternViewControl);
         }
     }
 

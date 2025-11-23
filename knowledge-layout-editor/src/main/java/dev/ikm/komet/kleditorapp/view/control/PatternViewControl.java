@@ -10,7 +10,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-public class PatternViewControl extends Region {
+public class PatternViewControl extends EditorWindowBaseControl {
+    public static final String DEFAULT_STYLE_CLASS = "pattern-view";
+
     private final VBox patternContainer = new VBox();
     private final Label patternTitle = new Label();
 
@@ -27,6 +29,8 @@ public class PatternViewControl extends Region {
         fields.addListener(this::onFieldAdded);
 
         getChildren().add(patternContainer);
+
+        getStyleClass().add(DEFAULT_STYLE_CLASS);
     }
 
     private void onFieldAdded(ListChangeListener.Change<? extends String> change) {

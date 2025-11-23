@@ -1,5 +1,6 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
+import dev.ikm.komet.kleditorapp.view.skin.EditorWindowSkin;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;

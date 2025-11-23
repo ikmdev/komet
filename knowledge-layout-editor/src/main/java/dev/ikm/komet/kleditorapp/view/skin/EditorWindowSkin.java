@@ -1,5 +1,6 @@
-package dev.ikm.komet.kleditorapp.view.control;
+package dev.ikm.komet.kleditorapp.view.skin;
 
+import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
