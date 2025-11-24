@@ -321,11 +321,11 @@
 
 /*******************************************************************************
  *                                                                             *
- * Right Pane                                                                  *
+ * Right Properties Pane                                                       *
  *                                                                             *
  ******************************************************************************/
 
-.right-pane {
+.right-properties-pane {
     -fx-pref-width: 400px;
 
     -fx-background-color: #f1f3f8;
@@ -337,7 +337,7 @@
     -fx-spacing: 10px;
 }
 
-.right-pane .title {
+.right-properties-pane .title {
     -fx-font-size: 18px;
 
     -fx-padding: 0 0 10px 0;
@@ -345,22 +345,34 @@
     -fx-font-family: "Noto Sans SemiBold";
 }
 
-.right-pane .section-name-container {
+/******************************************************************************
+ * Section Properties Pane                                                    *           *
+ ******************************************************************************/
+
+.right-properties-pane .section-properties .main-container {
+    -fx-spacing: 8;
+}
+
+.right-properties-pane .section-properties .section-name-container {
     -fx-spacing: 3px;
     -fx-font-size: 13px;
 }
 
-.right-pane GridPane > .label {
+.right-properties-pane .section-properties GridPane > .label {
     -fx-padding: 0 5 0 0;
 }
 
-.right-pane .separator:horizontal .line {
+.right-properties-pane .section-properties .main-container .separator {
+    -fx-pref-width: 200px;
+}
+
+.right-properties-pane .section-properties .separator:horizontal .line {
     -fx-border-color: #aaa transparent transparent transparent,
     transparent transparent transparent transparent;
     -fx-border-insets: 0 0 0 0, 1 0 0 0;
 }
 
-.right-pane .group-title {
+.right-properties-pane .section-properties .group-title {
     -fx-font-family: "Noto Sans Bold";
     -fx-font-size: 14px;
 }
