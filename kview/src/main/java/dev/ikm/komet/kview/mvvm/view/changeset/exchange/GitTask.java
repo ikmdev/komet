@@ -971,12 +971,22 @@ public class GitTask extends TrackingCallable<Boolean> {
             try {
                 // Extract
                 updateMessage("Extracting data for reasoning...");
-                rs.extractData();
+                rs.extractData(new TrackingCallable<Object>() {
+                    @Override
+                    protected Object compute() throws Exception {
+                        return null;
+                    }
+                });
                 updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.25);
 
                 // Load
                 updateMessage("Loading data for reasoning...");
-                rs.loadData();
+                rs.loadData(new TrackingCallable<Object>() {
+                    @Override
+                    protected Object compute() throws Exception {
+                        return null;
+                    }
+                });
                 updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.5);
 
                 // Compute
