@@ -72,7 +72,7 @@ public class KLEditorWindowController {
     private void addSectionView(EditorSectionModel editorSectionModel) {
         SectionViewControl sectionViewControl = new SectionViewControl();
 
-        sectionViewControl.nameProperty().bind(editorSectionModel.nameProperty());
+        sectionViewControl.nameProperty().bindBidirectional(editorSectionModel.nameProperty());
         sectionViewControl.tagTextProperty().bind(editorSectionModel.tagTextProperty());
 
         sectionViewToModel.put(sectionViewControl, editorSectionModel);

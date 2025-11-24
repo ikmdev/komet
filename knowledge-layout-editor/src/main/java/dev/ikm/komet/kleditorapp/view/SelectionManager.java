@@ -10,8 +10,16 @@ import javafx.collections.ListChangeListener;
 import javafx.scene.input.MouseEvent;
 
 public class SelectionManager {
+    private static SelectionManager INSTANCE;
 
-    public SelectionManager(EditorWindowControl editorWindowControl) {
+    public static SelectionManager init(EditorWindowControl editorWindowControl) {
+        INSTANCE = new SelectionManager(editorWindowControl);
+        return INSTANCE;
+    }
+
+    public static SelectionManager instance() { return INSTANCE; }
+
+    private SelectionManager(EditorWindowControl editorWindowControl) {
         editorWindowControl.getSectionViews().forEach(this::setupSectionView);
         editorWindowControl.getSectionViews().addListener((ListChangeListener<? super SectionViewControl>) c -> onSectionViewsChanged(c));
     }

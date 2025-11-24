@@ -41,13 +41,10 @@ public class KLEditorMainScreenController {
     private final EvtBus eventBus = EvtBusFactory.getDefaultEvtBus();
 
     @FXML
+    private PropertiesPane propertiesPane;
+
+    @FXML
     private BorderPane klEditorMainContainer;
-
-    @FXML
-    private ComboBox<String> columnsComboBox;
-
-    @FXML
-    private TextField sectionNameTextField;
 
     @FXML
     private TextField titleTextField;
@@ -87,13 +84,10 @@ public class KLEditorMainScreenController {
         klEditorWindowController = new KLEditorWindowController(editorWindowModel, editorWindowControl, viewCalculator);
 
         // Selection Manager
-        SelectionManager selectionManager = new SelectionManager(editorWindowControl);
+        SelectionManager selectionManager = SelectionManager.init(editorWindowControl);
 
-        // Columns ComboBox
-        for (int i = 1 ; i <= 4 ; ++i) {
-            columnsComboBox.getItems().add(i + " column");
-        }
-        columnsComboBox.setValue(columnsComboBox.getItems().getFirst());
+        // Properties pane
+        propertiesPane.init(selectionManager);
 
         // setup Toast Manager
         KLToastManager.initParent(klEditorMainContainer);
@@ -120,12 +114,7 @@ public class KLEditorMainScreenController {
 
     private void initWindow(String windowTitle) {
         loadWindow(windowTitle);
-
         titleTextField.textProperty().bindBidirectional(editorWindowModel.titleProperty());
-
-        // sections
-        EditorSectionModel editorSectionModel = editorWindowModel.getMainSection();
-        sectionNameTextField.textProperty().bindBidirectional(editorSectionModel.nameProperty());
     }
 
     private void loadWindow(String windowTitle) {
