@@ -17,7 +17,7 @@ public class KlEditableComponentField extends BaseDefaultKlField<EntityProxy> {
      * @param stamp4field observable stamp for field
      */
     public KlEditableComponentField(ObservableField.Editable<EntityProxy> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
-        KLComponentControl node = KLComponentControlFactory.createTypeAheadComponentControl(observableView.calculator());
+        KLComponentControl node = KLComponentControlFactory.createComponentControl(observableView.calculator());
         super(observableFieldEditable, observableView, stamp4field, node);
 
         FeatureDefinition fieldDefinition = field().definition(observableView.calculator());

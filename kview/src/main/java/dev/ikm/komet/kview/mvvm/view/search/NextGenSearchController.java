@@ -53,7 +53,6 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -144,7 +143,6 @@ public class NextGenSearchController {
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
         clearView();
-        setUpTypeAhead();
         setUpSearchOptionsPopOver();
 
         Subscriber<SearchSortOptionEvent> searchSortOptionListener = (evt -> {
@@ -243,30 +241,6 @@ public class NextGenSearchController {
         }
 
         currentSearchResultType = newSearchResultType;
-    }
-
-    private void setUpTypeAhead() {
-        searchField.setCompleter(newSearchText -> {
-            TypeAheadSearch typeAheadSearch = TypeAheadSearch.get();
-            List<EntityFacade> entityFacadeResults = typeAheadSearch.typeAheadSuggestions(
-                getViewProperties().nodeView().calculator().navigationCalculator(), /* nav calculator */
-                searchField.getText(), /* text */
-                10  /* max results returned */
-            );
-            return entityFacadeResults;
-        });
-
-        searchField.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(EntityFacade entityFacade) {
-                return getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
-            }
-
-            @Override
-            public EntityFacade fromString(String string) {
-                return null;
-            }
-        });
     }
 
     private void setUpSearchOptionsPopOver() {
