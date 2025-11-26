@@ -17,8 +17,10 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
+import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
@@ -26,6 +28,9 @@ import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.PatternVersionRecord;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -252,7 +257,6 @@ public class GenPurposeDetailsController {
 //    }
 
     public ViewProperties getViewProperties() {
-//        return getPatternViewModel().getPropertyValue(VIEW_PROPERTIES);
         return viewProperties;
     }
 
@@ -379,17 +383,33 @@ public class GenPurposeDetailsController {
     private void addPatternViews(EditorSectionModel sectionModel, List<? extends EditorPatternModel> patternModels) {
         VBox content = (VBox) sectionModelToTitledPane.get(sectionModel).getContent();
         for (EditorPatternModel editorPatternModel : patternModels) {
-            Label patternTitle = new Label(editorPatternModel.getTitle());
-            content.getChildren().add(patternTitle);
+            int nid = editorPatternModel.getNid();
 
-            // -- add fields if they exist
-            AtomicInteger i = new AtomicInteger(1);
-            editorPatternModel.getFields().forEach(field -> {
-                Label fieldLabel = new Label("     Field " + i + ": " + field);
-                content.getChildren().add(fieldLabel);
+            EntityHandle handle = EntityHandle.get(nid);
+            handle.asPattern().ifPresentOrElse(patternEntity -> addPatternView(editorPatternModel, patternEntity, content),
+            () -> {
+              throw new RuntimeException("Expecting a Pattern");
             });
         }
     }
+
+    private void addPatternView(EditorPatternModel editorPatternModel, PatternEntity patternEntity, VBox content) {
+        VBox patternContainer = new VBox();
+        patternContainer.getStyleClass().add("pattern-container");
+
+        // Pattern title
+        Label patternTitle = new Label(editorPatternModel.getTitle());
+        patternTitle.getStyleClass().add("gen-purpose-pattern-title");
+        patternContainer.getChildren().add(patternTitle);
+
+        // Pattern fields
+        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternEntity).get();
+        List<KLReadOnlyBaseControl> readOnlyControls = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
+        patternContainer.getChildren().addAll(readOnlyControls);
+
+        content.getChildren().add(patternContainer);
+    }
+
 
     private void onSectionPatternsChanged(EditorSectionModel editorSectionModel, ListChangeListener.Change<? extends EditorPatternModel> change) {
         while(change.next()) {

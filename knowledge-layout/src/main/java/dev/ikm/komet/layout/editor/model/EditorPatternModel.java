@@ -96,5 +96,7 @@ public class EditorPatternModel {
     private final ObservableList<String> fields = FXCollections.observableArrayList();
     public ObservableList<String> getFields() { return fields; }
 
+    // -- nid
+    public int getNid() { return nid; }
 
 }

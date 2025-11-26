@@ -58,7 +58,6 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleVa
         mainContainer.setFillWidth(true);
         getChildren().add(mainContainer);
 
-        titleLabel.setPrefWidth(Double.MAX_VALUE);
         titleLabel.setMaxWidth(Region.USE_PREF_SIZE);
 
 
