@@ -8,6 +8,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -66,10 +67,25 @@ public class SectionViewControl extends EditorWindowBaseControl {
             doPatternDrop(event, this);
         });
 
+        patterns.addListener(this::onPatternsChanged);
+
         // CSS
         titleContainer.getStyleClass().add("title-container");
         contentContainer.getStyleClass().add("content");
         getStyleClass().add(DEFAULT_STYLE_CLASS);
+    }
+
+    private void onPatternsChanged(ListChangeListener.Change<? extends PatternViewControl> change) {
+        while (change.next()) {
+            if (change.wasAdded()) {
+                change.getAddedSubList().forEach(pattern -> pattern.setParentSection(this));
+            }
+        }
+    }
+
+    @Override
+    public void delete() {
+        getParentWindow().getSectionViews().remove(this);
     }
 
     private void setTitledPaneUnCollapsible(TitledPane titledPane) {
@@ -121,7 +137,13 @@ public class SectionViewControl extends EditorWindowBaseControl {
     private final ObservableList<PatternViewControl> patterns = FXCollections.observableArrayList();
     public ObservableList<PatternViewControl> getPatterns() { return patterns; }
 
-    // on pattern dropped
+    // -- parent window
+    private final ObjectProperty<EditorWindowControl> parentWindow = new SimpleObjectProperty<>();
+    public EditorWindowControl getParentWindow() { return parentWindow.get(); }
+    public ObjectProperty<EditorWindowControl> parentWindowProperty() { return parentWindow; }
+    public void setParentWindow(EditorWindowControl parent) { this.parentWindow.set(parent); }
+
+    // -- on pattern dropped
     private ObjectProperty<BiConsumer<DragEvent, Integer>> onPatternDropped = new SimpleObjectProperty<>();
     public BiConsumer<DragEvent, Integer> getOnPatternDropped() { return onPatternDropped.get(); }
     public ObjectProperty<BiConsumer<DragEvent, Integer>> onPatternDroppedProperty() { return onPatternDropped; }

@@ -1,6 +1,5 @@
 package dev.ikm.komet.kleditorapp.view;
 
-import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
@@ -16,12 +15,10 @@ import javafx.scene.layout.VBox;
 public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionViewControl> {
     public static final String DEFAULT_STYLE_CLASS = "section-properties";
 
-    private VBox mainContainer = new VBox();
+    private final VBox sectionMainContainer = new VBox();
 
     private final TextField sectionNameTextField;
     private final ComboBox<Integer> columnsComboBox;
-
-    private SectionViewControl previouslySelectedSection;
 
     public SectionPropertiesPane() {
         // Section name container
@@ -76,45 +73,27 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
         columnsComboBox.setMaxWidth(Double.MAX_VALUE);
         gridPane.add(columnsComboBox, 1, 0);
 
-        mainContainer.getChildren().addAll(
+        sectionMainContainer.getChildren().addAll(
             sectionNameContainer,
             separator,
             gridTitleLabel,
             gridPane
         );
 
-        getChildren().add(mainContainer);
+        mainContainer.setCenter(sectionMainContainer);
 
         // CSS
         getStyleClass().add(DEFAULT_STYLE_CLASS);
-        mainContainer.getStyleClass().add("main-container");
-    }
-
-    @Override
-    protected void onDelete(ActionEvent event) {
-
+        sectionMainContainer.getStyleClass().add("section-main-container");
     }
 
     @Override
     public void initControl(SectionViewControl section) {
-        if (previouslySelectedSection != null) {
-            sectionNameTextField.textProperty().unbindBidirectional(previouslySelectedSection.nameProperty());
+        if (currentlyShownControl != null) {
+            sectionNameTextField.textProperty().unbindBidirectional(currentlyShownControl.nameProperty());
         }
         sectionNameTextField.textProperty().bindBidirectional(section.nameProperty());
 
-        previouslySelectedSection = section;
-    }
-
-    @Override
-    protected void layoutChildren() {
-        double leftInsets = snappedLeftInset();
-        double rightInsets = snappedRightInset();
-        double topInsets = snappedTopInset();
-        double bottomInsets = snappedBottomInset();
-        double width = getWidth();
-        double height = getHeight();
-
-        mainContainer.resizeRelocate(leftInsets, topInsets,
-                width - leftInsets - rightInsets, height - topInsets - bottomInsets);
+        super.initControl(section);
     }
 }

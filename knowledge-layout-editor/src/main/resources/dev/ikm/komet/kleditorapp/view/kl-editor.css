@@ -332,7 +332,7 @@
 
     -fx-border-color: #6e7989;
     -fx-border-width: 0 0 0 1px;
-    -fx-padding: 20px 15px 20px 15px;
+    -fx-padding: 20px 0px 0px 0px;
 
     -fx-spacing: 10px;
 }
@@ -340,16 +340,25 @@
 .right-properties-pane .title {
     -fx-font-size: 18px;
 
-    -fx-padding: 0 0 10px 0;
+    -fx-padding: 0 0 10px 10;
 
     -fx-font-family: "Noto Sans SemiBold";
 }
 
+.right-properties-pane .bottom-container {
+    -fx-padding: 7px 10 7px 10;
+    -fx-background-color: #44495d;
+}
+
 /******************************************************************************
- * Section Properties Pane                                                    *           *
+ * Section Properties Pane                                                    *
  ******************************************************************************/
 
-.right-properties-pane .section-properties .main-container {
+.right-properties-pane .section-properties . section-main-container {
+    -fx-padding: 0 10 0 10;
+}
+
+.right-properties-pane .section-properties .section-main-container {
     -fx-spacing: 8;
 }
 
@@ -362,7 +371,7 @@
     -fx-padding: 0 5 0 0;
 }
 
-.right-properties-pane .section-properties .main-container .separator {
+.right-properties-pane .section-properties .section-main-container .separator {
     -fx-pref-width: 200px;
 }
 

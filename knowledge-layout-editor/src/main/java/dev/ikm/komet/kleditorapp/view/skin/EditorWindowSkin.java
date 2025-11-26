@@ -1,8 +1,10 @@
 package dev.ikm.komet.kleditorapp.view.skin;
 
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
+import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import javafx.beans.binding.Bindings;
+import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Button;
@@ -35,7 +37,20 @@ public class EditorWindowSkin extends SkinBase<EditorWindowControl> {
         root.setPrefWidth(600.0);
 
         buildUI();
+
+        control.getSectionViews().addListener(this::onSectionsChanged);
+
         getChildren().add(root);
+    }
+
+    private void onSectionsChanged(ListChangeListener.Change<? extends SectionViewControl> change) {
+        EditorWindowControl control = getSkinnable();
+
+        while(change.next()) {
+            if (change.wasAdded()) {
+                change.getAddedSubList().forEach(section -> section.setParentWindow(control));
+            }
+        }
     }
 
     private void buildUI() {

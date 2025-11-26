@@ -15,6 +15,8 @@ public abstract class EditorWindowBaseControl extends Region {
         getStyleClass().add(DEFAULT_STYLE_CLASS);
     }
 
+    public abstract void delete();
+
     // -- selection
     private BooleanProperty selected = new SimpleBooleanProperty() {
         @Override

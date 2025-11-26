@@ -1,5 +1,7 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -7,7 +9,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 public class PatternViewControl extends EditorWindowBaseControl {
@@ -31,6 +32,11 @@ public class PatternViewControl extends EditorWindowBaseControl {
         getChildren().add(patternContainer);
 
         getStyleClass().add(DEFAULT_STYLE_CLASS);
+    }
+
+    @Override
+    public void delete() {
+        getParentSection().getPatterns().remove(this);
     }
 
     private void onFieldAdded(ListChangeListener.Change<? extends String> change) {
@@ -65,6 +71,12 @@ public class PatternViewControl extends EditorWindowBaseControl {
         patternContainer.resizeRelocate(leftInsets, topInsets,
                 width - leftInsets - rightInsets, height - topInsets - bottomInsets);
     }
+
+    // -- parent section
+    private ObjectProperty<SectionViewControl> parentSection = new SimpleObjectProperty<>();
+    public SectionViewControl getParentSection() { return parentSection.get(); }
+    public ObjectProperty<SectionViewControl> parentSectionProperty() { return parentSection; }
+    public void setParentSection(SectionViewControl parentSection) { this.parentSection.set(parentSection); }
 
     // -- title
     private final StringProperty title = new SimpleStringProperty();

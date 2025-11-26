@@ -1,9 +1,11 @@
 package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowBaseControl;
+import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
@@ -16,6 +18,9 @@ public class PropertiesPane extends Region {
     private final StackPane controlPropertiesContainer = new StackPane();
 
     private final SectionPropertiesPane sectionPropertiesPane = new SectionPropertiesPane();
+    private final PatternPropertiesPane patternPropertiesPane = new PatternPropertiesPane();
+
+    private ControlBasePropertiesPane currentPropertiesPane;
 
     public PropertiesPane() {
         getStyleClass().add(DEFAULT_STYLE_CLASS);
@@ -27,9 +32,19 @@ public class PropertiesPane extends Region {
 
         mainContainer.setTop(titleLabel);
         mainContainer.setCenter(controlPropertiesContainer);
+
         controlPropertiesContainer.getChildren().add(sectionPropertiesPane);
+        controlPropertiesContainer.getChildren().add(patternPropertiesPane);
 
         getChildren().add(mainContainer);
+    }
+
+    public void setCurrentPropertiesPane(ControlBasePropertiesPane controlBasePropertiesPane) {
+        for (Node child : controlPropertiesContainer.getChildren()) {
+            child.setVisible(child == controlBasePropertiesPane);
+            child.setManaged(child == controlBasePropertiesPane);
+        }
+        currentPropertiesPane = controlBasePropertiesPane;
     }
 
     public void init(SelectionManager selectionManager) {
@@ -38,10 +53,16 @@ public class PropertiesPane extends Region {
             switch (control) {
                 case SectionViewControl sectionView -> {
                     setTitle(sectionView.getTagText());
-                    sectionPropertiesPane.initControl(sectionView);
+                    setCurrentPropertiesPane(sectionPropertiesPane);
+
+                }
+                case PatternViewControl patternView -> {
+                    setTitle("Pattern");
+                    setCurrentPropertiesPane(patternPropertiesPane);
                 }
                 default -> System.out.println("TODO...");
             }
+            currentPropertiesPane.initControl(control);
 
         });
     }
