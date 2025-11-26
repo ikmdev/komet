@@ -31,8 +31,8 @@ public class PropertiesPane extends Region {
         titleLabel.textProperty().bind(title);
 
         mainContainer.setTop(titleLabel);
-        mainContainer.setCenter(controlPropertiesContainer);
 
+        mainContainer.setCenter(controlPropertiesContainer);
         controlPropertiesContainer.getChildren().add(sectionPropertiesPane);
         controlPropertiesContainer.getChildren().add(patternPropertiesPane);
 
@@ -54,7 +54,6 @@ public class PropertiesPane extends Region {
                 case SectionViewControl sectionView -> {
                     setTitle(sectionView.getTagText());
                     setCurrentPropertiesPane(sectionPropertiesPane);
-
                 }
                 case PatternViewControl patternView -> {
                     setTitle("Pattern");

@@ -1,7 +1,7 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -73,10 +73,10 @@ public class PatternViewControl extends EditorWindowBaseControl {
     }
 
     // -- parent section
-    private ObjectProperty<SectionViewControl> parentSection = new SimpleObjectProperty<>();
+    private ReadOnlyObjectWrapper<SectionViewControl> parentSection = new ReadOnlyObjectWrapper<>();
     public SectionViewControl getParentSection() { return parentSection.get(); }
-    public ObjectProperty<SectionViewControl> parentSectionProperty() { return parentSection; }
-    public void setParentSection(SectionViewControl parentSection) { this.parentSection.set(parentSection); }
+    public ReadOnlyObjectProperty<SectionViewControl> parentSectionProperty() { return parentSection.getReadOnlyProperty(); }
+    void setParentSection(SectionViewControl parentSection) { this.parentSection.set(parentSection); }
 
     // -- title
     private final StringProperty title = new SimpleStringProperty();

@@ -14,6 +14,7 @@ public abstract class ControlBasePropertiesPane<T extends EditorWindowBaseContro
     private final Button deleteButton = new Button();
 
     protected T currentlyShownControl;
+    protected T previouslyShownControl;
 
     public ControlBasePropertiesPane() {
         bottomContainer.getChildren().add(deleteButton);
@@ -34,14 +35,17 @@ public abstract class ControlBasePropertiesPane<T extends EditorWindowBaseContro
     }
 
     /**
-     * Inits the current properties panel using the passed in Control.
-     * Overriding methods in subclasses must call super at the end.
+     * Initializes the current properties panel using the passed in Control.
      *
      * @param control the control to initialize the properties panel to.
      */
-    public void initControl(T control){
+    public final void initControl(T control){
+        previouslyShownControl = currentlyShownControl;
         currentlyShownControl = control;
+        doInit(control);
     }
+
+    protected abstract void doInit(T control);
 
     @Override
     protected void layoutChildren() {

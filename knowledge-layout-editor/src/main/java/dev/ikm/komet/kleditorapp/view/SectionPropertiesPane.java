@@ -88,12 +88,10 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
     }
 
     @Override
-    public void initControl(SectionViewControl section) {
-        if (currentlyShownControl != null) {
-            sectionNameTextField.textProperty().unbindBidirectional(currentlyShownControl.nameProperty());
+    public void doInit(SectionViewControl section) {
+        if (previouslyShownControl != null) {
+            sectionNameTextField.textProperty().unbindBidirectional(previouslyShownControl.nameProperty());
         }
         sectionNameTextField.textProperty().bindBidirectional(section.nameProperty());
-
-        super.initControl(section);
     }
 }

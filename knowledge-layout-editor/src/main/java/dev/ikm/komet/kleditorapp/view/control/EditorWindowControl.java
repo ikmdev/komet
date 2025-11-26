@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -18,11 +19,21 @@ public class EditorWindowControl extends Control {
 
     public EditorWindowControl() {
         getStyleClass().add(DEFAULT_STYLE_CLASS);
+
+        getSectionViews().addListener(this::onSectionsChanged);
     }
 
     @Override
     protected Skin<?> createDefaultSkin() {
         return new EditorWindowSkin(this);
+    }
+
+    private void onSectionsChanged(ListChangeListener.Change<? extends SectionViewControl> change) {
+        while(change.next()) {
+            if (change.wasAdded()) {
+                change.getAddedSubList().forEach(section -> section.setParentWindow(this));
+            }
+        }
     }
 
     // -- title

@@ -38,20 +38,10 @@ public class EditorWindowSkin extends SkinBase<EditorWindowControl> {
 
         buildUI();
 
-        control.getSectionViews().addListener(this::onSectionsChanged);
-
         getChildren().add(root);
     }
 
-    private void onSectionsChanged(ListChangeListener.Change<? extends SectionViewControl> change) {
-        EditorWindowControl control = getSkinnable();
 
-        while(change.next()) {
-            if (change.wasAdded()) {
-                change.getAddedSubList().forEach(section -> section.setParentWindow(control));
-            }
-        }
-    }
 
     private void buildUI() {
         // Create header

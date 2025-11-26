@@ -4,6 +4,8 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -138,10 +140,10 @@ public class SectionViewControl extends EditorWindowBaseControl {
     public ObservableList<PatternViewControl> getPatterns() { return patterns; }
 
     // -- parent window
-    private final ObjectProperty<EditorWindowControl> parentWindow = new SimpleObjectProperty<>();
+    private final ReadOnlyObjectWrapper<EditorWindowControl> parentWindow = new ReadOnlyObjectWrapper<>();
     public EditorWindowControl getParentWindow() { return parentWindow.get(); }
-    public ObjectProperty<EditorWindowControl> parentWindowProperty() { return parentWindow; }
-    public void setParentWindow(EditorWindowControl parent) { this.parentWindow.set(parent); }
+    public ReadOnlyObjectProperty<EditorWindowControl> parentWindowProperty() { return parentWindow.getReadOnlyProperty(); }
+    void setParentWindow(EditorWindowControl parent) { this.parentWindow.set(parent); }
 
     // -- on pattern dropped
     private ObjectProperty<BiConsumer<DragEvent, Integer>> onPatternDropped = new SimpleObjectProperty<>();
