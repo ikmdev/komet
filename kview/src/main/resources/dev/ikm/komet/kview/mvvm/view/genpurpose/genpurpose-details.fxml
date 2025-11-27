@@ -154,8 +154,7 @@
                                         <Font name="Open Sans SemiBold" size="13.0"/>
                                     </font>
                                 </Text>
-                                <ToggleButton fx:id="propertiesToggleButton" mnemonicParsing="false"
-                                              text="ToggleButton">
+                                <ToggleButton fx:id="propertiesToggleButton" mnemonicParsing="false" onAction="#openPropertiesPanel" text="ToggleButton">
                                     <graphic>
                                         <Group>
                                             <children>

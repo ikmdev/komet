@@ -37,6 +37,7 @@ import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.NodeOrientation;
 import javafx.scene.control.Button;
@@ -49,12 +50,15 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -62,7 +66,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 
 public class GenPurposeDetailsController {
 
@@ -118,6 +126,8 @@ public class GenPurposeDetailsController {
     @FXML
     private Text windowTitleLabel;
 
+    private GenPurposePropertiesController propertiesController;
+
     private final HashMap<EditorSectionModel, TitledPane> sectionModelToTitledPane = new HashMap<>();
 
     private EditorWindowModel editorWindowModel;
@@ -143,6 +153,39 @@ public class GenPurposeDetailsController {
 
         // Setup window support with explicit draggable nodes
         addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
+    }
+
+    @FXML
+    private void openPropertiesPanel() {
+        LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
+
+        propertiesToggleButton.setSelected(true);
+        if (isClosed(propertiesSlideoutTrayPane)) {
+            slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
+        }
+
+        updateDraggableNodesForPropertiesPanel(true);
+    }
+
+    public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
+        addPaneToTray(propertiesViewBorderPane, propertiesSlideoutTrayPane);
+    }
+
+    private void addPaneToTray(Pane contentViewPane, Pane slideoutTrayPane) {
+        double width = contentViewPane.getWidth();
+        contentViewPane.setLayoutX(width);
+        contentViewPane.getStyleClass().add("slideout-tray-pane");
+
+        slideoutTrayPane.getChildren().add(contentViewPane);
+        clipChildren(slideoutTrayPane, 0);
+        contentViewPane.setLayoutX(-width);
+        slideoutTrayPane.setMaxWidth(0);
+
+        Region contentRegion = contentViewPane;
+        // binding the child's height to the preferred height of hte parent
+        // so that when we resize the window the content in the slide out pane
+        // aligns with the details view
+        contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
     }
 
     private void onStampSelectionChanged() {
@@ -184,21 +227,15 @@ public class GenPurposeDetailsController {
     }
 
     private void setupProperties() {
-        // Stamp
-//        patternViewModel.getProperty(STAMP_VIEW_MODEL).bind(propertiesController.stampFormViewModelProperty());
+        FXMLLoader fxmlLoader = new FXMLLoader(GenPurposeDetailsController.class.getResource("genpurpose-properties.fxml"));
+        try {
+            BorderPane root = fxmlLoader.load();
+            this.propertiesController = fxmlLoader.getController();
 
-//        propertiesController.updateModel(patternViewModel.getPropertyValue(PATTERN));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-//        patternViewModel.getProperty(MODE).subscribe(newMode -> {
-//            if (newMode.equals(EDIT)) {
-//                updateStampControlFromViewModel();
-//
-//                // now in EDIT mode, update the identifier
-//                updateDisplayIdentifier();
-//            }
-//        });
-
-//        propertiesController.getStampFormViewModel().getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(this::onStampConfirmedOrSubmitted);
     }
 
     private void onStampConfirmedOrSubmitted(boolean isSubmittedOrConfirmed) {
@@ -330,6 +367,26 @@ public class GenPurposeDetailsController {
 
     private EventHandler<MouseEvent> hideTooltipHandler(Tooltip tooltip) {
         return event -> tooltip.hide();
+    }
+
+    /**
+     * Updates draggable behavior for the properties panel based on its open/closed state.
+     * <p>
+     * When opened, adds the properties tabs pane as a draggable node. When closed,
+     * safely removes the draggable behavior to prevent memory leaks.
+     *
+     * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
+     */
+    private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
+        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+            if (isOpen) {
+                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                LOG.debug("Added properties nodes as draggable");
+            } else {
+                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                LOG.debug("Removed properties nodes from draggable");
+            }
+        }
     }
 
     public void init(KometPreferences editorWindowPreferences, ViewProperties viewProperties) {
