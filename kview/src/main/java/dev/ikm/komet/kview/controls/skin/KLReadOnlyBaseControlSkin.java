@@ -53,13 +53,11 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleVa
 
         control.editModeProperty().addListener(editModeChanged);
 
-
         mainContainer.getChildren().addAll(titleLabel);
         mainContainer.setFillWidth(true);
         getChildren().add(mainContainer);
 
         titleLabel.setMaxWidth(Region.USE_PREF_SIZE);
-
 
         initContextMenu(control);
 

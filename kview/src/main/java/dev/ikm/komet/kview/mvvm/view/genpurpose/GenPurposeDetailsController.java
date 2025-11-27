@@ -19,6 +19,7 @@ import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
+import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
@@ -363,13 +364,14 @@ public class GenPurposeDetailsController {
     }
 
     private TitledPane createTitledPane(EditorSectionModel sectionModel) {
-        TitledPane titledPane = new TitledPane();
+        SectionTitledPane titledPane = new SectionTitledPane();
         titledPane.textProperty().bind(sectionModel.nameProperty());
 
         titledPane.setMaxHeight(Double.MAX_VALUE);
         titledPane.setMaxWidth(Double.MAX_VALUE);
 
         titledPane.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
+
         titledPane.getStyleClass().add("pattern-titled-pane");
 
         VBox titledPaneContent = new VBox();
