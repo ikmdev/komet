@@ -116,6 +116,14 @@ public class KLEditorWindowController {
         editorWindowModel.getAdditionalSections().add(editorSectionModel);
     }
 
+    /**
+     * Perform any initial configuration. This method is called after everything has been setup.
+     */
+    public void start() {
+        // Select main section initially
+        SelectionManager.instance().setSelectedControl(sectionModelToView.get(editorWindowModel.getMainSection()));
+    }
+
     public void shutdown() {
         EditorWindowManager.shutdown();
     }

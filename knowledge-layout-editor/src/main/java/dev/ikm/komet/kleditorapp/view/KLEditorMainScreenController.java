@@ -5,7 +5,6 @@ import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
-import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.KLEditorWindowCreatedOrRemovedEvent;
@@ -25,7 +24,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -62,7 +60,7 @@ public class KLEditorMainScreenController {
     private WindowSettings windowSettings;
     private KometPreferences klEditorAppPreferences;
 
-    private ObservableViewNoOverride windowView;
+    private ObservableViewNoOverride windowViewCoordinates;
 
     private ViewCalculator viewCalculator;
     private ObservableList<Entity<EntityVersion>> patterns;
@@ -71,9 +69,9 @@ public class KLEditorMainScreenController {
         this.klEditorAppPreferences = klEditorAppPreferences;
         this.windowSettings = windowSettings;
 
-        this.windowView = windowSettings.getView();
+        this.windowViewCoordinates = windowSettings.getView();
 
-        viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
+        viewCalculator = ViewCalculatorWithCache.getCalculator(windowViewCoordinates.toViewCoordinateRecord());
 
         initPatternsList(viewCalculator);
 
@@ -88,6 +86,8 @@ public class KLEditorMainScreenController {
 
         // Properties pane
         propertiesPane.init(selectionManager);
+
+        klEditorWindowController.start();
 
         // setup Toast Manager
         KLToastManager.initParent(klEditorMainContainer);
