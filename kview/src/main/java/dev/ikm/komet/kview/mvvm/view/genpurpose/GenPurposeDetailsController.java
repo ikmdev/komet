@@ -55,15 +55,17 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
@@ -126,6 +128,8 @@ public class GenPurposeDetailsController {
     @FXML
     private Text windowTitleLabel;
 
+    private BorderPane propertiesBorderPane;
+
     private GenPurposePropertiesController propertiesController;
 
     private final HashMap<EditorSectionModel, TitledPane> sectionModelToTitledPane = new HashMap<>();
@@ -145,6 +149,9 @@ public class GenPurposeDetailsController {
         publishTooltip.textProperty().bind(Bindings.when(savePatternButton.disableProperty())
                 .then("Publish: Disabled")
                 .otherwise("Submit"));
+
+        // Setup Properties Bump out view
+        setupProperties();
 
         // Assign the tooltip to the StackPane (container of Publish button)
         setupTooltipForDisabledButton(savePatternButton);
@@ -227,15 +234,13 @@ public class GenPurposeDetailsController {
     }
 
     private void setupProperties() {
-        FXMLLoader fxmlLoader = new FXMLLoader(GenPurposeDetailsController.class.getResource("genpurpose-properties.fxml"));
-        try {
-            BorderPane root = fxmlLoader.load();
-            this.propertiesController = fxmlLoader.getController();
+        URL genpurposePropertiesFXML = GenPurposeDetailsController.class.getResource("genpurpose-properties.fxml");
+        Config config = new Config(genpurposePropertiesFXML);
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+        JFXNode<BorderPane, GenPurposePropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
+        this.propertiesBorderPane = propsFXMLLoader.node();
+        this.propertiesController = propsFXMLLoader.controller();
+        attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
     }
 
     private void onStampConfirmedOrSubmitted(boolean isSubmittedOrConfirmed) {

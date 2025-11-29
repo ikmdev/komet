@@ -180,7 +180,7 @@ public class GenPurposePropertiesController {
 //    }
 
     private void setupShowingPanelHandlers() {
-        Config config = new Config(this.getClass().getResource("semantic-edit-fields.fxml"))
+        Config config = new Config(this.getClass().getResource("genpurpose-edit-fields.fxml"))
             .addNamedViewModel(new NamedVm("genEditingViewModel", genPurposeViewModel));
 
         editFieldsJfxNode = FXMLMvvmLoader.make(config);

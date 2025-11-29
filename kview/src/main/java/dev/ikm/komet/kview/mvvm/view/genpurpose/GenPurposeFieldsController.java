@@ -36,7 +36,7 @@ import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
-import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -135,7 +135,7 @@ public class GenPurposeFieldsController {
     private Button submitButton;
 
     @InjectViewModel
-    private GenEditingViewModel genEditingViewModel;
+    private GenPurposeViewModel genPurposeViewModel;
 
     // ObservableComposer integration for proper transaction management
     private ObservableComposer composer;
@@ -170,7 +170,7 @@ public class GenPurposeFieldsController {
     }
 
     private StampCalculator getStampCalculator() {
-        ObservableViewWithOverride view = genEditingViewModel.getViewProperties().nodeView();
+        ObservableViewWithOverride view = genPurposeViewModel.getViewProperties().nodeView();
         StampCalculator stampCalculator = view.calculator();
         return stampCalculator;
     }
@@ -185,8 +185,8 @@ public class GenPurposeFieldsController {
         ConceptFacade author = getViewProperties().parentView().editCoordinate().getAuthorForChanges();
         ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
         ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
-        if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
-            StampFormViewModelBase stampFormViewModel = genEditingViewModel.getPropertyValue(STAMP_VIEW_MODEL);
+        if (genPurposeViewModel.getPropertyValue(MODE).equals(CREATE)) {
+            StampFormViewModelBase stampFormViewModel = genPurposeViewModel.getPropertyValue(STAMP_VIEW_MODEL);
             module = stampFormViewModel.getPropertyValue(MODULE);
             path = stampFormViewModel.getPropertyValue(PATH);
         } else {
@@ -286,10 +286,10 @@ public class GenPurposeFieldsController {
         editFieldsVBox.setSpacing(8.0);
         editFieldsVBox.getChildren().clear();
         submitButton.setDisable(true); // disable submit until fields changed.
-        genEditingViewModel.save();
-        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+        genPurposeViewModel.save();
+        EntityFacade semantic = genPurposeViewModel.getPropertyValue(SEMANTIC);
         reloadPatternNavigator = true;
-        ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
+        ObjectProperty<EntityFacade> semanticProperty = genPurposeViewModel.getProperty(SEMANTIC);
         // listen if the semantic property is updated during Create mode.
         semanticProperty.addListener( _ -> setupEditSemanticDetails());
 
@@ -297,8 +297,8 @@ public class GenPurposeFieldsController {
         Subscriber<GenEditingEvent> createUncommittedSemanticSubscriber = evt -> {
             // After confirming stamp and reference component create
             if (evt.getEventType() == CONFIRM_REFERENCE_COMPONENT) {
-                EntityFacade referencedComponentFacade = genEditingViewModel.getPropertyValue(REF_COMPONENT);
-                EntityFacade patternFacade = genEditingViewModel.getPropertyValue(PATTERN);
+                EntityFacade referencedComponentFacade = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
+                EntityFacade patternFacade = genPurposeViewModel.getPropertyValue(PATTERN);
                 ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referencedComponentFacade.nid()).expectEntity();
                 ObservablePattern observablePattern = ObservableEntityHandle.get(patternFacade.nid()).expectPattern();
 
@@ -309,18 +309,18 @@ public class GenPurposeFieldsController {
 
                 semanticEditor.save(); // Save to create an uncommitted version
                 EntityHandle.get(semanticEditor.getEntity().nid()).asSemantic().ifPresent(semanticEntity ->
-                        genEditingViewModel.setPropertyValue(SEMANTIC, semanticEntity));
+                        genPurposeViewModel.setPropertyValue(SEMANTIC, semanticEntity));
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
                 GenEditingEvent.class, createUncommittedSemanticSubscriber);
 
-        if (semantic != null && genEditingViewModel.getPropertyValue(MODE) == EDIT) {
+        if (semantic != null && genPurposeViewModel.getPropertyValue(MODE) == EDIT) {
             //Change the button name to RESET FORM in EDIT MODE
             clearOrResetFormButton.setText("RESET FORM");
             setupEditSemanticDetails();
         }
-        genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
+        genPurposeViewModel.getProperty(MODE).subscribe((mode) -> {
             if(mode == EDIT){
                 clearOrResetFormButton.setText("RESET FORM");
             }else {
@@ -338,7 +338,7 @@ public class GenPurposeFieldsController {
     }
 
     private void setupEditSemanticDetails() {
-        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+        EntityFacade semantic = genPurposeViewModel.getPropertyValue(SEMANTIC);
         this.observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
         this.observableEntityHandle.ifSemantic(observableSemantic -> {
             observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
@@ -366,7 +366,7 @@ public class GenPurposeFieldsController {
                         uncheckedField.setValue(values.get(i));
                     }
                 }
-                if(reloadPatternNavigator && genEditingViewModel.getPropertyValue(MODE) == CREATE) {
+                if(reloadPatternNavigator && genPurposeViewModel.getPropertyValue(MODE) == CREATE) {
                     // refresh the pattern navigation
                     EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
                             new PatternSavedEvent(this, PatternSavedEvent.PATTERN_CREATION_EVENT));
@@ -385,7 +385,7 @@ public class GenPurposeFieldsController {
         //  pencil icon and wants to edit all the fields
         // if the FIELD_INDEX is >= 0 then the user chose the context menu of a single field
         //  to edit that field
-        genEditingViewModel.getObjectProperty(FIELD_INDEX).subscribe(fieldIndex -> {
+        genPurposeViewModel.getObjectProperty(FIELD_INDEX).subscribe(fieldIndex -> {
             int fieldIdx = (int)fieldIndex;
             editFieldsVBox.getChildren().clear();
             // single field to edit
@@ -434,7 +434,7 @@ public class GenPurposeFieldsController {
             ObservableList<ObservableField.Editable<?>> editables =  editableVersion.getEditableFields();
             // Generate UI nodes from editable fields
             for (ObservableField.Editable editableField : editables) {
-                if (genEditingViewModel.getPropertyValue(MODE) == CREATE && editableField.getValue() instanceof EntityProxy) {
+                if (genPurposeViewModel.getPropertyValue(MODE) == CREATE && editableField.getValue() instanceof EntityProxy) {
                     // Set default blank concept for new semantics
                     @SuppressWarnings("unchecked")
                     ObservableField.Editable<EntityProxy> proxyField = (ObservableField.Editable<EntityProxy>) editableField;
@@ -472,7 +472,7 @@ public class GenPurposeFieldsController {
      * Reconstitutes the editable fields by rebinding them to the current observable semantic version.
      */
     private void rebindNewEditableVersion() {
-        EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+        EntityFacade semantic = genPurposeViewModel.getPropertyValue(SEMANTIC);
         this.observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
         this.observableEntityHandle.ifSemantic(observableSemantic -> {
             observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
@@ -521,13 +521,13 @@ public class GenPurposeFieldsController {
     }
 
     public ViewProperties getViewProperties() {
-        return genEditingViewModel.getPropertyValue(VIEW_PROPERTIES);
+        return genPurposeViewModel.getPropertyValue(VIEW_PROPERTIES);
     }
 
     @FXML
     private void cancel(ActionEvent actionEvent) {
         doTheClearOrResetForm();
-        EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
         // if previous state was closed cancel will close properties bump out.
         // else show
     }
@@ -535,7 +535,7 @@ public class GenPurposeFieldsController {
     @FXML
     private void clearOrResetForm(ActionEvent actionEvent) {
         // if create mode display the confirm clear dialog
-        if (genEditingViewModel.getPropertyValue(MODE) == CREATE) {
+        if (genPurposeViewModel.getPropertyValue(MODE) == CREATE) {
             ConfirmationDialogController.showConfirmationDialog(this.cancelButton, CONFIRM_CLEAR_TITLE, CONFIRM_CLEAR_MESSAGE)
                     .thenAccept(confirmed -> {
                         if (confirmed) {
@@ -634,7 +634,7 @@ public class GenPurposeFieldsController {
                     .toList();
 
             // Get the semantic for event publishing
-            EntityFacade semantic = genEditingViewModel.getPropertyValue(SEMANTIC);
+            EntityFacade semantic = genPurposeViewModel.getPropertyValue(SEMANTIC);
 
             // Save editable version (creates uncommitted version)
             semanticEditor.save();
@@ -658,18 +658,18 @@ public class GenPurposeFieldsController {
 
                 // Publish event to refresh details area
                 EvtBusFactory.getDefaultEvtBus().publish(
-                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                        genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
                         new GenEditingEvent(actionEvent.getSource(), PUBLISH, fieldValues, semantic.nid())
                 );
 
                 // Show success message
                 String submitMessage = "Semantic Details %s Successfully!"
-                        .formatted(genEditingViewModel.getStringProperty(MODE).equals(EDIT) ? "Edited" : "Added");
+                        .formatted(genPurposeViewModel.getStringProperty(MODE).equals(EDIT) ? "Edited" : "Added");
                 toast().withUndoAction(undoActionEvent -> LOG.info("undo called"))
                         .show(Toast.Status.SUCCESS, submitMessage);
 
                 // Cleanup and reset
-                genEditingViewModel.setPropertyValue(MODE, EDIT);
+                genPurposeViewModel.setPropertyValue(MODE, EDIT);
                 composer = null;
                 initializeComposer();
                 readyToEditVersion.set(false); // reset change flag when user types older listener will trigger rebind.
