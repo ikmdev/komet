@@ -83,7 +83,6 @@ public abstract class RunReasonerTaskBase extends TrackingCallable<ReasonerServi
 		Future<ReasonerService> future = TinkExecutor.threadPool().submit(task);
 		future.get();
 		updateProgress(workDone);
-
 	}
 
 	protected void processResults(int workDone) throws Exception {

@@ -228,7 +228,7 @@ public class ImportController {
                     if (entityCountSummary != null) {
                         EntityCountSummary ecs = entityCountSummary;
                         String completeMsg = importTask.getMessage();
-                        importTask.updateMessage("%s - total: %d, C: %d, Sem: %d, P: %d, Stamps: %d".formatted(
+                        importTask.updateMessage("%s - total: %,d, C: %,d, Sem: %,d, P: %,d, Stamps: %,d".formatted(
                                 completeMsg,
                                 ecs.getTotalCount(),
                                 ecs.conceptsCount(),
