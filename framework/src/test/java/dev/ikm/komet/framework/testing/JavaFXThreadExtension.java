@@ -115,7 +115,7 @@ public class JavaFXThreadExtension implements InvocationInterceptor, BeforeAllCa
         boolean completed = latch.await(timeout, unit);
         if (!completed) {
             throw new RuntimeException(
-                String.format("Test timed out after %d %s waiting for JavaFX thread",
+                String.format("Test timed out after %,d %s waiting for JavaFX thread",
                     timeout, unit.toString().toLowerCase()));
         }
 
