@@ -3,9 +3,13 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.util.uuid.UuidUtil;
 import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -33,10 +37,10 @@ public class KLComponentControlFactory {
      *                                                                         *
      **************************************************************************/
 
-    public static KLComponentControl createTypeAheadComponentControl(ViewCalculator viewCalculator) {
+    public static KLComponentControl createComponentControl(ViewCalculator viewCalculator) {
         KLComponentControl componentControl = new KLComponentControl();
         NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
-        //componentControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
+        componentControl.setTypeAheadCompleter(createUUIDConverterFunction(navigationCalculator));
 
         // add the function to render the component name
         componentControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
@@ -48,17 +52,14 @@ public class KLComponentControlFactory {
         // suggestions cell factory
         componentControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
 
-        // header node
-        componentControl.setTypeAheadHeaderPane(createTypeAheadHeaderPane());
-
         return componentControl;
     }
 
-    public static <T extends IntIdCollection> KLComponentCollectionControl createTypeAheadComponentListControl(ViewCalculator viewCalculator) {
+    public static <T extends IntIdCollection> KLComponentCollectionControl createComponentListControl(ViewCalculator viewCalculator) {
         KLComponentCollectionControl<T> componentListControl = new KLComponentCollectionControl<>();
         NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
 
-        //componentListControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
+        componentListControl.setTypeAheadCompleter(createUUIDConverterFunction(navigationCalculator));
 
         // add the function to render the component name
         componentListControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
@@ -86,6 +87,31 @@ public class KLComponentControlFactory {
         });
 
         return componentListControl;
+    }
+
+    /***************************************************************************
+     *                                                                         *
+     * Private Implementation                                                  *
+     *                                                                         *
+     **************************************************************************/
+
+    /**
+     * If the user enters a valid UUID this method will return the associated Concept.
+     *
+     * @param navigationCalculator the navigation calculator.
+     * @return a List containing the associated concept or an empty list if there is no Concept associated with the UUID
+     */
+    private static Function<String, List<EntityProxy>> createUUIDConverterFunction(NavigationCalculator navigationCalculator) {
+        return newSearchText -> {
+            List<EntityProxy> entityProxyResults = new ArrayList<>();
+
+            UuidUtil.getUUID(newSearchText).ifPresent(
+                    uuid -> EntityHandle.get(PrimitiveData.nid(PublicIds.of(uuid))).ifPresent(
+                    entityFacade -> entityProxyResults.add(entityFacade.toProxy())
+                    )
+            );
+            return entityProxyResults;
+        };
     }
 
 

@@ -1,11 +1,9 @@
 package dev.ikm.komet.kview.klfields.componentlistfield;
 
-import static dev.ikm.komet.kview.controls.KLComponentControlFactory.createTypeAheadComponentListControl;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.controls.KLComponentControlFactory.createComponentListControl;
+
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.observable.ObservableField.Editable;
 import dev.ikm.komet.framework.observable.ObservableStamp;
-import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.layout.version.field.KlComponentListField;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -17,12 +15,6 @@ import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.property.ObjectProperty;
-import javafx.scene.Parent;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 
@@ -63,7 +55,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
             UUID journalTopic) {
 
         Region node = switch (stamp4field.lastVersion().uncommitted()) {
-            case true -> createTypeAheadComponentListControl(observableView.calculator());
+            case true -> createComponentListControl(observableView.calculator());
             case false -> new KLReadOnlyComponentListControl();
         };
 
@@ -104,7 +96,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
             UUID journalTopic) {
 
         Region node = switch (stamp4field.lastVersion().uncommitted()) {
-            case true -> createTypeAheadComponentListControl(observableView.calculator());
+            case true -> createComponentListControl(observableView.calculator());
             case false -> new KLReadOnlyComponentListControl();
         };
 
