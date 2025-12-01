@@ -316,7 +316,7 @@
 .canvas {
     -fx-background-image: url("dot-grid-40px-25.png");
     -fx-background-size: 12px 12px;
-    -fx-background-color: transparent;
+    -fx-background-color: #cad3e2;
 }
 
 /*******************************************************************************
@@ -386,5 +386,38 @@
     -fx-font-size: 14px;
 }
 
+/******************************************************************************
+ * Pattern Properties Pane                                                    *
+ ******************************************************************************/
 
+.right-properties-pane .pattern-properties .pattern-main-container {
+    -fx-padding: 0 10 0 10;
+}
 
+.right-properties-pane .pattern-properties .pattern-main-container {
+    -fx-spacing: 8;
+}
+
+.right-properties-pane .pattern-properties .pattern-name-container {
+    -fx-spacing: 3px;
+    -fx-font-size: 13px;
+}
+
+.right-properties-pane .pattern-properties GridPane > .label {
+    -fx-padding: 0 5 0 0;
+}
+
+.right-properties-pane .pattern-properties .pattern-main-container .separator {
+    -fx-pref-width: 200px;
+}
+
+.right-properties-pane .pattern-properties .separator:horizontal .line {
+    -fx-border-color: #aaa transparent transparent transparent,
+    transparent transparent transparent transparent;
+    -fx-border-insets: 0 0 0 0, 1 0 0 0;
+}
+
+.right-properties-pane .pattern-properties .group-title {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 14px;
+}

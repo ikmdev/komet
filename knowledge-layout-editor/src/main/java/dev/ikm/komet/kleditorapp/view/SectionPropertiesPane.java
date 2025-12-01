@@ -1,7 +1,8 @@
 package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
-import javafx.event.ActionEvent;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -12,6 +13,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 
+import java.util.List;
+
 public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionViewControl> {
     public static final String DEFAULT_STYLE_CLASS = "section-properties";
 
@@ -19,6 +22,8 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
 
     private final TextField sectionNameTextField;
     private final ComboBox<Integer> columnsComboBox;
+
+    private final ObservableList<Integer> columnsList = FXCollections.observableArrayList(List.of(1, 2, 3));
 
     public SectionPropertiesPane() {
         // Section name container
@@ -70,6 +75,8 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
 
         // ComboBox in grid
         columnsComboBox = new ComboBox<>();
+        columnsComboBox.setItems(columnsList);
+        columnsComboBox.getSelectionModel().select((Integer)1);
         columnsComboBox.setMaxWidth(Double.MAX_VALUE);
         gridPane.add(columnsComboBox, 1, 0);
 

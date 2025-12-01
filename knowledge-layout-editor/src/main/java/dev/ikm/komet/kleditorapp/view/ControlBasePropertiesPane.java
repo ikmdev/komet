@@ -23,6 +23,7 @@ public abstract class ControlBasePropertiesPane<T extends EditorWindowBaseContro
         // Delete button
         deleteButton.setText("DELETE");
         deleteButton.setOnAction(this::onDelete);
+        deleteButton.getStyleClass().add("dark");
 
         getChildren().add(mainContainer);
 
