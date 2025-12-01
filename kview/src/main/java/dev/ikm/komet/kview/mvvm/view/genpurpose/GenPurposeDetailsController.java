@@ -21,8 +21,10 @@ import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
+import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
+import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
@@ -32,14 +34,16 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.NodeOrientation;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
@@ -57,22 +61,29 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 
 public class GenPurposeDetailsController {
 
@@ -141,6 +152,11 @@ public class GenPurposeDetailsController {
     private final Tooltip publishTooltip = new Tooltip();
     private ViewProperties viewProperties;
 
+    @InjectViewModel
+    private GenPurposeViewModel genPurposeViewModel;
+
+    private final List<KLReadOnlyBaseControl> controls = new ArrayList<>();
+
     @FXML
     private void initialize() {
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
@@ -152,6 +168,7 @@ public class GenPurposeDetailsController {
 
         // Setup Properties Bump out view
         setupProperties();
+
 
         // Assign the tooltip to the StackPane (container of Publish button)
         setupTooltipForDisabledButton(savePatternButton);
@@ -235,7 +252,8 @@ public class GenPurposeDetailsController {
 
     private void setupProperties() {
         URL genpurposePropertiesFXML = GenPurposeDetailsController.class.getResource("genpurpose-properties.fxml");
-        Config config = new Config(genpurposePropertiesFXML);
+        Config config = new Config(genpurposePropertiesFXML)
+                .addNamedViewModel(new NamedVm("genPurposeViewModel", genPurposeViewModel));
 
         JFXNode<BorderPane, GenPurposePropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
         this.propertiesBorderPane = propsFXMLLoader.node();
@@ -439,9 +457,29 @@ public class GenPurposeDetailsController {
         VBox titledPaneContent = new VBox();
         titledPane.setContent(titledPaneContent);
 
+        titledPane.setOnEditAction(this::showAndEditSemanticFieldsPanel);
+
         sectionModelToTitledPane.put(sectionModel, titledPane);
 
         return titledPane;
+    }
+
+    private void showAndEditSemanticFieldsPanel(ActionEvent actionEvent) {
+        EntityFacade semantic = genPurposeViewModel.getPropertyValue(SEMANTIC);
+
+        // notify bump out to display edit fields in bump out area.
+        EvtBusFactory.getDefaultEvtBus()
+                .publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new PropertyPanelEvent(actionEvent.getSource(),
+                                SHOW_EDIT_SEMANTIC_FIELDS, semantic));
+        // open properties bump out.
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+
+        // Set all controls to edit mode
+        for (Node node : controls) {
+            KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
+            klReadOnlyBaseControl.setEditMode(true);
+        }
     }
 
     private void addPatternViews(EditorSectionModel sectionModel, List<? extends EditorPatternModel> patternModels) {
@@ -471,6 +509,7 @@ public class GenPurposeDetailsController {
         List<KLReadOnlyBaseControl> readOnlyControls = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
         patternContainer.getChildren().addAll(readOnlyControls);
 
+        controls.addAll(readOnlyControls);
         content.getChildren().add(patternContainer);
     }
 

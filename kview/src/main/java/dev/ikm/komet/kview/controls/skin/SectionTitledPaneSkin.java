@@ -61,7 +61,7 @@ public class SectionTitledPaneSkin extends TitledPaneSkin {
             graphic.setPrefWidth(32);
             graphic.getStyleClass().add("add-pencil");
             button.setGraphic(graphic);
-            titledPane.onEditActionProperty().bind(button.onActionProperty());
+            button.onActionProperty().bind(titledPane.onEditActionProperty());
 
             tooltip.setText("Edit Fields");
             button.setTooltip(tooltip);

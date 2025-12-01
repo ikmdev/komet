@@ -287,11 +287,12 @@ public class GenPurposeFieldsController {
         editFieldsVBox.getChildren().clear();
         submitButton.setDisable(true); // disable submit until fields changed.
         genPurposeViewModel.save();
-        EntityFacade semantic = genPurposeViewModel.getPropertyValue(SEMANTIC);
+
+//        EntityFacade semantic = genPurposeViewModel.getPropertyValue(SEMANTIC);
         reloadPatternNavigator = true;
-        ObjectProperty<EntityFacade> semanticProperty = genPurposeViewModel.getProperty(SEMANTIC);
+//        ObjectProperty<EntityFacade> semanticProperty = genPurposeViewModel.getProperty(SEMANTIC);
         // listen if the semantic property is updated during Create mode.
-        semanticProperty.addListener( _ -> setupEditSemanticDetails());
+//        semanticProperty.addListener( _ -> setupEditSemanticDetails());
 
         // Create a transaction and uncommitted semantic when reference component is confirmed.
         Subscriber<GenEditingEvent> createUncommittedSemanticSubscriber = evt -> {
@@ -315,11 +316,11 @@ public class GenPurposeFieldsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
                 GenEditingEvent.class, createUncommittedSemanticSubscriber);
 
-        if (semantic != null && genPurposeViewModel.getPropertyValue(MODE) == EDIT) {
-            //Change the button name to RESET FORM in EDIT MODE
-            clearOrResetFormButton.setText("RESET FORM");
-            setupEditSemanticDetails();
-        }
+//        if (semantic != null && genPurposeViewModel.getPropertyValue(MODE) == EDIT) {
+//            //Change the button name to RESET FORM in EDIT MODE
+//            clearOrResetFormButton.setText("RESET FORM");
+//            setupEditSemanticDetails();
+//        }
         genPurposeViewModel.getProperty(MODE).subscribe((mode) -> {
             if(mode == EDIT){
                 clearOrResetFormButton.setText("RESET FORM");
