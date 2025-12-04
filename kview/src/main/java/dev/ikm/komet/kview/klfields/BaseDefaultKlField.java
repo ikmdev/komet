@@ -170,7 +170,9 @@ public abstract class BaseDefaultKlField<T> implements KlField<T> {
     @Override
     public Subscription doOnEditableValuePropertyChange(Runnable codeBlock) {
         Subscription subscription = KlField.super.doOnEditableValuePropertyChange(codeBlock);
-
+        if (subscription == null) {
+            return null;
+        }
         // Add to list of subscriptions.
         getFieldEditableSubscriptions().add(subscription);
         return subscription;

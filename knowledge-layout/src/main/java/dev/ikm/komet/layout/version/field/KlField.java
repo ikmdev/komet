@@ -72,6 +72,9 @@ public non-sealed interface KlField<DT> extends KlArea, ClassConceptBinding {
      * @return A Subscription or change listener when field value changes.
      */
     default Subscription doOnEditableValuePropertyChange(Runnable codeBlock) {
+        if (fieldEditable() == null) {
+            return null;
+        }
         Subscription subscription = fieldEditable()
                 .editableValueProperty()
                 .subscribe(codeBlock);
