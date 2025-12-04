@@ -8,6 +8,7 @@ import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.GenPurposeDetailsController;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
@@ -39,7 +40,8 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
      */
     public GenPurposeKLWindow(UUID journalTopic, EntityFacade entityFacade,
                            ViewProperties viewProperties, KometPreferences preferences) {
-        super(journalTopic, entityFacade, viewProperties, preferences);
+        final EntityFacade entityFacadeFinal = TinkarTerm.USER;
+        super(journalTopic, entityFacadeFinal, viewProperties, preferences);
 
         // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
         Config patternConfig = new Config(GenPurposeDetailsController.class.getResource("genpurpose-details.fxml"))
@@ -49,7 +51,7 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
                                 .setPropertyValue(WINDOW_TOPIC, getWindowTopic())
 //                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
                                 .setPropertyValue(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
-//                                .setPropertyValue(REF_COMPONENT, refComponent)
+                                .setPropertyValue(REF_COMPONENT, entityFacadeFinal)
 //                                .setPropertyValue(SEMANTIC, semanticComponent)
 //                                .setPropertyValue(PATTERN, patternFacade))
                 );

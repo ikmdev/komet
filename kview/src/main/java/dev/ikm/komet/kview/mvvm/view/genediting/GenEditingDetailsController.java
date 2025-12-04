@@ -529,14 +529,13 @@ public class GenEditingDetailsController {
         ObservableEntity referencedComponent = ObservableEntityHandle.get(observableSemantic.referencedComponentNid()).expectEntity();
         ObservablePattern pattern = ObservableEntityHandle.get(observableSemantic.patternNid()).expectPattern();
         semanticEditor = composer.composeSemantic(observableSemantic.publicId(), referencedComponent, pattern);
-
         // Get editable version with cached editing capabilities
         editableVersion = semanticEditor.getEditableVersion();
 
 
 //        if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
             // In creation mode, use the composer stamp for display
-//            currentEditStamp = editableVersion.getEditStamp();
+//            currentEditStamp = editableVersion.currentEditStamp();
 //        }
 
         // Get editable fields from the editable version

@@ -15,6 +15,10 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
+import dev.ikm.komet.framework.observable.ObservableComposer;
+import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
+import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
@@ -32,10 +36,16 @@ import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.Field;
+import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -82,6 +92,8 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 
@@ -504,12 +516,55 @@ public class GenPurposeDetailsController {
         patternTitle.getStyleClass().add("gen-purpose-pattern-title");
         patternContainer.getChildren().add(patternTitle);
 
+        ConceptFacade author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+        ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
+        ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
+
+        ObservableComposer composer = ObservableComposer.create(
+                getViewProperties().calculator(),
+                State.ACTIVE,
+                author,
+                module,
+                path,
+                "Edit Semantic Details"
+        );
+
         // Pattern fields
         PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternEntity).get();
-        List<KLReadOnlyBaseControl> readOnlyControls = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
-        patternContainer.getChildren().addAll(readOnlyControls);
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
+        List<KLReadOnlyBaseControl> controlItems = new ArrayList<>();
+        EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(), patternEntity.nid(),
+                (semantic) -> {
+                    ObservableEntitySnapshot<?,?> snap = composer.snapshot(semantic.nid()).get();
+                    if (snap instanceof ObservableSemanticSnapshot semanticSnapshot) {
+                        for(ObservableField<?> observableField : semanticSnapshot.getLatestFields().get()){
+                            Field<?> field = observableField.field();
 
-        controls.addAll(readOnlyControls);
+                            // Generate node using the underlying ObservableField (read-only view)
+                            // This was throwing a cast exception, expecting KLReadOnlyBaseControl.
+                            Node baseControl = KlFieldHelper.createReadOnlyKlField(
+                                    (FieldRecord<?>) field,
+                                    observableField, // Use underlying ObservableField for display
+                                    getViewProperties(),
+                                    null,
+                                    genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC)
+                            );
+
+                            // Eliminated unsafe cast here...
+                            if (baseControl instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
+//                                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
+//                                semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
+                                controlItems.add(klReadOnlyBaseControl);
+                            }
+                        }
+                    }
+                });
+        List<KLReadOnlyBaseControl> readOnlyControls = KlFieldHelper.addReadOnlyBlankControlsToContainer(patternVersionRecord, getViewProperties());
+//        patternContainer.getChildren().addAll(readOnlyControls);
+        patternContainer.getChildren().addAll(controlItems);
+
+//        controls.addAll(readOnlyControls);
+        controls.addAll(controlItems);
         content.getChildren().add(patternContainer);
     }
 
