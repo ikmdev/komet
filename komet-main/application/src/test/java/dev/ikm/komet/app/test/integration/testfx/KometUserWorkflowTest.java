@@ -23,14 +23,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.testfx.util.WaitForAsyncUtils.waitFor;
 
 /**
- * Refactored Komet user workflow test using Page Object Model pattern.
- * This demonstrates how to use reusable page components for cleaner, more maintainable tests.
+ * Integration test for the complete Komet user workflow using Page Object Model pattern.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(ApplicationExtension.class)
-public class KometUserWorkflowRefactoredTest {
+public class KometUserWorkflowTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(KometUserWorkflowRefactoredTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KometUserWorkflowTest.class);
 
     // Configuration constants
     private static final String PROPERTY_TARGET_DATA_DIR = "target.data.directory";
@@ -47,6 +46,7 @@ public class KometUserWorkflowRefactoredTest {
     private static final String PASSWORD = "KOMET user";
     private static final String SEARCH_QUERY = "user";
     private static final String NEW_NAME = "KOMET User";
+    private static final String conceptName = "KOMET user";
 
     private Path screenshotDirectory;
     private Path extentReportsDirectory;
@@ -100,7 +100,7 @@ public class KometUserWorkflowRefactoredTest {
         LOG.info("Starting Complete Komet User Workflow Test (Refactored)");
 
         try {
-            // Step 1: Wait for application to launch
+            // Step 1: Launch KOMET application
             reporter.logBeforeStep("Step 1: USER to LAUNCH Komet Application");
             assertInitialAppState();
             reporter.logAfterStep("Step 1: Application launched successfully");
@@ -156,7 +156,7 @@ public class KometUserWorkflowRefactoredTest {
         try {
             // Step 6: Click SIGN IN button
             reporter.logBeforeStep("Step 6: USER to CLICK SIGN IN button");
-            landingPage = loginPage.signIn();
+            landingPage = loginPage.clickSignIn();
             reporter.logAfterStep("Step 6: Clicked SIGN IN button");
         } catch (Exception e) {
             reporter.logFailure("Step 6: USER to CLICK SIGN IN button", e);
@@ -174,11 +174,11 @@ public class KometUserWorkflowRefactoredTest {
             throw e;
         }
 
-        JournalPage journalPage;
+ 
         try {
             // Step 7: Click New Project Journal button
             reporter.logBeforeStep("Step 7: USER to CLICK New Project Journal button");
-            journalPage = landingPage.createProjectJournal();
+            landingPage.clickCreateProjectJournal();
             reporter.logAfterStep("Step 7: Clicked New Project Journal button");
         } catch (Exception e) {
             reporter.logFailure("Step 7: USER to CLICK New Project Journal button", e);
@@ -190,7 +190,7 @@ public class KometUserWorkflowRefactoredTest {
         try {
             // Step 8: Click Nextgen Navigator button
             reporter.logBeforeStep("Step 8: USER to CLICK Nextgen Navigator button");
-            navigator.openNavigator();
+            navigator.clickNextgenNavigator();
             reporter.logAfterStep("Step 8: Clicked Nextgen Navigator button");
         } catch (Exception e) {
             reporter.logFailure("Step 8: USER to CLICK Nextgen Navigator button", e);
@@ -217,7 +217,7 @@ public class KometUserWorkflowRefactoredTest {
             throw e;
         }
 
-        ConceptDetailsPage conceptPage;
+        ConceptPane conceptPage;
         try {
             // Step 11: Double click Gretel tab
             reporter.logBeforeStep("Step 11: USER to DOUBLE CLICK Gretel tab");
@@ -231,7 +231,7 @@ public class KometUserWorkflowRefactoredTest {
         try {
             // Step 12: Drag and drop Komet User to editing area via six dots
             reporter.logBeforeStep("Step 12: USER to DRAG AND DROP Komet User to editing area via six dots");
-            journalPage.dragKometUserToEditingArea();
+            navigator.dragToEditingArea(conceptName);
             reporter.logAfterStep("Step 12: Dragged and dropped Komet User to editing area");
         } catch (Exception e) {
             reporter.logFailure("Step 12: USER to DRAG AND DROP Komet User to editing area", e);
@@ -241,8 +241,7 @@ public class KometUserWorkflowRefactoredTest {
         try {
             // Close navigator to make resizing easier
             reporter.logBeforeStep("Closing navigator");
-            navigator.openNavigator(); // Toggle to close
-            Thread.sleep(3000);
+            navigator.clickNextgenNavigator(); // Toggle to close
             reporter.logAfterStep("Closed navigator");
         } catch (Exception e) {
             reporter.logFailure("Closing navigator", e);
@@ -252,7 +251,7 @@ public class KometUserWorkflowRefactoredTest {
         try {
             // Step 13: Drag and drop corner of Komet User pane to resize
             reporter.logBeforeStep("Step 13: USER to DRAG AND DROP corner of Komet User Pane to resize");
-            journalPage.resizeConceptPane();
+            conceptPage.resizeConceptPane();
             reporter.logAfterStep("Step 13: Resized Komet User pane");
         } catch (Exception e) {
             reporter.logFailure("Step 13: USER to DRAG AND DROP corner of Komet User Pane to resize", e);
@@ -272,7 +271,7 @@ public class KometUserWorkflowRefactoredTest {
         try {
             // Step 15: Click Create project journal tab
             reporter.logBeforeStep("Step 15: USER to CLICK Create project journal tab");
-            landingPage.createProjectJournal();
+            landingPage.clickCreateProjectJournal();
             reporter.logAfterStep("Step 15: Clicked Create project journal tab");
         } catch (Exception e) {
             reporter.logFailure("Step 15: USER to CLICK Create project journal tab", e);
@@ -282,49 +281,37 @@ public class KometUserWorkflowRefactoredTest {
         try {
             // Step 16: Click Nextgen Search button
             reporter.logBeforeStep("Step 16: USER to CLICK Nextgen Search button");
-            navigator.openCloseSearch();
+            navigator.clickNextgenSearch();
             reporter.logAfterStep("Step 16: Clicked Nextgen Search button");
         } catch (Exception e) {
             reporter.logFailure("Step 16: USER to CLICK Nextgen Search button", e);
             throw e;
         }
 
-        SearchPanel searchPanel;
         try {
             // Step 17: Input user into search field
-            reporter.logBeforeStep("Step 17: USER to INPUT user into search field");
-            searchPanel = new SearchPanel(robot);
-            searchPanel.search(SEARCH_QUERY);
-            reporter.logAfterStep("Step 17: Entered user into search field");
+            reporter.logBeforeStep("Step 17: USER to INPUT user into search field and press enter");
+            navigator.search(SEARCH_QUERY);
+            reporter.logAfterStep("Step 17: Entered user into search field and pressed enter");
         } catch (Exception e) {
-            reporter.logFailure("Step 17: USER to INPUT user into search field", e);
+            reporter.logFailure("Step 17: USER to INPUT user into search field and press enter", e);
             throw e;
         }
 
         try {
-            // Step 18: Press Enter key (already handled in search method)
-            reporter.logBeforeStep("Step 18: USER to PRESS Enter key");
-            // Search already executes on Enter
-            reporter.logAfterStep("Step 18: Pressed Enter key");
+            // Step 18: Double click KOMET User concept tab
+            reporter.logBeforeStep("Step 18: USER to DOUBLE CLICK KOMET User concept tab");
+            navigator.openConceptFromResults("KOMET user");
+            reporter.logAfterStep("Step 18: Double clicked KOMET User concept tab");
         } catch (Exception e) {
-            reporter.logFailure("Step 18: USER to PRESS Enter key", e);
-            throw e;
-        }
-
-        try {
-            // Step 19: Double click KOMET User concept tab
-            reporter.logBeforeStep("Step 19: USER to DOUBLE CLICK KOMET User concept tab");
-            searchPanel.openConceptFromResults("KOMET user");
-            reporter.logAfterStep("Step 19: Double clicked KOMET User concept tab");
-        } catch (Exception e) {
-            reporter.logFailure("Step 19: USER to DOUBLE CLICK KOMET User concept tab", e);
+            reporter.logFailure("Step 18: USER to DOUBLE CLICK KOMET User concept tab", e);
             throw e;
         }
 
         try {
             // Close search panel
             reporter.logBeforeStep("Closing search panel");
-            navigator.openCloseSearch(); // Toggle to close
+            navigator.clickNextgenSearch(); // Toggle to close
             Thread.sleep(2000);
             reporter.logAfterStep("Closed search panel");
         } catch (Exception e) {
@@ -333,42 +320,42 @@ public class KometUserWorkflowRefactoredTest {
         }
 
         try {
-            // Step 20: Click KOMET User (Case insensitive, English Language)
-            reporter.logBeforeStep("Step 20: USER to click KOMET User (Case insensitive, English Language)");
-            conceptPage.selectOtherName();
-            reporter.logAfterStep("Step 20: Clicked KOMET User (Case insensitive, English Language)");
+            // Step 19 : Click KOMET User (Case insensitive, English Language)
+            reporter.logBeforeStep("Step 19: USER to click KOMET User (Case insensitive, English Language)");
+            conceptPage.editOtherName();
+            reporter.logAfterStep("Step 19: Clicked KOMET User (Case insensitive, English Language)");
         } catch (Exception e) {
-            reporter.logFailure("Step 20: USER to click KOMET User (Case insensitive, English Language)", e);
+            reporter.logFailure("Step 19: USER to click KOMET User (Case insensitive, English Language)", e);
             throw e;
         }
 
         try {
-            // Step 21: Clear Name field
-            reporter.logBeforeStep("Step 21: USER to CLEAR Name field");
+            // Step 20 : Clear Name field
+            reporter.logBeforeStep("Step 20: USER to CLEAR Name field");
             // Clear is handled in updateName method
-            reporter.logAfterStep("Step 21: Cleared Name field");
+            reporter.logAfterStep("Step 20: Cleared Name field");
         } catch (Exception e) {
-            reporter.logFailure("Step 21: USER to CLEAR Name field", e);
+            reporter.logFailure("Step 20: USER to CLEAR Name field", e);
             throw e;
         }
 
         try {
-            // Step 22: Input KOMET User
-            reporter.logBeforeStep("Step 22: USER to INPUT KOMET User");
-            conceptPage.updateName(NEW_NAME);
-            reporter.logAfterStep("Step 22: Entered KOMET User");
+            // Step 21: Input KOMET User
+            reporter.logBeforeStep("Step 21: USER to INPUT KOMET User");
+            conceptPage.updateOtherName(NEW_NAME);
+            reporter.logAfterStep("Step 21: Entered KOMET User");
         } catch (Exception e) {
-            reporter.logFailure("Step 22: USER to INPUT KOMET User", e);
+            reporter.logFailure("Step 21: USER to INPUT KOMET User", e);
             throw e;
         }
 
         try {
-            // Step 23: Click Submit button
-            reporter.logBeforeStep("Step 23: USER to CLICK Submit button");
+            // Step 22 : Click Submit button
+            reporter.logBeforeStep("Step 22: USER to CLICK Submit button");
             conceptPage.submit();
-            reporter.logAfterStep("Step 23: Clicked Submit button");
+            reporter.logAfterStep("Step 22: Clicked Submit button");
         } catch (Exception e) {
-            reporter.logFailure("Step 23: USER to CLICK Submit button", e);
+            reporter.logFailure("Step 22: USER to CLICK Submit button", e);
             throw e;
         }
 

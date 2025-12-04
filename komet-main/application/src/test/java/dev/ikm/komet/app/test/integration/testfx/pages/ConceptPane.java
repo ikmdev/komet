@@ -1,48 +1,77 @@
 package dev.ikm.komet.app.test.integration.testfx.pages;
 
-import javafx.geometry.Bounds;
 import javafx.geometry.HorizontalDirection;
 import javafx.geometry.Point2D;
-import javafx.scene.input.MouseButton;
+import javafx.scene.input.KeyCode;
 import org.testfx.api.FxRobot;
 
 /**
- * Page object for Journal operations.
+ * Page object for Concept Details operations.
  */
-public class JournalPage extends BasePage {
+public class ConceptPane extends BasePage {
     
-    public JournalPage(FxRobot robot) {
+    private static final String SELECTOR_SUBMIT_BUTTON = "#submitButton";
+    
+    public ConceptPane(FxRobot robot) {
         super(robot);
     }
     
     /**
-     * Drags KOMET user bar to editing area using the move button.
+     * Clicks on "OTHER NAMES" section and selects the first item.
      */
-    public JournalPage dragKometUserToEditingArea() {
-        waitFor(1000);
-        
-        javafx.scene.Node kometUserText = robot.lookup("KOMET user").query();
-        Bounds kometUserBounds = kometUserText.localToScreen(kometUserText.getBoundsInLocal());
-        
-        double moveButtonX = kometUserBounds.getMinX() + 375;
-        double moveButtonY = kometUserBounds.getMinY() + (kometUserBounds.getHeight() / 2);
-        
-        robot.moveTo(moveButtonX, moveButtonY);
-        waitFor(300);
-        robot.clickOn(MouseButton.PRIMARY);
-        waitFor(200);
-        robot.drag(MouseButton.PRIMARY).moveBy(50, 0).drop();
-        waitFor(500);
-        
-        LOG.info("Dragged KOMET user to editing area");
-        closeDialogs();
+    public ConceptPane editOtherName() {
+        robot.moveTo("OTHER NAMES (1):");
+        robot.moveBy(0, 10);
+        robot.clickOn();
+        LOG.info("Selected other name");
         return this;
     }
     
     /**
+     * Clears the name field and enters new text.
+     */
+    public ConceptPane updateOtherName(String newName) {
+        robot.moveTo("Edit Description: Other Name");
+        robot.moveBy(0, 45);
+        robot.clickOn();
+        robot.clickOn();
+        robot.clickOn();
+        waitFor(500);
+        pressKey(KeyCode.DELETE);
+        waitFor(500);
+        type(newName);
+        LOG.info("Updated name to: {}", newName);
+        return this;
+    }
+    
+    /**
+     * Submits the changes.
+     */
+    public ConceptPane submit() {
+        try {
+            clickOn(SELECTOR_SUBMIT_BUTTON);
+            LOG.info("Clicked Submit button using CSS selector");
+        } catch (Exception e1) {
+            try {
+                scrollDown();
+                clickOn(SELECTOR_SUBMIT_BUTTON);
+                LOG.info("Clicked Submit button using CSS selector after scrolling");
+            } catch (Exception e2) {
+                try {
+                    clickOnText("Submit");
+                    LOG.info("Clicked Submit button using text");
+                } catch (Exception e3) {
+                    LOG.warn("Could not find Submit button");
+                }
+            }
+        }
+        return this;
+    }
+
+     /**
      * Resizes the concept pane by dragging from the top-right corner.
      */
-    public JournalPage resizeConceptPane() {
+    public ConceptPane resizeConceptPane() {
         waitFor(3000);
         
         // Scroll horizontally first

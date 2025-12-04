@@ -55,7 +55,7 @@ public class LoginPage extends BasePage {
     /**
      * Clicks the sign-in button.
      */
-    public LandingPage signIn() {
+    public LandingPage clickSignIn() {
         Button signInButton = lookup(SELECTOR_SIGN_IN_BUTTON, Button.class);
         robot.clickOn(signInButton);
         waitFor(2000); // Wait for app to process sign-in

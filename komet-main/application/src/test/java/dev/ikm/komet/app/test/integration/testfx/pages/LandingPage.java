@@ -38,13 +38,24 @@ public class LandingPage extends BasePage {
     /**
      * Clicks the "Create Project Journal" button.
      */
-    public JournalPage createProjectJournal() {
-        waitFor(2000);
+    public LandingPage clickCreateProjectJournal() {
+        try {
+        waitFor(500);
         clickOnText("Create project journal");
         waitFor(1000);
         closeDialogs();
         LOG.info("Clicked 'Create Project Journal' button");
-        return new JournalPage(robot);
+        } catch  (Exception e) {
+            robot.moveTo("My project journals");
+            robot.moveBy(0, 50);
+            scrollDown();
+            waitFor(300);
+            clickOnText("Create project journal");
+            waitFor(1000);
+            closeDialogs();
+            LOG.info("Clicked 'Create Project Journal' button after scrolling");
+        }
+        return this;
     }
     
     /**

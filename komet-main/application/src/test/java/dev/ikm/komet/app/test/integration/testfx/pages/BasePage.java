@@ -89,7 +89,14 @@ public abstract class BasePage {
             LOG.error("Interrupted while closing dialogs", e);
         }
     }
-    
+
+    /** 
+     * Scrolls down the current view.
+     */
+    protected void scrollDown(){
+        robot.scroll(10, javafx.geometry.VerticalDirection.DOWN);
+    }
+
     /**
      * Captures a screenshot with the given description.
      */
