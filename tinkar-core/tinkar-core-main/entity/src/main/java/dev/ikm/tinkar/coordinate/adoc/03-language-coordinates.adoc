@@ -1,0 +1,441 @@
+= Language Coordinates
+
+[NOTE]
+====
+This document describes the IKE Coordinate System (Integrated Knowledge Ecosystem), based on the HL7 TINKAR specification. Technical references use "Tinkar" in code for backward compatibility.
+====
+
+== Overview
+
+Language coordinates specify how to retrieve and display human-readable descriptions for concepts and other entities. They control:
+
+* Which natural language (English, Spanish, etc.)
+* Which description types (Fully Qualified Name, Regular Name, Definition)
+* Dialect preferences (US English vs. GB English)
+* Module preferences for description selection
+
+== The Description Selection Problem
+
+A single concept may have many descriptions:
+
+* Multiple languages (English, Spanish, French)
+* Multiple types (FQN, Regular Name, Definition, Synonym)
+* Multiple dialects (US English: "Color", GB English: "Colour")
+* Multiple modules (Core, Extension, Local)
+
+*Language coordinates solve this by providing a ranking algorithm.*
+
+== Language Coordinate Components
+
+[mermaid]
+....
+classDiagram
+    class LanguageCoordinate {
+        +int languageConceptNid
+        +IntIdList descriptionPatternPreferenceNidList
+        +IntIdList descriptionTypePreferenceNidList
+        +IntIdList dialectPatternPreferenceNidList
+        +IntIdList modulePreferenceNidListForLanguage
+    }
+
+    class DescriptionRanking {
+        <<algorithm>>
+        Filter by language
+        Filter by pattern
+        Rank by type
+        Rank by dialect
+        Rank by module
+    }
+
+    LanguageCoordinate ..> DescriptionRanking : uses
+....
+
+=== Language
+
+The natural language for descriptions:
+
+[source,java]
+----
+// English
+int langNid = TinkarTerm.ENGLISH_LANGUAGE.nid();
+
+// Spanish
+int langNid = TinkarTerm.SPANISH_LANGUAGE.nid();
+
+// Any language (wildcard)
+int langNid = TinkarTerm.LANGUAGE.nid();
+----
+
+=== Description Patterns
+
+Patterns that define description structure (usually DESCRIPTION_PATTERN):
+
+[source,java]
+----
+IntIdList patterns = IntIds.list.of(
+    TinkarTerm.DESCRIPTION_PATTERN.nid()
+);
+----
+
+=== Description Types
+
+Preferred types in priority order:
+
+[source,java]
+----
+// Prefer regular names, fall back to FQN
+IntIdList types = IntIds.list.of(
+    TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid(),
+    TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()
+);
+
+// Prefer FQN, fall back to regular name
+IntIdList types = IntIds.list.of(
+    TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid(),
+    TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid()
+);
+
+// Definitions only
+IntIdList types = IntIds.list.of(
+    TinkarTerm.DEFINITION_DESCRIPTION_TYPE.nid()
+);
+----
+
+=== Dialect Preferences
+
+Language variants in priority order:
+
+[source,java]
+----
+// Prefer US English, fall back to GB English
+IntIdList dialects = IntIds.list.of(
+    TinkarTerm.US_DIALECT_PATTERN.nid(),
+    TinkarTerm.GB_DIALECT_PATTERN.nid()
+);
+
+// Prefer GB English
+IntIdList dialects = IntIds.list.of(
+    TinkarTerm.GB_DIALECT_PATTERN.nid(),
+    TinkarTerm.US_DIALECT_PATTERN.nid()
+);
+----
+
+=== Module Preferences
+
+When multiple descriptions match all criteria:
+
+[source,java]
+----
+// Prefer overlay module, fall back to core
+IntIdList modules = IntIds.list.of(
+    TinkarTerm.SOLOR_OVERLAY_MODULE.nid(),
+    TinkarTerm.SOLOR_MODULE.nid()
+);
+----
+
+== Description Ranking Algorithm
+
+[mermaid]
+....
+flowchart TD
+    Start[All Descriptions] --> Lang{Matches<br/>Language?}
+    Lang -->|No| Exclude1[Exclude]
+    Lang -->|Yes| Pattern{Matches<br/>Pattern?}
+    Pattern -->|No| Exclude2[Exclude]
+    Pattern -->|Yes| Type{Has Preferred<br/>Type?}
+    Type -->|No| NextType[Try Next Type]
+    Type -->|Yes| Dialect{Best<br/>Dialect?}
+    Dialect --> Module{Best<br/>Module?}
+    Module --> Natural{Natural<br/>Order}
+    Natural --> Result[Return Description]
+
+    style Result fill:#90ee90
+    style Exclude1 fill:#ffcccb
+    style Exclude2 fill:#ffcccb
+....
+
+== Predefined Language Coordinates
+
+=== English Variants
+
+[source,java]
+----
+// US English, regular names preferred
+LanguageCoordinateRecord usEnglish =
+    Coordinates.Language.UsEnglishRegularName();
+
+// US English, FQNs preferred
+LanguageCoordinateRecord usEnglishFqn =
+    Coordinates.Language.UsEnglishFullyQualifiedName();
+
+// GB English, regular names
+LanguageCoordinateRecord gbEnglish =
+    Coordinates.Language.GbEnglishPreferredName();
+
+// GB English, FQNs
+LanguageCoordinateRecord gbEnglishFqn =
+    Coordinates.Language.GbEnglishFullyQualifiedName();
+----
+
+=== Spanish
+
+[source,java]
+----
+// Spanish, regular names
+LanguageCoordinateRecord spanish =
+    Coordinates.Language.SpanishPreferredName();
+
+// Spanish, FQNs
+LanguageCoordinateRecord spanishFqn =
+    Coordinates.Language.SpanishFullyQualifiedName();
+----
+
+=== Language-Agnostic (Fallback)
+
+[source,java]
+----
+// Any language, regular names
+LanguageCoordinateRecord anyLang =
+    Coordinates.Language.AnyLanguageRegularName();
+
+// Any language, FQNs
+LanguageCoordinateRecord anyLangFqn =
+    Coordinates.Language.AnyLanguageFullyQualifiedName();
+
+// Any language, definitions
+LanguageCoordinateRecord anyDef =
+    Coordinates.Language.AnyLanguageDefinition();
+----
+
+== Custom Language Coordinates
+
+[source,java]
+----
+// Custom: German, prefer definitions
+LanguageCoordinateRecord germanDef = LanguageCoordinateRecord.make(
+    TinkarTerm.GERMAN_LANGUAGE.nid(),
+    IntIds.list.of(TinkarTerm.DESCRIPTION_PATTERN.nid()),
+    IntIds.list.of(
+        TinkarTerm.DEFINITION_DESCRIPTION_TYPE.nid(),
+        TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()
+    ),
+    IntIds.list.empty(),  // No dialect preferences
+    IntIds.list.empty()   // No module preferences
+);
+----
+
+== Cascading Language Coordinates
+
+ViewCoordinates support multiple language coordinates in priority order:
+
+[source,java]
+----
+ViewCoordinateRecord multilingualView = ViewCoordinateRecord.make(
+    stampCoord,
+    Lists.immutable.of(
+        Coordinates.Language.SpanishPreferredName(),      // Try Spanish first
+        Coordinates.Language.UsEnglishRegularName(),      // Then English
+        Coordinates.Language.AnyLanguageRegularName()     // Then any language
+    ),
+    logicCoord,
+    navCoord,
+    editCoord
+);
+
+ViewCalculator calc = ViewCalculatorWithCache.getCalculator(multilingualView);
+
+// Will return Spanish if available, else English, else any language
+String description = calc.getDescriptionText(conceptNid);
+----
+
+== Using Language Calculators
+
+=== Getting Descriptions
+
+[source,java]
+----
+StampCoordinateRecord stamp = Coordinates.Stamp.DevelopmentLatestActiveOnly();
+LanguageCoordinateRecord lang = Coordinates.Language.UsEnglishRegularName();
+
+LanguageCalculator calc = LanguageCalculatorWithCache.getCalculator(
+    stamp,
+    Lists.immutable.of(lang)
+);
+
+// Get preferred text
+String text = calc.getDescriptionText(conceptNid);
+
+// Get FQN specifically
+Optional<String> fqn = calc.getFullyQualifiedName(conceptNid);
+
+// Get with fallback
+String text = calc.getDescriptionTextOrDefault(conceptNid, "Unknown");
+----
+
+=== Getting All Descriptions
+
+[source,java]
+----
+// Get all descriptions in preference order
+ImmutableList<SemanticEntityVersion> descriptions =
+    calc.getDescriptionsForComponent(conceptNid);
+
+for (SemanticEntityVersion desc : descriptions) {
+    String text = (String) desc.fieldValues().get(0);
+    int typeNid = (Integer) desc.fieldValues().get(1);
+    System.out.println(text + " (" +
+        Entity.getConceptForNid(typeNid).description() + ")");
+}
+----
+
+== Practical Examples
+
+=== Example 1: Multilingual Application
+
+[source,java]
+----
+public class MultilingualService {
+    private final Map<Locale, LanguageCoordinateRecord> langMap = Map.of(
+        Locale.US, Coordinates.Language.UsEnglishRegularName(),
+        Locale.UK, Coordinates.Language.GbEnglishPreferredName(),
+        new Locale("es"), Coordinates.Language.SpanishPreferredName()
+    );
+
+    public String getDescription(int conceptNid, Locale locale) {
+        LanguageCoordinateRecord lang = langMap.getOrDefault(
+            locale,
+            Coordinates.Language.UsEnglishRegularName()
+        );
+
+        LanguageCalculator calc = LanguageCalculatorWithCache.getCalculator(
+            Coordinates.Stamp.MasterLatestActiveOnly(),
+            Lists.immutable.of(lang)
+        );
+
+        return calc.getDescriptionText(conceptNid);
+    }
+}
+----
+
+=== Example 2: Description Type Comparison
+
+[source,java]
+----
+// Get both regular name and FQN for comparison
+LanguageCalculator calc = LanguageCalculatorWithCache.getCalculator(
+    stamp,
+    Lists.immutable.of(Coordinates.Language.UsEnglishRegularName())
+);
+
+Latest<SemanticEntityVersion> regularName = calc.getDescription(
+    conceptNid,
+    TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE
+);
+
+Latest<SemanticEntityVersion> fqn = calc.getDescription(
+    conceptNid,
+    TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE
+);
+
+if (regularName.isPresent() && fqn.isPresent()) {
+    String regular = (String) regularName.get().fieldValues().get(0);
+    String qualified = (String) fqn.get().fieldValues().get(0);
+
+    if (!regular.equals(qualified)) {
+        System.out.println("Regular: " + regular);
+        System.out.println("FQN: " + qualified);
+    }
+}
+----
+
+=== Example 3: Finding Missing Translations
+
+[source,java]
+----
+// Find concepts without Spanish descriptions
+LanguageCalculator englishCalc = LanguageCalculatorWithCache.getCalculator(
+    stamp,
+    Lists.immutable.of(Coordinates.Language.UsEnglishRegularName())
+);
+
+LanguageCalculator spanishCalc = LanguageCalculatorWithCache.getCalculator(
+    stamp,
+    Lists.immutable.of(Coordinates.Language.SpanishPreferredName())
+);
+
+List<Integer> needsTranslation = new ArrayList<>();
+
+for (int conceptNid : conceptsToCheck) {
+    String english = englishCalc.getDescriptionText(conceptNid);
+    String spanish = spanishCalc.getDescriptionText(conceptNid);
+
+    // If Spanish returned English text, translation missing
+    if (english.equals(spanish)) {
+        needsTranslation.add(conceptNid);
+    }
+}
+
+System.out.println(needsTranslation.size() + " concepts need Spanish translation");
+----
+
+== Best Practices
+
+=== DO: Use Cascading for Fallback
+
+[source,java]
+----
+// GOOD: Graceful fallback
+Lists.immutable.of(
+    Coordinates.Language.SpanishPreferredName(),       // Primary
+    Coordinates.Language.UsEnglishRegularName(),       // Fallback
+    Coordinates.Language.AnyLanguageRegularName()      // Last resort
+)
+----
+
+=== DO: Match Description Types to Use Case
+
+[source,java]
+----
+// GOOD: FQN for technical interfaces
+LanguageCoordinateRecord technical =
+    Coordinates.Language.UsEnglishFullyQualifiedName();
+
+// GOOD: Regular names for end users
+LanguageCoordinateRecord endUser =
+    Coordinates.Language.UsEnglishRegularName();
+
+// GOOD: Definitions for help text
+LanguageCoordinateRecord help =
+    Coordinates.Language.AnyLanguageDefinition();
+----
+
+=== DON'T: Assume Descriptions Exist
+
+[source,java]
+----
+// BAD: Assumes description exists
+String text = calc.getDescriptionText(conceptNid);
+// Could return empty string or concept NID
+
+// GOOD: Provide fallback
+String text = calc.getDescriptionTextOrDefault(
+    conceptNid,
+    "Concept " + conceptNid
+);
+----
+
+== Summary
+
+Language coordinates control description retrieval through:
+
+* *Language* - Natural language preference
+* *Description Types* - FQN, Regular Name, Definition
+* *Dialects* - Regional variants
+* *Modules* - Module priorities
+
+Key points:
+
+* Use cascading coordinates for graceful fallback
+* Match description types to your use case
+* Provide defaults when descriptions might be missing
+* Reuse calculators for cache efficiency

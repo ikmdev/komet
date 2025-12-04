@@ -1,0 +1,117 @@
+@import "../mvvm/view/kview.css";
+
+.workspace > .scroll-pane {
+    -fx-background-color: #CAD3E2;
+    -fx-background-insets: 0;
+    -fx-padding: 0 -12 -12 0;
+}
+
+.workspace > .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.workspace > .scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+
+.workspace > .scroll-pane > .scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.workspace > .scroll-pane > .scroll-bar:vertical {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-padding: 3 3 3 -12;
+}
+
+.workspace > .scroll-pane > .scroll-bar:horizontal {
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+    -fx-padding: -12 3 3 3;
+}
+
+.workspace > .scroll-pane > .scroll-bar .track {
+    -fx-background-color: transparent;
+}
+
+.workspace > .scroll-pane > .scroll-bar:vertical .track {
+    -fx-background-insets: 0 12 0 0;
+}
+
+.workspace > .scroll-pane > .scroll-bar:horizontal .track {
+    -fx-background-insets: 0 0 12 0;
+}
+
+.workspace > .scroll-pane > .scroll-bar .thumb {
+    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.4);
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6px;
+    -fx-padding: 0;
+}
+
+.workspace > .scroll-pane > .scroll-bar:hover .thumb {
+    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.5);
+}
+
+.workspace > .scroll-pane > .scroll-bar .increment-button,
+.workspace > .scroll-pane > .scroll-bar .decrement-button {
+    -fx-background-insets: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-padding: 0;
+}
+
+.workspace > .scroll-pane > .scroll-bar .increment-arrow,
+.workspace > .scroll-pane > .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.workspace .desktop-pane {
+    -fx-background-image: url("dot-grid-40px-25.png");
+    -fx-background-size: 12px 12px;
+    -fx-background-color: transparent;
+}
+
+.workspace .desktop-pane > .drop-region {
+    -fx-border-color: white, -Primary-04;
+    -fx-border-style: solid, segments(12, 16) phase -8 line-join round line-cap round;
+    -fx-border-radius: 8, 8;
+    -fx-border-width: 4, 4;
+    -fx-background-radius: 8;
+    -fx-background-insets: 4;
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+}
+
+.workspace .desktop-pane > .drop-region:box {
+    -default-width: 672px;
+    -default-height: 940px;
+    -fx-min-width: -default-width;
+    -fx-min-height: -default-height;
+    -fx-pref-width: -default-width;
+    -fx-pref-height: -default-height;
+    -fx-max-width: -default-width;
+    -fx-max-height: -default-width;
+}
+
+.workspace .desktop-pane > .drop-region:line {
+    -default-width: 12px;
+    -default-height: 940px;
+    -fx-min-width: -default-width;
+    -fx-min-height: -default-height;
+    -fx-pref-width: -default-width;
+    -fx-pref-height: -default-height;
+    -fx-max-width: -default-width;
+    -fx-max-height: -default-width;
+
+    -fx-border-color: transparent, -Primary-04;
+    -fx-border-style: solid, segments(12, 16) phase 15.65 line-join round line-cap round;
+    -fx-border-width: 2, 4;
+    -fx-background-insets: 2;
+    -fx-background-color: white;
+}

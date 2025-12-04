@@ -1,0 +1,105 @@
+= IKE Coordinate System - Knowledge Engineer's Guide
+:toc: left
+:toclevels: 2
+:sectnums:
+:icons: font
+:imagesdir: ../images
+
+[abstract]
+--
+A practical guide for knowledge engineers and business analysts to understand the IKE Coordinate System (Integrated Knowledge Ecosystem). Learn how coordinates control what you see when browsing, searching, and editing knowledge.
+
+_Note: This coordinate system is based on the HL7 Terminology Knowledge Architecture (TINKAR) specification. Technical references use "Tinkar" in code for backward compatibility._
+--
+
+== About This Guide
+
+*For:* Knowledge Engineers, Business Analysts, Content Managers, Clinical Informaticists
+
+*You'll Learn:*
+
+* What coordinates are and why they matter
+* The five coordinate types and when to use each
+* How to configure coordinates for common tasks
+* Best practices for terminology work
+
+*You Will NOT Find:* Code examples, programming syntax, or API documentation (see the Developer's Guide for those)
+
+== The Five Coordinate Types
+
+[cols="1,2,2"]
+|===
+|Type |Controls |Your Question
+
+|*STAMP*
+|Time, status, modules, paths
+|"When and where am I looking?"
+
+|*Language*
+|Descriptions, translations, dialects
+|"What language do I want?"
+
+|*Logic*
+|Classification, reasoning
+|"Stated or inferred relationships?"
+
+|*Navigation*
+|Hierarchies, sorting
+|"How do I browse?"
+
+|*Edit*
+|Authoring, attribution
+|"Who am I and where does my work go?"
+|===
+
+Think of coordinates as **viewing filters** that determine what content you see and how it's displayed.
+
+== Document Sections
+
+include::01-introduction.adoc[leveloffset=+1]
+
+include::02-stamp-coordinates.adoc[leveloffset=+1]
+
+include::03-language-coordinates.adoc[leveloffset=+1]
+
+include::04-logic-coordinates.adoc[leveloffset=+1]
+
+include::05-navigation-coordinates.adoc[leveloffset=+1]
+
+include::06-edit-coordinates.adoc[leveloffset=+1]
+
+include::07-practical-scenarios.adoc[leveloffset=+1]
+
+include::08-best-practices.adoc[leveloffset=+1]
+
+== Quick Reference
+
+*Common Configurations:*
+
+[cols="1,2"]
+|===
+|Use Case |Key Settings
+
+|*Clinical Browsing*
+|Active only, Latest, Production, Inferred hierarchy
+
+|*Content Authoring*
+|Both active/inactive, Development, Stated hierarchy
+
+|*QA Review*
+|Both active/inactive, Staging, Inferred hierarchy
+
+|*End Users*
+|Active only, Latest, Production, Preferred terms
+|===
+
+== Glossary
+
+*Active*:: Current, usable content +
+*Author*:: Person or system who created/modified content +
+*Inferred*:: Relationships computed by classifier +
+*Module*:: Organizational grouping of content +
+*Path*:: Development branch (Development, Staging, Production) +
+*STAMP*:: Status, Time, Author, Module, Path +
+*Stated*:: Relationships explicitly authored +
+*Version*:: Specific state of content at a point in time

@@ -1,0 +1,74 @@
+/*
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import dev.ikm.tinkar.common.service.CachingService;
+import dev.ikm.tinkar.common.service.DataServiceController;
+import dev.ikm.tinkar.common.service.DefaultDescriptionForNidService;
+import dev.ikm.tinkar.common.service.PublicIdService;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.StampService;
+
+/**
+ * ## Me
+ * The error is during test compile on SearcherIT. The module-info of the module includes requires org.eclipse.collections.api and org.eclipse.collections.impl, as does the module info on the test files (`module dev.ikm.tinkar.integration.test`). What might be wrong?
+ *
+ * ## AI Assistant
+ * Likely cause: your tests are defined as a different JPMS module (module dev.ikm.tinkar.integration.test). With Maven + JPMS, the test sources are supposed to “patch” the main module. That only happens when:
+ * - there is no module-info.java in test sources, or
+ * - the test module-info.java has the SAME module name as the main module.
+ *
+ * If the test module has a different name, Maven can’t patch the main module and it builds tests as a separate module. Then the test module must explicitly require every module it uses (including all transitives), and tool defaults can still leave you with resolution issues that surface as “cannot access MutableList”.
+ * What to do
+ * - Easiest: remove src/test/java/module-info.java entirely. Maven will compile tests on the module path and patch them into the main module automatically.
+ */
+//open module dev.ikm.tinkar.integration.test {
+//    requires dev.ikm.tinkar.common;
+//    requires dev.ikm.tinkar.composer;
+//    requires dev.ikm.tinkar.entity;
+//    requires dev.ikm.tinkar.provider.entity;
+//    requires dev.ikm.tinkar.terms;
+//    requires dev.ikm.tinkar.coordinate;
+//    requires dev.ikm.jpms.protobuf;
+//    requires org.junit.jupiter.api;
+//    requires dev.ikm.tinkar.integration;
+//    requires org.slf4j;
+//    requires com.fasterxml.jackson.core;
+//    requires com.fasterxml.jackson.databind;
+//    requires org.eclipse.collections.api;
+//    requires org.eclipse.collections.impl;
+//    requires org.mockito; //TODO: delete with stale ITs
+//    requires dev.ikm.tinkar.ext.lang.owl;
+//    requires dev.ikm.tinkar.schema;
+//    requires dev.ikm.tinkar.provider.search;
+//    requires org.apache.lucene.highlighter;
+//    requires org.apache.lucene.queryparser;
+//    requires org.apache.lucene.core;
+//    requires dev.ikm.tinkar.ext.binding;
+//    requires dev.ikm.jpms.recordbuilder.core;
+//    requires java.compiler;
+//    requires dev.ikm.tinkar.reasoner.elkowl;
+//    requires dev.ikm.tinkar.reasoner.elksnomed;
+//    requires dev.ikm.tinkar.reasoner.hybrid;
+//    requires dev.ikm.tinkar.reasoner.service;
+//    requires dev.ikm.tinkar.provider.changeset;
+//
+//    uses CachingService;
+//    uses DataServiceController;
+//    uses DefaultDescriptionForNidService;
+//    uses EntityService;
+//    uses PublicIdService;
+//    uses StampService;
+//}

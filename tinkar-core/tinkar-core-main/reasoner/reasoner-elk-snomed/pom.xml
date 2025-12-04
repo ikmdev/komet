@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
+	<modelVersion>4.1.0</modelVersion>
+
+	<parent>
+		<groupId>dev.ikm.tinkar</groupId>
+		<artifactId>reasoner</artifactId>
+	</parent>
+
+	<artifactId>reasoner-elk-snomed</artifactId>
+
+	<name>Reasoner Elk Snomed</name>
+
+	<properties>
+		<failsafeArgLine>-Xmx12G</failsafeArgLine>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>data-spinedarray-provider</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>entity</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>entity-provider</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>executor-provider</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>dev.ikm.tinkar.ext.owl</groupId>
+			<artifactId>owl-extension</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>reasoner-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>dev.ikm.elk</groupId>
+			<artifactId>elk-snomed</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>dev.ikm.elk</groupId>
+			<artifactId>elk-snomed-owl-el</artifactId>
+			<!-- TODO This should be test scoped, but the module system? -->
+			<!-- <scope>test</scope> -->
+		</dependency>
+		<dependency>
+			<groupId>dev.ikm.elk</groupId>
+			<artifactId>elk-snomed-test</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>dev.ikm.hybrid-reasoner</groupId>
+			<artifactId>hybrid-reasoner-snomed</artifactId>
+		</dependency>
+	</dependencies>
+</project>

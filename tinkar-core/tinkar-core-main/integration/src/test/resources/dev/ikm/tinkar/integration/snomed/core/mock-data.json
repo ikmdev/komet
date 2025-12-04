@@ -1,0 +1,65 @@
+{
+  "data": [
+    {
+      "type": "Concept",
+      "value": "Active",
+      "nid": 1
+    },
+    {
+      "type": "Concept",
+      "value": "Inactive",
+      "nid": 2
+    },
+    {
+      "type": "Concept",
+      "value": "Deloitte User",
+      "nid": 3
+    },
+    {
+      "type": "Concept",
+      "value": "SNOMED CT Starter Data Module",
+      "nid": 4
+    },
+    {
+      "type": "Concept",
+      "value": "Development Path",
+      "nid": 5
+    },
+    {
+      "type": "Concept",
+      "value": "SNOMED CT Author",
+      "nid": 6
+    },
+    {
+      "type": "Concept",
+      "value": "SNOMED CT identifier",
+      "nid": 7
+    },
+    {
+      "type": "Concept",
+      "value": "Relationship Modifier Semantic",
+      "nid": 8
+    },
+    {
+      "type": "Concept",
+      "value": "Relationship Modifier",
+      "nid": 9
+    },
+    {
+      "type": "Concept",
+      "value": "Concept Relationship Modifier",
+      "nid": 10
+    },
+    {
+      "type": "Module",
+      "value": "900000000000207008",
+      "nid": 11
+    },
+    {
+      "type": "EntityRef",
+      "value": "48b004d4-6457-4648-8d58-e3287126d96b",
+      "nid": 12
+    }
+
+  ]
+}       

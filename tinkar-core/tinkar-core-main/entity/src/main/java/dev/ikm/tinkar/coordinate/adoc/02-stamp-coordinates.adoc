@@ -1,0 +1,558 @@
+= STAMP Coordinates
+
+[NOTE]
+====
+This document describes the IKE Coordinate System (Integrated Knowledge Ecosystem), based on the HL7 TINKAR specification. Technical references use "Tinkar" in code for backward compatibility.
+====
+
+== Overview
+
+STAMP coordinates control *temporal versioning* and *provenance tracking* in the IKE Coordinate System. STAMP is an acronym for:
+
+* **S**tatus - Lifecycle state (ACTIVE or INACTIVE)
+* **T**ime - When the version was created
+* **A**uthor - Who made the change
+* **M**odule - Which organizational unit owns the content
+* **P**ath - Which development branch contains the version
+
+Every version of every entity in the IKE Coordinate System carries STAMP metadata. STAMP coordinates specify which versions you want to see.
+
+== The STAMP Hierarchy
+
+STAMP coordinates are built from three levels:
+
+[mermaid]
+....
+classDiagram
+    class StampCoordinate {
+        +StateSet allowedStates
+        +StampPosition stampPosition
+        +IntIdSet moduleNids
+        +IntIdList modulePriorityNidList
+    }
+
+    class StampPosition {
+        +long time
+        +int pathNid
+    }
+
+    class StampPath {
+        +int pathConceptNid
+        +Set~StampPosition~ pathOrigins
+    }
+
+    StampCoordinate --> StampPosition
+    StampPosition --> StampPath
+....
+
+=== StampPosition: Time and Path
+
+A position specifies *when* on *which path*:
+
+[source,java]
+----
+// Latest on development path
+StampPositionRecord latest = StampPositionRecord.make(
+    Long.MAX_VALUE,                      // Latest
+    TinkarTerm.DEVELOPMENT_PATH
+);
+
+// Specific date on master path
+StampPositionRecord historic = StampPositionRecord.make(
+    Instant.parse("2024-01-01T00:00:00Z").toEpochMilli(),
+    TinkarTerm.MASTER_PATH
+);
+----
+
+=== StampPath: Development Branches
+
+Paths represent development branches with their origins:
+
+[source,java]
+----
+// Master path branches from primordial path
+StampPathImmutable masterPath = StampPathImmutable.make(
+    TinkarTerm.MASTER_PATH,
+    Sets.immutable.of(
+        StampPositionRecord.make(Long.MAX_VALUE, TinkarTerm.PRIMORDIAL_PATH.nid())
+    )
+);
+
+// Development branches from master at specific time
+StampPathImmutable devPath = StampPathImmutable.make(
+    TinkarTerm.DEVELOPMENT_PATH,
+    Sets.immutable.of(
+        StampPositionRecord.make(branchTimestamp, TinkarTerm.MASTER_PATH.nid())
+    )
+);
+----
+
+=== StampCoordinate: Complete Filter
+
+A coordinate combines position with state and module filters:
+
+[source,java]
+----
+StampCoordinateRecord coordinate = StampCoordinateRecord.make(
+    StateSet.ACTIVE,                     // Only active content
+    StampPositionRecord.make(            // Latest on master
+        Long.MAX_VALUE,
+        TinkarTerm.MASTER_PATH
+    ),
+    IntIds.set.empty()                   // All modules (wildcard)
+);
+----
+
+== Version Selection Algorithm
+
+When you request the "latest" version, STAMP coordinates apply this algorithm:
+
+[mermaid]
+....
+flowchart TD
+    Start[All Versions] --> State{State<br/>Matches?}
+    State -->|No| Exclude1[Exclude]
+    State -->|Yes| Module{Module<br/>Allowed?}
+    Module -->|No| Exclude2[Exclude]
+    Module -->|Yes| Path{Visible on<br/>Path?}
+    Path -->|No| Exclude3[Exclude]
+    Path -->|Yes| Time{Time <=<br/>Position?}
+    Time -->|No| Exclude4[Exclude]
+    Time -->|Yes| Keep[Keep]
+    Keep --> Latest[Select Latest<br/>by Time]
+    Latest --> Priority{Multiple at<br/>Same Time?}
+    Priority -->|Yes| ModulePriority[Apply Module<br/>Priority]
+    Priority -->|No| Result[Return Version]
+    ModulePriority --> Result
+
+    style Result fill:#90ee90
+    style Exclude1 fill:#ffcccb
+    style Exclude2 fill:#ffcccb
+    style Exclude3 fill:#ffcccb
+    style Exclude4 fill:#ffcccb
+....
+
+== State Filtering
+
+=== StateSet Options
+
+[source,java]
+----
+// Active only (most common)
+StateSet activeOnly = StateSet.ACTIVE;
+
+// Inactive only (for retirement analysis)
+StateSet inactiveOnly = StateSet.INACTIVE;
+
+// Both (for administrative views)
+StateSet both = StateSet.ACTIVE_AND_INACTIVE;
+----
+
+=== Use Cases
+
+.When to Use Each StateSet
+[cols="1,2,2"]
+|===
+|StateSet |Use Case |Example
+
+|ACTIVE
+|Normal application use
+|End-user interfaces, API responses
+
+|INACTIVE
+|Retirement analysis
+|Finding deprecated concepts, auditing deletions
+
+|ACTIVE_AND_INACTIVE
+|Administrative views
+|System administration, data analysis, quality assurance
+|===
+
+== Time-Based Queries
+
+=== Latest (Most Common)
+
+[source,java]
+----
+// Latest versions
+StampPositionRecord latest = StampPositionRecord.make(
+    Long.MAX_VALUE,
+    TinkarTerm.DEVELOPMENT_PATH
+);
+----
+
+=== Point-in-Time
+
+[source,java]
+----
+// View as of January 1, 2024
+long timestamp = Instant.parse("2024-01-01T00:00:00Z").toEpochMilli();
+StampPositionRecord pointInTime = StampPositionRecord.make(
+    timestamp,
+    TinkarTerm.MASTER_PATH
+);
+
+// Use in coordinate
+StampCoordinateRecord historic = StampCoordinateRecord.make(
+    StateSet.ACTIVE,
+    pointInTime,
+    IntIds.set.empty()
+);
+
+// Query with historic coordinate
+StampCalculator calc = StampCalculatorWithCache.getCalculator(historic);
+Latest<ConceptVersion> historicVersion = calc.latest(concept);
+----
+
+=== Time Range Analysis
+
+[source,java]
+----
+// Find what changed between two dates
+StampPositionRecord start = StampPositionRecord.make(
+    startTimestamp,
+    TinkarTerm.MASTER_PATH
+);
+StampPositionRecord end = StampPositionRecord.make(
+    endTimestamp,
+    TinkarTerm.MASTER_PATH
+);
+
+// Get changes
+StampCalculator calc = StampCalculatorWithCache.getCalculator(
+    Coordinates.Stamp.MasterLatestActiveOnly()
+);
+ChangeChronology changes = calc.getChanges(concept, start, end);
+
+if (!changes.versionChanges().isEmpty()) {
+    System.out.println("Concept changed between dates");
+}
+----
+
+== Module Filtering
+
+=== Module Inclusion
+
+[source,java]
+----
+// Include specific modules only
+IntIdSet allowedModules = IntIds.set.of(
+    TinkarTerm.SOLOR_MODULE.nid(),
+    TinkarTerm.SNOMED_CT_CORE_MODULE.nid()
+);
+
+StampCoordinateRecord filtered = coordinate.withModuleNids(allowedModules);
+----
+
+=== Module Exclusion
+
+[source,java]
+----
+// Exclude deprecated modules
+IntIdSet excludedModules = IntIds.set.of(
+    TinkarTerm.DEPRECATED_MODULE.nid()
+);
+
+StampCoordinateRecord filtered = coordinate.withExcludedModuleNids(excludedModules);
+----
+
+=== Module Priority
+
+When multiple versions exist with the same timestamp:
+
+[source,java]
+----
+// Prefer versions from these modules (in order)
+IntIdList modulePriority = IntIds.list.of(
+    TinkarTerm.SOLOR_OVERLAY_MODULE.nid(),  // 1st preference
+    TinkarTerm.SOLOR_MODULE.nid()           // 2nd preference
+);
+
+StampCoordinateRecord prioritized = coordinate.withModulePriorityNidList(modulePriority);
+----
+
+== Path-Based Versioning
+
+=== Common Paths
+
+[cols="1,3"]
+|===
+|Path |Purpose
+
+|PRIMORDIAL_PATH
+|Initial import, root of all paths
+
+|MASTER_PATH
+|Production/released content
+
+|DEVELOPMENT_PATH
+|Active development
+
+|SANDBOX_PATH
+|Experimental changes
+|===
+
+=== Path Visibility
+
+Versions are visible on a path if:
+
+1. They were created on that path, OR
+2. They were created on a parent path before the branch point
+
+[mermaid]
+....
+gitGraph
+    commit id: "V1 (visible to all paths)"
+    branch master
+    commit id: "V2 (visible to master & dev)"
+    branch development
+    commit id: "V3 (visible to dev only)"
+    checkout master
+    commit id: "V4 (visible to master only)"
+....
+
+== Common STAMP Coordinate Patterns
+
+=== Development Work
+
+[source,java]
+----
+// Active and inactive, latest on development
+StampCoordinateRecord devLatest = Coordinates.Stamp.DevelopmentLatest();
+
+// Active only, latest on development
+StampCoordinateRecord devActive = Coordinates.Stamp.DevelopmentLatestActiveOnly();
+----
+
+=== Production Queries
+
+[source,java]
+----
+// Active only, latest on master (production)
+StampCoordinateRecord production = Coordinates.Stamp.MasterLatestActiveOnly();
+----
+
+=== Historical Analysis
+
+[source,java]
+----
+// View as of specific date
+long historicDate = Instant.parse("2023-01-01T00:00:00Z").toEpochMilli();
+StampCoordinateRecord historic = StampCoordinateRecord.make(
+    StateSet.ACTIVE_AND_INACTIVE,  // See everything
+    StampPositionRecord.make(historicDate, TinkarTerm.MASTER_PATH),
+    IntIds.set.empty()
+);
+----
+
+=== Module-Specific View
+
+[source,java]
+----
+// Only SNOMED CT core content
+StampCoordinateRecord snomedOnly = StampCoordinateRecord.make(
+    StateSet.ACTIVE,
+    StampPositionRecord.make(Long.MAX_VALUE, TinkarTerm.MASTER_PATH),
+    IntIds.set.of(TinkarTerm.SNOMED_CT_CORE_MODULE.nid())
+);
+----
+
+== Using STAMP Calculators
+
+=== Basic Version Resolution
+
+[source,java]
+----
+StampCoordinateRecord stamp = Coordinates.Stamp.DevelopmentLatestActiveOnly();
+StampCalculator calc = StampCalculatorWithCache.getCalculator(stamp);
+
+// Get latest version
+ConceptEntity concept = Entity.getConceptForNid(conceptNid);
+Latest<ConceptVersion> latest = calc.latest(concept);
+
+if (latest.isPresent()) {
+    ConceptVersion version = latest.get();
+    System.out.println("Found version: " + version.stampNid());
+} else if (latest.isAbsent()) {
+    System.out.println("No visible version");
+} else if (latest.isContradiction()) {
+    System.out.println("Multiple contradictory versions");
+}
+----
+
+=== Checking Active Status
+
+[source,java]
+----
+StampCalculator calc = StampCalculatorWithCache.getCalculator(stamp);
+
+// Quick check if concept has active latest version
+boolean isActive = calc.isLatestActive(conceptNid);
+----
+
+=== Relative Position
+
+[source,java]
+----
+// Determine temporal ordering of two stamps
+RelativePosition position = calc.relativePosition(stamp1Nid, stamp2Nid);
+
+switch (position) {
+    case BEFORE -> System.out.println("Stamp1 before Stamp2");
+    case AFTER -> System.out.println("Stamp1 after Stamp2");
+    case EQUAL -> System.out.println("Same stamp");
+    case UNREACHABLE -> System.out.println("On unreachable paths");
+}
+----
+
+== Practical Examples
+
+=== Example 1: Comparing Versions Across Paths
+
+[source,java]
+----
+// What's different between development and production?
+StampCalculator devCalc = StampCalculatorWithCache.getCalculator(
+    Coordinates.Stamp.DevelopmentLatestActiveOnly()
+);
+StampCalculator prodCalc = StampCalculatorWithCache.getCalculator(
+    Coordinates.Stamp.MasterLatestActiveOnly()
+);
+
+ConceptEntity concept = Entity.getConceptForNid(conceptNid);
+
+Latest<ConceptVersion> devVersion = devCalc.latest(concept);
+Latest<ConceptVersion> prodVersion = prodCalc.latest(concept);
+
+if (devVersion.isPresent() && prodVersion.isPresent()) {
+    if (!devVersion.get().equals(prodVersion.get())) {
+        System.out.println("Development differs from production");
+    }
+}
+----
+
+=== Example 2: Audit Trail
+
+[source,java]
+----
+// Get all versions with STAMP details
+ConceptEntity concept = Entity.getConceptForNid(conceptNid);
+
+System.out.println("Audit trail for concept: " + conceptNid);
+for (ConceptVersion version : concept.versions()) {
+    StampEntity stamp = Entity.getStamp(version.stampNid());
+
+    System.out.printf("%s | %s | %s | %s%n",
+        DateTimeUtil.format(stamp.time()),
+        stamp.state(),
+        Entity.getConceptForNid(stamp.authorNid()).description(),
+        Entity.getConceptForNid(stamp.moduleNid()).description()
+    );
+}
+----
+
+=== Example 3: Finding Recent Changes
+
+[source,java]
+----
+// Find concepts changed in last 7 days
+long sevenDaysAgo = Instant.now()
+    .minus(7, ChronoUnit.DAYS)
+    .toEpochMilli();
+
+StampPositionRecord weekAgo = StampPositionRecord.make(
+    sevenDaysAgo,
+    TinkarTerm.DEVELOPMENT_PATH
+);
+StampPositionRecord now = StampPositionRecord.make(
+    Long.MAX_VALUE,
+    TinkarTerm.DEVELOPMENT_PATH
+);
+
+List<Integer> changedConcepts = new ArrayList<>();
+for (int conceptNid : allConceptNids) {
+    ConceptEntity concept = Entity.getConceptForNid(conceptNid);
+    ChangeChronology changes = calc.getChanges(concept, weekAgo, now);
+
+    if (!changes.versionChanges().isEmpty()) {
+        changedConcepts.add(conceptNid);
+    }
+}
+
+System.out.println("Changed " + changedConcepts.size() + " concepts");
+----
+
+== Best Practices
+
+=== DO: Reuse STAMP Coordinates
+
+[source,java]
+----
+// GOOD: Reuse coordinate across application
+public class MyService {
+    private static final StampCoordinateRecord STAMP =
+        Coordinates.Stamp.MasterLatestActiveOnly();
+
+    private static final StampCalculator CALC =
+        StampCalculatorWithCache.getCalculator(STAMP);
+}
+----
+
+=== DON'T: Create New Coordinates Repeatedly
+
+[source,java]
+----
+// BAD: Creates new coordinate and calculator each time
+public String getDescription(int nid) {
+    StampCoordinateRecord stamp = Coordinates.Stamp.MasterLatestActiveOnly();
+    StampCalculator calc = StampCalculatorWithCache.getCalculator(stamp);
+    // ... loses cache benefits
+}
+----
+
+=== DO: Use Appropriate State Sets
+
+[source,java]
+----
+// GOOD: Active only for end users
+if (isEndUserView) {
+    stamp = stamp.withAllowedStates(StateSet.ACTIVE);
+}
+
+// GOOD: Both states for administrators
+if (isAdminView) {
+    stamp = stamp.withAllowedStates(StateSet.ACTIVE_AND_INACTIVE);
+}
+----
+
+=== DO: Handle All Latest Cases
+
+[source,java]
+----
+Latest<ConceptVersion> latest = calc.latest(concept);
+
+if (latest.isPresent()) {
+    // Process version
+} else if (latest.isAbsent()) {
+    // Handle no version (filtered out or doesn't exist)
+} else if (latest.isContradiction()) {
+    // Handle contradiction (multiple versions same time)
+    List<ConceptVersion> contradictions = latest.contradictions();
+}
+----
+
+== Summary
+
+STAMP coordinates provide precise control over temporal versioning:
+
+* *State* - Filter by lifecycle (active/inactive)
+* *Time* - Query at specific points in time or get latest
+* *Module* - Include, exclude, or prioritize modules
+* *Path* - Work on different development branches
+
+Key points:
+
+* Use `StampCalculatorWithCache` for efficient version resolution
+* Reuse coordinates to maximize cache benefits
+* Handle all `Latest` result cases (present, absent, contradiction)
+* Choose appropriate state sets for your use case

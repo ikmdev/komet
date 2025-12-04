@@ -1,0 +1,22 @@
+/* turn off the border and set the background color to transparent */
+
+.public-id-list  {
+    -fx-border-style: none;
+    -fx-background-color: transparent;
+    -fx-hbar-policy: never;
+}
+
+.public-id-list .scroll-pane {
+    -fx-border-style: none;
+    -fx-background-color: transparent;
+    -fx-hbar-policy: never;
+}
+
+.public-id-list .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.public-id-list .identifier-vbox  {
+    -fx-spacing: 0;
+    -fx-fill-width: false;
+}

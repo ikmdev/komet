@@ -1,0 +1,408 @@
+= Logic Coordinates
+
+[NOTE]
+====
+This document describes the IKE Coordinate System (Integrated Knowledge Ecosystem), based on the HL7 TINKAR specification. Technical references use "Tinkar" in code for backward compatibility.
+====
+
+== Overview
+
+Logic coordinates configure description logic reasoning and axiom processing. They specify:
+
+* Which classifier to use (Snorocket, ELK, etc.)
+* Which description logic profile (EL++, ALC, SROIQ)
+* Where to find stated and inferred axioms
+* How axioms generate navigation patterns
+
+== What is Description Logic?
+
+Description Logic (DL) is a family of formal knowledge representation languages:
+
+* Express concept definitions using logical operators
+* Support automated reasoning and classification
+* Enable subsumption testing (is-a relationships)
+* Generate inferred taxonomies from stated axioms
+
+Example concept definition in description logic:
+----
+Pneumonia ≡ Disease ⊓ ∃finding_site.Lung ⊓ ∃morphology.Inflammation
+----
+
+Translation: "Pneumonia is defined as a disease with finding site in the lung and morphology of inflammation."
+
+== Logic Coordinate Components
+
+[source,java]
+----
+public interface LogicCoordinate {
+    int classifierNid();              // Reasoning engine
+    int descriptionLogicProfileNid(); // Logic expressivity
+    int statedAxiomsPatternNid();     // Where stated axioms stored
+    int inferredAxiomsPatternNid();   // Where inferred axioms stored
+    int conceptMemberPatternNid();    // Which concepts to classify
+    int statedNavigationPatternNid(); // Stated hierarchy pattern
+    int inferredNavigationPatternNid();// Inferred hierarchy pattern
+    int rootNid();                    // Root of taxonomy
+}
+----
+
+== The Standard: EL++ Logic
+
+The most common configuration uses EL++ (a decidable DL profile):
+
+[source,java]
+----
+LogicCoordinateRecord elPlusPlus = Coordinates.Logic.ElPlusPlus();
+
+// Equivalent to:
+LogicCoordinateRecord elPlusPlus = LogicCoordinateRecord.make(
+    TinkarTerm.SNOROCKET_CLASSIFIER,              // Classifier
+    TinkarTerm.EL_PLUS_PLUS_PROFILE,             // Profile
+    TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN,
+    TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
+    TinkarTerm.SOLOR_CONCEPT_PATTERN,            // Concept membership
+    TinkarTerm.STATED_NAVIGATION_PATTERN,
+    TinkarTerm.INFERRED_NAVIGATION_PATTERN,
+    TinkarTerm.NAVIGATION_VERTEX                 // Root
+);
+----
+
+== Classifiers
+
+.Common Classifiers
+[cols="1,2,2"]
+|===
+|Classifier |Profile Support |Use Case
+
+|Snorocket
+|EL++
+|Medical terminologies (fast, efficient)
+
+|ELK
+|EL++
+|Large terminologies (incremental classification)
+
+|HermiT
+|SROIQ (OWL 2 DL)
+|Complex ontologies (complete but slower)
+|===
+
+== Description Logic Profiles
+
+.Profile Comparison
+[cols="1,2,2"]
+|===
+|Profile |Expressivity |Classification Complexity
+
+|*EL++*
+|Existential restrictions, conjunctions, role hierarchies
+|Polynomial (fast)
+
+|*ALC*
+|Adds negation, disjunction, universal restrictions
+|ExpTime
+
+|*SROIQ*
+|Adds role composition, nominals, qualified cardinality
+|NExpTime
+|===
+
+[TIP]
+====
+Use EL++ for medical terminologies - it provides the right balance of expressivity and performance.
+====
+
+== Axiom Patterns
+
+=== Stated vs. Inferred Axioms
+
+[cols="1,2,2"]
+|===
+|Type |Source |Use Case
+
+|*Stated*
+|Author-asserted
+|Authoring, editing, quality assurance
+
+|*Inferred*
+|Classifier-generated
+|Queries, navigation, subsumption testing
+|===
+
+=== Axiom Storage
+
+Axioms are stored as DiTree graphs in semantic entities:
+
+[source,java]
+----
+// Get stated axioms
+LogicCoordinate logic = Coordinates.Logic.ElPlusPlus();
+Latest<DiTreeEntity> statedAxioms = logic.getStatedAxiomsVersion(
+    conceptNid,
+    stampCoord
+);
+
+if (statedAxioms.isPresent()) {
+    DiTreeEntity axiomTree = statedAxioms.get();
+    // Process axiom tree
+    processAxiomTree(axiomTree);
+}
+----
+
+== Premise Types
+
+[source,java]
+----
+public enum PremiseType {
+    STATED,   // Author-asserted axioms
+    INFERRED  // Classifier-generated axioms
+}
+
+// Use premise type to select axioms
+Latest<DiTreeEntity> axioms = logic.getAxiomsVersion(
+    conceptNid,
+    PremiseType.STATED,  // or INFERRED
+    stampCoord
+);
+----
+
+== Using Logic Calculators
+
+=== Getting Axioms
+
+[source,java]
+----
+StampCoordinateRecord stamp = Coordinates.Stamp.DevelopmentLatestActiveOnly();
+LogicCoordinateRecord logic = Coordinates.Logic.ElPlusPlus();
+
+LogicCalculator calc = LogicCalculatorWithCache.getCalculator(stamp, logic);
+
+// Get stated axioms
+Latest<DiTreeEntity> statedAxioms = calc.getStatedAxiomTree(conceptNid);
+
+// Get inferred axioms
+Latest<DiTreeEntity> inferredAxioms = calc.getInferredAxiomTree(conceptNid);
+
+// Get axioms by premise type
+Latest<DiTreeEntity> axioms = calc.getAxiomTreeForEntity(
+    conceptNid,
+    PremiseType.STATED
+);
+----
+
+=== Checking Definitions
+
+[source,java]
+----
+// Check if concept has sufficient definition
+Latest<DiTreeEntity> statedAxioms = calc.getStatedAxiomTree(conceptNid);
+
+if (statedAxioms.isPresent()) {
+    DiTreeEntity tree = statedAxioms.get();
+    boolean isSufficientlyDefined =
+        tree.containsVertexWithMeaning(TinkarTerm.SUFFICIENT_SET);
+
+    if (isSufficientlyDefined) {
+        System.out.println("Concept has sufficient definition");
+    }
+}
+----
+
+== Axiom Tree Structure
+
+Axioms are encoded as DiTree graphs:
+
+[mermaid]
+....
+graph TD
+    ROOT[SUFFICIENT_SET] --> AND[AND]
+    AND --> RG1[ROLE_GROUP]
+    AND --> RG2[ROLE_GROUP]
+
+    RG1 --> SOME1[SOME finding_site]
+    SOME1 --> LUNG[Lung structure]
+
+    RG1 --> SOME2[SOME morphology]
+    SOME2 --> INFL[Inflammation]
+
+    RG2 --> SOME3[SOME interpretation]
+    SOME3 --> ABN[Abnormal]
+
+    style ROOT fill:#e1f5fe
+    style AND fill:#fff9c4
+    style RG1 fill:#f3e5f5
+    style RG2 fill:#f3e5f5
+....
+
+== Practical Examples
+
+=== Example 1: Extracting Relationships from Axioms
+
+[source,java]
+----
+public List<Relationship> extractRelationships(int conceptNid) {
+    LogicCalculator calc = LogicCalculatorWithCache.getCalculator(
+        stamp, logic
+    );
+
+    Latest<DiTreeEntity> axioms = calc.getStatedAxiomTree(conceptNid);
+    if (!axioms.isPresent()) {
+        return List.of();
+    }
+
+    List<Relationship> relationships = new ArrayList<>();
+    DiTreeEntity tree = axioms.get();
+
+    // Process tree to extract SOME restrictions
+    processVertex(tree, tree.root().vertexIndex(), relationships);
+
+    return relationships;
+}
+
+private void processVertex(DiTreeEntity tree, int vertexIndex,
+                          List<Relationship> relationships) {
+    EntityVertex vertex = tree.vertex(vertexIndex);
+
+    if (vertex.getMeaningNid() == TinkarTerm.SOME.nid()) {
+        // Existential restriction: SOME role.filler
+        IntList successors = tree.successors(vertexIndex).toList();
+        int roleNid = tree.vertex(successors.get(0)).getMeaningNid();
+        int fillerNid = tree.vertex(successors.get(1)).getMeaningNid();
+
+        relationships.add(new Relationship(roleNid, fillerNid));
+    }
+
+    // Recurse to children
+    tree.successors(vertexIndex).forEach(childIndex ->
+        processVertex(tree, childIndex, relationships)
+    );
+}
+----
+
+=== Example 2: Comparing Stated vs. Inferred
+
+[source,java]
+----
+// Compare stated and inferred axioms
+LogicCalculator calc = LogicCalculatorWithCache.getCalculator(stamp, logic);
+
+Latest<DiTreeEntity> stated = calc.getStatedAxiomTree(conceptNid);
+Latest<DiTreeEntity> inferred = calc.getInferredAxiomTree(conceptNid);
+
+if (stated.isPresent() && inferred.isPresent()) {
+    if (stated.get().equals(inferred.get())) {
+        System.out.println("Stated and inferred match");
+    } else {
+        System.out.println("Classifier inferred additional relationships");
+        // Could compare trees in detail
+    }
+}
+----
+
+=== Example 3: Finding Defined Concepts
+
+[source,java]
+----
+// Find all sufficiently defined concepts
+List<Integer> definedConcepts = new ArrayList<>();
+
+for (int conceptNid : allConceptNids) {
+    Latest<DiTreeEntity> axioms = calc.getStatedAxiomTree(conceptNid);
+
+    if (axioms.isPresent()) {
+        DiTreeEntity tree = axioms.get();
+        if (tree.containsVertexWithMeaning(TinkarTerm.SUFFICIENT_SET)) {
+            definedConcepts.add(conceptNid);
+        }
+    }
+}
+
+System.out.println("Found " + definedConcepts.size() +
+    " sufficiently defined concepts");
+----
+
+== Integration with Navigation
+
+Logic coordinates generate navigation patterns:
+
+[source,java]
+----
+// Stated navigation from stated axioms
+int statedNavPattern = logic.statedNavigationPatternNid();
+
+// Inferred navigation from classification
+int inferredNavPattern = logic.inferredNavigationPatternNid();
+
+// Use in navigation coordinate
+NavigationCoordinateRecord nav = NavigationCoordinateRecord.make(
+    IntIds.set.of(inferredNavPattern),  // Use inferred hierarchy
+    StateSet.ACTIVE,
+    IntIds.list.empty(),
+    true
+);
+----
+
+== Best Practices
+
+=== DO: Use EL++ for Medical Terminologies
+
+[source,java]
+----
+// GOOD: Standard EL++ configuration
+LogicCoordinateRecord logic = Coordinates.Logic.ElPlusPlus();
+----
+
+=== DO: Check for Axiom Presence
+
+[source,java]
+----
+// GOOD: Handle absent axioms
+Latest<DiTreeEntity> axioms = calc.getStatedAxiomTree(conceptNid);
+
+if (axioms.isPresent()) {
+    // Process axioms
+} else {
+    // Handle primitive concept (no stated axioms)
+}
+----
+
+=== DO: Use Appropriate Premise Type
+
+[source,java]
+----
+// GOOD: Stated for authoring
+if (isAuthoringContext) {
+    axioms = calc.getStatedAxiomTree(conceptNid);
+}
+
+// GOOD: Inferred for queries
+if (isQueryContext) {
+    axioms = calc.getInferredAxiomTree(conceptNid);
+}
+----
+
+=== DON'T: Mix Premise Types Inconsistently
+
+[source,java]
+----
+// BAD: Inconsistent premise types
+Latest<DiTreeEntity> axioms1 = calc.getStatedAxiomTree(concept1Nid);
+Latest<DiTreeEntity> axioms2 = calc.getInferredAxiomTree(concept2Nid);
+// Comparing apples to oranges
+----
+
+== Summary
+
+Logic coordinates configure description logic reasoning:
+
+* *Classifier* - Reasoning engine (Snorocket, ELK, HermiT)
+* *Profile* - Logic expressivity (EL++, ALC, SROIQ)
+* *Axiom Patterns* - Where to find stated and inferred definitions
+* *Navigation Patterns* - How axioms generate hierarchies
+
+Key points:
+
+* Use EL++ for medical terminologies (fast and sufficient)
+* Stated axioms for authoring, inferred for queries
+* Check for axiom presence before processing
+* Logic coordinates feed into navigation coordinates

@@ -1,0 +1,42 @@
+.auto-complete-text-field {
+    -fx-background-color: white;
+    -fx-background-radius: 4;
+    -fx-background-insets: 0;
+
+    -fx-border-width: 1px;
+    -fx-border-color: #ccc;
+    -fx-border-radius: 4;
+
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+
+    -fx-text-fill: #44495E;
+    -fx-prompt-text-fill: #111;
+
+    -fx-padding: 0.333333em 0.583em 0.333333em 0.583em; /* 4 7 4 7 */
+
+    -fx-cursor: text;
+}
+
+.auto-complete-text-field:focused {
+    -fx-background-color: white;
+}
+
+/* Right clear button */
+.auto-complete-text-field  > .right-button > .right-button-graphic {
+    -fx-shape: "M221.738,305.873l6.135,6.16l-1.875,1.863l-6.135-6.159l-6.263,6.237l-1.864-1.875l6.263-6.238l-6.177-6.202l1.875-1.863l6.177,6.201l6.244-6.22l1.864,1.876L221.738,305.873z";
+
+    -fx-padding: 0.416667em;
+    -fx-background-color: -Secondary-05;
+}
+
+.auto-complete-text-field > .right-button:hover > .right-button-graphic {
+	-fx-background-color: derive(-Secondary-05, 20%);
+}
+
+.auto-complete-text-field > .right-button {
+    -fx-cursor: default;
+
+    -fx-background-radius: 0 3 3 0, 2, 2;
+    -fx-padding: 0.583333em;
+}

@@ -1,0 +1,844 @@
+= Quick Reference
+
+[NOTE]
+====
+This document describes the IKE Coordinate System (Integrated Knowledge Ecosystem), based on the HL7 TINKAR specification. Technical references use "Tinkar" in code for backward compatibility.
+====
+
+== Overview
+
+This reference provides quick lookup for common coordinate operations, factory methods, and key interfaces.
+
+== Coordinate Factory Methods
+
+=== STAMP Coordinates
+
+[source,java]
+----
+// Predefined STAMP coordinates
+Coordinates.Stamp.DevelopmentLatest()
+Coordinates.Stamp.DevelopmentLatestActiveOnly()
+
+// Custom STAMP coordinate
+StampCoordinateRecord.make(
+    StateSet allowedStates,
+    StampPositionRecord position
+)
+
+// STAMP position
+StampPositionRecord.make(long time, int pathNid)
+
+// State sets
+StateSet.ACTIVE_ONLY
+StateSet.ACTIVE_AND_INACTIVE
+StateSet.INACTIVE_ONLY
+----
+
+=== Language Coordinates
+
+[source,java]
+----
+// Predefined language coordinates
+Coordinates.Language.UsEnglishRegularName()
+Coordinates.Language.UsEnglishFullyQualifiedName()
+Coordinates.Language.GbEnglishRegularName()
+Coordinates.Language.SpanishLanguage()
+Coordinates.Language.LanguageAgnostic()
+
+// Custom language coordinate
+LanguageCoordinateRecord.make(
+    int languageConceptNid,
+    List<Integer> dialectPatternNids,
+    List<Integer> descriptionTypePreferenceNids
+)
+----
+
+=== Logic Coordinates
+
+[source,java]
+----
+// Predefined logic coordinates
+Coordinates.Logic.ElPlusPlus()
+
+// Custom logic coordinate
+LogicCoordinateRecord.make(
+    int statedAxiomsPatternNid,
+    int inferredAxiomsPatternNid,
+    int classifierNid,
+    int inferredPremiseTypeNid
+)
+----
+
+=== Navigation Coordinates
+
+[source,java]
+----
+// Predefined navigation coordinates
+Coordinates.Navigation.inferred()
+Coordinates.Navigation.stated()
+
+// Custom navigation coordinate
+NavigationCoordinateRecord.make(
+    IntIdSet navigationPatternNids,
+    StateSet vertexStates,
+    boolean sortVertices,
+    IntIdList verticesSortPatternNidList
+)
+----
+
+=== Edit Coordinates
+
+[source,java]
+----
+// Predefined edit coordinates
+Coordinates.Edit.Default()
+
+// Custom edit coordinate
+EditCoordinateRecord.make(
+    int authorNid,
+    int defaultModuleNid,
+    int destinationModuleNid,
+    int defaultPathNid,
+    int promotionPathNid
+)
+----
+
+=== View Coordinates
+
+[source,java]
+----
+// Predefined view coordinates
+Coordinates.View.DefaultView()
+
+// Custom view coordinate
+ViewCoordinateRecord.make(
+    StampCoordinate stampCoordinate,
+    List<LanguageCoordinate> languageCoordinateList,
+    LogicCoordinate logicCoordinate,
+    NavigationCoordinate navigationCoordinate,
+    EditCoordinate editCoordinate
+)
+----
+
+== Calculator Creation
+
+=== Obtaining Calculators
+
+[source,java]
+----
+// STAMP calculator
+StampCalculator stampCalc = StampCalculatorWithCache.getCalculator(
+    stampCoordinate
+);
+
+// Language calculator
+LanguageCalculator langCalc = LanguageCalculatorWithCache.getCalculator(
+    stampCoordinate,
+    languageCoordinateList
+);
+
+// Logic calculator
+LogicCalculator logicCalc = LogicCalculatorWithCache.getCalculator(
+    stampCoordinate,
+    logicCoordinate
+);
+
+// Navigation calculator
+NavigationCalculator navCalc = NavigationCalculatorWithCache.getCalculator(
+    stampCoordinate,
+    navigationCoordinate
+);
+
+// View calculator (unified)
+ViewCalculator viewCalc = ViewCalculatorWithCache.getCalculator(
+    viewCoordinate
+);
+----
+
+== Common Operations
+
+=== STAMP Operations
+
+[source,java]
+----
+StampCalculator calc = StampCalculatorWithCache.getCalculator(stamp);
+
+// Get latest version
+Latest<ConceptVersion> latest = calc.latest(conceptNid);
+Latest<SemanticVersion> latestSemantic = calc.latest(semanticNid);
+
+// Check if version is latest
+boolean isLatest = calc.isLatestActive(versionNid);
+
+// Get specific version
+Optional<ConceptVersion> version = calc.getConceptVersion(
+    conceptNid,
+    versionStampNid
+);
+
+// Get all versions
+List<ConceptVersion> versions = calc.getAllVersions(conceptNid);
+----
+
+=== Language Operations
+
+[source,java]
+----
+LanguageCalculator calc = LanguageCalculatorWithCache.getCalculator(
+    stamp,
+    languageCoords
+);
+
+// Get description text
+String description = calc.getDescriptionText(conceptNid);
+
+// Get fully qualified name
+String fqn = calc.getFullyQualifiedDescriptionText(conceptNid);
+
+// Get preferred description
+Optional<String> preferred = calc.getPreferredDescriptionText(conceptNid);
+
+// Get description with details
+Optional<DescriptionVersion> descVersion =
+    calc.getDescription(conceptNid);
+----
+
+=== Logic Operations
+
+[source,java]
+----
+LogicCalculator calc = LogicCalculatorWithCache.getCalculator(
+    stamp,
+    logicCoord
+);
+
+// Get stated axioms
+DiTreeEntity statedAxioms = calc.getStatedAxiomTree(conceptNid);
+
+// Get inferred axioms
+DiTreeEntity inferredAxioms = calc.getInferredAxiomTree(conceptNid);
+
+// Get axiom DiTree
+Optional<DiTreeEntity> axiomTree = calc.getAxiomTreeForEntity(
+    conceptNid,
+    logicCoord.statedAxiomsPatternNid()
+);
+----
+
+=== Navigation Operations
+
+[source,java]
+----
+NavigationCalculator calc = NavigationCalculatorWithCache.getCalculator(
+    stamp,
+    navCoord
+);
+
+// Get parents
+int[] parents = calc.unsortedParentsOf(conceptNid);
+int[] sortedParents = calc.sortedParentsOf(conceptNid);
+
+// Get children
+int[] children = calc.unsortedChildrenOf(conceptNid);
+int[] sortedChildren = calc.sortedChildrenOf(conceptNid);
+
+// Get ancestors (transitive closure)
+IntIdSet ancestors = calc.ancestorsOf(conceptNid);
+
+// Get descendants (transitive closure)
+IntIdSet descendants = calc.descendantsOf(conceptNid);
+
+// Check relationships
+boolean isChildOf = calc.isChildOf(childNid, parentNid);
+boolean isDescendantOf = calc.isDescendantOf(descendantNid, ancestorNid);
+
+// Get roots
+IntIdSet roots = calc.roots();
+----
+
+=== View Operations (Unified)
+
+[source,java]
+----
+ViewCalculator calc = ViewCalculatorWithCache.getCalculator(view);
+
+// All STAMP operations
+Latest<ConceptVersion> latest = calc.latest(conceptNid);
+
+// All Language operations
+String description = calc.getDescriptionText(conceptNid);
+
+// All Logic operations
+DiTreeEntity statedAxioms = calc.getStatedAxiomTree(conceptNid);
+
+// All Navigation operations
+int[] parents = calc.unsortedParentsOf(conceptNid);
+IntIdSet ancestors = calc.ancestorsOf(conceptNid);
+
+// Access to edit coordinate
+EditCoordinate editCoord = calc.editCoordinate();
+----
+
+== Coordinate Modification
+
+=== STAMP Coordinate Modifications
+
+[source,java]
+----
+StampCoordinateRecord modified = original
+    .withAllowedStates(StateSet.ACTIVE_AND_INACTIVE)
+    .withStampPosition(newPosition)
+    .withModuleNids(moduleNidSet)
+    .withExcludedModuleNids(excludedModuleNidSet)
+    .withModulePriorityNidList(modulePriorityList)
+    .withPath(pathConcept);
+----
+
+=== View Coordinate Modifications
+
+[source,java]
+----
+// Modify individual coordinate
+ViewCoordinateRecord modified = ViewCoordinateRecord.make(
+    original.stampCoordinate().withAllowedStates(StateSet.ACTIVE_AND_INACTIVE),
+    original.languageCoordinateList(),
+    original.logicCoordinate(),
+    original.navigationCoordinate(),
+    original.editCoordinate()
+);
+----
+
+== Key Interfaces
+
+=== StampCoordinate Interface
+
+[source,java]
+----
+public interface StampCoordinate {
+    StateSet allowedStates();
+    StampPosition stampPosition();
+    IntIdSet moduleNids();
+    IntIdSet excludedModuleNids();
+    IntIdList modulePriorityNidList();
+    int pathNidForFilter();
+
+    StampCoordinate withAllowedStates(StateSet states);
+    StampCoordinate withStampPosition(StampPositionRecord position);
+    StampCoordinate withModuleNids(IntIdSet moduleNids);
+    StampCoordinate withExcludedModuleNids(IntIdSet excludedModuleNids);
+    StampCoordinate withModulePriorityNidList(IntIdList priorityList);
+
+    long time();
+    String toUserString();
+}
+----
+
+=== LanguageCoordinate Interface
+
+[source,java]
+----
+public interface LanguageCoordinate {
+    int languageConceptNid();
+    IntIdList dialectPatternPreferenceNidList();
+    IntIdList descriptionTypePreferenceNidList();
+
+    String toUserString();
+}
+----
+
+=== LogicCoordinate Interface
+
+[source,java]
+----
+public interface LogicCoordinate {
+    int statedAxiomsPatternNid();
+    int inferredAxiomsPatternNid();
+    int classifierNid();
+    int inferredPremiseTypeNid();
+
+    String toUserString();
+}
+----
+
+=== NavigationCoordinate Interface
+
+[source,java]
+----
+public interface NavigationCoordinate {
+    IntIdSet navigationPatternNids();
+    StateSet vertexStates();
+    boolean sortVertices();
+    IntIdList verticesSortPatternNidList();
+
+    String toUserString();
+}
+----
+
+=== EditCoordinate Interface
+
+[source,java]
+----
+public interface EditCoordinate {
+    int getAuthorNidForChanges();
+    int getDefaultModuleNid();
+    int getDestinationModuleNid();
+    int getDefaultPathNid();
+    int getPromotionPathNid();
+}
+----
+
+=== ViewCoordinate Interface
+
+[source,java]
+----
+public interface ViewCoordinate {
+    StampCoordinate stampCoordinate();
+    <T extends LanguageCoordinate> Iterable<T> languageCoordinateIterable();
+    LogicCoordinate logicCoordinate();
+    NavigationCoordinate navigationCoordinate();
+    EditCoordinate editCoordinate();
+
+    String toUserString();
+}
+----
+
+== Common TinkarTerm Constants
+
+=== States
+
+[source,java]
+----
+State.ACTIVE
+State.INACTIVE
+State.PRIMORDIAL
+State.CANCELED
+State.WITHDRAWN
+----
+
+=== Paths
+
+[source,java]
+----
+TinkarTerm.DEVELOPMENT_PATH
+TinkarTerm.MASTER_PATH
+TinkarTerm.PRIMORDIAL_PATH
+----
+
+=== Modules
+
+[source,java]
+----
+TinkarTerm.SOLOR_OVERLAY_MODULE
+TinkarTerm.CORE_MODULE
+TinkarTerm.EXTENSION_MODULE
+----
+
+=== Languages
+
+[source,java]
+----
+TinkarTerm.ENGLISH_LANGUAGE
+TinkarTerm.SPANISH_LANGUAGE
+TinkarTerm.FRENCH_LANGUAGE
+TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION
+----
+
+=== Dialect Patterns
+
+[source,java]
+----
+TinkarTerm.US_DIALECT_ASSEMBLAGE
+TinkarTerm.GB_DIALECT_ASSEMBLAGE
+TinkarTerm.SPANISH_DIALECT_ASSEMBLAGE
+----
+
+=== Description Types
+
+[source,java]
+----
+TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE
+TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE
+TinkarTerm.DEFINITION_DESCRIPTION_TYPE
+----
+
+=== Navigation Patterns
+
+[source,java]
+----
+TinkarTerm.INFERRED_NAVIGATION
+TinkarTerm.STATED_NAVIGATION
+----
+
+=== Logic Patterns
+
+[source,java]
+----
+TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN
+TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN
+----
+
+=== Classifiers
+
+[source,java]
+----
+TinkarTerm.SNOROCKET_CLASSIFIER
+----
+
+=== Premise Types
+
+[source,java]
+----
+TinkarTerm.STATED_PREMISE_TYPE
+TinkarTerm.INFERRED_PREMISE_TYPE
+----
+
+=== Users
+
+[source,java]
+----
+TinkarTerm.USER
+----
+
+== Entity Operations
+
+=== Getting Entities
+
+[source,java]
+----
+// Get entity by NID
+Entity entity = Entity.getFast(nid);
+ConceptEntity concept = Entity.getConceptForNid(nid);
+SemanticEntity semantic = Entity.getSemanticForNid(nid);
+PatternEntity pattern = Entity.getPatternForNid(nid);
+StampEntity stamp = Entity.getStampForNid(nid);
+
+// Get entity by public ID
+Entity entity = Entity.get(publicId);
+----
+
+=== Creating Versions
+
+[source,java]
+----
+// Create STAMP
+StampEntity stamp = StampRecord.build(
+    state,
+    time,
+    authorNid,
+    moduleNid,
+    pathNid
+);
+
+// Create concept version
+ConceptVersionRecord conceptVersion = ConceptVersionRecord.build(
+    conceptNid,
+    stampNid
+);
+
+// Create semantic version
+SemanticVersionRecord semanticVersion = SemanticVersionRecord.build(
+    semanticNid,
+    stampNid,
+    fieldValues
+);
+
+// Commit
+Entity.provider().putEntity(stamp);
+Entity.provider().putEntity(conceptVersion);
+Entity.provider().putEntity(semanticVersion);
+----
+
+== Working with Latest
+
+=== Latest Pattern
+
+[source,java]
+----
+Latest<ConceptVersion> latest = calculator.latest(conceptNid);
+
+if (latest.isPresent()) {
+    ConceptVersion version = latest.get();
+    State state = version.state();
+    int moduleNid = version.moduleNid();
+    // ... use version
+} else {
+    // No version matches coordinate
+}
+
+// Or with ifPresent
+latest.ifPresent(version -> {
+    // Process version
+});
+
+// Or with orElse
+ConceptVersion version = latest.orElse(defaultVersion);
+----
+
+=== Absence Reasons
+
+[source,java]
+----
+Latest<ConceptVersion> latest = calculator.latest(conceptNid);
+
+if (latest.isAbsent()) {
+    System.out.println("No latest version because: " +
+        latest.absenceReason());
+}
+----
+
+== IntId Collections
+
+=== Creating IntId Collections
+
+[source,java]
+----
+// IntIdSet
+IntIdSet set = IntIds.set.empty();
+IntIdSet set = IntIds.set.of(nid1, nid2, nid3);
+IntIdSet set = IntIds.set.of(intArray);
+IntIdSet set = IntIds.set.of(collection, Entity::nid);
+
+// IntIdList
+IntIdList list = IntIds.list.empty();
+IntIdList list = IntIds.list.of(nid1, nid2, nid3);
+IntIdList list = IntIds.list.of(intArray);
+IntIdList list = IntIds.list.of(collection, Entity::nid);
+----
+
+=== Using IntId Collections
+
+[source,java]
+----
+IntIdSet set = IntIds.set.of(nid1, nid2);
+
+// Add/remove
+IntIdSet modified = set.with(nid3);
+IntIdSet modified = set.without(nid2);
+
+// Operations
+IntIdSet union = set1.union(set2);
+IntIdSet intersection = set1.intersect(set2);
+IntIdSet difference = set1.difference(set2);
+
+// Query
+boolean contains = set.contains(nid);
+int size = set.size();
+boolean isEmpty = set.isEmpty();
+
+// Iterate
+set.forEach(nid -> process(nid));
+int[] array = set.toArray();
+----
+
+== Common Patterns
+
+=== Building a Hierarchy
+
+[source,java]
+----
+public TreeNode buildHierarchy(int rootNid, ViewCalculator calc) {
+    String description = calc.getDescriptionText(rootNid);
+    int[] children = calc.sortedChildrenOf(rootNid);
+
+    List<TreeNode> childNodes = Arrays.stream(children)
+        .mapToObj(childNid -> buildHierarchy(childNid, calc))
+        .collect(Collectors.toList());
+
+    return new TreeNode(rootNid, description, childNodes);
+}
+----
+
+=== Getting All Ancestors
+
+[source,java]
+----
+public IntIdSet getAllAncestors(int conceptNid, ViewCalculator calc) {
+    return calc.ancestorsOf(conceptNid);
+}
+----
+
+=== Finding Common Ancestor
+
+[source,java]
+----
+public Optional<Integer> findCommonAncestor(
+    int concept1Nid,
+    int concept2Nid,
+    ViewCalculator calc
+) {
+    IntIdSet ancestors1 = calc.ancestorsOf(concept1Nid);
+    IntIdSet ancestors2 = calc.ancestorsOf(concept2Nid);
+
+    IntIdSet common = ancestors1.intersect(ancestors2);
+
+    if (common.isEmpty()) {
+        return Optional.empty();
+    }
+
+    // Return closest common ancestor (implementation depends on needs)
+    return Optional.of(common.intIterator().next());
+}
+----
+
+=== Checking Subsumption
+
+[source,java]
+----
+public boolean isKindOf(
+    int specificNid,
+    int generalNid,
+    ViewCalculator calc
+) {
+    if (specificNid == generalNid) {
+        return true;
+    }
+
+    IntIdSet ancestors = calc.ancestorsOf(specificNid);
+    return ancestors.contains(generalNid);
+}
+----
+
+=== Creating New Version
+
+[source,java]
+----
+public void createNewVersion(
+    int conceptNid,
+    EditCoordinate editCoord
+) {
+    // Create STAMP
+    StampEntity stamp = StampRecord.build(
+        State.ACTIVE,
+        System.currentTimeMillis(),
+        editCoord.getAuthorNidForChanges(),
+        editCoord.getDefaultModuleNid(),
+        editCoord.getDefaultPathNid()
+    );
+
+    // Create version
+    ConceptVersionRecord version = ConceptVersionRecord.build(
+        conceptNid,
+        stamp.nid()
+    );
+
+    // Commit
+    Entity.provider().putEntity(stamp);
+    Entity.provider().putEntity(version);
+}
+----
+
+== Debugging and Logging
+
+=== User-Friendly Output
+
+[source,java]
+----
+// All coordinates have toUserString()
+String stampInfo = stampCoord.toUserString();
+String langInfo = langCoord.toUserString();
+String logicInfo = logicCoord.toUserString();
+String navInfo = navCoord.toUserString();
+String viewInfo = viewCoord.toUserString();
+
+System.out.println("Current view:");
+System.out.println(viewInfo);
+----
+
+=== Getting Text for NIDs
+
+[source,java]
+----
+// Convert NID to description
+String text = PrimitiveData.text(nid);
+
+// Convert multiple NIDs to text list
+String textList = PrimitiveData.textList(nidArray);
+----
+
+== Package Structure
+
+[cols="1,2"]
+|===
+|Package |Purpose
+
+|`dev.ikm.tinkar.coordinate`
+|Root package with Coordinates factory
+
+|`dev.ikm.tinkar.coordinate.stamp`
+|STAMP coordinates and records
+
+|`dev.ikm.tinkar.coordinate.stamp.calculator`
+|STAMP calculator implementations
+
+|`dev.ikm.tinkar.coordinate.stamp.change`
+|Change tracking for STAMP
+
+|`dev.ikm.tinkar.coordinate.language`
+|Language coordinates and records
+
+|`dev.ikm.tinkar.coordinate.language.calculator`
+|Language calculator implementations
+
+|`dev.ikm.tinkar.coordinate.logic`
+|Logic coordinates and records
+
+|`dev.ikm.tinkar.coordinate.logic.calculator`
+|Logic calculator implementations
+
+|`dev.ikm.tinkar.coordinate.navigation`
+|Navigation coordinates and records
+
+|`dev.ikm.tinkar.coordinate.navigation.calculator`
+|Navigation calculator implementations
+
+|`dev.ikm.tinkar.coordinate.edit`
+|Edit coordinates and records
+
+|`dev.ikm.tinkar.coordinate.view`
+|View coordinates combining all types
+
+|`dev.ikm.tinkar.coordinate.view.calculator`
+|View calculator implementations
+
+|===
+
+== Additional Resources
+
+=== JavaDoc
+
+Complete JavaDoc is available for all packages:
+
+* `dev.ikm.tinkar.coordinate` - Package documentation
+* Individual interface and class JavaDoc
+* Method-level documentation with examples
+
+=== Source Code
+
+Reference implementations in:
+
+* `Coordinates.java` - Factory methods
+* `*Record.java` - Immutable record implementations
+* `*WithCache.java` - Cached calculator implementations
+
+=== Related Packages
+
+* `dev.ikm.tinkar.entity` - Entity system
+* `dev.ikm.tinkar.terms` - Standard terminology constants
+* `dev.ikm.tinkar.common` - Common utilities
+
+== Summary
+
+This reference provides quick access to:
+
+* Coordinate factory methods
+* Calculator creation
+* Common operations
+* Coordinate modification
+* Key interfaces
+* TinkarTerm constants
+* Entity operations
+* IntId collections
+* Common patterns
+* Package structure
+
+For detailed explanations and examples, refer to the main guide sections.

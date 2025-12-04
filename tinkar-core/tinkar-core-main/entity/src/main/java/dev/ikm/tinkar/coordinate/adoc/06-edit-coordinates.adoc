@@ -1,0 +1,284 @@
+= Edit Coordinates
+
+[NOTE]
+====
+This document describes the IKE Coordinate System (Integrated Knowledge Ecosystem), based on the HL7 TINKAR specification. Technical references use "Tinkar" in code for backward compatibility.
+====
+
+== Overview
+
+Edit coordinates specify metadata for creating and modifying knowledge content. They control:
+
+* Who is making changes (author)
+* Where new content goes (default module)
+* Where content is moved during modularization (destination module)
+* Which path new content is created on (default path)
+* Which path content is promoted to (promotion path)
+
+== Edit Coordinate Components
+
+[source,java]
+----
+public interface EditCoordinate {
+    int getAuthorNidForChanges();      // Who
+    int getDefaultModuleNid();         // Where (new content)
+    int getDestinationModuleNid();     // Where (modularizing)
+    int getDefaultPathNid();           // Which path (new content)
+    int getPromotionPathNid();         // Which path (promoting)
+}
+----
+
+== The Three Workflows
+
+Edit coordinates support three distinct workflows:
+
+=== 1. Developing
+
+Creating new content or modifying existing content:
+
+* New content goes to *default module*
+* Created on *default path*
+* Attributed to *author*
+* Existing content retains its module
+
+=== 2. Modularizing
+
+Moving content between modules:
+
+* Content moved to *destination module*
+* Written to *default path*
+* Module changes, other metadata preserved
+
+=== 3. Promoting
+
+Moving content across development paths:
+
+* Content retains *current module*
+* Copy written to *promotion path*
+* Supports staged releases (dev → staging → production)
+
+== Standard Edit Coordinate
+
+[source,java]
+----
+// Default edit coordinate
+EditCoordinateRecord editCoord = Coordinates.Edit.Default();
+
+// Equivalent to:
+EditCoordinateRecord editCoord = EditCoordinateRecord.make(
+    TinkarTerm.USER.nid(),                    // Author
+    TinkarTerm.SOLOR_OVERLAY_MODULE.nid(),    // Default module
+    TinkarTerm.SOLOR_OVERLAY_MODULE.nid(),    // Destination module
+    TinkarTerm.DEVELOPMENT_PATH.nid(),        // Default path
+    TinkarTerm.DEVELOPMENT_PATH.nid()         // Promotion path
+);
+----
+
+== Creating Custom Edit Coordinates
+
+[source,java]
+----
+// Custom for specific user and module
+EditCoordinateRecord customEdit = EditCoordinateRecord.make(
+    drSmithNid,                              // Dr. Smith as author
+    extensionModuleNid,                      // Extension module for new content
+    coreModuleNid,                          // Core module for modularization
+    developmentPathNid,                     // Create on development
+    masterPathNid                           // Promote to master
+);
+----
+
+== Using Edit Coordinates
+
+Edit coordinates are typically used when creating new versions:
+
+[source,java]
+----
+EditCoordinateRecord editCoord = Coordinates.Edit.Default();
+
+// Create STAMP for new version
+StampEntity stamp = StampRecord.build(
+    State.ACTIVE,
+    System.currentTimeMillis(),
+    editCoord.getAuthorNidForChanges(),      // From edit coordinate
+    editCoord.getDefaultModuleNid(),         // From edit coordinate
+    editCoord.getDefaultPathNid()            // From edit coordinate
+);
+
+// Create new concept version
+ConceptVersionRecord newVersion = ConceptVersionRecord.build(
+    conceptNid,
+    stamp.nid()
+);
+
+// Commit to database
+Entity.provider().putEntity(newVersion);
+----
+
+== Practical Examples
+
+=== Example 1: User-Specific Edit Context
+
+[source,java]
+----
+public class UserEditContext {
+    private final Map<String, EditCoordinateRecord> userEdits = new HashMap<>();
+
+    public EditCoordinateRecord getEditCoordinateForUser(String userId) {
+        return userEdits.computeIfAbsent(userId, id -> {
+            int userNid = getUserNid(id);
+            int moduleNid = getUserDefaultModule(id);
+
+            return EditCoordinateRecord.make(
+                userNid,
+                moduleNid,
+                moduleNid,
+                TinkarTerm.DEVELOPMENT_PATH.nid(),
+                TinkarTerm.DEVELOPMENT_PATH.nid()
+            );
+        });
+    }
+}
+----
+
+=== Example 2: Module-Specific Development
+
+[source,java]
+----
+// Create edit coordinate for extension development
+public EditCoordinateRecord createExtensionEditCoordinate(int authorNid) {
+    return EditCoordinateRecord.make(
+        authorNid,
+        TinkarTerm.EXTENSION_MODULE.nid(),      // Extensions go here
+        TinkarTerm.CORE_MODULE.nid(),           // Modularize to core
+        TinkarTerm.DEVELOPMENT_PATH.nid(),
+        TinkarTerm.MASTER_PATH.nid()
+    );
+}
+----
+
+=== Example 3: Promotion Workflow
+
+[source,java]
+----
+// Promote content from development to master
+public void promoteToMaster(List<Integer> conceptNids,
+                           EditCoordinateRecord editCoord) {
+    StampCoordinateRecord devStamp = Coordinates.Stamp.DevelopmentLatestActiveOnly();
+    StampCalculator devCalc = StampCalculatorWithCache.getCalculator(devStamp);
+
+    for (int conceptNid : conceptNids) {
+        ConceptEntity concept = Entity.getConceptForNid(conceptNid);
+        Latest<ConceptVersion> devVersion = devCalc.latest(concept);
+
+        if (devVersion.isPresent()) {
+            ConceptVersion version = devVersion.get();
+
+            // Create STAMP on promotion path
+            StampEntity promoStamp = StampRecord.build(
+                version.state(),
+                System.currentTimeMillis(),
+                editCoord.getAuthorNidForChanges(),
+                version.moduleNid(),                     // Keep original module
+                editCoord.getPromotionPathNid()          // Promotion path
+            );
+
+            // Create version on master path
+            ConceptVersionRecord promoVersion = ConceptVersionRecord.build(
+                conceptNid,
+                promoStamp.nid()
+            );
+
+            Entity.provider().putEntity(promoVersion);
+        }
+    }
+}
+----
+
+== Integration with View Coordinates
+
+Edit coordinates are part of view coordinates:
+
+[source,java]
+----
+ViewCoordinateRecord view = ViewCoordinateRecord.make(
+    stampCoord,
+    languageCoords,
+    logicCoord,
+    navCoord,
+    editCoord  // Edit coordinate included
+);
+
+// Access via view
+EditCoordinate editFromView = view.editCoordinate();
+int authorNid = editFromView.getAuthorNidForChanges();
+----
+
+== Best Practices
+
+=== DO: Use Per-User Edit Coordinates
+
+[source,java]
+----
+// GOOD: Each user has own edit coordinate
+public EditCoordinateRecord getUserEditCoordinate(User user) {
+    return EditCoordinateRecord.make(
+        user.getConceptNid(),
+        user.getDefaultModule(),
+        user.getDefaultModule(),
+        TinkarTerm.DEVELOPMENT_PATH.nid(),
+        TinkarTerm.DEVELOPMENT_PATH.nid()
+    );
+}
+----
+
+=== DO: Match Module to Context
+
+[source,java]
+----
+// GOOD: Core development
+if (isDevelopingCore) {
+    editCoord = EditCoordinateRecord.make(
+        authorNid,
+        TinkarTerm.CORE_MODULE.nid(),  // Core module
+        ...
+    );
+}
+
+// GOOD: Extension development
+if (isDevelopingExtension) {
+    editCoord = EditCoordinateRecord.make(
+        authorNid,
+        TinkarTerm.EXTENSION_MODULE.nid(),  // Extension module
+        ...
+    );
+}
+----
+
+=== DON'T: Share Edit Coordinates Across Users
+
+[source,java]
+----
+// BAD: All users share same author
+public static final EditCoordinateRecord SHARED_EDIT =
+    Coordinates.Edit.Default();
+
+// All changes attributed to same author - can't track who did what
+----
+
+== Summary
+
+Edit coordinates control change attribution:
+
+* *Author* - Who is making changes
+* *Default Module* - Where new content goes
+* *Destination Module* - Target for modularization
+* *Default Path* - Where to create new content
+* *Promotion Path* - Target for content promotion
+
+Key points:
+
+* Use per-user edit coordinates for proper attribution
+* Match module to development context
+* Support three workflows: developing, modularizing, promoting
+* Integrate with STAMP for complete provenance

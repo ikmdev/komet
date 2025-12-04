@@ -1,0 +1,365 @@
+= Introduction to Coordinates
+
+== What Are Coordinates?
+
+In the IKE Coordinate System, a *coordinate* is a specification that describes *how* to access and interpret knowledge at a specific point in time, in a specific language, using specific reasoning rules, and through a specific navigational structure.
+
+Think of coordinates like viewing settings for a knowledge graph:
+
+* A STAMP coordinate is like setting a "point in time" filter
+* A Language coordinate is like choosing your preferred language
+* A Logic coordinate is like selecting which reasoning engine to use
+* A Navigation coordinate is like choosing which hierarchy to browse
+* An Edit coordinate is like setting your author identity
+
+Together, these coordinates provide a complete context for accessing versioned, multilingual, logic-enabled knowledge.
+
+== About IKE and TINKAR
+
+The *IKE Coordinate System* is the collaborative, open-source framework developed by our independent community for managing complex knowledge at scale. The architecture is based on the HL7 Terminology Knowledge Architecture (TINKAR), which was formally balloted by HL7. While *TINKAR* remains valid as the historical and technical foundation, we use *IKE (Integrated Knowledge Ecosystem)* to emphasize:
+
+* *Collaborative*: Multiple organizations and individuals contributing together
+* *Open-source*: Transparent development and freely available implementations
+* *Ecosystem*: A comprehensive environment for knowledge curation at scale
+* *Independent*: Community-driven rather than single-organization controlled
+
+Throughout this documentation, you may see references to "Tinkar" in package names (`dev.ikm.tinkar.*`) and code—this reflects the historical naming and maintains backward compatibility.
+
+== Why Coordinates Matter
+
+=== The Problem: Knowledge Changes Over Time
+
+Medical terminologies, business vocabularies, and other knowledge bases are not static. They evolve:
+
+* Concepts are added, modified, or deprecated
+* Descriptions are refined or translated
+* Relationships change as understanding improves
+* Different teams work on different branches
+
+*Without coordinates*, answering "What is the definition of Pneumonia?" is ambiguous:
+
+* Which version? (from yesterday, last month, or today?)
+* Which language? (English, Spanish, or French?)
+* Which hierarchy? (stated by authors or inferred by classifier?)
+* Which development branch? (production, staging, or development?)
+
+*With coordinates*, the question becomes precise:
+
+[source,java]
+----
+ViewCoordinateRecord view = ViewCoordinateRecord.make(
+    Coordinates.Stamp.MasterLatestActiveOnly(),      // Production, latest, active only
+    Lists.immutable.of(
+        Coordinates.Language.UsEnglishRegularName()  // US English, regular names
+    ),
+    Coordinates.Logic.ElPlusPlus(),                  // EL++ reasoning
+    Coordinates.Navigation.inferred(),               // Inferred hierarchy
+    Coordinates.Edit.Default()                       // Default edit context
+);
+
+ViewCalculator calc = ViewCalculatorWithCache.getCalculator(view);
+String description = calc.getDescriptionText(pneumoniaNid);
+// Returns: "Pneumonia" (as of latest master, in US English, active only)
+----
+
+=== The Solution: Declarative Coordinates
+
+Coordinates provide a *declarative* way to specify your viewing context:
+
+* *Consistency* - All operations use the same coordinate, ensuring coherent results
+* *Reproducibility* - Same coordinates always produce same results
+* *Flexibility* - Switch contexts by changing coordinates
+* *Transparency* - Coordinates make viewing assumptions explicit
+
+== The Five Coordinate Types
+
+[mermaid]
+....
+graph TB
+    VC[View Coordinate]
+    VC --> STAMP[STAMP Coordinate<br/>Status, Time, Author,<br/>Module, Path]
+    VC --> LANG[Language Coordinate<br/>Language, Dialect,<br/>Description Types]
+    VC --> LOGIC[Logic Coordinate<br/>Classifier, Profile,<br/>Axiom Patterns]
+    VC --> NAV[Navigation Coordinate<br/>Hierarchy Patterns,<br/>Vertex Sorting]
+    VC --> EDIT[Edit Coordinate<br/>Author, Module,<br/>Paths]
+
+    style VC fill:#e1f5fe
+    style STAMP fill:#fff9c4
+    style LANG fill:#f3e5f5
+    style LOGIC fill:#e8f5e9
+    style NAV fill:#ffe0b2
+    style EDIT fill:#fce4ec
+....
+
+=== STAMP Coordinates
+
+Control *temporal versioning* and *provenance*:
+
+[cols="1,3"]
+|===
+|Component |Purpose
+
+|*Status*
+|ACTIVE or INACTIVE (filter by lifecycle state)
+
+|*Time*
+|Timestamp (view knowledge as of specific date/time)
+
+|*Author*
+|Who made changes (not used in filtering, just metadata)
+
+|*Module*
+|Organizational unit (include/exclude specific modules)
+
+|*Path*
+|Development branch (production, staging, development)
+|===
+
+*Key Use Cases:*
+
+* "Show me active content only"
+* "What did the terminology look like on January 1, 2024?"
+* "Show me only content from the SNOMED CT core module"
+
+=== Language Coordinates
+
+Control *multilingual descriptions*:
+
+[cols="1,3"]
+|===
+|Component |Purpose
+
+|*Language*
+|Natural language (English, Spanish, French, etc.)
+
+|*Description Patterns*
+|Which patterns define descriptions
+
+|*Description Types*
+|Prefer FQN, Regular Name, or Definition
+
+|*Dialect Preferences*
+|US English vs. GB English, etc.
+
+|*Module Preferences*
+|When multiple descriptions exist, which module wins
+|===
+
+*Key Use Cases:*
+
+* "Show me Spanish descriptions"
+* "Prefer fully qualified names over regular names"
+* "Use US English spellings when available, fall back to GB English"
+
+=== Logic Coordinates
+
+Control *description logic reasoning*:
+
+[cols="1,3"]
+|===
+|Component |Purpose
+
+|*Classifier*
+|Reasoning engine (Snorocket, ELK, etc.)
+
+|*Profile*
+|Logic expressivity (EL++, ALC, SROIQ)
+
+|*Axiom Patterns*
+|Where to find stated and inferred logical definitions
+
+|*Navigation Patterns*
+|How axioms generate navigational hierarchies
+
+|*Root Concept*
+|Top of the taxonomy
+|===
+
+*Key Use Cases:*
+
+* "Classify concepts using EL++ description logic"
+* "Get inferred parent-child relationships"
+* "Check if concept A subsumes concept B"
+
+=== Navigation Coordinates
+
+Control *graph traversal* and *hierarchies*:
+
+[cols="1,3"]
+|===
+|Component |Purpose
+
+|*Navigation Patterns*
+|Which graph(s) to use (inferred, stated, custom)
+
+|*Vertex States*
+|Include active, inactive, or both
+
+|*Vertex Sorting*
+|Sort children alphabetically or by custom order
+
+|*Sort Patterns*
+|Custom sorting criteria
+|===
+
+*Key Use Cases:*
+
+* "Navigate the inferred subsumption hierarchy"
+* "Browse the stated (author-asserted) hierarchy"
+* "Combine is-a and part-of relationships in one view"
+
+=== Edit Coordinates
+
+Control *change attribution*:
+
+[cols="1,3"]
+|===
+|Component |Purpose
+
+|*Author*
+|Who is making changes
+
+|*Default Module*
+|Where new content goes
+
+|*Destination Module*
+|Target for modularization
+
+|*Default Path*
+|Where to create new content
+
+|*Promotion Path*
+|Target for content promotion
+|===
+
+*Key Use Cases:*
+
+* "Attribute changes to Dr. Smith"
+* "Create new content in the Extension module"
+* "Promote content from development to production"
+
+== How Coordinates Work Together
+
+All five coordinate types combine in a *View Coordinate* to provide unified access:
+
+[mermaid]
+....
+sequenceDiagram
+    participant App as Application
+    participant View as ViewCalculator
+    participant Stamp as StampCalculator
+    participant Lang as LanguageCalculator
+    participant Nav as NavigationCalculator
+
+    App->>View: getDescriptionText(conceptNid)
+    View->>Stamp: latest(concept)
+    Stamp-->>View: Latest version
+    View->>Lang: getPreferredDescription(concept)
+    Lang-->>View: "Pneumonia"
+    View-->>App: "Pneumonia"
+
+    App->>View: parentsOf(conceptNid)
+    View->>Nav: parentsOf(conceptNid)
+    Nav->>Stamp: Filter by STAMP
+    Stamp-->>Nav: Visible parents
+    Nav-->>View: Parent NIDs
+    View-->>App: Parent NIDs
+....
+
+The View Coordinate ensures:
+
+1. *Consistency* - Same STAMP coordinate used for all version resolution
+2. *Integration* - Language, Logic, and Navigation work together seamlessly
+3. *Simplicity* - Single point of configuration for entire application
+
+== Coordinate Lifecycle
+
+Coordinates follow this lifecycle:
+
+[mermaid]
+....
+stateDiagram-v2
+    [*] --> Create: Configure coordinates
+    Create --> Use: Pass to calculator
+    Use --> Cache: First use builds cache
+    Cache --> Reuse: Subsequent uses hit cache
+    Reuse --> Reuse: Same coordinate = same cache
+    Reuse --> Create: Need different view
+    Create --> [*]: Coordinates immutable
+....
+
+*Key Points:*
+
+* Coordinates are *immutable* - Once created, they never change
+* Calculators *cache* results per coordinate
+* *Reusing* coordinates maximizes cache efficiency
+* *Creating* new coordinates means new cache entries
+
+== Common Patterns
+
+=== Pattern 1: Application Startup
+
+[source,java]
+----
+// Create standard view at startup
+public class MyApplication {
+    // Reuse this coordinate throughout application
+    private static final ViewCoordinateRecord STANDARD_VIEW =
+        Coordinates.View.DefaultView();
+
+    private static final ViewCalculator CALCULATOR =
+        ViewCalculatorWithCache.getCalculator(STANDARD_VIEW);
+}
+----
+
+=== Pattern 2: User Preferences
+
+[source,java]
+----
+// Build view from user preferences
+public ViewCoordinateRecord buildUserView(UserPreferences prefs) {
+    return ViewCoordinateRecord.make(
+        buildStampFromPrefs(prefs),
+        buildLanguagesFromPrefs(prefs),
+        Coordinates.Logic.ElPlusPlus(),
+        Coordinates.Navigation.inferred(),
+        Coordinates.Edit.Default()
+    );
+}
+----
+
+=== Pattern 3: Temporary Context Switch
+
+[source,java]
+----
+// Temporarily view historical state
+ViewCoordinateRecord currentView = Coordinates.View.DefaultView();
+ViewCalculator currentCalc = ViewCalculatorWithCache.getCalculator(currentView);
+
+// Switch to historical view
+StampPositionRecord historicPosition = StampPositionRecord.make(
+    historicTimestamp,
+    TinkarTerm.MASTER_PATH
+);
+ViewCoordinateRecord historicView = currentView.withStampCoordinate(
+    currentView.stampCoordinate().withStampPosition(historicPosition)
+);
+ViewCalculator historicCalc = ViewCalculatorWithCache.getCalculator(historicView);
+
+// Compare
+String currentDesc = currentCalc.getDescriptionText(conceptNid);
+String historicDesc = historicCalc.getDescriptionText(conceptNid);
+----
+
+== What's Next?
+
+Now that you understand what coordinates are and why they matter, the following sections will teach you how to configure each coordinate type for your specific needs.
+
+Each section includes:
+
+* Detailed explanation of the coordinate type
+* Configuration options and parameters
+* Code examples and use cases
+* Best practices and tips
+
+TIP: You can read sections in any order, but STAMP coordinates are foundational and recommended as the starting point.

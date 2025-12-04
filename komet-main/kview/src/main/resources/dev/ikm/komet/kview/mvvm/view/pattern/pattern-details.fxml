@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import dev.ikm.komet.kview.controls.KLExpandableNodeListControl?>
+<?import dev.ikm.komet.kview.controls.PublicIDListControl?>
+<?import dev.ikm.komet.kview.controls.StampViewControl?>
+<?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
+<?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Ellipse?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<BorderPane fx:id="detailsOuterBorderPane" maxHeight="Infinity" maxWidth="Infinity" prefWidth="727.0" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.pattern.PatternDetailsController">
+   <center>
+      <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
+         <top>
+            <VBox BorderPane.alignment="CENTER">
+               <children>
+                  <FlowPane styleClass="rounded-top">
+                     <children>
+                        <HBox fx:id="tabHeader" prefHeight="18.0" spacing="4.0" style="-fx-background-color: -Natural-Grey-Main;">
+                           <styleClass>
+                              <String fx:value="lidr-rounded-tab" />
+                           </styleClass>
+                           <children>
+                              <Region prefHeight="12.0" prefWidth="8.4" styleClass="nine-dots-icon" />
+                              <Text fx:id="patternText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="lidr-tab-text" text="Pattern" />
+                           </children>
+                           <cursor>
+                              <Cursor fx:constant="CLOSED_HAND" />
+                           </cursor>
+                        </HBox>
+                     </children>
+                  </FlowPane>
+                  <HBox fx:id="conceptHeaderControlToolBarHbox" prefHeight="100.0" prefWidth="762.0" style="-fx-background-color: -Natural-Grey-Main;">
+                     <children>
+                        <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY" styleClass="coordinate">
+                           <tooltip><Tooltip text="Coordinates" /></tooltip>
+                        </MenuButton>
+                        <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE" styleClass="vertical-divider" width="1.0" />
+                        <HBox fx:id="buttonContainer" alignment="CENTER" spacing="15.0">
+                           <children>
+                              <StackPane fx:id="publishStackPane">
+                                 <children>
+                                    <Button fx:id="savePatternButton" mnemonicParsing="false" onAction="#savePattern" text="Publish">
+                                       <graphic>
+                                          <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
+                                             <content><SVGConstants fx:constant="SAVE_SVG_PATH" /></content>
+                                          </SVGPath>
+                                       </graphic>
+                                    </Button>
+                                 </children>
+                              </StackPane>
+                              <Button mnemonicParsing="false" text="Button">
+                                 <graphic>
+                                    <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
+                                       <content><SVGConstants fx:constant="DUPLICATE_SVG_PATH" /></content>
+                                    </SVGPath>
+                                 </graphic>
+                                 <tooltip><Tooltip text="Duplicate Pattern" /></tooltip>
+                              </Button>
+                              <Button mnemonicParsing="false" styleClass="share-concept" text="Button">
+                                 <graphic>
+                                    <Region styleClass="share-icon" />
+                                 </graphic>
+                                 <tooltip><Tooltip text="Share Pattern" /></tooltip>
+                              </Button>
+                              <Button mnemonicParsing="false" styleClass="favorite-concept" text="Button">
+                                 <graphic>
+                                    <Region styleClass="favorite-icon" />
+                                 </graphic>
+                                 <tooltip><Tooltip text="Favorite Pattern" /></tooltip>
+                              </Button>
+                              <ToggleButton fx:id="reasonerToggleButton" mnemonicParsing="false" onAction="#openReasonerSlideout" styleClass="reasoner" text="ToggleButton">
+                                 <graphic>
+                                    <Region prefHeight="200.0" prefWidth="200.0">
+                                       <styleClass>
+                                          <String fx:value="icon" />
+                                          <String fx:value="reasoner-icon" />
+                                       </styleClass>
+                                    </Region>
+                                 </graphic>
+                                 <tooltip><Tooltip text="Reasoner" /></tooltip>
+                              </ToggleButton>
+                           </children>
+                        </HBox>
+                        <Separator orientation="VERTICAL" prefHeight="10.0" styleClass="thin-vertical-separator" />
+                        <ToggleButton fx:id="timelineToggleButton" mnemonicParsing="false" onAction="#openTimelinePanel" styleClass="timeline" text="ToggleButton">
+                           <graphic>
+                              <Region prefHeight="200.0" prefWidth="200.0">
+                                 <styleClass>
+                                    <String fx:value="icon" />
+                                    <String fx:value="timeline-icon" />
+                                 </styleClass>
+                              </Region>
+                           </graphic>
+                           <tooltip><Tooltip text="Time Travel" /></tooltip>
+                        </ToggleButton>
+                        <Region fx:id="controlBoxRegion2" minWidth="10.0" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                        <Text fill="#FFFFFF" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="properties-toggle" text="PROPERTY">
+                           <font>
+                              <Font name="Open Sans SemiBold" size="13.0" />
+                           </font>
+                        </Text>
+                        <ToggleButton fx:id="propertiesToggleButton" mnemonicParsing="false" onAction="#openPropertiesPanel" text="ToggleButton">
+                           <graphic>
+                              <Group>
+                                 <children>
+                                    <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="20.0" stroke="BLACK" strokeType="INSIDE" styleClass="toggle-switch-body" width="32.0" />
+                                    <Ellipse centerX="10.0" centerY="10.0" fill="DODGERBLUE" radiusX="8.0" radiusY="8.0" stroke="BLACK" strokeType="INSIDE" styleClass="property-toggle-switch" />
+                                 </children>
+                              </Group>
+                           </graphic>
+                        </ToggleButton>
+                        <Separator orientation="VERTICAL" prefHeight="10.0" styleClass="thin-vertical-separator" />
+                        <Button fx:id="closeConceptButton" mnemonicParsing="false" onAction="#closeConceptWindow" text="Button">
+                           <graphic>
+                              <Region prefHeight="200.0" prefWidth="200.0" styleClass="close-window" />
+                           </graphic>
+                        </Button>
+                     </children>
+                     <padding>
+                        <Insets left="5.0" right="5.0" />
+                     </padding>
+                     <styleClass>
+                        <String fx:value="concept-header-control" />
+                        <String fx:value="rounded-upper-right-only" />
+                     </styleClass>
+                  </HBox>
+               </children>
+            </VBox>
+         </top>
+         <right>
+            <HBox styleClass="main-right-container" BorderPane.alignment="CENTER">
+               <children>
+                  <VerticallyFilledPane fx:id="propertiesSlideoutTrayPane" styleClass="slideout-tray-pane" />
+                  <VerticallyFilledPane fx:id="timelineSlideoutTrayPane" styleClass="slideout-tray-pane" />
+               </children>
+            </HBox>
+         </right>
+         <center>
+            <BorderPane prefWidth="762.0" styleClass="main-center-container" BorderPane.alignment="CENTER">
+               <center>
+                  <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" prefWidth="762.0">
+                     <children>
+                        <HBox prefWidth="711.0">
+                           <children>
+                              <TitledPane fx:id="patternDefinitionTitledPane" contentDisplay="BOTTOM" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefWidth="5000.0" styleClass="pattern-titled-pane" text="PATTERN DEFINITION">
+                                 <content>
+                                    <GridPane prefWidth="711.0" styleClass="pattern-definition-container">
+                                       <columnConstraints>
+                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="195" />
+                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                                       </columnConstraints>
+                                       <rowConstraints>
+                                          <RowConstraints maxHeight="25.0" minHeight="25.0" prefHeight="25.0" vgrow="SOMETIMES" />
+                                          <RowConstraints minHeight="16.0" prefHeight="16.0" vgrow="SOMETIMES" />
+                                          <RowConstraints minHeight="18.0" prefHeight="18.0" vgrow="SOMETIMES" />
+                                       </rowConstraints>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-field" text="SEMANTIC MEANING:" GridPane.columnIndex="0">
+                                             <font>
+                                                <Font name="Open Sans Bold" size="14.0" />
+                                             </font>
+                                          </Text>
+                                          <Text fx:id="semanticPurposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="semantic-field" text="SEMANTIC PURPOSE:" wrappingWidth="121.474609375" GridPane.columnIndex="1">
+                                             <font>
+                                                <Font name="Noto Sans Batak Regular" size="12.0" />
+                                             </font>
+                                          </Text>
+                                          <TextFlow GridPane.rowIndex="1">
+                                             <children>
+                                                <Text fx:id="meaningText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
+                                             </children>
+                                          </TextFlow>
+                                          <Text fx:id="purposeDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                             <font>
+                                                <Font name="Noto Sans Batak Regular" size="13.0" />
+                                             </font>
+                                          </Text>
+                                          <TextFlow GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                             <children>
+                                                <Text fx:id="purposeText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" text="Capsular pattern of joint movement limitation (finding)" />
+                                             </children>
+                                          </TextFlow>
+                                          <Text fx:id="meaningDate" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                       </children>
+                                    </GridPane>
+                                 </content>
+                                 <font>
+                                    <Font name="Noto Sans Batak Regular" size="12.0" />
+                                 </font>
+                              </TitledPane>
+                              <Pane>
+                                 <children>
+                                    <HBox layoutX="-32.0">
+                                       <children>
+                                          <Separator maxWidth="-Infinity" orientation="VERTICAL" prefHeight="10.0" styleClass="pattern-vertical-separator">
+                                             <HBox.margin>
+                                                <Insets top="4.0" />
+                                             </HBox.margin>
+                                          </Separator>
+                                          <Button fx:id="addDefinitionButton" mnemonicParsing="false" onAction="#showAddEditDefinitionPanel" styleClass="add-pencil-button" text="Button">
+                                             <graphic>
+                                                <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
+                                             </graphic>
+                                             <HBox.margin>
+                                                <Insets top="4.0" />
+                                             </HBox.margin>
+                                             <tooltip>
+                                                <Tooltip text="Edit Definition" />
+                                             </tooltip>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </Pane>
+                           </children>
+                        </HBox>
+                        <AnchorPane>
+                           <children>
+                              <TitledPane fx:id="descriptionsTitledPane" contentDisplay="BOTTOM" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefWidth="5000.0" styleClass="pattern-titled-pane" text="DESCRIPTIONS" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <content>
+                                    <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="content-description-insets">
+                                       <children>
+                                          <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="408.0" HBox.hgrow="ALWAYS">
+                                             <children>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="pattern-title" text="FULLY QUALIFIED NAME:">
+                                                </Text>
+                                                <VBox>
+                                                   <children>
+                                                      <TextFlow fx:id="latestFqnTextFlow" styleClass="fqn-container" VBox.vgrow="SOMETIMES">
+                                                         <children>
+                                                            <Text fx:id="latestFqnText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-noto-sans-bold-grey-twelve" />
+                                                         </children>
+                                                      </TextFlow>
+                                                      <TextFlow styleClass="fqn-container" VBox.vgrow="SOMETIMES">
+                                                         <VBox.margin>
+                                                            <Insets />
+                                                         </VBox.margin>
+                                                         <children>
+                                                            <Text fx:id="fqnDescriptionSemanticText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="descr-semantic" />
+                                                         </children>
+                                                      </TextFlow>
+                                                      <TextFlow prefWidth="200.0">
+                                                         <children>
+                                                            <Label styleClass="grey8-12pt-bold" text="Date Added:" />
+                                                            <Label fx:id="fqnAddDateLabel" styleClass="grey8-12pt-bold" text="May 10, 2023" />
+                                                            <Hyperlink textFill="#1c1d1d80">
+                                                               <graphic>
+                                                                  <SVGPath content="M2.32011 11.5752C0.906855 10.162 0.906855 7.87464 2.32011 6.46139L7.55018 1.23131C8.58738 0.194111 10.2676 0.194111 11.3048 1.23131C12.342 2.26851 12.342 3.94873 11.3048 4.98593L6.98088 9.30986C6.31974 9.971 5.24664 9.971 4.58549 9.30986C3.92434 8.64871 3.92434 7.57561 4.58549 6.91446L8.52134 2.97861L9.33097 3.78824L5.39512 7.72409C5.18183 7.93738 5.18183 8.28694 5.39512 8.50023C5.60841 8.71352 5.95797 8.71352 6.17126 8.50023L10.4952 4.17631C11.0845 3.58696 11.0845 2.63028 10.4952 2.04094C9.90583 1.4516 8.94915 1.4516 8.35981 2.04094L3.12974 7.27101C2.16434 8.23641 2.16434 9.80021 3.12974 10.7656C4.09513 11.731 5.65894 11.731 6.62433 10.7656L11.4663 5.92361L12.276 6.73323L7.43396 11.5752C6.02071 12.9885 3.73336 12.9885 2.32011 11.5752Z" styleClass="descr-concept-icon" />
+                                                               </graphic>
+                                                               <opaqueInsets>
+                                                                  <Insets />
+                                                               </opaqueInsets>
+                                                            </Hyperlink>
+                                                            <Hyperlink styleClass="desc-concept-icon">
+                                                               <graphic>
+                                                                  <SVGPath content="M5.59212 12.8334C5.43741 12.8334 5.28904 12.772 5.17964 12.6626C5.07025 12.5532 5.00879 12.4048 5.00879 12.2501V10.5001H2.67546C2.36604 10.5001 2.06929 10.3772 1.8505 10.1584C1.63171 9.93958 1.50879 9.64283 1.50879 9.33341V2.33341C1.50879 1.68591 2.03379 1.16675 2.67546 1.16675H12.0088C12.3182 1.16675 12.615 1.28966 12.8337 1.50846C13.0525 1.72725 13.1755 2.024 13.1755 2.33341V9.33341C13.1755 9.64283 13.0525 9.93958 12.8337 10.1584C12.615 10.3772 12.3182 10.5001 12.0088 10.5001H8.45046L6.29212 12.6642C6.17546 12.7751 6.02962 12.8334 5.88379 12.8334H5.59212ZM6.17546 9.33341V11.1301L7.97212 9.33341H12.0088V2.33341H2.67546V9.33341H6.17546Z" fill="#00000086" styleClass="comment-icon" />
+                                                               </graphic>
+                                                            </Hyperlink>
+                                                         </children>
+                                                      </TextFlow>
+                                                   </children>
+                                                </VBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="357.0" HBox.hgrow="SOMETIMES">
+                                             <children>
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="pattern-title" text="OTHER NAME:">
+                                                </Text>
+                                                <KLExpandableNodeListControl fx:id="otherNamesNodeListControl" maxHeight="Infinity">
+                                                   <items>
+                                                      <TextFlow>
+                                                         <children>
+                                                            <Label text="Date Added:" />
+                                                            <Label text="May 10, 2023" />
+                                                            <Hyperlink text="Attachment" />
+                                                            <Hyperlink text="Comment" />
+                                                         </children>
+                                                      </TextFlow>
+                                                      <TextFlow>
+                                                         <children>
+                                                            <Label text="Date Added:" />
+                                                            <Label text="May 10, 2023" />
+                                                            <Hyperlink text="Attachment" />
+                                                            <Hyperlink text="Comment" />
+                                                         </children>
+                                                      </TextFlow>
+                                                   </items>
+                                                </KLExpandableNodeListControl>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </HBox>
+                                 </content>
+                                 <font>
+                                    <Font name="Noto Sans Batak Regular" size="12.0" />
+                                 </font>
+                              </TitledPane>
+                              <Separator orientation="VERTICAL" prefHeight="28.0" prefWidth="2.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="3.0" />
+                              <Button fx:id="addDescriptionButton" mnemonicParsing="false" onAction="#popupAddDescriptionContextMenu" styleClass="add-pencil-button" text="description name" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <graphic>
+                                    <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
+                                 </graphic>
+                                 <tooltip>
+                                    <Tooltip text="Edit Descriptions" />
+                                 </tooltip>
+                                 <contextMenu>
+                                    <ContextMenu fx:id="descriptionContextMenu" opacity="0.99" styleClass="kview-context-menu">
+                                       <items>
+                                          <MenuItem mnemonicParsing="false" text="DESCRIPTIONS" />
+                                          <SeparatorMenuItem mnemonicParsing="false" />
+                                          <MenuItem fx:id="addFqnMenuItem" mnemonicParsing="false" onAction="#showAddFqnPanel" text="Add Fully Qualified Name">
+                                             <graphic>
+                                                <Region prefHeight="20.0" prefWidth="20.0" styleClass="concept-edit-description-menu-icon" />
+                                             </graphic>
+                                          </MenuItem>
+                                          <MenuItem fx:id="addOtherNameMenuItem" mnemonicParsing="false" onAction="#showAddOtherNamePanel" text="Add Other Name">
+                                             <graphic>
+                                                <Region prefHeight="20.0" prefWidth="20.0" styleClass="concept-edit-description-menu-icon" />
+                                             </graphic>
+                                          </MenuItem>
+                                          <SeparatorMenuItem mnemonicParsing="false" />
+                                       </items>
+                                    </ContextMenu>
+                                 </contextMenu>
+                              </Button>
+                           </children>
+                        </AnchorPane>
+                        <HBox layoutX="14.0" layoutY="135.0" prefWidth="711.0" VBox.vgrow="ALWAYS">
+                           <children>
+                              <TitledPane fx:id="fieldsTitledPane" contentDisplay="BOTTOM" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" prefWidth="5000.0" styleClass="pattern-titled-pane" text="FIELDS">
+                                 <font>
+                                    <Font name="Noto Sans Batak Regular" size="12.0" />
+                                 </font>
+                                 <content>
+                                    <TilePane fx:id="fieldsTilePane" hgap="20.0">
+                                       <children>
+                                          <VBox prefWidth="330.0">
+                                             <children>
+                                                <Label styleClass="grey8-12pt-bold" text="Field 1:" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data Mapping" />
+                                                <HBox spacing="8.0">
+                                                   <children>
+                                                      <HBox>
+                                                         <children>
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" styleClass="grey8-12pt-bold" text="May 10, 2023" />
+                                                         </children>
+                                                      </HBox>
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
+                                                         <opaqueInsets>
+                                                            <Insets />
+                                                         </opaqueInsets>
+                                                      </Region>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox>
+                                             <children>
+                                                <Label styleClass="grey8-12pt-bold" text="Field 2:" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Data Mapping" />
+                                                <HBox spacing="8.0">
+                                                   <children>
+                                                      <HBox>
+                                                         <children>
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
+                                                         </children>
+                                                      </HBox>
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
+                                                         <opaqueInsets>
+                                                            <Insets />
+                                                         </opaqueInsets>
+                                                      </Region>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox>
+                                             <children>
+                                                <Label styleClass="grey8-12pt-bold" text="Field 3:" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Data Mapping" />
+                                                <HBox spacing="8.0">
+                                                   <children>
+                                                      <HBox>
+                                                         <children>
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
+                                                         </children>
+                                                      </HBox>
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
+                                                         <opaqueInsets>
+                                                            <Insets />
+                                                         </opaqueInsets>
+                                                      </Region>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox>
+                                             <children>
+                                                <Label styleClass="grey8-12pt-bold" text="Field 4:" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Data Mapping" />
+                                                <HBox spacing="8.0">
+                                                   <children>
+                                                      <HBox>
+                                                         <children>
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
+                                                         </children>
+                                                      </HBox>
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
+                                                         <opaqueInsets>
+                                                            <Insets />
+                                                         </opaqueInsets>
+                                                      </Region>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox>
+                                             <children>
+                                                <Label styleClass="grey8-12pt-bold" text="Field 5:" />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="grey8-12pt-bold" text="Data Mapping" />
+                                                <HBox spacing="8.0">
+                                                   <children>
+                                                      <HBox>
+                                                         <children>
+                                                            <Label styleClass="grey8-12pt-bold" text="" />
+                                                            <Label maxWidth="90.0" prefWidth="90.0" styleClass="descr-semantic" text="May 10, 2023" />
+                                                         </children>
+                                                      </HBox>
+                                                      <Region minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" styleClass="comment-icon">
+                                                         <opaqueInsets>
+                                                            <Insets />
+                                                         </opaqueInsets>
+                                                      </Region>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </TilePane>
+                                 </content>
+                              </TitledPane>
+                              <Pane>
+                                 <children>
+                                    <HBox layoutX="-32.0">
+                                       <children>
+                                          <Separator orientation="VERTICAL" prefHeight="10.0" styleClass="pattern-vertical-separator">
+                                             <HBox.margin>
+                                                <Insets top="4.0" />
+                                             </HBox.margin>
+                                          </Separator>
+                                          <Button fx:id="addFieldsButton" mnemonicParsing="false" onAction="#showAddFieldsPanel" styleClass="add-pencil-button" text="Button">
+                                             <graphic>
+                                                <Region prefHeight="200.0" prefWidth="200.0" styleClass="add-pencil" stylesheets="@../kview.css" />
+                                             </graphic>
+                                             <tooltip>
+                                                <Tooltip text="Edit Fields" />
+                                             </tooltip>
+                                             <HBox.margin>
+                                                <Insets top="4.0" />
+                                             </HBox.margin>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </Pane>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </center>
+               <top>
+                  <BorderPane prefHeight="120.0" prefWidth="894.0" styleClass="concept-detail-banner-background" BorderPane.alignment="CENTER">
+                     <center>
+                        <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="84.0" prefWidth="510.0" styleClass="concept-detail-banner-background">
+                           <columnConstraints>
+                              <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="-Infinity" prefWidth="42.0" />
+                              <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="234.0" prefWidth="416.0" />
+                              <ColumnConstraints />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints maxHeight="51.0" minHeight="47.0" prefHeight="47.0" vgrow="ALWAYS" />
+                              <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="66.0" vgrow="SOMETIMES" />
+                           </rowConstraints>
+                           <children>
+                               <PublicIDListControl fx:id="identifierControl" styleClass="concept-definition-title" GridPane.columnIndex="0" GridPane.columnSpan="3" GridPane.halignment="LEFT" GridPane.rowIndex="1" GridPane.valignment="TOP" />
+                              <Label fx:id="patternTitleText" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0" styleClass="pattern-main-title" text="New Pattern" textFill="#212430" wrapText="true" GridPane.columnIndex="1">
+                                 <font>
+                                    <Font name="Open Sans Regular" size="17.0" />
+                                 </font>
+                                 <tooltip>
+                                    <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip" />
+                                 </tooltip>
+                              </Label>
+                              <ImageView fx:id="identiconImageView" fitHeight="36.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-color: #F1F3F8;" GridPane.valignment="TOP">
+                                 <image>
+                                    <Image url="@../images/identicon-placeholder.png" />
+                                 </image></ImageView>
+                           </children>
+                           <padding>
+                              <Insets bottom="8.0" left="12.0" right="8.0" top="8.0" />
+                           </padding>
+                        </GridPane>
+                     </center>
+                     <right>
+                        <StackPane prefHeight="128.0" prefWidth="210.0" BorderPane.alignment="CENTER">
+                           <BorderPane.margin>
+                              <Insets bottom="5" right="5" top="5" />
+                           </BorderPane.margin>
+                           <StampViewControl fx:id="stampViewControl" prefWidth="210.0" />
+                        </StackPane>
+                     </right>
+                  </BorderPane>
+               </top>
+            </BorderPane>
+         </center>
+      </BorderPane>
+   </center>
+   <styleClass>
+      <String fx:value="concept-detail-pane" />
+      <String fx:value="lidr-container" />
+      <String fx:value="pattern-window" />
+   </styleClass>
+</BorderPane>

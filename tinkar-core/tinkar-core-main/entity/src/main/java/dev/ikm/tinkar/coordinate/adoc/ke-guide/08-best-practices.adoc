@@ -1,0 +1,127 @@
+= Best Practices
+
+== Top 10 Coordinate Practices
+
+=== 1. Know Your Role
+
+Set coordinates appropriate for your role:
+
+* Editor: Development path, stated view
+* QA: Staging path, inferred view
+* End User: Production path, active only
+
+=== 2. Verify Before Authoring
+
+At session start, confirm:
+
+* Author: Your identity
+* Module: Correct project module
+* Path: Development (NOT production!)
+
+=== 3. Default to Active Only for End Users
+
+Clinical and business users should see active content only. Both active/inactive is for authors and QA.
+
+=== 4. Work on Development, Release from Production
+
+Never author directly on Production. Always: Development → Staging → Production.
+
+=== 5. Use Cascading for Multilingual
+
+Always provide fallback languages:
+
+* Primary language
+* Fallback language (usually English)
+* Last resort: Any language
+
+=== 6. Author with Stated, Browse with Inferred
+
+* Author: Stated hierarchy (see what you're modeling)
+* Validate: Inferred hierarchy (see classification results)
+* End Users: Inferred hierarchy (complete view)
+
+=== 7. Match Description Types to Audience
+
+* Clinicians: Preferred Terms
+* Patients: Synonyms or Preferred Terms
+* Technical Staff: Fully Qualified Names
+* Help Systems: Definitions
+
+=== 8. Classify Regularly During Development
+
+Don't wait weeks between classifications. Classify daily during active development to catch issues early.
+
+=== 9. Keep Coordinates Consistent During Work Sessions
+
+Don't constantly switch coordinates. Set them at session start and keep them stable for coherent work.
+
+=== 10. Share Coordinate Context When Collaborating
+
+When discussing content with teammates, specify which coordinates you're using. "I don't see that!" often means different coordinates.
+
+== Common Pitfalls to Avoid
+
+*Pitfall 1: Forgetting You're on Development Path*
+
+Users can't see your work because you're viewing Development, they're viewing Production.
+
+**Solution:** Be aware of your path. Promote when ready.
+
+*Pitfall 2: Using Stated Hierarchy for End Users*
+
+Stated is sparse and incomplete for browsing.
+
+**Solution:** End users need inferred hierarchy.
+
+*Pitfall 3: Showing Inactive Concepts to End Users*
+
+Confuses users with retired content.
+
+**Solution:** Active only for clinical interfaces.
+
+*Pitfall 4: Not Cascading Languages*
+
+Blank descriptions when translation missing.
+
+**Solution:** Always use fallback languages.
+
+*Pitfall 5: Authoring on Production*
+
+Untested content reaches users immediately.
+
+**Solution:** Author on Development only.
+
+== Quick Checklist
+
+*Before Authoring:*
+
+- [ ] Author identity correct?
+- [ ] Default module correct?
+- [ ] Default path = Development?
+- [ ] Status = Both (to avoid duplicating retired concepts)?
+
+*Before Promoting to Production:*
+
+- [ ] Classification complete?
+- [ ] QA review passed?
+- [ ] Stakeholder approval?
+- [ ] Release notes prepared?
+
+*For End User Interfaces:*
+
+- [ ] Status = Active only?
+- [ ] Path = Production?
+- [ ] Language appropriate?
+- [ ] Navigation = Inferred hierarchy?
+
+== Summary
+
+Coordinates are powerful filters that control what you see and how you interact with terminology. Use them skillfully:
+
+* Set them appropriately for your role
+* Keep them consistent during work
+* Verify before critical operations
+* Understand common patterns
+* Avoid common pitfalls
+
+Master coordinates, and you'll be a more effective knowledge engineer.

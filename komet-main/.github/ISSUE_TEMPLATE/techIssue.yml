@@ -1,0 +1,60 @@
+name: "💻 Technical Issue"
+description: Use this form to report any issue that will involve touching code within this repository
+title: "Technical Issue: "
+
+body:
+- type: dropdown
+  id: issueType
+  attributes:
+    label: Issue Type
+    description: Select the technical issue type that most closely aligns with the issue you wish to report
+    options:
+      - Bug
+      - Accessibility Issue
+      - Feature Request
+      - Other Technical Issue
+  validations:
+    required: true
+- type: textarea
+  id: expected
+  attributes:
+    label: "Expected Behavior"
+    description: "Clearly and concisely describe what you expect or propose to happen:"
+- type: textarea
+  id: current
+  attributes:
+    label: "Current Behavior"
+    description: "Describe what is currently happening, highlighting the differences between current and expected behavior:" 
+- type: textarea
+  id: reproduce
+  attributes:
+    label: Steps to Reproduce Issue
+    description: "Enter the steps to reproduce the error:"
+    placeholder: |
+      1. Go to ...
+      2. Click on ....
+      3. Scroll down to ....
+      4. See error
+- type: textarea
+  id: screenshots
+  attributes:
+    label: Screenshots
+    description: If applicable, add screenshots to help explain your problem.
+- type: textarea
+  id: localEnv
+  attributes:
+    label: Local Environment
+    description: "Please complete the following information:"
+    value: |
+      - OS:
+      - Open JDK Java Version:
+      - Apache Maven Version:
+      - [REPO/SOFTWARE] Version:
+- type: checkboxes
+  id: selfhelp
+  attributes:
+    label: Self-Service
+    description: If you feel like you could contribute to this issue, please check the box below.
+    options:
+      - label: I would be willing to fix this issue
+

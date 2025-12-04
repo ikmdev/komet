@@ -1,0 +1,774 @@
+= Practical Examples
+
+[NOTE]
+====
+This document describes the IKE Coordinate System (Integrated Knowledge Ecosystem), based on the HL7 TINKAR specification. Technical references use "Tinkar" in code for backward compatibility.
+====
+
+== Overview
+
+This section provides real-world examples of coordinate configuration for common scenarios. Each example shows complete code and explains the rationale behind coordinate choices.
+
+== Example 1: Clinical Terminology Browser
+
+Build a browser for SNOMED CT clinical terminology.
+
+=== Requirements
+
+* Display current active concepts only
+* Show preferred English (US) descriptions
+* Navigate inferred "IS-A" hierarchy
+* Sort children alphabetically
+* Support full-text search
+
+=== Solution
+
+[source,java]
+----
+public class ClinicalTerminologyBrowser {
+    private final ViewCalculator viewCalc;
+
+    public ClinicalTerminologyBrowser() {
+        // Configure view for clinical browsing
+        ViewCoordinateRecord view = ViewCoordinateRecord.make(
+            // STAMP: Latest active on master path
+            StampCoordinateRecord.make(
+                StateSet.ACTIVE_ONLY,  // Only active concepts
+                StampPositionRecord.make(
+                    Long.MAX_VALUE,    // Latest
+                    TinkarTerm.MASTER_PATH.nid()  // Production
+                )
+            ),
+
+            // Language: US English preferred terms
+            List.of(
+                LanguageCoordinateRecord.make(
+                    TinkarTerm.ENGLISH_LANGUAGE.nid(),
+                    List.of(TinkarTerm.US_DIALECT_ASSEMBLAGE.nid()),
+                    List.of(
+                        TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid(),
+                        TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()
+                    )
+                )
+            ),
+
+            // Logic: Inferred relationships
+            LogicCoordinateRecord.make(
+                TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
+                TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid(),
+                TinkarTerm.SNOROCKET_CLASSIFIER.nid(),
+                TinkarTerm.INFERRED_PREMISE_TYPE.nid()
+            ),
+
+            // Navigation: Inferred, sorted
+            NavigationCoordinateRecord.make(
+                IntIds.set.of(TinkarTerm.INFERRED_NAVIGATION.nid()),
+                StateSet.ACTIVE_ONLY,
+                true,  // Sort children
+                IntIds.list.empty()  // By description text
+            ),
+
+            // Edit: Read-only
+            Coordinates.Edit.Default()
+        );
+
+        this.viewCalc = ViewCalculatorWithCache.getCalculator(view);
+    }
+
+    public ConceptHierarchyNode getConceptHierarchy(int conceptNid) {
+        String description = viewCalc.getDescriptionText(conceptNid);
+        int[] children = viewCalc.sortedChildrenOf(conceptNid);
+
+        return new ConceptHierarchyNode(
+            conceptNid,
+            description,
+            Arrays.stream(children)
+                .mapToObj(this::getConceptHierarchy)
+                .collect(Collectors.toList())
+        );
+    }
+
+    public List<SearchResult> search(String query) {
+        // Search using view context
+        return performSearch(query, viewCalc);
+    }
+}
+----
+
+=== Why These Coordinates?
+
+* **STAMP**: Active only + master path ensures production-ready content
+* **Language**: Regular names are clinically appropriate; FSN provides fallback
+* **Logic**: Inferred relationships show computed subsumption hierarchy
+* **Navigation**: Sorted children make browsing intuitive
+* **Edit**: Not needed for read-only browsing
+
+== Example 2: Multi-Language Medical Dictionary
+
+Support medical terminology in multiple languages with fallback.
+
+=== Requirements
+
+* Support Spanish, English, French (in priority order)
+* Show active and inactive terms (for reference)
+* Use latest development versions
+* Display both stated and inferred relationships
+* Enable editing by authenticated users
+
+=== Solution
+
+[source,java]
+----
+public class MultilingualMedicalDictionary {
+    private final Map<String, ViewCalculator> userViews = new HashMap<>();
+
+    public ViewCalculator getViewForUser(User user) {
+        return userViews.computeIfAbsent(user.getId(), id -> {
+            // Build cascading language preferences
+            List<LanguageCoordinate> languagePrefs = new ArrayList<>();
+
+            // Add user's preferred languages in order
+            for (String langCode : user.getLanguagePreferences()) {
+                languagePrefs.add(createLanguageCoordinate(langCode));
+            }
+
+            // Always add English as ultimate fallback
+            if (!user.getLanguagePreferences().contains("en")) {
+                languagePrefs.add(
+                    LanguageCoordinateRecord.make(
+                        TinkarTerm.ENGLISH_LANGUAGE.nid(),
+                        List.of(TinkarTerm.US_DIALECT_ASSEMBLAGE.nid()),
+                        List.of(
+                            TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid(),
+                            TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()
+                        )
+                    )
+                );
+            }
+
+            ViewCoordinateRecord view = ViewCoordinateRecord.make(
+                // STAMP: All states for reference
+                StampCoordinateRecord.make(
+                    StateSet.ACTIVE_AND_INACTIVE,
+                    StampPositionRecord.make(
+                        Long.MAX_VALUE,
+                        TinkarTerm.DEVELOPMENT_PATH.nid()
+                    )
+                ),
+
+                // Language: Cascading preferences
+                languagePrefs,
+
+                // Logic: Both stated and inferred
+                Coordinates.Logic.ElPlusPlus(),
+
+                // Navigation: Inferred hierarchy
+                Coordinates.Navigation.inferred(),
+
+                // Edit: User-specific
+                EditCoordinateRecord.make(
+                    user.getConceptNid(),
+                    user.getDefaultModule(),
+                    user.getDefaultModule(),
+                    TinkarTerm.DEVELOPMENT_PATH.nid(),
+                    TinkarTerm.DEVELOPMENT_PATH.nid()
+                )
+            );
+
+            return ViewCalculatorWithCache.getCalculator(view);
+        });
+    }
+
+    private LanguageCoordinate createLanguageCoordinate(String langCode) {
+        return switch (langCode) {
+            case "es" -> LanguageCoordinateRecord.make(
+                TinkarTerm.SPANISH_LANGUAGE.nid(),
+                List.of(TinkarTerm.SPANISH_DIALECT_ASSEMBLAGE.nid()),
+                List.of(
+                    TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid(),
+                    TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()
+                )
+            );
+            case "fr" -> LanguageCoordinateRecord.make(
+                TinkarTerm.FRENCH_LANGUAGE.nid(),
+                List.of(TinkarTerm.FRENCH_DIALECT_ASSEMBLAGE.nid()),
+                List.of(
+                    TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid(),
+                    TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()
+                )
+            );
+            default -> LanguageCoordinateRecord.make(
+                TinkarTerm.ENGLISH_LANGUAGE.nid(),
+                List.of(TinkarTerm.US_DIALECT_ASSEMBLAGE.nid()),
+                List.of(
+                    TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid(),
+                    TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()
+                )
+            );
+        };
+    }
+
+    public TranslatedConcept getTranslations(int conceptNid, User user) {
+        ViewCalculator calc = getViewForUser(user);
+
+        // Get description in preferred language (with fallback)
+        String preferredDesc = calc.getDescriptionText(conceptNid);
+
+        // Get descriptions in all available languages
+        Map<String, String> translations = new HashMap<>();
+        for (String langCode : List.of("en", "es", "fr")) {
+            // Create temporary view for specific language
+            ViewCoordinate langView = createSingleLanguageView(langCode);
+            ViewCalculator langCalc = ViewCalculatorWithCache.getCalculator(
+                langView.toViewCoordinateRecord()
+            );
+
+            String desc = langCalc.getDescriptionText(conceptNid);
+            if (desc != null && !desc.isEmpty()) {
+                translations.put(langCode, desc);
+            }
+        }
+
+        return new TranslatedConcept(conceptNid, preferredDesc, translations);
+    }
+}
+----
+
+=== Why These Coordinates?
+
+* **STAMP**: Include inactive for completeness in reference dictionary
+* **Language**: Cascading with fallback ensures something always displays
+* **Logic**: Both stated/inferred show complete relationships
+* **Navigation**: Inferred for standard hierarchy
+* **Edit**: User-specific for proper attribution
+
+== Example 3: Terminology Authoring Tool
+
+Support content authors creating and modifying terminology.
+
+=== Requirements
+
+* See all content including work-in-progress
+* View both stated and inferred relationships
+* Navigate stated hierarchy for authoring
+* Track changes by author
+* Support module-based development
+
+=== Solution
+
+[source,java]
+----
+public class TerminologyAuthoringTool {
+    private final Map<String, ViewCalculator> authorViews = new HashMap<>();
+
+    public ViewCalculator getAuthorView(Author author) {
+        return authorViews.computeIfAbsent(author.getId(), id -> {
+            ViewCoordinateRecord view = ViewCoordinateRecord.make(
+                // STAMP: All states, latest on dev path
+                StampCoordinateRecord.make(
+                    StateSet.ACTIVE_AND_INACTIVE,  // See all content
+                    StampPositionRecord.make(
+                        Long.MAX_VALUE,            // Latest
+                        TinkarTerm.DEVELOPMENT_PATH.nid()
+                    )
+                ),
+
+                // Language: Author's preference with fallback
+                createLanguageCoordinates(author),
+
+                // Logic: Stated axioms for editing
+                LogicCoordinateRecord.make(
+                    TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
+                    TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid(),
+                    TinkarTerm.SNOROCKET_CLASSIFIER.nid(),
+                    TinkarTerm.STATED_PREMISE_TYPE.nid()  // Stated!
+                ),
+
+                // Navigation: Stated hierarchy with all states
+                NavigationCoordinateRecord.make(
+                    IntIds.set.of(TinkarTerm.STATED_NAVIGATION.nid()),
+                    StateSet.ACTIVE_AND_INACTIVE,  // See inactive
+                    true,                          // Sorted
+                    IntIds.list.empty()
+                ),
+
+                // Edit: Author-specific
+                EditCoordinateRecord.make(
+                    author.getConceptNid(),
+                    author.getDefaultModule(),
+                    author.getDefaultModule(),
+                    TinkarTerm.DEVELOPMENT_PATH.nid(),
+                    TinkarTerm.DEVELOPMENT_PATH.nid()
+                )
+            );
+
+            return ViewCalculatorWithCache.getCalculator(view);
+        });
+    }
+
+    public void createNewConcept(
+        String description,
+        int parentNid,
+        Author author
+    ) {
+        ViewCalculator calc = getAuthorView(author);
+        EditCoordinate editCoord = calc.editCoordinate();
+
+        // Create STAMP for new version
+        StampEntity stamp = StampRecord.build(
+            State.ACTIVE,
+            System.currentTimeMillis(),
+            editCoord.getAuthorNidForChanges(),
+            editCoord.getDefaultModuleNid(),
+            editCoord.getDefaultPathNid()
+        );
+
+        // Create concept
+        ConceptEntity concept = ConceptRecord.build(
+            stamp.nid()
+        );
+
+        // Add description
+        SemanticEntity description = createDescription(
+            concept.nid(),
+            description,
+            stamp,
+            editCoord
+        );
+
+        // Add stated parent relationship
+        SemanticEntity relationship = createIsARelationship(
+            concept.nid(),
+            parentNid,
+            stamp,
+            editCoord
+        );
+
+        // Commit all
+        Entity.provider().putEntity(concept);
+        Entity.provider().putEntity(description);
+        Entity.provider().putEntity(relationship);
+    }
+
+    public void compareStatedVsInferred(int conceptNid, Author author) {
+        ViewCalculator authorCalc = getAuthorView(author);
+
+        // Get stated parents (what author created)
+        ViewCoordinateRecord statedView = authorCalc.viewCoordinate()
+            .toViewCoordinateRecord();
+        ViewCalculator statedCalc = ViewCalculatorWithCache.getCalculator(
+            statedView
+        );
+        int[] statedParents = statedCalc.unsortedParentsOf(conceptNid);
+
+        // Get inferred parents (what classifier computed)
+        ViewCoordinateRecord inferredView = ViewCoordinateRecord.make(
+            statedView.stampCoordinate(),
+            statedView.languageCoordinateList(),
+            LogicCoordinateRecord.make(
+                TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
+                TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid(),
+                TinkarTerm.SNOROCKET_CLASSIFIER.nid(),
+                TinkarTerm.INFERRED_PREMISE_TYPE.nid()  // Inferred
+            ),
+            Coordinates.Navigation.inferred(),
+            statedView.editCoordinate()
+        );
+        ViewCalculator inferredCalc = ViewCalculatorWithCache.getCalculator(
+            inferredView
+        );
+        int[] inferredParents = inferredCalc.unsortedParentsOf(conceptNid);
+
+        // Compare
+        IntIdSet statedSet = IntIds.set.of(statedParents);
+        IntIdSet inferredSet = IntIds.set.of(inferredParents);
+
+        IntIdSet onlyStated = statedSet.difference(inferredSet);
+        IntIdSet onlyInferred = inferredSet.difference(statedSet);
+
+        System.out.println("Stated but not inferred:");
+        onlyStated.forEach(nid ->
+            System.out.println("  " + authorCalc.getDescriptionText(nid))
+        );
+
+        System.out.println("\nInferred but not stated:");
+        onlyInferred.forEach(nid ->
+            System.out.println("  " + authorCalc.getDescriptionText(nid))
+        );
+    }
+}
+----
+
+=== Why These Coordinates?
+
+* **STAMP**: All states shows work-in-progress and inactive content
+* **Language**: Author's preference improves UX
+* **Logic**: Stated axioms for editing; compare with inferred
+* **Navigation**: Stated hierarchy for authoring structure
+* **Edit**: Author-specific for proper change attribution
+
+== Example 4: Version Comparison Tool
+
+Compare terminology versions across time or paths.
+
+=== Requirements
+
+* Compare same concept at different time points
+* Compare development vs production versions
+* Show what changed (descriptions, relationships, status)
+* Support different paths
+
+=== Solution
+
+[source,java]
+----
+public class VersionComparisonTool {
+
+    public ConceptComparison compare(
+        int conceptNid,
+        StampPosition position1,
+        StampPosition position2
+    ) {
+        // Create view for first position
+        ViewCalculator calc1 = createViewForPosition(position1);
+
+        // Create view for second position
+        ViewCalculator calc2 = createViewForPosition(position2);
+
+        return new ConceptComparison(
+            compareDescriptions(conceptNid, calc1, calc2),
+            compareHierarchy(conceptNid, calc1, calc2),
+            compareStatus(conceptNid, calc1, calc2),
+            compareModule(conceptNid, calc1, calc2)
+        );
+    }
+
+    private ViewCalculator createViewForPosition(StampPosition position) {
+        ViewCoordinateRecord view = ViewCoordinateRecord.make(
+            StampCoordinateRecord.make(
+                StateSet.ACTIVE_AND_INACTIVE,  // See all states
+                position
+            ),
+            Coordinates.Language.UsEnglishRegularName(),
+            Coordinates.Logic.ElPlusPlus(),
+            Coordinates.Navigation.inferred(),
+            Coordinates.Edit.Default()
+        );
+
+        return ViewCalculatorWithCache.getCalculator(view);
+    }
+
+    private DescriptionChanges compareDescriptions(
+        int conceptNid,
+        ViewCalculator calc1,
+        ViewCalculator calc2
+    ) {
+        String desc1 = calc1.getDescriptionText(conceptNid);
+        String desc2 = calc2.getDescriptionText(conceptNid);
+
+        return new DescriptionChanges(
+            desc1,
+            desc2,
+            !desc1.equals(desc2)
+        );
+    }
+
+    private HierarchyChanges compareHierarchy(
+        int conceptNid,
+        ViewCalculator calc1,
+        ViewCalculator calc2
+    ) {
+        IntIdSet parents1 = IntIds.set.of(calc1.unsortedParentsOf(conceptNid));
+        IntIdSet parents2 = IntIds.set.of(calc2.unsortedParentsOf(conceptNid));
+
+        IntIdSet added = parents2.difference(parents1);
+        IntIdSet removed = parents1.difference(parents2);
+
+        return new HierarchyChanges(
+            parents1,
+            parents2,
+            added,
+            removed
+        );
+    }
+
+    private StatusChange compareStatus(
+        int conceptNid,
+        ViewCalculator calc1,
+        ViewCalculator calc2
+    ) {
+        Latest<ConceptVersion> latest1 = calc1.latest(conceptNid);
+        Latest<ConceptVersion> latest2 = calc2.latest(conceptNid);
+
+        State state1 = latest1.isPresent() ?
+            latest1.get().state() : null;
+        State state2 = latest2.isPresent() ?
+            latest2.get().state() : null;
+
+        return new StatusChange(state1, state2);
+    }
+
+    private ModuleChange compareModule(
+        int conceptNid,
+        ViewCalculator calc1,
+        ViewCalculator calc2
+    ) {
+        Latest<ConceptVersion> latest1 = calc1.latest(conceptNid);
+        Latest<ConceptVersion> latest2 = calc2.latest(conceptNid);
+
+        int module1 = latest1.isPresent() ?
+            latest1.get().moduleNid() : 0;
+        int module2 = latest2.isPresent() ?
+            latest2.get().moduleNid() : 0;
+
+        return new ModuleChange(module1, module2);
+    }
+
+    // Usage examples
+    public void compareDevelopmentVsProduction(
+        int conceptNid,
+        long releaseTime
+    ) {
+        StampPosition devPos = StampPositionRecord.make(
+            Long.MAX_VALUE,
+            TinkarTerm.DEVELOPMENT_PATH.nid()
+        );
+
+        StampPosition prodPos = StampPositionRecord.make(
+            releaseTime,
+            TinkarTerm.MASTER_PATH.nid()
+        );
+
+        ConceptComparison comparison = compare(conceptNid, devPos, prodPos);
+
+        System.out.println("Changes since release:");
+        if (comparison.descriptions().hasChanges()) {
+            System.out.println("  Description: " +
+                comparison.descriptions().oldDescription() + " → " +
+                comparison.descriptions().newDescription());
+        }
+
+        if (!comparison.hierarchy().added().isEmpty()) {
+            System.out.println("  Added parents: " +
+                comparison.hierarchy().added().size());
+        }
+    }
+
+    public void compareAcrossTime(
+        int conceptNid,
+        long startTime,
+        long endTime,
+        int pathNid
+    ) {
+        StampPosition startPos = StampPositionRecord.make(startTime, pathNid);
+        StampPosition endPos = StampPositionRecord.make(endTime, pathNid);
+
+        ConceptComparison comparison = compare(conceptNid, startPos, endPos);
+
+        System.out.println("Changes over time:");
+        if (comparison.status().hasChanged()) {
+            System.out.println("  Status: " +
+                comparison.status().oldState() + " → " +
+                comparison.status().newState());
+        }
+    }
+}
+----
+
+=== Why These Coordinates?
+
+* **STAMP**: Different positions enable temporal comparison
+* **STAMP**: All states shows status transitions
+* **Language**: Consistent for fair comparison
+* **Logic**: Standard for both views
+* **Navigation**: Standard for hierarchy comparison
+
+== Example 5: Module-Based Development
+
+Manage content across multiple modules with dependencies.
+
+=== Requirements
+
+* Core module with base terminology
+* Extension modules depend on core
+* Filter content by module
+* Priority when modules conflict
+* Promote between modules
+
+=== Solution
+
+[source,java]
+----
+public class ModularDevelopment {
+    private final int coreModuleNid;
+    private final int extensionModuleNid;
+
+    public ModularDevelopment(int coreModuleNid, int extensionModuleNid) {
+        this.coreModuleNid = coreModuleNid;
+        this.extensionModuleNid = extensionModuleNid;
+    }
+
+    // View showing only core module content
+    public ViewCalculator getCoreView() {
+        ViewCoordinateRecord view = ViewCoordinateRecord.make(
+            StampCoordinateRecord.make(
+                StateSet.ACTIVE_ONLY,
+                StampPositionRecord.make(
+                    Long.MAX_VALUE,
+                    TinkarTerm.DEVELOPMENT_PATH.nid()
+                )
+            ).withModuleNids(
+                IntIds.set.of(coreModuleNid)  // Only core
+            ),
+            Coordinates.Language.UsEnglishRegularName(),
+            Coordinates.Logic.ElPlusPlus(),
+            Coordinates.Navigation.inferred(),
+            Coordinates.Edit.Default()
+        );
+
+        return ViewCalculatorWithCache.getCalculator(view);
+    }
+
+    // View showing core + extension with priority
+    public ViewCalculator getExtensionView() {
+        ViewCoordinateRecord view = ViewCoordinateRecord.make(
+            StampCoordinateRecord.make(
+                StateSet.ACTIVE_ONLY,
+                StampPositionRecord.make(
+                    Long.MAX_VALUE,
+                    TinkarTerm.DEVELOPMENT_PATH.nid()
+                )
+            ).withModuleNids(
+                IntIds.set.of(coreModuleNid, extensionModuleNid)
+            ).withModulePriorityNidList(
+                IntIds.list.of(
+                    extensionModuleNid,  // Extension first
+                    coreModuleNid        // Core fallback
+                )
+            ),
+            Coordinates.Language.UsEnglishRegularName(),
+            Coordinates.Logic.ElPlusPlus(),
+            Coordinates.Navigation.inferred(),
+            EditCoordinateRecord.make(
+                TinkarTerm.USER.nid(),
+                extensionModuleNid,      // New content to extension
+                extensionModuleNid,
+                TinkarTerm.DEVELOPMENT_PATH.nid(),
+                TinkarTerm.DEVELOPMENT_PATH.nid()
+            )
+        );
+
+        return ViewCalculatorWithCache.getCalculator(view);
+    }
+
+    // Create content in extension that extends core
+    public void createExtensionConcept(
+        String description,
+        int coreParentNid,
+        Author author
+    ) {
+        ViewCalculator extensionCalc = getExtensionView();
+        EditCoordinate editCoord = extensionCalc.editCoordinate();
+
+        // Verify parent is in core module
+        ViewCalculator coreCalc = getCoreView();
+        Latest<ConceptVersion> parent = coreCalc.latest(coreParentNid);
+
+        if (!parent.isPresent()) {
+            throw new IllegalArgumentException(
+                "Parent must be in core module"
+            );
+        }
+
+        // Create concept in extension module
+        StampEntity stamp = StampRecord.build(
+            State.ACTIVE,
+            System.currentTimeMillis(),
+            author.getConceptNid(),
+            extensionModuleNid,  // Extension module!
+            editCoord.getDefaultPathNid()
+        );
+
+        ConceptEntity concept = ConceptRecord.build(stamp.nid());
+
+        // Add content...
+        Entity.provider().putEntity(concept);
+    }
+
+    // Promote extension content to core
+    public void promoteToCore(int conceptNid) {
+        ViewCalculator extensionCalc = getExtensionView();
+
+        // Get current version from extension
+        Latest<ConceptVersion> extensionVersion =
+            extensionCalc.latest(conceptNid);
+
+        if (!extensionVersion.isPresent()) {
+            throw new IllegalArgumentException("Concept not found");
+        }
+
+        if (extensionVersion.get().moduleNid() != extensionModuleNid) {
+            throw new IllegalArgumentException(
+                "Concept not in extension module"
+            );
+        }
+
+        // Create new version in core module
+        StampEntity coreStamp = StampRecord.build(
+            extensionVersion.get().state(),
+            System.currentTimeMillis(),
+            extensionVersion.get().authorNid(),
+            coreModuleNid,  // Core module!
+            extensionVersion.get().pathNid()
+        );
+
+        ConceptVersionRecord coreVersion = ConceptVersionRecord.build(
+            conceptNid,
+            coreStamp.nid()
+        );
+
+        Entity.provider().putEntity(coreVersion);
+
+        // Inactivate in extension
+        StampEntity inactiveStamp = StampRecord.build(
+            State.INACTIVE,
+            System.currentTimeMillis(),
+            extensionVersion.get().authorNid(),
+            extensionModuleNid,
+            extensionVersion.get().pathNid()
+        );
+
+        ConceptVersionRecord inactiveVersion = ConceptVersionRecord.build(
+            conceptNid,
+            inactiveStamp.nid()
+        );
+
+        Entity.provider().putEntity(inactiveVersion);
+    }
+}
+----
+
+=== Why These Coordinates?
+
+* **STAMP**: Module filtering isolates content by module
+* **STAMP**: Module priority resolves conflicts
+* **Edit**: Default module directs new content
+* **Edit**: Destination module supports promotion
+
+== Summary
+
+These examples demonstrate:
+
+* **Browser**: Active-only, production path, inferred navigation
+* **Multilingual**: Cascading language fallback, all states
+* **Authoring**: All states, stated navigation, author attribution
+* **Comparison**: Temporal views, comprehensive change detection
+* **Modular**: Module filtering, priority, and promotion
+
+Key patterns:
+
+* Choose coordinates based on use case requirements
+* Use predefined coordinates when possible
+* Cache calculators for performance
+* Create user-specific views for personalization
+* Compare views to detect changes

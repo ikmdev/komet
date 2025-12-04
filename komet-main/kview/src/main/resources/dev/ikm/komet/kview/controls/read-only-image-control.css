@@ -1,0 +1,51 @@
+.read-only-image-control .main-container .text-container .text,
+.read-only-image-control .main-container .title {
+    -fx-border-width: 1px;
+    -fx-border-color: transparent;
+
+    -fx-padding: 0 0.25em 0 0.25em;
+}
+
+.read-only-image-control .main-container .title {
+    -fx-text-fill: #5d5d5d;
+}
+
+.read-only-image-control .main-container .text-container {
+    -fx-padding: 4px 0 0 0;
+}
+
+.read-only-image-control .main-container .text-container .text {
+    -fx-text-fill: #111;
+    -fx-font-size: 1.166667em;
+}
+
+.read-only-image-control:hover .main-container .text-container .text {
+    -fx-background-color: #f4f4f4;
+    -fx-border-color: #dfdfdf;
+}
+
+.read-only-image-control:edit-mode .main-container .text-container .text {
+    -fx-background-color: #f4f9ff;
+    -fx-border-color: #cfd8e4;
+
+    -fx-text-fill: #395c9a;
+}
+
+.read-only-image-control .main-container .image-container {
+    -fx-background-color: #eaeef1;
+
+    -fx-min-height: 150px;
+}
+
+.read-only-image-control .main-container .image-container .image-view {
+    -fx-opacity: 0.2;
+}
+
+.read-only-image-control:image-selected .main-container .image-container .image-view {
+    -fx-opacity: 1;
+}
+
+.read-only-image-control .main-container .image-container .prompt-text {
+    -fx-font-size: 1.166667em; /* 14 */
+    -fx-text-fill: #555;
+}

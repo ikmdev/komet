@@ -1,0 +1,36 @@
+@import "../mvvm/view/kview.css";
+
+.integer-control {
+}
+
+.integer-control > .value-text-field {
+    -fx-background-color: -Grey-5, white;
+    -fx-background-radius: 4, 4;
+    -fx-background-insets: 0, 1;
+    -fx-pref-height: 32.0;
+    -fx-padding: 4 10 4 10;;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+    -fx-text-fill: -Grey-10;
+    -fx-border-width: 0;
+}
+
+.integer-control > .value-text-field:focused {
+    -fx-background-color: #8ab4f8, white;
+    -fx-background-insets: 0, 2;
+}
+
+.integer-control > .value-text-field:error {
+    -fx-border-color: -Accent-color-red;
+}
+
+.integer-control > .error-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-text-fill: -Accent-color-red;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+    -fx-alignment: center;
+}

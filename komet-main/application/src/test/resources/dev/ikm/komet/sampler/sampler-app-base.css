@@ -1,0 +1,127 @@
+.label.header {
+    -fx-font-size: 3.5em;
+    -fx-font-family: "Segoe UI Light";
+    -fx-text-fill: #111;
+
+    -fx-padding: 0 0 20px 0;
+}
+
+.body-text {
+    -fx-font-size: 1.166667em;
+    -fx-line-spacing: 0.25em;
+    -fx-text-fill: #555;
+    -fx-font-family: "Segoe UI";
+}
+
+.sampler-odd-rows {
+    -fx-background-color: #f6f6f6;
+}
+
+.sampler-even-rows {
+    -fx-background-color: white;
+}
+
+.grid-label {
+    -fx-text-fill: #666666;
+}
+
+.top-row {
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+
+    -fx-background-radius: 5px 5px 0 5px;
+}
+
+.row {
+    -fx-border-width: 1px;
+}
+
+.bottom-row {
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+
+    -fx-border-radius: 0 5px 5px 5px;
+}
+
+.sample-control-container {
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.sample-control-container > .control-configuration-container {
+    -fx-border-width: 0 0 0 1px;
+}
+
+
+.sample-control-container > .inner-container,
+.sample-control-container > .control-configuration-container {
+    -fx-padding: 1.5em;
+}
+
+.sample-control-container > .control-configuration-container {
+    -fx-background-radius: 0 5px 5px 0;
+}
+
+.top-row {
+    -fx-border-color: #f2f2f2 #f2f2f2 transparent #f2f2f2;
+}
+
+.row {
+    -fx-border-color: transparent #f2f2f2 transparent #f2f2f2;
+}
+
+.bottom-row {
+    -fx-border-color: transparent #f2f2f2 #f2f2f2 #f2f2f2;
+}
+
+.sample-container .sample-control-container {
+    -fx-background-color: #fbfbfb;
+    -fx-border-color: #e6e6e6;
+}
+
+.sample-container .control-configuration-container {
+    -fx-background-color: white;
+    -fx-border-color: #ececec;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * NavigationPane (FXComponents)                                               *
+ *                                                                             *
+ ******************************************************************************/
+
+.navigation-pane > .main-container > .pane .navigation-pane-item:selected .selection-marker-container > .selection-marker {
+    -fx-background-color: green;
+}
+
+.navigation-pane > .main-container > .pane > .top-container > .hamburger-container {
+    -fx-padding: 0 0 0 8px;
+}
+
+.navigation-pane > .main-container > .pane > .top-container > .hamburger-container .button {
+    /* Weird bug happens when adding komet.css to the sampler... need to put this definintions below for the hamburger
+    button to work properly */
+    -fx-pref-width: 34;
+    -fx-max-width: 34;
+    -fx-pref-height: 26;
+    -fx-max-height:26;
+
+    -fx-background-color: transparent;
+    -fx-background-radius: 6px 6px 6px 6px;
+}
+
+.navigation-pane > .main-container > .pane > .top-container > .hamburger-container > .button:hover {
+    -fx-background-color: #f8f8f8;
+
+}
+
+.navigation-pane > .main-container > .pane > .top-container > .hamburger-container > .button:armed {
+    -fx-background-color: #f1f1f1;
+}
+
+.navigation-pane > .main-container > .content {
+    -fx-background-color: white;
+}

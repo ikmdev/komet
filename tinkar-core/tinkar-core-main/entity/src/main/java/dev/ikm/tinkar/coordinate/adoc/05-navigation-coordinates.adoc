@@ -1,0 +1,482 @@
+= Navigation Coordinates
+
+[NOTE]
+====
+This document describes the IKE Coordinate System (Integrated Knowledge Ecosystem), based on the HL7 TINKAR specification. Technical references use "Tinkar" in code for backward compatibility.
+====
+
+== Overview
+
+Navigation coordinates specify how to construct and traverse directed graphs over concepts. They control:
+
+* Which navigation patterns to use (inferred, stated, custom)
+* Which vertex states to include (active, inactive, both)
+* Whether and how to sort children
+* Custom sorting criteria
+
+== What is a Navigation Graph?
+
+A navigation graph (digraph) represents parent-child relationships:
+
+[mermaid]
+....
+graph TD
+    ROOT[Root Concept] --> DIS[Disease]
+    ROOT --> PROC[Procedure]
+
+    DIS --> LUNG[Lung Disease]
+    DIS --> HEART[Heart Disease]
+
+    LUNG --> PNEU[Pneumonia]
+    LUNG --> BRON[Bronchitis]
+
+    style ROOT fill:#e1f5fe
+    style DIS fill:#fff9c4
+    style LUNG fill:#f3e5f5
+    style PNEU fill:#e8f5e9
+....
+
+* *Vertices* = Concepts
+* *Edges* = Parent-child relationships
+* *Multiple patterns* can be combined
+
+== Navigation Coordinate Components
+
+[source,java]
+----
+public interface NavigationCoordinate {
+    IntIdSet navigationPatternNids();     // Which graphs to use
+    StateSet vertexStates();              // Active/inactive filter
+    IntIdList verticesSortPatternNidList();// Custom sort patterns
+    boolean sortVertices();               // Enable sorting?
+}
+----
+
+== Navigation Patterns
+
+=== Inferred Navigation
+
+Based on classifier-generated taxonomy:
+
+[source,java]
+----
+NavigationCoordinate inferred = Coordinates.Navigation.inferred();
+
+// Equivalent to:
+NavigationCoordinateRecord inferred = NavigationCoordinateRecord.make(
+    IntIds.set.of(TinkarTerm.INFERRED_NAVIGATION.nid()),
+    StateSet.ACTIVE,
+    IntIds.list.empty(),
+    true  // Sort enabled
+);
+----
+
+*Use Cases:*
+
+* End-user browsing
+* Semantic queries
+* Subsumption testing
+* Complete taxonomy with inferences
+
+=== Stated Navigation
+
+Based on author-asserted relationships:
+
+[source,java]
+----
+NavigationCoordinate stated = Coordinates.Navigation.stated();
+
+// Equivalent to:
+NavigationCoordinateRecord stated = NavigationCoordinateRecord.make(
+    IntIds.set.of(TinkarTerm.STATED_NAVIGATION.nid()),
+    StateSet.ACTIVE,
+    IntIds.list.empty(),
+    true
+);
+----
+
+*Use Cases:*
+
+* Authoring workflows
+* Quality assurance
+* Viewing editorial structure
+* Pre-classification browsing
+
+=== Combining Multiple Patterns
+
+[source,java]
+----
+// Combine inferred is-a with part-of relationships
+NavigationCoordinateRecord combined = NavigationCoordinateRecord.make(
+    IntIds.set.of(
+        TinkarTerm.INFERRED_NAVIGATION.nid(),
+        TinkarTerm.PART_OF_NAVIGATION.nid()
+    ),
+    StateSet.ACTIVE,
+    IntIds.list.empty(),
+    true
+);
+
+// Graph will include edges from both patterns
+----
+
+== Vertex State Filtering
+
+[source,java]
+----
+// Active only (most common)
+StateSet activeOnly = StateSet.ACTIVE;
+
+// Include inactive (for administration)
+StateSet all = StateSet.ACTIVE_AND_INACTIVE;
+
+// Inactive only (for retirement analysis)
+StateSet inactiveOnly = StateSet.INACTIVE;
+
+// Use in coordinate
+NavigationCoordinateRecord nav = inferred.withVertexStates(activeOnly);
+----
+
+== Vertex Sorting
+
+=== Enabling/Disabling Sort
+
+[source,java]
+----
+// Sorted alphabetically (default)
+NavigationCoordinateRecord sorted = NavigationCoordinateRecord.makeInferred();
+// sortVertices() returns true
+
+// Unsorted (faster)
+NavigationCoordinateRecord unsorted = NavigationCoordinateRecord.make(
+    IntIds.set.of(TinkarTerm.INFERRED_NAVIGATION.nid()),
+    StateSet.ACTIVE,
+    IntIds.list.empty(),
+    false  // No sorting
+);
+----
+
+=== Custom Sort Patterns
+
+[source,java]
+----
+// Sort by custom patterns, then alphabetically
+NavigationCoordinateRecord customSort = NavigationCoordinateRecord.make(
+    IntIds.set.of(TinkarTerm.INFERRED_NAVIGATION.nid()),
+    StateSet.ACTIVE,
+    IntIds.list.of(
+        TinkarTerm.SEVERITY_SORT_PATTERN.nid(),  // Sort by severity first
+        TinkarTerm.ALPHABETICAL_SORT_PATTERN.nid() // Then alphabetically
+    ),
+    true
+);
+----
+
+== Using Navigation Calculators
+
+=== Basic Graph Operations
+
+[source,java]
+----
+StampCoordinateRecord stamp = Coordinates.Stamp.DevelopmentLatestActiveOnly();
+NavigationCoordinateRecord nav = Coordinates.Navigation.inferred();
+
+NavigationCalculator calc = NavigationCalculatorWithCache.getCalculator(
+    stamp,
+    nav
+);
+
+// Get immediate parents
+IntIdSet parents = calc.parentsOf(conceptNid);
+
+// Get immediate children (sorted if coordinate specifies)
+IntIdSet children = calc.childrenOf(conceptNid);
+
+// Check if child
+boolean isChild = calc.isChildOf(childNid, parentNid);
+----
+
+=== Transitive Operations
+
+[source,java]
+----
+// Get all ancestors (parents, grandparents, etc.)
+IntIdSet ancestors = calc.ancestorsOf(conceptNid);
+
+// Get all descendants (children, grandchildren, etc.)
+IntIdSet descendants = calc.descendantsOf(conceptNid);
+
+// Test subsumption
+boolean subsumes = calc.isDescendentOf(specificNid, generalNid);
+// True if specific is a descendant of general
+----
+
+=== Special Nodes
+
+[source,java]
+----
+// Get root concepts (no parents)
+IntIdSet roots = calc.roots();
+
+// Get leaf concepts (no children)
+IntIdSet leaves = calc.leaves();
+----
+
+== Practical Examples
+
+=== Example 1: Building a Tree View
+
+[source,java]
+----
+public TreeNode buildTree(int rootNid, NavigationCalculator calc, int depth) {
+    // Get description for display
+    String name = langCalc.getDescriptionText(rootNid);
+    TreeNode node = new TreeNode(rootNid, name);
+
+    if (depth > 0) {
+        // Get children (sorted by navigation coordinate)
+        IntIdSet children = calc.childrenOf(rootNid);
+
+        children.forEach(childNid -> {
+            TreeNode childNode = buildTree(childNid, calc, depth - 1);
+            node.addChild(childNode);
+        });
+    }
+
+    return node;
+}
+
+// Use
+NavigationCalculator calc = NavigationCalculatorWithCache.getCalculator(
+    stamp,
+    Coordinates.Navigation.inferred()
+);
+
+IntIdSet roots = calc.roots();
+roots.forEach(rootNid -> {
+    TreeNode tree = buildTree(rootNid, calc, 3);  // 3 levels deep
+    displayTree(tree);
+});
+----
+
+=== Example 2: Finding Common Ancestors
+
+[source,java]
+----
+// Find common ancestors of two concepts
+public IntIdSet findCommonAncestors(int concept1Nid, int concept2Nid,
+                                    NavigationCalculator calc) {
+    IntIdSet ancestors1 = calc.ancestorsOf(concept1Nid);
+    IntIdSet ancestors2 = calc.ancestorsOf(concept2Nid);
+
+    // Intersection = common ancestors
+    return ancestors1.intersect(ancestors2);
+}
+
+// Find most specific common ancestor
+public int findMostSpecificCommonAncestor(int concept1Nid, int concept2Nid,
+                                         NavigationCalculator calc) {
+    IntIdSet commonAncestors = findCommonAncestors(
+        concept1Nid, concept2Nid, calc
+    );
+
+    // Most specific = has no descendants in the common set
+    for (int ancestorNid : commonAncestors.toArray()) {
+        IntIdSet ancestorDescendants = calc.descendantsOf(ancestorNid);
+        IntIdSet overlap = ancestorDescendants.intersect(commonAncestors);
+
+        if (overlap.isEmpty()) {
+            return ancestorNid;  // No descendants, most specific
+        }
+    }
+
+    return -1;  // No common ancestor found
+}
+----
+
+=== Example 3: Breadcrumb Navigation
+
+[source,java]
+----
+// Build breadcrumb path from concept to root
+public List<String> buildBreadcrumb(int conceptNid,
+                                    NavigationCalculator navCalc,
+                                    LanguageCalculator langCalc) {
+    List<String> breadcrumb = new ArrayList<>();
+
+    int current = conceptNid;
+    while (current != -1) {
+        // Add current to breadcrumb
+        String name = langCalc.getDescriptionText(current);
+        breadcrumb.add(0, name);  // Add to front
+
+        // Move to parent (take first parent if multiple)
+        IntIdSet parents = navCalc.parentsOf(current);
+        if (parents.isEmpty()) {
+            break;
+        }
+        current = parents.iterator().next();
+    }
+
+    return breadcrumb;
+}
+
+// Use
+List<String> breadcrumb = buildBreadcrumb(pneumoniaNid, navCalc, langCalc);
+// Result: ["Root", "Disease", "Lung Disease", "Pneumonia"]
+----
+
+=== Example 4: Comparing Stated vs. Inferred Hierarchies
+
+[source,java]
+----
+// Find differences between stated and inferred parents
+NavigationCalculator statedCalc = NavigationCalculatorWithCache.getCalculator(
+    stamp,
+    Coordinates.Navigation.stated()
+);
+
+NavigationCalculator inferredCalc = NavigationCalculatorWithCache.getCalculator(
+    stamp,
+    Coordinates.Navigation.inferred()
+);
+
+IntIdSet statedParents = statedCalc.parentsOf(conceptNid);
+IntIdSet inferredParents = inferredCalc.parentsOf(conceptNid);
+
+// Inferred but not stated = classifier added
+IntIdSet added = inferredParents.difference(statedParents);
+
+// Stated but not inferred = redundant
+IntIdSet redundant = statedParents.difference(inferredParents);
+
+if (!added.isEmpty()) {
+    System.out.println("Classifier inferred additional parents:");
+    added.forEach(nid ->
+        System.out.println("  " + langCalc.getDescriptionText(nid))
+    );
+}
+
+if (!redundant.isEmpty()) {
+    System.out.println("Redundant stated relationships:");
+    redundant.forEach(nid ->
+        System.out.println("  " + langCalc.getDescriptionText(nid))
+    );
+}
+----
+
+== Sorting Behavior
+
+When sorting is enabled:
+
+1. Apply custom sort patterns in order
+2. Fall back to natural alphabetical order
+3. Use language coordinate for description text
+
+[source,java]
+----
+// Example: Children sorted alphabetically
+NavigationCalculator calc = NavigationCalculatorWithCache.getCalculator(
+    stamp,
+    Coordinates.Navigation.inferred()  // Sorting enabled
+);
+
+IntIdSet children = calc.childrenOf(diseaseNid);
+// Returns: [Bronchitis, Pneumonia, ...]  (alphabetical)
+
+// Without sorting
+NavigationCalculator unsortedCalc = NavigationCalculatorWithCache.getCalculator(
+    stamp,
+    NavigationCoordinateRecord.make(
+        IntIds.set.of(TinkarTerm.INFERRED_NAVIGATION.nid()),
+        StateSet.ACTIVE,
+        IntIds.list.empty(),
+        false  // No sorting
+    )
+);
+
+IntIdSet unsortedChildren = unsortedCalc.childrenOf(diseaseNid);
+// Returns: [Pneumonia, Bronchitis, ...]  (arbitrary order, faster)
+----
+
+== Best Practices
+
+=== DO: Use Inferred Navigation for Queries
+
+[source,java]
+----
+// GOOD: Inferred for semantic queries
+NavigationCoordinate nav = Coordinates.Navigation.inferred();
+
+if (calc.isDescendentOf(conceptNid, TinkarTerm.DISEASE.nid())) {
+    System.out.println("Is a disease");
+}
+----
+
+=== DO: Use Stated Navigation for Authoring
+
+[source,java]
+----
+// GOOD: Stated for authoring views
+if (isAuthoringContext) {
+    NavigationCoordinate nav = Coordinates.Navigation.stated();
+}
+----
+
+=== DO: Disable Sorting for Performance
+
+[source,java]
+----
+// GOOD: Disable sorting when order doesn't matter
+NavigationCoordinateRecord unsorted = NavigationCoordinateRecord.make(
+    IntIds.set.of(TinkarTerm.INFERRED_NAVIGATION.nid()),
+    StateSet.ACTIVE,
+    IntIds.list.empty(),
+    false  // Faster when order doesn't matter
+);
+----
+
+=== DO: Filter by Vertex State Appropriately
+
+[source,java]
+----
+// GOOD: Active only for end users
+if (isEndUserView) {
+    nav = nav.withVertexStates(StateSet.ACTIVE);
+}
+
+// GOOD: Include inactive for administration
+if (isAdminView) {
+    nav = nav.withVertexStates(StateSet.ACTIVE_AND_INACTIVE);
+}
+----
+
+=== DON'T: Mix Navigation Types Inconsistently
+
+[source,java]
+----
+// BAD: Mixing stated and inferred
+NavigationCalculator statedCalc = ...;
+NavigationCalculator inferredCalc = ...;
+
+IntIdSet statedParents = statedCalc.parentsOf(conceptNid);
+IntIdSet inferredChildren = inferredCalc.childrenOf(conceptNid);
+// Inconsistent hierarchy views
+----
+
+== Summary
+
+Navigation coordinates control graph traversal:
+
+* *Navigation Patterns* - Which graphs to use (inferred, stated, custom)
+* *Vertex States* - Include active, inactive, or both
+* *Vertex Sorting* - Sort children or not
+* *Sort Patterns* - Custom sorting criteria
+
+Key points:
+
+* Use inferred navigation for queries and browsing
+* Use stated navigation for authoring
+* Disable sorting when performance matters
+* Filter by vertex state appropriately
+* Combine patterns for rich navigation views

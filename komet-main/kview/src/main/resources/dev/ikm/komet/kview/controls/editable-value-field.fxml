@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxWidth="1.7976931348623157E308" styleClass="semantic-field-container" stylesheets="@../mvvm/view/kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label styleClass="semantic-field-type-label" text="TEST PERFORMED ANALYTE OBSERVABLE (LOINC):" />
+      <TextField styleClass="semantic-field-value" text="Concept FQN / Semantic Name D" />
+   </children>
+</VBox>

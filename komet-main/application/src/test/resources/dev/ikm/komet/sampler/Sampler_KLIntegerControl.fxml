@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import dev.ikm.komet.kview.controls.KLIntegerControl?>
+
+<ScrollPane styleClass="sample-container" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.sampler.controllers.SamplerIntegerController">
+    <VBox>
+        <Label layoutX="43.0" layoutY="20.0" styleClass="header" text="KLIntegerControl" />
+        <Label fx:id="samplerDescription" styleClass="body-text" wrapText="true">
+            <VBox.margin>
+                <Insets  bottom="40.0" />
+            </VBox.margin>
+        </Label>
+        <BorderPane styleClass="sample-control-container">
+            <left>
+                <VBox prefWidth="500" styleClass="inner-container" fillWidth="true">
+                    <KLIntegerControl fx:id="integerControl" title="Integer Field Name" />
+                </VBox>
+            </left>
+            <right>
+                <VBox minWidth="200" spacing="8" styleClass="control-configuration-container" BorderPane.alignment="CENTER">
+                    <HBox spacing="5">
+                        <Label text="Value: "/>
+                        <Label fx:id="integerControlText"/>
+                    </HBox>
+                </VBox>
+            </right>
+            <VBox.margin>
+                <Insets bottom="40.0" />
+            </VBox.margin>
+        </BorderPane>
+        <padding>
+            <Insets bottom="60.0" right="60.0" />
+        </padding>
+    </VBox>
+</ScrollPane>

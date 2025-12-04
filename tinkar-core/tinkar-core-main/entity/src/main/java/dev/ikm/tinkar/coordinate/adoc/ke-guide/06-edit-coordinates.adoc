@@ -1,0 +1,95 @@
+= Edit Coordinates
+
+== Overview
+
+Edit coordinates answer: *"Who am I, and where does my work go?"*
+
+They control authoring attribution and content organization.
+
+== The Five Components
+
+=== 1. Author for Changes
+
+Your identity: Individual name, role, team, or system
+
+**Why:** Accountability, quality tracking, audit trails
+
+=== 2. Default Module
+
+Where new content is created:
+
+* Core module
+* National extension
+* Local extension
+
+**Note:** Applies to new content only. Existing content stays in original module.
+
+=== 3. Destination Module
+
+Where content moves during modularization (reorganizing between modules)
+
+=== 4. Default Path
+
+Which branch to write to:
+
+* Development - Active authoring
+* Staging - Testing
+* Production - Released (usually read-only)
+
+=== 5. Promotion Path
+
+Target branch for promoting content (Development → Staging → Production)
+
+== The Three Workflows
+
+=== 1. Developing
+
+Creating or modifying content:
+
+* New concepts → Default module, development path
+* Existing concepts → Original module preserved, new version on development path
+
+=== 2. Modularizing
+
+Moving content between modules:
+
+* Selected concepts → Destination module
+* Creates new versions with module change
+
+=== 3. Promoting
+
+Moving content between paths:
+
+* Copies from source path to promotion path
+* Typical: Development → Staging → Production
+
+== Standard Development Pipeline
+
+Development Path → Staging Path → Production Path
+
+* *Development*: Author and refine
+* *Staging*: QA and validation
+* *Production*: Release to end users
+
+== Best Practices
+
+* Verify edit coordinate before authoring
+* Use project modules for temporary work
+* Never author directly on Production
+* Always promote through staging for QA
+
+== Common Configurations
+
+[cols="1,2"]
+|===
+|Role |Edit Settings
+
+|*Terminology Editor*
+|Author: Your name, Module: Local Extension, Path: Development
+
+|*QA Reviewer*
+|Author: QA identity, Path: Staging, Promotion: Production
+
+|*Import Process*
+|Author: System process, Module: Core, Path: Integration branch
+|===

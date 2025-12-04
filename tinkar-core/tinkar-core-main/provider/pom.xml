@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
+    <modelVersion>4.1.0</modelVersion>
+
+    <parent/>
+
+    <artifactId>provider</artifactId>
+    <packaging>pom</packaging>
+
+    <name>TINKAR Providers</name>
+
+    <modules>
+        <module>data-ephemeral-provider</module>
+        <module>data-mvstore-provider</module>
+        <module>data-spinedarray-provider</module>
+        <module>data-websocket-client-provider</module>
+        <module>data-websocket-server-provider</module>
+        <module>entity-provider</module>
+        <module>executor-provider</module>
+        <module>search-provider</module>
+        <module>changeset-writer-provider</module>
+    </modules>
+</project>

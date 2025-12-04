@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<?import dev.ikm.komet.kview.controls.AutoCompleteTextField?>
+<?import javafx.scene.control.ListView?>
+<VBox fx:id="root" stylesheets="@../kview.css" styleClass="next-gen-search-main-container" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController">
+    <children>
+        <HBox prefHeight="61.0" prefWidth="372.0" styleClass="search-hbox" VBox.vgrow="NEVER">
+            <children>
+                <VBox prefHeight="61.0" prefWidth="350.0">
+                    <children>
+                        <HBox prefHeight="100.0" prefWidth="200.0" styleClass="search-box">
+                            <children>
+                                <AutoCompleteTextField fx:id="searchField" onAction="#doSearch" prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
+                                   <cursor>
+                                      <Cursor fx:constant="TEXT" />
+                                   </cursor>
+                                </AutoCompleteTextField>
+                                <StackPane fx:id="filterPane" styleClass="filter-region">
+                                    <Region styleClass="icon, filter"/>
+                                    <Region styleClass="icon, filter-dot"/>
+                                    <Region styleClass="icon, dot"/>
+                                </StackPane>
+                            </children>
+                        </HBox>
+                        <Button fx:id="sortByButton" mnemonicParsing="false" onAction="#showSearchOptions" prefHeight="25.0" prefWidth="345.0" styleClass="search-sort-button" />
+                    </children>
+                </VBox>
+            </children>
+            <padding>
+                <Insets bottom="12.0" left="12.0" right="8.0" top="12.0" />
+            </padding>
+        </HBox>
+        <ListView fx:id="searchResultsListView" styleClass="outer-list-view" VBox.vgrow="ALWAYS"/>
+    </children>
+</VBox>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefWidth="620.0" spacing="20.0" stylesheets="@../../kview.css" styleClass="github-pane"
+      xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitHubInfoController">
+    <VBox spacing="4.0">
+        <HBox>
+            <Label prefHeight="25.0" styleClass="title-label" text="GitHub Info"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <StackPane styleClass="icon-container">
+                <StackPane styleClass="help-icon">
+                    <StackPane prefHeight="150.0" prefWidth="200.0" styleClass="question-mark"/>
+                </StackPane>
+            </StackPane>
+        </HBox>
+        <Label maxWidth="Infinity" styleClass="title-description-label" text="Git repository information summary"/>
+    </VBox>
+    <VBox alignment="CENTER_LEFT" spacing="8.0">
+        <Label text="Git URL"/>
+        <TextField fx:id="gitUrlTextField" editable="false"/>
+        <Label text="Git Email"/>
+        <TextField fx:id="gitEmailTextField" editable="false"/>
+        <Label text="Git User Name"/>
+        <TextField fx:id="gitUsernameTextField" editable="false"/>
+        <Label text="Uncommitted Files"/>
+        <TextArea fx:id="statusTextArea" editable="false" minHeight="120" prefHeight="120"/>
+    </VBox>
+    <HBox alignment="BOTTOM_RIGHT" spacing="12.0">
+        <Button fx:id="closeButton" minHeight="32.0" mnemonicParsing="false"
+                prefHeight="32.0" prefWidth="88.0" styleClass="close-button" text="CLOSE">
+        </Button>
+    </HBox>
+</VBox>

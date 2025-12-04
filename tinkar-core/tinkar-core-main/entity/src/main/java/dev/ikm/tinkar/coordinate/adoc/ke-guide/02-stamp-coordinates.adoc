@@ -1,0 +1,106 @@
+= STAMP Coordinates
+
+== Overview
+
+STAMP coordinates answer: *"When am I looking, and from which branch?"*
+
+STAMP = **S**tatus + **T**ime + **A**uthor + **M**odule + **P**ath
+
+Every piece of content carries STAMP metadata. STAMP coordinates tell the system which versions to show you.
+
+== The Five Components
+
+=== Status: Active vs. Inactive
+
+* *Active* - Current, should be displayed
+* *Inactive* - Retired, deprecated, deleted
+
+**When to use:**
+
+* Active only → End users, clinical systems (most common)
+* Both → Authoring, QA, historical analysis
+* Inactive only → Finding retired concepts (rare)
+
+=== Time: When Are You Looking?
+
+* *Latest* - Current state (95% of use cases)
+* *Specific Date* - Historical view for analysis or troubleshooting
+
+**Example:** Set time to "2 weeks ago" to see what content looked like then, compare with today to find changes.
+
+=== Author: Who Made Changes?
+
+Tracks who created or modified content (tracked but not filtered):
+
+* For audit trails and accountability
+* For quality reviews
+* For change attribution
+
+**Note:** Author is informational—you typically don't filter by it.
+
+=== Module: Organizational Grouping
+
+Modules group content by ownership:
+
+* SNOMED CT Core
+* US Extension
+* Local Hospital Extension
+
+**Options:**
+
+* Include specific modules only
+* Exclude specific modules
+* Prioritize modules (when conflicts exist)
+
+=== Path: Development Branches
+
+Paths represent parallel development lines:
+
+* *Production* - Released content
+* *Development* - Work in progress
+* *Staging* - Testing before release
+* *Sandbox* - Experiments
+
+**Key Point:** Content is visible on a path if created there OR inherited from parent path before branching.
+
+== Common Configurations
+
+[cols="1,2"]
+|===
+|Use Case |STAMP Settings
+
+|*Clinical users*
+|Active only, Latest, Production
+
+|*Content authors*
+|Both active/inactive, Latest, Development
+
+|*QA reviewers*
+|Both active/inactive, Latest, Staging
+
+|*Historical analysis*
+|Both, Specific date, Production
+|===
+
+== Decision Guide
+
+*Status:*
+
+* Active only → End users
+* Both → Authoring, QA, analysis
+
+*Time:*
+
+* Latest → 95% of cases
+* Historical → Analysis, troubleshooting
+
+*Module:*
+
+* All modules → General work
+* Specific modules → Focused reviews
+
+*Path:*
+
+* Production → End users
+* Development → Authoring
+* Staging → QA/testing

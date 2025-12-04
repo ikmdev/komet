@@ -1,0 +1,88 @@
+@import "../mvvm/view/kview.css";
+
+.image-control .main-container {
+    -fx-spacing: 8px;
+}
+
+.image-control .main-container .title {
+    -fx-border-width: 1px;
+    -fx-border-color: transparent;
+
+    -fx-padding: 0 0.25em -3px 0.25em;
+
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: #111;
+
+    -fx-font-size: 1.166667em; /* 14 */
+}
+
+/******** Image and its Prompt Text ********/
+
+.image-control .main-container .image-container {
+    -fx-background-color: #f0f0f0;
+
+    -fx-min-height: 150px;
+}
+
+.image-control .main-container .image-container .image-view {
+    -fx-opacity: 0.2;
+}
+
+.image-control:image-selected .main-container .image-container .image-view {
+    -fx-opacity: 1;
+}
+
+.image-control .main-container .image-container .prompt-text {
+    -fx-font-family: "Noto Sans";
+
+    -fx-font-size: 1.166667em; /* 14 */
+    -fx-text-fill: #555;
+}
+
+/***** Clear Button *****/
+
+.image-control .main-container .image-container .clear-container {
+    -fx-max-width: 22px;
+    -fx-max-height: 22px;
+}
+
+.image-control .main-container .image-container .clear-container:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.55);
+    -fx-background-radius: 3px;
+}
+
+.image-control .main-container .image-container .icon.cross {
+    -fx-background-color: #111;
+
+    -fx-max-width: 12px;
+    -fx-max-height: 12px;
+}
+
+/***** Add Image Button *****/
+
+.image-control .main-container .image-button-container {
+    -fx-alignment: center-right;
+}
+
+.image-control .main-container .image-button-container .button {
+    -fx-font-family: "Noto Sans";
+
+    -fx-background-color: -Secondary-05;
+
+    -fx-text-fill: white;
+
+    -fx-background-radius: 3px;
+
+    -fx-padding: 0.333333em 2em 0.333333em 2em;
+}
+
+.image-control .main-container .image-button-container .button:hover {
+    -fx-background-color: derive(-Secondary-05, -10%);
+}
+
+.image-control .main-container .image-button-container .button:armed {
+    -fx-background-color: derive(-Secondary-05, -20%);
+
+    -fx-scale-x: 0.99;
+    -fx-scale-y: 0.99;
+}
