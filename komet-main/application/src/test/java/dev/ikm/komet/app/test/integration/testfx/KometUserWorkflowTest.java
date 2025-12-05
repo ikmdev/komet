@@ -110,6 +110,7 @@ public class KometUserWorkflowTest {
         }
 
         DataSourceSelectionPage dataSourcePage;
+        
         try {
             // Step 2: Select data source
             reporter.logBeforeStep("Step 2: USER to SELECT komet from list");

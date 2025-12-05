@@ -16,8 +16,7 @@ src/test/java/dev/ikm/komet/app/test/integration/testfx/
 │   ├── LoginPage.java
 │   ├── LandingPage.java
 │   ├── JournalPage.java
-│   ├── NavigatorPanel.java
-│   ├── SearchPanel.java
+│   ├── NavigatorPanel.java        # Includes search functionality
 │   └── ConceptDetailsPage.java
 ├── utils/                          # Utility classes
 │   └── TestReporter.java         # Screenshot and reporting utilities
@@ -33,8 +32,9 @@ The `BasePage` class provides common functionality shared across all page object
 
 - **Navigation**: `clickOn()`, `clickOnText()`, `doubleClickOnText()`
 - **Input**: `type()`, `pressKey()`
-- **Utilities**: `waitFor()`, `closeDialogs()`, `lookup()`
+- **Utilities**: `waitFor()`, `closeDialogs()`, `lookup()`, `captureScreenshot()`
 - **Logging**: Integrated SLF4J logging
+- **Screenshot Capture**: Automatic dialog screenshots before closing
 
 **Example:**
 ```java
@@ -72,12 +72,12 @@ new LoginPage(robot)
 ```
 
 #### LandingPage
-Controls main application screen operations.
+Controls main application screen operations with intelligent scrolling.
 ```java
 LandingPage landingPage = new LandingPage(robot);
 landingPage.maximizeWindow();
-landingPage.createProjectJournal();
-NavigatorPanel navigator = landingPage.openNavigator();
+landingPage.createProjectJournal();  // Automatically scrolls in journal pane
+landingPage.closeJournalWindow();
 ```
 
 #### JournalPage
@@ -89,29 +89,34 @@ new JournalPage(robot)
 ```
 
 #### NavigatorPanel
-Manages tree navigation and concept selection.
+Manages tree navigation, search operations, and concept selection.
 ```java
-new NavigatorPanel(robot)
+NavigatorPanel navigator = new NavigatorPanel(robot);
+
+// Navigation operations
+navigator
+    .clickNextgenNavigator()
     .clickConcepts()
     .expandTreeNode("Author")
     .openConcept("Gretel");
-```
 
-#### SearchPanel
-Handles search operations.
-```java
-new SearchPanel(robot)
+// Search operations
+navigator
+    .clickNextgenSearch()
     .search("user")
     .openConceptFromResults("KOMET user");
+
+// Drag and drop operations
+navigator.dragToEditingArea("KOMET user");
 ```
 
 #### ConceptDetailsPage
-Manages concept editing and updates.
+Manages concept editing and updates with retry logic for UI elements.
 ```java
 new ConceptDetailsPage(robot)
-    .selectOtherName()
+    .editOtherName()
     .updateName("New Name")
-    .submit();
+    .submit();  // Includes scroll fallback if button not immediately visible
 ```
 
 ### 3. TestReporter
@@ -147,6 +152,11 @@ reporter.flush();
 - Easy to add new page objects
 - Modular design supports parallel development
 - Reduces code duplication
+
+### 5. **Robustness**
+- Built-in retry logic and fallback strategies
+- Automatic screenshot capture before closing dialogs
+- Intelligent scrolling for hard-to-reach elements
 
 ## Writing Tests
 
@@ -281,15 +291,18 @@ set JAVA_HOME=C:\Program Files\Java\jdk-25
 export JAVA_HOME=/path/to/jdk-25
 ```
 
-### Run Original Test
-```bash
-mvn test -pl application -DrunITestFX -Dtest=KometUserWorkflowITestFX -Dtestfx.headless=false
-```
-
-### Run Refactored Test
+### Run Workflow Test
 ```bash
 mvn test -pl application -DrunITestFX -Dtest=KometUserWorkflowRefactoredTest -Dtestfx.headless=false
 ```
+
+### Run with Specific Application Version
+To test against a specific Komet version, set the `komet.app.version` property:
+```bash
+mvn test -pl application -DrunITestFX -Dtest=KometUserWorkflowRefactoredTest -Dtestfx.headless=false -Dkomet.app.version=1.59.0
+```
+
+This is useful for testing different releases or tracking which version was tested in reports.
 
 ### Run All Tests
 ```bash

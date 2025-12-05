@@ -95,7 +95,9 @@ public abstract class BasePage {
      */
     protected void scrollDown(){
         robot.scroll(10, javafx.geometry.VerticalDirection.DOWN);
+        LOG.info("Scrolled down to find the desired element");
     }
+
 
     /**
      * Captures a screenshot with the given description.

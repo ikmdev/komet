@@ -2,8 +2,12 @@ package dev.ikm.komet.app.test.integration.testfx.pages;
 
 import javafx.geometry.HorizontalDirection;
 import javafx.geometry.Point2D;
+import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
+
 import org.testfx.api.FxRobot;
+import javafx.scene.control.Tooltip;
 
 /**
  * Page object for Concept Details operations.
@@ -15,9 +19,68 @@ public class ConceptPane extends BasePage {
     public ConceptPane(FxRobot robot) {
         super(robot);
     }
+
+    /**
+     * ???
+     * Clicks "Edit Descriptions" button using tooltip lookup.
+     * Takes the parameter as the pane the button is located in.
+     */
+    public ConceptPane clickEditDescriptionsButton(String paneName) {
+        Button editDescriptionsButton = findButtonByTooltip("Edit Descriptions");
+        if (editDescriptionsButton != null) {
+            robot.interact(editDescriptionsButton::fire);
+            waitFor(500);
+            LOG.info("Clicked Edit Descriptions button");
+        } else {
+            LOG.warn("Edit Descriptions button not found");
+        }
+        return this;
+    }
+
+    /*
+     * ???
+     *Click "Edit Axioms" button using tooltip lookup
+     * Takes the parameter as the pane the button is located in
+     */
+    public ConceptPane clickEditAxiomsButton(String paneName) {
+        Button editAxiomsButton = findButtonByTooltip("Edit Axioms");
+        if (editAxiomsButton != null) {
+            robot.interact(editAxiomsButton::fire);
+            waitFor(500);
+            LOG.info("Clicked Edit Axioms button");
+        } else {
+            LOG.warn("Edit Axioms button not found");
+        }
+        return this;
+    }
+
+    /*Click "Coordinates" button using tooltip lookup
+     * Takes the parameter as the pane the button is located in
+     */
+    public ConceptPane clickCoordinatesButton(String paneName) {
+        Button coordinatesButton = findButtonByTooltip("Coordinates");
+        if (coordinatesButton != null) {
+            robot.interact(coordinatesButton::fire);
+            waitFor(500);
+            LOG.info("Clicked Coordinates button");
+        } else {
+            LOG.warn("Coordinates button not found");
+        }
+        return this;
+    }
+
+    /*
+    *
+    *
+     * Can add the remaining buttons similarly
+     * Reasoner buton in each concept pane has same tooltip as Reasoner in navigator pane
+     * Different loactor will need to be used to differentiate them
+     *
+     *
+    */
     
     /**
-     * Clicks on "OTHER NAMES" section and selects the first item.
+     * Clicks on "OTHER NAMES" section
      */
     public ConceptPane editOtherName() {
         robot.moveTo("OTHER NAMES (1):");
@@ -68,65 +131,30 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-     /**
-     * Resizes the concept pane by dragging from the top-right corner.
-     */
-    public ConceptPane resizeConceptPane() {
-        waitFor(3000);
-        
-        // Scroll horizontally first
-        robot.moveTo(new Point2D(400, 300));
+
+     // Resizes the concept pane using drag and drop
+      public ConceptPane resizeConceptPane() {
+        Point2D handle = new Point2D(70, 50);
+        robot.moveTo(handle);
+        waitFor(300);
+        robot.drag(MouseButton.PRIMARY).moveBy(100, 100).drop();
         waitFor(500);
-        robot.scroll(5, HorizontalDirection.RIGHT);
-        waitFor(500);
-        LOG.info("Scrolled editable area horizontally");
+        LOG.info("Resized concept pane");
+        return this;   
+      }
+    
         
-        /*
-        // Find the concept pane
-        Pane conceptPane = robot.lookup(node -> {
-            if (node instanceof Pane && !(node instanceof BorderPane)) {
-                Bounds bounds = node.localToScreen(node.getBoundsInLocal());
-                return bounds != null && bounds.getWidth() > 100 && bounds.getHeight() > 100;
+        /**
+         * Helper method to find a Button by its tooltip text.
+         */
+        private Button findButtonByTooltip(String tooltipText) {
+        return (Button) robot.lookup((java.util.function.Predicate<javafx.scene.Node>) n -> {
+            if (n instanceof Button) {
+                Button button = (Button) n;
+                Tooltip tooltip = button.getTooltip();
+                return tooltip != null && tooltipText.equals(tooltip.getText());
             }
             return false;
-        }).queryAll().stream()
-            .filter(node -> node instanceof Pane)
-            .map(node -> (Pane) node)
-            .findFirst()
-            .orElse(null);
-        
-        if (conceptPane != null) {
-            Bounds paneBounds = conceptPane.localToScreen(conceptPane.getBoundsInLocal());
-            double topRightX = paneBounds.getMaxX() - 5;
-            double topRightY = paneBounds.getMinY() + 5;
-            
-            robot.moveTo(topRightX, topRightY);
-            waitFor(1000);
-            LOG.info("Moved mouse to top-right corner at ({}, {})", topRightX, topRightY);
-            
-            robot.press(MouseButton.PRIMARY);
-            waitFor(500);
-            robot.moveBy(50, 50);
-            waitFor(500);
-            robot.release(MouseButton.PRIMARY);
-            waitFor(1000);
-            
-            LOG.info("Resized concept pane");
-        } else {
-            // Fallback to absolute coordinates
-            robot.moveTo(new Point2D(115, 200));
-            waitFor(1000);
-            robot.press(MouseButton.PRIMARY);
-            waitFor(500);
-            robot.moveBy(50, 50);
-            waitFor(500);
-            robot.release(MouseButton.PRIMARY);
-            waitFor(1000);
-            LOG.info("Resized using fallback coordinates");
-        }
-        */
-        // Fallback to absolute coordinates
-        
-        return this;
+        }).query();
     }
 }

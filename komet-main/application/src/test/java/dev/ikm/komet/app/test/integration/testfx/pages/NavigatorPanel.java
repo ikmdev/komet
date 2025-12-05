@@ -33,7 +33,7 @@ public class NavigatorPanel extends BasePage {
     public NavigatorPanel clickNextgenSearch() {
         ToggleButton nextgenSearchButton = findToggleButtonInNavigatorPane("Nextgen Search");
         robot.interact(nextgenSearchButton::fire);
-        waitFor(1000);
+        waitFor(500);
         LOG.info("Opened Nextgen Search");
         return this;
     }
@@ -42,7 +42,7 @@ public class NavigatorPanel extends BasePage {
      * Opens the Nextgen Navigator panel.
      */
     public NavigatorPanel clickNextgenNavigator() {
-        waitFor(2000); // Increased wait for UI to be ready after journal creation
+        waitFor(500); // Increased wait for UI to be ready after journal creation
         ToggleButton nextgenNavigatorButton = findToggleButtonInNavigatorPane("Nextgen Navigator");
         robot.interact(nextgenNavigatorButton::fire);
         waitFor(500);
@@ -124,7 +124,7 @@ public class NavigatorPanel extends BasePage {
      * Expands a tree node by clicking the disclosure arrow.
      */
     public NavigatorPanel expandTreeNode(String nodeName) {
-        waitFor(1000);
+        waitFor(500);
         Node node = robot.lookup(nodeName).query();
         robot.moveTo(node);
         robot.moveBy(-35, 0);
@@ -163,9 +163,9 @@ public class NavigatorPanel extends BasePage {
     public NavigatorPanel search(String query) {
         clickOnText("🔍  Search");
         type(query);
-        waitFor(2000);
+        waitFor(500);
         pressKey(KeyCode.ENTER);
-        waitFor(2000);
+        waitFor(1000);
         LOG.info("Searched for: {}", query);
         return this;
     }
@@ -175,7 +175,7 @@ public class NavigatorPanel extends BasePage {
      */
     public ConceptPane openConceptFromResults(String conceptName) {
         doubleClickOnText(conceptName);
-        waitFor(2000);
+        waitFor(1000);
         closeDialogs();
         LOG.info("Opened concept from search results: {}", conceptName);
         return new ConceptPane(robot);
