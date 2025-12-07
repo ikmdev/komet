@@ -4,6 +4,8 @@ import dev.ikm.komet.layout.*;
 import dev.ikm.komet.layout.area.AreaGridSettings;
 import dev.ikm.komet.layout.context.KlContextProvider;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
+import dev.ikm.komet.layout_engine.component.window.FxWindow;
+import dev.ikm.komet.layout_engine.component.window.RenderView;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import javafx.beans.property.BooleanProperty;
@@ -34,7 +36,7 @@ import static dev.ikm.komet.layout.KlRestorable.camelCaseToWords;
  */
 public sealed abstract class StateAndContextBlueprint<FX>
         implements KlStateCommands, KlContextSensitiveComponent, KlContextProvider
-        permits AreaBlueprint /*, FxWindow,  RenderView */ {
+        permits AreaBlueprint, FxWindow, RenderView {
 
     /**
      * Enum representing the various lifecycle states of a {@code StateAndContextBlueprint}.

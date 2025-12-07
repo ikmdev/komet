@@ -21,7 +21,8 @@ import java.util.Optional;
 public sealed interface KlAreaForFeature<DT, F extends Feature<DT>, FX extends Region>
         extends KlArea<FX>, KlFeaturePropertyForArea<F>, ClassConceptBinding
         permits KlFieldArea, KlAreaForBoolean, KlAreaForConcept, KlAreaForEntity, KlAreaForObject,
-        KlAreaForPattern, KlAreaForPublicId, KlAreaForSemantic, KlAreaForStamp, KlAreaForFeatureDefinition {
+        KlAreaForPattern, KlAreaForPublicId, KlAreaForSemantic, KlAreaForStamp, KlAreaForFeatureDefinition,
+        KlAreaForString {
 
     enum PreferenceKeys {
         AREA_FEATURE_KEY
