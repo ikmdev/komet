@@ -86,23 +86,15 @@ public class NavigatorPanel extends BasePage {
         return this;
     }
 
-    //Clicks the Settings button
-    public NavigatorPanel clickSettings() {
-        ToggleButton settingsButton = findToggleButtonInNavigatorPane("Settings");
-        robot.interact(settingsButton::fire);
+    //Clicks the Create button
+    public NavigatorPanel clickCreate() {
+        ToggleButton createButton = findToggleButtonInNavigatorPane("Create");
+        robot.interact(createButton::fire);
         waitFor(500);
-        LOG.info("Opened Settings panel");
+        LOG.info("Clicked Create button");
         return this;
     }
 
-    //Clicks the Profile button
-    public NavigatorPanel clickProfile() {
-        ToggleButton profileButton = findToggleButtonInNavigatorPane("Profile");
-        robot.interact(profileButton::fire);
-        waitFor(500);
-        LOG.info("Opened Profile panel");
-        return this;
-    }
     
     /**
      * Clicks the Concepts button.

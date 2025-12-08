@@ -1,6 +1,7 @@
 package dev.ikm.komet.app.test.integration.testfx.pages;
 
 import javafx.application.Platform;
+import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import org.testfx.api.FxRobot;
 
@@ -44,7 +45,7 @@ public class LandingPage extends BasePage {
         clickOnText("Create project journal");
         waitFor(1000);
         closeDialogs();
-        LOG.info("Clicked 'Create Project Journal' button");
+        LOG.info("Clicked 'Create Project Journal'");
         } catch  (Exception e) {
             robot.moveTo("My project journals");
             robot.moveBy(0, 50);
@@ -53,11 +54,65 @@ public class LandingPage extends BasePage {
             clickOnText("Create project journal");
             waitFor(1000);
             closeDialogs();
-            LOG.info("Clicked 'Create Project Journal' button after scrolling");
+            LOG.info("Clicked 'Create Project Journal' after scrolling");
         }
         return this;
     }
+
+    /*
+    * Click Home button in landing page
+    */
+    public LandingPage clickHomeButton() {
+        clickOnText("Home");
+        waitFor(500);
+        LOG.info("Clicked Home button");
+        return this;
+    }
+
+    /*
+    * Click Favorites button in landing page
+    */
+    public LandingPage clickFavoritesButton() {
+        clickOnText("Favorites");
+        waitFor(500);
+        LOG.info("Clicked Favorites button");
+        return this;
+    }
+
+    /*
+    * Click Comments button in landing page
+    */
+    public LandingPage clickCommentsButton() {
+        clickOnText("Comments");
+        waitFor(500);
+        LOG.info("Clicked Comments button");
+        return this;
+    }
+
+    /*
+    * Click Notifications button in landing page
+    */
+    public LandingPage clickNotificationsButton() {
+        clickOnText("Notifications");
+        waitFor(500);
+        LOG.info("Clicked Notifications button");
+        return this;
+    }
     
+    /*
+    * Deletes a journal by its name.
+    */
+    public LandingPage deleteJournal(String journalName) {
+        robot.moveTo(journalName);
+        robot.moveBy(200, -150);
+        waitFor(500);
+        robot.clickOn();
+        waitFor(500);
+        clickOnText("Delete");
+        LOG.info("Deleted journal: {}", journalName);
+        return this;
+    }
+
     /**
      * Closes the current journal window.
      */

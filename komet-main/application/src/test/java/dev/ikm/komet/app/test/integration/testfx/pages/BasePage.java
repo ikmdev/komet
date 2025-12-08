@@ -1,6 +1,7 @@
 package dev.ikm.komet.app.test.integration.testfx.pages;
 
 import javafx.scene.Node;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.KeyCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,4 +149,6 @@ public abstract class BasePage {
         assertNotNull(node, "Node with selector '" + selector + "' should exist");
         return type.cast(node);
     }
+
 }
+

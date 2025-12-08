@@ -23,7 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.testfx.util.WaitForAsyncUtils.waitFor;
 
 /**
- * Integration test for the complete Komet user workflow using Page Object Model pattern.
+ * Integration test for the complete Komet user workflow using Page Object Model
+ * pattern.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(ApplicationExtension.class)
@@ -35,11 +36,11 @@ public class KometUserWorkflowTest {
     private static final String PROPERTY_TARGET_DATA_DIR = "target.data.directory";
     private static final String PROPERTY_USER_HOME = "user.home";
     private static final String BASE_DATA_DIR = System.getProperty(PROPERTY_TARGET_DATA_DIR,
-                System.getProperty(PROPERTY_USER_HOME, System.getProperty("java.io.tmpdir")));
+            System.getProperty(PROPERTY_USER_HOME, System.getProperty("java.io.tmpdir")));
     private static final String SOLOR_DIR = "Solor";
     private static final String TEST_SCREENSHOTS_DIR = "test-screenshots";
     private static final String EXTENT_REPORTS_DIR = "extent-reports";
-    
+
     // Test data
     private static final String DATA_SOURCE_NAME = "komet";
     private static final String USERNAME = "KOMET user";
@@ -66,7 +67,7 @@ public class KometUserWorkflowTest {
             webApp = new App();
             return webApp;
         });
-        
+
         reporter = new TestReporter(screenshotDirectory, extentReportsDirectory, robot);
         reporter.createTest("Komet User Workflow Test (Refactored)",
                 "Complete automated workflow using Page Object Model pattern");
@@ -97,7 +98,7 @@ public class KometUserWorkflowTest {
     @Test
     @DisplayName("Complete Komet User Workflow Test - Refactored with Page Objects")
     public void testCompleteKometUserWorkflow(FxRobot robot) throws TimeoutException, InterruptedException {
-        LOG.info("Starting Complete Komet User Workflow Test (Refactored)");
+        LOG.info("Starting Complete Komet User Workflow Test");
 
         try {
             // Step 1: Launch KOMET application
@@ -110,7 +111,7 @@ public class KometUserWorkflowTest {
         }
 
         DataSourceSelectionPage dataSourcePage;
-        
+
         try {
             // Step 2: Select data source
             reporter.logBeforeStep("Step 2: USER to SELECT komet from list");
@@ -175,7 +176,6 @@ public class KometUserWorkflowTest {
             throw e;
         }
 
- 
         try {
             // Step 7: Click New Project Journal button
             reporter.logBeforeStep("Step 7: USER to CLICK New Project Journal button");
@@ -187,7 +187,7 @@ public class KometUserWorkflowTest {
         }
 
         NavigatorPanel navigator = new NavigatorPanel(robot);
-        
+
         try {
             // Step 8: Click Nextgen Navigator button
             reporter.logBeforeStep("Step 8: USER to CLICK Nextgen Navigator button");
@@ -197,7 +197,7 @@ public class KometUserWorkflowTest {
             reporter.logFailure("Step 8: USER to CLICK Nextgen Navigator button", e);
             throw e;
         }
-        
+
         try {
             // Step 9: Validate Concepts button is SELECTED
             reporter.logBeforeStep("Step 9: USER to Validate Concepts button is SELECTED");
@@ -207,7 +207,7 @@ public class KometUserWorkflowTest {
             reporter.logFailure("Step 9: USER to Validate Concepts button is SELECTED", e);
             throw e;
         }
-        
+
         try {
             // Step 10: Click expand button for Author
             reporter.logBeforeStep("Step 10: USER to CLICK expand button for Author");
