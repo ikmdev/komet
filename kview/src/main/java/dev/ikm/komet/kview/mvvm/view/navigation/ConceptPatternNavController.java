@@ -285,7 +285,7 @@ public class ConceptPatternNavController {
             case SEND_TO_JOURNAL, SEND_TO_CHAPTER, COPY, SAVE_TO_FAVORITES -> _ -> {}; // TODO: Add implementation
         });
         conceptNavigatorControl.setOnKLAction((conceptFacade, windowTitle) -> {
-            journalController.newCreateGenPurposeKLWindow(conceptFacade, null, windowTitle);
+            journalController.newCreateGenPurposeKLWindow(conceptFacade, windowTitle);
         });
 
         searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
