@@ -49,7 +49,7 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
                                 .setPropertyValue(WINDOW_TOPIC, getWindowTopic())
 //                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
                                 .setPropertyValue(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
-//                                .setPropertyValue(REF_COMPONENT, refComponent)
+                                .setPropertyValue(REF_COMPONENT, entityFacade)
 //                                .setPropertyValue(SEMANTIC, semanticComponent)
 //                                .setPropertyValue(PATTERN, patternFacade))
                 );

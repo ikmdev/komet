@@ -720,6 +720,12 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                 }
             }
         }
+
+        if (treeView.getOnKLAction() != null && item != null) {
+            singleSelectionContextMenu.setKLWindowMenuItemAction(windowTitle -> {
+                treeView.getOnKLAction().accept(item.getValue(), windowTitle);
+            });
+        }
     }
 
     /**
