@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class ChronologyAreaBlueprint<OC extends ObservableChronology>
         extends FeatureAreaBlueprint<OC, Feature<OC>, BorderPane>
-        implements KlChronologyArea<BorderPane, OC> {
+        implements KlGenericChronologyArea<BorderPane, OC> {
 
     final AtomicReference<Subscription> selectedItemsSubscriptionReference = new AtomicReference<>(Subscription.EMPTY);
     final SimpleObjectProperty<OC> componentProperty = new SimpleObjectProperty<>();
@@ -115,8 +115,24 @@ public abstract class ChronologyAreaBlueprint<OC extends ObservableChronology>
 
     protected abstract void subChronologyAreaSave();
 
-    public interface Factory<OC extends ObservableChronology, KL extends KlGenericChronologyArea<BorderPane, OC>>
-            extends FeatureAreaBlueprint.Factory<OC, Feature<OC>, BorderPane, KL> {
+    /**
+     * Provides access to the subscription reference for selected items.
+     * @return the atomic reference holding the subscription for selected items changes
+     */
+    protected final AtomicReference<Subscription> getSelectedItemsSubscriptionReference() {
+        return selectedItemsSubscriptionReference;
+    }
+
+    /**
+     * Provides access to the selected items list.
+     * @return the observable list of selected versions
+     */
+    protected final ObservableList<ObservableVersion> getSelectedItems() {
+        return selectedItems;
+    }
+
+    public interface Factory<KL extends KlGenericChronologyArea<BorderPane, ObservableChronology>>
+            extends KlGenericChronologyArea.Factory<BorderPane, ObservableChronology, KL> {
 
     }
 

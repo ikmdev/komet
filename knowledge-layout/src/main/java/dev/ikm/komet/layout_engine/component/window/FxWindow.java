@@ -9,8 +9,10 @@ import dev.ikm.komet.layout.preferences.*;
 import dev.ikm.komet.layout.window.KlFxWindow;
 import dev.ikm.komet.layout.window.KlRenderView;
 import dev.ikm.komet.layout_engine.blueprint.StateAndContextBlueprint;
+import dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea;
 import dev.ikm.komet.layout_engine.component.area.SupplementalTestArea;
 import dev.ikm.komet.layout_engine.component.menu.ViewContextMenuButtonArea;
+import dev.ikm.komet.layout_engine.layout.SimpleKnowledgeLayout;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import javafx.application.Platform;
@@ -33,7 +35,6 @@ import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.layout.window.KlFxWindow.PreferenceKeys.*;
-import static dev.ikm.orchestration.provider.knowledge.layout.gadget.blueprint.StateAndContextBlueprint.LOG;
 
 /**
  * The StageBlueprint class is a concrete implementation derived from GadgetBlueprint<Stage>
