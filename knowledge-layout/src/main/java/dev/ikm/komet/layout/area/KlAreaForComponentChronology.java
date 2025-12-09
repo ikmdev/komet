@@ -1,7 +1,7 @@
 package dev.ikm.komet.layout.area;
 
 import dev.ikm.komet.framework.observable.Feature;
-import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableChronology;
 import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
 import dev.ikm.tinkar.common.bind.annotations.names.FullyQualifiedName;
 import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
@@ -16,16 +16,14 @@ import javafx.scene.layout.Region;
  * This interface is generic and allows for type-safe interactions with JavaFX regions
  * by parameterizing the region type. It supports extensibility for customized field areas
  * while maintaining core functionality defined by the parent {@link KlFieldArea}.
- * @deprecated use KlAreaForComponentChronology
  * @param <FX> The type of JavaFX {@link Region} associated with this field area
  *             for managing and displaying fields bound to entity data.
  */
-@Deprecated
 @FullyQualifiedName("Knowledge layout entity feature area")
-@RegularName("Entity area")
+@RegularName("ObservableChronology area")
 @ParentConcept(KlAreaForFeature.class)
-public non-sealed interface KlAreaForEntity<FX extends Region>
-        extends KlAreaForFeature<ObservableEntity<?>, Feature<ObservableEntity<?>>, FX> {
+public non-sealed interface KlAreaForComponentChronology<FX extends Region>
+        extends KlAreaForFeature<ObservableChronology, Feature<ObservableChronology>, FX> {
 
 
     /**
@@ -35,14 +33,14 @@ public non-sealed interface KlAreaForEntity<FX extends Region>
      * field areas associated with entities.
      *
      * This interface defines the contract for building and initializing components that bind
-     * {@code EntityFacade}-related observable fields to JavaFX regions of a specified type.
+     * {@code ObservableChronology}-related observable fields to JavaFX regions of a specified type.
      * It enables property observation and manipulation with type-safe operations, maintaining
      * specialized behavior for entity-focused field management.
      *
      * @param <FX> the type of JavaFX {@link Region} associated with the field area, extending {@code Region}.
      */
-    interface Factory<FX extends Region, KL extends KlAreaForEntity<FX>>
-            extends KlAreaForFeature.Factory<ObservableEntity<?>, Feature<ObservableEntity<?>>, FX, KL> {
+    interface Factory<FX extends Region, KL extends KlAreaForComponentChronology<FX>>
+            extends KlAreaForFeature.Factory<ObservableChronology, Feature<ObservableChronology>, FX, KL> {
     }
 
 }
