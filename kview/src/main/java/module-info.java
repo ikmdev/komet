@@ -48,7 +48,6 @@ module dev.ikm.komet.kview {
     requires dev.ikm.tinkar.terms;
     requires dev.ikm.tinkar.events;
     requires dev.ikm.komet.preferences;
-    requires dev.ikm.komet.kview;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
@@ -184,4 +183,29 @@ module dev.ikm.komet.kview {
 
     uses dev.ikm.tinkar.events.EvtBus;
     uses EntityKlWindowFactory;
+
+    // Primary service interface for discovering ALL feature area factories (built-in and plugins)
+    provides dev.ikm.komet.layout.area.KlAreaForBoolean.Factory
+            with dev.ikm.komet.kview.klauthoring.readonly.booleanfield.ReadOnlyBooleanFieldArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForComponentChronology.Factory
+            with dev.ikm.komet.kview.klauthoring.readonly.componentfield.ReadOnlyObservableChronologyFieldArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForIntIdList.Factory
+            with dev.ikm.komet.kview.klauthoring.readonly.componentlistfield.ReadOnlyComponentListFieldArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForIntIdSet.Factory
+            with dev.ikm.komet.kview.klauthoring.readonly.componentsetfield.ReadOnlyComponentSetFieldArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForFloat.Factory
+            with dev.ikm.komet.kview.klauthoring.readonly.floatfield.ReadOnlyFloatFieldArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForImage.Factory
+            with dev.ikm.komet.kview.klauthoring.readonly.imagefield.ReadOnlyImageFieldArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForInteger.Factory
+            with dev.ikm.komet.kview.klauthoring.readonly.integerfield.ReadOnlyIntegerFieldArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForString.Factory
+            with dev.ikm.komet.kview.klauthoring.readonly.stringfield.ReadOnlyStringFieldArea.Factory;
 }
