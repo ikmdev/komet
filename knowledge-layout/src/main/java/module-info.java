@@ -20,9 +20,52 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout.window;
     exports dev.ikm.komet.layout.editor.model;
     exports dev.ikm.komet.layout.editor;
+    exports dev.ikm.komet.layout_engine.blueprint;
 
     opens dev.ikm.komet.layout to javafx.fxml;
     opens dev.ikm.layout.app to javafx.fxml;
     exports dev.ikm.komet.layout_engine.blueprint;
+
+    // Primary service interface for discovering ALL area factories (built-in and plugins)
+    provides dev.ikm.komet.layout.KlArea.Factory
+            with dev.ikm.komet.layout_engine.component.area.BooleanFieldArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.StringFieldArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.GenericArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.GenericArea.BlueFactory,
+                 dev.ikm.komet.layout_engine.component.area.PublicIdArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.SimpleVersionArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.SimpleVersionList.Factory,
+                 dev.ikm.komet.layout_engine.component.area.MultiVersionArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.SupplementalTestArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea.Factory;
+
+    // Type-specific service interfaces for targeted discovery
+    provides dev.ikm.komet.layout.area.KlAreaForBoolean.Factory
+            with dev.ikm.komet.layout_engine.component.area.BooleanFieldArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForString.Factory
+            with dev.ikm.komet.layout_engine.component.area.StringFieldArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForObject.Factory
+            with dev.ikm.komet.layout_engine.component.area.GenericArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.GenericArea.BlueFactory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForPublicId.Factory
+            with dev.ikm.komet.layout_engine.component.area.PublicIdArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForGenericVersion.Factory
+            with dev.ikm.komet.layout_engine.component.area.SimpleVersionArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForListOfVersions.Factory
+            with dev.ikm.komet.layout_engine.component.area.SimpleVersionList.Factory;
+
+    provides dev.ikm.komet.layout.area.KlMultiVersionArea.Factory
+            with dev.ikm.komet.layout_engine.component.area.MultiVersionArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlSupplementalArea.Factory
+            with dev.ikm.komet.layout_engine.component.area.SupplementalTestArea.Factory;
+
+    provides dev.ikm.komet.layout.component.KlGenericChronologyArea.Factory
+            with dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea.Factory;
 
 }
