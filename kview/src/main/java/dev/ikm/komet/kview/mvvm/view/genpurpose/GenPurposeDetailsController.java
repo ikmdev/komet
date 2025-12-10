@@ -15,12 +15,16 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
+import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableComposer;
+import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
@@ -34,13 +38,16 @@ import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -59,6 +66,7 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -91,6 +99,7 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
@@ -127,7 +136,10 @@ public class GenPurposeDetailsController {
     private ImageView identiconImageView;
 
     @FXML
-    private Label patternTitleText;
+    private Label conceptTitleText;
+
+    @FXML
+    private Tooltip conceptNameTooltip;
 
     @FXML
     private PublicIDListControl identifierControl;
@@ -183,8 +195,6 @@ public class GenPurposeDetailsController {
 
         // Assign the tooltip to the StackPane (container of Publish button)
         setupTooltipForDisabledButton(savePatternButton);
-
-        updateDisplayIdentifier();
 
         // Setup window support with explicit draggable nodes
         addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
@@ -243,13 +253,63 @@ public class GenPurposeDetailsController {
     }
 
     /// Show the public ID
-    private void updateDisplayIdentifier() {
-//        ViewCalculator viewCalculator = getViewProperties().calculator();
-//        PatternFacade patternFacade = (PatternFacade) patternViewModel.getProperty(PATTERN).getValue();
-//
-//        if (patternFacade != null) {
-//            identifierControl.updatePublicIdList(viewCalculator, patternFacade);
-//        }
+    private void updateDisplayIdentifier(ConceptFacade refComponent) {
+        ViewCalculator viewCalculator = getViewProperties().calculator();
+        identifierControl.updatePublicIdList(viewCalculator, refComponent);
+    }
+
+    private void updateIdenticon(ConceptFacade refComponent) {
+        Image identicon = Identicon.generateIdenticonImage(refComponent.publicId());
+        identiconImageView.setImage(identicon);
+    }
+
+    private void updateStampControl(ConceptFacade refConcept) {
+        ObservableEntity observableEntity = ObservableEntity.get(refConcept.nid());
+        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+        Latest<EntityVersion> latestEntityVersion = retrieveCommittedLatestVersion(observableEntitySnapshot);
+        latestEntityVersion.ifPresent(latestVersion -> {
+            StampEntity stampEntity = latestEntityVersion.get().stamp();
+
+            // -- status
+            State newStatus = stampEntity.state();
+            String statusMsg = newStatus == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((State) newStatus).nid());
+            stampViewControl.setStatus(statusMsg);
+
+            // -- time
+            long newTime = stampEntity.time();
+            stampViewControl.setLastUpdated(TimeUtils.toShortDateString(newTime));
+
+            // -- author
+            ConceptFacade authorConcept = stampEntity.author();
+            String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(authorConcept, getViewProperties());
+            stampViewControl.setAuthor(authorDescription);
+
+            // -- module
+            ConceptFacade newModule = stampEntity.module();
+            String newModuleDescription;
+            if (newModule == null) {
+                newModuleDescription = "";
+            } else {
+                newModuleDescription = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((newModule).nid());
+            }
+            stampViewControl.setModule(newModuleDescription);
+
+            // -- path
+            ConceptFacade newPath = stampEntity.path();
+            String pathDescr;
+            if (newPath == null) {
+                pathDescr = "";
+            } else {
+                pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((newPath).nid());
+            }
+            stampViewControl.setPath(pathDescr);
+        });
+    }
+
+    private void updateWindowTitle(ConceptFacade refConcept) {
+        String conceptNameStr = getViewProperties().calculator().languageCalculator().getDescriptionTextOrNid(refConcept.nid());
+        conceptTitleText.setText(conceptNameStr);
+        conceptNameTooltip.setText(conceptNameStr);
     }
 
     /**
@@ -286,47 +346,6 @@ public class GenPurposeDetailsController {
         stampViewControl.setDisable(true);
     }
 
-//    private void updateStampControlFromViewModel() {
-//        StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
-//
-//        if (stampFormViewModel == null) {
-//            return;
-//        }
-//
-//        // -- status
-//        State newStatus = stampFormViewModel.getPropertyValue(STATUS);
-//        String statusMsg = newStatus == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((State) newStatus).nid());
-//        stampViewControl.setStatus(statusMsg);
-//
-//        // -- time
-//        String newTime = stampFormViewModel.getPropertyValue(FORM_TIME_TEXT);
-//        stampViewControl.setLastUpdated(newTime);
-//
-//        // -- author
-//        EntityFacade newAuthor = stampFormViewModel.getPropertyValue(AUTHOR);
-//        String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(newAuthor, getViewProperties());
-//        stampViewControl.setAuthor(authorDescription);
-//
-//        // -- module
-//        ConceptFacade newModule = stampFormViewModel.getPropertyValue(MODULE);
-//        String newModuleDescription;
-//        if (newModule == null) {
-//            newModuleDescription = "";
-//        } else {
-//            newModuleDescription = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((newModule).nid());
-//        }
-//        stampViewControl.setModule(newModuleDescription);
-//
-//        // -- path
-//        ConceptFacade newPath = stampFormViewModel.getPropertyValue(PATH);
-//        String pathDescr;
-//        if (newPath == null) {
-//            pathDescr = "";
-//        } else {
-//            pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((newPath).nid());
-//        }
-//        stampViewControl.setPath(pathDescr);
-//    }
 
     public ViewProperties getViewProperties() {
         return viewProperties;
@@ -340,7 +359,7 @@ public class GenPurposeDetailsController {
 
     @FXML
     void closeConceptWindow(ActionEvent event) {
-        LOG.info("Cleanup occurring: Closing Window with pattern: " + patternTitleText.getText());
+        LOG.info("Cleanup occurring: Closing Window with pattern: " + conceptTitleText.getText());
 
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
@@ -452,6 +471,12 @@ public class GenPurposeDetailsController {
             mainContent.getChildren().add(titledPane);
         });
         editorWindowModel.getAdditionalSections().addListener(this::onAdditionalSectionsChanged);
+
+        ConceptFacade refConcept = (ConceptFacade) genPurposeViewModel.getProperty(REF_COMPONENT).getValue();
+        updateDisplayIdentifier(refConcept);
+        updateIdenticon(refConcept);
+        updateWindowTitle(refConcept);
+        updateStampControl(refConcept);
     }
 
     private TitledPane createTitledPane(EditorSectionModel sectionModel) {

@@ -261,13 +261,10 @@
                                                              GridPane.columnIndex="0" GridPane.columnSpan="3"
                                                              GridPane.halignment="LEFT" GridPane.rowIndex="1"
                                                              GridPane.valignment="TOP"/>
-                                        <Label fx:id="patternTitleText" alignment="TOP_LEFT"
+                                        <Label fx:id="conceptTitleText" alignment="TOP_LEFT"
                                                maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0"
                                                styleClass="pattern-main-title" text="New Concept" textFill="#212430"
                                                wrapText="true" GridPane.columnIndex="1">
-                                            <font>
-                                                <Font name="Open Sans Regular" size="17.0"/>
-                                            </font>
                                             <tooltip>
                                                 <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip"/>
                                             </tooltip>
