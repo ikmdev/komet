@@ -1,10 +1,10 @@
 package dev.ikm.komet.layout.area;
 
 import dev.ikm.komet.framework.observable.Feature;
-import dev.ikm.komet.framework.observable.ObservableChronology;
 import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
 import dev.ikm.tinkar.common.bind.annotations.names.FullyQualifiedName;
 import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.scene.layout.Region;
 
 /**
@@ -20,10 +20,10 @@ import javafx.scene.layout.Region;
  *             for managing and displaying fields bound to entity data.
  */
 @FullyQualifiedName("Knowledge layout entity feature area")
-@RegularName("Component (ObservableChronology) area")
+@RegularName("Component (EntityProxy) area")
 @ParentConcept(KlAreaForFeature.class)
-public non-sealed interface KlAreaForComponentChronology<FX extends Region>
-        extends KlAreaForFeature<ObservableChronology, Feature<ObservableChronology>, FX> {
+public non-sealed interface KlAreaForComponent<FX extends Region>
+        extends KlAreaForFeature<EntityProxy, Feature<EntityProxy>, FX> {
 
 
     /**
@@ -33,14 +33,14 @@ public non-sealed interface KlAreaForComponentChronology<FX extends Region>
      * field areas associated with entities.
      *
      * This interface defines the contract for building and initializing components that bind
-     * {@code ObservableChronology}-related observable fields to JavaFX regions of a specified type.
+     * {@code EntityProxy}-related observable fields to JavaFX regions of a specified type.
      * It enables property observation and manipulation with type-safe operations, maintaining
      * specialized behavior for entity-focused field management.
      *
      * @param <FX> the type of JavaFX {@link Region} associated with the field area, extending {@code Region}.
      */
-    interface Factory<FX extends Region, KL extends KlAreaForComponentChronology<FX>>
-            extends KlAreaForFeature.Factory<ObservableChronology, Feature<ObservableChronology>, FX, KL> {
+    interface Factory<FX extends Region, KL extends KlAreaForComponent<FX>>
+            extends KlAreaForFeature.Factory<EntityProxy, Feature<EntityProxy>, FX, KL> {
     }
 
 }

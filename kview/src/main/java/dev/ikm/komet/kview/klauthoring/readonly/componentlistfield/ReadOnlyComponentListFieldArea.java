@@ -27,7 +27,7 @@ public final class ReadOnlyComponentListFieldArea extends FeatureAreaBlueprint<I
         super(preferences, new KLReadOnlyComponentListControl());
     }
 
-    private ReadOnlyComponentListFieldArea(KlPreferencesFactory preferencesFactory, ReadOnlyComponentListFieldArea.Factory areaFactory) {
+    private ReadOnlyComponentListFieldArea(KlPreferencesFactory preferencesFactory, KlAreaForIntIdList.Factory areaFactory) {
         super(preferencesFactory, areaFactory, new KLReadOnlyComponentListControl());
     }
 

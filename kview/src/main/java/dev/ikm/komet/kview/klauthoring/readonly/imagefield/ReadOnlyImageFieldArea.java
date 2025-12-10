@@ -23,7 +23,7 @@ public final class ReadOnlyImageFieldArea extends FeatureAreaBlueprint<byte[], F
         super(preferences, new KLReadOnlyImageControl());
     }
 
-    private ReadOnlyImageFieldArea(KlPreferencesFactory preferencesFactory, ReadOnlyImageFieldArea.Factory areaFactory) {
+    private ReadOnlyImageFieldArea(KlPreferencesFactory preferencesFactory, KlAreaForImage.Factory areaFactory) {
         super(preferencesFactory, areaFactory, new KLReadOnlyImageControl());
     }
 

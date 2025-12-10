@@ -27,7 +27,7 @@ public final class ReadOnlyObservableChronologyFieldArea extends FeatureAreaBlue
         super(preferences, new KLReadOnlyComponentControl());
     }
 
-    private ReadOnlyObservableChronologyFieldArea(KlPreferencesFactory preferencesFactory, ReadOnlyObservableChronologyFieldArea.Factory areaFactory) {
+    private ReadOnlyObservableChronologyFieldArea(KlPreferencesFactory preferencesFactory, KlAreaForComponentChronology.Factory areaFactory) {
         super(preferencesFactory, areaFactory, new KLReadOnlyComponentControl());
     }
 

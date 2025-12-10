@@ -22,7 +22,7 @@ public final class ReadOnlyBooleanFieldArea extends FeatureAreaBlueprint<Boolean
         super(preferences, new KLReadOnlyDataTypeControl<>(Boolean.class));
     }
 
-    private ReadOnlyBooleanFieldArea(KlPreferencesFactory preferencesFactory, ReadOnlyBooleanFieldArea.Factory areaFactory) {
+    private ReadOnlyBooleanFieldArea(KlPreferencesFactory preferencesFactory, KlAreaForBoolean.Factory areaFactory) {
         super(preferencesFactory, areaFactory, new KLReadOnlyDataTypeControl<>(Boolean.class));
     }
 

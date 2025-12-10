@@ -22,7 +22,7 @@ public final class ReadOnlyFloatFieldArea extends FeatureAreaBlueprint<Float, Fe
         super(preferences, new KLReadOnlyDataTypeControl<>(Float.class));
     }
 
-    private ReadOnlyFloatFieldArea(KlPreferencesFactory preferencesFactory, ReadOnlyFloatFieldArea.Factory areaFactory) {
+    private ReadOnlyFloatFieldArea(KlPreferencesFactory preferencesFactory, KlAreaForFloat.Factory areaFactory) {
         super(preferencesFactory, areaFactory, new KLReadOnlyDataTypeControl<>(Float.class));
     }
 

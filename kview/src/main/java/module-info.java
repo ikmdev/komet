@@ -1,4 +1,6 @@
 import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
+import dev.ikm.komet.layout.area.KlAreaForComponent;
+import dev.ikm.komet.layout.area.KlAreaForComponentChronology;
 
 /*
  * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
@@ -185,27 +187,37 @@ module dev.ikm.komet.kview {
     uses EntityKlWindowFactory;
 
     // Primary service interface for discovering ALL feature area factories (built-in and plugins)
-    provides dev.ikm.komet.layout.area.KlAreaForBoolean.Factory
-            with dev.ikm.komet.kview.klauthoring.readonly.booleanfield.ReadOnlyBooleanFieldArea.Factory;
+    provides dev.ikm.komet.layout.area.KlAreaForBoolean.Factory with
+            dev.ikm.komet.kview.klauthoring.readonly.booleanfield.ReadOnlyBooleanFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.booleanfield.EditableBooleanFieldArea.Factory;
 
-    provides dev.ikm.komet.layout.area.KlAreaForComponentChronology.Factory
-            with dev.ikm.komet.kview.klauthoring.readonly.componentfield.ReadOnlyObservableChronologyFieldArea.Factory;
+    provides KlAreaForComponentChronology.Factory with
+            dev.ikm.komet.kview.klauthoring.readonly.componentfield.ReadOnlyObservableChronologyFieldArea.Factory;
 
-    provides dev.ikm.komet.layout.area.KlAreaForIntIdList.Factory
-            with dev.ikm.komet.kview.klauthoring.readonly.componentlistfield.ReadOnlyComponentListFieldArea.Factory;
+    provides KlAreaForComponent.Factory with
+            dev.ikm.komet.kview.klauthoring.editable.componentfield.EditableComponentFieldArea.Factory;
 
-    provides dev.ikm.komet.layout.area.KlAreaForIntIdSet.Factory
-            with dev.ikm.komet.kview.klauthoring.readonly.componentsetfield.ReadOnlyComponentSetFieldArea.Factory;
+    provides dev.ikm.komet.layout.area.KlAreaForIntIdList.Factory with
+            dev.ikm.komet.kview.klauthoring.readonly.componentlistfield.ReadOnlyComponentListFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.componentlistfield.EditableComponentListFieldArea.Factory;
 
-    provides dev.ikm.komet.layout.area.KlAreaForFloat.Factory
-            with dev.ikm.komet.kview.klauthoring.readonly.floatfield.ReadOnlyFloatFieldArea.Factory;
+    provides dev.ikm.komet.layout.area.KlAreaForIntIdSet.Factory with
+            dev.ikm.komet.kview.klauthoring.readonly.componentsetfield.ReadOnlyComponentSetFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.componentsetfield.EditableComponentSetFieldArea.Factory;
 
-    provides dev.ikm.komet.layout.area.KlAreaForImage.Factory
-            with dev.ikm.komet.kview.klauthoring.readonly.imagefield.ReadOnlyImageFieldArea.Factory;
+    provides dev.ikm.komet.layout.area.KlAreaForFloat.Factory with
+            dev.ikm.komet.kview.klauthoring.readonly.floatfield.ReadOnlyFloatFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.floatfield.EditableFloatFieldArea.Factory;
 
-    provides dev.ikm.komet.layout.area.KlAreaForInteger.Factory
-            with dev.ikm.komet.kview.klauthoring.readonly.integerfield.ReadOnlyIntegerFieldArea.Factory;
+    provides dev.ikm.komet.layout.area.KlAreaForImage.Factory with
+            dev.ikm.komet.kview.klauthoring.readonly.imagefield.ReadOnlyImageFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.imagefield.EditableImageFieldArea.Factory;
 
-    provides dev.ikm.komet.layout.area.KlAreaForString.Factory
-            with dev.ikm.komet.kview.klauthoring.readonly.stringfield.ReadOnlyStringFieldArea.Factory;
+    provides dev.ikm.komet.layout.area.KlAreaForInteger.Factory with
+            dev.ikm.komet.kview.klauthoring.readonly.integerfield.ReadOnlyIntegerFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.integerfield.EditableIntegerFieldArea.Factory;
+
+    provides dev.ikm.komet.layout.area.KlAreaForString.Factory with
+            dev.ikm.komet.kview.klauthoring.readonly.stringfield.ReadOnlyStringFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.stringfield.EditableStringFieldArea.Factory;
 }

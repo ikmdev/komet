@@ -22,7 +22,7 @@ public final class ReadOnlyStringFieldArea extends FeatureAreaBlueprint<String, 
         super(preferences, new KLReadOnlyDataTypeControl<>(String.class));
     }
 
-    private ReadOnlyStringFieldArea(KlPreferencesFactory preferencesFactory, ReadOnlyStringFieldArea.Factory areaFactory) {
+    private ReadOnlyStringFieldArea(KlPreferencesFactory preferencesFactory, KlAreaForString.Factory areaFactory) {
         super(preferencesFactory, areaFactory, new KLReadOnlyDataTypeControl<>(String.class));
     }
 

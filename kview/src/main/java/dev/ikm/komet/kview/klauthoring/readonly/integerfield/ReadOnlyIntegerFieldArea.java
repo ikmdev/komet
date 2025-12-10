@@ -22,7 +22,7 @@ public final class ReadOnlyIntegerFieldArea extends FeatureAreaBlueprint<Integer
         super(preferences, new KLReadOnlyDataTypeControl<>(Integer.class));
     }
 
-    private ReadOnlyIntegerFieldArea(KlPreferencesFactory preferencesFactory, ReadOnlyIntegerFieldArea.Factory areaFactory) {
+    private ReadOnlyIntegerFieldArea(KlPreferencesFactory preferencesFactory, KlAreaForInteger.Factory areaFactory) {
         super(preferencesFactory, areaFactory, new KLReadOnlyDataTypeControl<>(Integer.class));
     }
 
