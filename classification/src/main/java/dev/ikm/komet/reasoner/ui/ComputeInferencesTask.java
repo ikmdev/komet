@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.reasoner.ui;
 
+import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +40,7 @@ public class ComputeInferencesTask extends TrackingCallable<ReasonerService> {
 		String msg = "Computed inferences in " + durationString();
 		updateMessage(msg);
 		LOG.info(msg);
+		Platform.runLater(() -> updateMessage(msg));
 		return reasonerService;
 	}
 

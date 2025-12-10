@@ -1092,11 +1092,11 @@ public class ConceptController {
 
             final int fullyQualifiedNameCount = fullyQualifiedNameNodeListControl.getItems().size();
             fullyQualifiedNameHeaderText.setText(fullyQualifiedNameCount > 0 ?
-                    String.format("FULLY QUALIFIED NAMES (%d):", fullyQualifiedNameCount) : "FULLY QUALIFIED NAMES:");
+                    String.format("FULLY QUALIFIED NAMES (%,d):", fullyQualifiedNameCount) : "FULLY QUALIFIED NAMES:");
 
             final int otherNamesCount = otherNamesNodeListControl.getItems().size();
             otherNamesHeaderText.setText(otherNamesCount > 0 ?
-                    String.format("OTHER NAMES (%d):", otherNamesCount) : "OTHER NAMES:");
+                    String.format("OTHER NAMES (%,d):", otherNamesCount) : "OTHER NAMES:");
         }
 
         // when there are no versions for the concept, show no versions for view text

@@ -3,14 +3,9 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.common.util.uuid.UuidUtil;
 import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.provider.search.TypeAheadSearch;
-import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -41,7 +36,7 @@ public class KLComponentControlFactory {
     public static KLComponentControl createTypeAheadComponentControl(ViewCalculator viewCalculator) {
         KLComponentControl componentControl = new KLComponentControl();
         NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
-        componentControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
+        //componentControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
 
         // add the function to render the component name
         componentControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
@@ -63,7 +58,7 @@ public class KLComponentControlFactory {
         KLComponentCollectionControl<T> componentListControl = new KLComponentCollectionControl<>();
         NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
 
-        componentListControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
+        //componentListControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
 
         // add the function to render the component name
         componentListControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
@@ -80,10 +75,9 @@ public class KLComponentControlFactory {
         componentListControl.setOnDroppingMultipleConcepts(publicIds -> {
             ArrayList<Integer> newNids = new ArrayList<>();
 
-            publicIds.forEach(uuids -> {
-                for (UUID[] uuid : uuids) {
-                    Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuid));
-                    newNids.add(entity.nid());
+            publicIds.forEach(uuidArrayList -> {
+                for (UUID[] uuidArray : uuidArrayList) {
+                    EntityHandle.get(PublicIds.of(uuidArray)).ifPresent(entity -> newNids.add(entity.nid()));
                 }
             });
 
@@ -92,42 +86,6 @@ public class KLComponentControlFactory {
         });
 
         return componentListControl;
-    }
-
-    /***************************************************************************
-     *                                                                         *
-     * Private Implementation                                                  *
-     *                                                                         *
-     **************************************************************************/
-
-    private static Function<String, List<EntityProxy>> createGenericTypeAheadFunction(NavigationCalculator navigationCalculator) {
-        return newSearchText -> {
-            TypeAheadSearch typeAheadSearch = TypeAheadSearch.get();
-            List<EntityProxy> entityProxyResults = new ArrayList<>();
-            if (UuidUtil.isUUID(newSearchText)) {
-                UuidUtil.getUUID(newSearchText).ifPresent(uuid -> {
-                    try {
-                        EntityFacade entityFacade = Entity.getFast(PrimitiveData.nid(PublicIds.of(uuid)));
-                        entityProxyResults.add(entityFacade.toProxy());
-                    } catch (Exception e) {
-                        // not found or not existing uuid (ignore)
-                        // b/c it could be a valid uuid just not in the database.
-                    }
-                });
-            }
-            // Did it find a valid entity? if not call typeahead (Lucene)
-            if (entityProxyResults.size() > 0) {
-                return entityProxyResults;
-            } else {
-                List<EntityFacade> typeAheadResults = typeAheadSearch.typeAheadSuggestions(
-                        navigationCalculator, /* nav calculator */
-                        newSearchText, /* text */
-                        10  /* max results returned */
-                );
-                typeAheadResults.forEach(entity -> entityProxyResults.add(entity.toProxy()));
-            }
-            return entityProxyResults;
-        };
     }
 
 

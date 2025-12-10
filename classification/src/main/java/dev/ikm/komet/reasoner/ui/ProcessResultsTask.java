@@ -38,7 +38,7 @@ public class ProcessResultsTask extends TrackingCallable<ClassifierResults> {
 	protected ClassifierResults compute() throws Exception {
 		updateMessage("Getting classified results");
 		LOG.info("Getting classified results...");
-		ClassifierResults classifierResults = reasonerService.writeInferredResults();
+		ClassifierResults classifierResults = reasonerService.writeInferredResults(this);
 		updateMessage("Processed results in " + durationString());
 		return classifierResults;
 	}

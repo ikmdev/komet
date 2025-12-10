@@ -57,7 +57,6 @@ public abstract class RunReasonerTaskBase extends TrackingCallable<ReasonerServi
 
 	@Override
 	protected ReasonerService compute() throws Exception {
-		reasonerService.setProgressUpdater(this);
 		int workDone = 0;
 		updateProgress(workDone++);
 		loadData(workDone++);
@@ -84,7 +83,6 @@ public abstract class RunReasonerTaskBase extends TrackingCallable<ReasonerServi
 		Future<ReasonerService> future = TinkExecutor.threadPool().submit(task);
 		future.get();
 		updateProgress(workDone);
-
 	}
 
 	protected void processResults(int workDone) throws Exception {
