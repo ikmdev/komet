@@ -23,6 +23,20 @@ public class KlReadOnlyStringFieldFactory implements KlFieldFactory<String> {
         return new KlReadOnlyStringField(observableField, observableView, stamp4field);
     }
 
+    /**
+     * This function is overriden to avoid the unsupported exception to allow the user to view an
+     * unsupported datatype in edit mode to be shown as a read-only UI control. Axiom or Instant is an example
+     * of fields that don't have an associated editable field. See {@link dev.ikm.komet.kview.klfields.KlFieldHelper}
+     * @param observableFieldEditable - observable editable object.
+     * @param observableView view coordinates.
+     * @param stamp4field current stamp if any.
+     * @return KlField representing a read-only String field for screens attempting to display unsupported editable
+     *         fields.
+     */
+    @Override
+    public KlField<String> create(ObservableField.Editable<String> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+        return new KlReadOnlyStringField(observableFieldEditable.getObservableFeature(), observableView, stamp4field);
+    }
 
     @Override
     public Class<? extends KlField<String>> getFieldInterface() {
