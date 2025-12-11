@@ -1,10 +1,8 @@
-package dev.ikm.komet.kleditorapp.view;
+package dev.ikm.komet.kleditorapp.view.control;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
-import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
-import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;

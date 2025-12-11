@@ -15,7 +15,16 @@ import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 
+import java.util.ArrayList;
 import java.util.UUID;
+
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.FIELDS_COLLECTION;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
 
 public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
     private final JFXNode<Pane, GenPurposeDetailsController> jfxNode;
@@ -33,7 +42,17 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
         super(journalTopic, entityFacade, viewProperties, preferences);
 
         // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
-        Config patternConfig = new Config(GenPurposeDetailsController.class.getResource("genpurpose-details.fxml"));
+        Config patternConfig = new Config(GenPurposeDetailsController.class.getResource("genpurpose-details.fxml"))
+                .updateViewModel("genPurposeViewModel", genPurposeViewModel ->
+                        genPurposeViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                                .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
+                                .setPropertyValue(WINDOW_TOPIC, getWindowTopic())
+//                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
+                                .setPropertyValue(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
+                                .setPropertyValue(REF_COMPONENT, entityFacade)
+//                                .setPropertyValue(SEMANTIC, semanticComponent)
+//                                .setPropertyValue(PATTERN, patternFacade))
+                );
 
         // Create pattern window
         jfxNode = FXMLMvvmLoader.make(patternConfig);

@@ -1,0 +1,346 @@
+/*
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package dev.ikm.komet.kview.mvvm.view.genpurpose;
+
+import dev.ikm.komet.kview.events.StampEvent;
+import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
+import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
+import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
+import dev.ikm.komet.kview.mvvm.view.genediting.ReferenceComponentController;
+import dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController;
+import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampAddSubmitFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampCreateFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
+import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.Pane;
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.loader.NamedVm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
+
+import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
+import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_PANE_FXML_URL;
+import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CLOSE_CONFIRMATION_PANEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.SEMANTIC;
+import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
+
+public class GenPurposePropertiesController {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GenPurposePropertiesController.class);
+    private static final String EDIT_FIELD = "Edit Field";
+    private static final String ADD_FIELD = "Add Field";
+
+    @FXML
+    private ToggleButton addEditButton;
+
+    @FXML
+    private ToggleButton historyButton;
+
+    @FXML
+    private ToggleButton instancesButton;
+
+    public ToggleButton commentsButton;
+
+    @FXML
+    private ToggleGroup propertyToggleButtonGroup;
+
+    @FXML
+    private BorderPane contentBorderPane;
+
+    @FXML
+    private FlowPane propertiesTabsPane;
+
+    private EntityFacade newSemantic;
+
+    /////////// Private variables
+    /**
+     * Show the current edit window.
+     */
+    public enum PaneProperties {
+        PROPERTY_PANE_OPEN,
+    }
+    private Pane currentEditPane;
+
+    private Pane closePropsPane;
+
+    private StampAddSubmitFormViewModel stampAddSubmitFormViewModel;
+
+    private StampCreateFormViewModel stampCreateFormViewModel;
+
+    private JFXNode<Pane, StampFormController> stampJFXNode;
+
+    @InjectViewModel
+    private GenPurposeViewModel genPurposeViewModel;
+
+    private Subscriber<PropertyPanelEvent> showPanelSubscriber;
+
+    private Subscriber<GenEditingEvent> genEditingEventSubscriber;
+
+    private Subscriber<StampEvent> addStampSubscriber;
+
+    private Subscriber<StampEvent> createStampSubscriber;
+
+    private JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
+
+    private JFXNode<Pane, ReferenceComponentController> referenceComponentJfxNode;
+
+    public GenPurposePropertiesController() {
+        this.stampAddSubmitFormViewModel = new StampAddSubmitFormViewModel(SEMANTIC);
+        this.stampCreateFormViewModel = new StampCreateFormViewModel(SEMANTIC);
+    }
+
+    @FXML
+    private void initialize() {
+        clearView();
+
+//        setupShowingStampForm();
+        setupShowingPanelHandlers();
+//        setupShowReferencePanelHandlers();
+    }
+
+//    private void setupShowingStampForm() {
+//        // Load Stamp add View Panel (FXML & Controller)
+//        Config stampConfig = new Config(StampFormController.class.getResource(StampFormController.STAMP_FORM_FXML_FILE));
+//        stampJFXNode = FXMLMvvmLoader.make(stampConfig);
+//
+//        // -- add stamp
+//        addStampSubscriber = evt -> {
+//            if (evt.getEventType() == ADD_STAMP) {
+//                stampJFXNode.controller().init(stampAddSubmitFormViewModel);
+//                this.stampAddSubmitFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
+//                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+//
+//                contentBorderPane.setCenter(stampJFXNode.node());
+//
+//                addEditButton.setSelected(true);
+//            }
+//        };
+//        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, addStampSubscriber);
+
+//        // -- create stamp
+//        createStampSubscriber = evt -> {
+//            if (evt.getEventType() == CREATE_STAMP) {
+//                stampJFXNode.controller().init(stampCreateFormViewModel);
+//                this.stampCreateFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
+//                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+//
+//                contentBorderPane.setCenter(stampJFXNode.node());
+//                addEditButton.setSelected(true);
+//            }
+//        };
+//        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, createStampSubscriber);
+//    }
+
+    //Refers to Add Reference Component
+//    private void setupShowReferencePanelHandlers() {
+//        Config addReferenceConfig = new Config(this.getClass().getResource("reference-component.fxml"))
+//                .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel));
+//        referenceComponentJfxNode = FXMLMvvmLoader.make(addReferenceConfig);
+//    }
+
+    private void setupShowingPanelHandlers() {
+        Config config = new Config(this.getClass().getResource("genpurpose-edit-fields.fxml"))
+            .addNamedViewModel(new NamedVm("genEditingViewModel", genPurposeViewModel));
+
+        editFieldsJfxNode = FXMLMvvmLoader.make(config);
+
+        JFXNode<Pane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(CONFIRMATION_PANE_FXML_URL);
+        closePropsPane = closePropsJfxNode.node();
+
+        Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(CONFIRMATION_VIEW_MODEL);
+        ConfirmationPaneViewModel confirmationPaneViewModel = confirmationPaneViewModelOpt.get();
+
+        BooleanProperty closeConfPanelProp = confirmationPaneViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
+        closeConfPanelProp.subscribe(closeIt -> {
+            if (closeIt) {
+                EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new PropertyPanelEvent(closePropsPane, CLOSE_PANEL));
+
+                confirmationPaneViewModel.reset();
+            }
+        });
+
+        genEditingEventSubscriber = evt -> {
+            LOG.info("Publish event type: " + evt.getEventType());
+
+            // "Semantic Details Added" is displayed when form values are Submitted when in CREATE mode
+            // "Semantic Details Changed" is displayed when form values are Submitted when in EDIT mode
+
+            confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, "Semantic Details Added");
+            confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, "Make a selection in the view to edit the Semantic.");
+
+            contentBorderPane.setCenter(closePropsPane);
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                GenEditingEvent.class, genEditingEventSubscriber);
+
+        showPanelSubscriber = evt -> {
+            LOG.info("Show Panel by event type: " + evt.getEventType());
+            propertyToggleButtonGroup.selectToggle(addEditButton);
+
+            if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
+                genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
+                contentBorderPane.setCenter(editFieldsJfxNode.node());
+            } else if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD) {
+                genPurposeViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
+                contentBorderPane.setCenter(editFieldsJfxNode.node());
+            } else if (evt.getEventType() == PropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD) {
+                genPurposeViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
+                contentBorderPane.setCenter(referenceComponentJfxNode.node());
+            } else if (evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
+                // change the heading on the top of the panel
+                genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
+
+                confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, "No Selection Made");
+                confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, "Make a selection in the view to edit the Semantic.");
+
+                contentBorderPane.setCenter(closePropsPane);
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+                PropertyPanelEvent.class, showPanelSubscriber);
+
+
+    }
+
+
+    @FXML
+    private void showAddEditView(ActionEvent event) {
+        LOG.info("Show Add/Edit View " + event);
+        event.consume();
+        this.addEditButton.setSelected(true);
+//        contentBorderPane.setCenter(currentEditPane);
+    }
+
+    @FXML
+    private void showInstances(ActionEvent actionEvent) {
+        LOG.info("Show Instances " + actionEvent);
+//        contentBorderPane.setCenter(instancesPane);
+    }
+
+    @FXML
+    private void showHistoryView(ActionEvent event) {
+        LOG.info("Show Pattern History");
+        this.historyButton.setSelected(true);
+//        contentBorderPane.setCenter(historyPane);
+    }
+
+    public String selectedView() {
+        Toggle tab = propertyToggleButtonGroup.getSelectedToggle();
+        if (addEditButton.equals(tab)) {
+            return "EDIT";
+        } else if (instancesButton.equals(tab)) {
+            return "INSTANCES";
+        } else if (historyButton.equals(tab)) {
+            return "HISTORY";
+        } else if (commentsButton.equals(tab)) {
+            return "COMMENTS";
+        } else {
+            return "NONE";
+        }
+    };
+
+    public void restoreSelectedView(String selectedView) {
+        LOG.info("restore selected Pattern view with " + selectedView);
+        switch (selectedView) {
+            case "EDIT" -> {
+                addEditButton.setSelected(true);
+                contentBorderPane.setCenter(currentEditPane);
+            }
+            case "INSTANCES" -> {
+                instancesButton.setSelected(true);
+                //contentBorderPane.setCenter(instancesPane); // TODO: hook up nodes once impelemted
+            }
+            case "HISTORY" -> {
+                historyButton.setSelected(true);
+                //contentBorderPane.setCenter(historyPane); // TODO: hook up nodes once impelemted
+            }
+            case "COMMENTS" -> {
+                commentsButton.setSelected(true);
+                // contentBorderPane.setCenter(commentsPane); // TODO hook up nodes once impelemted
+            }
+            default -> {
+                addEditButton.setSelected(false);
+                instancesButton.setSelected(false);
+                historyButton.setSelected(false);
+                commentsButton.setSelected(false);
+                contentBorderPane.setCenter(closePropsPane);
+            }
+        }
+    }
+
+    public void clearView() {
+    }
+
+    /**
+     * Returns the propertiesTabsPane to be used as a draggable region.
+     * @return The FlowPane containing the property tabs
+     */
+    public FlowPane getPropertiesTabsPane() {
+        return propertiesTabsPane;
+    }
+
+//    public void updateModel(EntityFacade newSemantic) {
+//        this.newSemantic = newSemantic;
+//
+//        if (newSemantic != null && stampAddSubmitFormViewModel != null) {
+//            setStampFormViewModel(stampAddSubmitFormViewModel);
+//        } else if (newSemantic == null && stampCreateFormViewModel != null) {
+//            setStampFormViewModel(stampCreateFormViewModel);
+//        }
+//        stampFormViewModel.get().update(newSemantic, genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+//    }
+
+    /***************************************************************************
+     *                                                                         *
+     * Properties                                                              *
+     *                                                                         *
+     **************************************************************************/
+
+    // -- stamp form view model
+//    private final ObjectProperty<StampFormViewModelBase> stampFormViewModel = new SimpleObjectProperty<>();
+//    public StampFormViewModelBase getStampFormViewModel() { return stampFormViewModel.get(); }
+//    public ObjectProperty<StampFormViewModelBase> stampFormViewModelProperty() { return stampFormViewModel; }
+//    public void setStampFormViewModel(StampFormViewModelBase stampFormViewModel) { this.stampFormViewModel.set(stampFormViewModel); }
+}

@@ -27,6 +27,7 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -219,6 +220,16 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     public final void setOnAction(Function<CONTEXT_MENU_ACTION, Consumer<ConceptFacade>> value) {
         onActionProperty.set(value);
     }
+
+    /**
+     * Action to perform when the user clicks on a context menu option that corresponds to Window created
+     * in the KL Editor.
+     * The BiConsumer receives the Concept that the user right-clicked on and the Window title.
+     */
+    private final ObjectProperty<BiConsumer<ConceptFacade, String>> onKLAction = new SimpleObjectProperty<>();
+    public BiConsumer<ConceptFacade, String> getOnKLAction() { return onKLAction.get(); }
+    public ObjectProperty<BiConsumer<ConceptFacade, String>> onKLActionProperty() { return onKLAction; }
+    public void setOnKLAction(BiConsumer<ConceptFacade, String> consumer) { onKLAction.set(consumer); }
 
     /**
      * <p>Double property that sets the milliseconds of activation or delay for highlighting a

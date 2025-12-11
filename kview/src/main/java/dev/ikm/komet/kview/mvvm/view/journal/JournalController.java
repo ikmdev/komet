@@ -491,7 +491,7 @@ public class JournalController {
             windowTitleToMenuItem.put(windowTitle, windowMenuItem);
             addContextMenu.getItems().add(windowMenuItem);
 
-            windowMenuItem.setOnAction(actionEvent -> newCreateGenPurposeKLWindow(actionEvent, windowTitle));
+            windowMenuItem.setOnAction(actionEvent -> newCreateGenPurposeKLWindow(null, windowTitle));
 
             windowTitleToMenuItem.put(windowTitle, windowMenuItem);
         }
@@ -1651,13 +1651,13 @@ public class JournalController {
         createConceptWindow(null, NID_TEXT, null);
     }
 
-    public void newCreateGenPurposeKLWindow(ActionEvent actionEvent, String windowTitle) {
+    public void newCreateGenPurposeKLWindow(ConceptFacade conceptFacade, String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
 
         final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
 
-        createGenPurposeKLWindow(null, editorWindowPreferences);
+        createGenPurposeKLWindow(conceptFacade, editorWindowPreferences);
     }
 
     /**
