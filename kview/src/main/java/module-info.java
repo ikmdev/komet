@@ -186,6 +186,25 @@ module dev.ikm.komet.kview {
     uses dev.ikm.tinkar.events.EvtBus;
     uses EntityKlWindowFactory;
 
+    // Primary service interface for discovering ALL area factories (built-in and plugins)
+    provides dev.ikm.komet.layout.KlArea.Factory with
+            dev.ikm.komet.kview.klauthoring.readonly.booleanfield.ReadOnlyBooleanFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.booleanfield.EditableBooleanFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.readonly.componentfield.ReadOnlyObservableChronologyFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.componentfield.EditableComponentFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.readonly.componentlistfield.ReadOnlyComponentListFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.componentlistfield.EditableComponentListFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.readonly.componentsetfield.ReadOnlyComponentSetFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.componentsetfield.EditableComponentSetFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.readonly.floatfield.ReadOnlyFloatFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.floatfield.EditableFloatFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.readonly.imagefield.ReadOnlyImageFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.imagefield.EditableImageFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.readonly.integerfield.ReadOnlyIntegerFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.integerfield.EditableIntegerFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.readonly.stringfield.ReadOnlyStringFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.editable.stringfield.EditableStringFieldArea.Factory;
+
     // Primary service interface for discovering ALL feature area factories (built-in and plugins)
     provides dev.ikm.komet.layout.area.KlAreaForBoolean.Factory with
             dev.ikm.komet.kview.klauthoring.readonly.booleanfield.ReadOnlyBooleanFieldArea.Factory,
