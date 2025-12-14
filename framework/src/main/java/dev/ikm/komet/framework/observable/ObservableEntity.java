@@ -19,7 +19,6 @@ import static dev.ikm.tinkar.events.EntityVersionChangeEvent.VERSION_UPDATED;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.events.EntityVersionChangeEvent;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
@@ -35,6 +34,7 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticRecord;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
+import dev.ikm.tinkar.terms.EntityBinding;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyProperty;
@@ -407,7 +407,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
             default -> throw new UnsupportedOperationException("Can't handle: " + entity);
         };
         this.versionSetAsList = FeatureList.makeEmptyList(FeatureKey.Entity.VersionSet(entity.nid()),
-                Binding.Component.pattern(), Binding.Component.versionsFieldDefinitionIndex(), this);
+                EntityBinding.Component.pattern(), EntityBinding.Component.versionsFieldDefinitionIndex(), this);
 
         this.entityReference = new AtomicReference<>(entityClone);
         for (EntityVersion version : entity.versions()) {
@@ -683,8 +683,8 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
     }
     private FeatureWrapper makePublicIdFeature() {
         return new FeatureWrapper(this.publicId(),
-                Binding.Component.pattern().nid(),
-                Binding.Component.publicIdFieldDefinitionIndex(),
+                EntityBinding.Component.pattern().nid(),
+                EntityBinding.Component.publicIdFieldDefinitionIndex(),
                 this,
                 FeatureKey.Entity.PublicId(this.nid()));
     }

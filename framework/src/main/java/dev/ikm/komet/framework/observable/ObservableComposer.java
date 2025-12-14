@@ -28,7 +28,6 @@ import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
 
-import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.Nid;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -597,7 +596,7 @@ public final class ObservableComposer {
         Objects.requireNonNull(publicId, "publicId cannot be null");
         // Ensure we generate a nid using the Concept's Pattern public ID.
         // Required for the RocksDB approach
-        ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, Binding.Concept.pattern().publicId())
+        ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Concept.pattern().publicId())
                 .call(() -> PrimitiveData.nid(publicId));
 
         ObservableEntityHandle entityHandle = ObservableEntityHandle.get(publicId);
@@ -719,7 +718,7 @@ public final class ObservableComposer {
         Objects.requireNonNull(publicId, "publicId cannot be null");
         // Ensure we generate a nid using the Pattern's Pattern public ID.
         // Required for the RocksDB approach
-        ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, Binding.Pattern.pattern().publicId())
+        ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Pattern.pattern().publicId())
                     .call(() -> PrimitiveData.nid(publicId));
 
         ObservableEntityHandle entityHandle = ObservableEntityHandle.get(publicId);

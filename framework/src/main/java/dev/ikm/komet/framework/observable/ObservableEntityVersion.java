@@ -2,10 +2,10 @@ package dev.ikm.komet.framework.observable;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityBinding;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.*;
 import org.eclipse.collections.api.factory.Lists;
@@ -190,8 +190,8 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
     private FeatureWrapper makeVersionStampFeature() {
         FeatureKey locator = FeatureKey.Version.VersionStamp(this.nid(), this.stampNid());
         ObservableStamp stamp = ObservableEntityHandle.getStampOrThrow(stampNid());
-        return new FeatureWrapper(stamp, Binding.Stamp.Version.pattern().nid(),
-                Binding.Stamp.Version.stampFieldDefinitionIndex(),this, locator);
+        return new FeatureWrapper(stamp, EntityBinding.Stamp.Version.pattern().nid(),
+                EntityBinding.Stamp.Version.stampFieldDefinitionIndex(),this, locator);
     }
 
     @Override
