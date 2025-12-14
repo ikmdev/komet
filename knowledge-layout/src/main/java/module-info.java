@@ -1,3 +1,6 @@
+import dev.ikm.komet.layout.orchestration.WindowMenuProvider;
+import dev.ikm.komet.layout.orchestration.WindowMenuService;
+
 module dev.ikm.komet.layout {
 
     requires dev.ikm.komet.framework;
@@ -67,4 +70,12 @@ module dev.ikm.komet.layout {
     provides dev.ikm.komet.layout.component.KlGenericChronologyArea.Factory
             with dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea.Factory;
 
+    provides dev.ikm.komet.layout.orchestration.WindowRestoreProvider
+        with dev.ikm.komet.layout.orchestration.WindowRestoreMenuProvider;
+
+    provides WindowMenuService
+            with WindowMenuProvider;
+
+    provides dev.ikm.komet.layout.orchestration.WindowCreateProvider
+            with dev.ikm.komet.layout.orchestration.NewWindowMenuProvider;
 }
