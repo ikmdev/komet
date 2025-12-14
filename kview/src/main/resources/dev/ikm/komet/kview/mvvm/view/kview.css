@@ -3710,9 +3710,10 @@ Timeline Year line segment (will overlay change circles)
     -fx-padding: 5 0 5 0;
 }
 
-.search-result-context-button {
+.search-result-drag-indicator {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
+    -fx-padding: 0 5px 0 0;
 }
 
 
