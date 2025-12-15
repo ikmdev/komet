@@ -35,6 +35,8 @@ module dev.ikm.komet.layout {
                  dev.ikm.komet.layout_engine.component.area.GenericArea.Factory,
                  dev.ikm.komet.layout_engine.component.area.GenericArea.BlueFactory,
                  dev.ikm.komet.layout_engine.component.area.PublicIdArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.PublicIdArea.Factory32,
+                 dev.ikm.komet.layout_engine.component.area.PublicIdArea.Factory64,
                  dev.ikm.komet.layout_engine.component.area.SimpleVersionArea.Factory,
                  dev.ikm.komet.layout_engine.component.area.SimpleVersionList.Factory,
                  dev.ikm.komet.layout_engine.component.area.MultiVersionArea.Factory,
@@ -53,7 +55,9 @@ module dev.ikm.komet.layout {
                  dev.ikm.komet.layout_engine.component.area.GenericArea.BlueFactory;
 
     provides dev.ikm.komet.layout.area.KlAreaForPublicId.Factory
-            with dev.ikm.komet.layout_engine.component.area.PublicIdArea.Factory;
+            with dev.ikm.komet.layout_engine.component.area.PublicIdArea.Factory,
+                    dev.ikm.komet.layout_engine.component.area.PublicIdArea.Factory32,
+                    dev.ikm.komet.layout_engine.component.area.PublicIdArea.Factory64;
 
     provides dev.ikm.komet.layout.area.KlAreaForGenericVersion.Factory
             with dev.ikm.komet.layout_engine.component.area.SimpleVersionArea.Factory;
