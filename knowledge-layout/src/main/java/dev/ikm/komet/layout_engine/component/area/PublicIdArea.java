@@ -105,9 +105,7 @@ public final class PublicIdArea extends FeatureAreaBlueprint<PublicId, Feature<P
 
         @Override
         public PublicIdArea create(KlPreferencesFactory preferencesFactory) {
-            PublicIdArea publicIdArea = new PublicIdArea(preferencesFactory, this);
-            publicIdArea.setAreaLayout(defaultAreaGridSettings());
-            return publicIdArea;
+            return create(preferencesFactory, defaultAreaGridSettings());
         }
 
     }
@@ -125,15 +123,14 @@ public final class PublicIdArea extends FeatureAreaBlueprint<PublicId, Feature<P
         @Override
         public PublicIdArea create(KlPreferencesFactory preferencesFactory, AreaGridSettings areaGridSettings) {
             PublicIdArea publicIdArea = new PublicIdArea(preferencesFactory, this);
+            publicIdArea.idSize = 32;
             publicIdArea.setAreaLayout(areaGridSettings);
             return publicIdArea;
         }
 
         @Override
         public PublicIdArea create(KlPreferencesFactory preferencesFactory) {
-            PublicIdArea publicIdArea = new PublicIdArea(preferencesFactory, this);
-            publicIdArea.setAreaLayout(defaultAreaGridSettings());
-            return publicIdArea;
+            return create(preferencesFactory, defaultAreaGridSettings());
         }
 
     }
@@ -158,10 +155,7 @@ public final class PublicIdArea extends FeatureAreaBlueprint<PublicId, Feature<P
 
         @Override
         public PublicIdArea create(KlPreferencesFactory preferencesFactory) {
-            PublicIdArea publicIdArea = new PublicIdArea(preferencesFactory, this);
-            publicIdArea.setAreaLayout(defaultAreaGridSettings());
-            publicIdArea.idSize = 64;
-            return publicIdArea;
+            return create(preferencesFactory, defaultAreaGridSettings());
         }
 
     }
