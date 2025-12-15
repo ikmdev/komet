@@ -8,9 +8,9 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.ListCell;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.Config;
@@ -31,25 +31,20 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 // on and listen for changes in the ListView items. So we always need to check the type of the item passed in
 // to updateItem. We need to check its type to make sure the current ListView item being passed in still applies
 // to the cell
-public class SearchCellTopComponent extends ListCell {
-
+public class SearchCellTopComponent extends SearchCellBase {
     public static final String SORT_CONCEPT_RESULT_CONCEPT_FXML = "search-result-concept-entry.fxml";
-
-    private final ViewProperties viewProperties;
-    private final ObservableViewNoOverride observableViewNoOverride;
 
     private final SortResultConceptEntryController controller;
     private final Pane parentPane;
 
-    public SearchCellTopComponent(ViewProperties viewProperties, UUID jornalTopic, ObservableViewNoOverride observableViewNoOverride) {
-        this.viewProperties = viewProperties;
-        this.observableViewNoOverride = observableViewNoOverride;
+    public SearchCellTopComponent(ViewProperties viewProperties, UUID journalTopic, ObservableViewNoOverride observableViewNoOverride) {
+        super(viewProperties, journalTopic, observableViewNoOverride);
 
         Config config = new Config(SortResultConceptEntryController.class.getResource(SORT_CONCEPT_RESULT_CONCEPT_FXML));
         config.updateViewModel("searchEntryViewModel", (searchEntryViewModel) ->
                 searchEntryViewModel
                         .addProperty(VIEW_PROPERTIES, viewProperties)
-                        .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, jornalTopic)
+                        .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
         );
 
         JFXNode<Pane, SortResultConceptEntryController> searchConceptEntryJFXNode = FXMLMvvmLoader.make(config);
@@ -60,6 +55,21 @@ public class SearchCellTopComponent extends ListCell {
         VBox.setMargin(parentPane, new Insets(8, 0, 8, 0));
 
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+    }
+
+    @Override
+    protected void onPopulateConcept(ActionEvent actionEvent) {
+        controller.populateConcept(actionEvent);
+    }
+
+    @Override
+    protected void onOpenInConceptNavigator(ActionEvent actionEvent) {
+        controller.openInConceptNavigator(actionEvent);
+    }
+
+    @Override
+    protected void onOpenAsKLWindow(ActionEvent actionEvent, String windowTitle) {
+        controller.openAsKLWindow(actionEvent, windowTitle);
     }
 
     @Override

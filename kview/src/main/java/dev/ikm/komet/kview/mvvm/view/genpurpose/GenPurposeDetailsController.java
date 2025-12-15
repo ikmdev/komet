@@ -253,17 +253,17 @@ public class GenPurposeDetailsController {
     }
 
     /// Show the public ID
-    private void updateDisplayIdentifier(ConceptFacade refComponent) {
+    private void updateDisplayIdentifier(EntityFacade refComponent) {
         ViewCalculator viewCalculator = getViewProperties().calculator();
         identifierControl.updatePublicIdList(viewCalculator, refComponent);
     }
 
-    private void updateIdenticon(ConceptFacade refComponent) {
+    private void updateIdenticon(EntityFacade refComponent) {
         Image identicon = Identicon.generateIdenticonImage(refComponent.publicId());
         identiconImageView.setImage(identicon);
     }
 
-    private void updateStampControl(ConceptFacade refConcept) {
+    private void updateStampControl(EntityFacade refConcept) {
         ObservableEntity observableEntity = ObservableEntity.get(refConcept.nid());
         ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
         Latest<EntityVersion> latestEntityVersion = retrieveCommittedLatestVersion(observableEntitySnapshot);
@@ -306,8 +306,8 @@ public class GenPurposeDetailsController {
         });
     }
 
-    private void updateWindowTitle(ConceptFacade refConcept) {
-        String conceptNameStr = getViewProperties().calculator().languageCalculator().getDescriptionTextOrNid(refConcept.nid());
+    private void updateWindowTitle(EntityFacade refConcept) {
+        String conceptNameStr = getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(refConcept.nid());
         conceptTitleText.setText(conceptNameStr);
         conceptNameTooltip.setText(conceptNameStr);
     }
@@ -472,7 +472,7 @@ public class GenPurposeDetailsController {
         });
         editorWindowModel.getAdditionalSections().addListener(this::onAdditionalSectionsChanged);
 
-        ConceptFacade refConcept = (ConceptFacade) genPurposeViewModel.getProperty(REF_COMPONENT).getValue();
+        EntityFacade refConcept = (EntityFacade) genPurposeViewModel.getProperty(REF_COMPONENT).getValue();
         updateDisplayIdentifier(refConcept);
         updateIdenticon(refConcept);
         updateWindowTitle(refConcept);

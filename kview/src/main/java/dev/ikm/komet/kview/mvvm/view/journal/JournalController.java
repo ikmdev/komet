@@ -39,6 +39,7 @@ import dev.ikm.komet.kview.controls.NotificationPopup;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
+import dev.ikm.komet.kview.events.MakeKLWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
 import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
@@ -350,6 +351,8 @@ public class JournalController {
     private Subscriber<CloseReasonerPanelEvent> closeReasonerPanelEventSubscriber;
 
     private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
+
+    private Subscriber<MakeKLWindowEvent> makeKLWindowEventSubscriber;
     //////////////////////////////////////////////////////////////////////////////////
 
     @InjectViewModel
@@ -423,6 +426,11 @@ public class JournalController {
             }
         };
         journalEventBus.subscribe(journalTopic, MakeConceptWindowEvent.class, makeComponentWindowEventSubscriber);
+
+        makeKLWindowEventSubscriber = evt -> {
+            newCreateGenPurposeKLWindow(evt.getEntityFacade(), evt.getWindowTitle());
+        };
+        journalEventBus.subscribe(journalTopic, MakeKLWindowEvent.class, makeKLWindowEventSubscriber);
 
         makePatternWindowEventSubscriber = evt ->
                 createPatternWindow(evt.getPatternFacade(), evt.getViewProperties());
@@ -1144,8 +1152,7 @@ public class JournalController {
         setupWorkspaceWindow(chapterKlWindow);
     }
 
-    private void createGenPurposeKLWindow(ConceptFacade conceptFacade,
-                                          KometPreferences preferences) {
+    private void createGenPurposeKLWindow(EntityFacade entityFacade, KometPreferences preferences) {
 //        if (preferences != null) {
 //            preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
 //        }
@@ -1153,7 +1160,7 @@ public class JournalController {
         ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.createGenPurposeKLWindow");
 
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.GEN_PURPOSE_KL,
-                journalTopic, conceptFacade, viewProperties, preferences);
+                journalTopic, entityFacade, viewProperties, preferences);
         setupWorkspaceWindow(chapterKlWindow);
     }
 
@@ -1651,13 +1658,13 @@ public class JournalController {
         createConceptWindow(null, NID_TEXT, null);
     }
 
-    public void newCreateGenPurposeKLWindow(ConceptFacade conceptFacade, String windowTitle) {
+    public void newCreateGenPurposeKLWindow(EntityFacade entityFacade, String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
 
         final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
 
-        createGenPurposeKLWindow(conceptFacade, editorWindowPreferences);
+        createGenPurposeKLWindow(entityFacade, editorWindowPreferences);
     }
 
     /**
