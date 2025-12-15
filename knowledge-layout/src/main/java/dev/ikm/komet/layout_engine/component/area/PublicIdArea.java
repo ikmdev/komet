@@ -26,6 +26,8 @@ public final class PublicIdArea extends FeatureAreaBlueprint<PublicId, Feature<P
                 LayoutContextMenu.makeContextMenu(this).show(fxObject(), event.getScreenX(), event.getScreenY()));
     }
 
+    private int idSize = 16;
+
     public PublicIdArea(KometPreferences preferences) {
         super(preferences, new StackPane());
     }
@@ -49,6 +51,8 @@ public final class PublicIdArea extends FeatureAreaBlueprint<PublicId, Feature<P
 
     private void setupPublicId(PublicId publicId) {
         ImageView hashImage = new ImageView(Identicon.generateIdenticonImage(publicId));
+        hashImage.setFitHeight(idSize);
+        hashImage.setFitWidth(idSize);
         fxObject().setAlignment(Pos.TOP_LEFT);
         fxObject().getChildren().add(hashImage);
         Tooltip tooltip = new Tooltip(publicId.idString());
@@ -103,6 +107,60 @@ public final class PublicIdArea extends FeatureAreaBlueprint<PublicId, Feature<P
         public PublicIdArea create(KlPreferencesFactory preferencesFactory) {
             PublicIdArea publicIdArea = new PublicIdArea(preferencesFactory, this);
             publicIdArea.setAreaLayout(defaultAreaGridSettings());
+            return publicIdArea;
+        }
+
+    }
+    public static class Factory32 implements KlAreaForPublicId.Factory {
+
+        public Factory32() {}
+
+        @Override
+        public PublicIdArea restore(KometPreferences preferences) {
+            PublicIdArea publicIdArea = new PublicIdArea(preferences);
+            publicIdArea.idSize = 32;
+            return publicIdArea;
+        }
+
+        @Override
+        public PublicIdArea create(KlPreferencesFactory preferencesFactory, AreaGridSettings areaGridSettings) {
+            PublicIdArea publicIdArea = new PublicIdArea(preferencesFactory, this);
+            publicIdArea.setAreaLayout(areaGridSettings);
+            return publicIdArea;
+        }
+
+        @Override
+        public PublicIdArea create(KlPreferencesFactory preferencesFactory) {
+            PublicIdArea publicIdArea = new PublicIdArea(preferencesFactory, this);
+            publicIdArea.setAreaLayout(defaultAreaGridSettings());
+            return publicIdArea;
+        }
+
+    }
+    public static class Factory64 implements KlAreaForPublicId.Factory {
+
+        public Factory64() {}
+
+        @Override
+        public PublicIdArea restore(KometPreferences preferences) {
+            PublicIdArea publicIdArea = new PublicIdArea(preferences);
+            publicIdArea.idSize = 64;
+            return publicIdArea;
+        }
+
+        @Override
+        public PublicIdArea create(KlPreferencesFactory preferencesFactory, AreaGridSettings areaGridSettings) {
+            PublicIdArea publicIdArea = new PublicIdArea(preferencesFactory, this);
+            publicIdArea.setAreaLayout(areaGridSettings);
+            publicIdArea.idSize = 64;
+            return publicIdArea;
+        }
+
+        @Override
+        public PublicIdArea create(KlPreferencesFactory preferencesFactory) {
+            PublicIdArea publicIdArea = new PublicIdArea(preferencesFactory, this);
+            publicIdArea.setAreaLayout(defaultAreaGridSettings());
+            publicIdArea.idSize = 64;
             return publicIdArea;
         }
 
