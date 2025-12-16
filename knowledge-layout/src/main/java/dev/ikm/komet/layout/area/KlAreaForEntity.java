@@ -16,10 +16,11 @@ import javafx.scene.layout.Region;
  * This interface is generic and allows for type-safe interactions with JavaFX regions
  * by parameterizing the region type. It supports extensibility for customized field areas
  * while maintaining core functionality defined by the parent {@link KlFieldArea}.
- *
+ * @deprecated use KlAreaForComponentChronology
  * @param <FX> The type of JavaFX {@link Region} associated with this field area
  *             for managing and displaying fields bound to entity data.
  */
+@Deprecated
 @FullyQualifiedName("Knowledge layout entity feature area")
 @RegularName("Entity area")
 @ParentConcept(KlAreaForFeature.class)

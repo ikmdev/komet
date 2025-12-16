@@ -700,7 +700,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         return false;
     }
 
-    private static String getNameAndValueString(ViewCalculator viewCalculator, Property<?> baseProperty) {
+    protected static String getNameAndValueString(ViewCalculator viewCalculator, Property<?> baseProperty) {
         String propertyName = getPropertyNameWithOverride(viewCalculator, baseProperty);
         StringBuilder sb = new StringBuilder(propertyName + ": ");
         Object value = baseProperty.getValue();

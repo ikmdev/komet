@@ -15,9 +15,9 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.terms.EntityBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.eclipse.collections.api.factory.Lists;
@@ -94,7 +94,8 @@ public final class ObservableSemanticVersion
     }
     private Feature makeFieldListFeature() {
         FeatureKey locator = FeatureKey.Version.SemanticFieldList(this.nid(), stampNid());
-        return FeatureList.makeWithBackingList(this.fields(), locator, Binding.Semantic.Version.pattern(), Binding.Semantic.Version.semanticFieldsDefinitionIndex(), this);
+        return FeatureList.makeWithBackingList(this.fields(), locator, EntityBinding.Semantic.Version.pattern(),
+                EntityBinding.Semantic.Version.semanticFieldsDefinitionIndex(), this);
     }
 
     @Override

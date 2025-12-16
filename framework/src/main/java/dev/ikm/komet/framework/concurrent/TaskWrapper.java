@@ -28,10 +28,32 @@ public class TaskWrapper<V> extends Task<V> implements TrackingListener<V> {
     private final TrackingCallable<V> trackingCallable;
     private final Consumer<V> appThreadConsumer;
 
+    /**
+     * JavaFX implementation of UiThreadExecutor
+     */
+    private static final TrackingCallable.UiThreadExecutor JAVAFX_EXECUTOR = (runnable, latch) -> {
+        if (Platform.isFxApplicationThread()) {
+            try {
+                runnable.run();
+            } finally {
+                latch.countDown();
+            }
+        } else {
+            Platform.runLater(() -> {
+                try {
+                    runnable.run();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+    };
+
     private TaskWrapper(TrackingCallable<V> trackingCallable) {
         this.trackingCallable = trackingCallable;
         this.appThreadConsumer = null;
         this.updateProgress(-1, -1);
+        this.trackingCallable.setUiThreadExecutor(JAVAFX_EXECUTOR);
         this.trackingCallable.addListener(this);
     }
 
@@ -39,6 +61,7 @@ public class TaskWrapper<V> extends Task<V> implements TrackingListener<V> {
         this.trackingCallable = trackingCallable;
         this.appThreadConsumer = appThreadConsumer;
         this.updateProgress(-1, -1);
+        this.trackingCallable.setUiThreadExecutor(JAVAFX_EXECUTOR);
         this.trackingCallable.addListener(this);
     }
 

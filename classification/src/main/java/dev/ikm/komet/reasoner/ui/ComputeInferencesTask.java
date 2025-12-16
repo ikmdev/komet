@@ -37,10 +37,9 @@ public class ComputeInferencesTask extends TrackingCallable<ReasonerService> {
 	@Override
 	protected ReasonerService compute() throws Exception {
 		reasonerService.computeInferences();
-		String msg = "Computed inferences in " + durationString();
-		updateMessage(msg);
+		final String msg = "Computed inferences in " + durationString();
+		updateMessageAndBlock(msg);
 		LOG.info(msg);
-		Platform.runLater(() -> updateMessage(msg));
 		return reasonerService;
 	}
 
