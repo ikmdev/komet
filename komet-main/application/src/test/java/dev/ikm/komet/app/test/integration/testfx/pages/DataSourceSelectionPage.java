@@ -16,8 +16,34 @@ public class DataSourceSelectionPage extends BasePage {
     
     /**
      * Selects a data source by clicking on its text.
+     * Scrolls down if the data source is not visible.
      */
     public DataSourceSelectionPage selectDataSource(String dataSourceName) {
+        // Try to find the data source, scroll if not visible
+        int maxScrollAttempts = 10;
+        boolean found = false;
+        
+        for (int i = 0; i < maxScrollAttempts; i++) {
+            try {
+                // Check if the data source is visible
+                if (robot.lookup(dataSourceName).tryQuery().isPresent()) {
+                    found = true;
+                    LOG.info("Found data source: {} after {} scroll attempts", dataSourceName, i);
+                    break;
+                }
+                // Scroll down to find the data source
+                scrollDown();
+                waitFor(300);
+            } catch (Exception e) {
+                // Continue scrolling
+                scrollDown();
+                waitFor(300);
+            }
+        }
+        
+        if (!found) {
+            LOG.warn("Data source not found after scrolling, attempting to click anyway: {}", dataSourceName);
+        }
         clickOnText(dataSourceName);
         LOG.info("Selected data source: {}", dataSourceName);
         return this;

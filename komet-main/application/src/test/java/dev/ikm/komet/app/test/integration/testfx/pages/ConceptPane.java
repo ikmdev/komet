@@ -82,6 +82,7 @@ public class ConceptPane extends BasePage {
      * Takes the parameter as the pane the button is located in
      */
     public ConceptPane clickEditAxiomsButton() {
+        waitForFxEvents();
         Button editAxiomsButton = findButtonByTooltip("Edit Axioms");
         if (editAxiomsButton != null) {
             robot.interact(editAxiomsButton::fire);
@@ -178,7 +179,15 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         robot.clickOn();
         waitForFxEvents();
-        clickOn(newStatus);
+        // Click the second occurrence of the status (in the combobox dropdown)
+        var matches = robot.lookup(newStatus).queryAll();
+        if (matches.size() > 1) {
+            // Click the second occurrence
+            robot.clickOn(matches.stream().skip(1).findFirst().get());
+        } else {
+            // Fallback to first/only occurrence
+            robot.clickOn(newStatus);
+        }
         waitForFxEvents();
         LOG.info("Updated status to: {}", newStatus);
         return this;
@@ -214,7 +223,15 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         robot.clickOn();
         waitForFxEvents();
-        clickOn(newPath);
+        // Click the second occurrence of the path name (in the combobox dropdown)
+        var matches = robot.lookup(newPath).queryAll();
+        if (matches.size() > 1) {
+            // Click the second occurrence
+            robot.clickOn(matches.stream().skip(1).findFirst().get());
+        } else {
+            // Fallback to first/only occurrence
+            robot.clickOn(newPath);
+        }
         waitForFxEvents();
         LOG.info("Updated path to: {}", newPath);
         return this;
@@ -279,10 +296,16 @@ public class ConceptPane extends BasePage {
 
     //searches for parent concept using the search panel in concept pane
     public ConceptPane searchForParentConcept(String parentConcept) {
+        // Move to and click the search field
         robot.moveTo("enter search query");
         waitForFxEvents();
         robot.clickOn();
         waitForFxEvents();
+        
+        // Additional click to ensure focus
+        robot.clickOn();
+        waitForFxEvents();
+              
         // Enter search text and execute search
         robot.write(parentConcept);
         waitForFxEvents(); // Wait for text to be processed
@@ -291,8 +314,7 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         robot.release(KeyCode.ENTER);
         waitForFxEvents(); // Ensure Enter is processed
-
-        
+       
         LOG.info("Searched for parent concept: {}", parentConcept);
         return this;
 
@@ -300,16 +322,20 @@ public class ConceptPane extends BasePage {
 
     //Select the parent concept from the search results
     public ConceptPane selectParentConcept(String parentConcept) {
-        waitFor(2000); // Wait for search results to populate
+        waitForFxEvents();
+        
+        // Additional wait to ensure results are fully rendered
+        waitFor(3000);
+        
         robot.moveTo("Top component with score order");
         waitForFxEvents();
-        robot.moveBy(0, 25); // Move down to the first search result
+        robot.moveBy(0,25);
         waitForFxEvents();
-        robot.doubleClickOn();
+        robot.doubleClickOn(parentConcept);
         waitForFxEvents();
+
         LOG.info("Selected parent concept: {}", parentConcept);
         return this;
-
     }
 
     //clicks search for a concept
@@ -331,7 +357,7 @@ public class ConceptPane extends BasePage {
 
     //drag to reference component search field
     public ConceptPane dragToReferenceComponentField() {
-        waitForFxEvents();
+        waitFor(4000); // Wait for UI to stabilize
         // Initial mouse movement to activate mouse interactions
         robot.moveTo("SORT BY: TOP COMPONENT");
         waitForFxEvents();

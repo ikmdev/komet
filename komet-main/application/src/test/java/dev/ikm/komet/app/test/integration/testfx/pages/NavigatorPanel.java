@@ -204,6 +204,24 @@ public class NavigatorPanel extends BasePage {
         LOG.info("Searched for: {}", query);
         return this;
     }
+
+    /**
+     * Performs a search with Nextgen Search
+     */
+    public NavigatorPanel nextgenSearch(String query) {
+        robot.moveTo("SORT BY: TOP COMPONENT");
+        robot.moveBy(0, -40); // Move up to the search box
+        robot.clickOn();
+        waitForFxEvents(); // Wait for click to be processed
+        type(query);
+        waitForFxEvents(); // Wait for text to be processed
+        robot.press(KeyCode.ENTER);
+        waitForFxEvents();
+        robot.release(KeyCode.ENTER);
+        waitForFxEvents(); // Ensure Enter is processed
+        LOG.info("Searched for: {}", query);
+        return this;
+    }
     
     /**
      * Opens a concept from search results.

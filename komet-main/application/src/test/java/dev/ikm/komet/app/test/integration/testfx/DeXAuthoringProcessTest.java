@@ -417,10 +417,12 @@ public class DeXAuthoringProcessTest {
                         throw e;
                 }
 
+                /*
                 // Scroll horizontally to the left to reveal the pencil icon
                 robot.clickOn(250, 250);
                 horizontalScroll(robot, KeyCode.LEFT, 20);
                 waitForFxEvents();
+                */
 
                 // 14. Click the pencil icon that is in line with the axioms section header
                 try {
@@ -435,16 +437,18 @@ public class DeXAuthoringProcessTest {
                 try {
                         reporter.logBeforeStep("Step 15: Click Add Necessary Set");
                         robot.clickOn("Add Necessary Set");
+                        waitForFxEvents();
                         reporter.logAfterStep("Step 15  : Clicked Add Necessary Set");
                 } catch (Exception e) {
                         reporter.logFailure("Step 15: Click Add Necessary Set", e);
                         throw e;
                 }
 
+                /*
                 // scroll down
                         robot.scroll(5, VerticalDirection.DOWN);
                         waitForFxEvents();
-                        
+                */
 
                 // 16. Click the pencil icon aligned to the third axiom row
                 try {
@@ -536,10 +540,6 @@ public class DeXAuthoringProcessTest {
                         throw e;
                 }
 
-                // scroll up
-                        robot.scroll(5, VerticalDirection.UP);
-                        waitForFxEvents();
-
 
                 // 24. In the identifier row, copy the UUID by utilizing the copy shortcut
                 try {
@@ -595,10 +595,12 @@ public class DeXAuthoringProcessTest {
                         throw e;
                 }
 
+                /*
                 // Scroll horizontally to the RIGHT to reveal confirm button
                 robot.clickOn(250, 250);
                 horizontalScroll(robot, KeyCode.RIGHT, 1);
                 waitForFxEvents();
+                */
 
                 // 29. "Update the Stamp to reflect
                 // - Module: Device Extension Module
@@ -623,10 +625,12 @@ public class DeXAuthoringProcessTest {
                         throw e;
                 }
 
+                /*
                 // Scroll horizontally to the LEFT
                 robot.clickOn(600, 300);
                 horizontalScroll(robot, KeyCode.LEFT, 2);
                 waitForFxEvents();
+                */
 
                 // 31. Click the Next Gen Search (magnifying glass) and search for a concept
                 // using UUID or FQN. (If you have the UUID from the concept you created, you
@@ -635,7 +639,7 @@ public class DeXAuthoringProcessTest {
                         reporter.logBeforeStep(
                                         "Step 31: Click NextGen Search and search for a concept using UUID or FQN");
                         navigator.clickNextgenSearch();
-                        navigator.search(fullyQualifiedName); // search by FQN
+                        navigator.nextgenSearch(fullyQualifiedName); // search by FQN
                         waitForFxEvents();
                         reporter.logAfterStep(
                                         "Step 31: Clicked NextGen Search and searched for a concept using UUID or FQN successfully");
@@ -645,11 +649,13 @@ public class DeXAuthoringProcessTest {
                         throw e;
                 }
 
+                /*
                 // Scroll horizontally to the RIGHT
                 robot.clickOn(600, 300);
                 waitForFxEvents();
-                horizontalScroll(robot, KeyCode.RIGHT, 3);
+                horizontalScroll(robot, KeyCode.RIGHT, 5);
                 waitForFxEvents();
+                */
 
                 // 32. Locate the correct concept and drag and drop it into the Referenced
                 // Component field
@@ -672,7 +678,7 @@ public class DeXAuthoringProcessTest {
                                         "Step 33: Click Confirm and verify the correct reference component populates");
                         robot.clickOn("CONFIRM");
                         navigator.clickNextgenSearch(); // close search panel
-                        horizontalScroll(robot, KeyCode.RIGHT, 7); // scroll right to see populated reference component
+                        //horizontalScroll(robot, KeyCode.RIGHT, 10); // scroll right to see populated reference component
                         // ASSERT THAT THE CORRECT REFERENCE COMPONENT POPULATES
                         String populatedReferenceComponent = conceptPane.getPopulatedReferenceComponent();
                         assertEquals(fullyQualifiedName, populatedReferenceComponent, "The populated reference component should match the selected concept");
