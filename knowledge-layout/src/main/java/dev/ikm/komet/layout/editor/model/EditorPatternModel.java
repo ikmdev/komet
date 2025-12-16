@@ -46,7 +46,7 @@ public class EditorPatternModel {
             ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = patternVersionRecord.fieldDefinitions();
 
             fieldDefinitionRecords.stream().forEachOrdered(fieldDefinitionForEntity -> {
-                fields.add(fieldDefinitionForEntity.meaning().description());
+                fields.add(new EditorFieldModel(viewCalculator, fieldDefinitionForEntity));
             });
         });
 
@@ -93,8 +93,8 @@ public class EditorPatternModel {
     public void setTitle(String title) { this.title.set(title); }
 
     // -- fields
-    private final ObservableList<String> fields = FXCollections.observableArrayList();
-    public ObservableList<String> getFields() { return fields; }
+    private final ObservableList<EditorFieldModel> fields = FXCollections.observableArrayList();
+    public ObservableList<EditorFieldModel> getFields() { return fields; }
 
     // -- nid
     public int getNid() { return nid; }

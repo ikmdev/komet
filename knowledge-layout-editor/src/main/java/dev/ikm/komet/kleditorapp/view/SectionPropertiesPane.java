@@ -10,6 +10,7 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 
@@ -56,11 +57,11 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
 
         ColumnConstraints col2 = new ColumnConstraints();
         col2.setMinWidth(10);
-        col2.setPrefWidth(100);
+        col2.setHgrow(Priority.ALWAYS);
 
         gridPane.getColumnConstraints().addAll(col1, col2);
 
-        // Row constraints (3 rows as in your original FXML)
+        // Row constraints
         for (int i = 0; i < 3; i++) {
             RowConstraints row = new RowConstraints();
             row.setMinHeight(10);

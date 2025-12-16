@@ -354,7 +354,7 @@
  * Section Properties Pane                                                    *
  ******************************************************************************/
 
-.right-properties-pane .section-properties . section-main-container {
+.right-properties-pane .section-properties .section-main-container {
     -fx-padding: 0 10 0 10;
 }
 
@@ -418,6 +418,37 @@
 }
 
 .right-properties-pane .pattern-properties .group-title {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 14px;
+}
+
+/******************************************************************************
+ * Field Properties Pane                                                      *
+ ******************************************************************************/
+
+.right-properties-pane .field-properties .field-main-container {
+    -fx-padding: 0 10 0 10;
+}
+
+.right-properties-pane .field-properties .field-main-container {
+    -fx-spacing: 8;
+}
+
+.right-properties-pane .field-properties GridPane > .label {
+    -fx-padding: 0 5 0 0;
+}
+
+.right-properties-pane .field-properties .section-main-container .separator {
+    -fx-pref-width: 200px;
+}
+
+.right-properties-pane .field-properties .separator:horizontal .line {
+    -fx-border-color: #aaa transparent transparent transparent,
+    transparent transparent transparent transparent;
+    -fx-border-insets: 0 0 0 0, 1 0 0 0;
+}
+
+.right-properties-pane .field-properties .group-title {
     -fx-font-family: "Noto Sans Bold";
     -fx-font-size: 14px;
 }

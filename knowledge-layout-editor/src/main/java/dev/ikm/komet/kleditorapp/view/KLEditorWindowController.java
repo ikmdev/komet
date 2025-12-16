@@ -1,14 +1,15 @@
 package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
+import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
+import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -26,6 +27,8 @@ public class KLEditorWindowController {
 
     private final HashMap<SectionViewControl, EditorSectionModel> sectionViewToModel = new HashMap<>();
     private final HashMap<EditorSectionModel, SectionViewControl> sectionModelToView = new HashMap<>();
+
+    private final HashMap<EditorPatternModel, PatternViewControl> patternModelToView = new HashMap<>();
 
     private EditorWindowModel editorWindowModel;
 
@@ -54,10 +57,10 @@ public class KLEditorWindowController {
         }
     }
 
-    private void onSectionPatternsChanged(EditorSectionModel editorSectionModel, ListChangeListener.Change<? extends EditorPatternModel> change) {
+    private void onSectionModelPatternsChanged(EditorSectionModel sectionModel, ListChangeListener.Change<? extends EditorPatternModel> change) {
         while(change.next()) {
             if (change.wasAdded()) {
-                addPatternViews(editorSectionModel, change.getAddedSubList());
+                addPatternViews(sectionModel, change.getAddedSubList());
             }
         }
     }
@@ -85,13 +88,37 @@ public class KLEditorWindowController {
     }
 
     private void addPatternViews(EditorSectionModel editorSectionModel, List<? extends EditorPatternModel> patternModels) {
-        for (EditorPatternModel editorPatternModel : patternModels) {
+        for (EditorPatternModel patternModel : patternModels) {
             PatternViewControl patternViewControl = new PatternViewControl();
-            patternViewControl.titleProperty().bind(editorPatternModel.titleProperty());
-            Bindings.bindContent(patternViewControl.getFields(), editorPatternModel.getFields());
+
+            patternModelToView.put(patternModel, patternViewControl);
+
+            patternViewControl.titleProperty().bind(patternModel.titleProperty());
+
+            addFieldViews(patternModel, patternModel.getFields());
+            patternModel.getFields().addListener((ListChangeListener<? super EditorFieldModel>)change -> onPatternModelFieldsChanged(patternModel, change));
 
             SectionViewControl sectionViewControl = sectionModelToView.get(editorSectionModel);
             sectionViewControl.getPatterns().add(patternViewControl);
+        }
+    }
+
+    private void onPatternModelFieldsChanged(EditorPatternModel patternModel, ListChangeListener.Change<? extends EditorFieldModel> change) {
+        while(change.next()) {
+            if (change.wasAdded()) {
+                addFieldViews(patternModel, change.getAddedSubList());
+            }
+        }
+    }
+
+    private void addFieldViews(EditorPatternModel patternModel, List<? extends EditorFieldModel> fieldModels) {
+        for (EditorFieldModel fieldModel : fieldModels) {
+            FieldViewControl fieldViewControl = new FieldViewControl();
+            fieldViewControl.titleProperty().bind(fieldModel.titleProperty());
+            fieldViewControl.fieldNumberProperty().bind(fieldModel.indexProperty().add(1));
+
+            PatternViewControl patternViewControl = patternModelToView.get(patternModel);
+            patternViewControl.getFields().add(fieldViewControl);
         }
     }
 
@@ -107,7 +134,7 @@ public class KLEditorWindowController {
         });
 
         // Listen to changes on Section Patterns
-        editorSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) change -> onSectionPatternsChanged(editorSectionModel, change));
+        editorSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) change -> onSectionModelPatternsChanged(editorSectionModel, change));
     }
 
     @FXML
