@@ -230,6 +230,12 @@ Temporary Items
 htmlReport
 
 ###################
+# Test Credentials
+###################
+test-credentials.csv
+**/test-credentials.csv
+
+###################
  # Develocity
 ###################
 **.develocity/

@@ -1,13 +1,15 @@
 package dev.ikm.komet.app.test.integration.testfx.pages;
 
+import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
+
+import org.testfx.api.FxRobot;
+
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
-
-import org.testfx.api.FxRobot;
 
 /**
  * Page object for Navigator panel operations.
@@ -22,7 +24,7 @@ public class NavigatorPanel extends BasePage {
     public NavigatorPanel clickHome() {
         ToggleButton homeButton = findToggleButtonInNavigatorPane("Home");
         robot.interact(homeButton::fire);
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Opened Home panel");
         return this;
     }
@@ -31,9 +33,10 @@ public class NavigatorPanel extends BasePage {
      * Opens the Nextgen Search panel.
      */
     public NavigatorPanel clickNextgenSearch() {
+        waitFor(1000); // Ensure UI is ready after journal creation
         ToggleButton nextgenSearchButton = findToggleButtonInNavigatorPane("Nextgen Search");
         robot.interact(nextgenSearchButton::fire);
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Opened Nextgen Search");
         return this;
     }
@@ -42,10 +45,10 @@ public class NavigatorPanel extends BasePage {
      * Opens the Nextgen Navigator panel.
      */
     public NavigatorPanel clickNextgenNavigator() {
-        waitFor(500); // Increased wait for UI to be ready after journal creation
+        waitForFxEvents(); // Ensure UI is ready after journal creation
         ToggleButton nextgenNavigatorButton = findToggleButtonInNavigatorPane("Nextgen Navigator");
         robot.interact(nextgenNavigatorButton::fire);
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Opened Nextgen Navigator");
         return this;
     }
@@ -54,7 +57,7 @@ public class NavigatorPanel extends BasePage {
     public NavigatorPanel clickReasoner() {
         ToggleButton reasonerButton = findToggleButtonInNavigatorPane("Reasoner");
         robot.interact(reasonerButton::fire);
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Opened Reasoner panel");
         return this;
     }
@@ -63,7 +66,7 @@ public class NavigatorPanel extends BasePage {
     public NavigatorPanel clickSearch() {
         ToggleButton searchButton = findToggleButtonInNavigatorPane("Search");
         robot.interact(searchButton::fire);
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Opened Search panel");
         return this;
     }
@@ -72,7 +75,7 @@ public class NavigatorPanel extends BasePage {
     public NavigatorPanel clickNavigator() {
         ToggleButton navigatorButton = findToggleButtonInNavigatorPane("Navigator");
         robot.interact(navigatorButton::fire);
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Opened Navigator panel");
         return this;
     }
@@ -81,16 +84,37 @@ public class NavigatorPanel extends BasePage {
     public NavigatorPanel clickNextgenReasoner() {
         ToggleButton nextgenReasonerButton = findToggleButtonInNavigatorPane("Nextgen Reasoner");
         robot.interact(nextgenReasonerButton::fire);
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Opened Nextgen Reasoner panel");
         return this;
     }
 
     //Clicks the Create button
     public NavigatorPanel clickCreate() {
-        ToggleButton createButton = findToggleButtonInNavigatorPane("Create");
+        // Wait for the Create button to appear (journal window needs time to load)
+        javafx.scene.control.Button createButton = null;
+        int maxAttempts = 4; // 4 attempts * 100ms = 400ms max
+        
+        for (int i = 0; i < maxAttempts; i++) {
+            try {
+                createButton = findButtonInNavigatorPane("Create");
+                if (createButton != null) {
+                    LOG.info("Found Create button after {} attempts", i + 1);
+                    break;
+                }
+            } catch (Exception e) {
+                // Button not found yet, continue waiting
+            }
+            waitForFxEvents();
+        }
+        
+        if (createButton == null) {
+            LOG.error("Create button not found after waiting 400ms");
+            throw new RuntimeException("Create button with tooltip 'Create' not found after waiting 400ms");
+        }
+        
         robot.interact(createButton::fire);
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Clicked Create button");
         return this;
     }
@@ -101,6 +125,7 @@ public class NavigatorPanel extends BasePage {
      */
     public NavigatorPanel clickConcepts() {
         clickOnText("CONCEPTS");
+        waitForFxEvents();
         LOG.info("Clicked CONCEPTS button");
         return this;
     }
@@ -108,6 +133,7 @@ public class NavigatorPanel extends BasePage {
     //Click the Patterns button
     public NavigatorPanel clickPatterns() {
         clickOnText("PATTERNS");
+        waitForFxEvents();
         LOG.info("Clicked PATTERNS button");
         return this;
     }
@@ -116,12 +142,14 @@ public class NavigatorPanel extends BasePage {
      * Expands a tree node by clicking the disclosure arrow.
      */
     public NavigatorPanel expandTreeNode(String nodeName) {
-        waitFor(500);
+        waitForFxEvents();
         Node node = robot.lookup(nodeName).query();
         robot.moveTo(node);
+        waitForFxEvents();
         robot.moveBy(-35, 0);
+        waitForFxEvents();
         robot.clickOn();
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Expanded tree node: {}", nodeName);
         return this;
     }
@@ -130,8 +158,8 @@ public class NavigatorPanel extends BasePage {
      * Double-clicks on a tree item to open it.
      */
     public ConceptPane openConcept(String conceptName) {
-        waitFor(1000);
         doubleClickOnText(conceptName);
+        waitForFxEvents();
         LOG.info("Opened concept: {}", conceptName);
         closeDialogs();
         return new ConceptPane(robot);
@@ -149,15 +177,30 @@ public class NavigatorPanel extends BasePage {
         }).query();
     }
     
+    private javafx.scene.control.Button findButtonInNavigatorPane(String tooltipText) {
+        // Directly search for button by tooltip text without pane constraints
+        return (javafx.scene.control.Button) robot.lookup((java.util.function.Predicate<javafx.scene.Node>) n -> {
+            if (n instanceof javafx.scene.control.Button) {
+                javafx.scene.control.Button btn = (javafx.scene.control.Button) n;
+                Tooltip tooltip = btn.getTooltip();
+                return tooltip != null && tooltipText.equals(tooltip.getText());
+            }
+            return false;
+        }).query();
+    }
+    
         /**
      * Performs a search with the given query.
      */
     public NavigatorPanel search(String query) {
         clickOnText("🔍  Search");
+        waitForFxEvents(); // Wait for click to be processed
         type(query);
-        waitFor(500);
-        pressKey(KeyCode.ENTER);
-        waitFor(1000);
+        waitForFxEvents(); // Wait for text to be processed
+        robot.press(KeyCode.ENTER);
+        waitForFxEvents();
+        robot.release(KeyCode.ENTER);
+        waitForFxEvents(); // Ensure Enter is processed
         LOG.info("Searched for: {}", query);
         return this;
     }
@@ -167,7 +210,7 @@ public class NavigatorPanel extends BasePage {
      */
     public ConceptPane openConceptFromResults(String conceptName) {
         doubleClickOnText(conceptName);
-        waitFor(1000);
+        waitForFxEvents();
         closeDialogs();
         LOG.info("Opened concept from search results: {}", conceptName);
         return new ConceptPane(robot);
@@ -177,7 +220,6 @@ public class NavigatorPanel extends BasePage {
      * Drags concept to editing area using the move button.
      */
     public NavigatorPanel dragToEditingArea(String conceptName) {
-        waitFor(1000);
         
         javafx.scene.Node conceptText = robot.lookup(conceptName).query();
         Bounds conceptBounds = conceptText.localToScreen(conceptText.getBoundsInLocal());
@@ -186,14 +228,27 @@ public class NavigatorPanel extends BasePage {
         double moveButtonY = conceptBounds.getMinY() + (conceptBounds.getHeight() / 2);
         
         robot.moveTo(moveButtonX, moveButtonY);
-        waitFor(300);
+        waitForFxEvents();
         robot.clickOn(MouseButton.PRIMARY);
-        waitFor(200);
+        waitForFxEvents();
         robot.drag(MouseButton.PRIMARY).moveBy(50, 0).drop();
-        waitFor(500);
+        waitForFxEvents();
         
         LOG.info("Dragged concept '{}' to editing area", conceptName);
         closeDialogs();
+        return this;
+    }
+
+        //scroll horizontally to the left of right and how many times using the direction and amount
+    public NavigatorPanel scrollHorizontally(String direction, int amount) {
+                        //click in the center of the screen
+                        robot.clickOn(250,250);
+                        for (int i = 0; i < amount; i++) {
+                                //PRESS THE RIGHT DIRECTIONAL ARROW KEY
+                                robot.press(KeyCode.valueOf(direction));
+                                robot.release(KeyCode.valueOf(direction));
+                }
+        LOG.info("Scrolled horizontally {} by {} times", direction, amount);
         return this;
     }
 }

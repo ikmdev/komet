@@ -1,7 +1,6 @@
 package dev.ikm.komet.app.test.integration.testfx.pages;
 
 import javafx.scene.Node;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.input.KeyCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +69,6 @@ public abstract class BasePage {
     protected void closeDialogs() {
         try {
             // Wait for dialog to be fully rendered
-            Thread.sleep(500);
             waitForFxEvents();
             
             // Capture screenshot before closing dialog
@@ -83,7 +81,6 @@ public abstract class BasePage {
                 Thread.sleep(300);
                 waitForFxEvents();
             }
-            Thread.sleep(750);
             waitForFxEvents();
             LOG.info("Closed dialog boxes");
         } catch (InterruptedException e) {
@@ -98,7 +95,6 @@ public abstract class BasePage {
         robot.scroll(10, javafx.geometry.VerticalDirection.DOWN);
         LOG.info("Scrolled down to find the desired element");
     }
-
 
     /**
      * Captures a screenshot with the given description.
@@ -139,6 +135,37 @@ public abstract class BasePage {
         } catch (InterruptedException e) {
             LOG.error("Interrupted during wait", e);
         }
+    }
+    
+    /**
+     * Waits for text to appear in the scene with retries.
+     * @param text The text to wait for
+     * @param maxAttempts Maximum number of attempts (default 10)
+     * @param waitBetweenMs Milliseconds to wait between attempts (default 500)
+     * @return true if text was found, false otherwise
+     */
+    protected boolean waitForText(String text, int maxAttempts, long waitBetweenMs) {
+        for (int i = 0; i < maxAttempts; i++) {
+            try {
+                waitForFxEvents();
+                if (robot.lookup(text).tryQuery().isPresent()) {
+                    LOG.info("Found text '{}' after {} attempts", text, i + 1);
+                    return true;
+                }
+                Thread.sleep(waitBetweenMs);
+            } catch (Exception e) {
+                LOG.debug("Attempt {} to find text '{}' failed", i + 1, text);
+            }
+        }
+        LOG.warn("Text '{}' not found after {} attempts", text, maxAttempts);
+        return false;
+    }
+    
+    /**
+     * Waits for text to appear with default parameters (10 attempts, 500ms between).
+     */
+    protected boolean waitForText(String text) {
+        return waitForText(text, 10, 500);
     }
     
     /**

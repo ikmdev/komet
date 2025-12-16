@@ -35,35 +35,57 @@ public class TestReporter {
     private final FxRobot robot;
     
     public TestReporter(Path screenshotDirectory, Path reportDirectory, FxRobot robot) {
-        this.screenshotDirectory = screenshotDirectory;
-        this.robot = robot;
-        this.extentReports = initializeExtentReports(reportDirectory);
+        this(screenshotDirectory, reportDirectory, robot, "KometWorkflowTest");
     }
     
-    private ExtentReports initializeExtentReports(Path reportDirectory) {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        String reportFileName = String.format("KometWorkflowTest_%s.html", timestamp);
-        Path reportPath = reportDirectory.resolve(reportFileName);
-        
-        ExtentSparkReporter sparkReporter = new ExtentSparkReporter(reportPath.toString());
-        sparkReporter.config().setTheme(Theme.DARK);
-        sparkReporter.config().setDocumentTitle("Komet User Workflow Test Report");
-        sparkReporter.config().setReportName("Komet Automated Test Execution");
-        sparkReporter.config().setTimeStampFormat("yyyy-MM-dd HH:mm:ss");
-        
-        ExtentReports reports = new ExtentReports();
-        reports.attachReporter(sparkReporter);
-        reports.setSystemInfo("Application", "Komet");
-        reports.setSystemInfo("Environment", "Test");
-        reports.setSystemInfo("User", System.getProperty("user.name"));
-        reports.setSystemInfo("Java Version", System.getProperty("java.version"));
-        
-        LOG.info("ExtentReports initialized at: {}", reportPath);
-        return reports;
+    public TestReporter(Path screenshotDirectory, Path reportDirectory, FxRobot robot, String testSuiteName) {
+        this.screenshotDirectory = screenshotDirectory;
+        this.robot = robot;
+        this.extentReports = initializeExtentReports(reportDirectory, testSuiteName);
+    }
+    
+    private ExtentReports initializeExtentReports(Path reportDirectory, String testSuiteName) {
+        try {
+            // Ensure the report directory exists
+            if (!java.nio.file.Files.exists(reportDirectory)) {
+                java.nio.file.Files.createDirectories(reportDirectory);
+                LOG.info("Created report directory: {}", reportDirectory);
+            }
+            
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String reportFileName = String.format("%s_%s.html", testSuiteName, timestamp);
+            Path reportPath = reportDirectory.resolve(reportFileName);
+            
+            LOG.info("Initializing ExtentReports at: {}", reportPath.toAbsolutePath());
+            
+            ExtentSparkReporter sparkReporter = new ExtentSparkReporter(reportPath.toString());
+            sparkReporter.config().setTheme(Theme.DARK);
+            sparkReporter.config().setDocumentTitle("Komet User Workflow Test Report");
+            sparkReporter.config().setReportName("Komet Automated Test Execution");
+            sparkReporter.config().setTimeStampFormat("yyyy-MM-dd HH:mm:ss");
+            
+            ExtentReports reports = new ExtentReports();
+            reports.attachReporter(sparkReporter);
+            reports.setSystemInfo("Application", "Komet");
+            reports.setSystemInfo("Environment", "Test");
+            reports.setSystemInfo("User", System.getProperty("user.name"));
+            reports.setSystemInfo("Java Version", System.getProperty("java.version"));
+            
+            LOG.info("ExtentReports successfully initialized at: {}", reportPath.toAbsolutePath());
+            return reports;
+        } catch (Exception e) {
+            LOG.error("Failed to initialize ExtentReports", e);
+            throw new RuntimeException("Failed to initialize ExtentReports", e);
+        }
     }
     
     public void createTest(String testName, String description) {
-        extentTest = extentReports.createTest(testName, description);
+        if (extentReports != null) {
+            extentTest = extentReports.createTest(testName, description);
+            LOG.info("Created ExtentTest: {} - {}", testName, description);
+        } else {
+            LOG.error("Cannot create test - extentReports is null");
+        }
     }
     
     public void logStepWithScreenshot(String stepDescription) {
@@ -71,6 +93,11 @@ public class TestReporter {
     }
     
     public void logStepWithScreenshot(String stepDescription, Status status) {
+        if (extentTest == null) {
+            LOG.error("Cannot log step - extentTest is null. Was createTest() called?");
+            return;
+        }
+        
         try {
             CaptureSupport captureSupport = FxService.serviceContext().getCaptureSupport();
             Image fxImage = captureSupport.captureNode(robot.targetWindow().getScene().getRoot());
@@ -87,7 +114,9 @@ public class TestReporter {
             LOG.info("Logged step with screenshot ({}): {}", status, stepDescription);
         } catch (Exception e) {
             LOG.error("Failed to capture screenshot for step: " + stepDescription, e);
-            extentTest.log(Status.WARNING, stepDescription + " - Screenshot capture failed: " + e.getMessage());
+            if (extentTest != null) {
+                extentTest.log(Status.WARNING, stepDescription + " - Screenshot capture failed: " + e.getMessage());
+            }
         }
     }
     
@@ -100,6 +129,11 @@ public class TestReporter {
     }
     
     public void logFailure(String stepDescription, Throwable error) {
+        if (extentTest == null) {
+            LOG.error("Cannot log failure - extentTest is null. Was createTest() called?");
+            return;
+        }
+        
         try {
             CaptureSupport captureSupport = FxService.serviceContext().getCaptureSupport();
             Image fxImage = captureSupport.captureNode(robot.targetWindow().getScene().getRoot());
@@ -117,8 +151,10 @@ public class TestReporter {
             LOG.error("Logged failure with screenshot: {}", stepDescription, error);
         } catch (Exception e) {
             LOG.error("Failed to capture screenshot for failure at step: " + stepDescription, e);
-            extentTest.log(Status.FAIL, stepDescription + " - Failed: " + error.getMessage() + 
-                    " (Screenshot capture also failed: " + e.getMessage() + ")");
+            if (extentTest != null) {
+                extentTest.log(Status.FAIL, stepDescription + " - Failed: " + error.getMessage() + 
+                        " (Screenshot capture also failed: " + e.getMessage() + ")");
+            }
         }
     }
     
@@ -140,8 +176,14 @@ public class TestReporter {
     
     public void flush() {
         if (extentReports != null) {
-            extentReports.flush();
-            LOG.info("ExtentReports flushed");
+            try {
+                extentReports.flush();
+                LOG.info("ExtentReports flushed successfully");
+            } catch (Exception e) {
+                LOG.error("Failed to flush ExtentReports", e);
+            }
+        } else {
+            LOG.warn("ExtentReports is null, cannot flush");
         }
     }
 }

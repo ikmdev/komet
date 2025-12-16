@@ -100,6 +100,11 @@ public class KometUserWorkflowTest {
     public void testCompleteKometUserWorkflow(FxRobot robot) throws TimeoutException, InterruptedException {
         LOG.info("Starting Complete Komet User Workflow Test");
 
+        NavigatorPanel navigator = new NavigatorPanel(robot);
+        DataSourceSelectionPage dataSourcePage = new DataSourceSelectionPage(robot);
+        LoginPage loginPage = new LoginPage(robot);
+
+
         try {
             // Step 1: Launch KOMET application
             reporter.logBeforeStep("Step 1: USER to LAUNCH Komet Application");
@@ -110,12 +115,10 @@ public class KometUserWorkflowTest {
             throw e;
         }
 
-        DataSourceSelectionPage dataSourcePage;
 
         try {
             // Step 2: Select data source
             reporter.logBeforeStep("Step 2: USER to SELECT komet from list");
-            dataSourcePage = new DataSourceSelectionPage(robot);
             dataSourcePage.selectDataSource(DATA_SOURCE_NAME);
             reporter.logAfterStep("Step 2: Selected komet from list");
         } catch (Exception e) {
@@ -123,7 +126,7 @@ public class KometUserWorkflowTest {
             throw e;
         }
 
-        LoginPage loginPage;
+            
         try {
             // Step 3: Click OK button
             reporter.logBeforeStep("Step 3: USER to CLICK OK button");
@@ -185,8 +188,6 @@ public class KometUserWorkflowTest {
             reporter.logFailure("Step 7: USER to CLICK New Project Journal button", e);
             throw e;
         }
-
-        NavigatorPanel navigator = new NavigatorPanel(robot);
 
         try {
             // Step 8: Click Nextgen Navigator button

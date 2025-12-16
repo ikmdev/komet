@@ -3,6 +3,9 @@ package dev.ikm.komet.app.test.integration.testfx.pages;
 import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
+
+import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
+
 import org.testfx.api.FxRobot;
 
 /**
@@ -31,7 +34,7 @@ public class LandingPage extends BasePage {
             primaryStage.setHeight(screenBounds.getHeight());
         });
         
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Maximized window");
         return this;
     }
@@ -43,19 +46,33 @@ public class LandingPage extends BasePage {
         try {
         waitFor(500);
         clickOnText("Create project journal");
-        waitFor(1000);
+        waitForFxEvents();
+        maximizeWindow();  
         closeDialogs();
         LOG.info("Clicked 'Create Project Journal'");
         } catch  (Exception e) {
             robot.moveTo("My project journals");
             robot.moveBy(0, 50);
             scrollDown();
-            waitFor(300);
+            waitForFxEvents();
             clickOnText("Create project journal");
-            waitFor(1000);
+            waitForFxEvents();
+            maximizeWindow();  
             closeDialogs();
             LOG.info("Clicked 'Create Project Journal' after scrolling");
         }
+        return this;
+    }
+
+    /*
+    *Click "NEW PROJECT JOURNAL" button
+     */
+    public LandingPage clickNewProjectJournal() {
+        waitForFxEvents();
+        clickOnText("NEW PROJECT JOURNAL");
+        waitForFxEvents();
+        maximizeWindow();  
+        LOG.info("Clicked 'New Project Journal'");
         return this;
     }
 
@@ -64,7 +81,7 @@ public class LandingPage extends BasePage {
     */
     public LandingPage clickHomeButton() {
         clickOnText("Home");
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Clicked Home button");
         return this;
     }
@@ -74,7 +91,7 @@ public class LandingPage extends BasePage {
     */
     public LandingPage clickFavoritesButton() {
         clickOnText("Favorites");
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Clicked Favorites button");
         return this;
     }
@@ -84,7 +101,7 @@ public class LandingPage extends BasePage {
     */
     public LandingPage clickCommentsButton() {
         clickOnText("Comments");
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Clicked Comments button");
         return this;
     }
@@ -94,7 +111,7 @@ public class LandingPage extends BasePage {
     */
     public LandingPage clickNotificationsButton() {
         clickOnText("Notifications");
-        waitFor(500);
+        waitForFxEvents();
         LOG.info("Clicked Notifications button");
         return this;
     }
@@ -105,9 +122,9 @@ public class LandingPage extends BasePage {
     public LandingPage deleteJournal(String journalName) {
         robot.moveTo(journalName);
         robot.moveBy(200, -150);
-        waitFor(500);
+        waitForFxEvents();
         robot.clickOn();
-        waitFor(500);
+        waitForFxEvents();
         clickOnText("Delete");
         LOG.info("Deleted journal: {}", journalName);
         return this;
@@ -127,7 +144,7 @@ public class LandingPage extends BasePage {
         if (journalWindow != null) {
             Stage finalJournalStage = journalWindow;
             Platform.runLater(finalJournalStage::close);
-            waitFor(500);
+            waitForFxEvents();
             
             // Refocus on main window
             Stage mainStage = robot.listTargetWindows().stream()
@@ -142,7 +159,7 @@ public class LandingPage extends BasePage {
                     mainStage.requestFocus();
                     mainStage.toFront();
                 });
-                waitFor(500);
+                waitForFxEvents();
             }
             
             LOG.info("Closed journal window and refocused on main window");
