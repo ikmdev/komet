@@ -43,7 +43,7 @@ jobs:
           token: ${{secrets.IKMDEVOPS_PAT_TOKEN}}
 
       - name: Shared Release Action
-        uses: ikmdev/maven-semver-release-action@v2.7.0
+        uses: ikmdev/maven-semver-release-action@v4.0.2
         with:
           version_type: ${{ github.event.inputs.version_type }}
           github_token: ${{secrets.GITHUB_TOKEN}}

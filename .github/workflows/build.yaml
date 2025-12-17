@@ -17,7 +17,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Pull Request Version Validation
-        uses: ikmdev/maven-pull-request-version-validation-action@v2.1.0
+        uses: ikmdev/maven-pull-request-version-validation-action@v4.0.1
 
   get-args:
     name: Get Build Arguments
@@ -48,7 +48,7 @@ jobs:
     needs: get-args
     steps: 
       - name: Build IKMDEV Code
-        uses: ikmdev/maven-clean-install-build-action@v3.5.0
+        uses: ikmdev/maven-clean-install-build-action@v4.0.1
         with:
           branch_name: ${{env.BRANCH_NAME}}
           mvn_additional_args: '-Dbuild.version=${{needs.get-args.outputs.BUILD_NUMBER}} -Dbuild.time="${{needs.get-args.outputs.DATE}}"'
@@ -70,7 +70,7 @@ jobs:
          uses: actions/setup-java@v4
          with:
             distribution: 'zulu'
-            java-version: '24'
+            java-version: '25'
 
        - name: Composite Action
          uses: ./.github/installer_composite
