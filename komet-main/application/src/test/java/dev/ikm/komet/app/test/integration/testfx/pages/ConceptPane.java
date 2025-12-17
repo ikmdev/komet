@@ -137,8 +137,10 @@ public class ConceptPane extends BasePage {
     public ConceptPane updateFullyQualifiedName(String newFullyQualifiedName) {
         robot.clickOn("Enter Name");
         waitForFxEvents();
+        waitFor(300); // Ensure field is ready
         robot.write(newFullyQualifiedName);
         waitForFxEvents();
+        waitFor(300); // Ensure text is processed
         LOG.info("Updated Fully Qualified Name to: {}", newFullyQualifiedName);
         return this;
     }
@@ -152,6 +154,7 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         robot.clickOn();
         waitForFxEvents();
+        waitFor(500); // Ensure stamp editor dialog opens
         LOG.info("Opened Stamp Editor");
         return this;
     }
@@ -161,32 +164,59 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         this.updateStatus(status);
         waitForFxEvents();
+        waitFor(200);
         this.updateModule(module);
         waitForFxEvents();
+        waitFor(200);
         this.updatePath(path);
         waitForFxEvents();
+        waitFor(200);
         robot.clickOn("CONFIRM");
         waitForFxEvents();
+        waitFor(500); // Ensure stamp is applied
         LOG.info("Updated stamp to - Status: {}, Module: {}, Path: {}", status, module, path);
         return this;
     }
 
     //update status by selecting in combobox
     public ConceptPane updateStatus(String newStatus) {
+        waitFor(500);
         robot.moveTo("Status");
         waitForFxEvents();
         robot.moveBy(100, 0); // Move right from the label to find the ComboBox
         waitForFxEvents();
         robot.clickOn();
         waitForFxEvents();
-        // Click the second occurrence of the status (in the combobox dropdown)
-        var matches = robot.lookup(newStatus).queryAll();
-        if (matches.size() > 1) {
-            // Click the second occurrence
-            robot.clickOn(matches.stream().skip(1).findFirst().get());
+        waitFor(500); // Wait for dropdown to fully open
+        
+        // Look for ListCell containing the status text (dropdown items)
+        var dropdownItems = robot.lookup(".list-cell").lookup(newStatus).queryAll();
+        if (!dropdownItems.isEmpty()) {
+            // Click the first item found in the dropdown
+            robot.clickOn(dropdownItems.iterator().next());
         } else {
-            // Fallback to first/only occurrence
-            robot.clickOn(newStatus);
+            // Fallback: try to find any occurrence that's not the label
+            var matches = robot.lookup(newStatus).queryAll();
+            if (matches.size() > 1) {
+                // Click the last occurrence (most likely to be in dropdown)
+                robot.clickOn(matches.stream().skip(matches.size() - 1).findFirst().get());
+            } else {
+                // Last resort: use arrow keys to navigate
+                int maxAttempts = 20;
+                for (int i = 0; i < maxAttempts; i++) {
+                    robot.press(KeyCode.DOWN);
+                    waitForFxEvents();
+                    robot.release(KeyCode.DOWN);
+                    waitForFxEvents();
+                    if (robot.lookup(newStatus).tryQuery().isPresent()) {
+                        robot.press(KeyCode.ENTER);
+                        waitForFxEvents();
+                        robot.release(KeyCode.ENTER);
+                        waitForFxEvents();
+                        break;
+                    }
+                }
+            }
         }
         waitForFxEvents();
         LOG.info("Updated status to: {}", newStatus);
@@ -201,14 +231,36 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         robot.clickOn();
         waitForFxEvents();
-        // Click the second occurrence of the module name (in the combobox dropdown)
-        var matches = robot.lookup(newModule).queryAll();
-        if (matches.size() > 1) {
-            // Click the second occurrence
-            robot.clickOn(matches.stream().skip(1).findFirst().get());
+        waitFor(500); // Wait for dropdown to fully open
+        
+        // Look for ListCell containing the module text (dropdown items)
+        var dropdownItems = robot.lookup(".list-cell").lookup(newModule).queryAll();
+        if (!dropdownItems.isEmpty()) {
+            // Click the first item found in the dropdown
+            robot.clickOn(dropdownItems.iterator().next());
         } else {
-            // Fallback to first/only occurrence
-            robot.clickOn(newModule);
+            // Fallback: try to find any occurrence that's not the label
+            var matches = robot.lookup(newModule).queryAll();
+            if (matches.size() > 1) {
+                // Click the last occurrence (most likely to be in dropdown)
+                robot.clickOn(matches.stream().skip(matches.size() - 1).findFirst().get());
+            } else {
+                // Last resort: use arrow keys to navigate
+                int maxAttempts = 20;
+                for (int i = 0; i < maxAttempts; i++) {
+                    robot.press(KeyCode.DOWN);
+                    waitForFxEvents();
+                    robot.release(KeyCode.DOWN);
+                    waitForFxEvents();
+                    if (robot.lookup(newModule).tryQuery().isPresent()) {
+                        robot.press(KeyCode.ENTER);
+                        waitForFxEvents();
+                        robot.release(KeyCode.ENTER);
+                        waitForFxEvents();
+                        break;
+                    }
+                }
+            }
         }
         waitForFxEvents();
         LOG.info("Updated module to: {}", newModule);
@@ -223,14 +275,23 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         robot.clickOn();
         waitForFxEvents();
-        // Click the second occurrence of the path name (in the combobox dropdown)
-        var matches = robot.lookup(newPath).queryAll();
-        if (matches.size() > 1) {
-            // Click the second occurrence
-            robot.clickOn(matches.stream().skip(1).findFirst().get());
+        waitFor(500); // Wait for dropdown to fully open
+        
+        // Look for ListCell containing the path text (dropdown items)
+        var dropdownItems = robot.lookup(".list-cell").lookup(newPath).queryAll();
+        if (!dropdownItems.isEmpty()) {
+            // Click the first item found in the dropdown
+            robot.clickOn(dropdownItems.iterator().next());
         } else {
-            // Fallback to first/only occurrence
-            robot.clickOn(newPath);
+            // Fallback: try to find any occurrence that's not the label
+            var matches = robot.lookup(newPath).queryAll();
+            if (matches.size() > 1) {
+                // Click the last occurrence (most likely to be in dropdown)
+                robot.clickOn(matches.stream().skip(matches.size() - 1).findFirst().get());
+            } else {
+                // Fallback to first/only occurrence
+                robot.clickOn(newPath);
+            }
         }
         waitForFxEvents();
         LOG.info("Updated path to: {}", newPath);
@@ -297,23 +358,29 @@ public class ConceptPane extends BasePage {
     //searches for parent concept using the search panel in concept pane
     public ConceptPane searchForParentConcept(String parentConcept) {
         // Move to and click the search field
-        robot.moveTo("enter search query");
+        robot.moveTo("Top component with score order");
+        waitForFxEvents();
+        robot.moveBy(0,-25);
         waitForFxEvents();
         robot.clickOn();
         waitForFxEvents();
+        waitFor(200);
         
         // Additional click to ensure focus
         robot.clickOn();
         waitForFxEvents();
+        waitFor(300); // Ensure field is focused and ready
               
         // Enter search text and execute search
         robot.write(parentConcept);
         waitForFxEvents(); // Wait for text to be processed
+        waitFor(500); // Ensure all characters are in the field
         
         robot.press(KeyCode.ENTER);
         waitForFxEvents();
         robot.release(KeyCode.ENTER);
         waitForFxEvents(); // Ensure Enter is processed
+        waitFor(500); // Wait for search to execute
        
         LOG.info("Searched for parent concept: {}", parentConcept);
         return this;
@@ -324,15 +391,17 @@ public class ConceptPane extends BasePage {
     public ConceptPane selectParentConcept(String parentConcept) {
         waitForFxEvents();
         
-        // Additional wait to ensure results are fully rendered
+        // Additional wait to ensure results tree is fully rendered
         waitFor(3000);
-        
+        waitForFxEvents();        
         robot.moveTo("Top component with score order");
         waitForFxEvents();
-        robot.moveBy(0,25);
+        robot.moveBy(0, 25);
         waitForFxEvents();
-        robot.doubleClickOn(parentConcept);
+        waitFor(300); // Stabilize before double-click
+        robot.doubleClickOn();
         waitForFxEvents();
+        waitFor(300); // Ensure selection is processed
 
         LOG.info("Selected parent concept: {}", parentConcept);
         return this;
@@ -344,48 +413,51 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         robot.clickOn("Search for concept");
         waitForFxEvents(); // Wait for click to be processed
+        waitFor(500); // Initial stabilization
         // Wait for search popup to appear - verify it's actually open
-        if (!waitForText("Top component with score order", 20, 500)) {
+        if (!waitForText("Top component with score order", 30, 300)) {
             LOG.error("Search popup did not appear after clicking 'Search for concept'");
             captureScreenshot("search_popup_not_appeared");
             throw new RuntimeException("Search popup failed to open");
         }
         waitForFxEvents(); // Ensure popup is stable
+        waitFor(500); // Additional stabilization for popup content
         LOG.info("Clicked Search for concept and popup opened");
         return this;
     }
 
     //drag to reference component search field
     public ConceptPane dragToReferenceComponentField() {
-        waitFor(4000); // Wait for UI to stabilize
-        // Initial mouse movement to activate mouse interactions
+        waitFor(1000); // Initial stabilization
+
+        
+        // Locate the drag source
         robot.moveTo("SORT BY: TOP COMPONENT");
         waitForFxEvents();
-        // Move to center of screen first to ensure mouse is active
-        robot.moveBy(100, 0);
+        robot.moveBy(0, 210); // Move down to the element in the tree
         waitForFxEvents();
-        robot.moveBy(-100, 0);
-        waitForFxEvents();
-        // Now move to the drag source
-        robot.moveTo("SORT BY: TOP COMPONENT");
-        waitForFxEvents();
-        robot.moveBy(0, 210); // Move down to the next element in the tree
-        waitForFxEvents();
-        // Single click to ensure element is focused
-        robot.clickOn();
-        waitForFxEvents();
-        // Press and hold at current position for drag
+        waitFor(300); // Stabilize on element
+        
+            // Begin drag        
         robot.press(MouseButton.PRIMARY);
         waitForFxEvents();
-        // Small movement to initiate drag
-        robot.moveBy(0, 5);
+        waitFor(300); // Hold before moving
+        
+        // Small movement to initiate drag gesture
+        robot.moveBy(0, 10);
         waitForFxEvents();
-        // Move to target while holding
+        waitFor(200);
+        
+        // Continue dragging to target
         robot.moveTo("🔍  Search");
         waitForFxEvents();
+        waitFor(300); // Ensure we're at target
+        
         // Release to drop
         robot.release(MouseButton.PRIMARY);
         waitForFxEvents();
+        waitFor(500); // Ensure drop is processed
+        
         LOG.info("Dragged concept to Reference Component field");
         return this;
     }

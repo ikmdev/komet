@@ -676,8 +676,8 @@ public class DeXAuthoringProcessTest {
                 try {
                         reporter.logBeforeStep(
                                         "Step 33: Click Confirm and verify the correct reference component populates");
-                        robot.clickOn("CONFIRM");
                         navigator.clickNextgenSearch(); // close search panel
+                        robot.clickOn("CONFIRM");
                         //horizontalScroll(robot, KeyCode.RIGHT, 10); // scroll right to see populated reference component
                         // ASSERT THAT THE CORRECT REFERENCE COMPONENT POPULATES
                         String populatedReferenceComponent = conceptPane.getPopulatedReferenceComponent();

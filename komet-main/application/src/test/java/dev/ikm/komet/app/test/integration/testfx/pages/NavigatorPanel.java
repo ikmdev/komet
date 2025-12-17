@@ -219,6 +219,7 @@ public class NavigatorPanel extends BasePage {
         waitForFxEvents();
         robot.release(KeyCode.ENTER);
         waitForFxEvents(); // Ensure Enter is processed
+        waitFor(1000);
         LOG.info("Searched for: {}", query);
         return this;
     }
