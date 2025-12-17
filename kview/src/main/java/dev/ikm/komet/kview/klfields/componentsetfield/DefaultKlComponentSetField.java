@@ -34,7 +34,7 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
     public DefaultKlComponentSetField(ObservableField<IntIdSet> observableComponentSetField, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
         final Region node = switch (stamp4field.lastVersion().uncommitted()) {
             case true -> KLComponentControlFactory
-                    .createTypeAheadComponentListControl(observableView.calculator());
+                    .createComponentListControl(observableView.calculator());
             case false -> new KLReadOnlyComponentSetControl();
         };
         super(observableComponentSetField, observableView, stamp4field, node);

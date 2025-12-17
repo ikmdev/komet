@@ -90,9 +90,13 @@
 
     -fx-padding: 0.25em 0.833333em 0.25em  0.833333em; /* 4 10 4 10         */
 }
-
+/* Dark */
 .button.dark {
     -fx-background-color: -Grey-11;
+}
+
+.button.dark:hover {
+    -fx-background-color: derive(-Grey-11, 5%);
 }
 
 /* Default */

@@ -94,8 +94,6 @@ public class TitledPaneHelper {
      * default params wrapper method for putArrowOnRight
      * @param pane
      */
-
-
     public static void putArrowOnRight(TitledPane pane) {
 Platform.runLater(() ->{putArrowOnRight(pane, DEFAULT_BUTTON_SPACING, ".title", ".arrow-button");});
          }

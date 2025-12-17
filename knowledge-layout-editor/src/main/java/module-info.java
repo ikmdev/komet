@@ -15,7 +15,7 @@ import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-module dev.ikm.komet.kleditorapp {
+open module dev.ikm.komet.kleditorapp {
     requires dev.ikm.komet.kview;
 
     // JPro related modules
@@ -44,7 +44,7 @@ module dev.ikm.komet.kleditorapp {
     requires dev.ikm.tinkar.schema;
 
     exports dev.ikm.komet.kleditorapp.view;
-    opens dev.ikm.komet.kleditorapp.view to javafx.fxml, dev.ikm.komet.application;
+    exports dev.ikm.komet.kleditorapp.view.control;
 
     uses EntityKlWindowFactory;
 }

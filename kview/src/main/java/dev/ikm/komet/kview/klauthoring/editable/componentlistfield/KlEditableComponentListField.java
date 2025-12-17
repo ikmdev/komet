@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.klauthoring.editable.componentlistfield;
 
-import static dev.ikm.komet.kview.controls.KLComponentControlFactory.createTypeAheadComponentListControl;
+import static dev.ikm.komet.kview.controls.KLComponentControlFactory.createComponentListControl;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableField.Editable;
 import dev.ikm.komet.framework.observable.ObservableStamp;
@@ -40,7 +40,7 @@ public class KlEditableComponentListField extends BaseDefaultKlField<IntIdList> 
             ObservableView observableView,
             ObservableStamp stamp4field) {
 
-        KLComponentCollectionControl node = createTypeAheadComponentListControl(observableView.calculator());
+        KLComponentCollectionControl node = createComponentListControl(observableView.calculator());
         super(observableFieldEditable, observableView, stamp4field, node);
         node.setTitle(getTitle());
         //setupEditableBinding(editableField, node);

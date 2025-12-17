@@ -1,6 +1,7 @@
 package dev.ikm.komet.framework.observable.collection;
 
 import javafx.collections.ModifiableObservableListBase;
+import org.eclipse.collections.api.list.primitive.ImmutableIntList;
 import org.eclipse.collections.api.list.primitive.MutableIntList;
 import org.eclipse.collections.impl.factory.primitive.IntLists;
 
@@ -277,4 +278,81 @@ public class ObservableIntList extends ModifiableObservableListBase<Integer> {
         }
         return false;
     }
+
+    /**
+     * Replaces the entire contents of this list with the specified primitive int array.
+     * <p>
+     * This is a high-performance bulk operation that:
+     * <ul>
+     *   <li>Clears the existing list</li>
+     *   <li>Adds all new values in one operation</li>
+     *   <li>Fires a single change notification to listeners</li>
+     * </ul>
+     *
+     * <p><b>Performance Benefits for Large Datasets:</b>
+     * <ul>
+     *   <li><strong>Single Change Notification:</strong> Fires only one change event instead of N events</li>
+     *   <li><strong>No Boxing:</strong> Works directly with primitive int array</li>
+     *   <li><strong>Optimized Memory Copy:</strong> Eclipse Collections can use System.arraycopy internally</li>
+     * </ul>
+     *
+     * @param values the new primitive int values to replace the list contents
+     */
+    public void setAll(int... values) {
+        beginChange();
+        try {
+            int oldSize = backingList.size();
+            // Capture old values before clearing
+            MutableIntList oldValues = IntLists.mutable.withAll(backingList);
+            
+            backingList.clear();
+            backingList.addAll(values);
+
+            // Notify listeners of the change
+            if (oldValues.notEmpty()) {
+                // Convert to java.util.List<Integer>
+                java.util.List<Integer> removedList = new java.util.ArrayList<>(oldValues.size());
+                oldValues.forEach(removedList::add);
+                nextRemove(0, removedList);
+            }
+            if (values.length > 0) {
+                nextAdd(0, values.length);
+            }
+        } finally {
+            endChange();
+        }
+    }
+
+    /**
+     * Replaces the entire contents of this list with values from a MutableIntList.
+     * <p>
+     * This variant is useful when you have an Eclipse Collections int list that you want
+     * to use to replace the observable list's contents.
+     *
+     * @param values the MutableIntList containing the new values
+     */
+    public void setAll(ImmutableIntList values) {
+        beginChange();
+        try {
+            // Capture old values before clearing
+            MutableIntList oldValues = IntLists.mutable.withAll(backingList);
+
+            backingList.clear();
+            backingList.addAll(values);
+
+            // Notify listeners of the change
+            if (oldValues.notEmpty()) {
+                // Convert to java.util.List<Integer>
+                java.util.List<Integer> removedList = new java.util.ArrayList<>(oldValues.size());
+                oldValues.forEach(removedList::add);
+                nextRemove(0, removedList);
+            }
+            if (values.notEmpty()) {
+                nextAdd(0, values.size());
+            }
+        } finally {
+            endChange();
+        }
+    }
 }
+

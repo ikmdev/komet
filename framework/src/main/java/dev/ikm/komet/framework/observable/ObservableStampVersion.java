@@ -1,9 +1,9 @@
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityBinding;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -61,8 +61,8 @@ public final class ObservableStampVersion
     }
     private FeatureWrapper makeVersionStatusField() {
         FeatureKey locator = FeatureKey.Version.StampStatus(this.nid());
-        return new FeatureWrapper(this.stateProperty(), Binding.Stamp.Version.pattern().nid(),
-                Binding.Stamp.Version.statusFieldDefinitionIndex(),this, locator);
+        return new FeatureWrapper(this.stateProperty(), EntityBinding.Stamp.Version.pattern().nid(),
+                EntityBinding.Stamp.Version.statusFieldDefinitionIndex(),this, locator);
     }
 
 
@@ -75,8 +75,8 @@ public final class ObservableStampVersion
     }
     private FeatureWrapper makeVersionTimeField() {
         FeatureKey locator = FeatureKey.Version.StampTime(nid());
-        return new FeatureWrapper(this.timeProperty(), Binding.Stamp.Version.pattern().nid(),
-                Binding.Stamp.Version.timeFieldDefinitionIndex(), this, locator);
+        return new FeatureWrapper(this.timeProperty(), EntityBinding.Stamp.Version.pattern().nid(),
+                EntityBinding.Stamp.Version.timeFieldDefinitionIndex(), this, locator);
     }
 
     // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
@@ -88,8 +88,8 @@ public final class ObservableStampVersion
     }
     private FeatureWrapper makeVersionAuthorFeature() {
         FeatureKey locator = FeatureKey.Version.StampAuthor(this.nid());
-        return new FeatureWrapper(this.authorProperty(), Binding.Stamp.Version.pattern().nid(),
-                Binding.Stamp.Version.authorFieldDefinitionIndex(),this, locator);
+        return new FeatureWrapper(this.authorProperty(), EntityBinding.Stamp.Version.pattern().nid(),
+                EntityBinding.Stamp.Version.authorFieldDefinitionIndex(),this, locator);
     }
 
     // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
@@ -101,8 +101,8 @@ public final class ObservableStampVersion
     }
     private FeatureWrapper makeVersionModuleFeature() {
         FeatureKey locator = FeatureKey.Version.StampModule(this.nid());
-        return new FeatureWrapper(this.moduleProperty(), Binding.Stamp.Version.pattern().nid(),
-                Binding.Stamp.Version.moduleFieldDefinitionIndex(),this, locator);
+        return new FeatureWrapper(this.moduleProperty(), EntityBinding.Stamp.Version.pattern().nid(),
+                EntityBinding.Stamp.Version.moduleFieldDefinitionIndex(),this, locator);
     }
 
 
@@ -115,8 +115,8 @@ public final class ObservableStampVersion
     }
     private FeatureWrapper makeVersionPathField() {
         FeatureKey locator = FeatureKey.Version.StampPath(this.nid());
-        return new FeatureWrapper(this.pathProperty(), Binding.Stamp.Version.pattern().nid(),
-                Binding.Stamp.Version.pathFieldDefinitionIndex(),this, locator);
+        return new FeatureWrapper(this.pathProperty(), EntityBinding.Stamp.Version.pattern().nid(),
+                EntityBinding.Stamp.Version.pathFieldDefinitionIndex(),this, locator);
     }
 
     @Override

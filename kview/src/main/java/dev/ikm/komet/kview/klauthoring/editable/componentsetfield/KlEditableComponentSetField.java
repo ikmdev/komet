@@ -18,7 +18,7 @@ public class KlEditableComponentSetField extends BaseDefaultKlField<IntIdSet> im
      * @param stamp4field the stamp for UI state determination
      */
     public KlEditableComponentSetField(ObservableField.Editable<IntIdSet> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
-        final KLComponentCollectionControl node = KLComponentControlFactory.createTypeAheadComponentListControl(observableView.calculator());
+        final KLComponentCollectionControl node = KLComponentControlFactory.createComponentListControl(observableView.calculator());
         super(observableFieldEditable, observableView, stamp4field, node);
 
         // bi directionally bind editable UI control to the Editable.editableValueProperty().

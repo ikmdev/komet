@@ -23,6 +23,8 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.primitive.LongLists;
+
 import java.util.UUID;
 
 
@@ -267,7 +269,7 @@ public class SemanticWriter implements Writer {
                 .nid(semanticNid)
                 .leastSignificantBits(primordialUUID.getLeastSignificantBits())
                 .mostSignificantBits(primordialUUID.getMostSignificantBits())
-                .additionalUuidLongs(additionalLongs)
+                .additionalUuidLongs(LongLists.immutable.of(additionalLongs))
                 .patternNid(patternNid)
                 .referencedComponentNid(referencedComponentNid)
                 .versions(versions.toImmutable())

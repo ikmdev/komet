@@ -1,5 +1,7 @@
-package dev.ikm.komet.kleditorapp.view;
+package dev.ikm.komet.kleditorapp.view.control;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -7,10 +9,11 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-public class PatternViewControl extends Region {
+public class PatternViewControl extends EditorWindowBaseControl {
+    public static final String DEFAULT_STYLE_CLASS = "pattern-view";
+
     private final VBox patternContainer = new VBox();
     private final Label patternTitle = new Label();
 
@@ -27,6 +30,13 @@ public class PatternViewControl extends Region {
         fields.addListener(this::onFieldAdded);
 
         getChildren().add(patternContainer);
+
+        getStyleClass().add(DEFAULT_STYLE_CLASS);
+    }
+
+    @Override
+    public void delete() {
+        getParentSection().getPatterns().remove(this);
     }
 
     private void onFieldAdded(ListChangeListener.Change<? extends String> change) {
@@ -61,6 +71,12 @@ public class PatternViewControl extends Region {
         patternContainer.resizeRelocate(leftInsets, topInsets,
                 width - leftInsets - rightInsets, height - topInsets - bottomInsets);
     }
+
+    // -- parent section
+    private ReadOnlyObjectWrapper<SectionViewControl> parentSection = new ReadOnlyObjectWrapper<>();
+    public SectionViewControl getParentSection() { return parentSection.get(); }
+    public ReadOnlyObjectProperty<SectionViewControl> parentSectionProperty() { return parentSection.getReadOnlyProperty(); }
+    void setParentSection(SectionViewControl parentSection) { this.parentSection.set(parentSection); }
 
     // -- title
     private final StringProperty title = new SimpleStringProperty();

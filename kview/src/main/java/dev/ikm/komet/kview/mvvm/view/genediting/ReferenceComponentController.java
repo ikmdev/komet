@@ -2,7 +2,6 @@ package dev.ikm.komet.kview.mvvm.view.genediting;
 
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.common.alert.*;
-import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -66,7 +65,7 @@ public class ReferenceComponentController {
         referenceComponentVBox.setSpacing(8.0);
         referenceComponentVBox.getChildren().clear();
         confirmButton.setDisable(true);
-        klComponentControl = KLComponentControlFactory.createTypeAheadComponentControl(genEditingViewModel.getViewProperties().calculator());
+        klComponentControl = KLComponentControlFactory.createComponentControl(genEditingViewModel.getViewProperties().calculator());
         klComponentControl.setTitle("Reference component");
         ObjectProperty<EntityProxy> refComponentProperty = genEditingViewModel.getProperty(REF_COMPONENT);
         klComponentControl.entityProperty().bindBidirectional(refComponentProperty);

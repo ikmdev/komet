@@ -11,8 +11,6 @@ import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.property.ObjectProperty;
-import javafx.scene.Parent;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 
@@ -20,7 +18,7 @@ public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
 
     public DefaultKlComponentField(ObservableField<EntityProxy> observableComponentField, ObservableView observableView, ObservableStamp stamp4field) {
         Region node = switch (stamp4field.lastVersion().uncommitted()) {
-            case true -> KLComponentControlFactory.createTypeAheadComponentControl(
+            case true -> KLComponentControlFactory.createComponentControl(
                     observableView.calculator());
             case false -> new KLReadOnlyComponentControl();
         };

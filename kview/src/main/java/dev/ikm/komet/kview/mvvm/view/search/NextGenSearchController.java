@@ -236,7 +236,7 @@ public class NextGenSearchController {
                         new SearchCellDescriptionSemantic(getViewProperties(), getJournalTopic(), getViewProperties().parentView()));
             case NID ->
                 searchResultsListView.setCellFactory((Callback<ListView<Integer>, ListCell<Integer>>) param ->
-                        new SearchCellNid(getViewProperties(), getViewProperties().parentView(), getJournalTopic()));
+                        new SearchCellNid(getViewProperties(),  getJournalTopic(), getViewProperties().parentView()));
         }
 
         currentSearchResultType = newSearchResultType;

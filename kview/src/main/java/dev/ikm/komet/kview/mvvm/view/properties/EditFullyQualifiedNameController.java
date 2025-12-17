@@ -37,14 +37,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -189,17 +182,17 @@ public class EditFullyQualifiedNameController implements BasicController {
     }
 
     private void populateDialectComboBoxes() {
-        // currently no UNACCEPTABLE in TinkarTerm
-        Entity<? extends EntityVersion> acceptable = EntityService.get().getEntityFast(TinkarTerm.ACCEPTABLE);
-        Entity<? extends EntityVersion> preferred = EntityService.get().getEntityFast(TinkarTerm.PREFERRED);
+        // Get acceptable and preferred concepts
+        ConceptEntity acceptable = EntityHandle.getConceptOrThrow(TinkarTerm.ACCEPTABLE.nid());
+        ConceptEntity preferred = EntityHandle.getConceptOrThrow(TinkarTerm.PREFERRED.nid());
 
         // each combo box has a separate list instance
-        setupComboBox(dialectComboBox1, Arrays.asList(Entity.getFast(acceptable.nid()), Entity.getFast(preferred.nid())));
-        dialectComboBox1.getSelectionModel().select(Entity.getFast(acceptable.nid()));
-        setupComboBox(dialectComboBox2, Arrays.asList(Entity.getFast(acceptable.nid()), Entity.getFast(preferred.nid())));
-        dialectComboBox2.getSelectionModel().select(Entity.getFast(preferred.nid()));
-        setupComboBox(dialectComboBox3, Arrays.asList(Entity.getFast(acceptable.nid()), Entity.getFast(preferred.nid())));
-        dialectComboBox3.getSelectionModel().select(Entity.getFast(preferred.nid()));
+        setupComboBox(dialectComboBox1, Arrays.asList(acceptable, preferred));
+        dialectComboBox1.getSelectionModel().select(acceptable);
+        setupComboBox(dialectComboBox2, Arrays.asList(acceptable, preferred));
+        dialectComboBox2.getSelectionModel().select(preferred);
+        setupComboBox(dialectComboBox3, Arrays.asList(acceptable, preferred));
+        dialectComboBox3.getSelectionModel().select(preferred);
     }
 
     public void setEditFullyQualifiedNameTitleLabel(String editFullyQualifiedNameTitleLabel) {
@@ -302,7 +295,9 @@ public class EditFullyQualifiedNameController implements BasicController {
             PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
 
             int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
-            ConceptFacade caseSigConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexCaseSig);
+
+            ConceptFacade caseSigConceptFacade = FieldHandle.of(latestEntityVersion.get().fieldValues().get(indexCaseSig)).expectConcept();
+
             findByNid(caseSignificanceComboBox.getItems(), caseSigConceptFacade.nid())
                     .ifPresent(concept -> fqnViewModel.setPropertyValue(CASE_SIGNIFICANCE, concept));
 
@@ -311,7 +306,7 @@ public class EditFullyQualifiedNameController implements BasicController {
             setupComboBox(languageComboBox, fetchDescendentsOfConcept(viewProperties, TinkarTerm.LANGUAGE.publicId()));
             // get the language (e.g. 'English language')
             int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
-            ConceptFacade langConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexLang);
+            ConceptFacade langConceptFacade = FieldHandle.of(latestEntityVersion.get().fieldValues().get(indexLang)).expectConcept();
             findByNid(languageComboBox.getItems(), langConceptFacade.nid())
                     .ifPresent(concept -> fqnViewModel.setPropertyValue(LANGUAGE, concept));
 
@@ -319,7 +314,7 @@ public class EditFullyQualifiedNameController implements BasicController {
             setupComboBox(typeDisplayComboBox, fetchDescendentsOfConcept(viewProperties, DESCRIPTION_TYPE.publicId()));
             //Set selected value for DESCRIPTION TYPE
             int indexType = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE);
-            ConceptFacade typeConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexType);
+            ConceptFacade typeConceptFacade = FieldHandle.of(latestEntityVersion.get().fieldValues().get(indexType)).expectConcept();
             findByNid(typeDisplayComboBox.getItems(), typeConceptFacade.nid())
                     .ifPresent(concept -> fqnViewModel.setPropertyValue(NAME_TYPE, concept));
 
