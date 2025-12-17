@@ -631,8 +631,10 @@
 
     <repositories>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <id>tinkar-nexus</id>
+            <url>https://nexus.tinkar.org/repository/ike-public/</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
         </repository>
     </repositories>
 
