@@ -12,7 +12,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
-public class FieldViewControl extends EditorWindowBaseControl {
+public class FieldViewControl extends GridBaseControl {
     public static final String DEFAULT_STYLE_CLASS = "field-view";
 
     private final HBox mainContainer = new HBox();
@@ -73,37 +73,4 @@ public class FieldViewControl extends EditorWindowBaseControl {
     public int getFieldNumber() { return fieldNumber.get(); }
     public IntegerProperty fieldNumberProperty() { return fieldNumber; }
     public void setFieldNumber(int number) { fieldNumber.set(number); }
-
-    // -- column Index
-    private final IntegerProperty columnIndex = new SimpleIntegerProperty(){
-        @Override
-        protected void invalidated() {
-            GridPane.setColumnIndex(FieldViewControl.this, get());
-        }
-    };
-    public int getColumnIndex() { return columnIndex.get(); }
-    public IntegerProperty columnIndexProperty() { return columnIndex; }
-    public void setColumnIndex(int index) { columnIndex.set(index); }
-
-    // -- row index
-    private final IntegerProperty rowIndex = new SimpleIntegerProperty(){
-        @Override
-        protected void invalidated() {
-            GridPane.setRowIndex(FieldViewControl.this, get());
-        }
-    };
-    public int getRowIndex() { return rowIndex.get(); }
-    public IntegerProperty rowIndexProperty() { return rowIndex; }
-    public void setRowIndex(int index) { rowIndex.set(index); }
-
-    // -- column span
-    private final IntegerProperty columnSpan = new SimpleIntegerProperty(1){
-        @Override
-        protected void invalidated() {
-            GridPane.setColumnSpan(FieldViewControl.this, get());
-        }
-    };
-    public int getColumnSpan() { return columnSpan.get(); }
-    public IntegerProperty columnSpanProperty() { return columnSpan; }
-    public void setColumnSpan(int index) { columnSpan.set(index); }
 }

@@ -19,7 +19,7 @@ import javafx.scene.layout.VBox;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PatternViewControl extends EditorWindowBaseControl {
+public class PatternViewControl extends GridBaseControl {
     public static final String DEFAULT_STYLE_CLASS = "pattern-view";
 
     private final VBox patternContainer = new VBox();
@@ -105,39 +105,6 @@ public class PatternViewControl extends EditorWindowBaseControl {
     public int getNumberColumns() { return numberColumns.get(); }
     public IntegerProperty numberColumnsProperty() { return numberColumns; }
     public void setNumberColumns(int number) { numberColumns.set(number); }
-
-    // -- column Index
-    private final IntegerProperty columnIndex = new SimpleIntegerProperty(){
-        @Override
-        protected void invalidated() {
-            GridPane.setColumnIndex(PatternViewControl.this, get());
-        }
-    };
-    public int getColumnIndex() { return columnIndex.get(); }
-    public IntegerProperty columnIndexProperty() { return columnIndex; }
-    public void setColumnIndex(int index) { columnIndex.set(index); }
-
-    // -- row index
-    private final IntegerProperty rowIndex = new SimpleIntegerProperty(){
-        @Override
-        protected void invalidated() {
-            GridPane.setRowIndex(PatternViewControl.this, get());
-        }
-    };
-    public int getRowIndex() { return rowIndex.get(); }
-    public IntegerProperty rowIndexProperty() { return rowIndex; }
-    public void setRowIndex(int index) { rowIndex.set(index); }
-
-    // -- column span
-    private final IntegerProperty columnSpan = new SimpleIntegerProperty(1){
-        @Override
-        protected void invalidated() {
-            GridPane.setColumnSpan(PatternViewControl.this, get());
-        }
-    };
-    public int getColumnSpan() { return columnSpan.get(); }
-    public IntegerProperty columnSpanProperty() { return columnSpan; }
-    public void setColumnSpan(int index) { columnSpan.set(index); }
 
     // -- fields
     private final ObservableList<FieldViewControl> fields = FXCollections.observableArrayList();

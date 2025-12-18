@@ -164,6 +164,8 @@ public class PatternPropertiesPane extends ControlBasePropertiesPane<PatternView
     @Override
     protected void doInit(PatternViewControl control) {
         if (previouslyShownControl != null) {
+            previouslyShownControl.numberColumnsProperty().unbind();
+
             previouslyShownControl.columnIndexProperty().unbind();
             previouslyShownControl.rowIndexProperty().unbind();
             previouslyShownControl.columnSpanProperty().unbind();

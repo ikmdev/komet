@@ -97,6 +97,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
     public void doInit(SectionViewControl section) {
         if (previouslyShownControl != null) {
             sectionNameTextField.textProperty().unbindBidirectional(previouslyShownControl.nameProperty());
+            previouslyShownControl.numberColumnsProperty().unbind();
         }
         sectionNameTextField.textProperty().bindBidirectional(section.nameProperty());
         section.numberColumnsProperty().bind(columnsComboBox.valueProperty());
