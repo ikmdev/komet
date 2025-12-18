@@ -1,21 +1,30 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PatternViewControl extends EditorWindowBaseControl {
     public static final String DEFAULT_STYLE_CLASS = "pattern-view";
 
     private final VBox patternContainer = new VBox();
     private final Label patternTitle = new Label();
-    private final VBox contentContainer = new VBox();
+    private final GridPane contentContainer = new GridPane();
 
     public PatternViewControl() {
         patternContainer.getStyleClass().add("pattern-container");
@@ -27,8 +36,38 @@ public class PatternViewControl extends EditorWindowBaseControl {
 
         getChildren().add(patternContainer);
 
+        fields.addListener(this::onFieldsChanged);
+
+        numberColumns.subscribe(this::updateNumberOfColumns);
+
+        contentContainer.setHgap(5);
+        contentContainer.setVgap(0);
+
         patternTitle.getStyleClass().add("pattern-title");
         getStyleClass().add(DEFAULT_STYLE_CLASS);
+    }
+
+    private void updateNumberOfColumns(Number numberColumns) {
+        List<ColumnConstraints> columns = new ArrayList<>();
+        for (int i = 0; i < numberColumns.intValue(); ++i) {
+            ColumnConstraints columnConstraints = new ColumnConstraints();
+            columnConstraints.setHgrow(Priority.ALWAYS);
+            columnConstraints.setPercentWidth(100 / ((double)numberColumns.intValue()));
+            columns.add(columnConstraints);
+        }
+        contentContainer.getColumnConstraints().setAll(columns);
+    }
+
+    private void onFieldsChanged(ListChangeListener.Change<? extends FieldViewControl> change) {
+        while (change.next()) {
+            if (change.wasAdded()) {
+                change.getAddedSubList().forEach(pattern -> {
+                    pattern.setParentPattern(this);
+
+                    pattern.setRowIndex(fields.indexOf(pattern));
+                });
+            }
+        }
     }
 
     @Override
@@ -60,6 +99,45 @@ public class PatternViewControl extends EditorWindowBaseControl {
     public String getTitle() { return title.get(); }
     public StringProperty titleProperty() { return title; }
     public void setTitle(String title) { this.title.set(title); }
+
+    // -- number columns
+    private final IntegerProperty numberColumns = new SimpleIntegerProperty(1);
+    public int getNumberColumns() { return numberColumns.get(); }
+    public IntegerProperty numberColumnsProperty() { return numberColumns; }
+    public void setNumberColumns(int number) { numberColumns.set(number); }
+
+    // -- column Index
+    private final IntegerProperty columnIndex = new SimpleIntegerProperty(){
+        @Override
+        protected void invalidated() {
+            GridPane.setColumnIndex(PatternViewControl.this, get());
+        }
+    };
+    public int getColumnIndex() { return columnIndex.get(); }
+    public IntegerProperty columnIndexProperty() { return columnIndex; }
+    public void setColumnIndex(int index) { columnIndex.set(index); }
+
+    // -- row index
+    private final IntegerProperty rowIndex = new SimpleIntegerProperty(){
+        @Override
+        protected void invalidated() {
+            GridPane.setRowIndex(PatternViewControl.this, get());
+        }
+    };
+    public int getRowIndex() { return rowIndex.get(); }
+    public IntegerProperty rowIndexProperty() { return rowIndex; }
+    public void setRowIndex(int index) { rowIndex.set(index); }
+
+    // -- column span
+    private final IntegerProperty columnSpan = new SimpleIntegerProperty(1){
+        @Override
+        protected void invalidated() {
+            GridPane.setColumnSpan(PatternViewControl.this, get());
+        }
+    };
+    public int getColumnSpan() { return columnSpan.get(); }
+    public IntegerProperty columnSpanProperty() { return columnSpan; }
+    public void setColumnSpan(int index) { columnSpan.set(index); }
 
     // -- fields
     private final ObservableList<FieldViewControl> fields = FXCollections.observableArrayList();

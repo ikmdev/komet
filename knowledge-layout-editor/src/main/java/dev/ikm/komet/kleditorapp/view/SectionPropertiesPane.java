@@ -24,8 +24,6 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
     private final TextField sectionNameTextField;
     private final ComboBox<Integer> columnsComboBox;
 
-    private final ObservableList<Integer> columnsList = FXCollections.observableArrayList(List.of(1, 2, 3));
-
     public SectionPropertiesPane() {
         // Section name container
         VBox sectionNameContainer = new VBox();
@@ -76,7 +74,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
 
         // ComboBox in grid
         columnsComboBox = new ComboBox<>();
-        columnsComboBox.setItems(columnsList);
+        columnsComboBox.setItems(FXCollections.observableArrayList(List.of(1, 2, 3)));
         columnsComboBox.getSelectionModel().select((Integer)1);
         columnsComboBox.setMaxWidth(Double.MAX_VALUE);
         gridPane.add(columnsComboBox, 1, 0);
@@ -101,5 +99,6 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
             sectionNameTextField.textProperty().unbindBidirectional(previouslyShownControl.nameProperty());
         }
         sectionNameTextField.textProperty().bindBidirectional(section.nameProperty());
+        section.numberColumnsProperty().bind(columnsComboBox.valueProperty());
     }
 }

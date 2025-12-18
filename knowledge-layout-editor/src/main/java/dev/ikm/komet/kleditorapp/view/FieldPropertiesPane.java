@@ -1,6 +1,8 @@
 package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
+import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -11,21 +13,87 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 
+import java.util.List;
+
 public class FieldPropertiesPane extends ControlBasePropertiesPane<FieldViewControl> {
     public static final String DEFAULT_STYLE_CLASS = "field-properties";
 
     private final VBox fieldMainContainer = new VBox();
     private final ComboBox displayComboBox;
-    private final ComboBox editorComboBox;
+
+    private final ComboBox<Integer> columnPositionCB = new ComboBox<>();
+    private final ComboBox<Integer> rowPositionCB = new ComboBox<>();
+    private final ComboBox<Integer> columnSpanCB = new ComboBox<>();
 
     public FieldPropertiesPane() {
         VBox titleContainer = new VBox();
         titleContainer.getStyleClass().add("title-container");
         titleContainer.setSpacing(4);
 
+        // "POSITIONING" label
+        Label positioningLabel = new Label("POSITIONING");
+        positioningLabel.getStyleClass().add("group-title");
+
         // Separator
         Separator separator = new Separator();
         separator.setPrefWidth(200);
+
+        // GridPane
+        GridPane positioningGridPane = new GridPane();
+        positioningGridPane.setHgap(8);
+        positioningGridPane.setVgap(8);
+
+        // Column constraints
+        ColumnConstraints positionColumnConstraints1 = new ColumnConstraints();
+        positionColumnConstraints1.setMinWidth(10);
+        positionColumnConstraints1.setPrefWidth(100);
+
+        ColumnConstraints positionColumnConstraints2 = new ColumnConstraints();
+        positionColumnConstraints2.setMinWidth(10);
+        positionColumnConstraints2.setHgrow(Priority.ALWAYS);
+
+        positioningGridPane.getColumnConstraints().addAll(positionColumnConstraints1, positionColumnConstraints2);
+
+        for (int i = 0; i < 3; i++) {
+            RowConstraints row = new RowConstraints();
+            row.setMinHeight(10);
+            row.setPrefHeight(30);
+            positioningGridPane.getRowConstraints().add(row);
+        }
+
+        // Column Position
+        Label columnPositionLabel = new Label("Column Position");
+        GridPane.setHalignment(columnPositionLabel, HPos.RIGHT);
+        positioningGridPane.add(columnPositionLabel, 0, 0);
+
+        // Column Position ComboBox
+        columnPositionCB.setItems(FXCollections.observableArrayList(List.of(1, 2, 3)));
+        columnPositionCB.setMaxWidth(Double.MAX_VALUE);
+        positioningGridPane.add(columnPositionCB, 1, 0);
+
+        // Row Position
+        Label rowLabel = new Label("Row Position");
+        GridPane.setHalignment(rowLabel, HPos.RIGHT);
+        positioningGridPane.add(rowLabel, 0, 1);
+
+        // Row Position ComboBox
+        rowPositionCB.setItems((FXCollections.observableArrayList(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))));
+        rowPositionCB.setMaxWidth(Double.MAX_VALUE);
+        positioningGridPane.add(rowPositionCB, 1, 1);
+
+        // Column Span
+        Label columnSpanLabel = new Label("Column Span");
+        GridPane.setHalignment(columnSpanLabel, HPos.RIGHT);
+        positioningGridPane.add(columnSpanLabel, 0, 2);
+
+        // Column Span ComboBox
+        columnSpanCB.setItems((FXCollections.observableArrayList(List.of(1, 2, 3))));
+        columnSpanCB.setMaxWidth(Double.MAX_VALUE);
+        positioningGridPane.add(columnSpanCB, 1, 2);
+
+        // Separator
+        Separator separator2 = new Separator();
+        separator2.setPrefWidth(200);
 
         // "INTERACTION" label
         Label gridTitleLabel = new Label("INTERACTION");
@@ -60,28 +128,17 @@ public class FieldPropertiesPane extends ControlBasePropertiesPane<FieldViewCont
         GridPane.setHalignment(displayLabel, HPos.RIGHT);
         gridPane.add(displayLabel, 0, 0);
 
-        // ComboBox in grid
+        // "Display" ComboBox in grid
         displayComboBox = new ComboBox<>();
-//        displayComboBox.setItems(columnsList);
-//        displayComboBox.getSelectionModel().select((Integer)1);
         displayComboBox.setMaxWidth(Double.MAX_VALUE);
         gridPane.add(displayComboBox, 1, 0);
-
-        // "Editor" label in grid
-        Label editorLabel = new Label("Editor");
-        GridPane.setHalignment(editorLabel, HPos.RIGHT);
-        gridPane.add(editorLabel, 0, 1);
-
-        // ComboBox in grid
-        editorComboBox = new ComboBox<>();
-//        displayComboBox.setItems(columnsList);
-//        displayComboBox.getSelectionModel().select((Integer)1);
-        editorComboBox.setMaxWidth(Double.MAX_VALUE);
-        gridPane.add(editorComboBox, 1, 1);
 
         fieldMainContainer.getChildren().addAll(
                 titleContainer,
                 separator,
+                positioningLabel,
+                positioningGridPane,
+                separator2,
                 gridTitleLabel,
                 gridPane
         );
@@ -95,5 +152,25 @@ public class FieldPropertiesPane extends ControlBasePropertiesPane<FieldViewCont
 
     @Override
     protected void doInit(FieldViewControl control) {
+        if (previouslyShownControl != null) {
+            previouslyShownControl.columnIndexProperty().unbind();
+            previouslyShownControl.rowIndexProperty().unbind();
+            previouslyShownControl.columnSpanProperty().unbind();
+        }
+
+        columnPositionCB.setValue(control.getColumnIndex() + 1);
+        control.columnIndexProperty().bind(Bindings.createIntegerBinding(
+                () -> columnPositionCB.getValue() - 1,
+                columnPositionCB.valueProperty()
+        ));
+
+        rowPositionCB.setValue(control.getRowIndex() + 1);
+        control.rowIndexProperty().bind(Bindings.createIntegerBinding(
+                () -> rowPositionCB.getValue() - 1,
+                rowPositionCB.valueProperty()
+        ));
+
+        columnSpanCB.setValue(control.getColumnSpan());
+        control.columnSpanProperty().bind(columnSpanCB.valueProperty());
     }
 }

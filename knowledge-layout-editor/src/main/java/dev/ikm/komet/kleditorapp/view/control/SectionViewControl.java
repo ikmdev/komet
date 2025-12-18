@@ -3,9 +3,11 @@ package dev.ikm.komet.kleditorapp.view.control;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -19,9 +21,13 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import static dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell.KL_EDITOR_VERSION_PROXY;
@@ -33,7 +39,7 @@ public class SectionViewControl extends EditorWindowBaseControl {
     private final StackPane titleContainer = new StackPane();
     private final Label tagTextLabel = new Label();
     private final TitledPane titledPane = new TitledPane();
-    private final VBox contentContainer = new VBox();
+    private final GridPane contentContainer = new GridPane();
 
     public SectionViewControl() {
         titleContainer.getChildren().add(tagTextLabel);
@@ -71,16 +77,36 @@ public class SectionViewControl extends EditorWindowBaseControl {
 
         patterns.addListener(this::onPatternsChanged);
 
+        numberColumns.subscribe(this::updateNumberOfColumns);
+
+        contentContainer.setHgap(5);
+        contentContainer.setVgap(5);
+
         // CSS
         titleContainer.getStyleClass().add("title-container");
         contentContainer.getStyleClass().add("content");
         getStyleClass().add(DEFAULT_STYLE_CLASS);
     }
 
+    private void updateNumberOfColumns(Number numberColumns) {
+        List<ColumnConstraints> columns = new ArrayList<>();
+        for (int i = 0; i < numberColumns.intValue(); ++i) {
+            ColumnConstraints columnConstraints = new ColumnConstraints();
+            columnConstraints.setHgrow(Priority.ALWAYS);
+            columnConstraints.setPercentWidth(100 / ((double)numberColumns.intValue()));
+            columns.add(columnConstraints);
+        }
+        contentContainer.getColumnConstraints().setAll(columns);
+    }
+
     private void onPatternsChanged(ListChangeListener.Change<? extends PatternViewControl> change) {
         while (change.next()) {
             if (change.wasAdded()) {
-                change.getAddedSubList().forEach(pattern -> pattern.setParentSection(this));
+                change.getAddedSubList().forEach(pattern -> {
+                    pattern.setParentSection(this);
+
+                    pattern.setRowIndex(patterns.indexOf(pattern));
+                });
             }
         }
     }
@@ -134,6 +160,12 @@ public class SectionViewControl extends EditorWindowBaseControl {
     public String getName() { return name.get(); }
     public StringProperty nameProperty() { return name; }
     public void setName(String name) {this.name.set(name); }
+
+    // -- number columns
+    private final IntegerProperty numberColumns = new SimpleIntegerProperty(1);
+    public int getNumberColumns() { return numberColumns.get(); }
+    public IntegerProperty numberColumnsProperty() { return numberColumns; }
+    public void setNumberColumns(int number) { numberColumns.set(number); }
 
     // -- items
     private final ObservableList<PatternViewControl> patterns = FXCollections.observableArrayList();
