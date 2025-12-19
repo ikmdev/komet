@@ -78,6 +78,8 @@ public class KLEditorWindowController {
         sectionViewControl.nameProperty().bindBidirectional(editorSectionModel.nameProperty());
         sectionViewControl.tagTextProperty().bind(editorSectionModel.tagTextProperty());
 
+        sectionViewControl.numberColumnsProperty().bindBidirectional(editorSectionModel.numberColumnsProperty());
+
         sectionViewToModel.put(sectionViewControl, editorSectionModel);
         sectionModelToView.put(editorSectionModel, sectionViewControl);
 
@@ -89,18 +91,28 @@ public class KLEditorWindowController {
 
     private void addPatternViews(EditorSectionModel editorSectionModel, List<? extends EditorPatternModel> patternModels) {
         for (EditorPatternModel patternModel : patternModels) {
-            PatternViewControl patternViewControl = new PatternViewControl();
-
-            patternModelToView.put(patternModel, patternViewControl);
-
-            patternViewControl.titleProperty().bind(patternModel.titleProperty());
-
-            addFieldViews(patternModel, patternModel.getFields());
-            patternModel.getFields().addListener((ListChangeListener<? super EditorFieldModel>)change -> onPatternModelFieldsChanged(patternModel, change));
-
-            SectionViewControl sectionViewControl = sectionModelToView.get(editorSectionModel);
-            sectionViewControl.getPatterns().add(patternViewControl);
+            addPatternView(editorSectionModel, patternModel);
         }
+    }
+
+    private void addPatternView(EditorSectionModel editorSectionModel, EditorPatternModel patternModel) {
+        PatternViewControl patternViewControl = new PatternViewControl();
+
+        patternModelToView.put(patternModel, patternViewControl);
+
+        patternViewControl.titleProperty().bind(patternModel.titleProperty());
+
+        patternViewControl.numberColumnsProperty().bindBidirectional(patternModel.numberColumnsProperty());
+
+        patternViewControl.columnIndexProperty().bindBidirectional(patternModel.columnIndexProperty());
+        patternViewControl.rowIndexProperty().bindBidirectional(patternModel.rowIndexProperty());
+        patternViewControl.columnSpanProperty().bindBidirectional(patternModel.columnSpanProperty());
+
+        addFieldViews(patternModel, patternModel.getFields());
+        patternModel.getFields().addListener((ListChangeListener<? super EditorFieldModel>) change -> onPatternModelFieldsChanged(patternModel, change));
+
+        SectionViewControl sectionViewControl = sectionModelToView.get(editorSectionModel);
+        sectionViewControl.getPatterns().add(patternViewControl);
     }
 
     private void onPatternModelFieldsChanged(EditorPatternModel patternModel, ListChangeListener.Change<? extends EditorFieldModel> change) {
@@ -113,13 +125,21 @@ public class KLEditorWindowController {
 
     private void addFieldViews(EditorPatternModel patternModel, List<? extends EditorFieldModel> fieldModels) {
         for (EditorFieldModel fieldModel : fieldModels) {
-            FieldViewControl fieldViewControl = new FieldViewControl();
-            fieldViewControl.titleProperty().bind(fieldModel.titleProperty());
-            fieldViewControl.fieldNumberProperty().bind(fieldModel.indexProperty().add(1));
-
-            PatternViewControl patternViewControl = patternModelToView.get(patternModel);
-            patternViewControl.getFields().add(fieldViewControl);
+            addFieldView(patternModel, fieldModel);
         }
+    }
+
+    private void addFieldView(EditorPatternModel patternModel, EditorFieldModel fieldModel) {
+        FieldViewControl fieldViewControl = new FieldViewControl();
+        fieldViewControl.titleProperty().bind(fieldModel.titleProperty());
+        fieldViewControl.fieldNumberProperty().bind(fieldModel.indexProperty().add(1));
+
+        fieldViewControl.columnIndexProperty().bindBidirectional(fieldModel.columnIndexProperty());
+        fieldViewControl.rowIndexProperty().bindBidirectional(fieldModel.rowIndexProperty());
+        fieldViewControl.columnSpanProperty().bindBidirectional(fieldModel.columnSpanProperty());
+
+        PatternViewControl patternViewControl = patternModelToView.get(patternModel);
+        patternViewControl.getFields().add(fieldViewControl);
     }
 
     private void setupDragAndDrop(SectionViewControl sectionViewControl) {

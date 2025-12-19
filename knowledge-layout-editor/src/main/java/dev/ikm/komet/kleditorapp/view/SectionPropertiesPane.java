@@ -100,6 +100,6 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
             previouslyShownControl.numberColumnsProperty().unbind();
         }
         sectionNameTextField.textProperty().bindBidirectional(section.nameProperty());
-        section.numberColumnsProperty().bind(columnsComboBox.valueProperty());
+        columnsComboBox.valueProperty().bindBidirectional(section.numberColumnsProperty().asObject());
     }
 }

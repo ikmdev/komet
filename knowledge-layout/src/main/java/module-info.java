@@ -9,6 +9,8 @@ module dev.ikm.komet.layout {
     requires javafx.base;
     requires dev.ikm.tinkar.entity;
     requires dev.ikm.tinkar.terms;
+    requires javafx.graphics;
+    requires dev.ikm.komet.preferences;
 
     exports dev.ikm.komet.layout;
     exports dev.ikm.komet.layout.action;

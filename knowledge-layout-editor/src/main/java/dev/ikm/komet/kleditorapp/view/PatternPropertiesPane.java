@@ -173,7 +173,7 @@ public class PatternPropertiesPane extends ControlBasePropertiesPane<PatternView
 
         titleTextField.setText(control.getTitle());
 
-        control.numberColumnsProperty().bind(columnsComboBox.valueProperty());
+        columnsComboBox.valueProperty().bindBidirectional(control.numberColumnsProperty().asObject());
 
         columnPositionCB.setValue(control.getColumnIndex() + 1);
         control.columnIndexProperty().bind(Bindings.createIntegerBinding(

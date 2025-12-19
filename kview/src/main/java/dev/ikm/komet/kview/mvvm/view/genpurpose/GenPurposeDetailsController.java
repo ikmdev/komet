@@ -70,8 +70,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -490,7 +493,19 @@ public class GenPurposeDetailsController {
 
         titledPane.getStyleClass().add("pattern-titled-pane");
 
-        VBox titledPaneContent = new VBox();
+        GridPane titledPaneContent = new GridPane();
+
+        sectionModel.numberColumnsProperty().subscribe(newNumberColumns -> {
+            List<ColumnConstraints> columns = new ArrayList<>();
+            for (int i = 0; i < newNumberColumns.intValue(); ++i) {
+                ColumnConstraints columnConstraints = new ColumnConstraints();
+                columnConstraints.setHgrow(Priority.ALWAYS);
+                columnConstraints.setPercentWidth(100 / ((double)newNumberColumns.intValue()));
+                columns.add(columnConstraints);
+            }
+            titledPaneContent.getColumnConstraints().setAll(columns);
+        });
+
         titledPane.setContent(titledPaneContent);
 
         titledPane.setOnEditAction(this::showAndEditSemanticFieldsPanel);
@@ -519,7 +534,7 @@ public class GenPurposeDetailsController {
     }
 
     private void addPatternViews(EditorSectionModel sectionModel, List<? extends EditorPatternModel> patternModels) {
-        VBox content = (VBox) sectionModelToTitledPane.get(sectionModel).getContent();
+        GridPane content = (GridPane) sectionModelToTitledPane.get(sectionModel).getContent();
         for (EditorPatternModel editorPatternModel : patternModels) {
             int nid = editorPatternModel.getNid();
 
@@ -531,7 +546,7 @@ public class GenPurposeDetailsController {
         }
     }
 
-    private void addPatternView(EditorPatternModel editorPatternModel, PatternEntity patternEntity, VBox content) {
+    private void addPatternView(EditorPatternModel editorPatternModel, PatternEntity patternEntity, GridPane content) {
         VBox patternContainer = new VBox();
         patternContainer.getStyleClass().add("pattern-container");
 
@@ -585,6 +600,18 @@ public class GenPurposeDetailsController {
                 });
 
         controls.addAll(controlItems);
+
+        editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
+            GridPane.setRowIndex(patternContainer, newRowIndex.intValue());
+        });
+
+        editorPatternModel.columnIndexProperty().subscribe(newColumnIndex -> {
+            GridPane.setColumnIndex(patternContainer, newColumnIndex.intValue());
+        });
+
+        editorPatternModel.columnSpanProperty().subscribe(newColumnSpan -> {
+            GridPane.setColumnSpan(patternContainer, newColumnSpan.intValue());
+        });
 
         patternContainer.getChildren().addAll(controlItems);
         content.getChildren().add(patternContainer);

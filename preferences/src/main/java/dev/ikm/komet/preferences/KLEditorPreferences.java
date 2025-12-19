@@ -17,19 +17,40 @@ public class KLEditorPreferences {
     public static final String KL_ADDITIONAL_SECTIONS = "KL-ADDITIONAL-SECTIONS";
 
     /**
-     * Key for the list Patterns inside a Section.
-     */
-    public static final String KL_PATTERNS = "KL-PATTERNS";
-
-    /**
      * Root of KL Editor 'App' preferences.
      */
     public static final String KL_EDITOR_APP = "kl-editor-app";
 
-    public enum PatternKey {
+    public enum ListKey {
         /**
          * List of Patterns in a Section
          */
-        PATTERN_LIST
+        PATTERN_LIST,
+        /**
+         * List of Fields in a Pattern
+         */
+        FIELDS_LIST
     };
+
+    public class GridLayoutKey {
+        /**
+         * The number of columns to use for the GridPane like control.
+         */
+        public static String KL_GRID_NUMBER_COLUMNS = "kl-grid-number-columns";
+
+        /**
+         * The grid node column index.
+         */
+        public static String KL_GRID_COLUMN_INDEX = "kl-grid-node-column-index";
+
+        /**
+         * The grid node row index.
+         */
+        public static String KL_GRID_ROW_INDEX = "kl-grid-node-row-index";
+
+        /**
+         * The grid node column span.
+         */
+        public static String KL_GRID_COLUMN_SPAN = "kl-grid-node-column-span";
+    }
 }

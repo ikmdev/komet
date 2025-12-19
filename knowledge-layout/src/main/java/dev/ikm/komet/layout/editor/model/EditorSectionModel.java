@@ -2,6 +2,8 @@ package dev.ikm.komet.layout.editor.model;
 
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 
+import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRID_NUMBER_COLUMNS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_ADDITIONAL_SECTIONS;
 
 public class EditorSectionModel {
@@ -45,6 +48,8 @@ public class EditorSectionModel {
     }
 
     public void loadSectionDetails(KometPreferences sectionPreferences, ViewCalculator viewCalculator) {
+        sectionPreferences.getInt(KL_GRID_NUMBER_COLUMNS).ifPresent(this::setNumberColumns);
+
         List<EditorPatternModel> editorPatternModels = EditorPatternModel.load(sectionPreferences, viewCalculator);
         getPatterns().setAll(editorPatternModels);
     }
@@ -62,6 +67,8 @@ public class EditorSectionModel {
 
     public void saveSectionDetails(KometPreferences editorWindowPreferences) {
         final KometPreferences sectionPreferences = editorWindowPreferences.node(getName());
+
+        sectionPreferences.putInt(KL_GRID_NUMBER_COLUMNS, getNumberColumns());
 
         for (EditorPatternModel editorPatternModel : getPatterns()) {
             editorPatternModel.save(sectionPreferences);
@@ -96,4 +103,9 @@ public class EditorSectionModel {
     private final ObservableList<EditorPatternModel> patterns = FXCollections.observableArrayList();
     public ObservableList<EditorPatternModel> getPatterns() { return patterns; }
 
+    // -- number columns
+    private final IntegerProperty numberColumns = new SimpleIntegerProperty(1);
+    public int getNumberColumns() { return numberColumns.get(); }
+    public IntegerProperty numberColumnsProperty() { return numberColumns; }
+    public void setNumberColumns(int number) { numberColumns.set(number); }
 }

@@ -61,10 +61,8 @@ public class PatternViewControl extends GridBaseControl {
     private void onFieldsChanged(ListChangeListener.Change<? extends FieldViewControl> change) {
         while (change.next()) {
             if (change.wasAdded()) {
-                change.getAddedSubList().forEach(pattern -> {
-                    pattern.setParentPattern(this);
-
-                    pattern.setRowIndex(fields.indexOf(pattern));
+                change.getAddedSubList().forEach(fieldViewControl -> {
+                    fieldViewControl.setParentPattern(this);
                 });
             }
         }
