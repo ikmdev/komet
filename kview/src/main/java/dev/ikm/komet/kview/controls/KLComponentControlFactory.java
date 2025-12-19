@@ -9,10 +9,7 @@ import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.provider.search.Searcher;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -27,10 +24,8 @@ import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import org.eclipse.collections.api.list.ImmutableList;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Function;
+import java.util.*;
+import java.util.function.*;
 
 public class KLComponentControlFactory {
 
@@ -51,11 +46,11 @@ public class KLComponentControlFactory {
         componentControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
 
         // String converter
-        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
-        componentControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
+        StringConverter<EntityFacade> stringToEntityFacadeConverter = createStringToEntityFacadeConverter(navigationCalculator);
+        componentControl.setTypeAheadStringConverter(stringToEntityFacadeConverter);
 
         // suggestions cell factory
-        componentControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
+        componentControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityFacadeConverter));
 
         return componentControl;
     }
@@ -69,10 +64,10 @@ public class KLComponentControlFactory {
         // add the function to render the component name
         componentListControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
 
-        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
-        componentListControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
+        StringConverter<EntityFacade> stringToEntityFacadeConverter = createStringToEntityFacadeConverter(navigationCalculator);
+        componentListControl.setTypeAheadStringConverter(stringToEntityFacadeConverter);
 
-        componentListControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
+        componentListControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityFacadeConverter));
 
         // header node
         componentListControl.setTypeAheadHeaderPane(createTypeAheadHeaderPane());
@@ -106,16 +101,16 @@ public class KLComponentControlFactory {
      * @param navigationCalculator the navigation calculator.
      * @return a List containing the associated concept or an empty list if there is no Concept associated with the UUID
      */
-    private static Function<String, List<EntityProxy>> createUUIDConverterFunction(NavigationCalculator navigationCalculator) {
+    private static Function<String, List<EntityFacade>> createUUIDConverterFunction(NavigationCalculator navigationCalculator) {
         return newSearchText -> {
-            List<EntityProxy> entityProxyResults = new ArrayList<>();
+            List<EntityFacade> entityFacadeResults = new ArrayList<>();
 
             UuidUtil.getUUID(newSearchText).ifPresent(
                     uuid -> EntityHandle.get(PrimitiveData.nid(PublicIds.of(uuid))).ifPresent(
-                    entityFacade -> entityProxyResults.add(entityFacade.toProxy())
+                    entityFacade -> entityFacadeResults.add(entityFacade.toProxy())
                     )
             );
-            return entityProxyResults;
+            return entityFacadeResults;
         };
     }
 
@@ -126,14 +121,14 @@ public class KLComponentControlFactory {
      * @param navigationCalculator the navigation calculator.
      * @return a List containing the associated concept or an empty list if there is no Concept associated with the UUID
      */
-    private static Function<String, List<EntityProxy>> createInlineSearchFunction(NavigationCalculator navigationCalculator) {
+    private static Function<String, List<EntityFacade>> createInlineSearchFunction(NavigationCalculator navigationCalculator) {
         return newSearchText -> {
-            List<EntityProxy> entityProxyResults = new ArrayList<>();
+            List<EntityFacade> entityFacadeResults = new ArrayList<>();
 
             if (UuidUtil.isUUID(newSearchText)) {
                 UuidUtil.getUUID(newSearchText).ifPresent(
                         uuid -> EntityHandle.get(uuid).ifPresent(
-                                entityFacade -> entityProxyResults.add(entityFacade.toProxy())
+                                entityFacade -> entityFacadeResults.add(entityFacade.toProxy())
                         )
                 );
             } else {
@@ -142,37 +137,37 @@ public class KLComponentControlFactory {
                     inlineResults.forEach(latestVersionSearchResult ->
                             latestVersionSearchResult.latestVersion().ifPresent(matchedSemantic ->
                                     EntityHandle.get(matchedSemantic.referencedComponentNid())
-                                            .ifPresent(entity -> entityProxyResults.add(entity.toProxy()))));
+                                            .ifPresent(entity -> entityFacadeResults.add(entity.toProxy()))));
 
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
-            return entityProxyResults;
+            return entityFacadeResults;
         };
     }
 
-    private static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator) {
-        return (entityProxy) ->
+    private static Function<EntityFacade, String> createComponentNameRenderer(ViewCalculator viewCalculator) {
+        return (entityFacade) ->
             viewCalculator.languageCalculator()
-                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
     }
 
-    private static StringConverter<EntityProxy> createStringToEntityProxyConverter(NavigationCalculator navigationCalculator) {
+    private static StringConverter<EntityFacade> createStringToEntityFacadeConverter(NavigationCalculator navigationCalculator) {
         return new StringConverter<>() {
             @Override
-            public String toString(EntityProxy conceptFacade) {
+            public String toString(EntityFacade conceptFacade) {
                 return navigationCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(conceptFacade.nid());
             }
 
             @Override
-            public EntityProxy fromString(String string) {
+            public EntityFacade fromString(String string) {
                 return null;
             }
         };
     }
 
-    private static ListCell<EntityProxy> createComponentSuggestionNode(StringConverter<EntityProxy> stringConverter) {
+    private static ListCell<EntityFacade> createComponentSuggestionNode(StringConverter<EntityFacade> stringConverter) {
         return new ListCell<>() {
             StackPane stackPane;
             Label label;
@@ -201,7 +196,7 @@ public class KLComponentControlFactory {
             }
 
             @Override
-            protected void updateItem(EntityProxy item, boolean empty) {
+            protected void updateItem(EntityFacade item, boolean empty) {
                 super.updateItem(item, empty);
 
                 if (item == null) {
@@ -220,7 +215,7 @@ public class KLComponentControlFactory {
     }
 
     private static AutoCompleteTextField.HeaderPane createTypeAheadHeaderPane() {
-        return new AutoCompleteTextField.HeaderPane<EntityProxy>() {
+        return new AutoCompleteTextField.HeaderPane<EntityFacade>() {
             Label headerLabel = new Label();
             {
                 headerLabel.getStyleClass().add("header");
@@ -232,7 +227,7 @@ public class KLComponentControlFactory {
             }
 
             @Override
-            public void updateContent(List<EntityProxy> suggestions) {
+            public void updateContent(List<EntityFacade> suggestions) {
                 headerLabel.setText(suggestions.size() + " results");
             }
         };

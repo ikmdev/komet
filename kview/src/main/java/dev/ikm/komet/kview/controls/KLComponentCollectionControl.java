@@ -2,7 +2,7 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentCollectionControlSkin;
 import dev.ikm.tinkar.common.id.IntIdCollection;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -82,36 +82,36 @@ public class KLComponentCollectionControl<T extends IntIdCollection> extends Con
      * The auto-complete function. It will receive the string the user has input and should return the list of
      * auto-complete suggestions. This function runs on a background thread.
      */
-    private final ObjectProperty<Function<String, List<EntityProxy>>> typeAheadCompleter = new SimpleObjectProperty<>();
-    public final void setTypeAheadCompleter(Function<String, List<EntityProxy>> handler) { typeAheadCompleter.set(handler); }
-    public final Function<String, List<EntityProxy>> getTypeAheadCompleter() { return typeAheadCompleter.get(); }
-    public final ObjectProperty<Function<String, List<EntityProxy>>> typeAheadCompleterProperty() { return typeAheadCompleter; }
+    private final ObjectProperty<Function<String, List<EntityFacade>>> typeAheadCompleter = new SimpleObjectProperty<>();
+    public final void setTypeAheadCompleter(Function<String, List<EntityFacade>> handler) { typeAheadCompleter.set(handler); }
+    public final Function<String, List<EntityFacade>> getTypeAheadCompleter() { return typeAheadCompleter.get(); }
+    public final ObjectProperty<Function<String, List<EntityFacade>>> typeAheadCompleterProperty() { return typeAheadCompleter; }
 
     // -- type ahead string converter
     /**
      * Converts the user-typed input to an object of type T, or the object of type T to a String.
      * @return the converter property
      */
-    private final ObjectProperty<StringConverter<EntityProxy>> typeAheadStringConverter = new SimpleObjectProperty<>(this, "converter");
-    public final ObjectProperty<StringConverter<EntityProxy>> typeAheadStringConverterProperty() { return typeAheadStringConverter; }
-    public final void setTypeAheadStringConverter(StringConverter<EntityProxy> value) { typeAheadStringConverterProperty().set(value); }
-    public final StringConverter<EntityProxy> getTypeAheadStringConverter() {return typeAheadStringConverterProperty().get(); }
+    private final ObjectProperty<StringConverter<EntityFacade>> typeAheadStringConverter = new SimpleObjectProperty<>(this, "converter");
+    public final ObjectProperty<StringConverter<EntityFacade>> typeAheadStringConverterProperty() { return typeAheadStringConverter; }
+    public final void setTypeAheadStringConverter(StringConverter<EntityFacade> value) { typeAheadStringConverterProperty().set(value); }
+    public final StringConverter<EntityFacade> getTypeAheadStringConverter() {return typeAheadStringConverterProperty().get(); }
 
     // -- suggestions node factory
     /**
      * This will return a Cell to be shown in the auto-complete popup for each result returned
      * by the 'completer'.
      */
-    private final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactory = new SimpleObjectProperty<>();
-    public final void setSuggestionsCellFactory(Callback<ListView<EntityProxy>, ListCell<EntityProxy>> factory) { suggestionsCellFactory.set(factory); }
-    public final Callback<ListView<EntityProxy>, ListCell<EntityProxy>> getSuggestionsCellFactory() { return suggestionsCellFactory.get(); }
-    public final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactoryProperty() { return suggestionsCellFactory; }
+    private final ObjectProperty<Callback<ListView<EntityFacade>, ListCell<EntityFacade>>> suggestionsCellFactory = new SimpleObjectProperty<>();
+    public final void setSuggestionsCellFactory(Callback<ListView<EntityFacade>, ListCell<EntityFacade>> factory) { suggestionsCellFactory.set(factory); }
+    public final Callback<ListView<EntityFacade>, ListCell<EntityFacade>> getSuggestionsCellFactory() { return suggestionsCellFactory.get(); }
+    public final ObjectProperty<Callback<ListView<EntityFacade>, ListCell<EntityFacade>>> suggestionsCellFactoryProperty() { return suggestionsCellFactory; }
 
     // -- function to render the component's name and avoid entity.description()
-    private final ObjectProperty<Function<EntityProxy, String>> componentNameRenderer = new SimpleObjectProperty<>();
-    public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) { componentNameRenderer.set(nameHandler); }
-    public final Function<EntityProxy, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
-    public final ObjectProperty<Function<EntityProxy, String>> componentNameRendererProperty() { return componentNameRenderer; }
+    private final ObjectProperty<Function<EntityFacade, String>> componentNameRenderer = new SimpleObjectProperty<>();
+    public final void setComponentNameRenderer(Function<EntityFacade, String> nameHandler) { componentNameRenderer.set(nameHandler); }
+    public final Function<EntityFacade, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
+    public final ObjectProperty<Function<EntityFacade, String>> componentNameRendererProperty() { return componentNameRenderer; }
 
     // -- typeahead header pane
     private final ObjectProperty<AutoCompleteTextField.HeaderPane> typeAheadHeaderPane = new SimpleObjectProperty<>();

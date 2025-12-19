@@ -31,16 +31,11 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.FIELD_OR
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.FIELD_ORDER_OPTIONS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.PREVIOUS_PATTERN_FIELD;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.TOTAL_EXISTING_FIELDS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
-
-import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
-
-import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
@@ -49,14 +44,19 @@ import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
+import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.*;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -71,7 +71,8 @@ import javafx.util.converter.IntegerStringConverter;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.stream.IntStream;
+
+import java.util.stream.*;
 
 public class PatternFieldsController {
 
@@ -118,8 +119,8 @@ public class PatternFieldsController {
         ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
 
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
-        ObjectProperty<EntityProxy> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
-        ObjectProperty<EntityProxy> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
+        ObjectProperty<EntityFacade> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
+        ObjectProperty<EntityFacade> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
         ObjectProperty<PatternField> previousPatternFieldProperty = patternFieldsViewModel.getProperty(PREVIOUS_PATTERN_FIELD);
 
 

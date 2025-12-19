@@ -1,18 +1,45 @@
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
-import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
-import dev.ikm.tinkar.common.alert.*;
-import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.events.EvtBusFactory;
+import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CONFIRM_REFERENCE_COMPONENT;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.hasAnyUnsupportedFieldType;
+import static dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController.CONFIRM_CLEAR_MESSAGE;
+import static dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController.CONFIRM_CLEAR_TITLE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
+import dev.ikm.tinkar.common.alert.AlertObject;
+import dev.ikm.tinkar.common.alert.AlertStreams;
+import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.RecordListBuilder;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.SemanticRecordBuilder;
+import dev.ikm.tinkar.entity.SemanticVersionRecord;
+import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
+import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
+import dev.ikm.tinkar.terms.State;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -25,19 +52,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-
-import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.CONFIRM_REFERENCE_COMPONENT;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.hasAnyUnsupportedFieldType;
-import static dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController.CONFIRM_CLEAR_MESSAGE;
-import static dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController.CONFIRM_CLEAR_TITLE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 
 public class ReferenceComponentController {
 
@@ -67,7 +81,7 @@ public class ReferenceComponentController {
         confirmButton.setDisable(true);
         klComponentControl = KLComponentControlFactory.createComponentControl(genEditingViewModel.getViewProperties().calculator());
         klComponentControl.setTitle("Reference component");
-        ObjectProperty<EntityProxy> refComponentProperty = genEditingViewModel.getProperty(REF_COMPONENT);
+        ObjectProperty<EntityFacade> refComponentProperty = genEditingViewModel.getProperty(REF_COMPONENT);
         klComponentControl.entityProperty().bindBidirectional(refComponentProperty);
         referenceComponentVBox.getChildren().add(klComponentControl);
         confirmButton.disableProperty().bind(refComponentProperty.isNull());
@@ -133,7 +147,7 @@ public class ReferenceComponentController {
         }
         RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();
         UUID semanticUUID = UUID.randomUUID();
-        EntityProxy referencedComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
+        EntityFacade referencedComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
 
         int semanticNid = Entity.nidForSemantic(patternFacade, PublicIds.of(semanticUUID));
 

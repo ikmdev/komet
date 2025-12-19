@@ -7,16 +7,16 @@ import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.tinkar.component.FeatureDefinition;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 
-public class KlEditableComponentField extends BaseDefaultKlField<EntityProxy> {
+public class KlEditableComponentField extends BaseDefaultKlField<EntityFacade> {
     /**
      * Constructor for KlEditableComponentField
      * @param observableFieldEditable observable component editable field
      * @param observableView observable view
      * @param stamp4field observable stamp for field
      */
-    public KlEditableComponentField(ObservableField.Editable<EntityProxy> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+    public KlEditableComponentField(ObservableField.Editable<EntityFacade> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         KLComponentControl node = KLComponentControlFactory.createComponentControl(observableView.calculator());
         super(observableFieldEditable, observableView, stamp4field, node);
 
@@ -35,7 +35,7 @@ public class KlEditableComponentField extends BaseDefaultKlField<EntityProxy> {
      * @param newFieldEditable A new field editable to rebind with an editable UI control.
      */
     @Override
-    public void rebind(ObservableField.Editable<EntityProxy> newFieldEditable) {
+    public void rebind(ObservableField.Editable<EntityFacade> newFieldEditable) {
         // Obtain UI control
         KLComponentControl uiControl = (KLComponentControl) fxObject();
         // Unbind both directions editValueProperty <-> uiControl.entityValueProperty

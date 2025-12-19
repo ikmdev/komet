@@ -1,10 +1,10 @@
 package dev.ikm.komet.layout.area;
 
 import dev.ikm.komet.framework.observable.Feature;
-import dev.ikm.komet.framework.observable.ObservableChronology;
 import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
 import dev.ikm.tinkar.common.bind.annotations.names.FullyQualifiedName;
 import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.layout.Region;
 
 /**
@@ -20,10 +20,10 @@ import javafx.scene.layout.Region;
  *             for managing and displaying fields bound to entity data.
  */
 @FullyQualifiedName("Knowledge layout entity feature area")
-@RegularName("Component (ObservableChronology) area")
+@RegularName("Component (EntityFacade) area")
 @ParentConcept(KlAreaForFeature.class)
-public non-sealed interface KlAreaForComponentChronology<FX extends Region>
-        extends KlAreaForFeature<ObservableChronology, Feature<ObservableChronology>, FX> {
+public non-sealed interface KlAreaForEntityFacade<FX extends Region> // TODO Rename to KlAreaForEntityFacade
+        extends KlAreaForFeature<EntityFacade, Feature<EntityFacade>, FX> {
 
 
     /**
@@ -39,8 +39,8 @@ public non-sealed interface KlAreaForComponentChronology<FX extends Region>
      *
      * @param <FX> the type of JavaFX {@link Region} associated with the field area, extending {@code Region}.
      */
-    interface Factory<FX extends Region, KL extends KlAreaForComponentChronology<FX>>
-            extends KlAreaForFeature.Factory<ObservableChronology, Feature<ObservableChronology>, FX, KL> {
+    interface Factory<FX extends Region, KL extends KlAreaForEntityFacade<FX>>
+            extends KlAreaForFeature.Factory<EntityFacade, Feature<EntityFacade>, FX, KL> {
     }
 
 }

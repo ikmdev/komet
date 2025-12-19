@@ -5,22 +5,22 @@ import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.komet.layout.version.field.KlFieldFactory;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 
-public class KlComponentFieldFactory implements KlFieldFactory<EntityProxy> {
+public class KlComponentFieldFactory implements KlFieldFactory<EntityFacade> {
 
     @Override
-    public KlField<EntityProxy> create(ObservableField<EntityProxy> observableField, ObservableView observableView, ObservableStamp stamp4field) {
+    public KlField<EntityFacade> create(ObservableField<EntityFacade> observableField, ObservableView observableView, ObservableStamp stamp4field) {
         return new DefaultKlComponentField(observableField, observableView, stamp4field);
     }
 
     @Override
-    public Class<? extends KlField<EntityProxy>> getFieldInterface() {
+    public Class<? extends KlField<EntityFacade>> getFieldInterface() {
         return null;
     }
 
     @Override
-    public Class<? extends KlField<EntityProxy>> getFieldImplementation() {
+    public Class<? extends KlField<EntityFacade>> getFieldImplementation() {
         return DefaultKlComponentField.class;
     }
 

@@ -10,13 +10,13 @@ import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.tinkar.component.FeatureDefinition;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 
-public class DefaultKlComponentField extends BaseDefaultKlField<EntityProxy> {
+public class DefaultKlComponentField extends BaseDefaultKlField<EntityFacade> {
 
-    public DefaultKlComponentField(ObservableField<EntityProxy> observableComponentField, ObservableView observableView, ObservableStamp stamp4field) {
+    public DefaultKlComponentField(ObservableField<EntityFacade> observableComponentField, ObservableView observableView, ObservableStamp stamp4field) {
         Region node = switch (stamp4field.lastVersion().uncommitted()) {
             case true -> KLComponentControlFactory.createComponentControl(
                     observableView.calculator());
@@ -44,7 +44,7 @@ The fix: Change DefaultKlComponentField.java to always create KLReadOnlyComponen
                 readOnlyComponentControl.setTitle(title);
                 // value
                 updateControlValue(observableComponentField.valueProperty().get(), readOnlyComponentControl);
-                // Listen and update when EntityProxy changes
+                // Listen and update when EntityFacade changes
                 observableComponentField.valueProperty().subscribe(newEntity -> {
                     updateControlValue(newEntity, readOnlyComponentControl);
                 });
@@ -53,15 +53,15 @@ The fix: Change DefaultKlComponentField.java to always create KLReadOnlyComponen
         }
     }
 
-    private void updateControlValue(EntityProxy entityProxy, KLReadOnlyComponentControl klReadOnlyComponentControl) {
+    private void updateControlValue(EntityFacade entityFacade, KLReadOnlyComponentControl klReadOnlyComponentControl) {
         ComponentItem componentItem;
-        if (KLComponentControl.isEmpty(entityProxy)) {
+        if (KLComponentControl.isEmpty(entityFacade)) {
             componentItem = null;
         } else {
             String description = observableView.calculator().languageCalculator()
-                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
             Image identicon = Identicon.generateIdenticonImage(observableField.valueProperty().get().publicId());
-            componentItem = new ComponentItem(description, identicon, entityProxy.nid());
+            componentItem = new ComponentItem(description, identicon, entityFacade.nid());
         }
 
         klReadOnlyComponentControl.setValue(componentItem);

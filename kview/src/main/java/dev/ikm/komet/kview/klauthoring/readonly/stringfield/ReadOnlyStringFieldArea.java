@@ -2,12 +2,15 @@ package dev.ikm.komet.kview.klauthoring.readonly.stringfield;
 
 import dev.ikm.komet.framework.observable.Feature;
 import dev.ikm.komet.framework.observable.FeatureKey;
+import dev.ikm.komet.framework.observable.FeatureWrapper;
 import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
 import dev.ikm.komet.layout.area.AreaGridSettings;
 import dev.ikm.komet.layout.area.KlAreaForString;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.blueprint.FeatureAreaBlueprint;
 import dev.ikm.komet.preferences.KometPreferences;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyProperty;
 
 import java.util.*;
 
@@ -63,8 +66,9 @@ public final class ReadOnlyStringFieldArea extends FeatureAreaBlueprint<String, 
      * @param newValue the new Feature<String> to display
      */
     private void setDisplayValues(Feature<String> newValue) {
+        String text = ((ReadOnlyProperty)((ReadOnlyObjectProperty) ((FeatureWrapper<?>) newValue).valueProperty()).get()).getValue().toString();
         getFxPeer().setTitle(calculatorForContext().getDescriptionTextOrNid(newValue.definition(calculatorForContext()).purposeNid()));
-        getFxPeer().setValue(newValue.value());
+        getFxPeer().setValue(text);
     }
 
     public static Factory factory() {

@@ -3,11 +3,11 @@ package dev.ikm.komet.kview.klauthoring.editable.componentfield;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.layout.area.AreaGridSettings;
-import dev.ikm.komet.layout.area.KlAreaForComponent;
+import dev.ikm.komet.layout.area.KlAreaForEntityFacade;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.blueprint.EditableFieldAreaBlueprint;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.Property;
 
 /**
@@ -22,7 +22,7 @@ import javafx.beans.property.Property;
  * EditableComponentFieldArea componentArea = EditableComponentFieldArea.create(preferencesFactory);
  *
  * // Get an editable field from ObservableComposer
- * ObservableField.Editable<EntityProxy> editable = ...;
+ * ObservableField.Editable<EntityFacade> editable = ...;
  *
  * // Connect the area to the editable
  * componentArea.setEditable(editable);
@@ -31,8 +31,8 @@ import javafx.beans.property.Property;
  * parentPane.getChildren().add(componentArea.fxObject());
  * }</pre>
  */
-public final class EditableComponentFieldArea extends EditableFieldAreaBlueprint<EntityProxy, KLComponentControl>
-        implements KlAreaForComponent<KLComponentControl> {
+public final class EditableComponentFieldArea extends EditableFieldAreaBlueprint<EntityFacade, KLComponentControl>
+        implements KlAreaForEntityFacade<KLComponentControl> {
 
     /**
      * Constructor for restoring from preferences.
@@ -44,7 +44,7 @@ public final class EditableComponentFieldArea extends EditableFieldAreaBlueprint
     /**
      * Constructor for creating a new area.
      */
-    public EditableComponentFieldArea(KlPreferencesFactory preferencesFactory, KlAreaForComponent.Factory areaFactory) {
+    public EditableComponentFieldArea(KlPreferencesFactory preferencesFactory, KlAreaForEntityFacade.Factory<?,?> areaFactory) {
         super(preferencesFactory, areaFactory, new KLComponentControl());
     }
 
@@ -54,12 +54,12 @@ public final class EditableComponentFieldArea extends EditableFieldAreaBlueprint
     }
 
     @Override
-    protected Property<EntityProxy> getControlValueProperty() {
+    protected Property<EntityFacade> getControlValueProperty() {
         return getFxPeer().entityProperty();
     }
 
     @Override
-    protected void bindControlToEditable(ObservableField.Editable<EntityProxy> editable) {
+    protected void bindControlToEditable(ObservableField.Editable<EntityFacade> editable) {
         getFxPeer()
                 .entityProperty()
                 .bindBidirectional(editable.editableValueProperty());
@@ -103,7 +103,7 @@ public final class EditableComponentFieldArea extends EditableFieldAreaBlueprint
         return EditableComponentFieldArea.factory().create(preferencesFactory);
     }
 
-    public static class Factory implements KlAreaForComponent.Factory {
+    public static class Factory implements KlAreaForEntityFacade.Factory {
 
         public Factory() {}
 

@@ -9,12 +9,12 @@ import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.tinkar.component.FeatureDefinition;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.image.Image;
 
-public class KlReadOnlyComponentField extends BaseDefaultKlField<EntityProxy> {
+public class KlReadOnlyComponentField extends BaseDefaultKlField<EntityFacade> {
 
-    public KlReadOnlyComponentField(ObservableField<EntityProxy> observableComponentField, ObservableView observableView, ObservableStamp stamp4field) {
+    public KlReadOnlyComponentField(ObservableField<EntityFacade> observableComponentField, ObservableView observableView, ObservableStamp stamp4field) {
         KLReadOnlyComponentControl node = new KLReadOnlyComponentControl();
         super(observableComponentField, observableView, stamp4field, node);
 
@@ -24,21 +24,21 @@ public class KlReadOnlyComponentField extends BaseDefaultKlField<EntityProxy> {
         node.setTitle(title);
         // value
         updateControlValue(observableComponentField.editableValueProperty().get(), node);
-        // Listen and update when EntityProxy changes
+        // Listen and update when EntityFacade changes
         observableComponentField.editableValueProperty().subscribe(newEntity -> {
             updateControlValue(newEntity, node);
         });
     }
 
-    private void updateControlValue(EntityProxy entityProxy, KLReadOnlyComponentControl klReadOnlyComponentControl) {
+    private void updateControlValue(EntityFacade entityFacade, KLReadOnlyComponentControl klReadOnlyComponentControl) {
         ComponentItem componentItem;
-        if (KLComponentControl.isEmpty(entityProxy)) {
+        if (KLComponentControl.isEmpty(entityFacade)) {
             componentItem = null;
         } else {
             String description = observableView.calculator().languageCalculator()
-                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
             Image identicon = Identicon.generateIdenticonImage(observableField.valueProperty().get().publicId());
-            componentItem = new ComponentItem(description, identicon, entityProxy.nid());
+            componentItem = new ComponentItem(description, identicon, entityFacade.nid());
         }
 
         klReadOnlyComponentControl.setValue(componentItem);

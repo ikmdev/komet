@@ -1,18 +1,18 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.ConceptTile;
-import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentCollectionControl;
+import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -39,12 +39,8 @@ import javafx.scene.transform.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.UUID;
-import java.util.function.Function;
-
-import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
+import java.util.*;
+import java.util.function.*;
 
 /**
  * Default skin implementation for the {@link KLComponentControl} control
@@ -68,7 +64,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private final BorderPane doNotDropBorderPane;
     private final StackPane dragHandleIconContainer;
 
-    private AutoCompleteTextField<EntityProxy> typeAheadSearchField;
+    private AutoCompleteTextField<EntityFacade> typeAheadSearchField;
 
     /**
      * Creates a new KLComponentControlSkin instance, installing the necessary child
@@ -246,7 +242,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
             int nid = extractNid(event);
             if (nid != Integer.MIN_VALUE) {  //
-                EntityProxy entity = Entity.getFast(nid).toProxy();
+                EntityFacade entity = Entity.getFast(nid).toProxy();
 
                 control.setEntity(entity);
                 addConceptNode(entity, control.getComponentNameRenderer());
@@ -294,7 +290,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private boolean isADragAndDropInfo(DragEvent dragEvent) {
         // Existing checks for next gen search navigator and pattern nav items to drag.
         boolean isValidDnD =  dragEvent.getGestureSource() instanceof Node source // and the gesture source is a Node
-                && source.getUserData() instanceof DragAndDropInfo dropInfo // whose user data is DragAndDropInfoEntityProxy
+                && source.getUserData() instanceof DragAndDropInfo dropInfo // whose user data is DragAndDropInfoEntityFacade
                 && dropInfo.publicId() != null // with a non-null publicId
                 && getSkinnable().getComponentAllowedFilter().test(dropInfo.publicId()); // and the allowed filter returns true
         return isValidDnD;
@@ -497,7 +493,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     }
 
 
-    private void addConceptNode(EntityProxy entity, Function<EntityProxy, String> componentNameLabelFunction) {
+    private void addConceptNode(EntityFacade entity, Function<EntityFacade, String> componentNameLabelFunction) {
         ImageView imageView = new ImageView();
         imageView.setFitWidth(16);
         imageView.setFitHeight(16);

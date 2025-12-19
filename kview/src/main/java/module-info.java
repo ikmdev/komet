@@ -1,6 +1,5 @@
 import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
-import dev.ikm.komet.layout.area.KlAreaForComponent;
-import dev.ikm.komet.layout.area.KlAreaForComponentChronology;
+import dev.ikm.komet.layout.area.KlAreaForEntityFacade;
 
 /*
  * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
@@ -186,11 +185,30 @@ module dev.ikm.komet.kview {
     uses dev.ikm.tinkar.events.EvtBus;
     uses EntityKlWindowFactory;
 
+    // Export services used by layout module
+    exports dev.ikm.komet.kview.klauthoring.readonly.componentfield;
+    exports dev.ikm.komet.kview.klauthoring.editable.componentfield;
+    exports dev.ikm.komet.kview.klauthoring.readonly.componentlistfield;
+    exports dev.ikm.komet.kview.klauthoring.editable.componentlistfield;
+    exports dev.ikm.komet.kview.klauthoring.readonly.componentsetfield;
+    exports dev.ikm.komet.kview.klauthoring.editable.componentsetfield;
+    exports dev.ikm.komet.kview.klauthoring.readonly.booleanfield;
+    exports dev.ikm.komet.kview.klauthoring.editable.booleanfield;
+    exports dev.ikm.komet.kview.klauthoring.readonly.floatfield;
+    exports dev.ikm.komet.kview.klauthoring.editable.floatfield;
+    exports dev.ikm.komet.kview.klauthoring.readonly.imagefield;
+    exports dev.ikm.komet.kview.klauthoring.editable.imagefield;
+    exports dev.ikm.komet.kview.klauthoring.readonly.integerfield;
+    exports dev.ikm.komet.kview.klauthoring.editable.integerfield;
+    exports dev.ikm.komet.kview.klauthoring.readonly.stringfield;
+    exports dev.ikm.komet.kview.klauthoring.editable.stringfield;
+
     // Primary service interface for discovering ALL area factories (built-in and plugins)
     provides dev.ikm.komet.layout.KlArea.Factory with
             dev.ikm.komet.kview.klauthoring.readonly.booleanfield.ReadOnlyBooleanFieldArea.Factory,
             dev.ikm.komet.kview.klauthoring.editable.booleanfield.EditableBooleanFieldArea.Factory,
             dev.ikm.komet.kview.klauthoring.readonly.componentfield.ReadOnlyObservableChronologyFieldArea.Factory,
+            dev.ikm.komet.kview.klauthoring.readonly.componentfield.ReadOnlyEntityFacadeFieldArea.Factory,
             dev.ikm.komet.kview.klauthoring.editable.componentfield.EditableComponentFieldArea.Factory,
             dev.ikm.komet.kview.klauthoring.readonly.componentlistfield.ReadOnlyComponentListFieldArea.Factory,
             dev.ikm.komet.kview.klauthoring.editable.componentlistfield.EditableComponentListFieldArea.Factory,
@@ -210,10 +228,8 @@ module dev.ikm.komet.kview {
             dev.ikm.komet.kview.klauthoring.readonly.booleanfield.ReadOnlyBooleanFieldArea.Factory,
             dev.ikm.komet.kview.klauthoring.editable.booleanfield.EditableBooleanFieldArea.Factory;
 
-    provides KlAreaForComponentChronology.Factory with
-            dev.ikm.komet.kview.klauthoring.readonly.componentfield.ReadOnlyObservableChronologyFieldArea.Factory;
-
-    provides KlAreaForComponent.Factory with
+    provides KlAreaForEntityFacade.Factory with
+            dev.ikm.komet.kview.klauthoring.readonly.componentfield.ReadOnlyObservableChronologyFieldArea.Factory,
             dev.ikm.komet.kview.klauthoring.editable.componentfield.EditableComponentFieldArea.Factory;
 
     provides dev.ikm.komet.layout.area.KlAreaForIntIdList.Factory with
