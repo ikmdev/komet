@@ -22,6 +22,9 @@ import java.util.*;
  * A read-only area for displaying Component fields within the Komet framework.
  * This area utilizes a KLReadOnlyComponentControl to present the boolean value
  * in a non-editable format.  KlAreaForEntityFacade
+ * Todo: Consider merging with ReadOnlyEntityFacadeFieldArea. This implementation is slightly different in that it
+ *       uses FeatureWrapper to get the EntityFacade. The code downcasts through several layers to get the nid.
+ * See {@link dev.ikm.komet.kview.klauthoring.readonly.componentfield.ReadOnlyEntityFacadeFieldArea}
  */
 public final class ReadOnlyObservableChronologyFieldArea extends FeatureAreaBlueprint<EntityFacade, Feature<EntityFacade>, KLReadOnlyComponentControl>
         implements KlAreaForEntityFacade<KLReadOnlyComponentControl> {
