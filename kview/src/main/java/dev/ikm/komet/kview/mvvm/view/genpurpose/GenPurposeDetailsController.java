@@ -199,8 +199,6 @@ public class GenPurposeDetailsController {
         // Assign the tooltip to the StackPane (container of Publish button)
         setupTooltipForDisabledButton(savePatternButton);
 
-        updateDisplayIdentifier();
-
         // Setup window support with explicit draggable nodes
         addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
     }
