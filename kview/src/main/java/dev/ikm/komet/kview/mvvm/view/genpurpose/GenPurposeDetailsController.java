@@ -34,6 +34,7 @@ import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
+import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
@@ -547,13 +548,13 @@ public class GenPurposeDetailsController {
     }
 
     private void addPatternView(EditorPatternModel editorPatternModel, PatternEntity patternEntity, GridPane content) {
-        VBox patternContainer = new VBox();
-        patternContainer.getStyleClass().add("pattern-container");
+        VBox patternMainContainer = new VBox();
+        patternMainContainer.getStyleClass().add("pattern-container");
 
         // Pattern title
         Label patternTitle = new Label(editorPatternModel.getTitle());
         patternTitle.getStyleClass().add("gen-purpose-pattern-title");
-        patternContainer.getChildren().add(patternTitle);
+        patternMainContainer.getChildren().add(patternTitle);
 
         ConceptFacade author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
         ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
@@ -568,53 +569,97 @@ public class GenPurposeDetailsController {
                 "Edit Semantic Details"
         );
 
+        // Pattern Fields Container
+        VBox semanticsContainer = new VBox();
+        semanticsContainer.getStyleClass().add("semantics-container");
+
         // Pattern fields
-        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternEntity).get();
-        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
-        List<KLReadOnlyBaseControl> controlItems = new ArrayList<>();
-        EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(), patternEntity.nid(),
-                (semantic) -> {
-                    ObservableEntitySnapshot<?,?> snap = composer.snapshot(semantic.nid()).get();
-                    if (snap instanceof ObservableSemanticSnapshot semanticSnapshot) {
-                        for(ObservableField<?> observableField : semanticSnapshot.getLatestFields().get()){
-                            Field<?> field = observableField.field();
-
-                            // Generate node using the underlying ObservableField (read-only view)
-                            // This was throwing a cast exception, expecting KLReadOnlyBaseControl.
-                            Node baseControl = KlFieldHelper.createReadOnlyKlField(
-                                    (FieldRecord<?>) field,
-                                    observableField, // Use underlying ObservableField for display
-                                    getViewProperties(),
-                                    null,
-                                    genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC)
-                            );
-
-                            // Eliminated unsafe cast here...
-                            if (baseControl instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
-//                                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
-//                                semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
-                                controlItems.add(klReadOnlyBaseControl);
-                            }
-                        }
-                    }
-                });
-
-        controls.addAll(controlItems);
+        createFieldViews(editorPatternModel, patternEntity, composer, semanticsContainer);
 
         editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
-            GridPane.setRowIndex(patternContainer, newRowIndex.intValue());
+            GridPane.setRowIndex(patternMainContainer, newRowIndex.intValue());
         });
 
         editorPatternModel.columnIndexProperty().subscribe(newColumnIndex -> {
-            GridPane.setColumnIndex(patternContainer, newColumnIndex.intValue());
+            GridPane.setColumnIndex(patternMainContainer, newColumnIndex.intValue());
         });
 
         editorPatternModel.columnSpanProperty().subscribe(newColumnSpan -> {
-            GridPane.setColumnSpan(patternContainer, newColumnSpan.intValue());
+            GridPane.setColumnSpan(patternMainContainer, newColumnSpan.intValue());
         });
 
-        patternContainer.getChildren().addAll(controlItems);
-        content.getChildren().add(patternContainer);
+        patternMainContainer.getChildren().add(semanticsContainer);
+        content.getChildren().add(patternMainContainer);
+    }
+
+    private List<KLReadOnlyBaseControl> createFieldViews(EditorPatternModel editorPatternModel, PatternEntity patternEntity, ObservableComposer composer, Pane semanticsContainer) {
+        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternEntity).get();
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
+        List<KLReadOnlyBaseControl> controlItems = new ArrayList<>();
+
+        EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(), patternEntity.nid(),
+                (semantic) -> {
+                    GridPane fieldContainer = new GridPane();
+
+                    ObservableEntitySnapshot<?,?> snap = composer.snapshot(semantic.nid()).get();
+                    if (snap instanceof ObservableSemanticSnapshot semanticSnapshot) {
+                        for(ObservableField<?> observableField : semanticSnapshot.getLatestFields().get()){
+                            EditorFieldModel fieldModel = editorPatternModel.getFields().get(observableField.field().indexInPattern());
+                            createFieldView(observableField, fieldModel, controlItems, fieldContainer);
+                        }
+                    }
+
+                    editorPatternModel.numberColumnsProperty().subscribe(numberColumns -> {
+                        List<ColumnConstraints> columns = new ArrayList<>();
+                        for (int i = 0; i < numberColumns.intValue(); ++i) {
+                            ColumnConstraints columnConstraints = new ColumnConstraints();
+                            columnConstraints.setHgrow(Priority.ALWAYS);
+                            columnConstraints.setPercentWidth(100 / ((double)numberColumns.intValue()));
+                            columns.add(columnConstraints);
+                        }
+                        fieldContainer.getColumnConstraints().setAll(columns);
+                    });
+
+                    semanticsContainer.getChildren().add(fieldContainer);
+                });
+
+        controls.addAll(controlItems);
+        return controlItems;
+    }
+
+    private void createFieldView(ObservableField<?> observableField, EditorFieldModel fieldModel, List<KLReadOnlyBaseControl> controlItems, GridPane fieldContainer) {
+        Field<?> field = observableField.field();
+
+        // Generate node using the underlying ObservableField (read-only view)
+        // This was throwing a cast exception, expecting KLReadOnlyBaseControl.
+        Node baseControl = KlFieldHelper.createReadOnlyKlField(
+                (FieldRecord<?>) field,
+                observableField, // Use underlying ObservableField for display
+                getViewProperties(),
+                null,
+                genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC)
+        );
+
+        // Eliminated unsafe cast here...
+        if (baseControl instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
+//                                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
+//                                semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
+            controlItems.add(klReadOnlyBaseControl);
+        }
+
+        fieldModel.rowIndexProperty().subscribe(newRowIndex -> {
+            GridPane.setRowIndex(baseControl, newRowIndex.intValue());
+        });
+
+        fieldModel.columnIndexProperty().subscribe(newColumnIndex -> {
+            GridPane.setColumnIndex(baseControl, newColumnIndex.intValue());
+        });
+
+        fieldModel.columnSpanProperty().subscribe(newColumnSpan -> {
+            GridPane.setColumnSpan(baseControl, newColumnSpan.intValue());
+        });
+
+        fieldContainer.getChildren().add(baseControl);
     }
 
 
