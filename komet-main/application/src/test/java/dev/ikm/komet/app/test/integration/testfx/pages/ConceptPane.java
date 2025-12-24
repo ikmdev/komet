@@ -21,9 +21,9 @@ public class ConceptPane extends BasePage {
         super(robot);
     }
 
-    /*
-    * Clicks the "Properties"toggle 
-    */
+    /**
+     * Clicks the Properties toggle button.
+     */
     public ConceptPane clickPropertiesToggle() {
         robot.moveTo("PROPERTIES");
         waitForFxEvents();
@@ -36,9 +36,7 @@ public class ConceptPane extends BasePage {
     }
 
     /**
-     * ???
-     * Clicks "Edit Descriptions" button using tooltip lookup.
-     * Takes the parameter as the pane the button is located in.
+     * Clicks the Edit Descriptions button using tooltip lookup.
      */
     public ConceptPane clickEditDescriptionsButton() {
         Button editDescriptionsButton = findButtonByTooltip("Edit Descriptions");
@@ -52,9 +50,9 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-    /*
-    * Click the copy button using tooltip lookup
-    */
+    /**
+     * Clicks the Copy button next to the Komet ID.
+     */
     public ConceptPane clickCopyButton() {
         waitForFxEvents();
         // First move to the text containing "Komet ID: " to make the copy button appear
@@ -76,10 +74,8 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-    /*
-     * ???
-     *Click "Edit Axioms" button using tooltip lookup
-     * Takes the parameter as the pane the button is located in
+    /**
+     * Clicks the Edit Axioms button using tooltip lookup.
      */
     public ConceptPane clickEditAxiomsButton() {
         waitForFxEvents();
@@ -94,8 +90,9 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-    /*Click "Coordinates" button using tooltip lookup
-     * Takes the parameter as the pane the button is located in
+    /**
+     * Clicks the Coordinates button using tooltip lookup.
+     * @param paneName The name of the pane containing the button
      */
     public ConceptPane clickCoordinatesButton(String paneName) {
         Button coordinatesButton = findButtonByTooltip("Coordinates");
@@ -109,18 +106,8 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-    /*
-    *
-    *
-     * Can add the remaining buttons similarly
-     * Reasoner buton in each concept pane has same tooltip as Reasoner in navigator pane
-     * Different loactor will need to be used to differentiate them
-     *
-     *
-    */
-    
     /**
-     * Clicks on "OTHER NAMES" section
+     * Clicks on the OTHER NAMES section to edit.
      */
     public ConceptPane editOtherName() {
         robot.moveTo("OTHER NAMES (1):");
@@ -133,7 +120,10 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-    //Update Fully Qualified Name
+    /**
+     * Updates the Fully Qualified Name field.
+     * @param newFullyQualifiedName The new fully qualified name to enter
+     */
     public ConceptPane updateFullyQualifiedName(String newFullyQualifiedName) {
         robot.clickOn("Enter Name");
         waitForFxEvents();
@@ -145,9 +135,34 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-    //open stamp editor
+    /**
+     * Updates the Name field.
+     * @param newName The new name to enter
+     */
+    public ConceptPane updateName(String newName) {
+        robot.clickOn("Enter Name");
+        waitForFxEvents();
+        waitFor(300); // Ensure field is ready
+        robot.write(newName);
+        waitForFxEvents();
+        waitFor(300); // Ensure text is processed
+        LOG.info("Updated name to: {}", newName);
+        return this;
+    }
+
+    /**
+     * Opens the stamp editor dialog.
+     */
     public ConceptPane openStampEditor() {
         waitForFxEvents();
+        waitFor(1000);
+        
+        // Wait for the concept pane to load before looking for PROPERTIES
+        if (!waitForText("PROPERTIES", 20, 1000)) {
+            captureScreenshot("concept_pane_not_loaded_properties_missing");
+            throw new RuntimeException("PROPERTIES text not found - concept pane may not have loaded");
+        }
+        
         robot.moveTo("PROPERTIES");
         waitForFxEvents();
         robot.moveBy(0, 50);
@@ -159,9 +174,15 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-
+    /**
+     * Updates the stamp with status, module, and path.
+     * @param status The status to set
+     * @param module The module to select
+     * @param path The path to select
+     */
     public ConceptPane updateStamp(String status, String module, String path) {
         waitForFxEvents();
+        waitFor(500);
         this.updateStatus(status);
         waitForFxEvents();
         waitFor(200);
@@ -178,7 +199,10 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-    //update status by selecting in combobox
+    /**
+     * Updates the status by selecting from the dropdown.
+     * @param newStatus The status to select
+     */
     public ConceptPane updateStatus(String newStatus) {
         waitFor(500);
         robot.moveTo("Status");
@@ -221,9 +245,12 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         LOG.info("Updated status to: {}", newStatus);
         return this;
-    }    
+    }
 
-    //update module by selecting in combobox
+    /**
+     * Updates the module by selecting from the dropdown.
+     * @param newModule The module to select
+     */
     public ConceptPane updateModule(String newModule) {
         robot.moveTo("Module");
         waitForFxEvents();
@@ -267,7 +294,10 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-    //update path by selecting in combobox
+    /**
+     * Updates the path by selecting from the dropdown.
+     * @param newPath The path to select
+     */
     public ConceptPane updatePath(String newPath) {
         robot.moveTo("Path");
         waitForFxEvents();
@@ -307,6 +337,19 @@ public class ConceptPane extends BasePage {
             LOG.info("Clicked Edit Reference Component button");
         } else {
             LOG.warn("Edit Reference Component button not found");
+        }
+        return this;
+    }
+
+    public ConceptPane clickEditSemanticDetailsButton() {
+        //button has "Semantic Details" tooltip
+        Button semanticDetailsButton = findButtonByTooltip("Edit Details");
+        if (semanticDetailsButton != null) {
+            robot.interact(semanticDetailsButton::fire);
+            waitForFxEvents();
+            LOG.info("Clicked Semantic Edit Details button");
+        } else {
+            LOG.warn("Semantic Edit Details button not found");
         }
         return this;
     }
@@ -355,106 +398,253 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-    //searches for parent concept using the search panel in concept pane
+    /**
+     * Searches for parent concept using the search panel in concept pane.
+     * @param parentConceptName The name of the parent concept to search for
+     */
     public ConceptPane searchForParentConcept(String parentConcept) {
-        // Move to and click the search field
-        robot.moveTo("Top component with score order");
+        // Ensure search window is stable before interacting
+        waitFor(2000);
         waitForFxEvents();
-        robot.moveBy(0,-25);
-        waitForFxEvents();
-        robot.clickOn();
-        waitForFxEvents();
-        waitFor(200);
         
-        // Additional click to ensure focus
-        robot.clickOn();
+        // Focus the search window explicitly and verify it's focused
+        try {
+            robot.targetWindow().requestFocus();
+            waitForFxEvents();
+            waitFor(1000);
+            LOG.info("Search window focused for typing");
+        } catch (Exception e) {
+            LOG.warn("Could not explicitly focus search window: {}", e.getMessage());
+        }
+        
+        // Wait longer for the search field with more attempts
+        if (!waitForText("enter search query", 30, 300)) {
+            LOG.error("Search field 'enter search query' not found - window may have closed");
+            captureScreenshot("search_field_not_found");
+            throw new RuntimeException("Search field not found - window closed unexpectedly");
+        }
+        
+        LOG.info("Search field found, looking up TextField node");
         waitForFxEvents();
-        waitFor(300); // Ensure field is focused and ready
+        waitFor(500);
+        
+        // Find the TextField with exact prompt text "enter search query" that's in the active window
+        try {
+            var textFields = robot.lookup((javafx.scene.Node node) -> {
+                if (node instanceof javafx.scene.control.TextField) {
+                    javafx.scene.control.TextField tf = (javafx.scene.control.TextField) node;
+                    // Look for TextField with exact prompt text "enter search query", visible, editable, and focusTraversable
+                    return tf.isVisible() && 
+                           tf.isEditable() &&
+                           tf.isFocusTraversable() &&
+                           tf.getPromptText() != null && 
+                           tf.getPromptText().equalsIgnoreCase("enter search query") &&
+                           tf.getScene() != null &&
+                           tf.getScene().getWindow() != null &&
+                           tf.getScene().getWindow().isFocused();
+                }
+                return false;
+            }).queryAll();
+            
+            LOG.info("Found {} TextField nodes with exact prompt 'enter search query' in focused window", textFields.size());
+            
+            if (textFields.isEmpty()) {
+                // Try without the window focus check
+                LOG.warn("No TextField in focused window, trying all visible ones");
+                textFields = robot.lookup((javafx.scene.Node node) -> {
+                    if (node instanceof javafx.scene.control.TextField) {
+                        javafx.scene.control.TextField tf = (javafx.scene.control.TextField) node;
+                        return tf.isVisible() && 
+                               tf.isEditable() &&
+                               tf.getPromptText() != null && 
+                               tf.getPromptText().equalsIgnoreCase("enter search query");
+                    }
+                    return false;
+                }).queryAll();
+                LOG.info("Found {} TextField nodes total", textFields.size());
+            }
+            
+            if (textFields.isEmpty()) {
+                throw new RuntimeException("TextField with exact prompt 'enter search query' not found");
+            }
+            
+            // Find the correct TextField by checking screen position (looking for one near top=622)
+            javafx.scene.control.TextField searchField = null;
+            LOG.info("Found {} TextFields, checking screen bounds to find the correct one", textFields.size());
+            
+            int index = 0;
+            for (javafx.scene.Node node : textFields) {
+                javafx.scene.control.TextField tf = (javafx.scene.control.TextField) node;
+                index++;
+                
+                try {
+                    // Get the screen bounds of this TextField
+                    javafx.geometry.Bounds boundsInScreen = tf.localToScreen(tf.getBoundsInLocal());
+                    
+                    if (boundsInScreen != null) {
+                        double left = boundsInScreen.getMinX();
+                        double top = boundsInScreen.getMinY();
+                        double right = boundsInScreen.getMaxX();
+                        double bottom = boundsInScreen.getMaxY();
+                        
+                        LOG.info("TextField #{} - Screen bounds: [l={},t={},r={},b={}], Visible: {}, Focusable: {}", 
+                                index, (int)left, (int)top, (int)right, (int)bottom,
+                                tf.isVisible(), tf.isFocusTraversable());
+                        
+                        // Look for TextField with top coordinate around 622 (within 50 pixels tolerance)
+                        // and left coordinate around 229
+                        if (Math.abs(top - 622) < 50 && Math.abs(left - 229) < 50) {
+                            LOG.info("TextField #{} matches expected position (top~622, left~229) - selecting this one!", index);
+                            searchField = tf;
+                            break;
+                        }
+                    } else {
+                        LOG.warn("TextField #{} has null screen bounds", index);
+                    }
+                } catch (Exception e) {
+                    LOG.warn("TextField #{} failed to get bounds: {}", index, e.getMessage());
+                }
+            }
+            
+            if (searchField == null) {
+                LOG.warn("No TextField found at expected position, using first visible one");
+                // Fallback to first visible TextField
+                for (javafx.scene.Node node : textFields) {
+                    javafx.scene.control.TextField tf = (javafx.scene.control.TextField) node;
+                    if (tf.isVisible() && tf.isFocusTraversable()) {
+                        searchField = tf;
+                        break;
+                    }
+                }
+            }
+            
+            if (searchField == null) {
+                searchField = (javafx.scene.control.TextField) textFields.iterator().next();
+            }
+            
+            LOG.info("Selected TextField - Prompt: '{}', Editable: {}, Visible: {}, Focused: {}, Window focused: {}", 
+                    searchField.getPromptText(), searchField.isEditable(), searchField.isVisible(), 
+                    searchField.isFocused(), searchField.getScene().getWindow().isFocused());
+            
+            waitForFxEvents();
+            waitFor(500);
+            
+            // Click the TextField to focus it
+            robot.clickOn(searchField);
+            waitForFxEvents();
+            waitFor(1000);
+            
+            // Verify the field is now focused
+            if (!searchField.isFocused()) {
+                LOG.error("TextField is NOT focused after click - trying again");
+                robot.clickOn(searchField);
+                waitForFxEvents();
+                waitFor(800);
+            }
+            
+            LOG.info("TextField ready, focused: {}, ready to type", searchField.isFocused());
+            
+        } catch (Exception e) {
+            LOG.error("Failed to find or focus TextField", e);
+            captureScreenshot("failed_to_find_textfield");
+            throw new RuntimeException("Failed to find or focus TextField", e);
+        }
               
         // Enter search text and execute search
+        LOG.info("Starting to type: {}", parentConcept);
         robot.write(parentConcept);
         waitForFxEvents(); // Wait for text to be processed
-        waitFor(500); // Ensure all characters are in the field
+        waitFor(1000); // Ensure all characters are in the field
         
+        LOG.info("Pressing ENTER to search");
         robot.press(KeyCode.ENTER);
         waitForFxEvents();
         robot.release(KeyCode.ENTER);
         waitForFxEvents(); // Ensure Enter is processed
-        waitFor(500); // Wait for search to execute
+        waitFor(1000); // Wait for search to execute
        
         LOG.info("Searched for parent concept: {}", parentConcept);
         return this;
-
     }
 
-    //Select the parent concept from the search results
+    /**
+     * Selects the parent concept from the search results.
+     * @param parentConceptName The name of the parent concept to select
+     */
     public ConceptPane selectParentConcept(String parentConcept) {
         waitForFxEvents();
         
         // Additional wait to ensure results tree is fully rendered
         waitFor(3000);
-        waitForFxEvents();        
-        robot.moveTo("Top component with score order");
+        waitForFxEvents();     
+        //robot.moveTo("Top component with score order");
+        //waitForFxEvents();
+        robot.moveBy(0, 80);
         waitForFxEvents();
-        robot.moveBy(0, 25);
-        waitForFxEvents();
-        waitFor(300); // Stabilize before double-click
+        waitFor(1000); // Stabilize before double-click
+    
+        
+        // Then double-click to select
         robot.doubleClickOn();
         waitForFxEvents();
-        waitFor(300); // Ensure selection is processed
+        waitFor(750); // Ensure selection is processed
 
         LOG.info("Selected parent concept: {}", parentConcept);
         return this;
     }
 
-    //clicks search for a concept
+    /**
+     * Clicks the search for concept button.
+     */
     public ConceptPane clickSearchForConcept() {
         robot.moveTo("Choose replacement is-a");
         waitForFxEvents();
         robot.clickOn("Search for concept");
         waitForFxEvents(); // Wait for click to be processed
         waitFor(500); // Initial stabilization
+        
         // Wait for search popup to appear - verify it's actually open
         if (!waitForText("Top component with score order", 30, 300)) {
             LOG.error("Search popup did not appear after clicking 'Search for concept'");
             captureScreenshot("search_popup_not_appeared");
             throw new RuntimeException("Search popup failed to open");
         }
+        
+        // Get the currently focused window (should be the search popup)
+        waitForFxEvents();
+        try {
+            robot.targetWindow().requestFocus();
+            waitForFxEvents();
+            waitFor(300); // Allow focus to take effect
+            LOG.info("Search window focused successfully");
+        } catch (Exception e) {
+            LOG.warn("Could not explicitly focus search window: {}", e.getMessage());
+        }
+        
         waitForFxEvents(); // Ensure popup is stable
         waitFor(500); // Additional stabilization for popup content
         LOG.info("Clicked Search for concept and popup opened");
         return this;
     }
 
-    //drag to reference component search field
+    /**
+     * Drags a concept to the reference component search field.
+     */
     public ConceptPane dragToReferenceComponentField() {
         waitFor(1000); // Initial stabilization
-
         
         // Locate the drag source
         robot.moveTo("SORT BY: TOP COMPONENT");
         waitForFxEvents();
         robot.moveBy(0, 210); // Move down to the element in the tree
         waitForFxEvents();
-        waitFor(300); // Stabilize on element
+        waitFor(500); // Stabilize on element
         
-            // Begin drag        
-        robot.press(MouseButton.PRIMARY);
-        waitForFxEvents();
-        waitFor(300); // Hold before moving
+        // Use TestFX's drag API to automatically initiate and perform the drag
+        robot.drag(MouseButton.PRIMARY)
+             .moveTo("🔍  Search")
+             .drop();
         
-        // Small movement to initiate drag gesture
-        robot.moveBy(0, 10);
-        waitForFxEvents();
-        waitFor(200);
-        
-        // Continue dragging to target
-        robot.moveTo("🔍  Search");
-        waitForFxEvents();
-        waitFor(300); // Ensure we're at target
-        
-        // Release to drop
-        robot.release(MouseButton.PRIMARY);
         waitForFxEvents();
         waitFor(500); // Ensure drop is processed
         
@@ -462,23 +652,18 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-    public String getPopulatedReferenceComponent(){
-        // get the text from beneath the text "CONCEPT" withing the Reference Component section
-        robot.moveTo("CONCEPT");
+    public ConceptPane getPopulatedReferenceComponent(){
+        // Validate that success popup appears
+        if (!waitForText("Semantic Details Added Successfully!", 20, 500)) {
+            LOG.error("Success popup 'Semantic Details Added Successfully!' did not appear");
+            captureScreenshot("success_popup_not_found");
+            throw new RuntimeException("Success popup did not appear after adding semantic details");
+        }
+        LOG.info("Success popup 'Semantic Details Added Successfully!' appeared - validation successful");
         waitForFxEvents();
-        robot.moveBy(0, 30); // Move down to the populated reference component text
-        waitForFxEvents();
-        javafx.scene.Node referenceComponentNode = robot.lookup((javafx.scene.Node node) -> {
-            if (node instanceof javafx.scene.text.Text) {
-                String text = ((javafx.scene.text.Text) node).getText();
-                return text != null && !text.isEmpty();
-            }
-            return false;
-        }).query();
-        //return the text
-        String populatedReferenceComponent = ((javafx.scene.text.Text) referenceComponentNode).getText();
-        LOG.info("Populated Reference Component: {}", populatedReferenceComponent);
-        return populatedReferenceComponent;
+        waitFor(1000); // Wait for popup to be fully visible
+        
+        return this;
     }
 
 

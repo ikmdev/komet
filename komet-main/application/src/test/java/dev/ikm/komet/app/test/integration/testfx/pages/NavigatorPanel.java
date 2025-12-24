@@ -20,7 +20,9 @@ public class NavigatorPanel extends BasePage {
         super(robot);
     }
 
-    //Clicks the Home panel button
+    /**
+     * Opens the Home panel.
+     */
     public NavigatorPanel clickHome() {
         ToggleButton homeButton = findToggleButtonInNavigatorPane("Home");
         robot.interact(homeButton::fire);
@@ -53,7 +55,9 @@ public class NavigatorPanel extends BasePage {
         return this;
     }
 
-    //Clicks the Reasoner panel button
+    /**
+     * Opens the Reasoner panel.
+     */
     public NavigatorPanel clickReasoner() {
         ToggleButton reasonerButton = findToggleButtonInNavigatorPane("Reasoner");
         robot.interact(reasonerButton::fire);
@@ -62,7 +66,9 @@ public class NavigatorPanel extends BasePage {
         return this;
     }
 
-    //Clicks the Search panel button
+    /**
+     * Opens the Search panel.
+     */
     public NavigatorPanel clickSearch() {
         ToggleButton searchButton = findToggleButtonInNavigatorPane("Search");
         robot.interact(searchButton::fire);
@@ -71,7 +77,9 @@ public class NavigatorPanel extends BasePage {
         return this;
     }
 
-    //Clicks the Navigator panel button
+    /**
+     * Opens the Navigator panel.
+     */
     public NavigatorPanel clickNavigator() {
         ToggleButton navigatorButton = findToggleButtonInNavigatorPane("Navigator");
         robot.interact(navigatorButton::fire);
@@ -80,7 +88,9 @@ public class NavigatorPanel extends BasePage {
         return this;
     }
 
-    //Clicks the Nextgen Reasoner panel button
+    /**
+     * Opens the Nextgen Reasoner panel.
+     */
     public NavigatorPanel clickNextgenReasoner() {
         ToggleButton nextgenReasonerButton = findToggleButtonInNavigatorPane("Nextgen Reasoner");
         robot.interact(nextgenReasonerButton::fire);
@@ -89,7 +99,26 @@ public class NavigatorPanel extends BasePage {
         return this;
     }
 
-    //Clicks the Create button
+    /**
+     * Clicks the Reasoner starburst button.
+     */
+    public NavigatorPanel clickReasonerStarburst() {
+        // Move to button with name "+"
+        robot.moveTo("+");
+        waitForFxEvents();
+        // Move down 30 pixels to the starburst button
+        robot.moveBy(0, 30);
+        waitForFxEvents();
+        robot.clickOn();
+        waitForFxEvents();
+        LOG.info("Clicked Reasoner starburst button");
+        return this;
+    }
+
+    /**
+     * Clicks the Create button in the journal window toolbar.
+     * Waits for the button to appear with retry logic.
+     */
     public NavigatorPanel clickCreate() {
         // Wait for the Create button to appear (journal window needs time to load)
         javafx.scene.control.Button createButton = null;
@@ -130,7 +159,9 @@ public class NavigatorPanel extends BasePage {
         return this;
     }
 
-    //Click the Patterns button
+    /**
+     * Clicks the PATTERNS button to switch to patterns view.
+     */
     public NavigatorPanel clickPatterns() {
         clickOnText("PATTERNS");
         waitForFxEvents();
@@ -215,12 +246,69 @@ public class NavigatorPanel extends BasePage {
         waitForFxEvents(); // Wait for click to be processed
         type(query);
         waitForFxEvents(); // Wait for text to be processed
+        waitFor(500); // Wait for typing to settle
         robot.press(KeyCode.ENTER);
-        waitForFxEvents();
+        robot.release(KeyCode.ENTER);
+        robot.press(KeyCode.ENTER);
         robot.release(KeyCode.ENTER);
         waitForFxEvents(); // Ensure Enter is processed
-        waitFor(1000);
+        waitFor(2000);
         LOG.info("Searched for: {}", query);
+        return this;
+    }
+
+    /**
+     * Opens a specific search result by finding and double-clicking on it.
+     * @param searchText The text to search for within the search results list
+     */
+    public NavigatorPanel openNextGenSearchResult(String searchText) {
+        // Wait for search results to appear
+        waitForFxEvents();
+        waitFor(1000); // Wait for results to populate
+        
+        // Find the list control by screen coordinates [l=59,t=181,r=431,b=1032]
+        var listControls = robot.lookup((javafx.scene.Node node) -> {
+            return (node instanceof javafx.scene.control.ListView || 
+                    node instanceof javafx.scene.control.TreeView) && 
+                   node.isVisible();
+        }).queryAll();
+        
+        javafx.scene.Node targetList = null;
+        for (javafx.scene.Node node : listControls) {
+            try {
+                javafx.geometry.Bounds boundsInScreen = node.localToScreen(node.getBoundsInLocal());
+                if (boundsInScreen != null) {
+                    double left = boundsInScreen.getMinX();
+                    double top = boundsInScreen.getMinY();
+                    
+                    // Match list at position left~59, top~181 (50px tolerance)
+                    if (Math.abs(left - 59) < 50 && Math.abs(top - 181) < 50) {
+                        LOG.info("Found target list at position [l={},t={}]", (int)left, (int)top);
+                        targetList = node;
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                LOG.warn("Failed to check list coordinates: {}", e.getMessage());
+            }
+        }
+        
+        if (targetList == null) {
+            throw new RuntimeException("Could not find list at position [l=59,t=181]");
+        }
+        
+        // Find the text within the list
+        javafx.scene.Node resultNode = robot.from(targetList).lookup((javafx.scene.Node node) -> {
+            if (node instanceof javafx.scene.text.Text) {
+                String text = ((javafx.scene.text.Text) node).getText();
+                return text != null && text.contains(searchText);
+            }
+            return false;
+        }).query();
+        
+        robot.doubleClickOn(resultNode);
+        waitForFxEvents();
+        LOG.info("Opened search result: {}", searchText);
         return this;
     }
     
@@ -258,15 +346,19 @@ public class NavigatorPanel extends BasePage {
         return this;
     }
 
-        //scroll horizontally to the left of right and how many times using the direction and amount
+    /**
+     * Scrolls horizontally in the specified direction.
+     * @param direction The direction to scroll ("LEFT" or "RIGHT")
+     * @param amount The number of times to scroll
+     */
     public NavigatorPanel scrollHorizontally(String direction, int amount) {
-                        //click in the center of the screen
-                        robot.clickOn(250,250);
-                        for (int i = 0; i < amount; i++) {
-                                //PRESS THE RIGHT DIRECTIONAL ARROW KEY
-                                robot.press(KeyCode.valueOf(direction));
-                                robot.release(KeyCode.valueOf(direction));
-                }
+        // Click in the center of the screen
+        robot.clickOn(250, 250);
+        for (int i = 0; i < amount; i++) {
+            // Press the directional arrow key
+            robot.press(KeyCode.valueOf(direction));
+            robot.release(KeyCode.valueOf(direction));
+        }
         LOG.info("Scrolled horizontally {} by {} times", direction, amount);
         return this;
     }

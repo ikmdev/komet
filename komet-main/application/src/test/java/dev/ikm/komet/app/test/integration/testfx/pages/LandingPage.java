@@ -64,8 +64,8 @@ public class LandingPage extends BasePage {
         return this;
     }
 
-    /*
-    *Click "NEW PROJECT JOURNAL" button
+    /**
+     * Clicks the NEW PROJECT JOURNAL button.
      */
     public LandingPage clickNewProjectJournal() {
         waitForFxEvents();
@@ -76,9 +76,9 @@ public class LandingPage extends BasePage {
         return this;
     }
 
-    /*
-    * Click Home button in landing page
-    */
+    /**
+     * Clicks the Home button in the landing page.
+     */
     public LandingPage clickHomeButton() {
         clickOnText("Home");
         waitForFxEvents();
@@ -86,9 +86,9 @@ public class LandingPage extends BasePage {
         return this;
     }
 
-    /*
-    * Click Favorites button in landing page
-    */
+    /**
+     * Clicks the Favorites button in the landing page.
+     */
     public LandingPage clickFavoritesButton() {
         clickOnText("Favorites");
         waitForFxEvents();
@@ -96,9 +96,9 @@ public class LandingPage extends BasePage {
         return this;
     }
 
-    /*
-    * Click Comments button in landing page
-    */
+    /**
+     * Clicks the Comments button in the landing page.
+     */
     public LandingPage clickCommentsButton() {
         clickOnText("Comments");
         waitForFxEvents();
@@ -106,19 +106,20 @@ public class LandingPage extends BasePage {
         return this;
     }
 
-    /*
-    * Click Notifications button in landing page
-    */
+    /**
+     * Clicks the Notifications button in the landing page.
+     */
     public LandingPage clickNotificationsButton() {
         clickOnText("Notifications");
         waitForFxEvents();
         LOG.info("Clicked Notifications button");
         return this;
     }
-    
-    /*
-    * Deletes a journal by its name.
-    */
+
+    /**
+     * Deletes a journal by its name.
+     * @param journalName The name of the journal to delete
+     */
     public LandingPage deleteJournal(String journalName) {
         robot.moveTo(journalName);
         robot.moveBy(200, -150);

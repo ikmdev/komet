@@ -98,31 +98,11 @@ public abstract class BasePage {
 
     /**
      * Captures a screenshot with the given description.
+     * Note: Screenshots are only saved to file on test failure via TestReporter.logFailure()
      */
     protected void captureScreenshot(String description) {
-        try {
-            String timestamp = java.time.LocalDateTime.now().format(
-                java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS"));
-            String filename = String.format("%s_%s.png", timestamp, 
-                description.replaceAll("[^a-zA-Z0-9-_]", "_"));
-            
-            java.nio.file.Path screenshotDir = java.nio.file.Paths.get(
-                System.getProperty("user.home"), "Solor", "test-screenshots");
-            java.nio.file.Files.createDirectories(screenshotDir);
-            
-            java.io.File screenshotFile = screenshotDir.resolve(filename).toFile();
-            
-            // Capture the entire screen including all windows and dialogs
-            java.awt.Robot awtRobot = new java.awt.Robot();
-            java.awt.Rectangle screenRect = new java.awt.Rectangle(
-                java.awt.Toolkit.getDefaultToolkit().getScreenSize());
-            java.awt.image.BufferedImage screenCapture = awtRobot.createScreenCapture(screenRect);
-            
-            javax.imageio.ImageIO.write(screenCapture, "png", screenshotFile);
-            LOG.info("Screenshot captured: {}", screenshotFile.getAbsolutePath());
-        } catch (Exception e) {
-            LOG.error("Failed to capture screenshot: {}", description, e);
-        }
+        // Log the screenshot attempt - actual file saving only happens on test failure
+        LOG.info("Screenshot point: {}", description);
     }
     
     /**

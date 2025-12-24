@@ -148,6 +148,23 @@ public class TestReporter {
             extentTest.log(Status.FAIL, errorMessage,
                     MediaEntityBuilder.createScreenCaptureFromBase64String(base64Image).build());
             
+            // Also save the screenshot to file
+            try {
+                if (!java.nio.file.Files.exists(screenshotDirectory)) {
+                    java.nio.file.Files.createDirectories(screenshotDirectory);
+                    LOG.info("Created screenshot directory: {}", screenshotDirectory);
+                }
+                
+                String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+                String filename = String.format("FAILURE_%s_%s.png", stepDescription.replaceAll("[^a-zA-Z0-9-_]", "_"), timestamp);
+                Path screenshotPath = screenshotDirectory.resolve(filename);
+                
+                java.nio.file.Files.write(screenshotPath, imageBytes);
+                LOG.info("Failure screenshot saved to file: {}", screenshotPath);
+            } catch (Exception fileException) {
+                LOG.error("Failed to save failure screenshot to file", fileException);
+            }
+            
             LOG.error("Logged failure with screenshot: {}", stepDescription, error);
         } catch (Exception e) {
             LOG.error("Failed to capture screenshot for failure at step: " + stepDescription, e);
@@ -160,6 +177,12 @@ public class TestReporter {
     
     public void saveScreenshot(String name) {
         try {
+            // Ensure screenshot directory exists
+            if (!java.nio.file.Files.exists(screenshotDirectory)) {
+                java.nio.file.Files.createDirectories(screenshotDirectory);
+                LOG.info("Created screenshot directory: {}", screenshotDirectory);
+            }
+            
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
             String filename = String.format("%s_%s.png", name, timestamp);
             Path screenshotPath = screenshotDirectory.resolve(filename);

@@ -2,6 +2,7 @@ package dev.ikm.komet.app.test.integration.testfx;
 
 import dev.ikm.komet.app.App;
 import dev.ikm.komet.app.AppState;
+import dev.ikm.komet.app.test.integration.testfx.helpers.ConceptWorkflow;
 import dev.ikm.komet.app.test.integration.testfx.pages.*;
 import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
 import org.junit.jupiter.api.*;
@@ -41,7 +42,7 @@ public class DeXAuthoringProcessTest {
                         System.getProperty(PROPERTY_USER_HOME, System.getProperty("java.io.tmpdir")));
         private static final String SOLOR_DIR = "Solor";
         private static final String TEST_SCREENSHOTS_DIR = "test-screenshots-dex";
-        private static final String EXTENT_REPORTS_DIR = "extent-reports";
+        private static final String EXTENT_REPORTS_DIR = "extent-reports-dex";
 
         // Version tracking
         private static final String PROPERTY_APP_VERSION = "komet.app.version";
@@ -62,17 +63,18 @@ public class DeXAuthoringProcessTest {
         private static final String USERNAME = credentialsReader.get("komet_username", "KOMET user");
         private static final String PASSWORD = credentialsReader.get("komet_password", "KOMET user");
 
-        //concept details
-        String fullyQualifiedName = "Albumin";
-        String status = "Active";
-        String moduleName = "Device Extension Module";
-        String path = "Development path";
-        String parentConceptName = "Target";
+        // Concept Details
+        String fullyQualifiedName;
+        String status;
+        String moduleName;
+        String path;
+        String parentConceptName;
 
         private Path screenshotDirectory;
         private Path extentReportsDirectory;
         private App webApp;
         private TestReporter reporter;
+        private ConceptWorkflow conceptWorkflow;
 
         @BeforeAll
         public void setUpClass() {
@@ -93,6 +95,7 @@ public class DeXAuthoringProcessTest {
                                 "DeXAuthoringProcessTest");
                 reporter.createTest("DeX Authoring Process Test - v" + APP_VERSION,
                                 "Complete DeX authoring workflow with GitHub integration");
+                conceptWorkflow = new ConceptWorkflow(robot, reporter);
         }
 
         @AfterEach
@@ -118,7 +121,7 @@ public class DeXAuthoringProcessTest {
         }
 
         @Test
-        @DisplayName("Complete DeX Authoring Process - New Concept Creation")
+        @DisplayName("DeX Authoring Process - New Concept Creation")
         public void testDeXAuthoringProcess(FxRobot robot) throws TimeoutException, InterruptedException {
                 LOG.info("Starting DeX Authoring Process Test");
 
@@ -212,496 +215,508 @@ public class DeXAuthoringProcessTest {
                 }
 
                 /*
-                 // Step 2: In the tool bar, click Exchange
-                 try {
-                        reporter.logBeforeStep("Step 2: CLICK 'Exchange'");
-                        robot.clickOn("Exchange");
-                        waitForFxEvents();
-                        reporter.logAfterStep("Step 2: CLICK 'Exchange' successful");
-                 } catch (Exception e) {
-                        reporter.logFailure("Step 2: CLICK 'Exchange'", e);
+
+                // ========== Steps 2-6: Connect to GitHub Repository ==========
+                conceptWorkflow.connectToGitHub(GITHUB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
+
+                // ========== Steps 7-33: Create Concepts ==========
+                // Create Target concept
+                conceptWorkflow.createConcept("Albumin", "Active", "Device Extension Module", "Development path", "Target");
+                conceptWorkflow.addConceptToDexMembershipPattern("Albumin", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
+
+                // 34. Repeat for all necessary DeX concepts (Target, Analyte, Company/Device Labeler)
+                conceptWorkflow.createConcept("Albumin", "Active", "Device Extension Module", "Development path", "Analyte");
+                conceptWorkflow.addConceptToDexMembershipPattern("Albumin", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
+
+                // Create Company concept
+                conceptWorkflow.createConcept("Roche Diagnostics GmbH", "Active", "Device Extension Module", "Development path", "Company");
+                conceptWorkflow.addConceptToDexMembershipPattern("Roche Diagnostics GmbH", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
+
+                LOG.info("✓ Concept Creation: PASSED");
+
+                */
+
+                // ========== DeX Data Generation ==========
+                LOG.info("===== DeX Data Generation =====");
+
+                String suppliedBrandName = "Albumin Gen2 5166861190";
+                String indentifiedDevice = "Roche Diagnostics COBAS Integra Albumin Gen.2";
+
+                // Open a new journal for DeX data entry
+                try {
+                        reporter.logBeforeStep("Open a new journal for DeX data entry");
+                        landingPage.clickNewProjectJournal();
+                        reporter.logAfterStep("Opened a new journal for DeX data entry successfully");
+                } catch (Exception e) {
+                        reporter.logFailure("Open a new journal for DeX data entry", e);
                         throw e;
-                 }
-                 
-                 // Step 3: Click Info
-                 try {
-                        reporter.logBeforeStep("Step 3: CLICK 'Info'");
+                }
+
+                // Step 35: Search for the identified device by the supplied brand name + version/model for the DeX record you are creating
+                try {
+                        reporter.logBeforeStep("Step 35: Search for the identified device by the supplied brand name + version/model for the DeX record you are creating");
+                        navigator.clickNextgenSearch();
+                        navigator.nextgenSearch(suppliedBrandName);
+                        navigator.openNextGenSearchResult(indentifiedDevice);
+                        conceptPane.clickCopyButton();
+                        reporter.logAfterStep("Step 35: Searched for the identified device successfully");
+                } catch (Exception e) {
+                        reporter.logFailure("Step 35: Search for the identified device by the supplied brand name + version/model for the DeX record you are creating", e);
+                        throw e;
+                }
+
+                // Step 36: Add the Device Name from the Device Extension Data as an 'Other Name'
+                try {
+                        reporter.logBeforeStep("Step 36: Add the Device Name from the Device Extension Data as an 'Other Name'");
+                        conceptPane.clickEditDescriptionsButton();
+                        conceptPane.updateName(indentifiedDevice);
+                        conceptPane.updateModule("Device Extension Module");
+                        conceptPane.submit();
+                        reporter.logAfterStep("Step 36: Added the Device Name from the Device Extension Data as an 'Other Name' successfully");
+                } catch (Exception e) {
+                        reporter.logFailure("Step 36: Add the Device Name from the Device Extension Data as an 'Other Name'", e);
+                        throw e;
+                }
+
+                /*
+                // Step 49: Run Reasoner
+                conceptWorkflow.runReasoner();
+
+                // Step 50: Click Info
+                try {
+                        reporter.logBeforeStep("Step 50: Click 'Info'");
                         robot.clickOn("Info");
                         waitForFxEvents();
-                        reporter.logAfterStep("Step 3: CLICK 'Info' successful");
-                 } catch (Exception e) {
-                        reporter.logFailure("Step 3: CLICK 'Info'", e);
+                        reporter.logAfterStep("Step 50: Clicked 'Info' successfully");
+                } catch (Exception e) {
+                        reporter.logFailure("Step 50: Click 'Info'", e);
                         throw e;
-                 }
-                 
-                 // Step 4: Input the repo url and the user's github account info
-                 try {
-                        reporter.logBeforeStep("Step 4: INPUT Repo URL and GitHub Credentials");
-                        gitHubConnectionPage.enterGitHubCredentials(GITHUB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
-                        reporter.logAfterStep("Step 4: INPUT Repo URL and GitHub Credentials successful");
-                 } catch (Exception e) {
-                        reporter.logFailure("Step 4: INPUT Repo URL and GitHub Credentials", e);
+                }
+
+                // Step 51: Click Sync
+                try {
+                        reporter.logBeforeStep("Step 51: Click 'Sync'");
+                        robot.clickOn("Sync");
+                        waitForFxEvents();
+                        reporter.logAfterStep("Step 51: Clicked 'Sync' successfully");
+                } catch (Exception e) {
+                        reporter.logFailure("Step 51: Click 'Sync'", e);
                         throw e;
-                 }
-                 
-                  // Step 5: Click Connect
-                  try {
-                        reporter.logBeforeStep("Step 5: CLICK 'Connect'");
-                        robot.clickOn("CONNECT");
-                        waitForFxEvents();
-                        reporter.logAfterStep("Step 5: CLICK 'Connect' successful");
-                  } catch (Exception e) {
-                        reporter.logFailure("Step 5: CLICK 'Connect'", e);
-                        throw e;
-                  }
-                  
-                  // Step 6: Wait for connection to establish and close the GitHub Info popup
-                  try {
-                        reporter.logBeforeStep("Step 6: Wait for GitHub connection and close 'GitHub Info' popup");
-                        
-                        // Wait for "GitHub Info" popup to appear (indicates successful connection)
-                        boolean popupFound = false;
-                        for (int i = 0; i < 30; i++) {
-                              waitForFxEvents();
-                              try {
-                                    // Look for "GitHub Info" text in the scene
-                                    if (robot.lookup("GitHub Info").tryQuery().isPresent()) {
-                                          popupFound = true;
-                                          LOG.info("GitHub Info popup appeared after {} attempts", i + 1);
-                                          break;
-                                    }
-                              } catch (Exception e) {
-                                    // Popup not found yet, continue waiting
-                              }
-                              Thread.sleep(1000);
-                        }
-                        
-                        if (!popupFound) {
-                              throw new RuntimeException("GitHub Info popup did not appear within 15 seconds");
-                        }
-                        
-                        waitForFxEvents();
-                        
-                        // Click CLOSE button to close the popup - use moveTo first then click
-                        robot.clickOn();
-                        waitForFxEvents();
-                        robot.moveTo("CLOSE");
-                        waitForFxEvents();
-                        robot.clickOn();
-                        waitForFxEvents();
-                        
-                        reporter.logAfterStep("Step 6: GitHub connection verified - 'GitHub Info' popup closed successfully");
-                  } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        LOG.error("Interrupted while waiting for GitHub connection", e);
-                        reporter.logFailure("Step 6: Wait for GitHub connection", e);
-                        throw new RuntimeException("Interrupted while waiting for GitHub connection", e);
-                  } catch (Exception e) {
-                        reporter.logFailure("Step 6: Wait for GitHub connection and close popup", e);
-                        throw e;
-                 }
+                }
 
-                 */
-        
-                // Steps 7-33: Create the first concept with specified details
-                createConcept(robot, fullyQualifiedName, status, moduleName, path, parentConceptName);
+                LOG.info("✓ DeX Data Generation: PASSED");
 
-                // 34. Repeat for all necessary DeX concepts (Target, Analyte, Company/Device
-                createConcept(robot, "Albumin", "Active", "Device Extension Module", "Development path", "Target");
-                createConcept(robot, "Albumin", "Active", "Device Extension Module", "Development path", "Company/Device Labeler");
+                */
 
+                // ========== Add DeX Device Company Semantic ==========
+                // Step 53-62
+                conceptWorkflow.addSemanticToPattern("Device Company Pattern", "Active", "Device Extension Module", 
+                                                    "Development path", "Albumin Gen2 5166861190", "Roche Diagnostics GmbH");
 
-                LOG.info("✓ DeX Authoring Process Test: PASSED");
+                LOG.info("✓ Add DeX Device Company Semantic: PASSED");
 
+                // ========== Add DeX Associated Devices Semantic ==========
+                // Step 63-71
+
+                // Add Associated Devices semantic (with multiple device identifiers)
+                String[] associatedDeviceIdentifiers1 = {"Device1", "Device2", "Device3"};
+
+                conceptWorkflow.addSemanticToPattern("Associated Devices Pattern", "Active", "Device Extension Module", 
+                                                    "Development path", "Roche Diagnostics COBAS Integra Albumin Gen.2", associatedDeviceIdentifiers1);
+
+                LOG.info("✓ Add DeX Associated Devices Semantic: PASSED");
+
+                // ========== Add DeX Test Performed Semantic ==========
+                // Step 72-87
+
+                // Open new journal
+                
+                String patternName = "Test Performed Pattern";
+                try {
+                reporter.logBeforeStep("Open a new journal for " + patternName + " semantic entry");
+                landingPage.clickNewProjectJournal();
+                reporter.logAfterStep("Opened a new journal for " + patternName + " semantic entry successfully");
+                } catch (Exception e) {
+                reporter.logFailure("Open a new journal for " + patternName + " semantic entry", e);
+                throw e;
+                }
+
+                // Open nextgen navigator
+                try {
+                reporter.logBeforeStep("Open NextGen Navigator");
+                navigator.clickNextgenNavigator();
+                reporter.logAfterStep("Opened NextGen Navigator successfully");
+                } catch (Exception e) {
+                reporter.logFailure("Open NextGen Navigator", e);
+                throw e;
+                }
+
+                // Click Patterns tab
+                try {
+                reporter.logBeforeStep("Click Patterns tab");
+                navigator.clickPatterns();
+                reporter.logAfterStep("Clicked Patterns tab successfully");
+                } catch (Exception e) {
+                reporter.logFailure("Click Patterns tab", e);
+                throw e;
+                }
+
+                // Move to the specified pattern
+                try {
+                reporter.logBeforeStep("Move to '" + patternName + "'");
+                robot.moveTo(patternName);
+                //if pattern is not visible, scroll down 10, repeat till visible
+                while (!robot.lookup(patternName).tryQuery().isPresent()) {
+                        verticalScroll(KeyCode.DOWN, 10);
+                        waitForFxEvents();
+                }
+
+                           reporter.logAfterStep("Moved to '" + patternName + "' successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Move to '" + patternName + "'", e);
+            throw e;
         }
 
-        /**
-         * Creates a new concept with the specified details (Steps 7-33).
-         * This method encapsulates the complete workflow for creating a new concept including:
-         * - Creating a project journal
-         * - Setting up concept with stamp information
-         * - Adding fully qualified name
-         * - Configuring axioms and parent concept
-         * - Creating semantic element
-         * - Setting up reference component
-         * - Returning to landing page for next concept
-         *
-         * @param robot FxRobot instance for UI interactions
-         * @param fullyQualifiedName The fully qualified name for the concept
-         * @param status The status for the concept (e.g., "Active")
-         * @param moduleName The module name (e.g., "Device Extension Module")
-         * @param path The path name (e.g., "Development path")
-         * @param parentConceptName The parent concept name to search for and link
-         * @throws InterruptedException if thread is interrupted during execution
-         */
-        private void createConcept(FxRobot robot, String fullyQualifiedName, String status, 
-                                  String moduleName, String path, String parentConceptName) 
-                throws InterruptedException {
+        // Right Click the pattern and select "Add New Semantic Element"
+        try {
+            reporter.logBeforeStep("Right Click the pattern and select 'Add New Semantic Element'");
+            robot.rightClickOn(patternName);
+            waitForFxEvents();
+            robot.clickOn("Add New Semantic Element");
+            waitForFxEvents();
+            navigator.clickNextgenNavigator();
+            reporter.logAfterStep("Right Clicked the pattern and selected 'Add New Semantic Element' successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Right Click the pattern and select 'Add New Semantic Element'", e);
+            throw e;
+        }
+
+        // Update the Stamp
+        try {
+            reporter.logBeforeStep("Update the Stamp to reflect Module: " + moduleName);
+            conceptPane.updateStamp(status, moduleName, path);
+            reporter.logAfterStep("Updated the Stamp to reflect Module: " + moduleName + " successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Update the Stamp to reflect Module: " + moduleName, e);
+            throw e;
+        }
+
+        // Click the pencil icon that is in line with the Reference Component section header
+        try {
+            reporter.logBeforeStep("Click the pencil icon that is in line with the Reference Component section header");
+            conceptPane.clickEditReferenceComponentButton();
+            reporter.logAfterStep("Clicked the pencil icon that is in line with the Reference Component section header successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click the pencil icon that is in line with the Reference Component section header", e);
+            throw e;
+        }
+
+        // Paste UUID from clipboard
+        try {
+            reporter.logBeforeStep("Paste UUID from clipboard");
+            robot.rightClickOn("🔍  Search");
+            waitForFxEvents();
+            robot.clickOn("Paste");
+            waitForFxEvents();
+            waitFor(1500); // Wait for results to load
+            //press down arrow then press enter
+            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitForFxEvents();
+            reporter.logAfterStep("Pasted UUID from clipboard successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Paste UUID from clipboard", e);
+            throw e;
+        }
+
+        // Click Confirm and verify the correct reference component populates
+        try {
+            reporter.logBeforeStep("Click Confirm and verify the correct reference component populates");
+            robot.clickOn("CONFIRM");
+            waitForFxEvents();
+            reporter.logAfterStep("Clicked Confirm and verified the correct reference component populated successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click Confirm and verify the correct reference component populates", e);
+            throw e;
+        }
+
+        // Click the pencil that is in line with the Semantic Details section header
+        try {
+            reporter.logBeforeStep("Click the pencil that is in line with the Semantic Details section header");
+            conceptPane.clickEditSemanticDetailsButton();
+            reporter.logAfterStep("Clicked the pencil that is in line with the Semantic Details section header successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click the pencil that is in line with the Semantic Details section header", e);
+            throw e;
+        }
+
+        //move to analyte search field
+        try{
+                reporter.logBeforeStep("Search and select Analyte");
+                robot.moveTo("Analyte:").moveBy(40,40).clickOn();
+                robot.write(analyteConcept);
+                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+                waitForFxEvents();
+        } catch (Exception e) {
+                reporter.logFailure("Search and select Analyte", e);
+                throw e;
+        }
+
+        //move to target search field
+        try{
+                reporter.logBeforeStep("Search and select Target");
+                robot.moveTo("Target:").moveBy(40,40).clickOn();
+                robot.write(targetConcept);
+                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+                waitForFxEvents();
+        } catch (Exception e) {
+                reporter.logFailure("Search and select Target", e);
+                throw e;
+        }      
+
+        //move to test performed field
+        try{
+                reporter.logBeforeStep("Search and select Test Performed");     
+                robot.moveTo("Test Performed:").moveBy(40,40).clickOn();
+                robot.write(testPerformedConcept);
+                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+                waitForFxEvents();
+        } catch (Exception e) {
+                reporter.logFailure("Search and select Test Performed", e);
+                throw e;
+        }
+
+        //move to insrtrument field
+        try{
+                reporter.logBeforeStep("Search and select Instrument");
+                robot.moveTo("Instrument:").moveBy(40,40).clickOn();
+                robot.write(instrumentConcept);
+                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+                waitForFxEvents();
+        } catch (Exception e) {
+                reporter.logFailure("Search and select Instrument", e);
+                throw e;
+        }
+
+        //move to specimen field
+        try{
+                reporter.logBeforeStep("Search and select Specimen");
+                robot.moveTo("Specimen:").moveBy(40,40).clickOn();
+                robot.write(specimenConcept);
+                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+                waitForFxEvents();
+        } catch (Exception e) {
+                reporter.logFailure("Search and select Specimen", e);
+                throw e;
+        }
+
+        //move to detection limit field
+        try{
+                reporter.logBeforeStep("Type in the Detection Limit");
+                robot.moveTo("Detection Limit:").moveBy(0,25).doubleClickOn();
+                robot.write(detectionLimit);
+                waitForFxEvents();
+                reporter.logAfterStep("Typed in the Detection Limit successfully");
+        } catch (Exception e) {
+                reporter.logFailure("Type in the Detection Limit", e);
+                throw e;
+        }
+
+        //move to example ucum units field
+        try{
+                reporter.logBeforeStep("Type in the Example UCUM units");
+                robot.moveTo("Example UCUM units:").moveBy(0,25).doubleClickOn();
+                robot.write(exampleUcumUnits);
+                waitForFxEvents();
+                reporter.logAfterStep("Typed in the Example UCUM units successfully");
+        } catch (Exception e) {
+                reporter.logFailure("Type in the Example UCUM units", e);
+                throw e;
+        }
+
+                //click submit
+        try {
+                reporter.logBeforeStep("Click Submit to save the semantic");
+                conceptPane.submit();
+                reporter.logAfterStep("Clicked Submit to save the semantic successfully");
+        } catch (Exception e) {
+                reporter.logFailure("Click Submit to save the semantic", e);
+                throw e;
+        }
+
+                //Repeat for all necessary Test Performed Semantics for the device
                 
-                ConceptPane conceptPane = new ConceptPane(robot);
-                LandingPage landingPage = new LandingPage(robot);
-                NavigatorPanel navigator = new NavigatorPanel(robot);
+        LOG.info("✓ Add DeX Test Performed Semantic: PASSED");
 
-                // 7. Open an existing project journal or create a new one
+        // ========== Add DeX Allowed Results Semantic ==========
+                // Step 88-97
+
+                String patternName = "Allowed Results Pattern";
+                     
+                // Open new journal
                 try {
-                        reporter.logBeforeStep("Step 7: CLICK 'Create Project Journal'");
-                        landingPage.clickNewProjectJournal();
-                        reporter.logAfterStep("Step 7: CLICK 'Create Project Journal' successful");
+                reporter.logBeforeStep("Open a new journal for " + patternName + " semantic entry");
+                landingPage.clickNewProjectJournal();
+                reporter.logAfterStep("Opened a new journal for " + patternName + " semantic entry successfully");
                 } catch (Exception e) {
-                        reporter.logFailure("Step 7: CLICK 'Create Project Journal'", e);
-                        throw e;
+                reporter.logFailure("Open a new journal for " + patternName + " semantic entry", e);
+                throw e;
                 }
 
-                // 8. Click the "+" icon in the journal window toolbar
+                // Open nextgen navigator
                 try {
-                        reporter.logBeforeStep("Step 8: CLICK '+' Icon in Journal Toolbar");
-                        navigator.clickCreate();
-                        reporter.logAfterStep("Step 8: CLICK '+' Icon in Journal Toolbar successful");
+                reporter.logBeforeStep("Open NextGen Navigator");
+                navigator.clickNextgenNavigator();
+                reporter.logAfterStep("Opened NextGen Navigator successfully");
                 } catch (Exception e) {
-                        reporter.logFailure("Step 8: CLICK '+' Icon in Journal Toolbar", e);
-                        throw e;
+                reporter.logFailure("Open NextGen Navigator", e);
+                throw e;
                 }
 
-                // 9. Click New Concept
+                // Click Patterns tab
                 try {
-                        reporter.logBeforeStep("Step 9: CLICK 'New Concept'");
-                        robot.clickOn("New Concept");
-                        reporter.logAfterStep("Step 9: CLICK 'New Concept' successful");
+                reporter.logBeforeStep("Click Patterns tab");
+                navigator.clickPatterns();
+                reporter.logAfterStep("Clicked Patterns tab successfully");
                 } catch (Exception e) {
-                        reporter.logFailure("Step 9: CLICK 'New Concept'", e);
-                        throw e;
+                reporter.logFailure("Click Patterns tab", e);
+                throw e;
                 }
 
-                // 10. Update stamp information:
-                // - Module: Device Extension Module
-                // - Path: Development Path
+                // Move to the specified pattern
                 try {
-                        reporter.logAfterStep("Step 10: Update Stamp Information");
-                        conceptPane.openStampEditor();
-                        conceptPane.updateStamp(status, moduleName, path);
-                        reporter.logAfterStep("Step 10: Updated Stamp Information successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 10: Update Stamp Information", e);
-                        throw e;
-                }
-
-                // 11. Click the Properties Panel toggle in the top right of the window
-                try {
-                        reporter.logBeforeStep("Step 11: Click the Properties Panel toggle");
-                        conceptPane.clickPropertiesToggle();
-                        reporter.logAfterStep("Step 11: Clicked the Properties Panel toggle");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 11: Click the Properties Panel toggle", e);
-                        throw e;
-                }
-
-                // 12. Add the Fully Qualified Name information
-                // - Module: Device Extension Module
-                try {
-                        reporter.logBeforeStep("Step 12: Update Fully Qualified Name");
-                        conceptPane.updateFullyQualifiedName(fullyQualifiedName);
-                        conceptPane.updateModule(moduleName);
-                        reporter.logAfterStep("Step 12: Updated Fully Qualified Name successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 12: Update Fully Qualified Name", e);
-                        throw e;
-                }
-
-                // 13. Click Submit
-                try {
-                        reporter.logBeforeStep("Step 13: USER to CLICK Submit button");
-                        conceptPane.submit();
-                        reporter.logAfterStep("Step 13: Clicked Submit button");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 13: USER to CLICK Submit button", e);
-                        throw e;
-                }
-
-                /*
-                // Scroll horizontally to the left to reveal the pencil icon
-                robot.clickOn(250, 250);
-                horizontalScroll(robot, KeyCode.LEFT, 20);
-                waitForFxEvents();
-                */
-
-                // 14. Click the pencil icon that is in line with the axioms section header
-                try {
-                        reporter.logBeforeStep("Step 14: Click Axioms Pencil Icon");
-                        conceptPane.clickEditAxiomsButton();
-                        reporter.logAfterStep("Step 14: Clicked Axioms Pencil Icon");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 14: Click Axioms Pencil Icon", e);
-                        throw e;
-                }
-                // 15. Click "Add Necessary Set"
-                try {
-                        reporter.logBeforeStep("Step 15: Click Add Necessary Set");
-                        robot.clickOn("Add Necessary Set");
+                reporter.logBeforeStep("Move to '" + patternName + "'");
+                robot.moveTo(patternName);
+                //if pattern is not visible, scroll down 10, repeat till visible
+                while (!robot.lookup(patternName).tryQuery().isPresent()) {
+                        verticalScroll(KeyCode.DOWN, 10);
                         waitForFxEvents();
-                        reporter.logAfterStep("Step 15  : Clicked Add Necessary Set");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 15: Click Add Necessary Set", e);
-                        throw e;
                 }
 
-                /*
-                // scroll down
-                        robot.scroll(5, VerticalDirection.DOWN);
+                           reporter.logAfterStep("Moved to '" + patternName + "' successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Move to '" + patternName + "'", e);
+            throw e;
+        }
+
+        // Right Click the pattern and select "Add New Semantic Element"
+        try {
+            reporter.logBeforeStep("Right Click the pattern and select 'Add New Semantic Element'");
+            robot.rightClickOn(patternName);
+            waitForFxEvents();
+            robot.clickOn("Add New Semantic Element");
+            waitForFxEvents();
+            navigator.clickNextgenNavigator();
+            reporter.logAfterStep("Right Clicked the pattern and selected 'Add New Semantic Element' successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Right Click the pattern and select 'Add New Semantic Element'", e);
+            throw e;
+        }
+
+        // Update the Stamp
+        try {
+            reporter.logBeforeStep("Update the Stamp to reflect Module: " + moduleName);
+            conceptPane.updateStamp(status, moduleName, path);
+            reporter.logAfterStep("Updated the Stamp to reflect Module: " + moduleName + " successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Update the Stamp to reflect Module: " + moduleName, e);
+            throw e;
+        }
+
+        // Click the pencil icon that is in line with the Reference Component section header
+        try {
+            reporter.logBeforeStep("Click the pencil icon that is in line with the Reference Component section header");
+            conceptPane.clickEditReferenceComponentButton();
+            reporter.logAfterStep("Clicked the pencil icon that is in line with the Reference Component section header successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click the pencil icon that is in line with the Reference Component section header", e);
+            throw e;
+        }
+
+        // Paste UUID from clipboard
+        try {
+            reporter.logBeforeStep("Paste UUID from clipboard");
+            robot.rightClickOn("🔍  Search");
+            waitForFxEvents();
+            robot.clickOn("Paste");
+            waitForFxEvents();
+            waitFor(1500); // Wait for results to load
+            //press down arrow then press enter
+            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitForFxEvents();
+            reporter.logAfterStep("Pasted UUID from clipboard successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Paste UUID from clipboard", e);
+            throw e;
+        }
+
+        // Click Confirm and verify the correct reference component populates
+        try {
+            reporter.logBeforeStep("Click Confirm and verify the correct reference component populates");
+            robot.clickOn("CONFIRM");
+            waitForFxEvents();
+            reporter.logAfterStep("Clicked Confirm and verified the correct reference component populated successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click Confirm and verify the correct reference component populates", e);
+            throw e;
+        }
+
+        // Click the pencil that is in line with the Semantic Details section header
+        try {
+            reporter.logBeforeStep("Click the pencil that is in line with the Semantic Details section header");
+            conceptPane.clickEditSemanticDetailsButton();
+            reporter.logAfterStep("Clicked the pencil that is in line with the Semantic Details section header successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click the pencil that is in line with the Semantic Details section header", e);
+            throw e;
+        }
+
+        //add the necessary qualifier value concepts
+        //list of qualifier concepts
+        String[] qualifierConcepts = {"Less than", "Greater than", "Equal to"};
+
+        //while the list hasnext, process each qualifier concept
+
+        try{
+                reporter.logBeforeStep("Add Allowed Results Qualifier Values");
+                while(qualifierConcepts.iterator().hasNext()){
+                        String qualifierConcept = qualifierConcepts.iterator().next();
+                        //move to qualifier value search field
+                        robot.moveTo("Allowed Results Set:").moveBy(40,40).clickOn();
+                        robot.write(qualifierConcept);
+                        robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+                        robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
                         waitForFxEvents();
-                */
-
-                // 16. Click the pencil icon aligned to the third axiom row
-                try {
-                        reporter.logBeforeStep("Step 16: Click pencil icon following 'Anonymous concept'");
-                        // Move to "Anonymous concept" text then move right to find the button
-                        robot.moveTo("[Anonymous concept] ");
-                        robot.moveBy(425, 0); // Move 425 pixels to the right to find the button
-                        robot.clickOn();
-                        reporter.logAfterStep("Step 16: Clicked pencil icon following 'Anonymous concept'");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 16: Click pencil icon following 'Anonymous concept'", e);
-                        throw e;
                 }
+                reporter.logAfterStep("Added Allowed Results Qualifier Values successfully");
+        } catch (Exception e) {
+                reporter.logFailure("Add Allowed Results Qualifier Values", e);
+                throw e;
+        }
 
-                // 17. Click "Remove axiom"
-                try {
-                        reporter.logBeforeStep("Step 17: Click Remove Axiom");
-                        robot.clickOn("Remove axiom");
-                        reporter.logAfterStep("Step 17  : Clicked Remove Axiom");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 17    : Click Remove Axiom", e);
-                        throw e;
-                }
+        //click submit
+        try {
+                reporter.logBeforeStep("Click Submit to save the semantic");
+                conceptPane.submit();
+                reporter.logAfterStep("Clicked Submit to save the semantic successfully");
+        } catch (Exception e) {
+                reporter.logFailure("Click Submit to save the semantic", e);
+                throw e;
+        }
 
-                // 18. Click the pencil icon aligned to the second axiom row
-                try {
-                        reporter.logBeforeStep("Step 18: Click pencil icon aligned to second axiom row");
-                        // Move to "Necessary set:" text then move right to find the button
-                        robot.moveTo("Necessary set: " + fullyQualifiedName);
-                        robot.moveBy(450, 0); // Move 450 pixels to the right to find the button
-                        robot.clickOn();
-                        reporter.logAfterStep("Step 18: Clicked pencil icon aligned to second axiom row");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 18: Click pencil icon aligned to second axiom row", e);
-                        throw e;
-                }
+        // Repeat for all necessary Allowed Results Semantics for the device
 
-                // 19. Click "add is-a"
-                try {
-                        reporter.logBeforeStep("Step 19: Click Add Is-A");
-                        robot.clickOn("Add is-a");
-                        reporter.logAfterStep("Step 19: Clicked Add Is-A");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 19: Click Add Is-A", e);
-                        throw e;
-                }
+        LOG.info("✓ Add DeX Allowed Results Semantic: PASSED");
 
-                // 20. Click the pencil icon aligned to the third axiom row
-                try {
-                        reporter.logBeforeStep("Step 20: Click pencil icon alligned to third axiom row");
-                        // Move to "Anonymous concept" text then move right to find the button
-                        robot.moveTo("Anonymous concept");
-                        robot.moveBy(445, 0); // Move 445 pixels to the right to find the button
-                        robot.clickOn();
-                        reporter.logAfterStep("Step 20: Clicked pencil icon alligned to third axiom row");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 20: Click pencil icon alligned to third axiom row", e);
-                        throw e;
-                }
-
-                // 21. Click search for concept
-                try {
-                        reporter.logBeforeStep("Step 21: Click Search for Concept");
-                        conceptPane.clickSearchForConcept();
-                        reporter.logAfterStep("Step 21: Clicked Search for Concept");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 21: Click Search for Concept", e);
-                        throw e;
-                }
-
-                // 22. Search for parent concept using the search panel
-                try {
-                        reporter.logBeforeStep("Step 22: Search for Parent Concept");
-                        conceptPane.searchForParentConcept(parentConceptName);
-                        reporter.logAfterStep("Step 22: Searched for Parent Concept successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 22: Search for Parent Concept", e);
-                        throw e;
-                }
-
-                // 23. When the required parent concept is located, double click to submit
-                try {
-                        reporter.logBeforeStep("Step 23: Locate parent concept and double click to select");
-                        conceptPane.selectParentConcept(parentConceptName);
-                        reporter.logAfterStep(
-                                        "Step 23: Located parent concept and double clicked to select successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 23: Locate parent concept and double click to select  ", e);
-                        throw e;
-                }
+        // ========== Add Dex Quantitative Allowed Results Range Semantic ==========
 
 
-                // 24. In the identifier row, copy the UUID by utilizing the copy shortcut
-                try {
-                        reporter.logBeforeStep("Step 24: Copy UUID from Identifier Row");
-                        conceptPane.clickCopyButton();
-                        reporter.logAfterStep("Step 24: Copied UUID from Identifier Row successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 24: Copy UUID from Identifier Row", e);
-                        throw e;
-                }
-
-                // 25. Open the Navigator by selecting the hierarchy icon in the left panel
-                try {
-                        reporter.logBeforeStep("Step 25: Open Navigator");
-                        navigator.clickNextgenNavigator();
-                        reporter.logAfterStep("Step 25: Opened Navigator successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 25: Open Navigator", e);
-                        throw e;
-                }
-
-                // 26. Switch the view to patterns by clicking on the Patterns text at the top
-                try {
-                        reporter.logBeforeStep("Step 26: Switch to Patterns View");
-                        navigator.clickPatterns();
-                        reporter.logAfterStep("Step 26: Switched to Patterns View successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 26: Switch to Patterns View", e);
-                        throw e;
-                }
-
-                // 27. Locate the Device Extension Membership Pattern pattern
-                try {
-                        reporter.logBeforeStep("Step 27: Locate Device Extension Membership Pattern");
-                        robot.moveTo("Device Extension Membership Pattern");
-                        reporter.logAfterStep("Step 27: Located Device Extension Membership Pattern successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 27: Locate Device Extension Membership Pattern", e);
-                        throw e;
-                }
-
-                // 28. Right Click the pattern and select "Add New Semantic Element"
-                try {
-                        reporter.logBeforeStep("Step 28: Right Click and Add New Semantic Element");
-                        robot.rightClickOn();
-                        robot.clickOn("Add New Semantic Element");
-                        // close navigator panel
-                        navigator.clickNextgenNavigator();
-
-                        reporter.logAfterStep("Step 28: Right Clicked and Add New Semantic Element successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 28: Right Click and Add New Semantic Element", e);
-                        throw e;
-                }
-
-                /*
-                // Scroll horizontally to the RIGHT to reveal confirm button
-                robot.clickOn(250, 250);
-                horizontalScroll(robot, KeyCode.RIGHT, 1);
-                waitForFxEvents();
-                */
-
-                // 29. "Update the Stamp to reflect
-                // - Module: Device Extension Module
-                // - Path: Development Path"
-                try {
-                        reporter.logBeforeStep("Step 29: Update Stamp Information");
-                        conceptPane.updateStamp(status, moduleName, path);
-                        reporter.logAfterStep("Step 29: Updated Stamp Information successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 29: Update Stamp Information", e);
-                        throw e;
-                }
-
-                // 30. Click the pencil icon that is in line with the Reference Component
-                // section header
-                try {
-                        reporter.logBeforeStep("Step 30: Click Reference Component Pencil Icon");
-                        conceptPane.clickEditReferenceComponentButton();
-                        reporter.logAfterStep("Step 30: Clicked Reference Component Pencil Icon");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 30: Click Reference Component Pencil Icon", e);
-                        throw e;
-                }
-
-                /*
-                // Scroll horizontally to the LEFT
-                robot.clickOn(600, 300);
-                horizontalScroll(robot, KeyCode.LEFT, 2);
-                waitForFxEvents();
-                */
-
-                // 31. Click the Next Gen Search (magnifying glass) and search for a concept
-                // using UUID or FQN. (If you have the UUID from the concept you created, you
-                // can search by UUID in the Reference Component Dearch)
-                try {
-                        reporter.logBeforeStep(
-                                        "Step 31: Click NextGen Search and search for a concept using UUID or FQN");
-                        navigator.clickNextgenSearch();
-                        navigator.nextgenSearch(fullyQualifiedName); // search by FQN
-                        waitForFxEvents();
-                        reporter.logAfterStep(
-                                        "Step 31: Clicked NextGen Search and searched for a concept using UUID or FQN successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 31: Click NextGen Search and search for a concept using UUID or FQN",
-                                        e);
-                        throw e;
-                }
-
-                /*
-                // Scroll horizontally to the RIGHT
-                robot.clickOn(600, 300);
-                waitForFxEvents();
-                horizontalScroll(robot, KeyCode.RIGHT, 5);
-                waitForFxEvents();
-                */
-
-                // 32. Locate the correct concept and drag and drop it into the Referenced
-                // Component field
-                try {
-                        reporter.logBeforeStep(
-                                        "Step 32: Locate the correct concept and drag and drop it into the Referenced Component field");
-                        conceptPane.dragToReferenceComponentField();
-                        reporter.logAfterStep(
-                                        "Step 32: Located the correct concept and drag and dropped it into the Referenced Component field successfully");
-                } catch (Exception e) {
-                        reporter.logFailure(
-                                        "Step 32: Locate the correct concept and drag and drop it into the Referenced Component field",
-                                        e);
-                        throw e;
-                }
-
-                // 33. Click Confirm and verify the correct reference component populates
-                try {
-                        reporter.logBeforeStep(
-                                        "Step 33: Click Confirm and verify the correct reference component populates");
-                        navigator.clickNextgenSearch(); // close search panel
-                        robot.clickOn("CONFIRM");
-                        //horizontalScroll(robot, KeyCode.RIGHT, 10); // scroll right to see populated reference component
-                        // ASSERT THAT THE CORRECT REFERENCE COMPONENT POPULATES
-                        String populatedReferenceComponent = conceptPane.getPopulatedReferenceComponent();
-                        assertEquals(fullyQualifiedName, populatedReferenceComponent, "The populated reference component should match the selected concept");
-                        reporter.logAfterStep(          
-                                        "Step 33: Clicked Confirm and verified the correct reference component populates successfully");        
-
-                } catch (Exception e) {
-                        reporter.logFailure(
-                                        "Step 33: Click Confirm and verify the correct reference component populates",
-                                        e);
-                        throw e;
-                }
-
-                // Navigate back to landing page for next concept creation
-                try {
-                        reporter.logBeforeStep("Navigate back to Landing Page");
-                        //close journal window and refocus onto landing page
-                        landingPage.clickHomeButton();
-                        reporter.logAfterStep("Returned to Landing Page successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Navigate back to Landing Page", e);
-                        throw e;
-                }
         }
 
         // ========== Helper Methods ==========
