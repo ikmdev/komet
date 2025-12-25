@@ -5,8 +5,16 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.layout.GridPane;
 
 public abstract class GridBaseControl extends EditorWindowBaseControl {
+
+    protected GridBaseControl() {
+        // Init GridPane properties with the existing default values
+        GridPane.setColumnIndex(this, getColumnIndex());
+        GridPane.setRowIndex(this, getRowIndex());
+        GridPane.setColumnSpan(this, getColumnSpan());
+    }
+
     // -- column Index
-    private final IntegerProperty columnIndex = new SimpleIntegerProperty(){
+    private final IntegerProperty columnIndex = new SimpleIntegerProperty(0) {
         @Override
         protected void invalidated() {
             GridPane.setColumnIndex(GridBaseControl.this, get());
@@ -17,7 +25,7 @@ public abstract class GridBaseControl extends EditorWindowBaseControl {
     public void setColumnIndex(int index) { columnIndex.set(index); }
 
     // -- row index
-    private final IntegerProperty rowIndex = new SimpleIntegerProperty(){
+    private final IntegerProperty rowIndex = new SimpleIntegerProperty(0) {
         @Override
         protected void invalidated() {
             GridPane.setRowIndex(GridBaseControl.this, get());

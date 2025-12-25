@@ -145,8 +145,11 @@ public class KLEditorWindowController {
     private void setupDragAndDrop(SectionViewControl sectionViewControl) {
         EditorSectionModel editorSectionModel = sectionViewToModel.get(sectionViewControl);
 
-        sectionViewControl.setOnPatternDropped((event, patternNid) -> {
+        sectionViewControl.setOnPatternDropped((event, patternNid, rowIndex, columnIndex) -> {
             EditorPatternModel editorPatternModel = new EditorPatternModel(viewCalculator, patternNid);
+            editorPatternModel.setRowIndex(rowIndex);
+            editorPatternModel.setColumnIndex(columnIndex);
+
             editorSectionModel.getPatterns().add(editorPatternModel);
 
             event.setDropCompleted(true);

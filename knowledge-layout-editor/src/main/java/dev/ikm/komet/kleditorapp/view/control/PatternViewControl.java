@@ -11,51 +11,35 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class PatternViewControl extends GridBaseControl {
     public static final String DEFAULT_STYLE_CLASS = "pattern-view";
 
     private final VBox patternContainer = new VBox();
     private final Label patternTitle = new Label();
-    private final GridPane contentContainer = new GridPane();
+    private final EditorGridPane gridPane = new EditorGridPane();
 
     public PatternViewControl() {
         patternContainer.getStyleClass().add("pattern-container");
 
         patternTitle.textProperty().bind(title);
-        patternContainer.getChildren().addAll(patternTitle, contentContainer);
+        patternContainer.getChildren().addAll(patternTitle, gridPane);
 
-        Bindings.bindContent(contentContainer.getChildren(), getFields());
+        Bindings.bindContent(gridPane.getItems(), getFields());
 
         getChildren().add(patternContainer);
 
         fields.addListener(this::onFieldsChanged);
 
-        numberColumns.subscribe(this::updateNumberOfColumns);
+        gridPane.numberColumnsProperty().bind(numberColumns);
 
-        contentContainer.setHgap(5);
-        contentContainer.setVgap(0);
+        gridPane.setHgap(5);
+        gridPane.setVgap(0);
 
+        // CSS
         patternTitle.getStyleClass().add("pattern-title");
         getStyleClass().add(DEFAULT_STYLE_CLASS);
-    }
-
-    private void updateNumberOfColumns(Number numberColumns) {
-        List<ColumnConstraints> columns = new ArrayList<>();
-        for (int i = 0; i < numberColumns.intValue(); ++i) {
-            ColumnConstraints columnConstraints = new ColumnConstraints();
-            columnConstraints.setHgrow(Priority.ALWAYS);
-            columnConstraints.setPercentWidth(100 / ((double)numberColumns.intValue()));
-            columns.add(columnConstraints);
-        }
-        contentContainer.getColumnConstraints().setAll(columns);
     }
 
     private void onFieldsChanged(ListChangeListener.Change<? extends FieldViewControl> change) {

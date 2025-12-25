@@ -1,6 +1,7 @@
 package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
+import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
@@ -23,6 +24,8 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
 
     private final TextField sectionNameTextField;
     private final ComboBox<Integer> columnsComboBox;
+
+    private ObjectProperty<Integer> lastColumnsSectionProperty;
 
     public SectionPropertiesPane() {
         // Section name container
@@ -97,9 +100,12 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
     public void doInit(SectionViewControl section) {
         if (previouslyShownControl != null) {
             sectionNameTextField.textProperty().unbindBidirectional(previouslyShownControl.nameProperty());
-            previouslyShownControl.numberColumnsProperty().unbind();
+            columnsComboBox.valueProperty().unbindBidirectional(lastColumnsSectionProperty);
         }
         sectionNameTextField.textProperty().bindBidirectional(section.nameProperty());
-        columnsComboBox.valueProperty().bindBidirectional(section.numberColumnsProperty().asObject());
+
+        // Bind number of columns property
+        lastColumnsSectionProperty = section.numberColumnsProperty().asObject();
+        columnsComboBox.valueProperty().bindBidirectional(lastColumnsSectionProperty);
     }
 }

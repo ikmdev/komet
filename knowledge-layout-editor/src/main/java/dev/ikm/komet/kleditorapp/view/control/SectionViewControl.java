@@ -1,5 +1,6 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
+import dev.ikm.komet.framework.QuadConsumer;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -18,19 +19,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-
-import static dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell.KL_EDITOR_VERSION_PROXY;
 
 public class SectionViewControl extends EditorWindowBaseControl {
     public static final String DEFAULT_STYLE_CLASS = "section-view";
@@ -39,11 +29,11 @@ public class SectionViewControl extends EditorWindowBaseControl {
     private final StackPane titleContainer = new StackPane();
     private final Label tagTextLabel = new Label();
     private final TitledPane titledPane = new TitledPane();
-    private final GridPane contentContainer = new GridPane();
+    private final EditorGridPane gridPane = new EditorGridPane();
 
     public SectionViewControl() {
         titleContainer.getChildren().add(tagTextLabel);
-        titledPane.setContent(contentContainer);
+        titledPane.setContent(gridPane);
         mainContainer.setTop(titleContainer);
         mainContainer.setCenter(titledPane);
         getChildren().add(mainContainer);
@@ -54,49 +44,21 @@ public class SectionViewControl extends EditorWindowBaseControl {
         setTitledPaneUnCollapsible(titledPane);
 
         tagTextLabel.textProperty().bind(tagText);
-        Bindings.bindContent(contentContainer.getChildren(), getPatterns());
-
-        // Drag and drop
-        setOnDragOver(event -> {
-            if (event.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)) {
-                event.acceptTransferModes(TransferMode.COPY);
-            }
-
-            event.consume();
-        });
-
-        setOnDragDropped(event -> {
-            if (!event.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)) {
-                event.setDropCompleted(false);
-                event.consume();
-                return;
-            }
-
-            doPatternDrop(event, this);
-        });
+        Bindings.bindContent(gridPane.getItems(), getPatterns());
 
         patterns.addListener(this::onPatternsChanged);
 
-        numberColumns.subscribe(this::updateNumberOfColumns);
+        gridPane.numberColumnsProperty().bind(numberColumns);
 
-        contentContainer.setHgap(5);
-        contentContainer.setVgap(5);
+        gridPane.setHgap(5);
+        gridPane.setVgap(5);
+
+        gridPane.onPatternDroppedProperty().bind(onPatternDroppedProperty());
 
         // CSS
         titleContainer.getStyleClass().add("title-container");
-        contentContainer.getStyleClass().add("content");
+        gridPane.getStyleClass().add("content");
         getStyleClass().add(DEFAULT_STYLE_CLASS);
-    }
-
-    private void updateNumberOfColumns(Number numberColumns) {
-        List<ColumnConstraints> columns = new ArrayList<>();
-        for (int i = 0; i < numberColumns.intValue(); ++i) {
-            ColumnConstraints columnConstraints = new ColumnConstraints();
-            columnConstraints.setHgrow(Priority.ALWAYS);
-            columnConstraints.setPercentWidth(100 / ((double)numberColumns.intValue()));
-            columns.add(columnConstraints);
-        }
-        contentContainer.getColumnConstraints().setAll(columns);
     }
 
     private void onPatternsChanged(ListChangeListener.Change<? extends PatternViewControl> change) {
@@ -104,8 +66,6 @@ public class SectionViewControl extends EditorWindowBaseControl {
             if (change.wasAdded()) {
                 change.getAddedSubList().forEach(pattern -> {
                     pattern.setParentSection(this);
-
-                    pattern.setRowIndex(patterns.indexOf(pattern));
                 });
             }
         }
@@ -126,14 +86,6 @@ public class SectionViewControl extends EditorWindowBaseControl {
                 titledPane.sceneProperty().removeListener(this);
             }
         });
-    }
-
-    private void doPatternDrop(DragEvent event, SectionViewControl sectionViewControl) {
-        if (getOnPatternDropped() != null) {
-            Dragboard dragboard = event.getDragboard();
-            Integer patternNid = (Integer) dragboard.getContent(KL_EDITOR_VERSION_PROXY);
-            getOnPatternDropped().accept(event, patternNid);
-        }
     }
 
     @Override
@@ -178,8 +130,8 @@ public class SectionViewControl extends EditorWindowBaseControl {
     void setParentWindow(EditorWindowControl parent) { this.parentWindow.set(parent); }
 
     // -- on pattern dropped
-    private ObjectProperty<BiConsumer<DragEvent, Integer>> onPatternDropped = new SimpleObjectProperty<>();
-    public BiConsumer<DragEvent, Integer> getOnPatternDropped() { return onPatternDropped.get(); }
-    public ObjectProperty<BiConsumer<DragEvent, Integer>> onPatternDroppedProperty() { return onPatternDropped; }
-    public void setOnPatternDropped(BiConsumer<DragEvent, Integer> onPatternDropped) { this.onPatternDropped.set(onPatternDropped); }
+    private ObjectProperty<QuadConsumer<DragEvent, Integer, Integer, Integer>> onPatternDropped = new SimpleObjectProperty<>();
+    public QuadConsumer<DragEvent, Integer, Integer, Integer> getOnPatternDropped() { return onPatternDropped.get(); }
+    public ObjectProperty<QuadConsumer<DragEvent, Integer, Integer, Integer>> onPatternDroppedProperty() { return onPatternDropped; }
+    public void setOnPatternDropped(QuadConsumer<DragEvent, Integer, Integer, Integer> onPatternDropped) { this.onPatternDropped.set(onPatternDropped); }
 }

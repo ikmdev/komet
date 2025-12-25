@@ -123,6 +123,15 @@
     -fx-font-size: 12px;
 }
 
+.window .section-view .titled-pane {
+    -fx-border-insets: 0 0 1 0;
+    -fx-border-width: 2px;
+    -fx-border-color: transparent;
+    -fx-border-radius: 0 3px 3px 3px;
+    -fx-border-style: solid inside;
+}
+
+/************  Content including GridTile's in Section  *************/
 .window .section-view .content {
     -fx-background-color: white;
 
@@ -131,12 +140,19 @@
     -fx-padding: 2px;
 }
 
-.window .section-view .titled-pane {
-    -fx-border-insets: 0 0 1 0;
-    -fx-border-width: 2px;
-    -fx-border-color: transparent;
-    -fx-border-radius: 0 3px 3px 3px;
-    -fx-border-style: solid inside;
+.window .section-view .content > .editor-grid-pane > GridPane > .grid-tile {
+    -fx-border-color: #7ac257;
+    -fx-border-width: 1px;
+    -fx-border-style: segments(3, 3);
+    -fx-padding: 2px;
+}
+
+.window .section-view .content > .editor-grid-pane > GridPane > .grid-tile:empty {
+    -fx-pref-height: 100px;
+}
+
+.window .section-view .content > .editor-grid-pane > GridPane > .grid-tile:drag-hover {
+    -fx-background-color: #f8f8f8;
 }
 
 /************  Hover  *************/
@@ -160,10 +176,11 @@
  ******************************************************************************/
 
 .window .section-view .pattern-view .pattern-container {
-    -fx-border-color: #9747ff, transparent;
-    -fx-border-radius: 3px;
-    -fx-border-style: segments(3, 3), solid;
-    -fx-border-width: 1px, 2px;
+    -fx-border-color: transparent, #9747ff, transparent; /* First border acts like a margin */
+    -fx-border-radius: 3px, 3px, 3px;
+    -fx-border-style: solid, segments(3, 3), solid;
+    -fx-border-width: 5px, 1px, 2px;
+    -fx-border-insets: 0, 5px, 5px;
 
     -fx-padding: 6px;
 }
@@ -174,15 +191,15 @@
 
 /************  Hover  *************/
 .window .section-view .pattern-view:hover .pattern-container {
-    -fx-border-color: rgba(98, 137, 247, 0.5), transparent;
-    -fx-border-style: solid, solid;
+    -fx-border-color: transparent, rgba(98, 137, 247, 0.5), transparent;
+    -fx-border-style: solid, solid, solid;
 }
 
 /***********  Selection  ***********/
 
 .window .section-view .pattern-view:selected .pattern-container {
-    -fx-border-color: #5dcf16, transparent;
-    -fx-border-style: solid, solid;
+    -fx-border-color: transparent, #5dcf16, transparent;
+    -fx-border-style: solid, solid, solid;
 }
 
 /*******************************************************************************
