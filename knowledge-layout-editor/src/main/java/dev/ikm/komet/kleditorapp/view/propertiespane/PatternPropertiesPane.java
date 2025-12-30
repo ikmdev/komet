@@ -1,7 +1,8 @@
-package dev.ikm.komet.kleditorapp.view;
+package dev.ikm.komet.kleditorapp.view.propertiespane;
 
+import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
-import javafx.beans.binding.Bindings;
+import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
@@ -13,6 +14,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
+import javafx.util.Subscription;
 
 import java.util.List;
 
@@ -28,6 +30,11 @@ public class PatternPropertiesPane extends ControlBasePropertiesPane<PatternView
     private final ComboBox<Integer> columnPositionCB = new ComboBox<>();
     private final ComboBox<Integer> rowPositionCB = new ComboBox<>();
     private final ComboBox<Integer> columnSpanCB = new ComboBox<>();
+
+    private ObjectProperty<Integer> previousControlColumnsObjProperty;
+    private ObjectProperty<Integer> previousControlColumnSpanProperty;
+    private Subscription columnIndexSubscription;
+    private Subscription rowIndexSubscription;
 
     public PatternPropertiesPane() {
         // Section name container
@@ -164,30 +171,34 @@ public class PatternPropertiesPane extends ControlBasePropertiesPane<PatternView
     @Override
     protected void doInit(PatternViewControl control) {
         if (previouslyShownControl != null) {
-            previouslyShownControl.numberColumnsProperty().unbind();
-
-            previouslyShownControl.columnIndexProperty().unbind();
-            previouslyShownControl.rowIndexProperty().unbind();
-            previouslyShownControl.columnSpanProperty().unbind();
+            columnIndexSubscription.unsubscribe();
+            rowIndexSubscription.unsubscribe();
+            columnSpanCB.valueProperty().unbindBidirectional(previousControlColumnSpanProperty);
+            columnsComboBox.valueProperty().unbindBidirectional(previousControlColumnsObjProperty);
         }
 
         titleTextField.setText(control.getTitle());
 
-        columnsComboBox.valueProperty().bindBidirectional(control.numberColumnsProperty().asObject());
+        // Columns ComboBox
+        previousControlColumnsObjProperty = control.numberColumnsProperty().asObject();
+        columnsComboBox.valueProperty().bindBidirectional(previousControlColumnsObjProperty);
 
-        columnPositionCB.setValue(control.getColumnIndex() + 1);
-        control.columnIndexProperty().bind(Bindings.createIntegerBinding(
-                () -> columnPositionCB.getValue() - 1,
-                columnPositionCB.valueProperty()
-        ));
+        // Column Index
+        columnIndexSubscription = bindBidirectionalWithConverter(
+                control.columnIndexProperty(),
+                columnPositionCB.valueProperty(),
+                val -> val - 1,
+                val -> val.intValue() + 1);
 
-        rowPositionCB.setValue(control.getRowIndex() + 1);
-        control.rowIndexProperty().bind(Bindings.createIntegerBinding(
-                () -> rowPositionCB.getValue() - 1,
-                rowPositionCB.valueProperty()
-        ));
+        // Row Index
+        rowIndexSubscription = bindBidirectionalWithConverter(
+                control.rowIndexProperty(),
+                rowPositionCB.valueProperty(),
+                val -> val - 1,
+                val -> val.intValue() + 1);
 
-        columnSpanCB.setValue(control.getColumnSpan());
-        control.columnSpanProperty().bind(columnSpanCB.valueProperty());
+        // Column Span
+        previousControlColumnSpanProperty = control.columnSpanProperty().asObject();
+        columnSpanCB.valueProperty().bindBidirectional(previousControlColumnSpanProperty);
     }
 }

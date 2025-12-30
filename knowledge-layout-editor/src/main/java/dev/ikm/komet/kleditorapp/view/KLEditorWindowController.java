@@ -13,11 +13,15 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.util.HashMap;
 import java.util.List;
+
+import static dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell.KL_EDITOR_VERSION_PROXY;
 
 public class KLEditorWindowController {
 
@@ -145,10 +149,28 @@ public class KLEditorWindowController {
     private void setupDragAndDrop(SectionViewControl sectionViewControl) {
         EditorSectionModel editorSectionModel = sectionViewToModel.get(sectionViewControl);
 
-        sectionViewControl.setOnPatternDropped((event, patternNid, rowIndex, columnIndex) -> {
+        sectionViewControl.setOnDragOverIntoTile(dragEvent -> {
+            if (dragEvent.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)) {
+                dragEvent.acceptTransferModes(TransferMode.COPY);
+            }
+
+            dragEvent.consume();
+        });
+
+        sectionViewControl.setOnDragDroppedIntoTile((event, gridDropInfo) -> {
+            if (!event.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)) {
+                event.setDropCompleted(false);
+                event.consume();
+                return;
+            }
+
+            Dragboard dragboard = event.getDragboard();
+
+            Integer patternNid = (Integer) dragboard.getContent(KL_EDITOR_VERSION_PROXY);
+
             EditorPatternModel editorPatternModel = new EditorPatternModel(viewCalculator, patternNid);
-            editorPatternModel.setRowIndex(rowIndex);
-            editorPatternModel.setColumnIndex(columnIndex);
+            editorPatternModel.setRowIndex(gridDropInfo.getRowIndex());
+            editorPatternModel.setColumnIndex(gridDropInfo.getColumnIndex());
 
             editorSectionModel.getPatterns().add(editorPatternModel);
 

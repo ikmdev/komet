@@ -1,6 +1,6 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
-import dev.ikm.komet.framework.QuadConsumer;
+import dev.ikm.komet.kleditorapp.view.GridDropInfo;
 import dev.ikm.komet.kleditorapp.view.skin.EditorGridPaneSkin;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -11,6 +11,9 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.input.DragEvent;
+
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class EditorGridPane extends Control {
     public static final String DEFAULT_STYLE_CLASS = "editor-grid-pane";
@@ -25,8 +28,8 @@ public class EditorGridPane extends Control {
     }
 
     // -- items
-    private ObservableList<EditorWindowBaseControl> items = FXCollections.observableArrayList();
-    public ObservableList<EditorWindowBaseControl> getItems() { return items; }
+    private ObservableList<GridBaseControl> items = FXCollections.observableArrayList();
+    public ObservableList<GridBaseControl> getItems() { return items; }
 
     // -- number columns
     private final IntegerProperty numberColumns = new SimpleIntegerProperty(1);
@@ -46,9 +49,15 @@ public class EditorGridPane extends Control {
     public IntegerProperty vgapProperty() { return vgap; }
     public void setVgap(int number) { vgap.set(number); }
 
-    // -- on pattern drop
-    private final ObjectProperty<QuadConsumer<DragEvent, Integer, Integer, Integer>> onPatternDropped = new SimpleObjectProperty<>();
-    public QuadConsumer<DragEvent, Integer, Integer, Integer> getOnPatternDropped() { return onPatternDropped.get(); }
-    public ObjectProperty<QuadConsumer<DragEvent, Integer, Integer, Integer>> onPatternDroppedProperty() {return onPatternDropped; }
-    public void setOnPatternDropped(QuadConsumer<DragEvent, Integer, Integer, Integer> onPatternDropped) { this.onPatternDropped.set(onPatternDropped); }
+    // -- on drag over into tile
+    private final ObjectProperty<Consumer<DragEvent>> onDragOverIntoTile = new SimpleObjectProperty<>();
+    public Consumer<DragEvent> getOnDragOverIntoTile() { return onDragOverIntoTile.get(); }
+    public ObjectProperty<Consumer<DragEvent>> onDragOverIntoTileProperty() { return onDragOverIntoTile; }
+    public void setOnDragDroppedIntoTile(Consumer<DragEvent> consumer) { onDragOverIntoTile.set(consumer); }
+
+    // -- on drag dropped
+    private final ObjectProperty<BiConsumer<DragEvent, GridDropInfo>> onDragDroppedIntoTile = new SimpleObjectProperty<>();
+    public BiConsumer<DragEvent, GridDropInfo> getOnDragDroppedIntoTile() { return onDragDroppedIntoTile.get(); }
+    public ObjectProperty<BiConsumer<DragEvent, GridDropInfo>> onDragDroppedIntoTileProperty() {return onDragDroppedIntoTile; }
+    public void setOnDragDroppedIntoTile(BiConsumer<DragEvent, GridDropInfo> onDragDroppedIntoTile) { this.onDragDroppedIntoTile.set(onDragDroppedIntoTile); }
 }

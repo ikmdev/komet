@@ -45,6 +45,7 @@ open module dev.ikm.komet.kleditorapp {
 
     exports dev.ikm.komet.kleditorapp.view;
     exports dev.ikm.komet.kleditorapp.view.control;
+    exports dev.ikm.komet.kleditorapp.view.propertiespane;
 
     uses EntityKlWindowFactory;
 }

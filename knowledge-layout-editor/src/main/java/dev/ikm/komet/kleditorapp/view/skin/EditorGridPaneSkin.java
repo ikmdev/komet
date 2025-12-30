@@ -1,15 +1,19 @@
 package dev.ikm.komet.kleditorapp.view.skin;
 
-import dev.ikm.komet.framework.QuadConsumer;
+import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.kleditorapp.view.GridDropInfo;
 import dev.ikm.komet.kleditorapp.view.control.EditorGridPane;
-import dev.ikm.komet.kleditorapp.view.control.EditorWindowBaseControl;
+import dev.ikm.komet.kleditorapp.view.control.GridBaseControl;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.scene.Node;
 import javafx.scene.control.SkinBase;
-import javafx.scene.input.DragEvent;
+import javafx.scene.image.Image;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.ColumnConstraints;
@@ -19,8 +23,6 @@ import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell.KL_EDITOR_VERSION_PROXY;
 
 public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
 
@@ -39,8 +41,8 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
 
         // Add starting GridTile
         GridTile gridTile = new GridTile(control, true);
-        GridPane.setRowIndex(gridTile, 0);
-        GridPane.setColumnIndex(gridTile, 0);
+        gridTile.setColumnIndex(0);
+        gridTile.setRowIdex(0);
         gridPane.getChildren().add(gridTile);
 
 
@@ -61,13 +63,42 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
         updateTiles();
     }
 
-    private void onItemsChanged(ListChangeListener.Change<? extends EditorWindowBaseControl> change) {
+    private void onItemsChanged(ListChangeListener.Change<? extends GridBaseControl> change) {
         while(change.next()) {
             if (change.wasAdded()) {
-                gridPane.getChildren().addAll(change.getAddedSubList());
+                change.getAddedSubList().forEach(this::addItem);
             }
         }
         updateTiles();
+    }
+
+    private void addItem(GridBaseControl gridBaseControl) {
+        gridPane.getChildren().add(gridBaseControl);
+
+        // Set up the drag detection event handler
+        gridBaseControl.setOnDragDetected(mouseEvent -> {
+
+            // Initiate a drag-and-drop gesture with copy or move transfer mode
+            Dragboard dragboard = gridBaseControl.startDragAndDrop(TransferMode.MOVE);
+
+            // Create the content to be placed on the dragboard
+            ClipboardContent clipboardContent = new ClipboardContent();
+            clipboardContent.putString(gridBaseControl.toString());
+
+            // Generate the drag image using DragImageMaker
+            DragImageMaker dragImageMaker = new DragImageMaker(gridBaseControl);
+            Image dragImage = dragImageMaker.getDragImage();
+            // Set the drag image on the dragboard
+            if (dragImage != null) {
+                dragboard.setDragView(dragImage);
+            }
+
+            // Place the content on the dragboard
+            dragboard.setContent(clipboardContent);
+
+            // Consume the mouse event to prevent further processing
+            mouseEvent.consume();
+        });
     }
 
     private int getUsedRowCount() {
@@ -110,8 +141,8 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
 
                 gridPane.getChildren().addFirst(gridTile);
 
-                GridPane.setRowIndex(gridTile, rowIndex);
-                GridPane.setColumnIndex(gridTile, columnIndex);
+                gridTile.setRowIdex(rowIndex);
+                gridTile.setColumnIndex(columnIndex);
 
                 gridTiles.add(gridTile);
             }
@@ -150,23 +181,30 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
         }
 
         private void setupDragAndDrop() {
-            // Drag and drop
             setOnDragOver(event -> {
-                if (event.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)) {
-                    event.acceptTransferModes(TransferMode.COPY);
-                }
-
-                event.consume();
-            });
-
-            setOnDragDropped(event -> {
-                if (!event.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)) {
-                    event.setDropCompleted(false);
+                if (event.getGestureSource() instanceof GridBaseControl) {
+                    event.acceptTransferModes(TransferMode.MOVE);
                     event.consume();
                     return;
                 }
 
-                doPatternDrop(event);
+                if (editorGridPane.getOnDragOverIntoTile() != null) {
+                    editorGridPane.getOnDragOverIntoTile().accept(event);
+                }
+            });
+
+            setOnDragDropped(event -> {
+                if (event.getGestureSource() instanceof GridBaseControl gridBaseControl) {
+                    moveGridBaseControl(gridBaseControl, getRowIdex(), getColumnIndex());
+                    event.setDropCompleted(true);
+                    event.consume();
+                    return;
+                }
+
+                if (editorGridPane.getOnDragDroppedIntoTile() != null) {
+                    GridDropInfo gridDropInfo = new GridDropInfo(getRowIdex(), getColumnIndex());
+                    editorGridPane.getOnDragDroppedIntoTile().accept(event, gridDropInfo);
+                }
             });
 
             setOnDragEntered(event -> {
@@ -178,19 +216,32 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
             });
         }
 
-        private void doPatternDrop(DragEvent event) {
-            if (editorGridPane.getOnPatternDropped() != null) {
-                QuadConsumer<DragEvent, Integer, Integer, Integer> onPatternDropped = editorGridPane.getOnPatternDropped();
-
-                Dragboard dragboard = event.getDragboard();
-
-                Integer patternNid = (Integer) dragboard.getContent(KL_EDITOR_VERSION_PROXY);
-                Integer rowIndex = GridPane.getRowIndex(this);
-                Integer columnIndex = GridPane.getColumnIndex(this);
-
-                onPatternDropped.accept(event, patternNid, rowIndex, columnIndex);
-            }
+        private void moveGridBaseControl(GridBaseControl gridBaseControl, int rowIdex, int columnIndex) {
+            gridBaseControl.setRowIndex(rowIdex);
+            gridBaseControl.setColumnIndex(columnIndex);
         }
+
+        // -- row index
+        private IntegerProperty rowIdex = new SimpleIntegerProperty() {
+            @Override
+            protected void invalidated() {
+                GridPane.setRowIndex(GridTile.this, get());
+            }
+        };
+        public int getRowIdex() { return rowIdex.get(); }
+        public IntegerProperty rowIdexProperty() { return rowIdex; }
+        public void setRowIdex(int rowIdex) { this.rowIdex.set(rowIdex); }
+
+        // -- column index
+        private IntegerProperty columnIndex = new SimpleIntegerProperty() {
+            @Override
+            protected void invalidated() {
+                GridPane.setColumnIndex(GridTile.this, get());
+            }
+        };
+        public int getColumnIndex() { return columnIndex.get(); }
+        public IntegerProperty columnIndexProperty() { return columnIndex; }
+        public void setColumnIndex(int columnIndex) { this.columnIndex.set(columnIndex); }
 
         // -- empty
         private BooleanProperty empty = new SimpleBooleanProperty() {

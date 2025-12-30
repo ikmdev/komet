@@ -1,5 +1,6 @@
-package dev.ikm.komet.kleditorapp.view;
+package dev.ikm.komet.kleditorapp.view.propertiespane;
 
+import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
