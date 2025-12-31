@@ -15,13 +15,16 @@
  */
 package dev.ikm.komet.executor;
 
+import dev.ikm.tinkar.common.service.*;
 import dev.ikm.tinkar.common.service.ExecutorService;
 import dev.ikm.tinkar.common.util.thread.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -49,6 +52,9 @@ import java.util.concurrent.*;
 public class KometExecutorProvider implements ExecutorService {
 
     private static final Logger LOG = LoggerFactory.getLogger(KometExecutorProvider.class);
+
+    private final AtomicBoolean started = new AtomicBoolean(false);
+
     /**
      * The fork join executor.
      */
@@ -75,100 +81,122 @@ public class KometExecutorProvider implements ExecutorService {
      * Start me.
      */
     protected void start() {
-        if (forkJoinExecutor == null) {
-            LOG.info("Starting the WorkExecutors thread pools");
-
-            // The java default ForkJoinPool.commmonPool starts with only 1 thread, on 1 and 2 core systems, which can get us deadlocked pretty easily.
-            final int procCount = Runtime.getRuntime()
-                    .availableProcessors();
-            final int parallelism = ((procCount - 1) < 6 ? 6
-                    : procCount - 1);  // set between 6 and 1 less than proc count (not less than 6)
-
-            this.forkJoinExecutor = new KometForkJoinPool(parallelism);
-
-            final int corePoolSize = 2;
-            final int maximumPoolSize = parallelism;
-            final int keepAliveTime = 60;
-            final TimeUnit timeUnit = TimeUnit.SECONDS;
-
-            // The blocking executor
-            this.blockingThreadPoolExecutor = new KometThreadPoolExecutor(corePoolSize,
-                    maximumPoolSize,
-                    keepAliveTime,
-                    timeUnit,
-                    new SynchronousQueue<>(),
-                    new NamedThreadFactory("Tinkar-B-work-thread", true));
-            
-            this.blockingThreadPoolExecutor.setRejectedExecutionHandler((runnable, executor) -> {
-                try {
-                    executor.getQueue()
-                            .offer(runnable, Long.MAX_VALUE, TimeUnit.HOURS);
-                } catch (final Exception e) {
-                    throw new RejectedExecutionException("Interrupted while waiting to enqueue");
-                }
-            });
-
-            // The non-blocking executor - set core threads equal to max - otherwise, it will never increase the thread count
-            // with an unbounded queue.
-            this.threadPoolExecutor = new KometThreadPoolExecutor(maximumPoolSize,
-                    maximumPoolSize,
-                    keepAliveTime,
-                    timeUnit,
-                    new LinkedBlockingQueue<>(),
-                    new NamedThreadFactory("Tinkar-Q-work-thread", true));
-            this.threadPoolExecutor.allowCoreThreadTimeOut(true);
-
-
-            // The IO non-blocking executor - set core threads equal to max - otherwise, it will never increase the thread count
-            // with an unbounded queue.
-            this.ioThreadPoolExecutor = new KometThreadPoolExecutor(6,
-                    6,
-                    keepAliveTime,
-                    timeUnit,
-                    new LinkedBlockingQueue<>(),
-                    new NamedThreadFactory("Tinkar-IO-work-thread", true));
-            this.ioThreadPoolExecutor.allowCoreThreadTimeOut(true);
-
-            // Execute this once, early on, in a background thread - as randomUUID uses secure random - and the initial
-            // init of secure random can block on many systems that don't have enough entropy occuring.  The DB load process
-            // should provide enough entropy to get it initialized, so it doesn't pause things later when someone requests a random UUID.
-            threadPool().execute(() -> UUID.randomUUID());
-
-            this.scheduledExecutor = new KometScheduledExecutor(1,
-                    new NamedThreadFactory("Tinkar-Scheduled-Thread", true));
-            LOG.info("WorkExecutors thread pools ready");
+        if (!started.compareAndSet(false, true)) {
+            return; // Already started
         }
+
+        LOG.info("Starting the WorkExecutors thread pools");
+
+        // The java default ForkJoinPool.commmonPool starts with only 1 thread, on 1 and 2 core systems, which can get us deadlocked pretty easily.
+        final int procCount = Runtime.getRuntime()
+                .availableProcessors();
+        final int parallelism = ((procCount - 1) < 6 ? 6
+                : procCount - 1);  // set between 6 and 1 less than proc count (not less than 6)
+
+        this.forkJoinExecutor = new KometForkJoinPool(parallelism);
+
+        final int corePoolSize = 2;
+        final int maximumPoolSize = parallelism;
+        final int keepAliveTime = 60;
+        final TimeUnit timeUnit = TimeUnit.SECONDS;
+
+        // The blocking executor
+        this.blockingThreadPoolExecutor = new KometThreadPoolExecutor(corePoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                timeUnit,
+                new SynchronousQueue<>(),
+                new NamedThreadFactory("Tinkar-B-work-thread", true));
+
+        this.blockingThreadPoolExecutor.setRejectedExecutionHandler((runnable, executor) -> {
+            try {
+                executor.getQueue()
+                        .offer(runnable, Long.MAX_VALUE, TimeUnit.HOURS);
+            } catch (final Exception e) {
+                throw new RejectedExecutionException("Interrupted while waiting to enqueue");
+            }
+        });
+
+        // The non-blocking executor - set core threads equal to max - otherwise, it will never increase the thread count
+        // with an unbounded queue.
+        this.threadPoolExecutor = new KometThreadPoolExecutor(maximumPoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                timeUnit,
+                new LinkedBlockingQueue<>(),
+                new NamedThreadFactory("Tinkar-Q-work-thread", true));
+        this.threadPoolExecutor.allowCoreThreadTimeOut(true);
+
+
+        // The IO non-blocking executor - set core threads equal to max - otherwise, it will never increase the thread count
+        // with an unbounded queue.
+        this.ioThreadPoolExecutor = new KometThreadPoolExecutor(6,
+                6,
+                keepAliveTime,
+                timeUnit,
+                new LinkedBlockingQueue<>(),
+                new NamedThreadFactory("Tinkar-IO-work-thread", true));
+        this.ioThreadPoolExecutor.allowCoreThreadTimeOut(true);
+
+        // Execute this once, early on, in a background thread - as randomUUID uses secure random - and the initial
+        // init of secure random can block on many systems that don't have enough entropy occuring.  The DB load process
+        // should provide enough entropy to get it initialized, so it doesn't pause things later when someone requests a random UUID.
+        threadPool().execute(() -> UUID.randomUUID());
+
+        this.scheduledExecutor = new KometScheduledExecutor(1,
+                new NamedThreadFactory("Tinkar-Scheduled-Thread", true));
+        LOG.info("WorkExecutors thread pools ready");
     }
 
     /**
      * Stop me.
      */
     protected void stop() {
+        if (!started.get()) {
+            return; // Not started
+        }
+
         LOG.info("Stopping WorkExecutors thread pools. ");
 
-        if (this.forkJoinExecutor != null) {
-            this.forkJoinExecutor.shutdownNow();
-            this.forkJoinExecutor = null;
-        }
+        try {
+            if (this.forkJoinExecutor != null) {
+                this.forkJoinExecutor.shutdown();
+                if (this.forkJoinExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
+                    LOG.info("forkJoinExecutor terminated successfully");
+                }
+            }
 
-        if (this.blockingThreadPoolExecutor != null) {
-            this.blockingThreadPoolExecutor.shutdownNow();
-            this.blockingThreadPoolExecutor = null;
-        }
+            if (this.blockingThreadPoolExecutor != null) {
+                this.blockingThreadPoolExecutor.shutdown();
+                if (this.blockingThreadPoolExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
+                    LOG.info("blockingThreadPoolExecutor terminated successfully");
+                }
+            }
 
-        if (this.threadPoolExecutor != null) {
-            this.threadPoolExecutor.shutdownNow();
-            this.threadPoolExecutor = null;
-        }
+            if (this.threadPoolExecutor != null) {
+                this.threadPoolExecutor.shutdown();
+                if (this.threadPoolExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
+                    LOG.info("threadPoolExecutor terminated successfully");
+                }
+            }
 
-        if (this.ioThreadPoolExecutor != null) {
-            this.ioThreadPoolExecutor.shutdownNow();
-            this.ioThreadPoolExecutor = null;
-        }
+            if (this.ioThreadPoolExecutor != null) {
+                this.ioThreadPoolExecutor.shutdown();
+                if (this.ioThreadPoolExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
+                    LOG.info("ioThreadPoolExecutor terminated successfully");
+                }
+            }
 
-        if (this.scheduledExecutor != null) {
-            this.scheduledExecutor.shutdownNow();
-            this.scheduledExecutor = null;
+            if (this.scheduledExecutor != null) {
+                this.scheduledExecutor.shutdown();
+                if (this.scheduledExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
+                    LOG.info("scheduledExecutor terminated successfully");
+                }
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } finally {
+            started.set(false);
         }
         LOG.info("Stopped WorkExecutors thread pools");
     }
@@ -234,5 +262,75 @@ public class KometExecutorProvider implements ExecutorService {
         return this.scheduledExecutor;
     }
 
+    /**
+     * Controller for KometExecutorProvider lifecycle management.
+     * <p>
+     * Integrates with {@link ServiceLifecycleManager} and provides
+     * {@link ExecutorController} interface for programmatic access.
+     * </p>
+     */
+    public static class Controller extends ProviderController<KometExecutorProvider>
+            implements ExecutorController {
+
+        @Override
+        protected KometExecutorProvider createProvider() {
+            return new KometExecutorProvider();
+        }
+
+        @Override
+        protected void startProvider(KometExecutorProvider provider) {
+            provider.start();
+        }
+
+        @Override
+        protected void stopProvider(KometExecutorProvider provider) {
+            provider.stop();
+        }
+
+        @Override
+        protected String getProviderName() {
+            return "KometExecutorProvider";
+        }
+
+        @Override
+        public ServiceLifecyclePhase getLifecyclePhase() {
+            return ServiceLifecyclePhase.INFRASTRUCTURE;
+        }
+
+        @Override
+        public int getSubPriority() {
+            return 11; // Start after core Tinkar ExecutorProvider
+        }
+
+        @Override
+        public Optional<ServiceExclusionGroup> getMutualExclusionGroup() {
+            return Optional.of(ServiceExclusionGroup.EXECUTOR_PROVIDER);
+        }
+
+        // ========== ExecutorController Implementation ==========
+
+        @Override
+        public dev.ikm.tinkar.common.service.ExecutorService create() {
+            return getOrCreateProvider();
+        }
+
+        @Override
+        public void stop() {
+            shutdown();
+        }
+    }
+
+    /**
+     * Nested CacheProvider for integration with caching service.
+     */
+    public static class CacheProvider implements CachingService {
+        @Override
+        public void reset() {
+            Controller controller = PluggableService.first(Controller.class);
+            if (controller != null) {
+                controller.shutdown();
+            }
+        }
+    }
 }
 
