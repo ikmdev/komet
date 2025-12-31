@@ -235,7 +235,7 @@
 }
 
 /***********  Pressed  ************/
-.window .section-view .pattern-view .pattern-container .field-view:pressed {
+.window .section-view .pattern-view .pattern-container .field-view:armed {
     -fx-border-color: #5dcf16, #5dcf16;
     -fx-background-color: white;
 }
