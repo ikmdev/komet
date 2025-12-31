@@ -14,11 +14,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
-import javafx.util.Subscription;
 
 import java.util.List;
 
-public class PatternPropertiesPane extends ControlBasePropertiesPane<PatternViewControl> {
+public class PatternPropertiesPane extends GridNodePropertiesPane<PatternViewControl> {
     public static final String DEFAULT_STYLE_CLASS = "pattern-properties";
 
     private final VBox patternMainContainer = new VBox();
@@ -27,14 +26,7 @@ public class PatternPropertiesPane extends ControlBasePropertiesPane<PatternView
 
     private final ComboBox<Integer> columnsComboBox = new ComboBox<>();
 
-    private final ComboBox<Integer> columnPositionCB = new ComboBox<>();
-    private final ComboBox<Integer> rowPositionCB = new ComboBox<>();
-    private final ComboBox<Integer> columnSpanCB = new ComboBox<>();
-
     private ObjectProperty<Integer> previousControlColumnsObjProperty;
-    private ObjectProperty<Integer> previousControlColumnSpanProperty;
-    private Subscription columnIndexSubscription;
-    private Subscription rowIndexSubscription;
 
     public PatternPropertiesPane() {
         // Section name container
@@ -90,66 +82,9 @@ public class PatternPropertiesPane extends ControlBasePropertiesPane<PatternView
         columnsComboBox.setMaxWidth(Double.MAX_VALUE);
         gridLayoutGridPane.add(columnsComboBox, 1, 0);
 
-        // "POSITIONING" label
-        Label positioningLabel = new Label("POSITIONING");
-        positioningLabel.getStyleClass().add("group-title");
-
         // Separator
         Separator separator2 = new Separator();
         separator.setPrefWidth(200);
-
-        // GridPane
-        GridPane positioningGridPane = new GridPane();
-        positioningGridPane.setHgap(8);
-        positioningGridPane.setVgap(8);
-
-        // Column constraints
-        ColumnConstraints positionColumnConstraints1 = new ColumnConstraints();
-        positionColumnConstraints1.setMinWidth(10);
-        positionColumnConstraints1.setPrefWidth(100);
-
-        ColumnConstraints positionColumnConstraints2 = new ColumnConstraints();
-        positionColumnConstraints2.setMinWidth(10);
-        positionColumnConstraints2.setHgrow(Priority.ALWAYS);
-
-        positioningGridPane.getColumnConstraints().addAll(positionColumnConstraints1, positionColumnConstraints2);
-
-        for (int i = 0; i < 3; i++) {
-            RowConstraints row = new RowConstraints();
-            row.setMinHeight(10);
-            row.setPrefHeight(30);
-            positioningGridPane.getRowConstraints().add(row);
-        }
-
-        // Column Position
-        Label columnPositionLabel = new Label("Column Position");
-        GridPane.setHalignment(columnPositionLabel, HPos.RIGHT);
-        positioningGridPane.add(columnPositionLabel, 0, 0);
-
-        // Column Position ComboBox
-        columnPositionCB.setItems(FXCollections.observableArrayList(List.of(1, 2, 3)));
-        columnPositionCB.setMaxWidth(Double.MAX_VALUE);
-        positioningGridPane.add(columnPositionCB, 1, 0);
-
-        // Row Position
-        Label rowLabel = new Label("Row Position");
-        GridPane.setHalignment(rowLabel, HPos.RIGHT);
-        positioningGridPane.add(rowLabel, 0, 1);
-
-        // Row Position ComboBox
-        rowPositionCB.setItems((FXCollections.observableArrayList(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))));
-        rowPositionCB.setMaxWidth(Double.MAX_VALUE);
-        positioningGridPane.add(rowPositionCB, 1, 1);
-
-        // Column Span
-        Label columnSpanLabel = new Label("Column Span");
-        GridPane.setHalignment(columnSpanLabel, HPos.RIGHT);
-        positioningGridPane.add(columnSpanLabel, 0, 2);
-
-        // Column Span ComboBox
-        columnSpanCB.setItems((FXCollections.observableArrayList(List.of(1, 2, 3))));
-        columnSpanCB.setMaxWidth(Double.MAX_VALUE);
-        positioningGridPane.add(columnSpanCB, 1, 2);
 
         patternMainContainer.getChildren().addAll(
                 titleContainer,
@@ -170,10 +105,9 @@ public class PatternPropertiesPane extends ControlBasePropertiesPane<PatternView
 
     @Override
     protected void doInit(PatternViewControl control) {
+        super.doInit(control);
+
         if (previouslyShownControl != null) {
-            columnIndexSubscription.unsubscribe();
-            rowIndexSubscription.unsubscribe();
-            columnSpanCB.valueProperty().unbindBidirectional(previousControlColumnSpanProperty);
             columnsComboBox.valueProperty().unbindBidirectional(previousControlColumnsObjProperty);
         }
 
@@ -182,23 +116,5 @@ public class PatternPropertiesPane extends ControlBasePropertiesPane<PatternView
         // Columns ComboBox
         previousControlColumnsObjProperty = control.numberColumnsProperty().asObject();
         columnsComboBox.valueProperty().bindBidirectional(previousControlColumnsObjProperty);
-
-        // Column Index
-        columnIndexSubscription = bindBidirectionalWithConverter(
-                control.columnIndexProperty(),
-                columnPositionCB.valueProperty(),
-                val -> val - 1,
-                val -> val.intValue() + 1);
-
-        // Row Index
-        rowIndexSubscription = bindBidirectionalWithConverter(
-                control.rowIndexProperty(),
-                rowPositionCB.valueProperty(),
-                val -> val - 1,
-                val -> val.intValue() + 1);
-
-        // Column Span
-        previousControlColumnSpanProperty = control.columnSpanProperty().asObject();
-        columnSpanCB.valueProperty().bindBidirectional(previousControlColumnSpanProperty);
     }
 }
