@@ -59,6 +59,7 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
         control.getItems().addListener(this::onItemsChanged);
 
         // init control
+        control.getItems().forEach(this::setupDragAndDrop);
         updateNumberColumns();
         updateTiles();
     }
@@ -66,15 +67,16 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
     private void onItemsChanged(ListChangeListener.Change<? extends GridBaseControl> change) {
         while(change.next()) {
             if (change.wasAdded()) {
-                change.getAddedSubList().forEach(this::addItem);
+                change.getAddedSubList().forEach(gridBaseControl -> {
+                    gridPane.getChildren().add(gridBaseControl);
+                    setupDragAndDrop(gridBaseControl);
+                });
             }
         }
         updateTiles();
     }
 
-    private void addItem(GridBaseControl gridBaseControl) {
-        gridPane.getChildren().add(gridBaseControl);
-
+    private void setupDragAndDrop(GridBaseControl gridBaseControl) {
         // Set up the drag detection event handler
         gridBaseControl.setOnDragDetected(mouseEvent -> {
 

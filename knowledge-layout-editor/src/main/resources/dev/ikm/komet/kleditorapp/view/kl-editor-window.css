@@ -215,6 +215,19 @@
     -fx-padding: 0 2px 0 2px;
 }
 
+/*************************  GridTile's inside Pattern  ************************/
+
+.window .section-view .content .pattern-container > .editor-grid-pane > GridPane > .grid-tile {
+    -fx-border-color: #ccc #ccc transparent #ccc;
+    -fx-border-width: 1px;
+    -fx-border-style: segments(3, 3);
+    -fx-padding: 2px;
+}
+
+.window .section-view .content .pattern-container > .editor-grid-pane > GridPane > .grid-tile:drag-hover {
+    -fx-background-color: #f8f8f8;
+}
+
 /************  Hover  *************/
 .window .section-view .pattern-view .pattern-container .field-view:hover {
     -fx-border-color: rgba(98, 137, 247, 0.5), transparent;
