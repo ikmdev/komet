@@ -180,7 +180,7 @@
     -fx-border-radius: 3px, 3px, 3px;
     -fx-border-style: solid, segments(3, 3), solid;
     -fx-border-width: 5px, 1px, 2px;
-    -fx-border-insets: 0, 5px, 5px;
+    -fx-border-insets: 0, 4px, 4px;
 
     -fx-padding: 6px;
 }
@@ -190,9 +190,13 @@
 }
 
 /************  Hover  *************/
-.window .section-view .pattern-view:hover .pattern-container {
+.window .section-view .pattern-view .pattern-container:hover {
     -fx-border-color: transparent, rgba(98, 137, 247, 0.5), transparent;
     -fx-border-style: solid, solid, solid;
+
+    -fx-background-color: #f4f9ff;
+    -fx-background-radius: 3px;
+    -fx-background-insets: 5px;
 }
 
 /***********  Selection  ***********/
@@ -224,6 +228,10 @@
     -fx-padding: 2px;
 }
 
+.window .section-view .content .pattern-container > .editor-grid-pane > GridPane > .grid-tile {
+    -fx-border-color: #ccc #ccc transparent #ccc;
+}
+
 .window .section-view .content .pattern-container > .editor-grid-pane > GridPane > .grid-tile:drag-hover {
     -fx-background-color: #f8f8f8;
 }
@@ -234,7 +242,7 @@
     -fx-background-color: rgb(244, 249, 255, 0.5);
 }
 
-/***********  Pressed  ************/
+/***********  Armed  ************/
 .window .section-view .pattern-view .pattern-container .field-view:armed {
     -fx-border-color: #5dcf16, #5dcf16;
     -fx-background-color: white;
