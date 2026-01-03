@@ -90,7 +90,7 @@ public class SelectDataSourceController {
     void initialize() {
         assert dataSourceChoiceBox != null : "fx:id=\"dataSourceChoiceBox\" was not injected: check your FXML file 'SelectDataSource.fxml'.";
         assert cancelButton != null : "fx:id=\"cancelButton\" was not injected: check your FXML file 'SelectDataSource.fxml'.";
-        ObservableList<DataServiceController> controllerOptions = FXCollections.observableList(PrimitiveData.getControllerOptions());
+        ObservableList<DataServiceController<?>> controllerOptions = FXCollections.observableList(PrimitiveData.getControllerOptions());
         controllerOptions.forEach(dataServiceController -> dataSourceChoiceBox.getItems().add(dataServiceController));
 
         dataSourceChoiceBox.getSelectionModel().selectedItemProperty().addListener(this::dataSourceChanged);

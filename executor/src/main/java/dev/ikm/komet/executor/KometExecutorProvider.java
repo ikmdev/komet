@@ -18,6 +18,8 @@ package dev.ikm.komet.executor;
 import dev.ikm.tinkar.common.service.*;
 import dev.ikm.tinkar.common.service.ExecutorService;
 import dev.ikm.tinkar.common.util.thread.NamedThreadFactory;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -290,6 +292,13 @@ public class KometExecutorProvider implements ExecutorService {
         @Override
         protected String getProviderName() {
             return "KometExecutorProvider";
+        }
+
+        @Override
+        public ImmutableList<Class<?>> serviceClasses() {
+            // KometExecutorProvider (the generic type parameter P) implements ExecutorService
+            // This establishes the contract: ProviderController<KometExecutorProvider> provides ExecutorService
+            return Lists.immutable.of(dev.ikm.tinkar.common.service.ExecutorService.class);
         }
 
         @Override
