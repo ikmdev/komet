@@ -10,6 +10,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
+import javafx.geometry.Bounds;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.SkinBase;
 import javafx.scene.image.Image;
@@ -20,11 +22,15 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
+    private static final int DRAG_LINE_WIDTH = 5;
 
     private final GridPane gridPane = new GridPane();
     private final List<GridTile> gridTiles = new ArrayList<>();
@@ -59,7 +65,7 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
         control.getItems().addListener(this::onItemsChanged);
 
         // init control
-        control.getItems().forEach(this::setupDragAndDrop);
+        control.getItems().forEach(this::initGridControl);
         updateNumberColumns();
         updateTiles();
     }
@@ -69,11 +75,27 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
             if (change.wasAdded()) {
                 change.getAddedSubList().forEach(gridBaseControl -> {
                     gridPane.getChildren().add(gridBaseControl);
-                    setupDragAndDrop(gridBaseControl);
+
+                    initGridControl(gridBaseControl);
                 });
             }
         }
         updateTiles();
+    }
+
+    private Optional<GridTile> getGridTile(int rowIndex, int columnIndex) {
+        for (GridTile gridTile : gridTiles) {
+            if (gridTile.getRowIdex() == rowIndex && gridTile.getColumnIndex() == columnIndex) {
+                return Optional.of(gridTile);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private void initGridControl(GridBaseControl gridControl) {
+        addDragHandles(gridPane, gridControl);
+        setupDragAndDrop(gridControl);
     }
 
     private void setupDragAndDrop(GridBaseControl gridBaseControl) {
@@ -149,6 +171,90 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
                 gridTiles.add(gridTile);
             }
         }
+    }
+
+    private void addDragHandles(GridPane gridPane, GridBaseControl gridBaseControl) {
+        // Rectangle that becomes visible when user is dragging and covers the Grid Control's bounds
+        Rectangle rectWhileDragging = new Rectangle();
+
+        rectWhileDragging.setArcHeight(3);
+        rectWhileDragging.setArcWidth(3);
+
+        rectWhileDragging.setManaged(false);
+        rectWhileDragging.setMouseTransparent(true);
+        rectWhileDragging.setStroke(Color.TRANSPARENT);
+        rectWhileDragging.setFill(Color.TRANSPARENT);
+
+        // Rectangle (line) used to catch the actual drag to change column span
+        Rectangle rightEdge = new Rectangle();
+        rightEdge.setManaged(false);
+
+        rightEdge.setCursor(Cursor.H_RESIZE);
+        rightEdge.setFill(Color.TRANSPARENT);
+        rightEdge.setStroke(Color.TRANSPARENT);
+
+        gridBaseControl.boundsInParentProperty().subscribe(bounds -> {
+            Bounds grindControlBounds = gridPane.localToParent(bounds);
+            rectWhileDragging.setLayoutX(grindControlBounds.getMinX());
+            rectWhileDragging.setLayoutY(grindControlBounds.getMinY());
+            rectWhileDragging.setWidth(grindControlBounds.getWidth());
+            rectWhileDragging.setHeight(grindControlBounds.getHeight());
+
+            rightEdge.setLayoutX(grindControlBounds.getMaxX() - DRAG_LINE_WIDTH);
+            rightEdge.setWidth(DRAG_LINE_WIDTH);
+            rightEdge.setLayoutY(grindControlBounds.getMinY());
+            rightEdge.setHeight(grindControlBounds.getHeight());
+        });
+
+        getChildren().add(rectWhileDragging);
+        getChildren().add(rightEdge);
+
+        // Setup mouse events on Right Edge
+        rightEdge.setOnMouseDragged(mouseEvent -> {
+            double mouseX = rightEdge.localToParent(mouseEvent.getX(), 0).getX();
+
+            rectWhileDragging.setWidth(mouseX - rectWhileDragging.getLayoutX());
+
+            rectWhileDragging.setStroke(Color.web("#5dcf16"));
+        });
+
+        rightEdge.setOnMouseReleased(mouseEvent -> {
+            rectWhileDragging.setStroke(Color.TRANSPARENT);
+
+            double mouseX = rightEdge.localToParent(mouseEvent.getX(), 0).getX();
+
+            Bounds gridControlBounds = gridPane.localToParent(gridBaseControl.getBoundsInParent());
+
+            if (mouseX > gridControlBounds.getMaxX()) {
+                // Dragging mouse to make Tile bigger
+                GridTile mouseHoverGridTile;
+                int columnCount = 1;
+                while(true) {
+                    Optional<GridTile> optionalGridTile = getGridTile(gridBaseControl.getRowIndex(), gridBaseControl.getColumnIndex() + columnCount);
+                    if (optionalGridTile.isPresent()) {
+                        mouseHoverGridTile = optionalGridTile.get();
+                        Bounds mouseHoverGridTileBounds= gridPane.localToParent(mouseHoverGridTile.getBoundsInParent());
+                        if (mouseHoverGridTile.getLayoutX() <= mouseX && mouseHoverGridTile.getLayoutX() + mouseHoverGridTileBounds.getWidth() >= mouseX) {
+                            break; // Found the Tile where the mouse is hover
+                        }
+                    }
+                    ++columnCount;
+                }
+
+                if (mouseHoverGridTile == null) {
+                    return;
+                }
+
+                Bounds gridTileBounds = gridPane.localToParent(mouseHoverGridTile.getBoundsInParent());
+                double gridTileCenterX = gridTileBounds.getCenterX();
+
+                if (mouseX > gridTileCenterX) {
+                    int gridBaseControlColIndex = gridBaseControl.getColumnIndex();
+                    int mouseHoverGridTileColIndex = mouseHoverGridTile.getColumnIndex();
+                    gridBaseControl.setColumnSpan(mouseHoverGridTileColIndex - gridBaseControlColIndex + 1);
+                }
+            }
+        });
     }
 
     /***************************************************************************
