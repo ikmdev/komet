@@ -2,8 +2,9 @@ package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
+import dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
-import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.KLEditorWindowCreatedOrRemovedEvent;
@@ -23,7 +24,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -39,13 +39,10 @@ public class KLEditorMainScreenController {
     private final EvtBus eventBus = EvtBusFactory.getDefaultEvtBus();
 
     @FXML
+    private PropertiesPane propertiesPane;
+
+    @FXML
     private BorderPane klEditorMainContainer;
-
-    @FXML
-    private ComboBox<String> columnsComboBox;
-
-    @FXML
-    private TextField sectionNameTextField;
 
     @FXML
     private TextField titleTextField;
@@ -53,15 +50,17 @@ public class KLEditorMainScreenController {
     @FXML
     private ListView patternBrowserListView;
 
-    @FXML
     private KLEditorWindowController klEditorWindowController;
+
+    @FXML
+    private EditorWindowControl editorWindowControl;
 
     private EditorWindowModel editorWindowModel;
 
     private WindowSettings windowSettings;
     private KometPreferences klEditorAppPreferences;
 
-    private ObservableViewNoOverride windowView;
+    private ObservableViewNoOverride windowViewCoordinates;
 
     private ViewCalculator viewCalculator;
     private ObservableList<Entity<EntityVersion>> patterns;
@@ -70,9 +69,9 @@ public class KLEditorMainScreenController {
         this.klEditorAppPreferences = klEditorAppPreferences;
         this.windowSettings = windowSettings;
 
-        this.windowView = windowSettings.getView();
+        this.windowViewCoordinates = windowSettings.getView();
 
-        viewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
+        viewCalculator = ViewCalculatorWithCache.getCalculator(windowViewCoordinates.toViewCoordinateRecord());
 
         initPatternsList(viewCalculator);
 
@@ -80,13 +79,15 @@ public class KLEditorMainScreenController {
         initWindow(windowToLoad);
 
         // Init KLEditorWindow Controller
-        klEditorWindowController.init(viewCalculator, editorWindowModel);
+        klEditorWindowController = new KLEditorWindowController(editorWindowModel, editorWindowControl, viewCalculator);
 
-        // Columns ComboBox
-        for (int i = 1 ; i <= 4 ; ++i) {
-            columnsComboBox.getItems().add(i + " column");
-        }
-        columnsComboBox.setValue(columnsComboBox.getItems().getFirst());
+        // Selection Manager
+        SelectionManager selectionManager = SelectionManager.init(editorWindowControl);
+
+        // Properties pane
+        propertiesPane.init(selectionManager);
+
+        klEditorWindowController.start();
 
         // setup Toast Manager
         KLToastManager.initParent(klEditorMainContainer);
@@ -113,12 +114,7 @@ public class KLEditorMainScreenController {
 
     private void initWindow(String windowTitle) {
         loadWindow(windowTitle);
-
         titleTextField.textProperty().bindBidirectional(editorWindowModel.titleProperty());
-
-        // sections
-        EditorSectionModel editorSectionModel = editorWindowModel.getMainSection();
-        sectionNameTextField.textProperty().bindBidirectional(editorSectionModel.nameProperty());
     }
 
     private void loadWindow(String windowTitle) {

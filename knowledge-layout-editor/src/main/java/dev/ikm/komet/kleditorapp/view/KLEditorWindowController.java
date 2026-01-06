@@ -1,5 +1,8 @@
 package dev.ikm.komet.kleditorapp.view;
 
+import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
+import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
+import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
@@ -9,7 +12,6 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
@@ -18,11 +20,7 @@ import java.util.List;
 
 public class KLEditorWindowController {
 
-    @FXML
-    private VBox sectionContainer;
-
-    @FXML
-    private Label titleLabel;
+    private EditorWindowControl editorWindowControl;
 
     private ViewCalculator viewCalculator;
 
@@ -31,11 +29,14 @@ public class KLEditorWindowController {
 
     private EditorWindowModel editorWindowModel;
 
-    public void init(ViewCalculator viewCalculator, EditorWindowModel editorWindowModel) {
+    public KLEditorWindowController(EditorWindowModel editorWindowModel, EditorWindowControl editorWindowControl, ViewCalculator viewCalculator) {
         this.viewCalculator = viewCalculator;
         this.editorWindowModel = editorWindowModel;
+        this.editorWindowControl = editorWindowControl;
 
-        titleLabel.textProperty().bind(editorWindowModel.titleProperty());
+        editorWindowControl.titleProperty().bind(editorWindowModel.titleProperty());
+
+        editorWindowControl.setOnAddSectionAction(this::onAddSectionAction);
 
         // Main Section
         addSectionViewAndPatterns(List.of(editorWindowModel.getMainSection()));
@@ -71,7 +72,7 @@ public class KLEditorWindowController {
     private void addSectionView(EditorSectionModel editorSectionModel) {
         SectionViewControl sectionViewControl = new SectionViewControl();
 
-        sectionViewControl.nameProperty().bind(editorSectionModel.nameProperty());
+        sectionViewControl.nameProperty().bindBidirectional(editorSectionModel.nameProperty());
         sectionViewControl.tagTextProperty().bind(editorSectionModel.tagTextProperty());
 
         sectionViewToModel.put(sectionViewControl, editorSectionModel);
@@ -80,7 +81,7 @@ public class KLEditorWindowController {
         setupDragAndDrop(sectionViewControl);
 
         VBox.setVgrow(sectionViewControl, Priority.ALWAYS);
-        sectionContainer.getChildren().add(sectionViewControl);
+        editorWindowControl.getSectionViews().add(sectionViewControl);
     }
 
     private void addPatternViews(EditorSectionModel editorSectionModel, List<? extends EditorPatternModel> patternModels) {
@@ -90,7 +91,7 @@ public class KLEditorWindowController {
             Bindings.bindContent(patternViewControl.getFields(), editorPatternModel.getFields());
 
             SectionViewControl sectionViewControl = sectionModelToView.get(editorSectionModel);
-            sectionViewControl.getItems().add(patternViewControl);
+            sectionViewControl.getPatterns().add(patternViewControl);
         }
     }
 
@@ -113,6 +114,14 @@ public class KLEditorWindowController {
     private void onAddSectionAction(ActionEvent actionEvent) {
         EditorSectionModel editorSectionModel = new EditorSectionModel();
         editorWindowModel.getAdditionalSections().add(editorSectionModel);
+    }
+
+    /**
+     * Perform any initial configuration. This method is called after everything has been setup.
+     */
+    public void start() {
+        // Select main section initially
+        SelectionManager.instance().setSelectedControl(sectionModelToView.get(editorWindowModel.getMainSection()));
     }
 
     public void shutdown() {

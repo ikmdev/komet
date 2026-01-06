@@ -47,7 +47,7 @@ runs:
 
             var macos_suffix = '';
             if ("${{inputs.operating_system}}".includes("macos")){
-            macos_suffix = ("${{inputs.operating_system}}".includes("13")) ? "-intel" : "-m1"
+            macos_suffix = ("${{inputs.operating_system}}".includes("intel")) ? "-intel" : "-m1"
             }
             
             // Get OS Name
@@ -130,7 +130,7 @@ runs:
             os_title = "Linux"
           } else  {
             asset_type = "pkg";
-            os_title = node_name.includes("14") ? "Mac-M1" : "Mac-Intel";
+            os_title = node_name.includes("intel") ? "Mac-Intel" : "Mac-M1";
           }
 
           const assetName = `Komet-${{steps.get_current_version.outputs.POM_VERSION}}-Installer-${os_title}-Unsigned.${asset_type}`;

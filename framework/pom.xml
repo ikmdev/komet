@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.58.0-progress-SNAPSHOT</version>
+        <version>1.58.0-SNAPSHOT</version>
     </parent>
     <artifactId>framework</artifactId>
     <dependencies>
@@ -211,28 +211,10 @@
                                     <outputDirectory>${project.build.directory}/data</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
+                            <stripVersion>true</stripVersion>
                             <outputDirectory>${project.build.directory}/data</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>rename-starter-data</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <move file="${project.build.directory}/data/tinkar-starter-data-${tinkar-starter-data.version}-reasoned-pb.zip"
-                                      tofile="${project.build.directory}/data/tinkar-starter-data-reasoned-pb.zip" />
-                            </target>
                         </configuration>
                     </execution>
                 </executions>

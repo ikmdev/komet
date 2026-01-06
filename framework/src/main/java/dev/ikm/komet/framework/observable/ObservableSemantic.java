@@ -15,16 +15,11 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.terms.TinkarTerm;
-import org.eclipse.collections.api.factory.Maps;
+import dev.ikm.tinkar.terms.EntityBinding;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.ImmutableMap;
-import org.eclipse.collections.api.map.MutableMap;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -117,7 +112,7 @@ public final class ObservableSemantic
     }
     private FeatureWrapper makePatternForSemanticFeature() {
         FeatureKey locator = FeatureKey.Entity.SemanticPattern(this.nid());
-        return new FeatureWrapper(this.pattern(), Binding.Semantic.pattern().nid(), Binding.Semantic.patternFieldDefinitionIndex(), this, locator);
+        return new FeatureWrapper(this.pattern(), EntityBinding.Semantic.pattern().nid(), EntityBinding.Semantic.patternFieldDefinitionIndex(), this, locator);
     }
 
     // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
@@ -130,7 +125,7 @@ public final class ObservableSemantic
 
     private FeatureWrapper makeReferencedComponentFeature() {
         FeatureKey locator = FeatureKey.Entity.SemanticReferencedComponent(this.nid());
-        return new FeatureWrapper(this.referencedComponent(), Binding.Semantic.pattern().nid(), Binding.Component.versionsFieldDefinitionIndex(), this, locator);
+        return new FeatureWrapper(this.referencedComponent(), EntityBinding.Semantic.pattern().nid(), EntityBinding.Component.versionsFieldDefinitionIndex(), this, locator);
     }
 
     @Override

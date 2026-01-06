@@ -31,7 +31,7 @@ public class ProcessResultsTask extends TrackingCallable<ClassifierResults> {
 	public ProcessResultsTask(ReasonerService reasonerService) {
 		super(false, true);
 		this.reasonerService = reasonerService;
-		updateTitle("Processing reasoner results");
+		updateTitle("Processing and writing reasoner results");
 	}
 
 	@Override

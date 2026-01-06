@@ -15,9 +15,9 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.terms.EntityBinding;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
@@ -143,8 +143,8 @@ public final class ObservablePatternVersion
     }
     private Feature makePatternMeaningFeature() {
         FeatureKey locator = FeatureKey.Version.PatternMeaning(this.nid(), this.stampNid());
-        return new FeatureWrapper(this.meaningProperty, Binding.Pattern.Version.pattern().nid(),
-                Binding.Pattern.Version.patternMeaningFieldDefinitionIndex(), this, locator);
+        return new FeatureWrapper(this.meaningProperty, EntityBinding.Pattern.Version.pattern().nid(),
+                EntityBinding.Pattern.Version.patternMeaningFieldDefinitionIndex(), this, locator);
     }
 
     // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
@@ -156,8 +156,8 @@ public final class ObservablePatternVersion
     }
     private Feature makePatternPurposeFeature() {
         FeatureKey locator = FeatureKey.Version.PatternPurpose(this.nid(), this.stampNid()) ;
-        return new FeatureWrapper(this.purposeProperty, Binding.Pattern.Version.pattern().nid(),
-                Binding.Pattern.Version.patternPurposeFieldDefinitionIndex(),this, locator);
+        return new FeatureWrapper(this.purposeProperty, EntityBinding.Pattern.Version.pattern().nid(),
+                EntityBinding.Pattern.Version.patternPurposeFieldDefinitionIndex(),this, locator);
     }
 
     // TODO: replace with JEP 502: Stable Values when finalized to allow lazy initialization of feature.
@@ -169,7 +169,8 @@ public final class ObservablePatternVersion
     }
     private Feature makeFieldDefinitionListFeature() {
         FeatureKey locator = FeatureKey.Version.PatternFieldDefinitionList(this.nid(), this.stampNid()) ;
-        return FeatureList.makeWithBackingList(this.observableFieldDefinitions, locator, Binding.Pattern.Version.pattern(), Binding.Pattern.Version.fieldDefinitionListFieldDefinitionIndex(), this);
+        return FeatureList.makeWithBackingList(this.observableFieldDefinitions, locator, EntityBinding.Pattern.Version.pattern(),
+                EntityBinding.Pattern.Version.fieldDefinitionListFieldDefinitionIndex(), this);
     }
 
     @Override

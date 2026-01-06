@@ -3,9 +3,15 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.util.uuid.UuidUtil;
 import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
+import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.provider.search.Searcher;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -19,6 +25,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,16 +34,18 @@ import java.util.function.Function;
 
 public class KLComponentControlFactory {
 
+    public static final int MAX_INLINE_SEARCH_RESULTS = 15;
+
     /***************************************************************************
      *                                                                         *
      * Public API                                                              *
      *                                                                         *
      **************************************************************************/
 
-    public static KLComponentControl createTypeAheadComponentControl(ViewCalculator viewCalculator) {
+    public static KLComponentControl createComponentControl(ViewCalculator viewCalculator) {
         KLComponentControl componentControl = new KLComponentControl();
         NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
-        //componentControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
+        componentControl.setTypeAheadCompleter(createInlineSearchFunction(navigationCalculator));
 
         // add the function to render the component name
         componentControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
@@ -48,17 +57,14 @@ public class KLComponentControlFactory {
         // suggestions cell factory
         componentControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
 
-        // header node
-        componentControl.setTypeAheadHeaderPane(createTypeAheadHeaderPane());
-
         return componentControl;
     }
 
-    public static <T extends IntIdCollection> KLComponentCollectionControl createTypeAheadComponentListControl(ViewCalculator viewCalculator) {
+    public static <T extends IntIdCollection> KLComponentCollectionControl createComponentListControl(ViewCalculator viewCalculator) {
         KLComponentCollectionControl<T> componentListControl = new KLComponentCollectionControl<>();
         NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
 
-        //componentListControl.setTypeAheadCompleter(createGenericTypeAheadFunction(navigationCalculator));
+        componentListControl.setTypeAheadCompleter(createInlineSearchFunction(navigationCalculator));
 
         // add the function to render the component name
         componentListControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
@@ -88,6 +94,63 @@ public class KLComponentControlFactory {
         return componentListControl;
     }
 
+    /***************************************************************************
+     *                                                                         *
+     * Private Implementation                                                  *
+     *                                                                         *
+     **************************************************************************/
+
+    /**
+     * If the user enters a valid UUID this method will return the associated Concept.
+     *
+     * @param navigationCalculator the navigation calculator.
+     * @return a List containing the associated concept or an empty list if there is no Concept associated with the UUID
+     */
+    private static Function<String, List<EntityProxy>> createUUIDConverterFunction(NavigationCalculator navigationCalculator) {
+        return newSearchText -> {
+            List<EntityProxy> entityProxyResults = new ArrayList<>();
+
+            UuidUtil.getUUID(newSearchText).ifPresent(
+                    uuid -> EntityHandle.get(PrimitiveData.nid(PublicIds.of(uuid))).ifPresent(
+                    entityFacade -> entityProxyResults.add(entityFacade.toProxy())
+                    )
+            );
+            return entityProxyResults;
+        };
+    }
+
+    /**
+     * If the user enters a valid UUID this method will return the associated Component, otherwise will match
+     * based on the component descriptions.
+     *
+     * @param navigationCalculator the navigation calculator.
+     * @return a List containing the associated concept or an empty list if there is no Concept associated with the UUID
+     */
+    private static Function<String, List<EntityProxy>> createInlineSearchFunction(NavigationCalculator navigationCalculator) {
+        return newSearchText -> {
+            List<EntityProxy> entityProxyResults = new ArrayList<>();
+
+            if (UuidUtil.isUUID(newSearchText)) {
+                UuidUtil.getUUID(newSearchText).ifPresent(
+                        uuid -> EntityHandle.get(uuid).ifPresent(
+                                entityFacade -> entityProxyResults.add(entityFacade.toProxy())
+                        )
+                );
+            } else {
+                try {
+                    ImmutableList<LatestVersionSearchResult> inlineResults = navigationCalculator.search(newSearchText, MAX_INLINE_SEARCH_RESULTS);
+                    inlineResults.forEach(latestVersionSearchResult ->
+                            latestVersionSearchResult.latestVersion().ifPresent(matchedSemantic ->
+                                    EntityHandle.get(matchedSemantic.referencedComponentNid())
+                                            .ifPresent(entity -> entityProxyResults.add(entity.toProxy()))));
+
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            return entityProxyResults;
+        };
+    }
 
     private static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator) {
         return (entityProxy) ->

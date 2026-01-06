@@ -11,7 +11,7 @@
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
     <name>KOMET</name>
-    <version>1.58.0-progress-SNAPSHOT</version>
+    <version>1.58.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <inceptionYear>2015</inceptionYear>
     <licenses>
@@ -67,7 +67,7 @@
         <!-- Tinkar Core Variables -->
         <tinkar-core.groupId>dev.ikm.tinkar</tinkar-core.groupId>
         <tinkar-composer.version>1.10.0</tinkar-composer.version>
-        <tinkar-core.version>1.126.0-progress-SNAPSHOT</tinkar-core.version>
+        <tinkar-core.version>1.126.0</tinkar-core.version>
 
         <!-- IKM Evrete Variables -->
         <ikm-evrete.groupId>org.evrete</ikm-evrete.groupId>
@@ -631,8 +631,10 @@
 
     <repositories>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <id>tinkar-nexus</id>
+            <url>https://nexus.tinkar.org/repository/ike-public/</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
         </repository>
     </repositories>
 
@@ -701,6 +703,15 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <configuration>
+                        <!-- Exclude files using JEP 447 (statements before super/this) - unsupported by Checkstyle parser -->
+                        <!-- @SuppressWarnings is ineffective because Checkstyle fails during parsing, before annotations are processed -->
+                        <excludes>**/ViewContext.java,**/DefaultKl*Field.java,**/KlReadOnly*Field.java,**/KlEditable*Field.java</excludes>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

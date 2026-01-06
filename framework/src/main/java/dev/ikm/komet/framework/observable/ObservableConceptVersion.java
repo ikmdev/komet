@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.komet.framework.observable.binding.Binding;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import dev.ikm.tinkar.entity.Entity;

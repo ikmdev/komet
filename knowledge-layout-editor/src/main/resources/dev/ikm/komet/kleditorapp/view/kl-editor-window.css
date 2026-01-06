@@ -97,17 +97,23 @@
  *                                                                             *
  ******************************************************************************/
 
-.window .content-container {
+/*******************************************************************************
+ * Section View                                                                *
+ ******************************************************************************/
+
+.window .section-view {
     -fx-background-color: transparent;
 }
 
-.window .content-container .title-container {
+.window .section-view .title-container {
     -fx-alignment: center_left;
 
     -fx-background-color: transparent;
+
+    -fx-translate-y: 2px;
 }
 
-.window .content-container .title-container .label {
+.window .section-view .title-container .label {
     -fx-text-fill: white;
     -fx-background-color: #5d5d5d;
     -fx-background-radius: 3px 3px 0px 0px;
@@ -117,18 +123,61 @@
     -fx-font-size: 12px;
 }
 
-.window .content-container .content {
+.window .section-view .content {
     -fx-background-color: white;
 
     -fx-spacing: 5px;
+
+    -fx-padding: 2px;
 }
 
-.window .content-container .pattern-container {
-    -fx-border-color: #9747ff;
+.window .section-view .titled-pane {
+    -fx-border-insets: 0 0 1 0;
+    -fx-border-width: 2px;
+    -fx-border-color: transparent;
+    -fx-border-radius: 0 3px 3px 3px;
+    -fx-border-style: solid inside;
+}
+
+/************  Hover  *************/
+
+.window .section-view .title-container:hover .label {
+    -fx-background-color: #777;
+}
+
+/***********  Selection  ***********/
+
+.window .section-view:selected .titled-pane {
+    -fx-border-color: #67ba3f;
+}
+
+.window .section-view:selected .title-container .label {
+    -fx-background-color: #67ba3f;
+}
+
+/*******************************************************************************
+ * Pattern View                                                                *
+ ******************************************************************************/
+
+.window .section-view .pattern-view .pattern-container {
+    -fx-border-color: #9747ff, transparent;
     -fx-border-radius: 3px;
-    -fx-border-style: segments(3, 3);
+    -fx-border-style: segments(3, 3), solid;
+    -fx-border-width: 1px, 2px;
 
     -fx-padding: 6px;
+}
+
+/************  Hover  *************/
+.window .section-view .pattern-view:hover .pattern-container {
+    -fx-border-color: #aaa, transparent;
+}
+
+/***********  Selection  ***********/
+
+.window .section-view .pattern-view:selected .pattern-container {
+    -fx-border-color: #67ba3f;
+    -fx-border-style: solid, solid;
 }
 
 /*******************************************************************************

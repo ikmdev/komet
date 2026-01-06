@@ -7,20 +7,9 @@ import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.binary.EncoderOutput;
 
 public record VersionKey(int nid, int stampNid) implements FeatureKey.ChronologyFeature.Version {
-    public VersionKey {
-        checkForIndex(nid);
-        checkForIndex(stampNid);
-    }
 
     public VersionKey(int stampNid) {
-        this(FeatureKey.WILDCARD, checkForIndex(stampNid));
-    }
-
-    static int checkForIndex(int nid) {
-        if (nid < 0) {
-            return nid;
-        }
-        throw new IllegalStateException("Not a nid, probably an index because value >= 0: " + nid);
+        this(FeatureKey.WILDCARD, stampNid);
     }
 
     @Override

@@ -21,6 +21,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.function.Function;
 
+import dev.ikm.komet.framework.observable.collection.ObservableIntList;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.primitive.ImmutableIntObjectMap;
@@ -122,8 +123,10 @@ public class ReasonerResultsController {
         assert editCoordinatePane != null : "fx:id=\"editCoordinatePane\" was not injected: check your FXML file 'ClassifierResultsInterface.fxml'.";
         assert editTextArea != null : "fx:id=\"editTextArea\" was not injected: check your FXML file 'ClassifierResultsInterface.fxml'.";
 
+        inferredChangesList.setItems(new ObservableIntList());
         inferredChangesList.setCellFactory(conceptCellFactory());
         orphanList.setCellFactory(conceptCellFactory());
+        orphanList.setItems(new ObservableIntList());
         orphanList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         inferredChangesList.getSelectionModel().getSelectedItems().addListener(this::onChanged);
         inferredChangesList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
