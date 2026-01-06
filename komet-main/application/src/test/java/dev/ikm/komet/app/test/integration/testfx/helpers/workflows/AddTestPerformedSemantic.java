@@ -1,0 +1,294 @@
+package dev.ikm.komet.app.test.integration.testfx.helpers.workflows;
+
+import javafx.scene.input.KeyCode;
+import org.testfx.api.FxRobot;
+import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
+
+import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
+
+public class AddTestPerformedSemantic extends BaseWorkflow {
+
+    /**
+     * Constructs an AddTestPerformedSemantic workflow helper.
+     * 
+     * @param robot    FxRobot instance for UI interactions
+     * @param reporter TestReporter instance for logging test steps
+     */
+    public AddTestPerformedSemantic(FxRobot robot, TestReporter reporter) {
+        super(robot, reporter);
+    }
+
+    /**
+     * Adds the Test Performed Semantic.
+     * This method encapsulates the complete workflow for adding semantic elements
+     * including:
+     * - Creating a new journal
+     * - Navigating to the Associated Devices pattern
+     * - Setting up stamp and reference component
+     * - Populating analytes, targets, test performed, instruments, specimens,
+     * detection limit, and example UCUM units
+     *
+     * @param patternName      The name of the pattern to add semantic element to
+     *                         (e.g., "Device Company Pattern", "Associated
+     *                         Devices Pattern")
+     * @param status           The status for the semantic (e.g., "Active")
+     * @param moduleName       The module name (e.g., "Device Extension Module")
+     * @param path             The path name (e.g., "Development path")
+     * @param analytes         One or more analyte identifiers to populate in
+     *                         semantic details
+     * @param targets          One or more target identifiers to populate in
+     *                         semantic details
+     * @param testPerformed    Test perfomed found by the LOINC code
+     * @param instruments      One or more instrument identifiers found by
+     *                         searching for Device Identifier
+     * @param specimens        One or more specimen identifiers found by searching
+     *                         the FQN of SNOMED ID
+     * @param detectionLimit   The detection limit value to input
+     * @param exampleUcumUnits The example UCUM units to input
+     * 
+     * @throws InterruptedException if thread is interrupted during execution
+     */
+    public void addTestPerformedSemantic(String patternName, String status,
+            String moduleName, String path,
+            String analytes, String targets, String testPerformed,
+            String instruments, String[] specimens, String detectionLimit, String exampleUcumUnits)
+            throws InterruptedException {
+
+        // Open new journal
+        try {
+            reporter.logBeforeStep("Open a new journal for " + patternName + " semantic entry");
+            landingPage.clickNewProjectJournal();
+            reporter.logAfterStep("Opened a new journal for " + patternName + " semantic entry successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Open a new journal for " + patternName + " semantic entry", e);
+            throw e;
+        }
+
+        // Open nextgen navigator
+        try {
+            reporter.logBeforeStep("Open NextGen Navigator");
+            navigator.clickNextgenNavigator();
+            reporter.logAfterStep("Opened NextGen Navigator successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Open NextGen Navigator", e);
+            throw e;
+        }
+
+        // Click Patterns tab
+        try {
+            reporter.logBeforeStep("Click Patterns tab");
+            navigator.clickPatterns();
+            reporter.logAfterStep("Clicked Patterns tab successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click Patterns tab", e);
+            throw e;
+        }
+
+        // Move to the specified pattern
+        try {
+            reporter.logBeforeStep("Move to '" + patternName + "'");
+            robot.moveTo(patternName);
+            // if pattern is not visible, scroll down 50, repeat till visible
+            while (!robot.lookup(patternName).tryQuery().isPresent()) {
+                verticalScroll(KeyCode.DOWN, 50);
+                waitForFxEvents();
+            }
+            reporter.logAfterStep("Moved to '" + patternName + "' successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Move to '" + patternName + "'", e);
+            throw e;
+        }
+
+        // Right Click the pattern and select "Add New Semantic Element"
+        try {
+            reporter.logBeforeStep("Right Click the pattern and select 'Add New Semantic Element'");
+            robot.rightClickOn(patternName);
+            waitForFxEvents();
+            robot.clickOn("Add New Semantic Element");
+            waitForFxEvents();
+            navigator.clickNextgenNavigator();
+            reporter.logAfterStep("Right Clicked the pattern and selected 'Add New Semantic Element' successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Right Click the pattern and select 'Add New Semantic Element'", e);
+            throw e;
+        }
+
+        // Update the Stamp
+        try {
+            reporter.logBeforeStep("Update the Stamp to reflect Module: " + moduleName);
+            conceptPane.updateStamp(status, moduleName, path);
+            reporter.logAfterStep("Updated the Stamp to reflect Module: " + moduleName + " successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Update the Stamp to reflect Module: " + moduleName, e);
+            throw e;
+        }
+
+        // Click the pencil icon that is in line with the Reference Component section
+        // header
+        try {
+            reporter.logBeforeStep("Click the pencil icon that is in line with the Reference Component section header");
+            conceptPane.clickEditReferenceComponentButton();
+            reporter.logAfterStep(
+                    "Clicked the pencil icon that is in line with the Reference Component section header successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click the pencil icon that is in line with the Reference Component section header", e);
+            throw e;
+        }
+
+        // Paste UUID from clipboard
+        try {
+            reporter.logBeforeStep("Paste UUID from clipboard");
+            robot.rightClickOn("🔍  Search");
+            waitForFxEvents();
+            robot.clickOn("Paste");
+            waitForFxEvents();
+            waitFor(1500); // Wait for results to load
+            // press down arrow then press enter
+            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitForFxEvents();
+            reporter.logAfterStep("Pasted UUID from clipboard successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Paste UUID from clipboard", e);
+            throw e;
+        }
+
+        // Click Confirm and verify the correct reference component populates
+        try {
+            reporter.logBeforeStep("Click Confirm and verify the correct reference component populates");
+            robot.clickOn("CONFIRM");
+            waitForFxEvents();
+            reporter.logAfterStep(
+                    "Clicked Confirm and verified the correct reference component populated successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click Confirm and verify the correct reference component populates", e);
+            throw e;
+        }
+
+        // Click the pencil that is in line with the Semantic Details section header
+        try {
+            reporter.logBeforeStep("Click the pencil that is in line with the Semantic Details section header");
+            conceptPane.clickEditSemanticDetailsButton();
+            reporter.logAfterStep(
+                    "Clicked the pencil that is in line with the Semantic Details section header successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click the pencil that is in line with the Semantic Details section header", e);
+            throw e;
+        }
+
+        // Add the Analyte(s) by searching the analyte concept in the NextGen Search
+        try {
+            reporter.logBeforeStep("Search and select Analyte");
+            robot.moveTo("Analyte:").moveBy(40, 40).clickOn();
+            robot.write(analytes);
+            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitForFxEvents();
+        } catch (Exception e) {
+            reporter.logFailure("Search and select Analyte", e);
+            throw e;
+        }
+
+        // Add the Target(s) by searching the analyte concept FQN or UUID in the NextGen
+        // Search
+        try {
+            reporter.logBeforeStep("Search and select Target");
+            robot.moveTo("Target:").moveBy(40, 40).clickOn();
+            robot.write(targets);
+            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitForFxEvents();
+        } catch (Exception e) {
+            reporter.logFailure("Search and select Target", e);
+            throw e;
+        }
+
+        // move to test performed field
+        try {
+            reporter.logBeforeStep("Search and select Test Performed");
+            robot.moveTo("Test Performed:").moveBy(40, 40).clickOn();
+            robot.write(testPerformed);
+            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitForFxEvents();
+        } catch (Exception e) {
+            reporter.logFailure("Search and select Test Performed", e);
+            throw e;
+        }
+
+        // move to insrtrument field
+        try {
+            reporter.logBeforeStep("Search and select Instrument");
+            robot.moveTo("Instrument:").moveBy(40, 40).clickOn();
+            robot.write(instruments);
+            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitForFxEvents();
+        } catch (Exception e) {
+            reporter.logFailure("Search and select Instrument", e);
+            throw e;
+        }
+
+        // move to specimen field
+        try {
+            reporter.logBeforeStep("Search and select Specimen");
+            robot.moveTo("Specimen:").moveBy(40, 40).clickOn();
+            for (String specimen : specimens) {
+                robot.write(specimen);
+                waitFor(1000); // wait for results to load
+                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
+                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+                waitForFxEvents();
+            }
+        } catch (Exception e) {
+            reporter.logFailure("Search and select Specimen", e);
+            throw e;
+        }
+
+        // move to detection limit field
+        try {
+            reporter.logBeforeStep("Type in the Detection Limit");
+            robot.moveTo("Detection Limit:").moveBy(0, 25).doubleClickOn();
+            robot.write(detectionLimit);
+            waitForFxEvents();
+            reporter.logAfterStep("Typed in the Detection Limit successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Type in the Detection Limit", e);
+            throw e;
+        }
+
+        // move to example ucum units field
+        try {
+            reporter.logBeforeStep("Type in the Example UCUM units");
+            robot.moveTo("Example UCUM units:").moveBy(0, 25).doubleClickOn();
+            robot.write(exampleUcumUnits);
+            waitForFxEvents();
+            reporter.logAfterStep("Typed in the Example UCUM units successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Type in the Example UCUM units", e);
+            throw e;
+        }
+
+        // click submit
+        try {
+            reporter.logBeforeStep("Click Submit to save the semantic");
+            conceptPane.submit();
+            reporter.logAfterStep("Clicked Submit to save the semantic successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click Submit to save the semantic", e);
+            throw e;
+        }
+
+        // close journal window
+        try {
+            reporter.logBeforeStep("Close journal window");
+            landingPage.closeJournalWindow();
+            reporter.logAfterStep("Closed journal window successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Close journal window", e);
+            throw e;
+        }
+
+        LOG.info("✓ Add DeX Test Performed Semantic: PASSED");
+    }
+}

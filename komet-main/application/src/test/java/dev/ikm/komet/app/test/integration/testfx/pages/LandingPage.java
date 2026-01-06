@@ -168,4 +168,18 @@ public class LandingPage extends BasePage {
         
         return this;
     }
+
+    public LandingPage clickInfo(){
+            robot.clickOn("Info");
+            waitForFxEvents();
+            LOG.info("Clicked Info button");
+            return this;
+    }
+
+    public LandingPage clickSync(){
+            robot.clickOn("Sync");
+            waitForFxEvents();
+            LOG.info("Clicked Sync button");
+            return this;
+    }
 }

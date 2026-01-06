@@ -575,14 +575,13 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         
         // Additional wait to ensure results tree is fully rendered
-        waitFor(3000);
+        waitFor(3500);
         waitForFxEvents();     
         //robot.moveTo("Top component with score order");
         //waitForFxEvents();
         robot.moveBy(0, 80);
         waitForFxEvents();
-        waitFor(1000); // Stabilize before double-click
-    
+        waitFor(1500); // Stabilize before double-click
         
         // Then double-click to select
         robot.doubleClickOn();
@@ -631,17 +630,19 @@ public class ConceptPane extends BasePage {
      * Drags a concept to the reference component search field.
      */
     public ConceptPane dragToReferenceComponentField() {
-        waitFor(1000); // Initial stabilization
-        
-        // Locate the drag source
+        // Wait for search results to appear
+        waitForFxEvents();
+        waitFor(1500); // Wait for results to populate
+
+        //move to the second instance of the concept name in the results
         robot.moveTo("SORT BY: TOP COMPONENT");
         waitForFxEvents();
-        robot.moveBy(0, 210); // Move down to the element in the tree
+        robot.moveBy(0, 50); // Move down to results area
         waitForFxEvents();
-        waitFor(500); // Stabilize on element
         
         // Use TestFX's drag API to automatically initiate and perform the drag
         robot.drag(MouseButton.PRIMARY)
+             .moveBy(5, 5) // Small movement to initiate drag
              .moveTo("🔍  Search")
              .drop();
         

@@ -2,7 +2,7 @@ package dev.ikm.komet.app.test.integration.testfx;
 
 import dev.ikm.komet.app.App;
 import dev.ikm.komet.app.AppState;
-import dev.ikm.komet.app.test.integration.testfx.helpers.ConceptWorkflow;
+import dev.ikm.komet.app.test.integration.testfx.helpers.workflows.*;
 import dev.ikm.komet.app.test.integration.testfx.pages.*;
 import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
 import org.junit.jupiter.api.*;
@@ -39,7 +39,7 @@ public class DeXAuthoringProcessTest {
         private static final String PROPERTY_TARGET_DATA_DIR = "target.data.directory";
         private static final String PROPERTY_USER_HOME = "user.home";
         private static final String BASE_DATA_DIR = System.getProperty(PROPERTY_TARGET_DATA_DIR,
-                        System.getProperty(PROPERTY_USER_HOME, System.getProperty("java.io.tmpdir")));
+                                                        System.getProperty(PROPERTY_USER_HOME, System.getProperty("java.io.tmpdir")));
         private static final String SOLOR_DIR = "Solor";
         private static final String TEST_SCREENSHOTS_DIR = "test-screenshots-dex";
         private static final String EXTENT_REPORTS_DIR = "extent-reports-dex";
@@ -69,12 +69,33 @@ public class DeXAuthoringProcessTest {
         String moduleName;
         String path;
         String parentConceptName;
+        
+        // Test Performed Semantic Data
+        String analyteConcept = "Albumin";
+        String targetConcept = "Serum";
+        String testPerformedConcept = "Quantitative";
+        String instrumentConcept = "COBAS";
+        String specimenConcept = "Blood";
+        String detectionLimit = "0.1";
+        String exampleUcumUnits = "g/L";
 
         private Path screenshotDirectory;
         private Path extentReportsDirectory;
         private App webApp;
         private TestReporter reporter;
-        private ConceptWorkflow conceptWorkflow;
+        private FxRobot robot;
+
+        // Workflow helpers
+        private GithubConnection githubConnection;
+        private AuthorConcepts authorConcepts;
+        private AddConceptToDexMembershipPattern addConceptToDexMembership;
+        private Reasoner reasoner;
+        private AddDeviceCompanySemantic addDeviceCompanySemantic;
+        private AddAssociateDevicesSemantic addAssociateDevicesSemantic;
+        private AddTestPerformedSemantic addTestPerformedSemantic;
+        private AddAllowedResultsSemantic addAllowedResultsSemantic;
+        private AddQuantitativeAllowedResultsSemantic addQuantitativeAllowedResultsSemantic;
+        private AddPopulationReferenceRangeSemantic addPopulationReferenceRangeSemantic;
 
         @BeforeAll
         public void setUpClass() {
@@ -86,6 +107,7 @@ public class DeXAuthoringProcessTest {
 
         @BeforeEach
         void setUp(FxRobot robot) throws Exception {
+                this.robot = robot;
                 FxToolkit.setupApplication(() -> {
                         webApp = new App();
                         return webApp;
@@ -95,7 +117,18 @@ public class DeXAuthoringProcessTest {
                                 "DeXAuthoringProcessTest");
                 reporter.createTest("DeX Authoring Process Test - v" + APP_VERSION,
                                 "Complete DeX authoring workflow with GitHub integration");
-                conceptWorkflow = new ConceptWorkflow(robot, reporter);
+
+                // Initialize workflow helpers
+                githubConnection = new GithubConnection(robot, reporter);
+                authorConcepts = new AuthorConcepts(robot, reporter);
+                addConceptToDexMembership = new AddConceptToDexMembershipPattern(robot, reporter);
+                reasoner = new Reasoner(robot, reporter);
+                addDeviceCompanySemantic = new AddDeviceCompanySemantic(robot, reporter);
+                addAssociateDevicesSemantic = new AddAssociateDevicesSemantic(robot, reporter);
+                addTestPerformedSemantic = new AddTestPerformedSemantic(robot, reporter);
+                addAllowedResultsSemantic = new AddAllowedResultsSemantic(robot, reporter);
+                addQuantitativeAllowedResultsSemantic = new AddQuantitativeAllowedResultsSemantic(robot, reporter);
+                addPopulationReferenceRangeSemantic = new AddPopulationReferenceRangeSemantic(robot, reporter);
         }
 
         @AfterEach
@@ -214,27 +247,28 @@ public class DeXAuthoringProcessTest {
                         throw e;
                 }
 
-                /*
-
+                
+                
                 // ========== Steps 2-6: Connect to GitHub Repository ==========
-                conceptWorkflow.connectToGitHub(GITHUB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
+                githubConnection.connectToGitHub(GITHUB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
 
                 // ========== Steps 7-33: Create Concepts ==========
                 // Create Target concept
-                conceptWorkflow.createConcept("Albumin", "Active", "Device Extension Module", "Development path", "Target");
-                conceptWorkflow.addConceptToDexMembershipPattern("Albumin", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
+                authorConcepts.createConcept("Albumin", "Active", "Device Extension Module", "Development path", "Target");
+                addConceptToDexMembership.addConceptToDexMembershipPattern("Albumin", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
 
                 // 34. Repeat for all necessary DeX concepts (Target, Analyte, Company/Device Labeler)
-                conceptWorkflow.createConcept("Albumin", "Active", "Device Extension Module", "Development path", "Analyte");
-                conceptWorkflow.addConceptToDexMembershipPattern("Albumin", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
+                //create Analyte concept
+                authorConcepts.createConcept("Albumin", "Active", "Device Extension Module", "Development path", "Analyte");
+                addConceptToDexMembership.addConceptToDexMembershipPattern("Albumin", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
 
                 // Create Company concept
-                conceptWorkflow.createConcept("Roche Diagnostics GmbH", "Active", "Device Extension Module", "Development path", "Company");
-                conceptWorkflow.addConceptToDexMembershipPattern("Roche Diagnostics GmbH", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
+                authorConcepts.createConcept("Roche Diagnostics GmbH", "Active", "Device Extension Module", "Development path", "Company");
+                addConceptToDexMembership.addConceptToDexMembershipPattern("Roche Diagnostics GmbH", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
 
-                LOG.info("✓ Concept Creation: PASSED");
-
-                */
+                //LOG.info("✓ Concept Creation: PASSED");
+                
+                
 
                 // ========== DeX Data Generation ==========
                 LOG.info("===== DeX Data Generation =====");
@@ -257,7 +291,8 @@ public class DeXAuthoringProcessTest {
                         reporter.logBeforeStep("Step 35: Search for the identified device by the supplied brand name + version/model for the DeX record you are creating");
                         navigator.clickNextgenSearch();
                         navigator.nextgenSearch(suppliedBrandName);
-                        navigator.openNextGenSearchResult(indentifiedDevice);
+                        navigator.openNextGenSearchResult(suppliedBrandName);
+                        //navigator.openNextGenSearchResult(indentifiedDevice);
                         conceptPane.clickCopyButton();
                         reporter.logAfterStep("Step 35: Searched for the identified device successfully");
                 } catch (Exception e) {
@@ -265,6 +300,7 @@ public class DeXAuthoringProcessTest {
                         throw e;
                 }
 
+                
                 // Step 36: Add the Device Name from the Device Extension Data as an 'Other Name'
                 try {
                         reporter.logBeforeStep("Step 36: Add the Device Name from the Device Extension Data as an 'Other Name'");
@@ -277,10 +313,18 @@ public class DeXAuthoringProcessTest {
                         reporter.logFailure("Step 36: Add the Device Name from the Device Extension Data as an 'Other Name'", e);
                         throw e;
                 }
-
-                /*
+                
+                
                 // Step 49: Run Reasoner
-                conceptWorkflow.runReasoner();
+                try{
+                        reporter.logBeforeStep("Step 49: Run Reasoner");
+                        reasoner.runReasoner();     
+                        reporter.logAfterStep("Step 49: Reasoner run successfully");
+                } catch (Exception e) {
+                        reporter.logFailure("Step 49: Run Reasoner", e);
+                        throw e;
+                }
+
 
                 // Step 50: Click Info
                 try {
@@ -306,416 +350,66 @@ public class DeXAuthoringProcessTest {
 
                 LOG.info("✓ DeX Data Generation: PASSED");
 
-                */
+                
 
-                // ========== Add DeX Device Company Semantic ==========
-                // Step 53-62
-                conceptWorkflow.addSemanticToPattern("Device Company Pattern", "Active", "Device Extension Module", 
+                // ========== Steps 52-62: Add DeX Device Company Semantic ==========
+                
+                addDeviceCompanySemantic.addDeviceCompanySemantic("Device Company Pattern", "Active", "Device Extension Module", 
                                                     "Development path", "Albumin Gen2 5166861190", "Roche Diagnostics GmbH");
 
                 LOG.info("✓ Add DeX Device Company Semantic: PASSED");
 
-                // ========== Add DeX Associated Devices Semantic ==========
-                // Step 63-71
+                // ========== Steps 63-71: Add DeX Associated Devices Semantic ==========
 
                 // Add Associated Devices semantic (with multiple device identifiers)
-                String[] associatedDeviceIdentifiers1 = {"Device1", "Device2", "Device3"};
+                String[] associatedDeviceIdentifiers = new String[]{"Device1", "Device2", "Device3"};
 
-                conceptWorkflow.addSemanticToPattern("Associated Devices Pattern", "Active", "Device Extension Module", 
-                                                    "Development path", "Roche Diagnostics COBAS Integra Albumin Gen.2", associatedDeviceIdentifiers1);
+                addAssociateDevicesSemantic.addAssociatedDevicesSemantic("Associated Devices Pattern", "Active", "Device Extension Module", 
+                                                    "Development path", "Roche Diagnostics COBAS Integra Albumin Gen.2", associatedDeviceIdentifiers);
 
                 LOG.info("✓ Add DeX Associated Devices Semantic: PASSED");
 
-                // ========== Add DeX Test Performed Semantic ==========
-                // Step 72-87
+                // ========== Steps 72-87: Add DeX Test Performed Semantic ==========
 
-                // Open new journal
-                
-                String patternName = "Test Performed Pattern";
-                try {
-                reporter.logBeforeStep("Open a new journal for " + patternName + " semantic entry");
-                landingPage.clickNewProjectJournal();
-                reporter.logAfterStep("Opened a new journal for " + patternName + " semantic entry successfully");
-                } catch (Exception e) {
-                reporter.logFailure("Open a new journal for " + patternName + " semantic entry", e);
-                throw e;
-                }
+                String[] specimens = new String[]{specimenConcept};
+                addTestPerformedSemantic.addTestPerformedSemantic("Test Performed Pattern", "Active", "Device Extension Module",
+                        "Development path", analyteConcept, targetConcept, testPerformedConcept, instrumentConcept, 
+                        specimens, detectionLimit, exampleUcumUnits);
+                        
+                LOG.info("✓ Add DeX Test Performed Semantic: PASSED");
 
-                // Open nextgen navigator
-                try {
-                reporter.logBeforeStep("Open NextGen Navigator");
-                navigator.clickNextgenNavigator();
-                reporter.logAfterStep("Opened NextGen Navigator successfully");
-                } catch (Exception e) {
-                reporter.logFailure("Open NextGen Navigator", e);
-                throw e;
-                }
+                // ========== Steps 88-97: Add DeX Allowed Results Semantic ==========
 
-                // Click Patterns tab
-                try {
-                reporter.logBeforeStep("Click Patterns tab");
-                navigator.clickPatterns();
-                reporter.logAfterStep("Clicked Patterns tab successfully");
-                } catch (Exception e) {
-                reporter.logFailure("Click Patterns tab", e);
-                throw e;
-                }
+                String[] qualifierConcepts = new String[]{"Less than", "Greater than", "Equal to"};
+                addAllowedResultsSemantic.addAllowedResultsSemantic("Allowed Results Pattern", "Allowed Results Pattern", 
+                        "Active", "Device Extension Module", "Development path", qualifierConcepts);
 
-                // Move to the specified pattern
-                try {
-                reporter.logBeforeStep("Move to '" + patternName + "'");
-                robot.moveTo(patternName);
-                //if pattern is not visible, scroll down 10, repeat till visible
-                while (!robot.lookup(patternName).tryQuery().isPresent()) {
-                        verticalScroll(KeyCode.DOWN, 10);
-                        waitForFxEvents();
-                }
+                LOG.info("✓ Add DeX Allowed Results Semantic: PASSED");
 
-                           reporter.logAfterStep("Moved to '" + patternName + "' successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Move to '" + patternName + "'", e);
-            throw e;
-        }
+                // ========== Steps 98-110: Add Dex Quantitative Allowed Results Range Semantic ==========
 
-        // Right Click the pattern and select "Add New Semantic Element"
-        try {
-            reporter.logBeforeStep("Right Click the pattern and select 'Add New Semantic Element'");
-            robot.rightClickOn(patternName);
-            waitForFxEvents();
-            robot.clickOn("Add New Semantic Element");
-            waitForFxEvents();
-            navigator.clickNextgenNavigator();
-            reporter.logAfterStep("Right Clicked the pattern and selected 'Add New Semantic Element' successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Right Click the pattern and select 'Add New Semantic Element'", e);
-            throw e;
-        }
+                addQuantitativeAllowedResultsSemantic.addQuantitativeAllowedResultsSemantic("Quantitative Allowed Results Pattern", 
+                        "Active", "Device Extension Module", "Development path",
+                        "<=", ">=", "10.0", "1.0", "g/L");
 
-        // Update the Stamp
-        try {
-            reporter.logBeforeStep("Update the Stamp to reflect Module: " + moduleName);
-            conceptPane.updateStamp(status, moduleName, path);
-            reporter.logAfterStep("Updated the Stamp to reflect Module: " + moduleName + " successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Update the Stamp to reflect Module: " + moduleName, e);
-            throw e;
-        }
+                LOG.info("✓ Add DeX Quantitative Allowed Results Semantic: PASSED");
 
-        // Click the pencil icon that is in line with the Reference Component section header
-        try {
-            reporter.logBeforeStep("Click the pencil icon that is in line with the Reference Component section header");
-            conceptPane.clickEditReferenceComponentButton();
-            reporter.logAfterStep("Clicked the pencil icon that is in line with the Reference Component section header successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Click the pencil icon that is in line with the Reference Component section header", e);
-            throw e;
-        }
+                // ========== Steps 111-123: Add Dex Population Reference Range Semantic ==========
 
-        // Paste UUID from clipboard
-        try {
-            reporter.logBeforeStep("Paste UUID from clipboard");
-            robot.rightClickOn("🔍  Search");
-            waitForFxEvents();
-            robot.clickOn("Paste");
-            waitForFxEvents();
-            waitFor(1500); // Wait for results to load
-            //press down arrow then press enter
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
-            waitForFxEvents();
-            reporter.logAfterStep("Pasted UUID from clipboard successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Paste UUID from clipboard", e);
-            throw e;
-        }
+                addPopulationReferenceRangeSemantic.addPopulationReferenceRangeSemantic("Population Reference Range Pattern", 
+                        "Active", "Device Extension Module", "Development path",
+                        "Adult", "<=", ">=", "10.0", "1.0", "g/L");
 
-        // Click Confirm and verify the correct reference component populates
-        try {
-            reporter.logBeforeStep("Click Confirm and verify the correct reference component populates");
-            robot.clickOn("CONFIRM");
-            waitForFxEvents();
-            reporter.logAfterStep("Clicked Confirm and verified the correct reference component populated successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Click Confirm and verify the correct reference component populates", e);
-            throw e;
-        }
+                LOG.info("✓ Add DeX Population Reference Range Semantic: PASSED");
 
-        // Click the pencil that is in line with the Semantic Details section header
-        try {
-            reporter.logBeforeStep("Click the pencil that is in line with the Semantic Details section header");
-            conceptPane.clickEditSemanticDetailsButton();
-            reporter.logAfterStep("Clicked the pencil that is in line with the Semantic Details section header successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Click the pencil that is in line with the Semantic Details section header", e);
-            throw e;
-        }
 
-        //move to analyte search field
-        try{
-                reporter.logBeforeStep("Search and select Analyte");
-                robot.moveTo("Analyte:").moveBy(40,40).clickOn();
-                robot.write(analyteConcept);
-                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
-                waitForFxEvents();
-        } catch (Exception e) {
-                reporter.logFailure("Search and select Analyte", e);
-                throw e;
-        }
+                //TODO: 
+                //Ensure semantics behave as expected
+                //Run test in its entirety to ensure stability
+                //Fix any issues that arise during full test run
 
-        //move to target search field
-        try{
-                reporter.logBeforeStep("Search and select Target");
-                robot.moveTo("Target:").moveBy(40,40).clickOn();
-                robot.write(targetConcept);
-                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
-                waitForFxEvents();
-        } catch (Exception e) {
-                reporter.logFailure("Search and select Target", e);
-                throw e;
-        }      
-
-        //move to test performed field
-        try{
-                reporter.logBeforeStep("Search and select Test Performed");     
-                robot.moveTo("Test Performed:").moveBy(40,40).clickOn();
-                robot.write(testPerformedConcept);
-                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
-                waitForFxEvents();
-        } catch (Exception e) {
-                reporter.logFailure("Search and select Test Performed", e);
-                throw e;
-        }
-
-        //move to insrtrument field
-        try{
-                reporter.logBeforeStep("Search and select Instrument");
-                robot.moveTo("Instrument:").moveBy(40,40).clickOn();
-                robot.write(instrumentConcept);
-                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
-                waitForFxEvents();
-        } catch (Exception e) {
-                reporter.logFailure("Search and select Instrument", e);
-                throw e;
-        }
-
-        //move to specimen field
-        try{
-                reporter.logBeforeStep("Search and select Specimen");
-                robot.moveTo("Specimen:").moveBy(40,40).clickOn();
-                robot.write(specimenConcept);
-                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
-                waitForFxEvents();
-        } catch (Exception e) {
-                reporter.logFailure("Search and select Specimen", e);
-                throw e;
-        }
-
-        //move to detection limit field
-        try{
-                reporter.logBeforeStep("Type in the Detection Limit");
-                robot.moveTo("Detection Limit:").moveBy(0,25).doubleClickOn();
-                robot.write(detectionLimit);
-                waitForFxEvents();
-                reporter.logAfterStep("Typed in the Detection Limit successfully");
-        } catch (Exception e) {
-                reporter.logFailure("Type in the Detection Limit", e);
-                throw e;
-        }
-
-        //move to example ucum units field
-        try{
-                reporter.logBeforeStep("Type in the Example UCUM units");
-                robot.moveTo("Example UCUM units:").moveBy(0,25).doubleClickOn();
-                robot.write(exampleUcumUnits);
-                waitForFxEvents();
-                reporter.logAfterStep("Typed in the Example UCUM units successfully");
-        } catch (Exception e) {
-                reporter.logFailure("Type in the Example UCUM units", e);
-                throw e;
-        }
-
-                //click submit
-        try {
-                reporter.logBeforeStep("Click Submit to save the semantic");
-                conceptPane.submit();
-                reporter.logAfterStep("Clicked Submit to save the semantic successfully");
-        } catch (Exception e) {
-                reporter.logFailure("Click Submit to save the semantic", e);
-                throw e;
-        }
-
-                //Repeat for all necessary Test Performed Semantics for the device
-                
-        LOG.info("✓ Add DeX Test Performed Semantic: PASSED");
-
-        // ========== Add DeX Allowed Results Semantic ==========
-                // Step 88-97
-
-                String patternName = "Allowed Results Pattern";
-                     
-                // Open new journal
-                try {
-                reporter.logBeforeStep("Open a new journal for " + patternName + " semantic entry");
-                landingPage.clickNewProjectJournal();
-                reporter.logAfterStep("Opened a new journal for " + patternName + " semantic entry successfully");
-                } catch (Exception e) {
-                reporter.logFailure("Open a new journal for " + patternName + " semantic entry", e);
-                throw e;
-                }
-
-                // Open nextgen navigator
-                try {
-                reporter.logBeforeStep("Open NextGen Navigator");
-                navigator.clickNextgenNavigator();
-                reporter.logAfterStep("Opened NextGen Navigator successfully");
-                } catch (Exception e) {
-                reporter.logFailure("Open NextGen Navigator", e);
-                throw e;
-                }
-
-                // Click Patterns tab
-                try {
-                reporter.logBeforeStep("Click Patterns tab");
-                navigator.clickPatterns();
-                reporter.logAfterStep("Clicked Patterns tab successfully");
-                } catch (Exception e) {
-                reporter.logFailure("Click Patterns tab", e);
-                throw e;
-                }
-
-                // Move to the specified pattern
-                try {
-                reporter.logBeforeStep("Move to '" + patternName + "'");
-                robot.moveTo(patternName);
-                //if pattern is not visible, scroll down 10, repeat till visible
-                while (!robot.lookup(patternName).tryQuery().isPresent()) {
-                        verticalScroll(KeyCode.DOWN, 10);
-                        waitForFxEvents();
-                }
-
-                           reporter.logAfterStep("Moved to '" + patternName + "' successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Move to '" + patternName + "'", e);
-            throw e;
-        }
-
-        // Right Click the pattern and select "Add New Semantic Element"
-        try {
-            reporter.logBeforeStep("Right Click the pattern and select 'Add New Semantic Element'");
-            robot.rightClickOn(patternName);
-            waitForFxEvents();
-            robot.clickOn("Add New Semantic Element");
-            waitForFxEvents();
-            navigator.clickNextgenNavigator();
-            reporter.logAfterStep("Right Clicked the pattern and selected 'Add New Semantic Element' successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Right Click the pattern and select 'Add New Semantic Element'", e);
-            throw e;
-        }
-
-        // Update the Stamp
-        try {
-            reporter.logBeforeStep("Update the Stamp to reflect Module: " + moduleName);
-            conceptPane.updateStamp(status, moduleName, path);
-            reporter.logAfterStep("Updated the Stamp to reflect Module: " + moduleName + " successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Update the Stamp to reflect Module: " + moduleName, e);
-            throw e;
-        }
-
-        // Click the pencil icon that is in line with the Reference Component section header
-        try {
-            reporter.logBeforeStep("Click the pencil icon that is in line with the Reference Component section header");
-            conceptPane.clickEditReferenceComponentButton();
-            reporter.logAfterStep("Clicked the pencil icon that is in line with the Reference Component section header successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Click the pencil icon that is in line with the Reference Component section header", e);
-            throw e;
-        }
-
-        // Paste UUID from clipboard
-        try {
-            reporter.logBeforeStep("Paste UUID from clipboard");
-            robot.rightClickOn("🔍  Search");
-            waitForFxEvents();
-            robot.clickOn("Paste");
-            waitForFxEvents();
-            waitFor(1500); // Wait for results to load
-            //press down arrow then press enter
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
-            waitForFxEvents();
-            reporter.logAfterStep("Pasted UUID from clipboard successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Paste UUID from clipboard", e);
-            throw e;
-        }
-
-        // Click Confirm and verify the correct reference component populates
-        try {
-            reporter.logBeforeStep("Click Confirm and verify the correct reference component populates");
-            robot.clickOn("CONFIRM");
-            waitForFxEvents();
-            reporter.logAfterStep("Clicked Confirm and verified the correct reference component populated successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Click Confirm and verify the correct reference component populates", e);
-            throw e;
-        }
-
-        // Click the pencil that is in line with the Semantic Details section header
-        try {
-            reporter.logBeforeStep("Click the pencil that is in line with the Semantic Details section header");
-            conceptPane.clickEditSemanticDetailsButton();
-            reporter.logAfterStep("Clicked the pencil that is in line with the Semantic Details section header successfully");
-        } catch (Exception e) {
-            reporter.logFailure("Click the pencil that is in line with the Semantic Details section header", e);
-            throw e;
-        }
-
-        //add the necessary qualifier value concepts
-        //list of qualifier concepts
-        String[] qualifierConcepts = {"Less than", "Greater than", "Equal to"};
-
-        //while the list hasnext, process each qualifier concept
-
-        try{
-                reporter.logBeforeStep("Add Allowed Results Qualifier Values");
-                while(qualifierConcepts.iterator().hasNext()){
-                        String qualifierConcept = qualifierConcepts.iterator().next();
-                        //move to qualifier value search field
-                        robot.moveTo("Allowed Results Set:").moveBy(40,40).clickOn();
-                        robot.write(qualifierConcept);
-                        robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-                        robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
-                        waitForFxEvents();
-                }
-                reporter.logAfterStep("Added Allowed Results Qualifier Values successfully");
-        } catch (Exception e) {
-                reporter.logFailure("Add Allowed Results Qualifier Values", e);
-                throw e;
-        }
-
-        //click submit
-        try {
-                reporter.logBeforeStep("Click Submit to save the semantic");
-                conceptPane.submit();
-                reporter.logAfterStep("Clicked Submit to save the semantic successfully");
-        } catch (Exception e) {
-                reporter.logFailure("Click Submit to save the semantic", e);
-                throw e;
-        }
-
-        // Repeat for all necessary Allowed Results Semantics for the device
-
-        LOG.info("✓ Add DeX Allowed Results Semantic: PASSED");
-
-        // ========== Add Dex Quantitative Allowed Results Range Semantic ==========
-
+                //Issues: 
+                //When running the full test, window stops responding (when clicking patterns and when creating new journal)
 
         }
 
@@ -799,6 +493,31 @@ public class DeXAuthoringProcessTest {
                         reporter.logFailure("Scroll horizontally", e);
                         throw e;
                 }
+        }
 
+        private void verticalScroll(KeyCode direction, int scrollAmount) {
+                try {
+                        reporter.logBeforeStep("Scroll vertically");
+                        for (int i = 0; i < scrollAmount; i++) {
+                                robot.press(direction);
+                                robot.release(direction);
+                        }
+                        reporter.logAfterStep("Scrolled vertically");
+                } catch (Exception e) {
+                        reporter.logFailure("Scroll vertically", e);
+                        throw e;
+                }
+        }
+
+        /**
+        * Waits for a specified duration.
+        */
+        public void waitForDelay(int milliseconds) {
+                try {
+                Thread.sleep(milliseconds);
+                waitForFxEvents();
+                } catch (InterruptedException e) {
+                LOG.error("Interrupted during wait", e);
+                }
         }
 }
