@@ -6,23 +6,23 @@ import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
 
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
-public class AddConceptToDexMembershipPattern extends BaseWorkflow {
+public class AddDeviceExtensionMembershipPattern extends BaseWorkflow {
 
     /**
-     * Constructs an AddConceptToDexMembershipPattern workflow helper.
+     * Constructs an AddDeviceExtensionMembershipPattern workflow helper.
      * 
      * @param robot    FxRobot instance for UI interactions
      * @param reporter TestReporter instance for logging test steps
      */
-    public AddConceptToDexMembershipPattern(FxRobot robot, TestReporter reporter) {
+    public AddDeviceExtensionMembershipPattern(FxRobot robot, TestReporter reporter) {
         super(robot, reporter);
     }
 
     /**
-     * Adds the specified concept to the Device Extension Membership Pattern (Steps
-     * 25-33).
-     * This method encapsulates the complete workflow for adding a concept to the
-     * DeX Membership Pattern including:
+     * Adds the specified concept to the Device Extension Membership Pattern
+     * Steps: 25-33
+     * 
+     * Key Features:
      * - Navigating to the Patterns view
      * - Locating the Device Extension Membership Pattern
      * - Adding a new semantic element
@@ -38,9 +38,11 @@ public class AddConceptToDexMembershipPattern extends BaseWorkflow {
      * @throws InterruptedException if thread is interrupted during execution
      */
     
-    public void addConceptToDexMembershipPattern(String fullyQualifiedName, String pattern,
+    public void addDeviceExtensionMembershipPattern(String fullyQualifiedName, String pattern,
             String status, String moduleName, String path)
             throws InterruptedException {
+
+        LOG.info("====== Adding " + pattern + " ======");
 
         // 25. Open the Navigator by selecting the hierarchy icon in the left panel
         try {
@@ -151,10 +153,10 @@ public class AddConceptToDexMembershipPattern extends BaseWorkflow {
             throw e;
         }
 
-        // Navigate back to landing page for next concept creation
+        // Close Journal
         try {
             reporter.logBeforeStep("Navigate back to Landing Page");
-            // Close journal window and refocus onto landing page
+            // Close journal window
             landingPage.closeJournalWindow();
             reporter.logAfterStep("Returned to Landing Page successfully");
         } catch (Exception e) {

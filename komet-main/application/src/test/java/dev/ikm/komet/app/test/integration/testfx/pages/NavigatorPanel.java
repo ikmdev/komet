@@ -12,8 +12,20 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 
 /**
- * Page object for Navigator panel operations.
+ * Page object representing the Navigator Panel in the Komet application.
+ * The Navigator Panel provides browsing and searching capabilities for
+ * concepts, patterns, and other functionalities. It supports multiple views
+ * including tree-based hierarchy navigation and search result displays.
+ * 
+ * Key Responsibilities:
+ *   Opening and closing the NextGen Navigator, NextGen Search, Reasoner, etc. panels
+ *   Switching between Concepts and Patterns tabs
+ *   Performing searches across the terminology
+ *   Opening search results to view details
+ * 
  */
+
+
 public class NavigatorPanel extends BasePage {
     
     public NavigatorPanel(FxRobot robot) {
@@ -346,20 +358,4 @@ public class NavigatorPanel extends BasePage {
         return this;
     }
 
-    /**
-     * Scrolls horizontally in the specified direction.
-     * @param direction The direction to scroll ("LEFT" or "RIGHT")
-     * @param amount The number of times to scroll
-     */
-    public NavigatorPanel scrollHorizontally(String direction, int amount) {
-        // Click in the center of the screen
-        robot.clickOn(250, 250);
-        for (int i = 0; i < amount; i++) {
-            // Press the directional arrow key
-            robot.press(KeyCode.valueOf(direction));
-            robot.release(KeyCode.valueOf(direction));
-        }
-        LOG.info("Scrolled horizontally {} by {} times", direction, amount);
-        return this;
-    }
 }

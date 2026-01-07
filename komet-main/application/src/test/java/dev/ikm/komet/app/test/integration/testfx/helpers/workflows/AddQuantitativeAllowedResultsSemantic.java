@@ -20,8 +20,9 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
 
     /**
      * Adds the Quantitative Allowed Results Semantic.
-     * This method encapsulates the complete workflow for adding semantic elements
-     * including:
+     * Steps: 98 - 110
+     * 
+     * Key Features:
      * - Creating a new journal
      * - Navigating to the Associated Devices pattern
      * - Setting up stamp and reference component
@@ -51,6 +52,8 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
             String moduleName, String path, String maxValueOperator,
             String minValueOperator, String rangeMaxValue, String rangeMinValue, String exampleUnits)
             throws InterruptedException {
+
+    LOG.info("====== Adding " + patternName + " ======");
 
         // Open new journal
         try {

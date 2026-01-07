@@ -63,13 +63,10 @@ public class DeXAuthoringProcessTest {
         private static final String USERNAME = credentialsReader.get("komet_username", "KOMET user");
         private static final String PASSWORD = credentialsReader.get("komet_password", "KOMET user");
 
-        // Concept Details
-        String fullyQualifiedName;
-        String status;
-        String moduleName;
-        String path;
-        String parentConceptName;
-        
+        // DeX Authoring Test Data
+        String suppliedBrandName = "Albumin Gen2 5166861190";
+        String indentifiedDevice = "Roche Diagnostics COBAS Integra Albumin Gen.2";
+
         // Test Performed Semantic Data
         String analyteConcept = "Albumin";
         String targetConcept = "Serum";
@@ -78,6 +75,13 @@ public class DeXAuthoringProcessTest {
         String specimenConcept = "Blood";
         String detectionLimit = "0.1";
         String exampleUcumUnits = "g/L";
+
+        // Concept Details
+        String fullyQualifiedName;
+        String status;
+        String moduleName;
+        String path;
+        String parentConceptName;
 
         private Path screenshotDirectory;
         private Path extentReportsDirectory;
@@ -88,10 +92,11 @@ public class DeXAuthoringProcessTest {
         // Workflow helpers
         private GithubConnection githubConnection;
         private AuthorConcepts authorConcepts;
-        private AddConceptToDexMembershipPattern addConceptToDexMembership;
+        private AddDeviceExtensionMembershipPattern addDeviceExtensionMembershipPattern;
         private Reasoner reasoner;
+        private GenerateDeXData generateDeXData;
         private AddDeviceCompanySemantic addDeviceCompanySemantic;
-        private AddAssociateDevicesSemantic addAssociateDevicesSemantic;
+        private AddAssociatedDevicesSemantic addAssociatedDevicesSemantic;
         private AddTestPerformedSemantic addTestPerformedSemantic;
         private AddAllowedResultsSemantic addAllowedResultsSemantic;
         private AddQuantitativeAllowedResultsSemantic addQuantitativeAllowedResultsSemantic;
@@ -121,14 +126,15 @@ public class DeXAuthoringProcessTest {
                 // Initialize workflow helpers
                 githubConnection = new GithubConnection(robot, reporter);
                 authorConcepts = new AuthorConcepts(robot, reporter);
-                addConceptToDexMembership = new AddConceptToDexMembershipPattern(robot, reporter);
+                addDeviceExtensionMembershipPattern = new AddDeviceExtensionMembershipPattern(robot, reporter);
                 reasoner = new Reasoner(robot, reporter);
                 addDeviceCompanySemantic = new AddDeviceCompanySemantic(robot, reporter);
-                addAssociateDevicesSemantic = new AddAssociateDevicesSemantic(robot, reporter);
+                addAssociatedDevicesSemantic = new AddAssociatedDevicesSemantic(robot, reporter);
                 addTestPerformedSemantic = new AddTestPerformedSemantic(robot, reporter);
                 addAllowedResultsSemantic = new AddAllowedResultsSemantic(robot, reporter);
                 addQuantitativeAllowedResultsSemantic = new AddQuantitativeAllowedResultsSemantic(robot, reporter);
                 addPopulationReferenceRangeSemantic = new AddPopulationReferenceRangeSemantic(robot, reporter);
+                generateDeXData = new GenerateDeXData(robot, reporter);
         }
 
         @AfterEach
@@ -165,7 +171,10 @@ public class DeXAuthoringProcessTest {
                 NavigatorPanel navigator = new NavigatorPanel(robot);
                 GitHubConnectionPage gitHubConnectionPage = new GitHubConnectionPage(robot);
 
-                // Step 1: Launch KOMET application with SOLOR-GUDID Dataset
+                // Step 1: Launch KOMET, select dataset, and login as user
+                //TO Do: Refactor login into workflow helper
+                LOG.info("Launching KOMET application with " + DATA_SOURCE_NAME + " data source, and logging in as " + USERNAME);
+
                 try {
 
                         reporter.logBeforeStep("Step 1: USER to LAUNCH Komet Application");
@@ -246,128 +255,52 @@ public class DeXAuthoringProcessTest {
                         reporter.logFailure("Application running state", e);
                         throw e;
                 }
-
-                
+                LOG.info("✓ Application Launch and Login: Complete");
                 
                 // ========== Steps 2-6: Connect to GitHub Repository ==========
-                githubConnection.connectToGitHub(GITHUB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
+                //githubConnection.connectToGitHub(GITHUB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
+                LOG.info("✓ GitHub Connection: Complete");
 
                 // ========== Steps 7-33: Create Concepts ==========
                 // Create Target concept
                 authorConcepts.createConcept("Albumin", "Active", "Device Extension Module", "Development path", "Target");
-                addConceptToDexMembership.addConceptToDexMembershipPattern("Albumin", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
+                addDeviceExtensionMembershipPattern.addDeviceExtensionMembershipPattern("Albumin", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
 
                 // 34. Repeat for all necessary DeX concepts (Target, Analyte, Company/Device Labeler)
                 //create Analyte concept
                 authorConcepts.createConcept("Albumin", "Active", "Device Extension Module", "Development path", "Analyte");
-                addConceptToDexMembership.addConceptToDexMembershipPattern("Albumin", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
+                addDeviceExtensionMembershipPattern.addDeviceExtensionMembershipPattern("Albumin", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
 
                 // Create Company concept
                 authorConcepts.createConcept("Roche Diagnostics GmbH", "Active", "Device Extension Module", "Development path", "Company");
-                addConceptToDexMembership.addConceptToDexMembershipPattern("Roche Diagnostics GmbH", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
+                addDeviceExtensionMembershipPattern.addDeviceExtensionMembershipPattern("Roche Diagnostics GmbH", "Device Extension Membership Pattern", "Active", "Device Extension Module", "Development path");
 
-                //LOG.info("✓ Concept Creation: PASSED");
+                LOG.info("✓ Concept Creation Complete");
                 
-                
 
-                // ========== DeX Data Generation ==========
-                LOG.info("===== DeX Data Generation =====");
+                // ========== Steps 35-51: DeX Data Generation ==========
+                generateDeXData.generateDeXData(suppliedBrandName, indentifiedDevice);
 
-                String suppliedBrandName = "Albumin Gen2 5166861190";
-                String indentifiedDevice = "Roche Diagnostics COBAS Integra Albumin Gen.2";
+                LOG.info("✓ DeX Data Generation: Complete");
 
-                // Open a new journal for DeX data entry
-                try {
-                        reporter.logBeforeStep("Open a new journal for DeX data entry");
-                        landingPage.clickNewProjectJournal();
-                        reporter.logAfterStep("Opened a new journal for DeX data entry successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Open a new journal for DeX data entry", e);
-                        throw e;
-                }
-
-                // Step 35: Search for the identified device by the supplied brand name + version/model for the DeX record you are creating
-                try {
-                        reporter.logBeforeStep("Step 35: Search for the identified device by the supplied brand name + version/model for the DeX record you are creating");
-                        navigator.clickNextgenSearch();
-                        navigator.nextgenSearch(suppliedBrandName);
-                        navigator.openNextGenSearchResult(suppliedBrandName);
-                        //navigator.openNextGenSearchResult(indentifiedDevice);
-                        conceptPane.clickCopyButton();
-                        reporter.logAfterStep("Step 35: Searched for the identified device successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 35: Search for the identified device by the supplied brand name + version/model for the DeX record you are creating", e);
-                        throw e;
-                }
-
-                
-                // Step 36: Add the Device Name from the Device Extension Data as an 'Other Name'
-                try {
-                        reporter.logBeforeStep("Step 36: Add the Device Name from the Device Extension Data as an 'Other Name'");
-                        conceptPane.clickEditDescriptionsButton();
-                        conceptPane.updateName(indentifiedDevice);
-                        conceptPane.updateModule("Device Extension Module");
-                        conceptPane.submit();
-                        reporter.logAfterStep("Step 36: Added the Device Name from the Device Extension Data as an 'Other Name' successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 36: Add the Device Name from the Device Extension Data as an 'Other Name'", e);
-                        throw e;
-                }
-                
-                
-                // Step 49: Run Reasoner
-                try{
-                        reporter.logBeforeStep("Step 49: Run Reasoner");
-                        reasoner.runReasoner();     
-                        reporter.logAfterStep("Step 49: Reasoner run successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 49: Run Reasoner", e);
-                        throw e;
-                }
-
-
-                // Step 50: Click Info
-                try {
-                        reporter.logBeforeStep("Step 50: Click 'Info'");
-                        robot.clickOn("Info");
-                        waitForFxEvents();
-                        reporter.logAfterStep("Step 50: Clicked 'Info' successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 50: Click 'Info'", e);
-                        throw e;
-                }
-
-                // Step 51: Click Sync
-                try {
-                        reporter.logBeforeStep("Step 51: Click 'Sync'");
-                        robot.clickOn("Sync");
-                        waitForFxEvents();
-                        reporter.logAfterStep("Step 51: Clicked 'Sync' successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 51: Click 'Sync'", e);
-                        throw e;
-                }
-
-                LOG.info("✓ DeX Data Generation: PASSED");
-
-                
 
                 // ========== Steps 52-62: Add DeX Device Company Semantic ==========
                 
                 addDeviceCompanySemantic.addDeviceCompanySemantic("Device Company Pattern", "Active", "Device Extension Module", 
                                                     "Development path", "Albumin Gen2 5166861190", "Roche Diagnostics GmbH");
 
-                LOG.info("✓ Add DeX Device Company Semantic: PASSED");
+                LOG.info("✓ Add DeX Device Company Semantic: Complete");
+
 
                 // ========== Steps 63-71: Add DeX Associated Devices Semantic ==========
 
                 // Add Associated Devices semantic (with multiple device identifiers)
                 String[] associatedDeviceIdentifiers = new String[]{"Device1", "Device2", "Device3"};
 
-                addAssociateDevicesSemantic.addAssociatedDevicesSemantic("Associated Devices Pattern", "Active", "Device Extension Module", 
+                addAssociatedDevicesSemantic.addAssociatedDevicesSemantic("Associated Devices Pattern", "Active", "Device Extension Module", 
                                                     "Development path", "Roche Diagnostics COBAS Integra Albumin Gen.2", associatedDeviceIdentifiers);
 
-                LOG.info("✓ Add DeX Associated Devices Semantic: PASSED");
+                LOG.info("✓ Add DeX Associated Devices Semantic: Complete");
 
                 // ========== Steps 72-87: Add DeX Test Performed Semantic ==========
 
@@ -376,7 +309,7 @@ public class DeXAuthoringProcessTest {
                         "Development path", analyteConcept, targetConcept, testPerformedConcept, instrumentConcept, 
                         specimens, detectionLimit, exampleUcumUnits);
                         
-                LOG.info("✓ Add DeX Test Performed Semantic: PASSED");
+                LOG.info("✓ Add DeX Test Performed Semantic: Complete");
 
                 // ========== Steps 88-97: Add DeX Allowed Results Semantic ==========
 
@@ -384,7 +317,7 @@ public class DeXAuthoringProcessTest {
                 addAllowedResultsSemantic.addAllowedResultsSemantic("Allowed Results Pattern", "Allowed Results Pattern", 
                         "Active", "Device Extension Module", "Development path", qualifierConcepts);
 
-                LOG.info("✓ Add DeX Allowed Results Semantic: PASSED");
+                LOG.info("✓ Add DeX Allowed Results Semantic: Complete");
 
                 // ========== Steps 98-110: Add Dex Quantitative Allowed Results Range Semantic ==========
 
@@ -392,7 +325,7 @@ public class DeXAuthoringProcessTest {
                         "Active", "Device Extension Module", "Development path",
                         "<=", ">=", "10.0", "1.0", "g/L");
 
-                LOG.info("✓ Add DeX Quantitative Allowed Results Semantic: PASSED");
+                LOG.info("✓ Add DeX Quantitative Allowed Results Semantic: Complete");
 
                 // ========== Steps 111-123: Add Dex Population Reference Range Semantic ==========
 
@@ -400,10 +333,10 @@ public class DeXAuthoringProcessTest {
                         "Active", "Device Extension Module", "Development path",
                         "Adult", "<=", ">=", "10.0", "1.0", "g/L");
 
-                LOG.info("✓ Add DeX Population Reference Range Semantic: PASSED");
+                LOG.info("✓ Add DeX Population Reference Range Semantic: Complete");
 
 
-                //TODO: 
+                //TO DO 
                 //Ensure semantics behave as expected
                 //Run test in its entirety to ensure stability
                 //Fix any issues that arise during full test run
@@ -481,43 +414,5 @@ public class DeXAuthoringProcessTest {
                 }
         }
 
-        private void horizontalScroll(FxRobot robot, KeyCode direction, int scrollAmount) {
-                try {
-                        reporter.logBeforeStep("Scroll horizontally");
-                        for (int i = 0; i < scrollAmount; i++) {
-                                robot.press(direction);
-                                robot.release(direction);
-                        }
-                        reporter.logAfterStep("Scrolled horizontally");
-                } catch (Exception e) {
-                        reporter.logFailure("Scroll horizontally", e);
-                        throw e;
-                }
-        }
-
-        private void verticalScroll(KeyCode direction, int scrollAmount) {
-                try {
-                        reporter.logBeforeStep("Scroll vertically");
-                        for (int i = 0; i < scrollAmount; i++) {
-                                robot.press(direction);
-                                robot.release(direction);
-                        }
-                        reporter.logAfterStep("Scrolled vertically");
-                } catch (Exception e) {
-                        reporter.logFailure("Scroll vertically", e);
-                        throw e;
-                }
-        }
-
-        /**
-        * Waits for a specified duration.
-        */
-        public void waitForDelay(int milliseconds) {
-                try {
-                Thread.sleep(milliseconds);
-                waitForFxEvents();
-                } catch (InterruptedException e) {
-                LOG.error("Interrupted during wait", e);
-                }
-        }
 }
+

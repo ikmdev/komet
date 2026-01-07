@@ -20,8 +20,9 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
 
     /**
      * Adds the Test Performed Semantic.
-     * This method encapsulates the complete workflow for adding semantic elements
-     * including:
+     * Steps: 72 - 86
+     * 
+     * Key Features:
      * - Creating a new journal
      * - Navigating to the Associated Devices pattern
      * - Setting up stamp and reference component
@@ -54,6 +55,8 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
             String instruments, String[] specimens, String detectionLimit, String exampleUcumUnits)
             throws InterruptedException {
 
+        LOG.info("====== Adding " + patternName + " ======");
+        
         // Open new journal
         try {
             reporter.logBeforeStep("Open a new journal for " + patternName + " semantic entry");

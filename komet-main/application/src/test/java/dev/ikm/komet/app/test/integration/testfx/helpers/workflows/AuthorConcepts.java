@@ -23,9 +23,10 @@ public class AuthorConcepts extends BaseWorkflow {
     }
 
     /**
-     * Creates a new concept with the specified details (Steps 7-24).
-     * This method encapsulates the complete workflow for creating a new concept
-     * including:
+     * Creates a new concept with the specified details
+     * Steps 7-24
+     * 
+     *  Key Features:
      * - Creating a project journal
      * - Setting up concept with stamp information
      * - Adding fully qualified name
@@ -41,6 +42,8 @@ public class AuthorConcepts extends BaseWorkflow {
     public void createConcept(String fullyQualifiedName, String status,
             String moduleName, String path, String parentConceptName)
             throws InterruptedException {
+
+        LOG.info("====== Creating Concept: " + fullyQualifiedName + " ======");
 
         // 7. Open an existing project journal or create a new one
         try {

@@ -6,20 +6,21 @@ import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
 
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
-public class AddAssociateDevicesSemantic extends BaseWorkflow {
+public class AddAssociatedDevicesSemantic extends BaseWorkflow {
 
     /**
-     * Constructs an AddAssociateDevicesSemantic workflow helper.
+     * Constructs an AddAssociatedDevicesSemantic workflow helper.
      * 
      * @param robot    FxRobot instance for UI interactions
      * @param reporter TestReporter instance for logging test steps
      */
-    public AddAssociateDevicesSemantic(FxRobot robot, TestReporter reporter) {
+    public AddAssociatedDevicesSemantic(FxRobot robot, TestReporter reporter) {
         super(robot, reporter);
     }
 
     /**
      * Adds the Associated Devices Semantic.
+     * Steps: 63 - 71
      * This method encapsulates the complete workflow for adding semantic elements
      * including:
      * - Creating a new journal
@@ -43,6 +44,8 @@ public class AddAssociateDevicesSemantic extends BaseWorkflow {
             String moduleName, String path, String referenceComponent,
             String... deviceLabelers)
             throws InterruptedException {
+
+        LOG.info("====== Adding " + patternName + " ======");
 
         // Open new journal
         try {

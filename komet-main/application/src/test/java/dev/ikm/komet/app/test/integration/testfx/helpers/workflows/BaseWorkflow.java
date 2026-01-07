@@ -66,12 +66,18 @@ public abstract class BaseWorkflow {
     }
 
     /**
-     * Waits for the specified amount of time.
+     * Waits for the specified number of milliseconds and then waits for FX events.
      * 
      * @param milliseconds The number of milliseconds to wait
-     * @throws InterruptedException if the thread is interrupted
      */
-    protected void waitFor(int milliseconds) throws InterruptedException {
-        Thread.sleep(milliseconds);
+    protected void waitFor(int milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+            waitForFxEvents();
+        } catch (InterruptedException e) {
+            LOG.error("Interrupted during wait", e);
+            Thread.currentThread().interrupt();
+        }
     }
+
 }

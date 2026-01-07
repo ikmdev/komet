@@ -20,8 +20,9 @@ public class AddPopulationReferenceRangeSemantic extends BaseWorkflow {
 
     /**
      * Adds the Population Reference Range Semantic.
-     * This method encapsulates the complete workflow for adding semantic elements
-     * including:
+     * Steps: 111 - 124
+     * 
+     *  Key Features:
      * - Creating a new journal
      * - Navigating to the Associated Devices pattern
      * - Setting up stamp and reference component
@@ -52,6 +53,8 @@ public class AddPopulationReferenceRangeSemantic extends BaseWorkflow {
             String moduleName, String path, String relevantPopulationValue, String maxValueOperator,
             String minValueOperator, String maxValue, String minValue, String exampleUnits)
             throws InterruptedException {
+
+        LOG.info("====== Adding " + patternName + " ======");
 
         // Open new journal
         try {

@@ -7,7 +7,16 @@ import javafx.scene.control.ComboBox;
 import org.testfx.api.FxRobot;
 
 /**
- * Page object for the login screen.
+ * Page object representing the Login/User Selection screen in the Komet application.
+ * This page appears after data source selection and handles user authentication.
+ * Users must select the desired identity from a dropdown and provide credentials to
+ * access the application.
+ * 
+ * Key Responsibilities:
+ *   Selecting user from the available user dropdown list
+ *   Entering password credentials
+ *   Submitting login form via Sign In button
+ *   Navigating to the Landing Page upon successful authentication
  */
 public class LoginPage extends BasePage {
     

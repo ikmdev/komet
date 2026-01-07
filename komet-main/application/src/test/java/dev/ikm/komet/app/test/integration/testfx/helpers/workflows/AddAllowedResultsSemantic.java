@@ -20,6 +20,7 @@ public class AddAllowedResultsSemantic extends BaseWorkflow {
 
     /**
      * Adds the Allowed Results Semantic.
+     * Steps: 88 - 97
      * This method encapsulates the complete workflow for adding semantic elements
      * including:
      * - Creating a new journal
@@ -44,6 +45,8 @@ public class AddAllowedResultsSemantic extends BaseWorkflow {
     public void addAllowedResultsSemantic(String patternName, String patternName2, String status,
             String moduleName, String path, String... qualifierValues)
             throws InterruptedException {
+
+        LOG.info("====== Adding " + patternName + " ======");
 
         // Open new journal
         try {

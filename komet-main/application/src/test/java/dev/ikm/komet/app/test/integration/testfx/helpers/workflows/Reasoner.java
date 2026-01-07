@@ -22,9 +22,10 @@ public class Reasoner extends BaseWorkflow {
     }
 
     /**
-     * Runs the reasoner to classify concepts (Step 49).
-     * This method encapsulates the complete workflow for running the reasoner
-     * including:
+     * Runs the reasoner to classify concepts
+     * Steps: 49/ 126
+     * 
+     * Key Features:
      * - Opening reasoner panel
      * - Clicking starburst button
      * - Initiating reasoner run
@@ -34,6 +35,8 @@ public class Reasoner extends BaseWorkflow {
      * @throws InterruptedException if thread is interrupted during execution
      */
     public void runReasoner() throws InterruptedException {
+
+        LOG.info("====== Running Reasoner ======");
 
         // Step 49.a: Click reasoner in navigation pane
         try {

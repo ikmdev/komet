@@ -10,8 +10,28 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 /**
- * Base class for all page objects providing common functionality.
+ * Abstract base class for all Page Object implementations in the Komet test framework.
+ * This class provides common utilities and helper methods that are shared across all
+ * page objects, following the Page Object Model design pattern. It encapsulates core
+ * TestFX interactions and provides reusable functionality for UI automation.
+ * 
+ * Key Features:
+ *   Centralized FxRobot instance management
+ *   Common UI interaction methods (click, type, press keys)
+ *   Wait and synchronization utilities
+ *   Screenshot capture capabilities
+ *   Scrolling and navigation helpers
+ *   Dialog management (ESC to close)
+ *   Element lookup with type safety
+ * 
+ * Design Pattern:
+ * All concrete page objects extend this base class to inherit common functionality
+ * while implementing page-specific operations. This promotes code reuse and maintains
+ * a consistent API across all page objects.
+ * 
  */
+
+
 public abstract class BasePage {
     
     protected static final Logger LOG = LoggerFactory.getLogger(BasePage.class);
@@ -20,47 +40,7 @@ public abstract class BasePage {
     public BasePage(FxRobot robot) {
         this.robot = robot;
     }
-    
-    /**
-     * Clicks on a node identified by CSS selector.
-     */
-    protected void clickOn(String selector) {
-        robot.clickOn(selector);
-        waitForFxEvents();
-    }
-    
-    /**
-     * Clicks on a text element.
-     */
-    protected void clickOnText(String text) {
-        robot.clickOn(text);
-        waitForFxEvents();
-    }
-    
-    /**
-     * Double-clicks on a text element.
-     */
-    protected void doubleClickOnText(String text) {
-        robot.doubleClickOn(text);
-        waitForFxEvents();
-    }
-    
-    /**
-     * Types text into the currently focused field.
-     */
-    protected void type(String text) {
-        robot.write(text);
-        waitForFxEvents();
-    }
-    
-    /**
-     * Presses a key.
-     */
-    protected void pressKey(KeyCode key) {
-        robot.press(key);
-        robot.release(key);
-        waitForFxEvents();
-    }
+
     
     /**
      * Presses ESC key multiple times to close dialogs.
@@ -86,14 +66,6 @@ public abstract class BasePage {
         } catch (InterruptedException e) {
             LOG.error("Interrupted while closing dialogs", e);
         }
-    }
-
-    /** 
-     * Scrolls down the current view.
-     */
-    protected void scrollDown(){
-        robot.scroll(10, javafx.geometry.VerticalDirection.DOWN);
-        LOG.info("Scrolled down to find the desired element");
     }
 
     /**
@@ -155,6 +127,56 @@ public abstract class BasePage {
         Node node = robot.lookup(selector).query();
         assertNotNull(node, "Node with selector '" + selector + "' should exist");
         return type.cast(node);
+    }
+    
+    /**
+     * Scrolls down by pressing DOWN arrow key.
+     */
+    protected void scrollDown() {
+        robot.press(KeyCode.DOWN);
+        robot.release(KeyCode.DOWN);
+        waitForFxEvents();
+    }
+    
+    /**
+     * Clicks on text in the UI.
+     */
+    protected void clickOnText(String text) {
+        robot.clickOn(text);
+        waitForFxEvents();
+    }
+    
+    /**
+     * Double-clicks on text in the UI.
+     */
+    protected void doubleClickOnText(String text) {
+        robot.doubleClickOn(text);
+        waitForFxEvents();
+    }
+    
+    /**
+     * Clicks on a node matching the query.
+     */
+    protected void clickOn(String query) {
+        robot.clickOn(query);
+        waitForFxEvents();
+    }
+    
+    /**
+     * Types text using keyboard.
+     */
+    protected void type(String text) {
+        robot.write(text);
+        waitForFxEvents();
+    }
+    
+    /**
+     * Presses a key.
+     */
+    protected void pressKey(KeyCode keyCode) {
+        robot.press(keyCode);
+        robot.release(keyCode);
+        waitForFxEvents();
     }
 
 }

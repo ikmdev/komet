@@ -9,7 +9,16 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 import org.testfx.api.FxRobot;
 
 /**
- * Page object for the main landing page.
+ * Page object representing the main Landing Page of the Komet application.
+ * This is the primary interface users interact with after successful login. It provides
+ * access to key application features including journal creation, window management,
+ * and main navigation elements.
+ * 
+ * Key Responsibilities:
+ *   Managing application window state (maximize, restore)
+ *   Creating and managing journals for authoring workflows
+ *   Providing access to navigation panels and search functionality
+ * 
  */
 public class LandingPage extends BasePage {
     

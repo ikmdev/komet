@@ -19,9 +19,10 @@ public class AddDeviceCompanySemantic extends BaseWorkflow {
     }
 
     /**
-     * Adds the Device Company Semantic.
-     * This method encapsulates the complete workflow for adding semantic elements
-     * including:
+     * Adds the Device Company Semantic
+     * Steps: 53 - 62
+     * 
+     * Key Features:
      * - Creating a new journal
      * - Navigating to the Device Company pattern
      * - Setting up stamp and reference component
@@ -43,6 +44,8 @@ public class AddDeviceCompanySemantic extends BaseWorkflow {
             String moduleName, String path, String referenceComponent,
             String deviceLabeler)
             throws InterruptedException {
+
+        LOG.info("====== Adding " + patternName + " ======");
 
         // Open new journal
         try {

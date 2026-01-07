@@ -11,7 +11,22 @@ import javafx.scene.control.Tooltip;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 /**
- * Page object for Concept Details operations.
+ * Page object representing the Concept Details pane in the Komet application.
+ * This is a comprehensive interface for viewing and editing concept information including
+ * descriptions, axioms, properties, stamps, semantic details, and reference components.
+ * It supports both viewing existing concepts and authoring new concepts with full metadata.
+ * 
+ * Key Responsibilities:
+ *   Editing concept descriptions (Fully Qualified Name, Other Names)
+ *   Managing concept properties and toggles
+ *   Updating stamp information (Status, Module, Path)
+ *   Editing axioms
+ *   Managing reference components for semantic patterns
+ *   Editing semantic details for pattern-based semantics
+ *   Searching and selecting parent concepts
+ *   Copying concept identifiers (UUID)
+ *   Submitting changes and handling validation
+ *   Drag-and-drop operations for reference components
  */
 public class ConceptPane extends BasePage {
     
@@ -154,22 +169,9 @@ public class ConceptPane extends BasePage {
      * Opens the stamp editor dialog.
      */
     public ConceptPane openStampEditor() {
+        //stamp has id "stampViewControl"
+        robot.clickOn("#stampViewControl");
         waitForFxEvents();
-        waitFor(1000);
-        
-        // Wait for the concept pane to load before looking for PROPERTIES
-        if (!waitForText("PROPERTIES", 20, 1000)) {
-            captureScreenshot("concept_pane_not_loaded_properties_missing");
-            throw new RuntimeException("PROPERTIES text not found - concept pane may not have loaded");
-        }
-        
-        robot.moveTo("PROPERTIES");
-        waitForFxEvents();
-        robot.moveBy(0, 50);
-        waitForFxEvents();
-        robot.clickOn();
-        waitForFxEvents();
-        waitFor(500); // Ensure stamp editor dialog opens
         LOG.info("Opened Stamp Editor");
         return this;
     }

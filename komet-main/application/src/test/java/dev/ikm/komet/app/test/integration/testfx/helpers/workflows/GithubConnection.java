@@ -22,14 +22,15 @@ public class GithubConnection extends BaseWorkflow {
     }
 
     /**
-     * Connects to GitHub repository for data synchronization (Steps 2-6).
-     * This method encapsulates the complete workflow for GitHub connection
-     * including:
-     * - Opening Exchange menu
-     * - Opening Info panel
-     * - Entering GitHub credentials
-     * - Connecting to repository
-     * - Verifying connection success
+     * Connects to GitHub repository for data synchronization
+     * Steps 2-6
+     * 
+     *  Key Features:
+     *      Opening Exchange menu
+     *      Opening Info panel
+     *      Entering GitHub credentials
+     *      Connecting to repository
+     *      Verifying connection success
      *
      * @param githubRepoUrl  The GitHub repository URL
      * @param githubEmail    The GitHub email address
@@ -40,6 +41,8 @@ public class GithubConnection extends BaseWorkflow {
     public void connectToGitHub(String githubRepoUrl, String githubEmail,
             String githubUsername, String githubPassword)
             throws InterruptedException {
+
+        LOG.info("====== Connecting to GitHub Repository ======");
 
         // Step 2: In the tool bar, click Exchange
         try {

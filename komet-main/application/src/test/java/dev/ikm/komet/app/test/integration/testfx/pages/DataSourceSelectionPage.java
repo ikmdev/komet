@@ -4,7 +4,16 @@ import javafx.scene.control.Button;
 import org.testfx.api.FxRobot;
 
 /**
- * Page object for the data source selection screen.
+ * Page object representing the Data Source Selection screen in the Komet application.
+ * This page allows users to select a data source from available options (e.g., SOLOR-GUDID)
+ * and proceed to the next step in the application launch workflow.
+ * 
+ * Key Responsibilities:
+ *   Selecting data sources from the list view
+ *   Handling scrolling to find data sources not immediately visible
+ *   Clicking the OK button to confirm selection
+ *   Navigating to the Login page after data source selection
+ * 
  */
 public class DataSourceSelectionPage extends BasePage {
     
