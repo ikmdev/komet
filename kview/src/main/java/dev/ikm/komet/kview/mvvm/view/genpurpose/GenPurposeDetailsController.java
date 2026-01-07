@@ -64,6 +64,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -94,6 +95,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
@@ -592,20 +594,29 @@ public class GenPurposeDetailsController {
         content.getChildren().add(patternMainContainer);
     }
 
-    private List<KLReadOnlyBaseControl> createFieldViews(EditorPatternModel editorPatternModel, PatternEntity patternEntity, ObservableComposer composer, Pane semanticsContainer) {
+    private List<KLReadOnlyBaseControl> createFieldViews(EditorPatternModel editorPatternModel, PatternEntity patternEntity,
+                                                         ObservableComposer composer, Pane semanticsContainer) {
         PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternEntity).get();
         EntityFacade refComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
         List<KLReadOnlyBaseControl> controlItems = new ArrayList<>();
 
+        AtomicInteger index = new AtomicInteger(0);
         EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(), patternEntity.nid(),
                 (semantic) -> {
-                    GridPane fieldContainer = new GridPane();
+                    // add Separator
+                    if (index.get() > 0) {
+                        Separator separator = new Separator();
+                        semanticsContainer.getChildren().add(separator);
+                    }
+
+                    GridPane fieldsContainer = new GridPane();
+                    fieldsContainer.getStyleClass().add("fields-container");
 
                     ObservableEntitySnapshot<?,?> snap = composer.snapshot(semantic.nid()).get();
                     if (snap instanceof ObservableSemanticSnapshot semanticSnapshot) {
                         for(ObservableField<?> observableField : semanticSnapshot.getLatestFields().get()){
                             EditorFieldModel fieldModel = editorPatternModel.getFields().get(observableField.field().indexInPattern());
-                            createFieldView(observableField, fieldModel, controlItems, fieldContainer);
+                            createFieldView(observableField, fieldModel, controlItems, fieldsContainer);
                         }
                     }
 
@@ -617,10 +628,12 @@ public class GenPurposeDetailsController {
                             columnConstraints.setPercentWidth(100 / ((double)numberColumns.intValue()));
                             columns.add(columnConstraints);
                         }
-                        fieldContainer.getColumnConstraints().setAll(columns);
+                        fieldsContainer.getColumnConstraints().setAll(columns);
                     });
 
-                    semanticsContainer.getChildren().add(fieldContainer);
+                    semanticsContainer.getChildren().add(fieldsContainer);
+
+                    index.incrementAndGet();
                 });
 
         controls.addAll(controlItems);
