@@ -19,6 +19,11 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.KL_ADDITIONAL_SECTIO
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_MAIN_SECTION;
 
+/**
+ * Represents a Window. It has properties like its title, the main Section (EditorSectionModel instance)
+ * the additional Sections inside it (EditorSectionModel instances).
+ * Every window has to have at least one section that's why there is a main Section property with a getter.
+ */
 public class EditorWindowModel {
     public static final String EMPTY_WINDOW_TITLE = "Untitled";
 
@@ -36,6 +41,12 @@ public class EditorWindowModel {
      *                                                                             *
      ******************************************************************************/
 
+    /**
+     * Loads and sets up the Window given an instance of KometPreferences (stored preferences).
+     *
+     * @param editorWindowPreferences the stored preferences pointing to the Window
+     * @param viewCalculator the view calculator
+     */
     public static EditorWindowModel load(KometPreferences editorWindowPreferences, ViewCalculator viewCalculator, String title) {
         EditorWindowModel editorWindowModel = new EditorWindowModel();
         editorWindowModel.setTitle(title);
@@ -49,6 +60,11 @@ public class EditorWindowModel {
         return editorWindowModel;
     }
 
+    /**
+     * Saves the Window into KometPreferences (stored preferences).
+     *
+     * @param klEditorAppPreferences the stored preferences pointing to the kl editor app
+     */
     public void save(KometPreferences klEditorAppPreferences) {
         final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(getTitle());
 
@@ -157,15 +173,24 @@ public class EditorWindowModel {
      ******************************************************************************/
 
     // -- main section
+    /**
+     * The main section. Every Window needs to at least have one.
+     */
     private final EditorSectionModel mainSection = new EditorSectionModel();
     public EditorSectionModel getMainSection() { return mainSection; }
 
     // -- title
+    /**
+     * The title of the Section.
+     */
     private final StringProperty title = new SimpleStringProperty(EMPTY_WINDOW_TITLE);
     public String getTitle() { return title.get(); }
     public StringProperty titleProperty() { return title; }
     public void setTitle(String title) { this.title.set(title);}
 
     // -- sections
+    /**
+     * The additional Sections (besides the main section) inside this Window.
+     */
     public ObservableList<EditorSectionModel> getAdditionalSections() { return additionalSections; }
 }
