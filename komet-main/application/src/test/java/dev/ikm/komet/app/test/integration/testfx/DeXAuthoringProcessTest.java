@@ -289,8 +289,8 @@ public class DeXAuthoringProcessTest {
                 addDeviceCompanySemantic.addDeviceCompanySemantic("Device Company Pattern", "Active", "Device Extension Module", 
                                                     "Development path", "Albumin Gen2 5166861190", "Roche Diagnostics GmbH");
 
-                LOG.info("✓ Add DeX Device Company Semantic: Complete");
 
+                LOG.info("✓ Add DeX Device Company Semantic: Complete");
 
                 // ========== Steps 63-71: Add DeX Associated Devices Semantic ==========
 

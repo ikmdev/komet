@@ -30,7 +30,9 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
  */
 public class ConceptPane extends BasePage {
     
-    private static final String SELECTOR_SUBMIT_BUTTON = "#submitButton";
+    private static final String SELECTOR_PROPERTIES_TOGGLE = "#propertiesToggleButton";
+    private static final String SELECTOR_ADD_REFERENCE_BUTTON = "#addReferenceButton";
+
     
     public ConceptPane(FxRobot robot) {
         super(robot);
@@ -40,11 +42,7 @@ public class ConceptPane extends BasePage {
      * Clicks the Properties toggle button.
      */
     public ConceptPane clickPropertiesToggle() {
-        robot.moveTo("PROPERTIES");
-        waitForFxEvents();
-        robot.moveBy(50, 0); // Move right to find the toggle button
-        waitForFxEvents();
-        robot.clickOn();
+        robot.clickOn(SELECTOR_PROPERTIES_TOGGLE);
         waitForFxEvents();
         LOG.info("Clicked Properties toggle");
         return this;
@@ -169,7 +167,6 @@ public class ConceptPane extends BasePage {
      * Opens the stamp editor dialog.
      */
     public ConceptPane openStampEditor() {
-        //stamp has id "stampViewControl"
         robot.clickOn("#stampViewControl");
         waitForFxEvents();
         LOG.info("Opened Stamp Editor");
@@ -194,7 +191,7 @@ public class ConceptPane extends BasePage {
         this.updatePath(path);
         waitForFxEvents();
         waitFor(200);
-        robot.clickOn("CONFIRM");
+        clickConfirm();
         waitForFxEvents();
         waitFor(500); // Ensure stamp is applied
         LOG.info("Updated stamp to - Status: {}, Module: {}, Path: {}", status, module, path);
@@ -331,15 +328,9 @@ public class ConceptPane extends BasePage {
     }
 
     public ConceptPane clickEditReferenceComponentButton(){
-        //button has "Edit Reference Component" tooltip
-        Button editReferenceComponentButton = findButtonByTooltip("Edit Reference Component");
-        if (editReferenceComponentButton != null) {
-            robot.interact(editReferenceComponentButton::fire);
-            waitForFxEvents();
+        robot.clickOn(SELECTOR_ADD_REFERENCE_BUTTON);
+        waitForFxEvents();
             LOG.info("Clicked Edit Reference Component button");
-        } else {
-            LOG.warn("Edit Reference Component button not found");
-        }
         return this;
     }
 
@@ -381,12 +372,12 @@ public class ConceptPane extends BasePage {
      */
     public ConceptPane submit() {
         try {
-            clickOn(SELECTOR_SUBMIT_BUTTON);
+            robot.clickOn("SUBMIT");
             LOG.info("Clicked Submit button using CSS selector");
         } catch (Exception e1) {
             try {
                 scrollDown();
-                clickOn(SELECTOR_SUBMIT_BUTTON);
+                robot.clickOn("SUBMIT");
                 LOG.info("Clicked Submit button using CSS selector after scrolling");
             } catch (Exception e2) {
                 try {
@@ -394,6 +385,28 @@ public class ConceptPane extends BasePage {
                     LOG.info("Clicked Submit button using text");
                 } catch (Exception e3) {
                     LOG.warn("Could not find Submit button");
+                }
+            }
+        }
+        return this;
+    }
+
+    //Click CONFIRM button
+    public ConceptPane clickConfirm() {
+        try {
+            robot.clickOn("CONFIRM");
+            LOG.info("Clicked CONFIRM button using CSS selector");
+        } catch (Exception e1) {
+            try {
+                scrollDown();
+                robot.clickOn("CONFIRM");
+                LOG.info("Clicked CONFIRM button using CSS selector after scrolling");
+            } catch (Exception e2) {
+                try {
+                    clickOnText("CONFIRM");
+                    LOG.info("Clicked CONFIRM button using text");
+                } catch (Exception e3) {
+                    LOG.warn("Could not find CONFIRM button");
                 }
             }
         }
@@ -583,12 +596,12 @@ public class ConceptPane extends BasePage {
         //waitForFxEvents();
         robot.moveBy(0, 80);
         waitForFxEvents();
-        waitFor(1500); // Stabilize before double-click
+        waitFor(2000); // Stabilize before double-click
         
         // Then double-click to select
         robot.doubleClickOn();
         waitForFxEvents();
-        waitFor(750); // Ensure selection is processed
+        waitFor(1000); // Ensure selection is processed
 
         LOG.info("Selected parent concept: {}", parentConcept);
         return this;
@@ -636,25 +649,26 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         waitFor(1500); // Wait for results to populate
 
-        //move to the second instance of the concept name in the results
+        // move to the second instance of the concept name in the results
         robot.moveTo("SORT BY: TOP COMPONENT");
         waitForFxEvents();
         robot.moveBy(0, 50); // Move down to results area
         waitForFxEvents();
-        
-        // Use TestFX's drag API to automatically initiate and perform the drag
-        robot.drag(MouseButton.PRIMARY)
-             .moveBy(5, 5) // Small movement to initiate drag
-             .moveTo("🔍  Search")
-             .drop();
-        
+        waitFor(500);
+
+        robot.press(MouseButton.PRIMARY)
+                .moveTo("🔍  Search")
+                .release(MouseButton.PRIMARY);
         waitForFxEvents();
-        waitFor(500); // Ensure drop is processed
-        
-        LOG.info("Dragged concept to Reference Component field");
+
+        LOG.info("Dragged concept to Reference Component field (via located search entry)");
+
         return this;
     }
 
+    /**
+     * Validates that the reference component was populated successfully.
+     */
     public ConceptPane getPopulatedReferenceComponent(){
         // Validate that success popup appears
         if (!waitForText("Semantic Details Added Successfully!", 20, 500)) {

@@ -60,7 +60,8 @@ public class GenerateDeXData extends BaseWorkflow {
                         navigator.clickNextgenSearch();
                         navigator.nextgenSearch(suppliedBrandName);
                         navigator.openNextGenSearchResult(suppliedBrandName);
-                        //navigator.openNextGenSearchResult(indentifiedDevice);
+                        //use after othr name is added
+                        //navigator.openNextGenSearchResult(identifiedDevice);
                         conceptPane.clickCopyButton();
                         reporter.logAfterStep("Step 35: Searched for the identified device successfully");
                 } catch (Exception e) {
@@ -68,6 +69,7 @@ public class GenerateDeXData extends BaseWorkflow {
                         throw e;
                 }
 
+                
                 
                 // Step 36: Add the Device Name from the Device Extension Data as an 'Other Name'
                 try {
@@ -96,5 +98,15 @@ public class GenerateDeXData extends BaseWorkflow {
                 gitHubConnection.clickSync();
 
                 */
+
+                //Close the journal
+                try {
+                        reporter.logBeforeStep("Close the DeX data journal");
+                        landingPage.closeJournalWindow();
+                        reporter.logAfterStep("Closed the DeX data journal successfully");
+                } catch (Exception e) {
+                        reporter.logFailure("Close the DeX data journal", e);
+                        throw e;
+                }
     }
 }

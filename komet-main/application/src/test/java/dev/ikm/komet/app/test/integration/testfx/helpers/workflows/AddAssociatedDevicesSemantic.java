@@ -136,8 +136,13 @@ public class AddAssociatedDevicesSemantic extends BaseWorkflow {
             waitForFxEvents();
             robot.clickOn("Paste");
             waitForFxEvents();
-            waitFor(500); // Wait for results to load
-            robot.doubleClickOn(referenceComponent);
+            waitFor(1000); // Wait for results to load
+            //if referenceComponent is not visible, scroll down 10, repeat till visible
+            while (!robot.lookup(referenceComponent).tryQuery().isPresent()) {
+                verticalScroll(KeyCode.DOWN, 10);
+                waitForFxEvents();
+            }
+            robot.clickOn(referenceComponent);
             waitForFxEvents();
             reporter.logAfterStep("Pasted UUID from clipboard successfully");
         } catch (Exception e) {

@@ -102,7 +102,7 @@ public class GithubConnection extends BaseWorkflow {
                     // Look for "GitHub Info" text in the scene
                     if (robot.lookup("GitHub Info").tryQuery().isPresent()) {
                         popupFound = true;
-                        LOG.info("GitHub Info popup appeared after {} attempts", i + 1);
+                        LOG.info("CONNECTION SUCCESSFUL: GitHub Info popup appeared after {} attempts", i + 1);
                         break;
                     }
                 } catch (Exception e) {

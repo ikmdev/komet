@@ -3,6 +3,7 @@ package dev.ikm.komet.app.test.integration.testfx.helpers.workflows;
 import javafx.scene.input.KeyCode;
 import org.testfx.api.FxRobot;
 import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
+import javafx.scene.input.MouseButton;
 
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
@@ -129,6 +130,8 @@ public class AddDeviceCompanySemantic extends BaseWorkflow {
             throw e;
         }
 
+        // ====================== TODO ===========================
+
         // Paste UUID from clipboard
         try {
             reporter.logBeforeStep("Paste UUID from clipboard");
@@ -136,10 +139,13 @@ public class AddDeviceCompanySemantic extends BaseWorkflow {
             waitForFxEvents();
             robot.clickOn("Paste");
             waitForFxEvents();
-            waitFor(500); // Wait for results to load
-            // press down arrow then press enter
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitFor(1000); // Wait for results to load
+            // locate the list then find the list item that matches referenceComponent
+            while (!robot.lookup(referenceComponent).tryQuery().isPresent()) {
+                verticalScroll(KeyCode.DOWN, 10);
+                waitForFxEvents();
+            }
+            robot.clickOn(referenceComponent);
             waitForFxEvents();
             reporter.logAfterStep("Pasted UUID from clipboard successfully");
         } catch (Exception e) {
@@ -175,13 +181,22 @@ public class AddDeviceCompanySemantic extends BaseWorkflow {
         // Populate the Device Labeler field(s)
         try {
             reporter.logBeforeStep("Populate the Device Labeler field by searching for device identifier");
-            robot.clickOn("🔍  Search");
+            // click NextGen Search
+            navigator.clickNextgenSearch();
             waitForFxEvents();
-            robot.write(deviceLabeler);
-            waitFor(500); // Wait for results to load
-            // press down arrow then press enter
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            // search for device labeler
+            navigator.nextgenSearch(deviceLabeler);
+            waitForFxEvents();
+            // move to search result
+            robot.moveTo(deviceLabeler);
+            waitForFxEvents();
+            // drag and drop to Device Labeler field
+            robot.press(MouseButton.PRIMARY)
+                    .moveTo("🔍  Search")
+                    .release(MouseButton.PRIMARY);
+            waitForFxEvents();
+            // close NextGen Search
+            navigator.clickNextgenSearch();
             waitForFxEvents();
             reporter.logAfterStep("Populated the Device Labeler/Associated Devices field successfully");
         } catch (Exception e) {
@@ -212,4 +227,3 @@ public class AddDeviceCompanySemantic extends BaseWorkflow {
         }
     }
 }
-    

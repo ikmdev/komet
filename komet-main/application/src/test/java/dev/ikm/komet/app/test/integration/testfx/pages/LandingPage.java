@@ -23,6 +23,7 @@ import org.testfx.api.FxRobot;
 public class LandingPage extends BasePage {
     
     private static final String SELECTOR_LANDING_PAGE_BORDER_PANE = "#landingPageBorderPane";
+    private static final String SELECTOR_NEW_PROJECT_JOURNAL_BUTTON = "#newProjectJournalButton";
     
     public LandingPage(FxRobot robot) {
         super(robot);
@@ -77,8 +78,7 @@ public class LandingPage extends BasePage {
      * Clicks the NEW PROJECT JOURNAL button.
      */
     public LandingPage clickNewProjectJournal() {
-        waitForFxEvents();
-        clickOnText("NEW PROJECT JOURNAL");
+        robot.clickOn(SELECTOR_NEW_PROJECT_JOURNAL_BUTTON);
         waitForFxEvents();
         maximizeWindow();  
         LOG.info("Clicked 'New Project Journal'");
