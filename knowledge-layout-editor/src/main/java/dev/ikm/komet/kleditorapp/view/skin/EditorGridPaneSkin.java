@@ -35,6 +35,9 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
     private final GridPane gridPane = new GridPane();
     private final List<GridTile> gridTiles = new ArrayList<>();
 
+    private final List<GridTile> mouseHoverGridTiles = new ArrayList<>();
+    private GridTile currentMouseHoverGridTile;
+
     /**
      * Constructor for EditorGridPaneSkin instances.
      *
@@ -216,44 +219,46 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
             rectWhileDragging.setWidth(mouseX - rectWhileDragging.getLayoutX());
 
             rectWhileDragging.setStroke(Color.web("#5dcf16"));
+
+            Bounds gridControlBounds = gridPane.localToParent(gridBaseControl.getBoundsInParent());
+            if (mouseX > gridControlBounds.getMaxX()) {
+                // Dragging mouse to make Tile bigger
+                int columnCount = 1;
+                while(true) {
+                    Optional<GridTile> optionalGridTile = getGridTile(gridBaseControl.getRowIndex(), gridBaseControl.getColumnIndex() + columnCount);
+                    if (optionalGridTile.isPresent()) {
+                        GridTile gridTile = optionalGridTile.get();
+
+                        Bounds mouseHoverGridTileBounds = gridPane.localToParent(gridTile.getBoundsInParent());
+                        if (mouseX >= mouseHoverGridTileBounds.getCenterX()) {
+                            currentMouseHoverGridTile = gridTile;
+                            mouseHoverGridTiles.add(currentMouseHoverGridTile);
+                            currentMouseHoverGridTile.setStyle("-fx-background-color: #7ac257;");
+                            if (mouseX <= currentMouseHoverGridTile.getLayoutX() + mouseHoverGridTileBounds.getWidth()) {
+                                break; // Found the Tile where the mouse is hover
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+                    ++columnCount;
+                }
+            }
         });
 
         rightEdge.setOnMouseReleased(mouseEvent -> {
             rectWhileDragging.setStroke(Color.TRANSPARENT);
 
-            double mouseX = rightEdge.localToParent(mouseEvent.getX(), 0).getX();
-
-            Bounds gridControlBounds = gridPane.localToParent(gridBaseControl.getBoundsInParent());
-
-            if (mouseX > gridControlBounds.getMaxX()) {
-                // Dragging mouse to make Tile bigger
-                GridTile mouseHoverGridTile;
-                int columnCount = 1;
-                while(true) {
-                    Optional<GridTile> optionalGridTile = getGridTile(gridBaseControl.getRowIndex(), gridBaseControl.getColumnIndex() + columnCount);
-                    if (optionalGridTile.isPresent()) {
-                        mouseHoverGridTile = optionalGridTile.get();
-                        Bounds mouseHoverGridTileBounds= gridPane.localToParent(mouseHoverGridTile.getBoundsInParent());
-                        if (mouseHoverGridTile.getLayoutX() <= mouseX && mouseHoverGridTile.getLayoutX() + mouseHoverGridTileBounds.getWidth() >= mouseX) {
-                            break; // Found the Tile where the mouse is hover
-                        }
-                    }
-                    ++columnCount;
-                }
-
-                if (mouseHoverGridTile == null) {
-                    return;
-                }
-
-                Bounds gridTileBounds = gridPane.localToParent(mouseHoverGridTile.getBoundsInParent());
-                double gridTileCenterX = gridTileBounds.getCenterX();
-
-                if (mouseX > gridTileCenterX) {
-                    int gridBaseControlColIndex = gridBaseControl.getColumnIndex();
-                    int mouseHoverGridTileColIndex = mouseHoverGridTile.getColumnIndex();
-                    gridBaseControl.setColumnSpan(mouseHoverGridTileColIndex - gridBaseControlColIndex + 1);
-                }
+            if (currentMouseHoverGridTile == null) {
+                return;
             }
+
+
+            int gridBaseControlColIndex = gridBaseControl.getColumnIndex();
+            int mouseHoverGridTileColIndex = currentMouseHoverGridTile.getColumnIndex();
+            gridBaseControl.setColumnSpan(mouseHoverGridTileColIndex - gridBaseControlColIndex + 1);
+
+            currentMouseHoverGridTile = null;
         });
     }
 
