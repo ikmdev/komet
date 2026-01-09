@@ -1,8 +1,9 @@
-package dev.ikm.komet.kleditorapp.view;
+package dev.ikm.komet.kleditorapp.view.propertiespane;
 
+import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
+import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -10,6 +11,7 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 
@@ -23,7 +25,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
     private final TextField sectionNameTextField;
     private final ComboBox<Integer> columnsComboBox;
 
-    private final ObservableList<Integer> columnsList = FXCollections.observableArrayList(List.of(1, 2, 3));
+    private ObjectProperty<Integer> lastColumnsSectionProperty;
 
     public SectionPropertiesPane() {
         // Section name container
@@ -56,11 +58,11 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
 
         ColumnConstraints col2 = new ColumnConstraints();
         col2.setMinWidth(10);
-        col2.setPrefWidth(100);
+        col2.setHgrow(Priority.ALWAYS);
 
         gridPane.getColumnConstraints().addAll(col1, col2);
 
-        // Row constraints (3 rows as in your original FXML)
+        // Row constraints
         for (int i = 0; i < 3; i++) {
             RowConstraints row = new RowConstraints();
             row.setMinHeight(10);
@@ -75,7 +77,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
 
         // ComboBox in grid
         columnsComboBox = new ComboBox<>();
-        columnsComboBox.setItems(columnsList);
+        columnsComboBox.setItems(FXCollections.observableArrayList(List.of(1, 2, 3)));
         columnsComboBox.getSelectionModel().select((Integer)1);
         columnsComboBox.setMaxWidth(Double.MAX_VALUE);
         gridPane.add(columnsComboBox, 1, 0);
@@ -98,7 +100,12 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
     public void doInit(SectionViewControl section) {
         if (previouslyShownControl != null) {
             sectionNameTextField.textProperty().unbindBidirectional(previouslyShownControl.nameProperty());
+            columnsComboBox.valueProperty().unbindBidirectional(lastColumnsSectionProperty);
         }
         sectionNameTextField.textProperty().bindBidirectional(section.nameProperty());
+
+        // Bind number of columns property
+        lastColumnsSectionProperty = section.numberColumnsProperty().asObject();
+        columnsComboBox.valueProperty().bindBidirectional(lastColumnsSectionProperty);
     }
 }
