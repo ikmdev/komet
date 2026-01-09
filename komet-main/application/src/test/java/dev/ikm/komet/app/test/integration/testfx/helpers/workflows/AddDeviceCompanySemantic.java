@@ -130,8 +130,6 @@ public class AddDeviceCompanySemantic extends BaseWorkflow {
             throw e;
         }
 
-        // ====================== TODO ===========================
-
         // Paste UUID from clipboard
         try {
             reporter.logBeforeStep("Paste UUID from clipboard");
@@ -188,8 +186,11 @@ public class AddDeviceCompanySemantic extends BaseWorkflow {
             navigator.nextgenSearch(deviceLabeler);
             waitForFxEvents();
             // move to search result
-            robot.moveTo(deviceLabeler);
+            robot.moveTo("SORT BY: TOP COMPONENT");
             waitForFxEvents();
+            robot.moveBy(0, 50); // Move down to results area
+            waitForFxEvents();
+            waitFor(500);
             // drag and drop to Device Labeler field
             robot.press(MouseButton.PRIMARY)
                     .moveTo("🔍  Search")

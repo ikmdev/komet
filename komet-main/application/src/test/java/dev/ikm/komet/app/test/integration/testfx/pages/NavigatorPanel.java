@@ -11,6 +11,8 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 
+
+
 /**
  * Page object representing the Navigator Panel in the Komet application.
  * The Navigator Panel provides browsing and searching capabilities for
@@ -27,6 +29,7 @@ import javafx.scene.input.MouseButton;
 
 
 public class NavigatorPanel extends BasePage {
+
     
     public NavigatorPanel(FxRobot robot) {
         super(robot);
@@ -254,8 +257,11 @@ public class NavigatorPanel extends BasePage {
     public NavigatorPanel nextgenSearch(String query) {
         robot.moveTo("SORT BY: TOP COMPONENT");
         robot.moveBy(0, -40); // Move up to the search box
+        //clear search box
         robot.clickOn();
-        waitForFxEvents(); // Wait for click to be processed
+        robot.press(KeyCode.CONTROL).press(KeyCode.A).release(KeyCode.A).release(KeyCode.CONTROL);
+        robot.press(KeyCode.BACK_SPACE).release(KeyCode.BACK_SPACE);
+        waitForFxEvents();
         type(query);
         waitForFxEvents(); // Wait for text to be processed
         waitFor(500); // Wait for typing to settle
@@ -355,6 +361,34 @@ public class NavigatorPanel extends BasePage {
         
         LOG.info("Dragged concept '{}' to editing area", conceptName);
         closeDialogs();
+        return this;
+    }
+
+    public NavigatorPanel scrollPatternResults(String patternName) {
+        ToggleButton nextgenNavigatorButton = findToggleButtonInNavigatorPane("Nextgen Navigator");
+        robot.moveTo(nextgenNavigatorButton);
+        waitForFxEvents();
+        robot.moveBy(35, 0);
+        robot.clickOn();
+        //if the pattern name is not visible, scroll down until it is
+        int maxScrollAttempts = 40;
+        for (int i = 0; i < maxScrollAttempts; i++) {
+            try {
+                // Check if the pattern is visible
+                if (robot.lookup(patternName).tryQuery().isPresent()) {
+                    LOG.info("Found pattern: {} after {} scroll attempts", patternName, i);
+                    break;
+                }
+                // Scroll down to find the pattern
+                scrollDown();
+                waitFor(300);
+            } catch (Exception e) {
+                // Continue scrolling
+                scrollDown();
+                waitFor(300);
+            }
+        }
+        LOG.info("Scrolled to pattern: {}", patternName);
         return this;
     }
 

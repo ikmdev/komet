@@ -3,6 +3,7 @@ package dev.ikm.komet.app.test.integration.testfx.helpers.workflows;
 import javafx.scene.input.KeyCode;
 import org.testfx.api.FxRobot;
 import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
+import javafx.scene.input.MouseButton;
 
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
@@ -43,7 +44,7 @@ public class AddAllowedResultsSemantic extends BaseWorkflow {
      */
 
     public void addAllowedResultsSemantic(String patternName, String patternName2, String status,
-            String moduleName, String path, String... qualifierValues)
+            String moduleName, String path, String referenceComponent, String... qualifierValues)
             throws InterruptedException {
 
         LOG.info("====== Adding " + patternName + " ======");
@@ -136,10 +137,13 @@ public class AddAllowedResultsSemantic extends BaseWorkflow {
             waitForFxEvents();
             robot.clickOn("Paste");
             waitForFxEvents();
-            waitFor(500); // Wait for results to load
-            // press down arrow then press enter
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitFor(1000); // Wait for results to load
+            // locate the list then find the list item that matches referenceComponent
+            while (!robot.lookup(referenceComponent).tryQuery().isPresent()) {
+                verticalScroll(KeyCode.DOWN, 10);
+                waitForFxEvents();
+            }
+            robot.clickOn(referenceComponent);
             waitForFxEvents();
             reporter.logAfterStep("Pasted UUID from clipboard successfully");
         } catch (Exception e) {
@@ -170,19 +174,38 @@ public class AddAllowedResultsSemantic extends BaseWorkflow {
             throw e;
         }
 
+        // Populate the qualifiers field(s)
         try {
-            reporter.logBeforeStep("Add Allowed Results Qualifier Values");
+            reporter.logBeforeStep("Populate the qualifiers field by searching for  identifiers");
+
             for (String qualifierValue : qualifierValues) {
-                // move to qualifier value search field
-                robot.moveTo("Allowed Results Set:").moveBy(40, 40).clickOn();
-                robot.write(qualifierValue);
-                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+                reporter.logBeforeStep("Add associated device: '" + qualifierValue + "'");
+
+                // Open NextGen Search
+                navigator.clickNextgenSearch();
+                waitForFxEvents();
+
+                // Search for the device identifier
+                navigator.nextgenSearch(qualifierValue);
+                waitForFxEvents();
+                // move to search result
+                robot.moveTo("SORT BY: TOP COMPONENT");
+                waitForFxEvents();
+                robot.moveBy(0, 50); // Move down to results area
+                waitForFxEvents();
+                waitFor(500);
+                // drag and drop to Device Labeler field
+                robot.press(MouseButton.PRIMARY)
+                        .moveTo("🔍  Search")
+                        .release(MouseButton.PRIMARY);
+                waitForFxEvents();
+                // close NextGen Search
+                navigator.clickNextgenSearch();
                 waitForFxEvents();
             }
-            reporter.logAfterStep("Added Allowed Results Qualifier Values successfully");
+            reporter.logAfterStep("Populated the qualifiers field successfully");
         } catch (Exception e) {
-            reporter.logFailure("Add Allowed Results Qualifier Values", e);
+            reporter.logFailure("Populate the qualifiers field by searching for qualifier concept(s)", e);
             throw e;
         }
 
@@ -196,20 +219,16 @@ public class AddAllowedResultsSemantic extends BaseWorkflow {
             throw e;
         }
 
-        // click "CLOSE PROPERTIES PANEL"
+        // Close journal window
         try {
-            reporter.logAfterStep("Close Properties Panel");
-            robot.clickOn("CLOSE PROPERTIES PANEL");
-            waitForFxEvents();
-            reporter.logAfterStep("Closed Properties Panel successfully");
+            reporter.logBeforeStep("Close journal window");
+            landingPage.closeJournalWindow();
+            reporter.logAfterStep("Closed journal window successfully");
         } catch (Exception e) {
-            reporter.logFailure("Close Properties Panel", e);
+            reporter.logFailure("Close journal window", e);
             throw e;
         }
-
-        // verify "Semantic Details Added Successfully!" message appears
-
-        // Repeat for all necessary Allowed Results Semantics for the device
+        LOG.info("✓ Add DeX Population Reference Range Semantic: PASSED");
 
         LOG.info("✓ Add DeX Allowed Results Semantic: PASSED");
     }

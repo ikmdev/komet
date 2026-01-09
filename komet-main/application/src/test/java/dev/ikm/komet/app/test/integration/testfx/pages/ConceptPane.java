@@ -103,6 +103,19 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
+    //Click Pattern Definition button using tooltip lookup
+    public ConceptPane clickEditDefinitionButton() {
+        Button patternDefinitionButton = findButtonByTooltip("Edit Definition");
+        if (patternDefinitionButton != null) {
+            robot.interact(patternDefinitionButton::fire);
+            waitForFxEvents();
+            LOG.info("Clicked Pattern Definition button");
+        } else {
+            LOG.warn("Pattern Definition button not found");
+        }
+        return this;
+    }
+
     /**
      * Clicks the Coordinates button using tooltip lookup.
      * @param paneName The name of the pane containing the button

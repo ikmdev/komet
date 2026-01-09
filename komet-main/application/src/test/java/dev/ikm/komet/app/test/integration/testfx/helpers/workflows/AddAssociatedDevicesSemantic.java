@@ -3,6 +3,7 @@ package dev.ikm.komet.app.test.integration.testfx.helpers.workflows;
 import javafx.scene.input.KeyCode;
 import org.testfx.api.FxRobot;
 import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
+import javafx.scene.input.MouseButton;
 
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
@@ -36,13 +37,13 @@ public class AddAssociatedDevicesSemantic extends BaseWorkflow {
      * @param path               The path name (e.g., "Development path")
      * @param referenceComponent The reference component to paste (device
      *                           name/identifier from clipboard)
-     * @param deviceLabelers     One or more device labeler identifiers to populate
+     * @param deviceIdentifier     One or more device labeler identifiers to populate
      *                           in semantic details
      * @throws InterruptedException if thread is interrupted during execution
      */
     public void addAssociatedDevicesSemantic(String patternName, String status,
             String moduleName, String path, String referenceComponent,
-            String... deviceLabelers)
+            String... deviceIdentifiers)
             throws InterruptedException {
 
         LOG.info("====== Adding " + patternName + " ======");
@@ -129,6 +130,7 @@ public class AddAssociatedDevicesSemantic extends BaseWorkflow {
             throw e;
         }
 
+
         // Paste UUID from clipboard
         try {
             reporter.logBeforeStep("Paste UUID from clipboard");
@@ -137,7 +139,7 @@ public class AddAssociatedDevicesSemantic extends BaseWorkflow {
             robot.clickOn("Paste");
             waitForFxEvents();
             waitFor(1000); // Wait for results to load
-            //if referenceComponent is not visible, scroll down 10, repeat till visible
+            // locate the list then find the list item that matches referenceComponent
             while (!robot.lookup(referenceComponent).tryQuery().isPresent()) {
                 verticalScroll(KeyCode.DOWN, 10);
                 waitForFxEvents();
@@ -173,19 +175,33 @@ public class AddAssociatedDevicesSemantic extends BaseWorkflow {
             throw e;
         }
 
-        // Populate the Device Labeler field(s)
+        // Populate the Associated Devices field(s)
         try {
-            reporter.logBeforeStep(
-                    "Populate the Associated Devices field by searching for device identifier/ Associated device identifiers");
-            // complete the following until the list returns null or empty
-            for (String associatedDevice : deviceLabelers) {
-                robot.rightClickOn("🔍  Search");
+            reporter.logBeforeStep("Populate the Associated Devices field by searching for device identifier/ Associated device identifiers");
+
+            for (String deviceIdentifier : deviceIdentifiers) {
+                reporter.logBeforeStep("Add associated device: '" + deviceIdentifier + "'");
+
+                // Open NextGen Search
+                navigator.clickNextgenSearch();
                 waitForFxEvents();
-                robot.clickOn("Paste");
+
+                // Search for the device identifier
+                navigator.nextgenSearch(deviceIdentifier);
                 waitForFxEvents();
-                Thread.sleep(500); // Wait for results to load
-                // press down arrow then press enter
-                robot.doubleClickOn(associatedDevice);
+                // move to search result
+                robot.moveTo("SORT BY: TOP COMPONENT");
+                waitForFxEvents();
+                robot.moveBy(0, 50); // Move down to results area
+                waitForFxEvents();
+                waitFor(500);
+                // drag and drop to Device Labeler field
+                robot.press(MouseButton.PRIMARY)
+                        .moveTo("🔍  Search")
+                        .release(MouseButton.PRIMARY);
+                waitForFxEvents();
+                // close NextGen Search
+                navigator.clickNextgenSearch();
                 waitForFxEvents();
             }
             reporter.logAfterStep("Populated the Associated Devices field successfully");

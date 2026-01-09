@@ -3,6 +3,7 @@ package dev.ikm.komet.app.test.integration.testfx.helpers.workflows;
 import javafx.scene.input.KeyCode;
 import org.testfx.api.FxRobot;
 import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
+import javafx.scene.input.MouseButton;
 
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
@@ -49,7 +50,7 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
      */
 
     public void addQuantitativeAllowedResultsSemantic(String patternName, String status,
-            String moduleName, String path, String maxValueOperator,
+            String moduleName, String path, String referenceComponent, String maxValueOperator,
             String minValueOperator, String rangeMaxValue, String rangeMinValue, String exampleUnits)
             throws InterruptedException {
 
@@ -143,10 +144,13 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
             waitForFxEvents();
             robot.clickOn("Paste");
             waitForFxEvents();
-            waitFor(1500); // Wait for results to load
-            // press down arrow then press enter
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitFor(1000); // Wait for results to load
+            // locate the list then find the list item that matches referenceComponent
+            while (!robot.lookup(referenceComponent).tryQuery().isPresent()) {
+                verticalScroll(KeyCode.DOWN, 10);
+                waitForFxEvents();
+            }
+            robot.clickOn(referenceComponent);
             waitForFxEvents();
             reporter.logAfterStep("Pasted UUID from clipboard successfully");
         } catch (Exception e) {
@@ -177,29 +181,51 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
             throw e;
         }
 
-        // move to Maximum Value Operator field
+        // Populate Maximum Value Operator: Search using Nextgen Search then drag and drop the concept into the Reference
         try {
-            reporter.logBeforeStep("Move to Maximum Value Operator Search Field");
-            robot.moveTo("Maximum Value Operator; Maximum Domain Operator").moveBy(0, 25).clickOn();
-            robot.write(maxValueOperator);
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            reporter.logBeforeStep("Search using Nextgen Search then drag and drop the concept into the Reference Component field");
+            navigator.clickNextgenSearch();
+            navigator.nextgenSearch(maxValueOperator);
             waitForFxEvents();
+            robot.moveTo("SORT BY: TOP COMPONENT");
+            waitForFxEvents();
+            robot.moveBy(0, 50); // Move down to results area
+            waitForFxEvents();
+            waitFor(500);
+
+            robot.press(MouseButton.PRIMARY)
+                .moveTo("Maximum Value Operator; Maximum Domain Operator")
+                .moveBy(0, 25)
+                .release(MouseButton.PRIMARY);
+        waitForFxEvents();
+            reporter.logAfterStep(
+                    "Searched using Nextgen Search then dragged and dropped the concept into the Reference Component field successfully");
         } catch (Exception e) {
-            reporter.logFailure("Search and select Maximum Value Operator", e);
+            reporter.logFailure("Search using Nextgen Search then drag and drop the concept into the Reference Component field", e);
             throw e;
         }
 
-        // move to Minimum Value Operator field
+        // Populate Minimum Value Operator: Search using Nextgen Search then drag and drop the concept into the Reference
         try {
-            reporter.logBeforeStep("Move to Minimum Value Operator Search Field");
-            robot.moveTo("Minimum Value Operator; Minimum Domain Operator").moveBy(0, 25).clickOn();
-            robot.write(minValueOperator);
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            reporter.logBeforeStep("Search using Nextgen Search then drag and drop the concept into the Reference Component field");
+            navigator.clickNextgenSearch();
+            navigator.nextgenSearch(minValueOperator);
             waitForFxEvents();
+            robot.moveTo("SORT BY: TOP COMPONENT");
+            waitForFxEvents();
+            robot.moveBy(0, 50); // Move down to results area
+            waitForFxEvents();
+            waitFor(500);
+
+            robot.press(MouseButton.PRIMARY)
+                .moveTo("Minimum Value Operator; Minimum Domain Operator")
+                .moveBy(0, 25)
+                .release(MouseButton.PRIMARY);
+        waitForFxEvents();
+            reporter.logAfterStep(
+                    "Searched using Nextgen Search then dragged and dropped the concept into the Reference Component field successfully");
         } catch (Exception e) {
-            reporter.logFailure("Search and select Minimum Value Operator", e);
+            reporter.logFailure("Search using Nextgen Search then drag and drop the concept into the Reference Component field", e);
             throw e;
         }
 
@@ -232,6 +258,8 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
             reporter.logBeforeStep("Type in the Example Units");
             robot.moveTo("Example Units:").moveBy(0, 25).doubleClickOn();
             robot.write(exampleUnits);
+            waitForFxEvents();
+            robot.moveBy(0, 50).clickOn(); // move focus away to ensure value is set
             waitForFxEvents();
             reporter.logAfterStep("Typed in the Example Units successfully");
         } catch (Exception e) {

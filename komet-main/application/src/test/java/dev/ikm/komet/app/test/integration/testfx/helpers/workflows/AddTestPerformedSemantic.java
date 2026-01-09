@@ -3,6 +3,7 @@ package dev.ikm.komet.app.test.integration.testfx.helpers.workflows;
 import javafx.scene.input.KeyCode;
 import org.testfx.api.FxRobot;
 import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
+import javafx.scene.input.MouseButton;
 
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
@@ -50,7 +51,7 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
      * @throws InterruptedException if thread is interrupted during execution
      */
     public void addTestPerformedSemantic(String patternName, String status,
-            String moduleName, String path,
+            String moduleName, String path, String referenceComponent,
             String analytes, String targets, String testPerformed,
             String instruments, String[] specimens, String detectionLimit, String exampleUcumUnits)
             throws InterruptedException {
@@ -90,12 +91,10 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
         // Move to the specified pattern
         try {
             reporter.logBeforeStep("Move to '" + patternName + "'");
-            robot.moveTo(patternName);
             // if pattern is not visible, scroll down 50, repeat till visible
-            while (!robot.lookup(patternName).tryQuery().isPresent()) {
-                verticalScroll(KeyCode.DOWN, 50);
-                waitForFxEvents();
-            }
+            navigator.scrollPatternResults(patternName);
+            waitForFxEvents();
+            robot.moveTo(patternName);
             reporter.logAfterStep("Moved to '" + patternName + "' successfully");
         } catch (Exception e) {
             reporter.logFailure("Move to '" + patternName + "'", e);
@@ -145,10 +144,13 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
             waitForFxEvents();
             robot.clickOn("Paste");
             waitForFxEvents();
-            waitFor(1500); // Wait for results to load
-            // press down arrow then press enter
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitFor(1000); // Wait for results to load
+            // locate the list then find the list item that matches referenceComponent
+            while (!robot.lookup(referenceComponent).tryQuery().isPresent()) {
+                verticalScroll(KeyCode.DOWN, 10);
+                waitForFxEvents();
+            }
+            robot.clickOn(referenceComponent);
             waitForFxEvents();
             reporter.logAfterStep("Pasted UUID from clipboard successfully");
         } catch (Exception e) {
@@ -266,6 +268,8 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
             robot.moveTo("Example UCUM units:").moveBy(0, 25).doubleClickOn();
             robot.write(exampleUcumUnits);
             waitForFxEvents();
+            robot.moveBy(0, 50).clickOn(); // move focus away to ensure input is registered
+            waitForFxEvents(); 
             reporter.logAfterStep("Typed in the Example UCUM units successfully");
         } catch (Exception e) {
             reporter.logFailure("Type in the Example UCUM units", e);
@@ -279,6 +283,16 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
             reporter.logAfterStep("Clicked Submit to save the semantic successfully");
         } catch (Exception e) {
             reporter.logFailure("Click Submit to save the semantic", e);
+            throw e;
+        }
+
+        //click copy button
+        try{
+            reporter.logBeforeStep("Click Copy button to copy the semantic UUID to clipboard");
+            conceptPane.clickCopyButton();
+            reporter.logAfterStep("Clicked Copy button to copy the semantic UUID to clipboard successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Click Copy button to copy the semantic UUID to clipboard", e);
             throw e;
         }
 
