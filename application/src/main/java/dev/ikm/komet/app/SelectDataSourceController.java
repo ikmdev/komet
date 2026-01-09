@@ -174,7 +174,10 @@ public class SelectDataSourceController {
     void okButtonPressed(ActionEvent event) {
         saveDataServiceProperties(dataSourceChoiceBox.getValue());
         dataSourceChoiceBox.getValue().setDataUriOption(fileListView.getSelectionModel().getSelectedItem());
-        PrimitiveData.setController(dataSourceChoiceBox.getValue());
+        dev.ikm.tinkar.common.service.ServiceLifecycleManager.get().selectServiceForGroup(
+            dev.ikm.tinkar.common.service.ServiceExclusionGroup.DATA_PROVIDER,
+            dataSourceChoiceBox.getValue().getClass()
+        );
         TabPane progressTabPane = new TabPane();
         rootBorderPane.setCenter(progressTabPane);
         rootBorderPane.setTop(null);
