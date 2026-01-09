@@ -20,8 +20,10 @@ public class GridNodePropertiesPane<D extends GridBaseControl> extends ControlBa
     protected final ComboBox<Integer> columnPositionCB = new ComboBox<>();
     protected final ComboBox<Integer> rowPositionCB = new ComboBox<>();
     protected final ComboBox<Integer> columnSpanCB = new ComboBox<>();
+    protected final ComboBox<Integer> rowSpanCB = new ComboBox<>();
 
     protected ObjectProperty<Integer> previousControlColumnSpanProperty;
+    protected ObjectProperty<Integer> previousControlRowSpanProperty;
     protected Subscription columnIndexSubscription;
     protected Subscription rowIndexSubscription;
 
@@ -61,7 +63,7 @@ public class GridNodePropertiesPane<D extends GridBaseControl> extends ControlBa
         GridPane.setHalignment(columnPositionLabel, HPos.RIGHT);
         positioningGridPane.add(columnPositionLabel, 0, 0);
 
-        // Column Position ComboBox
+        // - Column Position ComboBox
         columnPositionCB.setItems(FXCollections.observableArrayList(List.of(1, 2, 3)));
         columnPositionCB.setMaxWidth(Double.MAX_VALUE);
         positioningGridPane.add(columnPositionCB, 1, 0);
@@ -71,7 +73,7 @@ public class GridNodePropertiesPane<D extends GridBaseControl> extends ControlBa
         GridPane.setHalignment(rowLabel, HPos.RIGHT);
         positioningGridPane.add(rowLabel, 0, 1);
 
-        // Row Position ComboBox
+        // - Row Position ComboBox
         rowPositionCB.setItems((FXCollections.observableArrayList(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))));
         rowPositionCB.setMaxWidth(Double.MAX_VALUE);
         positioningGridPane.add(rowPositionCB, 1, 1);
@@ -81,10 +83,20 @@ public class GridNodePropertiesPane<D extends GridBaseControl> extends ControlBa
         GridPane.setHalignment(columnSpanLabel, HPos.RIGHT);
         positioningGridPane.add(columnSpanLabel, 0, 2);
 
-        // Column Span ComboBox
+        // - Column Span ComboBox
         columnSpanCB.setItems((FXCollections.observableArrayList(List.of(1, 2, 3))));
         columnSpanCB.setMaxWidth(Double.MAX_VALUE);
         positioningGridPane.add(columnSpanCB, 1, 2);
+
+        // Row Span
+        Label rowSpanLabel = new Label("Row Span");
+        GridPane.setHalignment(rowSpanLabel, HPos.RIGHT);
+        positioningGridPane.add(rowSpanLabel, 0, 3);
+
+        // - Row Span ComboBox
+        rowSpanCB.setItems((FXCollections.observableArrayList(List.of(1, 2, 3))));
+        rowSpanCB.setMaxWidth(Double.MAX_VALUE);
+        positioningGridPane.add(rowSpanCB, 1, 3);
 
     }
 
@@ -93,7 +105,9 @@ public class GridNodePropertiesPane<D extends GridBaseControl> extends ControlBa
         if (previouslyShownControl != null) {
             columnIndexSubscription.unsubscribe();
             rowIndexSubscription.unsubscribe();
+
             columnSpanCB.valueProperty().unbindBidirectional(previousControlColumnSpanProperty);
+            rowSpanCB.valueProperty().unbindBidirectional(previousControlRowSpanProperty);
         }
 
         // Column Index
@@ -113,5 +127,9 @@ public class GridNodePropertiesPane<D extends GridBaseControl> extends ControlBa
         // Column Span
         previousControlColumnSpanProperty = control.columnSpanProperty().asObject();
         columnSpanCB.valueProperty().bindBidirectional(previousControlColumnSpanProperty);
+
+        // Row Span
+        previousControlRowSpanProperty = control.rowSpanProperty().asObject();
+        rowSpanCB.valueProperty().bindBidirectional(previousControlRowSpanProperty);
     }
 }
