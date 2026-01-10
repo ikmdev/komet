@@ -31,6 +31,7 @@ import java.util.Optional;
 
 public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
     private static final int DRAG_LINE_WIDTH = 5;
+    private static final PseudoClass MOUSE_HOVER_WHILE_DRAGGING_PSEUDO_CLASS = PseudoClass.getPseudoClass("mouse-hover-dragging");
 
     private final GridPane gridPane = new GridPane();
     private final List<GridTile> gridTiles = new ArrayList<>();
@@ -185,8 +186,9 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
 
         rectWhileDragging.setManaged(false);
         rectWhileDragging.setMouseTransparent(true);
-        rectWhileDragging.setStroke(Color.TRANSPARENT);
-        rectWhileDragging.setFill(Color.TRANSPARENT);
+        rectWhileDragging.setVisible(false);
+
+        rectWhileDragging.getStyleClass().add("rect-while-dragging");
 
         // Rectangle (line) used to catch the actual drag to change column span
         Rectangle rightEdge = new Rectangle();
@@ -216,9 +218,8 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
         rightEdge.setOnMouseDragged(mouseEvent -> {
             double mouseX = rightEdge.localToParent(mouseEvent.getX(), 0).getX();
 
+            rectWhileDragging.setVisible(true);
             rectWhileDragging.setWidth(mouseX - rectWhileDragging.getLayoutX());
-
-            rectWhileDragging.setStroke(Color.web("#5dcf16"));
 
             Bounds gridControlBounds = gridPane.localToParent(gridBaseControl.getBoundsInParent());
             if (mouseX > gridControlBounds.getMaxX()) {
@@ -228,31 +229,29 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
                     Optional<GridTile> optionalGridTile = getGridTile(gridBaseControl.getRowIndex(), gridBaseControl.getColumnIndex() + columnCount);
                     if (optionalGridTile.isPresent()) {
                         GridTile gridTile = optionalGridTile.get();
-
-                        Bounds mouseHoverGridTileBounds = gridPane.localToParent(gridTile.getBoundsInParent());
-                        if (mouseX >= mouseHoverGridTileBounds.getCenterX()) {
+                        Bounds gridTileBounds = gridPane.localToParent(gridTile.getBoundsInParent());
+                        if (mouseX >= gridTileBounds.getCenterX()) {
                             currentMouseHoverGridTile = gridTile;
                             mouseHoverGridTiles.add(currentMouseHoverGridTile);
-                            currentMouseHoverGridTile.setStyle("-fx-background-color: #7ac257;");
-                            if (mouseX <= currentMouseHoverGridTile.getLayoutX() + mouseHoverGridTileBounds.getWidth()) {
+                            if (mouseX <= currentMouseHoverGridTile.getLayoutX() + gridTileBounds.getWidth()) {
                                 break; // Found the Tile where the mouse is hover
                             }
                         }
                     } else {
                         break;
                     }
+
                     ++columnCount;
                 }
             }
         });
 
         rightEdge.setOnMouseReleased(mouseEvent -> {
-            rectWhileDragging.setStroke(Color.TRANSPARENT);
+            rectWhileDragging.setVisible(false);
 
             if (currentMouseHoverGridTile == null) {
                 return;
             }
-
 
             int gridBaseControlColIndex = gridBaseControl.getColumnIndex();
             int mouseHoverGridTileColIndex = currentMouseHoverGridTile.getColumnIndex();
