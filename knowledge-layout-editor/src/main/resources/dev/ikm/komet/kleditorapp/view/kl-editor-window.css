@@ -102,6 +102,9 @@
  ******************************************************************************/
 
 .editor-grid-pane > .rect-while-dragging {
+    -fx-arc-height: 3px;
+    -fx-arc-width: 3px;
+
     -fx-stroke: #5dcf16;
     -fx-fill: transparent;
 }

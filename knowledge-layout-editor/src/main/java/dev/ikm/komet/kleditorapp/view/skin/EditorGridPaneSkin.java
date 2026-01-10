@@ -180,15 +180,12 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
     private void addDragHandles(GridPane gridPane, GridBaseControl gridBaseControl) {
         // Rectangle that becomes visible when user is dragging and covers the Grid Control's bounds
         Rectangle rectWhileDragging = new Rectangle();
-
-        rectWhileDragging.setArcHeight(3);
-        rectWhileDragging.setArcWidth(3);
+        rectWhileDragging.getStyleClass().add("rect-while-dragging");
 
         rectWhileDragging.setManaged(false);
         rectWhileDragging.setMouseTransparent(true);
-        rectWhileDragging.setVisible(false);
 
-        rectWhileDragging.getStyleClass().add("rect-while-dragging");
+        rectWhileDragging.setVisible(false);
 
         // Rectangle (line) used to catch the actual drag to change column span
         Rectangle rightEdge = new Rectangle();
@@ -198,7 +195,11 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
         rightEdge.setFill(Color.TRANSPARENT);
         rightEdge.setStroke(Color.TRANSPARENT);
 
+        getChildren().add(rectWhileDragging);
+        getChildren().add(rightEdge);
+
         gridBaseControl.boundsInParentProperty().subscribe(bounds -> {
+            // Update drag handles and drag visuals if control changes bounds
             Bounds grindControlBounds = gridPane.localToParent(bounds);
             rectWhileDragging.setLayoutX(grindControlBounds.getMinX());
             rectWhileDragging.setLayoutY(grindControlBounds.getMinY());
@@ -211,10 +212,8 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
             rightEdge.setHeight(grindControlBounds.getHeight());
         });
 
-        getChildren().add(rectWhileDragging);
-        getChildren().add(rightEdge);
+        //=====================  Setup mouse events on Right Edge  ==========================
 
-        // Setup mouse events on Right Edge
         rightEdge.setOnMouseDragged(mouseEvent -> {
             double mouseX = rightEdge.localToParent(mouseEvent.getX(), 0).getX();
 
