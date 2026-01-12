@@ -45,4 +45,15 @@ public abstract class GridBaseControl extends EditorWindowBaseControl {
     public int getColumnSpan() { return columnSpan.get(); }
     public IntegerProperty columnSpanProperty() { return columnSpan; }
     public void setColumnSpan(int index) { columnSpan.set(index); }
+
+    // -- row span
+    private final IntegerProperty rowSpan = new SimpleIntegerProperty(1){
+        @Override
+        protected void invalidated() {
+            GridPane.setRowSpan(GridBaseControl.this, get());
+        }
+    };
+    public int getRowSpan() { return rowSpan.get(); }
+    public IntegerProperty rowSpanProperty() { return rowSpan; }
+    public void setRowSpan(int span) { this.rowSpan.set(span); }
 }

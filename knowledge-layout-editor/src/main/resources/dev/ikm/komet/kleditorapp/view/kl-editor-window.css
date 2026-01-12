@@ -98,6 +98,19 @@
  ******************************************************************************/
 
 /*******************************************************************************
+ * EditorGridPane                                                              *
+ ******************************************************************************/
+
+.editor-grid-pane > .rect-while-dragging {
+    -fx-arc-height: 3px;
+    -fx-arc-width: 3px;
+
+    -fx-stroke: #5dcf16;
+    -fx-fill: transparent;
+}
+
+
+/*******************************************************************************
  * Section View                                                                *
  ******************************************************************************/
 
@@ -145,6 +158,10 @@
     -fx-border-width: 1px;
     -fx-border-style: segments(3, 3);
     -fx-padding: 2px;
+}
+
+.window .section-view .content > .editor-grid-pane > GridPane > .grid-tile:mouse-hover-dragging {
+    -fx-background-color: #ccc;
 }
 
 .window .section-view .content > .editor-grid-pane > GridPane > .grid-tile:empty {
@@ -218,6 +235,9 @@
     -fx-border-radius: 3px, 3px;
     -fx-border-style: solid, solid;
     -fx-border-width: 1px, 1px;
+
+    -fx-background-color: white;
+    -fx-background-insets: 1px;
 
     -fx-padding: 0 2px 0 2px;
 }
