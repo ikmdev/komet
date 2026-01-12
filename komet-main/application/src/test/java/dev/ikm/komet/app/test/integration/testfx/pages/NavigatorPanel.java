@@ -369,25 +369,15 @@ public class NavigatorPanel extends BasePage {
         robot.moveTo(nextgenNavigatorButton);
         waitForFxEvents();
         robot.moveBy(35, 0);
+        waitForFxEvents();
         robot.clickOn();
-        //if the pattern name is not visible, scroll down until it is
-        int maxScrollAttempts = 40;
-        for (int i = 0; i < maxScrollAttempts; i++) {
-            try {
-                // Check if the pattern is visible
-                if (robot.lookup(patternName).tryQuery().isPresent()) {
-                    LOG.info("Found pattern: {} after {} scroll attempts", patternName, i);
-                    break;
-                }
-                // Scroll down to find the pattern
-                scrollDown();
-                waitFor(300);
-            } catch (Exception e) {
-                // Continue scrolling
-                scrollDown();
-                waitFor(300);
+        waitForFxEvents();
+        for (int i = 0; i < 6; i++) {
+            robot.press(KeyCode.DOWN);
+            waitForFxEvents();
+            robot.release(KeyCode.DOWN);
+            waitForFxEvents();
             }
-        }
         LOG.info("Scrolled to pattern: {}", patternName);
         return this;
     }

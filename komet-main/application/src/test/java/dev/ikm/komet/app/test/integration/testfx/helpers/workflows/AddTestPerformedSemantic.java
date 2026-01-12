@@ -52,8 +52,8 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
      */
     public void addTestPerformedSemantic(String patternName, String status,
             String moduleName, String path, String referenceComponent,
-            String analytes, String targets, String testPerformed,
-            String instruments, String[] specimens, String detectionLimit, String exampleUcumUnits)
+            String[] analytes, String[] targets, String[] testPerformed,
+            String[] instruments, String[] specimens, String detectionLimit, String exampleUcumUnits)
             throws InterruptedException {
 
         LOG.info("====== Adding " + patternName + " ======");
@@ -91,9 +91,10 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
         // Move to the specified pattern
         try {
             reporter.logBeforeStep("Move to '" + patternName + "'");
-            // if pattern is not visible, scroll down 50, repeat till visible
-            navigator.scrollPatternResults(patternName);
-            waitForFxEvents();
+            for (int i = 0; i < 6; i++) {
+                navigator.scrollPatternResults(patternName);
+                waitForFxEvents();
+                }
             robot.moveTo(patternName);
             reporter.logAfterStep("Moved to '" + patternName + "' successfully");
         } catch (Exception e) {
@@ -184,11 +185,21 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
         // Add the Analyte(s) by searching the analyte concept in the NextGen Search
         try {
             reporter.logBeforeStep("Search and select Analyte");
-            robot.moveTo("Analyte:").moveBy(40, 40).clickOn();
-            robot.write(analytes);
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            navigator.clickNextgenSearch();
             waitForFxEvents();
+            navigator.nextgenSearch(analytes[0]);
+            waitForFxEvents();
+            robot.moveTo("SORT BY: TOP COMPONENT");
+                waitForFxEvents();
+                robot.moveBy(0, 50); // Move down to results area
+                waitForFxEvents();
+                waitFor(500);
+                // drag and drop to Device Labeler field
+                robot.press(MouseButton.PRIMARY)
+                        .moveTo("Analyte:").moveBy(40, 40)
+                        .release(MouseButton.PRIMARY);
+                waitForFxEvents();
+                reporter.logAfterStep("Searched and selected Analyte successfully");
         } catch (Exception e) {
             reporter.logFailure("Search and select Analyte", e);
             throw e;
@@ -198,11 +209,19 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
         // Search
         try {
             reporter.logBeforeStep("Search and select Target");
-            robot.moveTo("Target:").moveBy(40, 40).clickOn();
-            robot.write(targets);
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            navigator.nextgenSearch(targets[0]);
             waitForFxEvents();
+            robot.moveTo("SORT BY: TOP COMPONENT");
+                waitForFxEvents();
+                robot.moveBy(0, 50); // Move down to results area
+                waitForFxEvents();
+                waitFor(500);
+                // drag and drop to Device Labeler field
+                robot.press(MouseButton.PRIMARY)
+                        .moveTo("Target:").moveBy(40, 40)
+                        .release(MouseButton.PRIMARY);
+                waitForFxEvents();
+                reporter.logAfterStep("Searched and selected Target successfully");
         } catch (Exception e) {
             reporter.logFailure("Search and select Target", e);
             throw e;
@@ -211,11 +230,25 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
         // move to test performed field
         try {
             reporter.logBeforeStep("Search and select Test Performed");
-            robot.moveTo("Test Performed:").moveBy(40, 40).clickOn();
-            robot.write(testPerformed);
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            navigator.nextgenSearch(testPerformed[0]);
             waitForFxEvents();
+            robot.moveTo("SORT BY: TOP COMPONENT");
+                waitForFxEvents();
+                robot.moveBy(0, 50); // Move down to results area
+                waitForFxEvents();
+                waitFor(500);
+                // drag and drop to Device Labeler field
+                robot.press(MouseButton.PRIMARY)
+                        .moveTo("Test Performed:").moveBy(40, 40)
+                        .release(MouseButton.PRIMARY);
+                waitForFxEvents();
+                robot.moveTo("Test Performed:");
+                robot.moveBy(430, 0);
+                robot.drag()
+                    .moveBy(0, 50)
+                    .drop();
+                waitForFxEvents();
+                reporter.logAfterStep("Searched and selected Test Performed successfully");
         } catch (Exception e) {
             reporter.logFailure("Search and select Test Performed", e);
             throw e;
@@ -224,31 +257,75 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
         // move to insrtrument field
         try {
             reporter.logBeforeStep("Search and select Instrument");
-            robot.moveTo("Instrument:").moveBy(40, 40).clickOn();
-            robot.write(instruments);
-            robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            navigator.nextgenSearch(instruments[0]);
             waitForFxEvents();
+            robot.moveTo("SORT BY: TOP COMPONENT");
+                waitForFxEvents();
+                robot.moveBy(0, 50); // Move down to results area
+                waitForFxEvents();
+                waitFor(500);
+                // drag and drop to Device Labeler field
+                robot.press(MouseButton.PRIMARY)
+                        .moveTo("Instrument:").moveBy(40, 40)
+                        .release(MouseButton.PRIMARY);
+                waitForFxEvents();
+                reporter.logAfterStep("Searched and selected Instrument successfully");
         } catch (Exception e) {
             reporter.logFailure("Search and select Instrument", e);
             throw e;
         }
 
-        // move to specimen field
+        //Specimen 1
         try {
             reporter.logBeforeStep("Search and select Specimen");
-            robot.moveTo("Specimen:").moveBy(40, 40).clickOn();
-            for (String specimen : specimens) {
-                robot.write(specimen);
-                waitFor(1000); // wait for results to load
-                robot.press(KeyCode.DOWN).release(KeyCode.DOWN);
-                robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            navigator.nextgenSearch(specimens[0]);
+            waitForFxEvents();
+            robot.moveTo("SORT BY: TOP COMPONENT");
                 waitForFxEvents();
-            }
+                robot.moveBy(0, 50); // Move down to results area
+                waitForFxEvents();
+                waitFor(500);
+                // drag and drop to Device Labeler field
+                robot.press(MouseButton.PRIMARY)
+                        .moveTo("Specimen:").moveBy(40, 40)
+                        .release(MouseButton.PRIMARY);
+                waitForFxEvents();
+                reporter.logAfterStep("Searched and selected Specimen successfully");
         } catch (Exception e) {
             reporter.logFailure("Search and select Specimen", e);
             throw e;
         }
+
+        //Specimen 2
+        try {
+            reporter.logBeforeStep("Search and select Specimen");
+            navigator.nextgenSearch(specimens[1]);
+            waitForFxEvents();
+            robot.moveTo("SORT BY: TOP COMPONENT");
+                waitForFxEvents();
+                robot.moveBy(0, 50); // Move down to results area
+                waitForFxEvents();
+                waitFor(500);
+                // drag and drop to Device Labeler field
+                robot.press(MouseButton.PRIMARY)
+                        .moveTo("Specimen:").moveBy(40, 95)
+                        .release(MouseButton.PRIMARY);
+                waitForFxEvents();
+                // close NextGen Search
+                navigator.clickNextgenSearch();
+                waitForFxEvents();
+                robot.moveTo("Specimen:");
+                robot.moveBy(450, 0);
+                robot.drag()
+                    .moveBy(0, 50)
+                    .drop();
+                waitForFxEvents();
+                reporter.logAfterStep("Searched and selected Specimen successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Search and select Specimen", e);
+            throw e;
+        }
+
 
         // move to detection limit field
         try {

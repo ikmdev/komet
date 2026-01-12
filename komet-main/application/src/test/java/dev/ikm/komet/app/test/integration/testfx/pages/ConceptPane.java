@@ -64,6 +64,37 @@ public class ConceptPane extends BasePage {
     }
 
     /**
+     * Clicks the Edit Descriptions button using tooltip lookup.
+     */
+    public ConceptPane clickEditDefinitionsButton() {
+        Button editDefinitionsButton = findButtonByTooltip("Edit Definitions");
+        if (editDefinitionsButton != null) {
+            robot.interact(editDefinitionsButton::fire);
+            waitForFxEvents();
+            LOG.info("Clicked Edit Definitions button");
+        } else {
+            LOG.warn("Edit Definitions button not found");
+        }
+        return this;
+    }
+
+        /**
+     * Clicks the Edit Descriptions button using tooltip lookup.
+     */
+    public ConceptPane clickEditFieldsButton() {
+        Button editFieldsButton = findButtonByTooltip("Edit Fields");
+        if (editFieldsButton != null) {
+            robot.interact(editFieldsButton::fire);
+            waitForFxEvents();
+            LOG.info("Clicked Edit Fields button");
+        } else {
+            LOG.warn("Edit Fields button not found");
+        }
+        return this;
+    }
+
+
+    /**
      * Clicks the Copy button next to the Komet ID.
      */
     public ConceptPane clickCopyButton() {
@@ -128,6 +159,19 @@ public class ConceptPane extends BasePage {
             LOG.info("Clicked Coordinates button");
         } else {
             LOG.warn("Coordinates button not found");
+        }
+        return this;
+    }
+
+    //Click publish button using tooltip lookup
+    public ConceptPane clickPublishButton() {
+        Button publishButton = findButtonByTooltip("Submit");
+        if (publishButton != null) {
+            robot.interact(publishButton::fire);
+            waitForFxEvents();
+            LOG.info("Clicked Publish button");
+        } else {
+            LOG.warn("Publish button not found");
         }
         return this;
     }
@@ -337,6 +381,100 @@ public class ConceptPane extends BasePage {
         }
         waitForFxEvents();
         LOG.info("Updated path to: {}", newPath);
+        return this;
+    }
+
+        /**
+     * Updates the case significance by selecting from the dropdown.
+     * @param caseSignificance The case significance to select
+     */
+    public ConceptPane updateCaseSignificance(String caseSignificance) {
+        robot.moveTo("Case Significance");
+        waitForFxEvents();
+        robot.moveBy(100, 0); // Move right from the label to find the ComboBox
+        waitForFxEvents();
+        robot.clickOn();
+        waitForFxEvents();
+        waitFor(500); // Wait for dropdown to fully open
+        
+        // Look for ListCell containing the path text (dropdown items)
+        var dropdownItems = robot.lookup(".list-cell").lookup(caseSignificance).queryAll();
+        if (!dropdownItems.isEmpty()) {
+            // Click the first item found in the dropdown
+            robot.clickOn(dropdownItems.iterator().next());
+        } else {
+            // Fallback: try to find any occurrence that's not the label
+            var matches = robot.lookup(caseSignificance).queryAll();
+            if (matches.size() > 1) {
+                // Click the last occurrence (most likely to be in dropdown)
+                robot.clickOn(matches.stream().skip(matches.size() - 1).findFirst().get());
+            } else {
+                // Fallback to first/only occurrence
+                robot.clickOn(caseSignificance);
+            }
+        }
+        waitForFxEvents();
+        LOG.info("Updated case significance to: {}", caseSignificance);
+        return this;
+    }
+
+        public ConceptPane updateLanguage(String language) {
+        robot.moveTo("Language");
+        waitForFxEvents();
+        robot.moveBy(100, 0); // Move right from the label to find the ComboBox
+        waitForFxEvents();
+        robot.clickOn();
+        waitForFxEvents();
+        waitFor(500); // Wait for dropdown to fully open
+        
+        // Look for ListCell containing the path text (dropdown items)
+        var dropdownItems = robot.lookup(".list-cell").lookup(language).queryAll();
+        if (!dropdownItems.isEmpty()) {
+            // Click the first item found in the dropdown
+            robot.clickOn(dropdownItems.iterator().next());
+        } else {
+            // Fallback: try to find any occurrence that's not the label
+            var matches = robot.lookup(language).queryAll();
+            if (matches.size() > 1) {
+                // Click the last occurrence (most likely to be in dropdown)
+                robot.clickOn(matches.stream().skip(matches.size() - 1).findFirst().get());
+            } else {
+                // Fallback to first/only occurrence
+                robot.clickOn(language);
+            }
+        }
+        waitForFxEvents();
+        LOG.info("Updated language to: {}", language);
+        return this;
+    }
+
+            public ConceptPane updateDataType(String dataType) {
+        robot.moveTo("Data type");
+        waitForFxEvents();
+        robot.moveBy(0, 25);
+        waitForFxEvents();
+        robot.clickOn();
+        waitForFxEvents();
+        waitFor(500); // Wait for dropdown to fully open
+        
+        // Look for ListCell containing the path text (dropdown items)
+        var dropdownItems = robot.lookup(".list-cell").lookup(dataType).queryAll();
+        if (!dropdownItems.isEmpty()) {
+            // Click the first item found in the dropdown
+            robot.clickOn(dropdownItems.iterator().next());
+        } else {
+            // Fallback: try to find any occurrence that's not the label
+            var matches = robot.lookup(dataType).queryAll();
+            if (matches.size() > 1) {
+                // Click the last occurrence (most likely to be in dropdown)
+                robot.clickOn(matches.stream().skip(matches.size() - 1).findFirst().get());
+            } else {
+                // Fallback to first/only occurrence
+                robot.clickOn(dataType);
+            }
+        }
+        waitForFxEvents();
+        LOG.info("Updated data type to: {}", dataType);
         return this;
     }
 
