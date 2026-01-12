@@ -1,3 +1,5 @@
-dev.ikm.tinkar.provider.spinedarray.SpinedArrayOpenController
-dev.ikm.tinkar.provider.spinedarray.SpinedArrayNewController
-dev.ikm.tinkar.provider.ephemeral.ProviderEphemeralNewController
+dev.ikm.tinkar.provider.spinedarray.SpinedArrayProvider$OpenController
+dev.ikm.tinkar.provider.spinedarray.SpinedArrayProvider$NewController
+dev.ikm.tinkar.provider.ephemeral.ProviderEphemeral$NewController
+dev.ikm.tinkar.provider.mvstore.MVStoreProvider$OpenController
+dev.ikm.tinkar.provider.mvstore.MVStoreProvider$NewController

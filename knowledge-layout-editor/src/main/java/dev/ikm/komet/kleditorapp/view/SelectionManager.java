@@ -33,7 +33,10 @@ public class SelectionManager {
     }
 
     private void setupSectionView(SectionViewControl sectionViewControl) {
-        sectionViewControl.getPatterns().forEach(this::setupListenersForSelection);
+        sectionViewControl.getPatterns().forEach(pattern -> {
+            setupListenersForSelection(pattern);
+            pattern.getFields().forEach(this::setupListenersForSelection);
+        });
         sectionViewControl.getPatterns().addListener((ListChangeListener<? super PatternViewControl>) sectionChange -> onPatternViewsChanged(sectionChange));
 
         setupListenersForSelection(sectionViewControl);
@@ -42,7 +45,10 @@ public class SelectionManager {
     private void onPatternViewsChanged(ListChangeListener.Change<? extends PatternViewControl> change) {
         while (change.next()) {
             if (change.wasAdded()) {
-                change.getAddedSubList().forEach(this::setupListenersForSelection);
+                change.getAddedSubList().forEach(pattern -> {
+                    setupListenersForSelection(pattern);
+                    pattern.getFields().forEach(this::setupListenersForSelection);
+                });
             }
         }
     }
@@ -57,6 +63,7 @@ public class SelectionManager {
                 selectedControl.setSelected(false);
             }
             setSelectedControl(editorWindowBaseControl);
+            mouseEvent.consume(); // Consume the event so it doesn't bubble up to the parent
         });
     }
 

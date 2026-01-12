@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 import dev.ikm.komet.executor.AlertDialogSubscriber;
-import dev.ikm.komet.executor.KometExecutorController;
+import dev.ikm.komet.executor.KometExecutorProvider;
 import dev.ikm.komet.executor.TaskListsProvider;
 import dev.ikm.komet.framework.concurrent.TaskListsService;
 import dev.ikm.tinkar.common.alert.AlertReportingService;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.ExecutorController;
+import dev.ikm.tinkar.common.service.ServiceLifecycle;
 
 module dev.ikm.komet.executor {
 
     exports dev.ikm.komet.executor;
     provides AlertReportingService with AlertDialogSubscriber;
-    provides CachingService with KometExecutorController.CacheProvider;
-    provides ExecutorController with KometExecutorController;
+    provides CachingService with KometExecutorProvider.CacheProvider;
+    provides ExecutorController with KometExecutorProvider.Controller;
+    provides ServiceLifecycle with KometExecutorProvider.Controller;
     provides TaskListsService with TaskListsProvider;
     requires transitive javafx.base;
     requires transitive javafx.controls;

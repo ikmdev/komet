@@ -90,7 +90,7 @@ public class SelectDataSourceController {
     void initialize() {
         assert dataSourceChoiceBox != null : "fx:id=\"dataSourceChoiceBox\" was not injected: check your FXML file 'SelectDataSource.fxml'.";
         assert cancelButton != null : "fx:id=\"cancelButton\" was not injected: check your FXML file 'SelectDataSource.fxml'.";
-        ObservableList<DataServiceController> controllerOptions = FXCollections.observableList(PrimitiveData.getControllerOptions());
+        ObservableList<DataServiceController<?>> controllerOptions = FXCollections.observableList(PrimitiveData.getControllerOptions());
         controllerOptions.forEach(dataServiceController -> dataSourceChoiceBox.getItems().add(dataServiceController));
 
         dataSourceChoiceBox.getSelectionModel().selectedItemProperty().addListener(this::dataSourceChanged);
@@ -174,7 +174,10 @@ public class SelectDataSourceController {
     void okButtonPressed(ActionEvent event) {
         saveDataServiceProperties(dataSourceChoiceBox.getValue());
         dataSourceChoiceBox.getValue().setDataUriOption(fileListView.getSelectionModel().getSelectedItem());
-        PrimitiveData.setController(dataSourceChoiceBox.getValue());
+        dev.ikm.tinkar.common.service.ServiceLifecycleManager.get().selectServiceForGroup(
+            dev.ikm.tinkar.common.service.ServiceExclusionGroup.DATA_PROVIDER,
+            dataSourceChoiceBox.getValue().getClass()
+        );
         TabPane progressTabPane = new TabPane();
         rootBorderPane.setCenter(progressTabPane);
         rootBorderPane.setTop(null);

@@ -19,8 +19,6 @@ import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.Calculators;
-import dev.ikm.tinkar.coordinate.Coordinates;
-import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -50,7 +48,7 @@ class ObservableComposerITestFX {
     private static final File TEST_DATA_DIR = new File("target/data");
     private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "tinkar-starter-data-reasoned-pb.zip");
 
-    private EntityCountSummary loadedEntitiesSummary;
+    private dev.ikm.tinkar.common.service.EntityCountSummary loadedEntitiesSummary;
 
     @BeforeAll
     void setupDatabase() {

@@ -1,62 +1,60 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-public class PatternViewControl extends EditorWindowBaseControl {
+public class PatternViewControl extends GridBaseControl {
     public static final String DEFAULT_STYLE_CLASS = "pattern-view";
 
     private final VBox patternContainer = new VBox();
     private final Label patternTitle = new Label();
-
-    private final ObservableList<String> fields = FXCollections.observableArrayList();
-
-    private int fieldIndex = 1;
+    private final EditorGridPane gridPane = new EditorGridPane();
 
     public PatternViewControl() {
         patternContainer.getStyleClass().add("pattern-container");
 
         patternTitle.textProperty().bind(title);
-        patternContainer.getChildren().add(patternTitle);
+        patternContainer.getChildren().addAll(patternTitle, gridPane);
 
-        fields.addListener(this::onFieldAdded);
+        Bindings.bindContent(gridPane.getItems(), getFields());
 
         getChildren().add(patternContainer);
 
+        fields.addListener(this::onFieldsChanged);
+
+        gridPane.numberColumnsProperty().bind(numberColumns);
+
+        gridPane.setHgap(5);
+        gridPane.setVgap(0);
+
+        // CSS
+        patternTitle.getStyleClass().add("pattern-title");
         getStyleClass().add(DEFAULT_STYLE_CLASS);
+    }
+
+    private void onFieldsChanged(ListChangeListener.Change<? extends FieldViewControl> change) {
+        while (change.next()) {
+            if (change.wasAdded()) {
+                change.getAddedSubList().forEach(fieldViewControl -> {
+                    fieldViewControl.setParentPattern(this);
+                });
+            }
+        }
     }
 
     @Override
     public void delete() {
         getParentSection().getPatterns().remove(this);
-    }
-
-    private void onFieldAdded(ListChangeListener.Change<? extends String> change) {
-        while(change.next()) {
-            if (change.wasAdded()) {
-                for (String addedFieldString : change.getAddedSubList()) {
-                    HBox patternFieldContainer = new HBox();
-                    patternFieldContainer.getStyleClass().add("field-container");
-
-                    Label patternFieldLabel = new Label("Field " + fieldIndex + ": ");
-                    Label patternFieldText = new Label(addedFieldString);
-
-                    patternFieldContainer.getChildren().addAll(patternFieldLabel, patternFieldText);
-
-                    patternContainer.getChildren().add(patternFieldContainer);
-
-                    ++fieldIndex;
-                }
-            }
-        }
     }
 
     @Override
@@ -84,6 +82,13 @@ public class PatternViewControl extends EditorWindowBaseControl {
     public StringProperty titleProperty() { return title; }
     public void setTitle(String title) { this.title.set(title); }
 
+    // -- number columns
+    private final IntegerProperty numberColumns = new SimpleIntegerProperty(1);
+    public int getNumberColumns() { return numberColumns.get(); }
+    public IntegerProperty numberColumnsProperty() { return numberColumns; }
+    public void setNumberColumns(int number) { numberColumns.set(number); }
+
     // -- fields
-    public ObservableList<String> getFields() { return fields; }
+    private final ObservableList<FieldViewControl> fields = FXCollections.observableArrayList();
+    public ObservableList<FieldViewControl> getFields() { return fields; }
 }

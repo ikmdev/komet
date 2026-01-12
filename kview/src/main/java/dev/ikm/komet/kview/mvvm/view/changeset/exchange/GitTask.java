@@ -25,7 +25,7 @@ import dev.ikm.tinkar.common.service.SaveState;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.entity.ChangeSetWriterService;
-import dev.ikm.tinkar.entity.EntityCountSummary;
+import dev.ikm.tinkar.common.service.EntityCountSummary;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.reasoner.service.ClassifierResults;

@@ -6,6 +6,9 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 
 import java.util.HashMap;
 
+/**
+ * Window Manager used to load window instances (each loaded window is a canonical reference).
+ */
 public class EditorWindowManager {
     private static final HashMap<String, EditorWindowModel> titleToWindowModel = new HashMap<>();
 
@@ -39,11 +42,22 @@ public class EditorWindowManager {
         return editorWindowModel;
     }
 
+    /**
+     * Saves the Window into KometPreferences (stored preferences).
+     *
+     * @param klEditorAppPreferences the stored preferences pointing to the kl editor app
+     * @param editorWindowModel the EditorWindowModel to save to preferences
+     */
     public static void save(KometPreferences klEditorAppPreferences, EditorWindowModel editorWindowModel) {
         editorWindowModel.save(klEditorAppPreferences);
         titleToWindowModel.put(editorWindowModel.getTitle(), editorWindowModel);
     }
 
+    /**
+     * Returns a reference to an already initialized Window.
+     *
+     * @param title the title of the Window
+     */
     public static EditorWindowModel getWindowInstance(String title) {
         EditorWindowModel editorWindowModel = titleToWindowModel.get(title);
         if (editorWindowModel == null) {
@@ -52,6 +66,9 @@ public class EditorWindowManager {
         return editorWindowModel;
     }
 
+    /**
+     * Called when the Editor "app" gets closed. It should be used to clean up.
+     */
     public static void shutdown() {
         titleToWindowModel.remove(EditorWindowModel.EMPTY_WINDOW_TITLE);
     }
