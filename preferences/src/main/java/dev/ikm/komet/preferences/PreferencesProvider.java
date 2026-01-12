@@ -58,14 +58,14 @@ public class PreferencesProvider
      * Stop me.
      */
     public void stop() {
-        SimpleIndeterminateTracker progressTask = new SimpleIndeterminateTracker("Preference provider save");
-        TinkExecutor.threadPool().submit(progressTask);
+        // Don't use thread pool during shutdown - it may have been stopped already
+        // Just sync preferences directly on the current thread
         try {
+            LOG.info("Syncing preferences during shutdown");
             KometPreferencesImpl.getConfigurationRootPreferences().sync();
+            LOG.info("Preferences synced successfully");
         } catch (Throwable ex) {
-            LOG.error(ex.getLocalizedMessage(), ex);
-        } finally {
-            progressTask.finished();
+            LOG.error("Error syncing preferences during shutdown", ex);
         }
     }
 

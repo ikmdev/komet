@@ -19,30 +19,42 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TrackingCallable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LoadDataSourceTask extends TrackingCallable<Void> {
+    private static final Logger LOG = LoggerFactory.getLogger(LoadDataSourceTask.class);
     final SimpleObjectProperty<AppState> state;
 
     public LoadDataSourceTask(SimpleObjectProperty<AppState> state) {
         super(false, true);
         this.state = state;
         updateTitle("Loading Data Source");
-        updateMessage("Executing " + PrimitiveData.getController().controllerName());
+        updateMessage("Executing data source...");
         updateProgress(-1, -1);
     }
 
     @Override
     protected Void compute() throws Exception {
         try {
+            LOG.info("LoadDataSourceTask starting...");
             PrimitiveData.start();
-            Platform.runLater(() -> state.set(AppState.SELECT_USER));
+            LOG.info("PrimitiveData.start() completed successfully");
+            LOG.info("Scheduling state transition to SELECT_USER");
+            Platform.runLater(() -> {
+                LOG.info("Platform.runLater executing - setting state to SELECT_USER");
+                state.set(AppState.SELECT_USER);
+                LOG.info("State set to SELECT_USER");
+            });
+            LOG.info("LoadDataSourceTask completed successfully");
             return null;
         } catch (Throwable ex) {
+            LOG.error("LoadDataSourceTask failed with exception", ex);
             ex.printStackTrace();
             return null;
         } finally {
-            updateTitle(PrimitiveData.getController().controllerName() + " completed");
-            updateMessage("In " + durationString());
+            updateTitle("Data source loaded in " + durationString());
+            updateMessage("Completed");
         }
     }
 }
