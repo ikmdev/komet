@@ -59,17 +59,14 @@ public class GenerateDeXData extends BaseWorkflow {
                         reporter.logBeforeStep("Step 35: Search for the identified device by the supplied brand name + version/model for the DeX record you are creating");
                         navigator.clickNextgenSearch();
                         navigator.nextgenSearch(suppliedBrandName);
-                        //navigator.openNextGenSearchResult(suppliedBrandName);
-                        //use after othr name is added
-                        navigator.openNextGenSearchResult(identifiedDevice);
+                        navigator.openNextGenSearchResult(suppliedBrandName);
+                        //navigator.openNextGenSearchResult(identifiedDevice);
                         conceptPane.clickCopyButton();
                         reporter.logAfterStep("Step 35: Searched for the identified device successfully");
                 } catch (Exception e) {
                         reporter.logFailure("Step 35: Search for the identified device by the supplied brand name + version/model for the DeX record you are creating", e);
                         throw e;
                 }
-
-                /*
                 
                 // Step 36: Add the Device Name from the Device Extension Data as an 'Other Name'
                 try {
@@ -86,7 +83,7 @@ public class GenerateDeXData extends BaseWorkflow {
                 
                 //Steps 37 - 48 omitted
 
-                
+                /*
                 
                 // Step 49: Run Reasoner
                 reasoner.runReasoner();     

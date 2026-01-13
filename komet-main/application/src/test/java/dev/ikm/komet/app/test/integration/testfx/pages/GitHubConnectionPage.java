@@ -19,6 +19,8 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 public class GitHubConnectionPage extends BasePage {
 
     private static final String GITHUB_REPO_URL = "https://github.com/ikmdev/komet";
+    private static final String SELECTOR_GITHUB_STATUS = "#githubStatusHyperlink";
+    
     private final TestReporter reporter;
 
     public GitHubConnectionPage(FxRobot robot) {

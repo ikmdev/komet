@@ -231,14 +231,5 @@ public class AuthorPatterns extends BaseWorkflow {
             reporter.logFailure("CLICK 'Publish' Button to submit pattern", e);
             throw e;
         }
-
-
-
-
-
-
-
-
-
             }
 }

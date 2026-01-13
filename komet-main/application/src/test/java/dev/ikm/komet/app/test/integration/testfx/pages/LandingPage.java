@@ -24,6 +24,7 @@ public class LandingPage extends BasePage {
     
     private static final String SELECTOR_LANDING_PAGE_BORDER_PANE = "#landingPageBorderPane";
     private static final String SELECTOR_NEW_PROJECT_JOURNAL_BUTTON = "#newProjectJournalButton";
+    private static final String SELECTOR_IMPORT_BUTTON = "#importButton";
     
     public LandingPage(FxRobot robot) {
         super(robot);
@@ -82,6 +83,16 @@ public class LandingPage extends BasePage {
         waitForFxEvents();
         maximizeWindow();  
         LOG.info("Clicked 'New Project Journal'");
+        return this;
+    }
+
+    /**
+     * Clicks the IMPORT button
+     */
+    public LandingPage clickImportButton() {
+        clickOn(SELECTOR_IMPORT_BUTTON);
+        waitForFxEvents();
+        LOG.info("Clicked Import button");
         return this;
     }
 

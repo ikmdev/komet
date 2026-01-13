@@ -32,6 +32,11 @@ public class ConceptPane extends BasePage {
     
     private static final String SELECTOR_PROPERTIES_TOGGLE = "#propertiesToggleButton";
     private static final String SELECTOR_ADD_REFERENCE_BUTTON = "#addReferenceButton";
+    private static final String SELECTOR_PUBLISH_BUTTON = "#savePatternButton";
+    private static final String SELECTOR_EDIT_DESCRIPTIONS_BUTTON = "#addDescriptionButton";
+    private static final String SELECTOR_EDIT_DEFINITIONS_BUTTON = "#addDefinitionButton";
+    private static final String SELECTOR_EDIT_FIELDS_BUTTON = "#addFieldsButton";
+    private static final String SELECTOR_SORT_BY_BUTTON = "#sortByButton";
 
     
     public ConceptPane(FxRobot robot) {
@@ -52,14 +57,9 @@ public class ConceptPane extends BasePage {
      * Clicks the Edit Descriptions button using tooltip lookup.
      */
     public ConceptPane clickEditDescriptionsButton() {
-        Button editDescriptionsButton = findButtonByTooltip("Edit Descriptions");
-        if (editDescriptionsButton != null) {
-            robot.interact(editDescriptionsButton::fire);
+            robot.clickOn(SELECTOR_EDIT_DESCRIPTIONS_BUTTON);
             waitForFxEvents();
             LOG.info("Clicked Edit Descriptions button");
-        } else {
-            LOG.warn("Edit Descriptions button not found");
-        }
         return this;
     }
 
@@ -67,32 +67,21 @@ public class ConceptPane extends BasePage {
      * Clicks the Edit Descriptions button using tooltip lookup.
      */
     public ConceptPane clickEditDefinitionsButton() {
-        Button editDefinitionsButton = findButtonByTooltip("Edit Definitions");
-        if (editDefinitionsButton != null) {
-            robot.interact(editDefinitionsButton::fire);
-            waitForFxEvents();
-            LOG.info("Clicked Edit Definitions button");
-        } else {
-            LOG.warn("Edit Definitions button not found");
-        }
+        robot.clickOn(SELECTOR_EDIT_DEFINITIONS_BUTTON);
+        waitForFxEvents();
+        LOG.info("Clicked Edit Definitions button");
         return this;
     }
 
         /**
-     * Clicks the Edit Descriptions button using tooltip lookup.
+     * Clicks the Edit Fields button using tooltip lookup.
      */
     public ConceptPane clickEditFieldsButton() {
-        Button editFieldsButton = findButtonByTooltip("Edit Fields");
-        if (editFieldsButton != null) {
-            robot.interact(editFieldsButton::fire);
-            waitForFxEvents();
-            LOG.info("Clicked Edit Fields button");
-        } else {
-            LOG.warn("Edit Fields button not found");
-        }
+        robot.clickOn(SELECTOR_EDIT_FIELDS_BUTTON);
+        waitForFxEvents();
+        LOG.info("Clicked Edit Fields button");
         return this;
     }
-
 
     /**
      * Clicks the Copy button next to the Komet ID.
@@ -163,18 +152,14 @@ public class ConceptPane extends BasePage {
         return this;
     }
 
-    //Click publish button using tooltip lookup
-    public ConceptPane clickPublishButton() {
-        Button publishButton = findButtonByTooltip("Submit");
-        if (publishButton != null) {
-            robot.interact(publishButton::fire);
-            waitForFxEvents();
-            LOG.info("Clicked Publish button");
-        } else {
-            LOG.warn("Publish button not found");
-        }
+    //Click publish button
+    public ConceptPane clickPublishButton(){
+        robot.clickOn(SELECTOR_PUBLISH_BUTTON);
+        waitForFxEvents();
+        LOG.info("Clicked Publish button");
         return this;
     }
+    
 
     /**
      * Clicks on the OTHER NAMES section to edit.

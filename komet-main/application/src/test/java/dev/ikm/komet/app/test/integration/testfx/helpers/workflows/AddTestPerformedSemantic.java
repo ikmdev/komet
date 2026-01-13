@@ -317,7 +317,7 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
                 robot.moveTo("Specimen:");
                 robot.moveBy(450, 0);
                 robot.drag()
-                    .moveBy(0, 50)
+                    .moveBy(0, 100)
                     .drop();
                 waitForFxEvents();
                 reporter.logAfterStep("Searched and selected Specimen successfully");
@@ -342,10 +342,10 @@ public class AddTestPerformedSemantic extends BaseWorkflow {
         // move to example ucum units field
         try {
             reporter.logBeforeStep("Type in the Example UCUM units");
-            robot.moveTo("Example UCUM units:").moveBy(0, 25).doubleClickOn();
+            robot.moveTo("Example UCUM Units:").moveBy(0, 25).doubleClickOn();
             robot.write(exampleUcumUnits);
             waitForFxEvents();
-            robot.moveBy(0, 50).clickOn(); // move focus away to ensure input is registered
+            robot.moveBy(25, 50).clickOn(); // move focus away to ensure input is registered
             waitForFxEvents(); 
             reporter.logAfterStep("Typed in the Example UCUM units successfully");
         } catch (Exception e) {

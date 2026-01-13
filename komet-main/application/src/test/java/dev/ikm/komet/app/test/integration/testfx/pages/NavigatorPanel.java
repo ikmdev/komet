@@ -30,6 +30,18 @@ import javafx.scene.input.MouseButton;
 
 public class NavigatorPanel extends BasePage {
 
+    private static final String SELECTOR_NEXTGEN_NAVIGATOR_BUTTON = "#navigatorToggleButton";
+    private static final String SELECTOR_NEXTGEN_SEARCH_BUTTON = "#nextGenSearchToggleButton";
+    private static final String SELECTOR_REASONER_BUTTON = "#reasonerToggleButton";
+    private static final String SELECTOR_SEARCH_BUTTON = "#searchToggleButton";
+    private static final String SELECTOR_NAVIGATOR_BUTTON = "#conceptNavigatorToggleButton";
+    private static final String SELECTOR_NEXTGEN_REASONER_BUTTON = "#nextGenReasonerToggleButton";
+    private static final String SELECTOR_SETTINGS_BUTTON = "#settingsToggleButton";
+    private static final String SELECTOR_CREATE_BUTTON = "#addButton";
+    private static final String SELECTOR_CONCEPTS_BUTTON = "#conceptsToggleButton";
+    private static final String SELECTOR_PATTERNS_BUTTON = "#patternsToggleButton";
+
+
     
     public NavigatorPanel(FxRobot robot) {
         super(robot);
@@ -50,9 +62,7 @@ public class NavigatorPanel extends BasePage {
      * Opens the Nextgen Search panel.
      */
     public NavigatorPanel clickNextgenSearch() {
-        waitFor(1000); // Ensure UI is ready after journal creation
-        ToggleButton nextgenSearchButton = findToggleButtonInNavigatorPane("Nextgen Search");
-        robot.interact(nextgenSearchButton::fire);
+        robot.clickOn(SELECTOR_NEXTGEN_SEARCH_BUTTON);
         waitForFxEvents();
         LOG.info("Opened Nextgen Search");
         return this;
@@ -62,9 +72,7 @@ public class NavigatorPanel extends BasePage {
      * Opens the Nextgen Navigator panel.
      */
     public NavigatorPanel clickNextgenNavigator() {
-        waitForFxEvents(); // Ensure UI is ready after journal creation
-        ToggleButton nextgenNavigatorButton = findToggleButtonInNavigatorPane("Nextgen Navigator");
-        robot.interact(nextgenNavigatorButton::fire);
+        robot.clickOn(SELECTOR_NEXTGEN_NAVIGATOR_BUTTON);
         waitForFxEvents();
         LOG.info("Opened Nextgen Navigator");
         return this;
@@ -74,8 +82,7 @@ public class NavigatorPanel extends BasePage {
      * Opens the Reasoner panel.
      */
     public NavigatorPanel clickReasoner() {
-        ToggleButton reasonerButton = findToggleButtonInNavigatorPane("Reasoner");
-        robot.interact(reasonerButton::fire);
+        robot.clickOn(SELECTOR_REASONER_BUTTON);
         waitForFxEvents();
         LOG.info("Opened Reasoner panel");
         return this;
@@ -85,8 +92,7 @@ public class NavigatorPanel extends BasePage {
      * Opens the Search panel.
      */
     public NavigatorPanel clickSearch() {
-        ToggleButton searchButton = findToggleButtonInNavigatorPane("Search");
-        robot.interact(searchButton::fire);
+        robot.clickOn(SELECTOR_SEARCH_BUTTON);
         waitForFxEvents();
         LOG.info("Opened Search panel");
         return this;
@@ -96,8 +102,7 @@ public class NavigatorPanel extends BasePage {
      * Opens the Navigator panel.
      */
     public NavigatorPanel clickNavigator() {
-        ToggleButton navigatorButton = findToggleButtonInNavigatorPane("Navigator");
-        robot.interact(navigatorButton::fire);
+        robot.clickOn(SELECTOR_NAVIGATOR_BUTTON);
         waitForFxEvents();
         LOG.info("Opened Navigator panel");
         return this;
@@ -107,8 +112,7 @@ public class NavigatorPanel extends BasePage {
      * Opens the Nextgen Reasoner panel.
      */
     public NavigatorPanel clickNextgenReasoner() {
-        ToggleButton nextgenReasonerButton = findToggleButtonInNavigatorPane("Nextgen Reasoner");
-        robot.interact(nextgenReasonerButton::fire);
+        robot.clickOn(SELECTOR_NEXTGEN_REASONER_BUTTON);
         waitForFxEvents();
         LOG.info("Opened Nextgen Reasoner panel");
         return this;
@@ -135,29 +139,7 @@ public class NavigatorPanel extends BasePage {
      * Waits for the button to appear with retry logic.
      */
     public NavigatorPanel clickCreate() {
-        // Wait for the Create button to appear (journal window needs time to load)
-        javafx.scene.control.Button createButton = null;
-        int maxAttempts = 4; // 4 attempts * 100ms = 400ms max
-        
-        for (int i = 0; i < maxAttempts; i++) {
-            try {
-                createButton = findButtonInNavigatorPane("Create");
-                if (createButton != null) {
-                    LOG.info("Found Create button after {} attempts", i + 1);
-                    break;
-                }
-            } catch (Exception e) {
-                // Button not found yet, continue waiting
-            }
-            waitForFxEvents();
-        }
-        
-        if (createButton == null) {
-            LOG.error("Create button not found after waiting 400ms");
-            throw new RuntimeException("Create button with tooltip 'Create' not found after waiting 400ms");
-        }
-        
-        robot.interact(createButton::fire);
+        robot.clickOn(SELECTOR_CREATE_BUTTON);
         waitForFxEvents();
         LOG.info("Clicked Create button");
         return this;
@@ -168,7 +150,7 @@ public class NavigatorPanel extends BasePage {
      * Clicks the Concepts button.
      */
     public NavigatorPanel clickConcepts() {
-        clickOnText("CONCEPTS");
+        clickOn(SELECTOR_CONCEPTS_BUTTON);
         waitForFxEvents();
         LOG.info("Clicked CONCEPTS button");
         return this;
@@ -178,7 +160,7 @@ public class NavigatorPanel extends BasePage {
      * Clicks the PATTERNS button to switch to patterns view.
      */
     public NavigatorPanel clickPatterns() {
-        clickOnText("PATTERNS");
+        clickOn(SELECTOR_PATTERNS_BUTTON);
         waitForFxEvents();
         LOG.info("Clicked PATTERNS button");
         return this;

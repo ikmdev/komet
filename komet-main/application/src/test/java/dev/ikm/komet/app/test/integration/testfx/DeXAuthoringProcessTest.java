@@ -259,16 +259,17 @@ public class DeXAuthoringProcessTest {
                 }
                 LOG.info("✓ Application Launch and Login: Complete");
                 
-                // =2-6: Connect to GitHub Repository ==========
-                githubConnection.connectToGitHub(GITB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
+
+                // ========= Steps 2-6: Connect to GitHub Repository ==========
+                githubConnection.connectToGitHub(GITHUB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
                 LOG.info("✓ GitHub Connection: Complete");
 
                 
                 // ========== Steps 7-33: Create Concepts ==========
                 // Create Target concept
                 authorConcepts.createConcept("Albumin", "Active", "Device Extension Module", "Development path", "Target");
-                addDeviceExtensionMembershipPattern.addDeviceExtensionMembershipPattern("Albumin", "Device Extension Membership Pattern"
-                               , "Active", "Device Extension Module", "Development path");
+                addDeviceExtensionMembershipPattern.addDeviceExtensionMembershipPattern("Albumin", "Device Extension Membership Pattern",
+                               "Active", "Device Extension Module", "Development path");
 
              
                 // 34. Repeat for all necessary DeX concepts (Target, Analyte, Company/Device Labeler)
@@ -286,12 +287,11 @@ public class DeXAuthoringProcessTest {
              
                                   LOG.info("✓ Concept Creation Complete");
 
+
                 // ========== Steps 35-51: DeX Data Generation ==========
                 generateDeXData.generateDeXData(suppliedBrandName, indentifiedDevice);
 
                 LOG.info("✓ DeX Data Generation: Complete");
-
-                
 
                 // ========== Steps 52-62: Add DeX Device Company Semantic ==========
 
@@ -300,6 +300,8 @@ public class DeXAuthoringProcessTest {
                                 "Development path", "Albumin Gen2 5166861190", "Roche Diagnostics GmbH");
 
                 LOG.info("✓ Add DeX Device Company Semantic: Complete");
+
+                
 
                 // ========== Steps 63-71: Add DeX Associated Devices Semantic ==========
 
@@ -326,6 +328,7 @@ public class DeXAuthoringProcessTest {
                 LOG.info("✓ Add DeX Test Performed Semantic: Complete");
 
                 /*
+                
                 // ========== Steps 88-97: Add DeX Allowed Results Semantic ==========
 
                 String[] qualifierConcepts = new String[] { "258794004" };
@@ -337,8 +340,7 @@ public class DeXAuthoringProcessTest {
 
                 LOG.info("✓ Add DeX Allowed Results Semantic: Complete");
 
-                // ========== Steps 98-110: Add Dex Quantitative Allowed Results Range Semantic
-                // ==========
+                // ========== Steps 98-110: Add Dex Quantitative Allowed Results Range Semantic ==========
 
                 addQuantitativeAllowedResultsSemantic.addQuantitativeAllowedResultsSemantic(
                                 "Quantitative Allowed Results Pattern",
@@ -348,8 +350,7 @@ public class DeXAuthoringProcessTest {
 
                 LOG.info("✓ Add DeX Quantitative Allowed Results Semantic: Complete");
 
-                // ========== Steps 111-123: Add Dex Population Reference Range Semantic
-                // ==========
+                // ========== Steps 111-123: Add Dex Population Reference Range Semantic ==========
 
                 addPopulationReferenceRangeSemantic.addPopulationReferenceRangeSemantic(
                                 "Population Reference Range Pattern",
@@ -358,25 +359,15 @@ public class DeXAuthoringProcessTest {
                                 "Adults", "Equal To", "Equal To", "52", "35", "g/L");
 
                 LOG.info("✓ Add DeX Population Reference Range Semantic: Complete");
+
                 */
-
-                // TO DO
-                //fix test performed scroll
-                //fix publish button when authoring a pattern
-                // Ensure semantics behave as expected
-                // Run test in its entirety to ensure stability
-                // Fix any issues that arise during full test run
-
-                // Issues:
-                // When running the full test, window stops responding (when clicking patterns
-                // and when creating new journal)
 
                 //Create a pattern
                 LOG.info("Authoring a Pattern");
                 authorPatterns.authorPatterns("Test Pattern", "Active",
                                 "Device Extension Module", "Development path", "Case insensitive",
                                 "English language", "Component display field", "Author", "Author");
-
+                      
 
         }
 
