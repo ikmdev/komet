@@ -108,7 +108,7 @@ public class AuthorPatterns extends BaseWorkflow {
                 waitForFxEvents();
                 robot.moveBy(0, 50); // Move down to results area
                 waitForFxEvents();
-                waitFor(500);
+                waitForMillis(500);
                 // drag and drop to Purpose field
                 robot.press(MouseButton.PRIMARY)
                         .moveTo("Purpose").moveBy(40, 40)
@@ -128,7 +128,7 @@ public class AuthorPatterns extends BaseWorkflow {
                 waitForFxEvents();
                 robot.moveBy(0, 50); // Move down to results area
                 waitForFxEvents();
-                waitFor(500);
+                waitForMillis(500);
                 // drag and drop to Purpose field
                 robot.press(MouseButton.PRIMARY)
                         .moveTo("Meaning").moveBy(40, 40)
@@ -193,7 +193,7 @@ public class AuthorPatterns extends BaseWorkflow {
                 waitForFxEvents();
                 robot.moveBy(0, 50); // Move down to results area
                 waitForFxEvents();
-                waitFor(500);
+                waitForMillis(500);
                 // drag and drop to Purpose field
                 robot.press(MouseButton.PRIMARY)
                         .moveTo("Purpose").moveBy(40, 40)
@@ -205,7 +205,7 @@ public class AuthorPatterns extends BaseWorkflow {
                 waitForFxEvents();
                 robot.moveBy(0, 50); // Move down to results area
                 waitForFxEvents();
-                waitFor(500);
+                waitForMillis(500);
                 // drag and drop to Meaning field
                 robot.press(MouseButton.PRIMARY)
                         .moveTo("Meaning").moveBy(40, 40)

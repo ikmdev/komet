@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.testfx.api.FxRobot;
 import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit5.ApplicationExtension;
-
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
@@ -21,11 +21,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.geometry.VerticalDirection;
 
-import static java.nio.file.Files.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.testfx.util.WaitForAsyncUtils.waitFor;
-import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(ApplicationExtension.class)
@@ -39,7 +34,7 @@ public class DeXAuthoringProcessTest {
         private static final String PROPERTY_TARGET_DATA_DIR = "target.data.directory";
         private static final String PROPERTY_USER_HOME = "user.home";
         private static final String BASE_DATA_DIR = System.getProperty(PROPERTY_TARGET_DATA_DIR,
-                        System.getProperty(PROPERTY_USER_HOME, System.getProperty("java.io.tmpdir")));
+                                System.getProperty(PROPERTY_USER_HOME, System.getProperty("java.io.tmpdir")));
         private static final String SOLOR_DIR = "Solor";
         private static final String TEST_SCREENSHOTS_DIR = "test-screenshots-dex";
         private static final String EXTENT_REPORTS_DIR = "extent-reports-dex";
@@ -51,8 +46,10 @@ public class DeXAuthoringProcessTest {
         // Test data
         private static final String DATA_SOURCE_NAME = "SOLOR-GUDID";
 
+        
         // Load credentials from CSV file
         private static final dev.ikm.komet.app.test.integration.testfx.utils.CredentialsReader credentialsReader = new dev.ikm.komet.app.test.integration.testfx.utils.CredentialsReader();
+        
 
         private static final String GITHUB_REPO_URL = credentialsReader.get("github_repo_url",
                         "https://github.com/ikmdev/komet.git");
@@ -90,6 +87,7 @@ public class DeXAuthoringProcessTest {
         private FxRobot robot;
 
         // Workflow helpers
+        private LaunchKometUserSA launchKometUserSA;
         private GithubConnection githubConnection;
         private AuthorConcepts authorConcepts;
         private AuthorPatterns authorPatterns;
@@ -125,6 +123,7 @@ public class DeXAuthoringProcessTest {
                                 "Complete DeX authoring workflow with GitHub integration");
 
                 // Initialize workflow helpers
+                launchKometUserSA = new LaunchKometUserSA(robot, reporter);
                 githubConnection = new GithubConnection(robot, reporter);
                 authorConcepts = new AuthorConcepts(robot, reporter);
                 authorPatterns = new AuthorPatterns(robot, reporter);
@@ -172,93 +171,11 @@ public class DeXAuthoringProcessTest {
                 LoginPage loginPage = new LoginPage(robot);
                 NavigatorPanel navigator = new NavigatorPanel(robot);
                 GitHubConnectionPage gitHubConnectionPage = new GitHubConnectionPage(robot);
+                LaunchKometUserSA launchKometUserSA = new LaunchKometUserSA(robot);
 
                 // Step 1: Launch KOMET, select dataset, and login as user
-                LOG.info("Launching KOMET application with " + DATA_SOURCE_NAME + " data source, and logging in as " + USERNAME);
-
-                try {
-
-                    
-                                   reporter.logBeforeStep("Step 1: USER to LAUNCH Komet Application");
-                        assertInitialAppState();
-                        reporter.logAfterStep("Step 1: Application launched successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 1: USER to LAUNCH Komet Application", e);
-                        throw e;
-                }
-
-                try {
-                        // Select data source
-                        reporter.logBeforeStep("Step 2: USER to SELECT " + DATA_SOURCE_NAME + " from list");
-                        dataSourcePage.selectDataSource(DATA_SOURCE_NAME);
-                        reporter.logAfterStep("Step 2: Selected " + DATA_SOURCE_NAME + " from list");
-                } catch (Exception e) {
-                        reporter.logFailure("Step 2: USER to SELECT " + DATA_SOURCE_NAME + " from list", e);
-                        throw e;
-                }
-
-                try {
-                        // Click OK button
-                        reporter.logBeforeStep("USER to CLICK OK button");
-                        loginPage = dataSourcePage.clickOk();
-                        reporter.logAfterStep("USER clicked OK button");
-                } catch (Exception e) {
-                        reporter.logFailure("USER to CLICK OK button", e);
-                        throw e;
-                }
-
-                try {
-                        //Wait until the data is loaded and the "Welcome to Komet" screen is displayed
-                        reporter.logBeforeStep("Waiting for data to load");
-                        assertSelectUserState();
-                        reporter.logAfterStep("Data loaded successfully");
-                } catch (Exception e) {
-                        reporter.logFailure("Waiting for data to load", e);
-                        throw e;
-                }
-
-                try {
-                        // Select KOMET User from dropdown
-                        reporter.logBeforeStep("USER to SELECT KOMET User from dropdown");
-                        loginPage.selectUser(USERNAME);
-                        reporter.logAfterStep("USER selected KOMET User from dropdown");
-                } catch (Exception e) {
-                        reporter.logFailure("USER to SELECT KOMET User from dropdown", e);
-                        throw e;
-                }
-
-                try {
-                        // Input password
-                        reporter.logBeforeStep("USER to INPUT password");
-                        loginPage.enterPassword(PASSWORD);
-                        reporter.logAfterStep("USER entered password");
-                } catch (Exception e) {
-                        reporter.logFailure("USER to INPUT password", e);
-                        throw e;
-                }
-
-                try {
-                        // Click SIGN IN button
-                        reporter.logBeforeStep("USER to CLICK SIGN IN button");
-                        loginPage.clickSignIn();
-                        reporter.logAfterStep("USER clicked SIGN IN button");
-                } catch (Exception e) {
-                        reporter.logFailure("USER to CLICK SIGN IN button", e);
-                        throw e;
-                }
-
-                try {
-                        // Wait for running state
-                        reporter.logBeforeStep("Waiting for application running state");
-                        assertRunningAppState();
-                        landingPage.maximizeWindow();
-                        reporter.logAfterStep("Application in running state and maximized");
-                } catch (Exception e) {
-                        reporter.logFailure("Application running state", e);
-                        throw e;
-                }
+                launchKometUserSA.launchKomet(USERNAME, PASSWORD);
                 LOG.info("✓ Application Launch and Login: Complete");
-                
 
                 // ========= Steps 2-6: Connect to GitHub Repository ==========
                 githubConnection.connectToGitHub(GITHUB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
@@ -373,40 +290,11 @@ public class DeXAuthoringProcessTest {
 
         // ========== Helper Methods ==========
 
-        private void assertInitialAppState() throws TimeoutException {
-                waitFor(10, TimeUnit.SECONDS, () -> App.state.get() == AppState.SELECT_DATA_SOURCE);
-                assertEquals(AppState.SELECT_DATA_SOURCE, App.state.get(),
-                                "Application should be in SELECT_DATA_SOURCE state");
-        }
-
-        private void assertSelectUserState() throws TimeoutException {
-                waitFor(60, TimeUnit.SECONDS, () -> {
-                        AppState current = App.state.get();
-                        System.out.println("Waiting for data load, current state: " + current);
-                        return current == AppState.SELECT_USER || current == AppState.RUNNING;
-                });
-                AppState currentState = App.state.get();
-                assertTrue(currentState == AppState.SELECT_USER || currentState == AppState.RUNNING,
-                                "Application should be in SELECT_USER or RUNNING state after data load, but was: "
-                                                + currentState);
-        }
-
-        private void assertRunningAppState() throws TimeoutException {
-                System.out.println("Current app state before wait: " + App.state.get());
-                waitFor(60, TimeUnit.SECONDS, () -> {
-                        AppState current = App.state.get();
-                        System.out.println("Waiting for RUNNING, current state: " + current);
-                        return current == AppState.RUNNING;
-                });
-                assertEquals(AppState.RUNNING, App.state.get(),
-                                "Application should be in RUNNING state");
-        }
-
         private void overrideUserHome() {
                 try {
                         Path targetDataPath = Paths.get(BASE_DATA_DIR, SOLOR_DIR);
-                        if (!exists(targetDataPath)) {
-                                createDirectories(targetDataPath);
+                        if (!Files.exists(targetDataPath)) {
+                                Files.createDirectories(targetDataPath);
                                 LOG.info("Created data directory: {}", targetDataPath);
                         }
                         System.setProperty(PROPERTY_USER_HOME, targetDataPath.getParent().toString());
@@ -418,8 +306,8 @@ public class DeXAuthoringProcessTest {
         private void createScreenshotDirectory() {
                 try {
                         screenshotDirectory = Paths.get(BASE_DATA_DIR, SOLOR_DIR, TEST_SCREENSHOTS_DIR);
-                        if (!exists(screenshotDirectory)) {
-                                createDirectories(screenshotDirectory);
+                        if (!Files.exists(screenshotDirectory)) {
+                                Files.createDirectories(screenshotDirectory);
                                 LOG.info("Created screenshot directory: {}", screenshotDirectory);
                         }
                 } catch (Exception e) {
@@ -430,8 +318,8 @@ public class DeXAuthoringProcessTest {
         private void createExtentReportsDirectory() {
                 try {
                         extentReportsDirectory = Paths.get(BASE_DATA_DIR, SOLOR_DIR, EXTENT_REPORTS_DIR);
-                        if (!exists(extentReportsDirectory)) {
-                                createDirectories(extentReportsDirectory);
+                        if (!Files.exists(extentReportsDirectory)) {
+                                Files.createDirectories(extentReportsDirectory);
                                 LOG.info("Created extent reports directory: {}", extentReportsDirectory);
                         }
                 } catch (Exception e) {

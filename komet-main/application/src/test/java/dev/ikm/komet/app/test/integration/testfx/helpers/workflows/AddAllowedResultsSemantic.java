@@ -137,7 +137,7 @@ public class AddAllowedResultsSemantic extends BaseWorkflow {
             waitForFxEvents();
             robot.clickOn("Paste");
             waitForFxEvents();
-            waitFor(1000); // Wait for results to load
+            waitForMillis(1000); // Wait for results to load
             // locate the list then find the list item that matches referenceComponent
             while (!robot.lookup(referenceComponent).tryQuery().isPresent()) {
                 verticalScroll(KeyCode.DOWN, 10);
@@ -193,7 +193,7 @@ public class AddAllowedResultsSemantic extends BaseWorkflow {
                 waitForFxEvents();
                 robot.moveBy(0, 50); // Move down to results area
                 waitForFxEvents();
-                waitFor(500);
+                waitForMillis(500);
                 // drag and drop to Device Labeler field
                 robot.press(MouseButton.PRIMARY)
                         .moveTo("🔍  Search")
