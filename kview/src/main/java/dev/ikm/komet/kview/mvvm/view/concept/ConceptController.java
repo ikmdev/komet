@@ -15,8 +15,49 @@
  */
 package dev.ikm.komet.kview.mvvm.view.concept;
 
+import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW;
+import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
+import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
+import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.AXIOM;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAMES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.VIEW;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.format;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
+import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
+import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_PATTERN;
+import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
+import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
@@ -28,6 +69,7 @@ import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
+import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
@@ -74,7 +116,6 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -116,55 +157,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Consumer;
-
-import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
-import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
-import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
-import static dev.ikm.komet.kview.fxutils.MenuHelper.fireContextMenuEvent;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.AXIOM;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAMES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.VIEW;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
-import static dev.ikm.tinkar.common.util.time.DateTimeUtil.format;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.AUTHOR;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.MODULE;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
-import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
-import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
-import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_PATTERN;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import java.util.*;
+import java.util.function.*;
 
 public class ConceptController {
 
@@ -178,6 +172,11 @@ public class ConceptController {
 
     @FXML
     private MenuButton coordinatesMenuButton;
+
+    /**
+     * popup for the filter coordinates menu, used with coordinatesMenuButton. An instance of FilterOptionsPopup.
+     */
+    private FilterOptionsPopup filterOptionsPopup;
 
     /**
      * model required for the filter coordinates menu, used with coordinatesMenuButton
@@ -353,6 +352,16 @@ public class ConceptController {
 
     @FXML
     public void initialize() {
+
+        // Set up the filter options popup for the coordinates menu button.
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(
+                conceptViewModel.getViewProperties(),
+                CHAPTER_WINDOW,
+                detailsInnerBorderPane,
+                coordinatesMenuButton,
+                this::updateView
+        );
+
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
         identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
@@ -536,7 +545,8 @@ public class ConceptController {
             }
         });
 
-        setUpEditCoordinateMenu();
+        // TODO: Test to make sure the coordinate menu works in the new popup design.
+//        setUpEditCoordinateMenu();
 
         // Update the pseudo-class when the viewport or content size changes.
         conceptContentScrollPane.viewportBoundsProperty().addListener((obs) ->
@@ -597,6 +607,8 @@ public class ConceptController {
             }
         });
     }
+
+
 
     private void onConfirmStampFormWhenCreating() {
         // Update StampViewControl
