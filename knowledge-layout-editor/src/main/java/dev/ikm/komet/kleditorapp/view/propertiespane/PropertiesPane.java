@@ -1,6 +1,9 @@
-package dev.ikm.komet.kleditorapp.view;
+package dev.ikm.komet.kleditorapp.view.propertiespane;
 
+import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
+import dev.ikm.komet.kleditorapp.view.SelectionManager;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowBaseControl;
+import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import javafx.beans.property.SimpleStringProperty;
@@ -19,6 +22,7 @@ public class PropertiesPane extends Region {
 
     private final SectionPropertiesPane sectionPropertiesPane = new SectionPropertiesPane();
     private final PatternPropertiesPane patternPropertiesPane = new PatternPropertiesPane();
+    private final FieldPropertiesPane fieldPropertiesPane = new FieldPropertiesPane();
 
     private ControlBasePropertiesPane currentPropertiesPane;
 
@@ -33,8 +37,11 @@ public class PropertiesPane extends Region {
         mainContainer.setTop(titleLabel);
 
         mainContainer.setCenter(controlPropertiesContainer);
-        controlPropertiesContainer.getChildren().add(sectionPropertiesPane);
-        controlPropertiesContainer.getChildren().add(patternPropertiesPane);
+        controlPropertiesContainer.getChildren().addAll(
+                sectionPropertiesPane,
+                patternPropertiesPane,
+                fieldPropertiesPane
+        );
 
         getChildren().add(mainContainer);
     }
@@ -58,6 +65,10 @@ public class PropertiesPane extends Region {
                 case PatternViewControl patternView -> {
                     setTitle("Pattern");
                     setCurrentPropertiesPane(patternPropertiesPane);
+                }
+                case FieldViewControl fieldView -> {
+                    setTitle("Field");
+                    setCurrentPropertiesPane(fieldPropertiesPane);
                 }
                 default -> System.out.println("TODO...");
             }

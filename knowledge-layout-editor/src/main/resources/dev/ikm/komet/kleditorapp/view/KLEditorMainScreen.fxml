@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl?>
-<?import dev.ikm.komet.kleditorapp.view.PropertiesPane?>
+<?import dev.ikm.komet.kleditorapp.view.propertiespane.PropertiesPane?>
 <BorderPane fx:id="klEditorMainContainer" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="dev.ikm.komet.kleditorapp.view.KLEditorMainScreenController">
     <center>

@@ -9,6 +9,8 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.terms.PatternFacade;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -20,17 +22,30 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.prefs.BackingStoreException;
+import java.util.stream.Collectors;
 
-import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_LIST;
+import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRID_NUMBER_COLUMNS;
+import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
 
-public class EditorPatternModel {
+/**
+ * Represents a Pattern. It has properties like the title of the Pattern, the fields inside it (EditorFieldModel instances),
+ * number of columns, its nid.
+ */
+public class EditorPatternModel extends EditorGridNodeModel {
     private static final Logger LOG = LoggerFactory.getLogger(EditorPatternModel.class);
 
     private final ViewCalculator viewCalculator;
     private final PatternFacade patternFacade;
     private final int nid;
 
+    /**
+     * Creates a EditorPatternModel given the passed in nid of the Pattern.
+     *
+     * @param viewCalculator the view calculator
+     * @param patternNid the nid of the Pattern
+     */
     public EditorPatternModel(ViewCalculator viewCalculator, int patternNid) {
         this.viewCalculator = viewCalculator;
         this.nid = patternNid;
@@ -46,12 +61,22 @@ public class EditorPatternModel {
             ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = patternVersionRecord.fieldDefinitions();
 
             fieldDefinitionRecords.stream().forEachOrdered(fieldDefinitionForEntity -> {
-                fields.add(fieldDefinitionForEntity.meaning().description());
+                EditorFieldModel editorFieldModel = new EditorFieldModel(viewCalculator, fieldDefinitionForEntity);
+                fields.add(editorFieldModel);
+                editorFieldModel.setRowIndex(fields.indexOf(editorFieldModel));
             });
         });
 
     }
 
+    /**
+     * Loads and sets up the Pattern given an instance of KometPreferences (stored preferences).
+     * It returns the list of PatternModels that are inside the preferences folder that's passed in to this method (the
+     * passed in folder points to a Section).
+     *
+     * @param sectionPreferences the stored preferences pointing to a Section
+     * @param viewCalculator the view calculator
+     */
     public static List<EditorPatternModel> load(KometPreferences sectionPreferences, ViewCalculator viewCalculator) {
         List<EditorPatternModel> editorPatternModels = new ArrayList<>();
 
@@ -60,11 +85,35 @@ public class EditorPatternModel {
         for (PatternFacade patternFacade : patternFacades) {
             EditorPatternModel editorPatternModel = new EditorPatternModel(viewCalculator, patternFacade.nid());
             editorPatternModels.add(editorPatternModel);
+
+            final KometPreferences patternPreferences = sectionPreferences.node(patternFacadeToPrefsDirName(patternFacade));
+
+            editorPatternModel.loadPatternDetails(patternPreferences, viewCalculator);
         }
 
         return editorPatternModels;
     }
 
+    private static String patternFacadeToPrefsDirName(PatternFacade patternFacade) {
+        return patternFacade.publicId().asUuidList().stream()
+                .map(UUID::toString)
+                .collect(Collectors.joining("_"));
+    }
+
+    private void loadPatternDetails(KometPreferences patternPreferences, ViewCalculator viewCalculator) {
+        patternPreferences.getInt(KL_GRID_NUMBER_COLUMNS).ifPresent(this::setNumberColumns);
+        loadGridNodeDetails(patternPreferences);
+
+        for (EditorFieldModel fieldModel : getFields()) {
+            fieldModel.load(patternPreferences, viewCalculator);
+        }
+    }
+
+    /**
+     * Saves the Pattern into KometPreferences (stored preferences).
+     *
+     * @param sectionPreferences the stored preferences pointing to the Section
+     */
     public void save(KometPreferences sectionPreferences) {
         List<PatternFacade> patterns = sectionPreferences.getPatternList(PATTERN_LIST);
         if (!patterns.contains(patternFacade)) {
@@ -73,10 +122,24 @@ public class EditorPatternModel {
 
         sectionPreferences.putComponentList(PATTERN_LIST, patterns);
 
+        savePatternDetails(sectionPreferences);
+
         try {
             sectionPreferences.flush();
         } catch (BackingStoreException e) {
             LOG.error("Error writing Section to preferences", e);
+        }
+    }
+
+    private void savePatternDetails(KometPreferences sectionPreferences) {
+        KometPreferences patternPreferences = sectionPreferences.node(patternFacadeToPrefsDirName(patternFacade));
+
+        patternPreferences.putInt(KL_GRID_NUMBER_COLUMNS, getNumberColumns());
+
+        saveGridNodeDetails(patternPreferences);
+
+        for (EditorFieldModel fieldModel : getFields()) {
+            fieldModel.save(patternPreferences);
         }
     }
 
@@ -86,17 +149,40 @@ public class EditorPatternModel {
         return optionalStringRegularName.orElseGet(optionalStringFQN::get);
     }
 
+    /*******************************************************************************
+     *                                                                             *
+     * Properties                                                                  *
+     *                                                                             *
+     ******************************************************************************/
+
     // -- title
+    /**
+     * The Pattern's title.
+     */
     private StringProperty title = new SimpleStringProperty();
     public String getTitle() { return title.get(); }
     public StringProperty titleProperty() { return title; }
     public void setTitle(String title) { this.title.set(title); }
 
     // -- fields
-    private final ObservableList<String> fields = FXCollections.observableArrayList();
-    public ObservableList<String> getFields() { return fields; }
+    /**
+     * The collection of EditorFieldModel (fields) this Pattern has.
+     */
+    private final ObservableList<EditorFieldModel> fields = FXCollections.observableArrayList();
+    public ObservableList<EditorFieldModel> getFields() { return fields; }
 
     // -- nid
+    /**
+     * The Pattern's nid.
+     */
     public int getNid() { return nid; }
 
+    // -- number columns
+    /**
+     * The number of columns the Grid layout inside this Pattern should have.
+     */
+    private final IntegerProperty numberColumns = new SimpleIntegerProperty(1);
+    public int getNumberColumns() { return numberColumns.get(); }
+    public IntegerProperty numberColumnsProperty() { return numberColumns; }
+    public void setNumberColumns(int number) { numberColumns.set(number); }
 }
