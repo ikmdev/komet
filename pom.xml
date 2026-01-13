@@ -11,7 +11,7 @@
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
     <name>KOMET</name>
-    <version>1.58.0-lifecycle-SNAPSHOT</version>
+    <version>1.58.0-lifecycle-FVKB-33-apply-view-coord-option-popup-to-journal-window-SNAPSHOT</version>
     <packaging>pom</packaging>
     <inceptionYear>2015</inceptionYear>
     <licenses>

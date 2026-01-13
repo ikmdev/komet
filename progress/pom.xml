@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.58.0-lifecycle-SNAPSHOT</version>
+        <version>1.58.0-lifecycle-FVKB-33-apply-view-coord-option-popup-to-journal-window-SNAPSHOT</version>
     </parent>
     <artifactId>progress</artifactId>
     <dependencies>
