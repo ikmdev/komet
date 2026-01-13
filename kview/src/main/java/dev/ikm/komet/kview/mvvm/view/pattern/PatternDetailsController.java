@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
+import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW;
 import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
@@ -44,6 +45,7 @@ import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.view.common.SVGConstants.DUPLICATE_SVG_PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
@@ -82,6 +84,7 @@ import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
+import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
@@ -139,7 +142,6 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -175,11 +177,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.*;
+import java.util.function.*;
 
 public class PatternDetailsController {
 
@@ -193,10 +192,18 @@ public class PatternDetailsController {
     private BorderPane detailsOuterBorderPane;
 
     @FXML
+    public BorderPane detailsInnerBorderPane;
+
+    @FXML
     private ToggleButton propertiesToggleButton;
 
     @FXML
     private MenuButton coordinatesMenuButton;
+
+    /**
+     * popup for the filter coordinates menu, used with coordinatesMenuButton. An instance of FilterOptionsPopup.
+     */
+    private FilterOptionsPopup filterOptionsPopup;
 
     /**
      * model required for the filter coordinates menu, used with coordinatesMenuButton
@@ -326,6 +333,16 @@ public class PatternDetailsController {
 
     @FXML
     private void initialize() {
+        // Set up the filter options popup for the coordinates menu button.
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(
+                patternViewModel.getViewProperties(),
+                CHAPTER_WINDOW,
+                detailsInnerBorderPane,
+                coordinatesMenuButton,
+                () -> { /* noop TODO: needs a way to redraw details based on view coordinates  */ }
+        );
+
+
         purposeText.setText("");
         meaningText.setText("");
         fqnAddDateLabel.setText("");
@@ -556,7 +573,7 @@ public class PatternDetailsController {
 
         // Setup Properties
         setupProperties();
-        setupFilterCoordinatesMenu();
+        //setupFilterCoordinatesMenu();
 
         // Setup window support with explicit draggable nodes
         addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);

@@ -170,7 +170,7 @@
             </HBox>
          </right>
          <center>
-            <BorderPane prefWidth="762.0" styleClass="main-center-container" BorderPane.alignment="CENTER">
+            <BorderPane fx:id="detailsInnerBorderPane" prefWidth="762.0" styleClass="main-center-container" BorderPane.alignment="CENTER">
                <center>
                   <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" prefWidth="762.0">
                      <children>
