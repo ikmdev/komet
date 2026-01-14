@@ -94,7 +94,7 @@ public class Reasoner extends BaseWorkflow {
                 } catch (Exception e) {
                     // Popup not found yet, continue waiting
                 }
-                Thread.sleep(1000);
+                Thread.sleep(1000); 
             }
 
             if (!popupFound) {

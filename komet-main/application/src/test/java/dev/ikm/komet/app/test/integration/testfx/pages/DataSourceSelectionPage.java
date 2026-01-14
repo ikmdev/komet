@@ -23,6 +23,18 @@ public class DataSourceSelectionPage extends BasePage {
         super(robot);
     }
     
+    /*
+    *Selects Data Source Store from list
+     */
+    public DataSourceSelectionPage selectDataSourceStore(String dataSourceStore) {
+        robot.moveTo("    data source:");
+        robot.moveBy(50, 0);
+        robot.clickOn();
+        robot.clickOn(dataSourceStore);
+        LOG.info("Selected Data Source Store");
+        return this;
+    }
+
     /**
      * Selects a data source by clicking on its text.
      * Scrolls down if the data source is not visible.
@@ -55,6 +67,18 @@ public class DataSourceSelectionPage extends BasePage {
         }
         clickOnText(dataSourceName);
         LOG.info("Selected data source: {}", dataSourceName);
+        return this;
+    }
+
+    /*
+    * Create New Folder Name
+    */
+    public DataSourceSelectionPage createNewFolder(String folderName) {
+        robot.moveTo("New folder name");
+        robot.moveBy(50, 0);
+        robot.clickOn();
+        robot.write(folderName);
+        LOG.info("Created New Folder: " + folderName);
         return this;
     }
     

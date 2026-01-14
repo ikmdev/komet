@@ -20,43 +20,45 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
  * - State verification at each step
  * - Window maximization after successful login
  */
-public class LaunchKometUserSA extends BaseWorkflow {
+public class LaunchKometUserNR extends BaseWorkflow {
 
-        private static final Logger LOG = LoggerFactory.getLogger(LaunchKometUserSA.class);
+        private static final Logger LOG = LoggerFactory.getLogger(LaunchKometUserNR.class);
 
         // Test data
-        private static final String DATA_SOURCE_STORE = "Open SpinedArrayStore";
+        private static final String DATA_SOURCE_STORE = "New Rocks KB";
+
     /**
-     * Constructs a LaunchKometUserSA workflow helper with reporter.
+     * Constructs a LaunchKometUser workflow helper with reporter.
      * 
      * @param robot    FxRobot instance for UI interactions
      * @param reporter TestReporter instance for logging test steps
      */
-    public LaunchKometUserSA(FxRobot robot, TestReporter reporter) {
+    public LaunchKometUserNR(FxRobot robot, TestReporter reporter) {
         super(robot, reporter);
     }
 
     /**
-     * Constructs a LaunchKometUserSA workflow helper without reporter.
+     * Constructs a LaunchKometUser workflow helper without reporter.
      * This constructor allows the helper to be used without test reporting.
      * 
      * @param robot FxRobot instance for UI interactions
      */
-    public LaunchKometUserSA(FxRobot robot) {
+    public LaunchKometUserNR(FxRobot robot) {
         super(robot, null);
     }
 
     /**
      * Launches Komet application, selects data source, and logs in as specified user.
-     * 
+     * @param DATA_SOURCE_NAME The data source name to select 
+     * @param newFolderName The name of the new folder to create
      * @param USERNAME The username for login
      * @param PASSWORD The password for login
      * @throws InterruptedException if thread is interrupted during execution
      * @throws java.util.concurrent.TimeoutException if waiting for application state times out
      */
-    public void launchKomet(String DATA_SOURCE_NAME, String USERNAME, String PASSWORD) throws InterruptedException, java.util.concurrent.TimeoutException {
+    public void launchKomet(String DATA_SOURCE_NAME, String newFolderName, String USERNAME, String PASSWORD) throws InterruptedException, java.util.concurrent.TimeoutException {
     // Step 1: Launch KOMET, select dataset, and login as user
-                LOG.info("Launching KOMET application with " + DATA_SOURCE_NAME + " data source, and logging in as " + USERNAME);
+                LOG.info("Launching KOMET application with " + DATA_SOURCE_STORE + " data source store, " + DATA_SOURCE_NAME + " data source, and logging in as " + USERNAME);
 
                 try {
                         //Launch KOMET
@@ -80,11 +82,21 @@ public class LaunchKometUserSA extends BaseWorkflow {
 
                 try {
                         // Select data source
-                        if (reporter != null) reporter.logBeforeStep("Step 2: USER to SELECT " + DATA_SOURCE_NAME + " from list");
+                        if (reporter != null) reporter.logBeforeStep("USER to SELECT " + DATA_SOURCE_NAME + " from list");
                         dataSource.selectDataSource(DATA_SOURCE_NAME);
-                        if (reporter != null) reporter.logAfterStep("Step 2: Selected " + DATA_SOURCE_NAME + " from list");
+                        if (reporter != null) reporter.logAfterStep("USER selected " + DATA_SOURCE_NAME + " from list");
                 } catch (Exception e) {
-                        if (reporter != null) reporter.logFailure("Step 2: USER to SELECT " + DATA_SOURCE_NAME + " from list", e);
+                        if (reporter != null) reporter.logFailure("USER to SELECT " + DATA_SOURCE_NAME + " from list", e);
+                        throw e;
+                }
+
+                try{
+                        //Create New Folder
+                        if (reporter != null) reporter.logBeforeStep("USER to CREATE New Folder");
+                        dataSource.createNewFolder(newFolderName);
+                        if (reporter != null) reporter.logAfterStep("USER created New Folder");     
+                } catch (Exception e) {
+                        if (reporter != null) reporter.logFailure("USER to CREATE New Folder", e);
                         throw e;
                 }
 

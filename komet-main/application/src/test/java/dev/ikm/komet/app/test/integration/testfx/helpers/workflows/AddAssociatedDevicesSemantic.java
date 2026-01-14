@@ -83,11 +83,6 @@ public class AddAssociatedDevicesSemantic extends BaseWorkflow {
             reporter.logBeforeStep("Move to '" + patternName + "'");
             robot.moveTo(patternName);
             waitForFxEvents();
-            // if pattern is not visible, scroll down 10, repeat till visible
-            while (!robot.lookup(patternName).tryQuery().isPresent()) {
-                verticalScroll(KeyCode.DOWN, 10);
-                waitForFxEvents();
-            }
             reporter.logAfterStep("Moved to '" + patternName + "' successfully");
         } catch (Exception e) {
             reporter.logFailure("Move to '" + patternName + "'", e);
@@ -99,6 +94,7 @@ public class AddAssociatedDevicesSemantic extends BaseWorkflow {
             reporter.logBeforeStep("Right Click the pattern and select 'Add New Semantic Element'");
             robot.rightClickOn(patternName);
             waitForFxEvents();
+            waitForMillis(500);
             robot.clickOn("Add New Semantic Element");
             waitForFxEvents();
             navigator.clickNextgenNavigator();
