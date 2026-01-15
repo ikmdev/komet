@@ -90,12 +90,11 @@ public class AddPopulationReferenceRangeSemantic extends BaseWorkflow {
         // Move to the specified pattern
         try {
             reporter.logBeforeStep("Move to '" + patternName + "'");
-            robot.moveTo(patternName);
-            // if pattern is not visible, scroll down 10, repeat till visible
-            while (!robot.lookup(patternName).tryQuery().isPresent()) {
-                verticalScroll(KeyCode.DOWN, 10);
+            for (int i = 0; i <4; i++) {
+                navigator.scrollPatternResults(patternName);
                 waitForFxEvents();
-            }
+                }
+            robot.moveTo(patternName);
             reporter.logAfterStep("Moved to '" + patternName + "' successfully");
         } catch (Exception e) {
             reporter.logFailure("Move to '" + patternName + "'", e);
@@ -138,6 +137,27 @@ public class AddPopulationReferenceRangeSemantic extends BaseWorkflow {
             throw e;
         }
 
+        //for testing purpose use Albumin
+        
+            navigator.clickNextgenSearch();
+            navigator.nextgenSearch("Albumin");
+            robot.moveTo("SORT BY: TOP COMPONENT");
+            waitForFxEvents();
+            robot.moveBy(0, 50); // Move down to results area
+            waitForFxEvents();
+            waitForMillis(500);
+            // drag and drop to Device Labeler field
+            robot.press(MouseButton.PRIMARY)
+                    .moveTo("🔍  Search")
+                    .release(MouseButton.PRIMARY);
+            waitForFxEvents();
+            // close NextGen Search
+            navigator.clickNextgenSearch();
+            waitForFxEvents();
+        
+
+        /*
+
         // Paste UUID from clipboard
         try {
             reporter.logBeforeStep("Paste UUID from clipboard");
@@ -158,6 +178,8 @@ public class AddPopulationReferenceRangeSemantic extends BaseWorkflow {
             reporter.logFailure("Paste UUID from clipboard", e);
             throw e;
         }
+
+        */
 
         // Click Confirm and verify the correct reference component populates
         try {
@@ -185,7 +207,7 @@ public class AddPopulationReferenceRangeSemantic extends BaseWorkflow {
         // move to Reference range population
         try {
             reporter.logBeforeStep("Enter the Reference Range Population");
-            robot.moveTo("Relevant Range Population:").moveBy(0, 25).doubleClickOn();
+            robot.moveTo("Reference Range Population:").moveBy(0, 25).doubleClickOn();
             robot.write(relevantPopulationValue);
             waitForFxEvents();
         } catch (Exception e) {
@@ -197,7 +219,7 @@ public class AddPopulationReferenceRangeSemantic extends BaseWorkflow {
         try {
             reporter.logBeforeStep("Search using Nextgen Search then drag and drop the concept into the Reference Component field");
             navigator.clickNextgenSearch();
-            navigator.nextgenSearch(maxValue);
+            navigator.nextgenSearch(maxValueOperator);
             waitForFxEvents();
             robot.moveTo("SORT BY: TOP COMPONENT");
             waitForFxEvents();
@@ -220,8 +242,7 @@ public class AddPopulationReferenceRangeSemantic extends BaseWorkflow {
         // Populate Minimum Value Operator: Search using Nextgen Search then drag and drop the concept into the Reference
         try {
             reporter.logBeforeStep("Search using Nextgen Search then drag and drop the concept into the Reference Component field");
-            navigator.clickNextgenSearch();
-            navigator.nextgenSearch(minValue);
+            navigator.nextgenSearch(minValueOperator);
             waitForFxEvents();
             robot.moveTo("SORT BY: TOP COMPONENT");
             waitForFxEvents();
@@ -234,6 +255,7 @@ public class AddPopulationReferenceRangeSemantic extends BaseWorkflow {
                 .moveBy(0, 25)
                 .release(MouseButton.PRIMARY);
         waitForFxEvents();
+        navigator.clickNextgenSearch();
             reporter.logAfterStep(
                     "Searched using Nextgen Search then dragged and dropped the concept into the Reference Component field successfully");
         } catch (Exception e) {

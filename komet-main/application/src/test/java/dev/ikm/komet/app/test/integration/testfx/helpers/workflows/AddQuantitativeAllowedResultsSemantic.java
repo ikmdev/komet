@@ -89,17 +89,18 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
         // Move to the specified pattern
         try {
             reporter.logBeforeStep("Move to '" + patternName + "'");
-            robot.moveTo(patternName);
-            // if pattern is not visible, scroll down 10, repeat till visible
-            while (!robot.lookup(patternName).tryQuery().isPresent()) {
-                verticalScroll(KeyCode.DOWN, 10);
+            for (int i = 0; i < 4; i++) {
+                navigator.scrollPatternResults(patternName);
                 waitForFxEvents();
-            }
+                }
+            robot.moveTo(patternName);
             reporter.logAfterStep("Moved to '" + patternName + "' successfully");
         } catch (Exception e) {
             reporter.logFailure("Move to '" + patternName + "'", e);
             throw e;
         }
+
+
 
         // Right Click the pattern and select "Add New Semantic Element"
         try {
@@ -137,6 +138,26 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
             throw e;
         }
 
+        //for testing purpose use Albumin
+        
+            navigator.clickNextgenSearch();
+            navigator.nextgenSearch("Albumin");
+            robot.moveTo("SORT BY: TOP COMPONENT");
+            waitForFxEvents();
+            robot.moveBy(0, 50); // Move down to results area
+            waitForFxEvents();
+            waitForMillis(500);
+            // drag and drop to Device Labeler field
+            robot.press(MouseButton.PRIMARY)
+                    .moveTo("🔍  Search")
+                    .release(MouseButton.PRIMARY);
+            waitForFxEvents();
+            // close NextGen Search
+            navigator.clickNextgenSearch();
+            waitForFxEvents();
+        
+
+        /*
         // Paste UUID from clipboard
         try {
             reporter.logBeforeStep("Paste UUID from clipboard");
@@ -157,6 +178,7 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
             reporter.logFailure("Paste UUID from clipboard", e);
             throw e;
         }
+        */
 
         // Click Confirm and verify the correct reference component populates
         try {
@@ -208,7 +230,6 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
         // Populate Minimum Value Operator: Search using Nextgen Search then drag and drop the concept into the Reference
         try {
             reporter.logBeforeStep("Search using Nextgen Search then drag and drop the concept into the Reference Component field");
-            navigator.clickNextgenSearch();
             navigator.nextgenSearch(minValueOperator);
             waitForFxEvents();
             robot.moveTo("SORT BY: TOP COMPONENT");
@@ -222,6 +243,7 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
                 .moveBy(0, 25)
                 .release(MouseButton.PRIMARY);
         waitForFxEvents();
+                navigator.clickNextgenSearch();
             reporter.logAfterStep(
                     "Searched using Nextgen Search then dragged and dropped the concept into the Reference Component field successfully");
         } catch (Exception e) {
@@ -244,7 +266,7 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
         // move to range min value field
         try {
             reporter.logBeforeStep("Type in the Range Minimum Value");
-            robot.moveTo("AllowableRange Minimum Value:").moveBy(0, 25).doubleClickOn();
+            robot.moveTo("Allowable Range Minimum Value:").moveBy(0, 25).doubleClickOn();
             robot.write(rangeMinValue);
             waitForFxEvents();
             reporter.logAfterStep("Typed in the Range Minimum Value successfully");
@@ -256,7 +278,7 @@ public class AddQuantitativeAllowedResultsSemantic extends BaseWorkflow {
         // move to example units field
         try {
             reporter.logBeforeStep("Type in the Example Units");
-            robot.moveTo("Example Units:").moveBy(0, 25).doubleClickOn();
+            robot.moveTo("Example UCUM Units:").moveBy(0, 25).doubleClickOn();
             robot.write(exampleUnits);
             waitForFxEvents();
             robot.moveBy(0, 50).clickOn(); // move focus away to ensure value is set

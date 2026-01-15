@@ -30,7 +30,22 @@ public class DataSourceSelectionPage extends BasePage {
         robot.moveTo("    data source:");
         robot.moveBy(50, 0);
         robot.clickOn();
-        robot.clickOn(dataSourceStore);
+        // Look for ListCell containing the path text (dropdown items)
+        var dropdownItems = robot.lookup(".list-cell").lookup(dataSourceStore).queryAll();
+        if (!dropdownItems.isEmpty()) {
+            // Click the first item found in the dropdown
+            robot.clickOn(dropdownItems.iterator().next());
+        } else {
+            // Fallback: try to find any occurrence that's not the label
+            var matches = robot.lookup(dataSourceStore).queryAll();
+            if (matches.size() > 1) {
+                // Click the last occurrence (most likely to be in dropdown)
+                robot.clickOn(matches.stream().skip(matches.size() - 1).findFirst().get());
+            } else {
+                // Fallback to first/only occurrence
+                robot.clickOn(dataSourceStore);
+            }
+        }
         LOG.info("Selected Data Source Store");
         return this;
     }

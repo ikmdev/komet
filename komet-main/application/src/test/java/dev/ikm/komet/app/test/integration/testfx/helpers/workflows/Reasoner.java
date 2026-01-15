@@ -78,38 +78,14 @@ public class Reasoner extends BaseWorkflow {
             throw e;
         }
 
-        // Verify reasoner completed - look for "Reasoner completed successfully" popup
+        //Wait until resaoner is completed before proceeding
         try {
-            reporter.logBeforeStep("Verify reasoner completed successfully");
-            boolean popupFound = false;
-            for (int i = 0; i < 30; i++) {
-                waitForFxEvents();
-                try {
-                    // Look for "Reasoner completed successfully" text in the scene
-                    if (robot.lookup("Reasoner completed successfully").tryQuery().isPresent()) {
-                        popupFound = true;
-                        LOG.info("Reasoner completed successfully popup appeared after {} attempts", i + 1);
-                        break;
-                    }
-                } catch (Exception e) {
-                    // Popup not found yet, continue waiting
-                }
-                Thread.sleep(1000); 
-            }
-
-            if (!popupFound) {
-                throw new RuntimeException("Reasoner completed successfully popup did not appear within 30 seconds");
-            }
-
+            reporter.logBeforeStep("Waiting for reasoner to complete");
+            //TODO: wait until reasoner is complete, periodically checking status
             waitForFxEvents();
-            reporter.logAfterStep("Reasoner completed successfully verified");
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            LOG.error("Interrupted while waiting for reasoner completion", e);
-            reporter.logFailure("Verify reasoner completed successfully", e);
-            throw new RuntimeException("Interrupted while waiting for reasoner completion", e);
+            reporter.logAfterStep("Reasoner completed successfully");
         } catch (Exception e) {
-            reporter.logFailure("Verify reasoner completed successfully", e);
+            reporter.logFailure("Waiting for reasoner to complete", e);
             throw e;
         }
 

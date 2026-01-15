@@ -140,8 +140,8 @@ public class DeXAuthoringProcessTest {
                 LOG.info("✓ Application Launch and Login: Complete");
 
                 // ========= Steps 2-6: Connect to GitHub Repository ==========
-                //githubConnection.connectToGitHub(GITHUB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
-                //LOG.info("✓ GitHub Connection: Complete");
+                githubConnection.connectToGitHub(GITHUB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
+                LOG.info("✓ GitHub Connection: Complete");
 
                 
                 // ========== Steps 7-34: Create Concepts (Target, Analyte, Company/Device Labeler) ==========
@@ -190,7 +190,6 @@ public class DeXAuthoringProcessTest {
 
                 LOG.info("✓ Add DeX Associated Devices Semantic: Complete");
 
-                
 
                 // ========== Steps 72-87: Add DeX Test Performed Semantic ==========
                 String[] analyteConcepts = new String[] { "Albumin" };
@@ -205,9 +204,8 @@ public class DeXAuthoringProcessTest {
                                 instrumentConcepts, specimenConcepts, "2.0", "g/L");
 
                 LOG.info("✓ Add DeX Test Performed Semantic: Complete");
-
-                /*
                 
+
                 // ========== Steps 88-97: Add DeX Allowed Results Semantic ==========
 
                 String[] qualifierConcepts = new String[] { "258794004" };
@@ -219,15 +217,17 @@ public class DeXAuthoringProcessTest {
 
                 LOG.info("✓ Add DeX Allowed Results Semantic: Complete");
 
-                // ========== Steps 98-110: Add Dex Quantitative Allowed Results Range Semantic ==========
+                
+                // ========== Steps 98-110: Add Dex Quantitative Allowed Result Range Semantic ==========
 
                 addQuantitativeAllowedResultsSemantic.addQuantitativeAllowedResultsSemantic(
-                                "Quantitative Allowed Results Pattern",
+                                "Quantitative Allowed Result Range Pattern",
                                 "Active", "Device Extension Module", "Development path",
                                 "[Test Performed] of <Roche Diagnostics COBAS Integra Albumin Gen.2> for [Device Extension Record]",
                                 "Equal To", "Equal To", "0.0", "0.0", "Test");
 
-                LOG.info("✓ Add DeX Quantitative Allowed Results Semantic: Complete");
+                LOG.info("✓ Add DeX Quantitative Allowed Result Range Semantic: Complete");
+
 
                 // ========== Steps 111-123: Add Dex Population Reference Range Semantic ==========
 
@@ -239,7 +239,6 @@ public class DeXAuthoringProcessTest {
 
                 LOG.info("✓ Add DeX Population Reference Range Semantic: Complete");
 
-                */
 
                 //========== Create a Pattern ==========
                 LOG.info("Authoring a Pattern");
@@ -248,7 +247,6 @@ public class DeXAuthoringProcessTest {
                                 "English language", "Component display field", "Author", "Author");
 
                 LOG.info("✓ Authoring a Pattern: COMPLETE");
-                      
 
         }
 

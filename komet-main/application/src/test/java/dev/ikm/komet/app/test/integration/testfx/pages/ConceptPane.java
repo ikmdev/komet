@@ -579,49 +579,29 @@ public class ConceptPane extends BasePage {
         waitForFxEvents();
         waitFor(500);
         
-        // Find the TextField with exact prompt text "enter search query" that's in the active window
+        // Find all TextFields with prompt text "enter search query"
         try {
             var textFields = robot.lookup((javafx.scene.Node node) -> {
                 if (node instanceof javafx.scene.control.TextField) {
                     javafx.scene.control.TextField tf = (javafx.scene.control.TextField) node;
-                    // Look for TextField with exact prompt text "enter search query", visible, editable, and focusTraversable
                     return tf.isVisible() && 
                            tf.isEditable() &&
                            tf.isFocusTraversable() &&
                            tf.getPromptText() != null && 
-                           tf.getPromptText().equalsIgnoreCase("enter search query") &&
-                           tf.getScene() != null &&
-                           tf.getScene().getWindow() != null &&
-                           tf.getScene().getWindow().isFocused();
+                           tf.getPromptText().equalsIgnoreCase("enter search query");
                 }
                 return false;
             }).queryAll();
             
-            LOG.info("Found {} TextField nodes with exact prompt 'enter search query' in focused window", textFields.size());
+            LOG.info("Found {} TextField nodes with prompt 'enter search query'", textFields.size());
             
             if (textFields.isEmpty()) {
-                // Try without the window focus check
-                LOG.warn("No TextField in focused window, trying all visible ones");
-                textFields = robot.lookup((javafx.scene.Node node) -> {
-                    if (node instanceof javafx.scene.control.TextField) {
-                        javafx.scene.control.TextField tf = (javafx.scene.control.TextField) node;
-                        return tf.isVisible() && 
-                               tf.isEditable() &&
-                               tf.getPromptText() != null && 
-                               tf.getPromptText().equalsIgnoreCase("enter search query");
-                    }
-                    return false;
-                }).queryAll();
-                LOG.info("Found {} TextField nodes total", textFields.size());
+                throw new RuntimeException("No TextField with prompt 'enter search query' found");
             }
             
-            if (textFields.isEmpty()) {
-                throw new RuntimeException("TextField with exact prompt 'enter search query' not found");
-            }
-            
-            // Find the correct TextField by checking screen position (looking for one near top=622)
+            // Select the TextField with the GREATEST top bound (lowest on screen)
             javafx.scene.control.TextField searchField = null;
-            LOG.info("Found {} TextFields, checking screen bounds to find the correct one", textFields.size());
+            double maxTopBound = Double.NEGATIVE_INFINITY;
             
             int index = 0;
             for (javafx.scene.Node node : textFields) {
@@ -629,25 +609,20 @@ public class ConceptPane extends BasePage {
                 index++;
                 
                 try {
-                    // Get the screen bounds of this TextField
                     javafx.geometry.Bounds boundsInScreen = tf.localToScreen(tf.getBoundsInLocal());
                     
                     if (boundsInScreen != null) {
-                        double left = boundsInScreen.getMinX();
                         double top = boundsInScreen.getMinY();
-                        double right = boundsInScreen.getMaxX();
-                        double bottom = boundsInScreen.getMaxY();
+                        double left = boundsInScreen.getMinX();
                         
-                        LOG.info("TextField #{} - Screen bounds: [l={},t={},r={},b={}], Visible: {}, Focusable: {}", 
-                                index, (int)left, (int)top, (int)right, (int)bottom,
-                                tf.isVisible(), tf.isFocusTraversable());
+                        LOG.info("TextField #{} - Top: {}, Left: {}, Visible: {}, Focusable: {}", 
+                                index, (int)top, (int)left, tf.isVisible(), tf.isFocusTraversable());
                         
-                        // Look for TextField with top coordinate around 622 (within 50 pixels tolerance)
-                        // and left coordinate around 229
-                        if (Math.abs(top - 622) < 50 && Math.abs(left - 229) < 50) {
-                            LOG.info("TextField #{} matches expected position (top~622, left~229) - selecting this one!", index);
+                        // Track the field with the greatest top coordinate (lowest on screen)
+                        if (top > maxTopBound) {
+                            maxTopBound = top;
                             searchField = tf;
-                            break;
+                            LOG.info("TextField #{} is now the lowest field (top={})", index, (int)top);
                         }
                     } else {
                         LOG.warn("TextField #{} has null screen bounds", index);
@@ -658,8 +633,7 @@ public class ConceptPane extends BasePage {
             }
             
             if (searchField == null) {
-                LOG.warn("No TextField found at expected position, using first visible one");
-                // Fallback to first visible TextField
+                LOG.warn("No TextField found with valid bounds, using first visible one");
                 for (javafx.scene.Node node : textFields) {
                     javafx.scene.control.TextField tf = (javafx.scene.control.TextField) node;
                     if (tf.isVisible() && tf.isFocusTraversable()) {
@@ -673,9 +647,8 @@ public class ConceptPane extends BasePage {
                 searchField = (javafx.scene.control.TextField) textFields.iterator().next();
             }
             
-            LOG.info("Selected TextField - Prompt: '{}', Editable: {}, Visible: {}, Focused: {}, Window focused: {}", 
-                    searchField.getPromptText(), searchField.isEditable(), searchField.isVisible(), 
-                    searchField.isFocused(), searchField.getScene().getWindow().isFocused());
+            LOG.info("Selected LOWEST TextField (top={}), Prompt: '{}', Editable: {}, Visible: {}", 
+                    (int)maxTopBound, searchField.getPromptText(), searchField.isEditable(), searchField.isVisible());
             
             waitForFxEvents();
             waitFor(500);
@@ -704,15 +677,15 @@ public class ConceptPane extends BasePage {
         // Enter search text and execute search
         LOG.info("Starting to type: {}", parentConcept);
         robot.write(parentConcept);
-        waitForFxEvents(); // Wait for text to be processed
-        waitFor(1000); // Ensure all characters are in the field
+        waitForFxEvents();
+        waitFor(1000);
         
         LOG.info("Pressing ENTER to search");
         robot.press(KeyCode.ENTER);
         waitForFxEvents();
         robot.release(KeyCode.ENTER);
-        waitForFxEvents(); // Ensure Enter is processed
-        waitFor(1000); // Wait for search to execute
+        waitForFxEvents();
+        waitFor(1000);
        
         LOG.info("Searched for parent concept: {}", parentConcept);
         return this;

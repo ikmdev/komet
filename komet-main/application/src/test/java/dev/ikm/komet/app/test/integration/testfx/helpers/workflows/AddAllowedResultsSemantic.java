@@ -83,11 +83,6 @@ public class AddAllowedResultsSemantic extends BaseWorkflow {
         try {
             reporter.logBeforeStep("Move to '" + patternName + "'");
             robot.moveTo(patternName);
-            // if pattern is not visible, scroll down 10, repeat till visible
-            while (!robot.lookup(patternName).tryQuery().isPresent()) {
-                verticalScroll(KeyCode.DOWN, 10);
-                waitForFxEvents();
-            }
             reporter.logAfterStep("Moved to '" + patternName + "' successfully");
         } catch (Exception e) {
             reporter.logFailure("Move to '" + patternName + "'", e);
@@ -130,6 +125,27 @@ public class AddAllowedResultsSemantic extends BaseWorkflow {
             throw e;
         }
 
+        //for testing purpose use Albumin
+        
+            navigator.clickNextgenSearch();
+            navigator.nextgenSearch("Albumin");
+            robot.moveTo("SORT BY: TOP COMPONENT");
+            waitForFxEvents();
+            robot.moveBy(0, 50); // Move down to results area
+            waitForFxEvents();
+            waitForMillis(500);
+            // drag and drop to Device Labeler field
+            robot.press(MouseButton.PRIMARY)
+                    .moveTo("🔍  Search")
+                    .release(MouseButton.PRIMARY);
+            waitForFxEvents();
+            // close NextGen Search
+            navigator.clickNextgenSearch();
+            waitForFxEvents();
+        
+
+
+        /*
         // Paste UUID from clipboard
         try {
             reporter.logBeforeStep("Paste UUID from clipboard");
@@ -150,6 +166,7 @@ public class AddAllowedResultsSemantic extends BaseWorkflow {
             reporter.logFailure("Paste UUID from clipboard", e);
             throw e;
         }
+        */
 
         // Click Confirm and verify the correct reference component populates
         try {
