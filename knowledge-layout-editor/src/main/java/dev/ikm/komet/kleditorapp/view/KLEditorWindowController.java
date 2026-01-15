@@ -105,6 +105,7 @@ public class KLEditorWindowController {
         patternModelToView.put(patternModel, patternViewControl);
 
         patternViewControl.titleProperty().bind(patternModel.titleProperty());
+        patternViewControl.titleVisibleProperty().bindBidirectional(patternModel.titleVisibleProperty());
 
         patternViewControl.numberColumnsProperty().bindBidirectional(patternModel.numberColumnsProperty());
 

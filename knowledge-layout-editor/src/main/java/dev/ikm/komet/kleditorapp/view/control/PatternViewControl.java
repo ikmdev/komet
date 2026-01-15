@@ -1,19 +1,24 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 public class PatternViewControl extends GridBaseControl {
+    public static final PseudoClass TITLE_VISIBLE = PseudoClass.getPseudoClass("title-visible");
+
     public static final String DEFAULT_STYLE_CLASS = "pattern-view";
 
     private final VBox patternContainer = new VBox();
@@ -81,6 +86,17 @@ public class PatternViewControl extends GridBaseControl {
     public String getTitle() { return title.get(); }
     public StringProperty titleProperty() { return title; }
     public void setTitle(String title) { this.title.set(title); }
+
+    // -- title visible
+    private final BooleanProperty titleVisible = new SimpleBooleanProperty() {
+        @Override
+        protected void invalidated() {
+            pseudoClassStateChanged(TITLE_VISIBLE, get());
+        }
+    };
+    public boolean isTitleVisible() { return titleVisible.get(); }
+    public BooleanProperty titleVisibleProperty() { return titleVisible; }
+    public void setTitleVisible(boolean value) { titleVisible.setValue(value); }
 
     // -- number columns
     private final IntegerProperty numberColumns = new SimpleIntegerProperty(1);

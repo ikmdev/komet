@@ -1,0 +1,53 @@
+.toggle-switch {
+    -thumb-move-animation-time: 100;
+    -toggle-display: right;
+
+    -fx-pref-height: 1.666666em; /* 20 */
+    -fx-max-height: 1.666666em; /* 20 */
+    -fx-min-height: 1.666666em; /* 20 */
+
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1em;
+}
+
+.toggle-switch > .main-container {
+    -fx-spacing: 10;
+}
+
+.toggle-switch .thumb {
+    -fx-background-color: #bbb, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 1.0em; /* large value to make sure this remains circular */
+    -fx-padding: 7.6px;
+    -fx-alignment: CENTER;
+    -fx-content-display: LEFT;
+}
+
+.toggle-switch > .main-container > .thumb-area {
+    -fx-background-radius: 1em;
+    -fx-background-color: #4a7ad2;
+    -fx-background-insets: 0;
+
+    -fx-pref-width: 34px;
+    -fx-max-width: 34px;
+    -fx-min-width: 34px;
+
+    -fx-padding: 3.6px 2px 4px 2px;
+}
+
+.toggle-switch:hover .thumb {
+    -fx-background-color: #eee;
+}
+
+.toggle-switch:selected:hover .thumb {
+    -fx-background-color: #eee;
+}
+
+.toggle-switch:selected > .main-container > .thumb-area {
+    -fx-background-color: #5dcf16;
+    -fx-background-insets: 0;
+}
+
+.toggle-switch:disabled {
+    -fx-opacity: 0.4;
+}

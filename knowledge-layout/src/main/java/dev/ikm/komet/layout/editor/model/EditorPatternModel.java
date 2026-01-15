@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout.editor.model;
 
+import dev.ikm.komet.preferences.KLEditorPreferences;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -9,7 +10,9 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.terms.PatternFacade;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRID_NUMBER_COLUMNS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
+import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_TITLE_VISIBLE;
 
 /**
  * Represents a Pattern. It has properties like the title of the Pattern, the fields inside it (EditorFieldModel instances),
@@ -102,6 +106,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
 
     private void loadPatternDetails(KometPreferences patternPreferences, ViewCalculator viewCalculator) {
         patternPreferences.getInt(KL_GRID_NUMBER_COLUMNS).ifPresent(this::setNumberColumns);
+        patternPreferences.getBoolean(PATTERN_TITLE_VISIBLE).ifPresent(this::setTitleVisible);
         loadGridNodeDetails(patternPreferences);
 
         for (EditorFieldModel fieldModel : getFields()) {
@@ -134,7 +139,11 @@ public class EditorPatternModel extends EditorGridNodeModel {
     private void savePatternDetails(KometPreferences sectionPreferences) {
         KometPreferences patternPreferences = sectionPreferences.node(patternFacadeToPrefsDirName(patternFacade));
 
+        // Grid
         patternPreferences.putInt(KL_GRID_NUMBER_COLUMNS, getNumberColumns());
+
+        // title visible
+        patternPreferences.putBoolean(PATTERN_TITLE_VISIBLE, isTitleVisible());
 
         saveGridNodeDetails(patternPreferences);
 
@@ -163,6 +172,12 @@ public class EditorPatternModel extends EditorGridNodeModel {
     public String getTitle() { return title.get(); }
     public StringProperty titleProperty() { return title; }
     public void setTitle(String title) { this.title.set(title); }
+
+    // -- title visible
+    private BooleanProperty titleVisible = new SimpleBooleanProperty(false);
+    public boolean isTitleVisible() { return titleVisible.get(); }
+    public BooleanProperty titleVisibleProperty() { return titleVisible; }
+    public void setTitleVisible(boolean titleVisible) { this.titleVisible.set(titleVisible); }
 
     // -- fields
     /**
