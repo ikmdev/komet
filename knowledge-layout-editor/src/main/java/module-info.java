@@ -48,4 +48,12 @@ open module dev.ikm.komet.kleditorapp {
     exports dev.ikm.komet.kleditorapp.view.propertiespane;
 
     uses EntityKlWindowFactory;
+    uses dev.ikm.komet.layout.area.KlAreaForString.Factory;
+    uses dev.ikm.komet.layout.area.KlAreaForComponent.Factory;
+    uses dev.ikm.komet.layout.area.KlAreaForIntIdSet.Factory;
+    uses dev.ikm.komet.layout.area.KlAreaForIntIdList.Factory;
+    uses dev.ikm.komet.layout.area.KlAreaForFloat.Factory;
+    uses dev.ikm.komet.layout.area.KlAreaForInteger.Factory;
+    uses dev.ikm.komet.layout.area.KlAreaForBoolean.Factory;
+    uses dev.ikm.komet.layout.area.KlAreaForImage.Factory;
 }
