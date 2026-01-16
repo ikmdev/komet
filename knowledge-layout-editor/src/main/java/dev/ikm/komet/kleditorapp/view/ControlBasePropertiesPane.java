@@ -21,14 +21,16 @@ public abstract class ControlBasePropertiesPane<T extends EditorWindowBaseContro
     protected T currentlyShownControl;
     protected T previouslyShownControl;
 
-    public ControlBasePropertiesPane() {
-        bottomContainer.getChildren().add(deleteButton);
-        mainContainer.setBottom(bottomContainer);
-
+    public ControlBasePropertiesPane(boolean isDeletable) {
         // Delete button
-        deleteButton.setText("DELETE");
-        deleteButton.setOnAction(this::onDelete);
-        deleteButton.getStyleClass().add("dark");
+        if (isDeletable) {
+            deleteButton.setText("DELETE");
+            deleteButton.setOnAction(this::onDelete);
+            deleteButton.getStyleClass().add("dark");
+
+            bottomContainer.getChildren().add(deleteButton);
+            mainContainer.setBottom(bottomContainer);
+        }
 
         getChildren().add(mainContainer);
 

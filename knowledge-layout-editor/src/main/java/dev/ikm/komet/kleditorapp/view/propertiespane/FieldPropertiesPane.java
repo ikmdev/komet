@@ -41,6 +41,8 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<FieldViewControl
     private final ComboBox<String> displayComboBox;
 
     public FieldPropertiesPane() {
+        super(false);
+
         VBox titleContainer = new VBox();
         titleContainer.getStyleClass().add("title-container");
         titleContainer.setSpacing(4);

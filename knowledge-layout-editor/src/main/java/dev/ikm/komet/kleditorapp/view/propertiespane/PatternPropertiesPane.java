@@ -30,6 +30,8 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<PatternViewCon
     private ObjectProperty<Integer> previousControlColumnsObjProperty;
 
     public PatternPropertiesPane() {
+        super(true);
+
         // Section name container
         VBox titleContainer = new VBox();
         titleContainer.getStyleClass().add("title-container");

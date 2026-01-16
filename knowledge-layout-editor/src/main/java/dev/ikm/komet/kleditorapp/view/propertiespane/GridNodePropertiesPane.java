@@ -30,7 +30,9 @@ public class GridNodePropertiesPane<D extends GridBaseControl> extends ControlBa
     protected final Label positioningLabel;
     protected final GridPane positioningGridPane;
 
-    public GridNodePropertiesPane() {
+    public GridNodePropertiesPane(boolean isDeletable) {
+        super(isDeletable);
+
         // "POSITIONING" label
         positioningLabel = new Label("POSITIONING");
         positioningLabel.getStyleClass().add("group-title");
@@ -97,7 +99,6 @@ public class GridNodePropertiesPane<D extends GridBaseControl> extends ControlBa
         rowSpanCB.setItems((FXCollections.observableArrayList(List.of(1, 2, 3))));
         rowSpanCB.setMaxWidth(Double.MAX_VALUE);
         positioningGridPane.add(rowSpanCB, 1, 3);
-
     }
 
     @Override
