@@ -345,7 +345,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                     pathFilterTitledPane,
                     kindOfFilterTitledPane,
                     membershipFilterTitledPane);
-        } else {
+        } else if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.SEARCH) {
             FilterOptions.Option<String> sortOption = filterOptions.getMainCoordinates().getSortBy();
             FilterTitledPane sortByFilterTitledPane = setupTitledPane(sortOption);
 
@@ -358,6 +358,13 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                     kindOfFilterTitledPane,
                     membershipFilterTitledPane,
                     sortByFilterTitledPane);
+        } else {
+            accordionBox.getPanes().setAll(
+                    statusFilterTitledPane,
+                    timeFilterTitledPane,
+                    moduleFilterTitledPane,
+                    pathFilterTitledPane,
+                    navigatorFilterTitledPane);
         }
 
         // Language Coordinates
