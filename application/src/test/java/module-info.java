@@ -74,7 +74,7 @@ module dev.ikm.komet.application.test {
     requires org.testfx.junit5;
     requires org.testfx.monocle;
     requires org.junit.jupiter;
-    requires surefire.shared.utils;
+    requires extentreports;
 
     exports dev.ikm.komet.app.test.integration.testfx;
     opens dev.ikm.komet.app.test.integration.testfx;
@@ -86,7 +86,7 @@ module dev.ikm.komet.application.test {
     uses dev.ikm.tinkar.common.service.PublicIdService;
     uses dev.ikm.tinkar.entity.StampService;
     uses dev.ikm.komet.framework.concurrent.TaskListsService;
-    uses dev.ikm.tinkar.events.EvtBus;
+    uses dev.ikm.tinkar.events.DefaultEvtBus;
 
     // For ScenicView...
     //requires org.scenicview.scenicview;

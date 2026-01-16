@@ -30,7 +30,7 @@ jobs:
           
       - name: IKMDEV Post Build Action
         id: ikmdev_post_build
-        uses: ikmdev/maven-post-build-action@v4.0.5
+        uses: ikmdev/maven-post-build-action@v3.3.0
         with:
             nexus_repo_url: ${{secrets.NEXUS_URL}}
             nexus_repo_username: ${{secrets.NEXUS_USER}}
@@ -62,7 +62,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
             distribution: 'zulu'
-            java-version: '25'
+            java-version: '24'
    
       - name: Composite Action
         uses: ./.github/installer_composite

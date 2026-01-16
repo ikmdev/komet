@@ -1,7 +1,5 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
@@ -9,16 +7,11 @@ import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.stage.Window;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
-
-import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
-import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
 
 /**
  * <p>A popup control containing an ObservableList of menu items.
@@ -57,9 +50,6 @@ public class SingleSelectionContextMenu extends ContextMenu {
         }
     };
 
-    private final HashMap<String, MenuItem> windowTitleToMenuItem = new HashMap<>();
-    private Consumer<String> klConsumer;
-
     /**
      * Creates a new SingleSelectionContextMenu
      */
@@ -72,34 +62,10 @@ public class SingleSelectionContextMenu extends ContextMenu {
         workspaceMenuItem = new MenuItem(resources.getString("single.selection.context.menu.option.workspace"));
 
         getItems().addAll(relatedMenuItem, workspaceMenuItem);
-
-        // Add menu items corresponding to the Window that were created in the KL Editor.
-        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
-        List<String> editorWindows = klEditorAppPreferences.getList(KL_EDITOR_WINDOWS);
-
-        if (!editorWindows.isEmpty()) {
-            SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();
-            getItems().add(separatorMenuItem);
-
-            for (String windowTitle : editorWindows) {
-                MenuItem windowMenuItem = new MenuItem("Open as " + windowTitle);
-                windowTitleToMenuItem.put(windowTitle, windowMenuItem);
-                windowMenuItem.setOnAction(actionEvent -> onKLEditorWindowMenuItemAction(actionEvent, windowTitle));
-                getItems().add(windowMenuItem);
-            }
-        }
-
         setAnchorLocation(AnchorLocation.CONTENT_TOP_LEFT);
 
         setOnShowing(_ -> Window.getWindows().addListener(windowListChangeListener));
         setOnHiding(_ -> Window.getWindows().removeListener(windowListChangeListener));
-    }
-
-    private void onKLEditorWindowMenuItemAction(ActionEvent actionEvent, String windowTitle) {
-        if (klConsumer != null) {
-            klConsumer.accept(windowTitle);
-        }
     }
 
     /**
@@ -110,10 +76,6 @@ public class SingleSelectionContextMenu extends ContextMenu {
      */
     public void setWorkspaceMenuItemAction(EventHandler<ActionEvent> eventHandler) {
         workspaceMenuItem.setOnAction(eventHandler);
-    }
-
-    public void setKLWindowMenuItemAction(Consumer<String> consumer) {
-        this.klConsumer = consumer;
     }
 
     /**

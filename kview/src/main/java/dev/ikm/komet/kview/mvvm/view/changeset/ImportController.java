@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.changeset;
 
 import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.PROGRESS_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.DESTINATION_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel.ImportField.SELECTED_FILE;
@@ -27,7 +28,7 @@ import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel;
 import dev.ikm.tinkar.common.alert.AlertStreams;
-import dev.ikm.tinkar.common.service.EntityCountSummary;
+import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
@@ -227,13 +228,13 @@ public class ImportController {
                     if (entityCountSummary != null) {
                         EntityCountSummary ecs = entityCountSummary;
                         String completeMsg = importTask.getMessage();
-                        importTask.updateMessage("%s - total: %,d, C: %,d, Sem: %,d, P: %,d, Stamps: %,d".formatted(
+                        importTask.updateMessage("%s - total: %d, C: %d, Sem: %d, P: %d, Stamps: %d".formatted(
                                 completeMsg,
                                 ecs.getTotalCount(),
-                                ecs.conceptCount(),
-                                ecs.semanticCount(),
-                                ecs.patternCount(),
-                                ecs.stampCount())
+                                ecs.conceptsCount(),
+                                ecs.semanticsCount(),
+                                ecs.patternsCount(),
+                                ecs.stampsCount())
                         );
                     }
                     // Refresh the Pattern Navigation

@@ -125,7 +125,6 @@ public class AutoCompleteTextFieldSkin<T> extends FXTextFieldSkin {
     private void updateAutoCompletePopupVisibility(AutoCompleteTextField<T> autoCompleteTextField, List<T> results) {
         if (results.isEmpty()) {
             autoCompletePopup.hide();
-            return;
         }
 
         autoCompletePopup.setPrefWidth(getPopupWidth());

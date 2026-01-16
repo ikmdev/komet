@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
-import dev.ikm.komet.kview.events.MakeKLWindowEvent;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
@@ -27,7 +26,9 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
+import javafx.geometry.Side;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -64,7 +65,10 @@ public class SortResultSemanticEntryController  {
     private Label retiredLabel;
 
     @FXML
-    private Node dragIndicator;
+    private Button showContextButton;
+
+    @FXML
+    private ContextMenu contextMenu;
 
     @InjectViewModel
     private SimpleViewModel searchEntryViewModel;
@@ -82,24 +86,36 @@ public class SortResultSemanticEntryController  {
     @FXML
     public void initialize() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
-        dragIndicator.setVisible(false);
-        searchEntryContainer.setOnMouseEntered(_ -> dragIndicator.setVisible(true));
-        searchEntryContainer.setOnMouseExited(_ ->  dragIndicator.setVisible(false));
-
+        showContextButton.setVisible(false);
+        contextMenu.setHideOnEscape(true);
+        searchEntryContainer.setOnMouseEntered(mouseEvent -> showContextButton.setVisible(true));
+        searchEntryContainer.setOnMouseExited(mouseEvent -> {
+            if (!contextMenu.isShowing()) {
+                showContextButton.setVisible(false);
+            }
+        });
+        showContextButton.setOnAction(event -> contextMenu.show(showContextButton, Side.BOTTOM, 0, 0));
 
         searchEntryContainer.setOnMouseClicked(mouseEvent -> {
             // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if (mouseEvent.getClickCount() == 2) {
                     UUID journalTopic = searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
+
                     eventBus.publish(journalTopic, new MakeConceptWindowEvent(this,
                             MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT, entity));
                 }
             }
+            // right click shows the context menu
+            if (mouseEvent.getButton().equals(MouseButton.SECONDARY)) {
+                contextMenu.show(showContextButton, Side.BOTTOM, 0, 0);
+            }
         });
     }
 
-    public void populateConcept(ActionEvent actionEvent) {
+    @FXML
+    private void populateConcept(ActionEvent actionEvent) {
+        actionEvent.consume();
         UUID journalTopic = searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
         if (entity instanceof ConceptEntity conceptEntity) {
             eventBus.publish(journalTopic, new MakeConceptWindowEvent(this,
@@ -111,19 +127,15 @@ public class SortResultSemanticEntryController  {
         }
     }
 
-    public void openInConceptNavigator(ActionEvent actionEvent) {
+    @FXML
+    private  void openInConceptNavigator(ActionEvent actionEvent) {
+        actionEvent.consume();
         if(entity instanceof ConceptEntity conceptEntity) {
             eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
         } else if (entity instanceof SemanticEntity semanticEntity) {
             ConceptEntity conceptEntity = Entity.getConceptForSemantic(semanticEntity.nid()).get();
             eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_SEMANTIC, conceptEntity));
         }
-    }
-
-    public void openAsKLWindow(ActionEvent actionEvent, String windowTitle) {
-        UUID journalTopic = searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
-        eventBus.publish(journalTopic,
-                new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_ENTITY_FROM_ENTITY, entity, windowTitle));
     }
 
     public boolean isRetired() {
@@ -163,4 +175,5 @@ public class SortResultSemanticEntryController  {
     public void setWindowView(ObservableViewNoOverride windowView) {
         this.windowView = windowView;
     }
+
 }

@@ -1,89 +1,201 @@
+/*
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package dev.ikm.komet.framework.observable;
 
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
-import org.eclipse.collections.api.list.ImmutableList;
+import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.State;
+import org.eclipse.collections.api.map.ImmutableMap;
 
-/**
- * Marker interface for observable entity versions.
- * <p>
- * Provides a generic-free type for working with observable versions without
- * exposing entity and version record type parameters. This is Layer 1 (Marker)
- * of the MGC pattern for observable versions.
- *
- * <h2>MGC Pattern Layers for Observable Versions</h2>
- * <ul>
- *   <li><b>Layer 1:</b> {@code ObservableVersion} - Marker interface (this interface)</li>
- *   <li><b>Layer 2:</b> {@link ObservableEntityVersion} - Generic abstract class</li>
- *   <li><b>Layer 3:</b> {@link ObservableConceptVersion}, {@link ObservablePatternVersion},
- *       {@link ObservableSemanticVersion}, {@link ObservableStampVersion} - Concrete final classes</li>
- * </ul>
- *
- * <h2>Relationship to EditableVersion</h2>
- * <p>
- * {@code ObservableVersion} represents read-only versions with JavaFX properties for UI binding.
- * {@link EditableVersion} represents editable versions with cached changes.
- *
- * <pre>{@code
- * ObservableVersion ←→ EditableVersion
- *        │                    │
- *   Read-only             Editable
- *   Properties            Cached changes
- *   Immediate updates     save()/commit()
- * }</pre>
- *
- * <h2>Usage</h2>
- * <pre>{@code
- * // Clean method signature
- * public void displayVersion(ObservableVersion version) {
- *     // Pattern matching for specific types
- *     switch (version) {
- *         case ObservableConceptVersion cv -> displayConcept(cv);
- *         case ObservableSemanticVersion sv -> displaySemantic(sv);
- *         default -> displayGeneric(version);
- *     }
- * }
- * }</pre>
- *
- * @see ObservableEntityVersion
- * @see EditableVersion
- * @see ObservableConceptVersion
- * @see ObservablePatternVersion
- * @see ObservableSemanticVersion
- * @see ObservableStampVersion
- */
-public sealed interface ObservableVersion extends ObservableComponent, Feature<ObservableVersion>
-        permits ObservableConceptVersion, ObservableEntityVersion, ObservablePatternVersion, ObservableSemanticVersion, ObservableStampVersion {
-    // Marker interface - intentionally empty
-    
-    /**
-     * Returns the observable entity (chronology) containing this version.
-     */
-    ObservableChronology getObservableEntity();
-    
-    /**
-     * Returns the underlying entity version record.
-     */
-    EntityVersion getVersionRecord();
+import java.util.Objects;
+
+public abstract sealed class ObservableVersion<V extends EntityVersion>
+        implements EntityVersion, ObservableComponent
+        permits ObservableConceptVersion, ObservablePatternVersion, ObservableSemanticVersion, ObservableStampVersion {
+    protected final SimpleObjectProperty<V> versionProperty = new SimpleObjectProperty<>();
+
+    private final EntityVersion entityVersion;
+
+    final SimpleObjectProperty<State> stateProperty = new SimpleObjectProperty<>();
+    final SimpleLongProperty timeProperty = new SimpleLongProperty();
+    final SimpleObjectProperty<ConceptFacade> authorProperty = new SimpleObjectProperty<>();
+    final SimpleObjectProperty<ConceptFacade> moduleProperty = new SimpleObjectProperty<>();
+    final SimpleObjectProperty<ConceptFacade> pathProperty = new SimpleObjectProperty<>();
 
 
-    @Override
-    default int indexInPattern() {
-        return switch (this) {
-            case ObservableConceptVersion cv -> cv.indexInPattern();
-            case ObservablePatternVersion pv -> pv.indexInPattern();
-            case ObservableSemanticVersion sv -> sv.indexInPattern();
-            case ObservableStampVersion sv -> sv.indexInPattern();
-        };
+    ObservableVersion(V entityVersion) {
+        versionProperty.set(entityVersion);
+        this.entityVersion = entityVersion;
+        stateProperty.set(entityVersion.state());
+        timeProperty.set(entityVersion.time());
+        authorProperty.set(Entity.provider().getEntityFast(entityVersion.authorNid()));
+        moduleProperty.set(Entity.provider().getEntityFast(entityVersion.moduleNid()));
+        pathProperty.set(Entity.provider().getEntityFast(entityVersion.pathNid()));
+        addListeners();
+    }
+
+    public abstract ImmutableMap<FieldCategory, ObservableField> getObservableFields();
+
+    protected void addListeners() {
+        stateProperty.addListener((observable, oldValue, newValue) -> {
+            if (version().uncommitted()) {
+                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
+                    StampEntity newStamp = transaction.getStamp(newValue, version().time(), version().authorNid(), version().moduleNid(), version().pathNid());
+                    versionProperty.set(withStampNid(newStamp.nid()));
+                }, () -> {
+                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
+                });
+            } else {
+                throw new IllegalStateException("Version is already committed, cannot change value.");
+            }
+        });
+
+        timeProperty.addListener((observable, oldValue, newValue) -> {
+            // TODO when to update the chronology with new record? At commit time? Automatically with reactive stream for commits?
+            if (version().uncommitted()) {
+                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
+                    StampEntity newStamp = transaction.getStamp(version().state(), newValue.longValue(), version().authorNid(), version().moduleNid(), version().pathNid());
+                    versionProperty.set(withStampNid(newStamp.nid()));
+                }, () -> {
+                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
+                });
+            } else {
+                throw new IllegalStateException("Version is already committed, cannot change value.");
+            }
+        });
+
+        authorProperty.addListener((observable, oldValue, newValue) -> {
+            if (version().uncommitted()) {
+                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
+                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(), newValue.nid(), version().moduleNid(), version().pathNid());
+                    versionProperty.set(withStampNid(newStamp.nid()));
+                }, () -> {
+                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
+                });
+            } else {
+                throw new IllegalStateException("Version is already committed, cannot change value.");
+            }
+        });
+
+        moduleProperty.addListener((observable, oldValue, newValue) -> {
+            if (version().uncommitted()) {
+                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
+                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(), version().authorNid(), newValue.nid(), version().pathNid());
+                    versionProperty.set(withStampNid(newStamp.nid()));
+                }, () -> {
+                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
+                });
+            } else {
+                throw new IllegalStateException("Version is already committed, cannot change value.");
+            }
+        });
+
+        pathProperty.addListener((observable, oldValue, newValue) -> {
+            if (version().uncommitted()) {
+                Transaction.forVersion(version()).ifPresentOrElse(transaction -> {
+                    StampEntity newStamp = transaction.getStamp(version().state(), version().time(), version().authorNid(), version().moduleNid(), newValue.nid());
+                    versionProperty.set(withStampNid(newStamp.nid()));
+                }, () -> {
+                    throw new IllegalStateException("No transaction for uncommitted version: " + version());
+                });
+            } else {
+                throw new IllegalStateException("Version is already committed, cannot change value.");
+            }
+        });
+
+    }
+
+    public V version() {
+        return versionProperty.getValue();
+    }
+
+    public EntityVersion getEntityVersion(){
+        return this.entityVersion;
+    }
+
+    protected abstract V withStampNid(int stampNid);
+
+    public ObjectProperty<V> versionProperty() {
+        return versionProperty;
     }
 
     @Override
-    default int patternNid() {
-        return switch (this) {
-            case ObservableConceptVersion cv -> cv.patternNid();
-            case ObservablePatternVersion pv -> pv.patternNid();
-            case ObservableSemanticVersion sv -> sv.patternNid();
-            case ObservableStampVersion sv -> sv.patternNid();
-        };
+    public Entity entity() {
+        return version().entity();
     }
 
+    @Override
+    public int stampNid() {
+        return version().stampNid();
+    }
+
+    @Override
+    public Entity chronology() {
+        return version().chronology();
+    }
+
+    public ObjectProperty<State> stateProperty() {
+        return stateProperty;
+    }
+
+    public LongProperty timeProperty() {
+        return timeProperty;
+    }
+
+    public ObjectProperty<ConceptFacade> authorProperty() {
+        return authorProperty;
+    }
+
+    public ObjectProperty<ConceptFacade> moduleProperty() {
+        return moduleProperty;
+    }
+
+    public ObjectProperty<ConceptFacade> pathProperty() {
+        return pathProperty;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getVersionRecord().stampNid());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o instanceof ObservableVersion observableVersion) {
+            return getVersionRecord().equals(observableVersion.getVersionRecord());
+        }
+        return false;
+    }
+
+    public abstract V getVersionRecord();
+
+    private ConceptFacade authorForChanges;
+
+    public void setAuthorForChanges(ConceptFacade authorForChanges){
+        this.authorForChanges = authorForChanges;
+    }
+    public ConceptFacade getAuthorForChanges(){
+        return this.authorForChanges;
+    }
 }

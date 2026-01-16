@@ -1,9 +1,9 @@
 package dev.ikm.komet.kview.klfields.componentsetfield;
 
 import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.layout.version.field.KlField;
+import dev.ikm.komet.layout.component.version.field.KlField;
+import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
 import dev.ikm.tinkar.common.id.IntIdSet;
 
 import java.util.UUID;
@@ -18,11 +18,11 @@ public class KlComponentSetFieldFactory{
      *
      * @param observableField the observable field that holds the data to be represented by the created {@link KlField}.
      * @param observableView  the observable view that defines the context in which the created {@link KlField} operates.
-     * @param stamp4field        flag to determine if the UI control is editable
+     * @param editable        flag to determine if the UI control is editable
      * @return a new {@link KlField} instance parameterized with the same type as the provided {@link ObservableField}.
      */
-    public KlField<IntIdSet> create(ObservableField<IntIdSet> observableField, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
-        return new DefaultKlComponentSetField(observableField, observableView, stamp4field, journalTopic);
+    public KlField<IntIdSet> create(ObservableField<IntIdSet> observableField, ObservableView observableView, boolean editable, UUID journalTopic) {
+        return new DefaultKlComponentSetField(observableField, observableView, editable, journalTopic);
     }
 
     /**

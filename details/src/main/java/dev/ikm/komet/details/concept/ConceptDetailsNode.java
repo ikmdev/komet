@@ -27,7 +27,6 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
-import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.*;
 import javafx.animation.Animation;
@@ -293,8 +292,7 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
     }
 
     public static List<ObservableSemanticSnapshot> filterAndSortDescriptions(List<ObservableSemanticSnapshot> entitySnapshotList,
-                                                                             SimpleEqualityBasedListProperty<ConceptFacade> descriptionTypeOrderList,
-                                                                             StampCalculator stampCalculator) {
+                                                                             SimpleEqualityBasedListProperty<ConceptFacade> descriptionTypeOrderList) {
 
         IntList typeOrderNidList = IntLists.immutable.ofAll(descriptionTypeOrderList.stream().mapToInt(value -> value.nid()));
         final boolean filterByType = !typeOrderNidList.contains(TinkarTerm.ANY_COMPONENT.nid());
@@ -302,7 +300,7 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
                 // Only description semantic snapshots
                 .filter(semanticSnapshot -> semanticSnapshot.patternNid() == TinkarTerm.DESCRIPTION_PATTERN.nid())
                 // Only descriptions snapshots whose latest meet description type criterion.
-                .filter(semanticSnapshot -> semanticSnapshot.findFirstField(field -> field.fieldDefinition(stampCalculator).meaningNid() == TinkarTerm.DESCRIPTION_TYPE.nid())
+                .filter(semanticSnapshot -> semanticSnapshot.findFirstField(field -> field.meaningNid() == TinkarTerm.DESCRIPTION_TYPE.nid())
                         .ifAbsentOrFunction(() -> false,
                                 typeField -> {
                                     if (filterByType) {
@@ -317,13 +315,13 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
                 // Sort descriptions by type then text.
                 .sorted((ObservableSemanticSnapshot d1Snapshot,
                          ObservableSemanticSnapshot d2Snapshot) -> {
-                    int o1index = typeOrderNidList.indexOf(d1Snapshot.findFirstFieldNidValueOrMaxValue(field -> field.fieldDefinition(stampCalculator).meaningNid() == TinkarTerm.DESCRIPTION_TYPE.nid()));
-                    int o2index = typeOrderNidList.indexOf(d2Snapshot.findFirstFieldNidValueOrMaxValue(field -> field.fieldDefinition(stampCalculator).meaningNid() == TinkarTerm.DESCRIPTION_TYPE.nid()));
+                    int o1index = typeOrderNidList.indexOf(d1Snapshot.findFirstFieldNidValueOrMaxValue(field -> field.meaningNid() == TinkarTerm.DESCRIPTION_TYPE.nid()));
+                    int o2index = typeOrderNidList.indexOf(d2Snapshot.findFirstFieldNidValueOrMaxValue(field -> field.meaningNid() == TinkarTerm.DESCRIPTION_TYPE.nid()));
                     if (o1index == o2index) {
                         // alphabetical by text if types are the same
                         return NaturalOrder.compareStrings(
-                                d1Snapshot.findFirstFieldStringValueOrEmpty(field -> field.fieldDefinition(stampCalculator).meaningNid() == TinkarTerm.TEXT_FOR_DESCRIPTION.nid()),
-                                d2Snapshot.findFirstFieldStringValueOrEmpty(field -> field.fieldDefinition(stampCalculator).meaningNid() == TinkarTerm.TEXT_FOR_DESCRIPTION.nid()));
+                                d1Snapshot.findFirstFieldStringValueOrEmpty(field -> field.meaningNid() == TinkarTerm.TEXT_FOR_DESCRIPTION.nid()),
+                                d2Snapshot.findFirstFieldStringValueOrEmpty(field -> field.meaningNid() == TinkarTerm.TEXT_FOR_DESCRIPTION.nid()));
                     }
                     if (o1index == -1) {
                         return 1;
@@ -617,7 +615,7 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
                     }
                 }
                 // add description versions here...
-                filterAndSortDescriptions(descriptionSemantics, descriptionTypeList, viewCalculator())
+                filterAndSortDescriptions(descriptionSemantics, descriptionTypeList)
                         .forEach(categorizedVersions -> addCategorizedVersions(categorizedVersions,
                                 semanticOrderForDescriptionDetails, parallelTransition));
 
@@ -653,7 +651,7 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
 //            ObservableCompoundVersion newDescriptionDialect
 //                    = new ObservableCompoundVersion(optionalFocus.get().getPrimordialUuid(), TinkarTerm.ENGLISH_LANGUAGE.nid());
 //            newDescriptions.add(newDescriptionDialect);
-//            // Set with pattern nid, attribute meaning nid.
+//            // Set with pattern nid, field meaning nid.
 //            newDescriptionDialect.setField(TinkarTerm.DESCRIPTION_PATTERN, TinkarTerm.DESCRIPTION_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
 //            newDescriptionDialect.getDescription().setDescriptionTypeConceptNid(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid());
 //            newDescriptionDialect.getDescription().setStatus(State.ACTIVE, null);
@@ -827,7 +825,7 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
         this.stampOrderHashMap.forEachKey(stampNid -> sortedStampNids.add(stampNid));
 
         this.sortedStampNids.sort(
-                (stampNid1, stampNid2) -> Entity.getStamp(stampNid2).lastVersion().instant().compareTo(Entity.getStamp(stampNid1).lastVersion().instant()));
+                (stampNid1, stampNid2) -> Entity.getStamp(stampNid2).instant().compareTo(Entity.getStamp(stampNid1).instant()));
 
         final AtomicInteger stampOrder = new AtomicInteger();
 

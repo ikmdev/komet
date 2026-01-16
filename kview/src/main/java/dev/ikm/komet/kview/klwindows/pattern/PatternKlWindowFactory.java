@@ -54,6 +54,12 @@ public class PatternKlWindowFactory implements EntityKlWindowFactory {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    @Override
+    public LidrKlWindow createWithContext(KlPreferencesFactory preferencesFactory, KlContextFactory contextFactory) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
     public PatternKlWindow restore(WindowSettings windowSettings, KometPreferences preferences) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
         try {
@@ -90,12 +96,17 @@ public class PatternKlWindowFactory implements EntityKlWindowFactory {
     }
 
     @Override
-    public EntityKlWindowType getWindowType() {
-        return EntityKlWindowTypes.PATTERN;
+    public Class<PatternKlWindow> klImplementationClass() {
+        return PatternKlWindow.class;
     }
 
     @Override
-    public AbstractEntityChapterKlWindow restore(KometPreferences preferences) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public String klDescription() {
+        return "Pattern Details Chapter Window are displayed inside of the Journal Window desktop workspace";
+    }
+
+    @Override
+    public EntityKlWindowType getWindowType() {
+        return EntityKlWindowTypes.PATTERN;
     }
 }

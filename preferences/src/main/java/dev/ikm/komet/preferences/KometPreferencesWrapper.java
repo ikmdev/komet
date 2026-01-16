@@ -61,10 +61,8 @@ public class KometPreferencesWrapper implements KometPreferences {
 
     @Override
     public void clear() throws BackingStoreException {
-        if (!delegate.isRemoved()) {
-            delegate.clear();
-        }
-     }
+        delegate.clear();
+    }
 
     @Override
     public void putInt(String key, int value) {

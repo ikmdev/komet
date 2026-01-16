@@ -24,7 +24,6 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.shape.SVGPath?>
 
-<?import javafx.scene.control.SeparatorMenuItem?>
 <BorderPane fx:id="journalBorderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.journal.JournalController">
    <center>
       <BorderPane prefHeight="485.0" prefWidth="544.0" BorderPane.alignment="CENTER">
@@ -70,7 +69,6 @@
                                     <SVGPath content="M9.00002 0.666748C4.40002 0.666748 0.666687 4.40008 0.666687 9.00008C0.666687 13.6001 4.40002 17.3334 9.00002 17.3334C13.6 17.3334 17.3334 13.6001 17.3334 9.00008C17.3334 4.40008 13.6 0.666748 9.00002 0.666748ZM8.16669 13.1667V11.5001H9.83335V13.1667H8.16669ZM8.16669 4.83342V9.83342H9.83335V4.83342H8.16669Z" fill="WHITE" fillRule="EVEN_ODD" />
                                  </graphic>
                             </MenuItem>
-                              <SeparatorMenuItem fx:id="addContextMenuSeparator" visible="false"/>
                           </items>
                         </ContextMenu>
                      </contextMenu>

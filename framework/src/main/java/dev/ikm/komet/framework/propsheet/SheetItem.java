@@ -15,7 +15,10 @@
  */
 package dev.ikm.komet.framework.propsheet;
 
-import javafx.beans.property.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Control;
 import javafx.scene.control.TextArea;
@@ -25,7 +28,6 @@ import org.controlsfx.property.editor.PropertyEditor;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.panel.axiom.AxiomView;
 import dev.ikm.komet.framework.propsheet.editor.IntIdListEditor;
@@ -34,7 +36,6 @@ import dev.ikm.komet.framework.propsheet.editor.PasswordEditor;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.component.FieldDefinition;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
@@ -89,13 +90,13 @@ public class SheetItem<T> implements PropertySheet.Item {
     public static <T> SheetItem<T> make(ObservableField field, String category, SemanticEntityVersion version, ViewProperties viewProperties) {
         Class<?> classType;
         // meaning
-        String name = viewProperties.calculator().getDescriptionTextOrNid(field.fieldDefinition(viewProperties.calculator()).meaningNid());
+        String name = viewProperties.calculator().getDescriptionTextOrNid(field.meaningNid());
         // Purpose
-        String description = viewProperties.calculator().getDescriptionTextOrNid(field.fieldDefinition(viewProperties.calculator()).purposeNid());
-        ObjectProperty property = field.editableValueProperty();
+        String description = viewProperties.calculator().getDescriptionTextOrNid(field.purposeNid());
+        ObjectProperty property = field.valueProperty();
 
         Class propertyEditorClass = null;
-        switch (field.fieldDefinition(viewProperties.calculator()).fieldDataType()) {
+        switch (field.fieldDataType()) {
             case STRING:
                 classType = String.class;
                 propertyEditorClass = null;
@@ -234,210 +235,6 @@ public class SheetItem<T> implements PropertySheet.Item {
         if (this.validationSupport != null) {
             this.validationSupport.registerValidator(control, validator);
         }
-    }
-
-    // ========== EDITABLE PROPERTY FACTORY METHODS ==========
-    // These methods create SheetItems that bind to ObservableField.Editable from ObservableSemanticVersion.Editable
-    // rather than read-only ObservableField.
-
-    /**
-     * Creates a SheetItem for an editable field from ObservableSemanticVersion.Editable.
-     * <p>
-     * This is used when you want to edit a semantic field with changes cached in the
-     * ObservableSemanticVersion.Editable until save() or commit() is called.
-     * <p>
-     * <b>API Symmetry:</b>
-     * <ul>
-     *   <li>{@link #make(ObservableField, ViewProperties)} - read-only field</li>
-     *   <li>{@link #makeEditable(ObservableSemanticVersion.Editable, int, ViewProperties)} - editable field</li>
-     * </ul>
-     *
-     * @param editableVersion the editable version containing editable fields
-     * @param fieldIndex the index of the field in the semantic version
-     * @param viewProperties view properties for field definition lookup
-     * @return a SheetItem bound to the editable field
-     */
-    public static <T> SheetItem<T> makeEditable(
-            ObservableSemanticVersion.Editable editableVersion,
-            int fieldIndex,
-            ViewProperties viewProperties) {
-        return makeEditable(editableVersion, fieldIndex, null, viewProperties);
-    }
-
-    /**
-     * Creates a SheetItem directly from an ObservableField.Editable.
-     * <p>
-     * Symmetric to {@link #make(ObservableField, ViewProperties)}.
-     *
-     * @param editableField the editable field
-     * @param viewProperties view properties for field definition lookup
-     * @return a SheetItem bound to the editable field
-     */
-    public static <T> SheetItem<T> makeEditable(
-            ObservableField.Editable<?> editableField,
-            ViewProperties viewProperties) {
-        return makeEditable(editableField, null, viewProperties);
-    }
-
-    /**
-     * Creates a SheetItem for an editable field from ObservableSemanticVersion.Editable with a category.
-     * <p>
-     * This is used when you want to edit a semantic field with changes cached in the
-     * ObservableSemanticVersion.Editable until save() or commit() is called.
-     *
-     * @param editableVersion the editable version containing editable fields
-     * @param fieldIndex the index of the field in the semantic version
-     * @param category optional category for grouping in property sheet
-     * @param viewProperties view properties for field definition lookup
-     * @return a SheetItem bound to the editable field
-     */
-    public static <T> SheetItem<T> makeEditable(
-            ObservableSemanticVersion.Editable editableVersion,
-            int fieldIndex,
-            String category,
-            ViewProperties viewProperties) {
-
-        // Get the editable field from the editable version
-        ObservableField.Editable<?> editableField = editableVersion.getEditableField(fieldIndex);
-        return makeEditable(editableField, category, viewProperties);
-    }
-
-    /**
-     * Creates a SheetItem for an editable field with a category.
-     * <p>
-     * Symmetric to {@link #make(ObservableField, String, ViewProperties)}.
-     *
-     * @param editableField the editable field
-     * @param category optional category for grouping in property sheet
-     * @param viewProperties view properties for field definition lookup
-     * @return a SheetItem bound to the editable field
-     */
-    public static <T> SheetItem<T> makeEditable(
-            ObservableField.Editable<?> editableField,
-            String category,
-            ViewProperties viewProperties) {
-
-        // Get field definition from the underlying observable field
-        ObservableField<?> observableField = editableField.getObservableFeature();
-        FieldDefinition fieldDef = observableField.fieldDefinition(viewProperties.calculator());
-
-        // Get field metadata
-        String name = viewProperties.calculator().getDescriptionTextOrNid(fieldDef.meaningNid());
-        String description = viewProperties.calculator().getDescriptionTextOrNid(fieldDef.purposeNid());
-
-        // Determine class type and editor based on field data type
-        Class<?> classType;
-        Class propertyEditorClass = null;
-
-        switch (fieldDef.fieldDataType()) {
-            case STRING:
-                classType = String.class;
-                propertyEditorClass = null;
-                break;
-            case CONCEPT:
-            case CONCEPT_CHRONOLOGY:
-            case CONCEPT_VERSION:
-            case SEMANTIC:
-            case SEMANTIC_CHRONOLOGY:
-            case SEMANTIC_VERSION:
-            case PATTERN:
-            case PATTERN_CHRONOLOGY:
-            case PATTERN_VERSION:
-            case IDENTIFIED_THING:
-                classType = EntityFacade.class;
-                propertyEditorClass = EntityLabelWithDragAndDrop.class;
-                break;
-            case COMPONENT_ID_LIST:
-                classType = IntIdList.class;
-                propertyEditorClass = IntIdListEditor.class;
-                break;
-            case COMPONENT_ID_SET:
-                classType = IntIdSet.class;
-                propertyEditorClass = IntIdSetEditor.class;
-                break;
-            case DITREE:
-                classType = DiTree.class;
-                propertyEditorClass = AxiomView.class;
-                break;
-            default:
-                classType = Object.class;
-                propertyEditorClass = null;
-        }
-
-        ValidationSupport validationSupport = null;
-        Validator validator = null;
-
-        @SuppressWarnings("unchecked")
-        SheetItem<T> item = new SheetItem(classType, category, name, description,
-                editableField.editableValueProperty(), propertyEditorClass,
-                validationSupport, validator, observableField);
-        return item;
-    }
-
-    /**
-     * Creates a SheetItem for an editable field with custom property and field definition.
-     * <p>
-     * This is a lower-level method that allows binding to any SimpleObjectProperty
-     * with metadata from a FieldDefinition.
-     *
-     * @param editableProperty the editable property to bind to
-     * @param fieldDefinition the field definition for metadata (meaning, purpose, data type)
-     * @param category optional category for grouping in property sheet
-     * @param viewProperties view properties for description lookup
-     * @return a SheetItem bound to the editable property
-     */
-    public static <T> SheetItem<T> makeEditableWithDefinition(
-            SimpleObjectProperty<Object> editableProperty,
-            FieldDefinition fieldDefinition,
-            String category,
-            ViewProperties viewProperties) {
-
-        // Get field metadata
-        String name = viewProperties.calculator().getDescriptionTextOrNid(fieldDefinition.meaningNid());
-        String description = viewProperties.calculator().getDescriptionTextOrNid(fieldDefinition.purposeNid());
-
-        // Determine class type and editor based on field data type
-        Class<?> classType;
-        Class propertyEditorClass = null;
-
-        switch (fieldDefinition.fieldDataType()) {
-            case STRING:
-                classType = String.class;
-                break;
-            case CONCEPT:
-            case CONCEPT_CHRONOLOGY:
-            case CONCEPT_VERSION:
-            case SEMANTIC:
-            case SEMANTIC_CHRONOLOGY:
-            case SEMANTIC_VERSION:
-            case PATTERN:
-            case PATTERN_CHRONOLOGY:
-            case PATTERN_VERSION:
-            case IDENTIFIED_THING:
-                classType = EntityFacade.class;
-                propertyEditorClass = EntityLabelWithDragAndDrop.class;
-                break;
-            case COMPONENT_ID_LIST:
-                classType = IntIdList.class;
-                propertyEditorClass = IntIdListEditor.class;
-                break;
-            case COMPONENT_ID_SET:
-                classType = IntIdSet.class;
-                propertyEditorClass = IntIdSetEditor.class;
-                break;
-            case DITREE:
-                classType = DiTree.class;
-                propertyEditorClass = AxiomView.class;
-                break;
-            default:
-                classType = Object.class;
-        }
-
-        @SuppressWarnings("unchecked")
-        SheetItem<T> item = new SheetItem(classType, category, name, description,
-                editableProperty, propertyEditorClass,
-                null, null, null);
-        return item;
     }
 
 }

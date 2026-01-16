@@ -32,7 +32,7 @@ public class KLBooleanControl extends Control {
     public final void setTitle(String value) { title.set(value); }
 
     // -- value
-    private final ObjectProperty<Boolean> value = new SimpleObjectProperty<>(Boolean.FALSE);
+    private final ObjectProperty<Boolean> value = new SimpleObjectProperty<>();
     public final ObjectProperty<Boolean> valueProperty() { return value; }
     public boolean isValue() { return value.get(); }
     public void setValue(boolean value) { this.value.set(value); }

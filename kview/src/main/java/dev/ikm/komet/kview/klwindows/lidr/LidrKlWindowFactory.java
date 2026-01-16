@@ -17,7 +17,10 @@ package dev.ikm.komet.kview.klwindows.lidr;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
-import dev.ikm.komet.kview.klwindows.*;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.layout.context.KlContextFactory;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -56,6 +59,12 @@ public class LidrKlWindowFactory implements EntityKlWindowFactory {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    @Override
+    public LidrKlWindow createWithContext(KlPreferencesFactory preferencesFactory, KlContextFactory contextFactory) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
     public LidrKlWindow restore(WindowSettings windowSettings, KometPreferences preferences) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
         try {
@@ -92,12 +101,17 @@ public class LidrKlWindowFactory implements EntityKlWindowFactory {
     }
 
     @Override
-    public EntityKlWindowType getWindowType() {
-        return EntityKlWindowTypes.LIDR;
+    public Class<LidrKlWindow> klImplementationClass() {
+        return LidrKlWindow.class;
     }
 
     @Override
-    public AbstractEntityChapterKlWindow restore(KometPreferences preferences) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public String klDescription() {
+        return "Lidr Details Chapter Window are displayed inside of the Journal Window desktop workspace";
+    }
+
+    @Override
+    public EntityKlWindowType getWindowType() {
+        return EntityKlWindowTypes.LIDR;
     }
 }

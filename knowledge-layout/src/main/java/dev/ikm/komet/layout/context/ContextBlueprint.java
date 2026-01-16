@@ -2,7 +2,7 @@ package dev.ikm.komet.layout.context;
 
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
-import dev.ikm.komet.layout.KlPeerable;
+import dev.ikm.komet.layout.KlObject;
 import dev.ikm.komet.layout.KlStateCommands;
 import dev.ikm.komet.layout.preferences.PreferencePropertyObject;
 import dev.ikm.komet.layout.preferences.PreferencePropertyString;
@@ -73,31 +73,31 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
 
     final ObservableViewNoOverride observableView;
     final PublicIdStringKey publicIdStringKey;
-    final KlPeerable klPeerable;
+    final KlObject klObject;
 
     // create
     protected ContextBlueprint(KlContextProvider contextProvider, ViewCoordinateRecord viewCoordinateRecord, PublicIdStringKey publicIdStringKey) {
-        this.klPeerable = contextProvider.klObject();
+        this.klObject = contextProvider.klObject();
         this.viewCoordinateProperty =
-                PreferencePropertyObject.objectProp(this.klPeerable, KlContext.PreferenceKeys.VIEW_COORDINATE);
+                PreferencePropertyObject.objectProp(this.klObject, KlContext.PreferenceKeys.VIEW_COORDINATE);
         this.contextUuidProperty =
-                PreferencePropertyObject.objectProp(this.klPeerable, KlContext.PreferenceKeys.CONTEXT_UUID);
+                PreferencePropertyObject.objectProp(this.klObject, KlContext.PreferenceKeys.CONTEXT_UUID);
         this.contextNameProperty =
-                PreferencePropertyObject.stringProp(this.klPeerable, KlContext.PreferenceKeys.CONTEXT_NAME);
+                PreferencePropertyObject.stringProp(this.klObject, KlContext.PreferenceKeys.CONTEXT_NAME);
 
         this.observableView = new ObservableViewNoOverride(viewCoordinateRecord, publicIdStringKey.getString());
         this.publicIdStringKey = publicIdStringKey;
 
-        this.klPeerable.properties().put(KlPeerable.PropertyKeys.KL_CONTEXT, contextProvider.context());
+        this.klObject.properties().put(KlObject.PropertyKeys.KL_CONTEXT, contextProvider.context());
     }
 
     // restore
     protected ContextBlueprint(KometPreferences preferences, KlContextProvider contextProvider) {
-        this.klPeerable = contextProvider.klObject();
+        this.klObject = contextProvider.klObject();
         this.viewCoordinateProperty =
-                PreferencePropertyObject.objectProp(this.klPeerable, KlContext.PreferenceKeys.VIEW_COORDINATE);
-        this.contextNameProperty = PreferencePropertyObject.stringProp(this.klPeerable, KlContext.PreferenceKeys.CONTEXT_NAME);
-        this.contextUuidProperty = PreferencePropertyObject.objectProp(this.klPeerable, KlContext.PreferenceKeys.CONTEXT_UUID);
+                PreferencePropertyObject.objectProp(this.klObject, KlContext.PreferenceKeys.VIEW_COORDINATE);
+        this.contextNameProperty = PreferencePropertyObject.stringProp(this.klObject, KlContext.PreferenceKeys.CONTEXT_NAME);
+        this.contextUuidProperty = PreferencePropertyObject.objectProp(this.klObject, KlContext.PreferenceKeys.CONTEXT_UUID);
 
         String contextName = preferences.get(PreferenceKeys.CONTEXT_NAME, (String) PreferenceKeys.CONTEXT_NAME.defaultValue());
         UUID contextUuid = preferences.getUuid(PreferenceKeys.CONTEXT_UUID, (UUID) PreferenceKeys.CONTEXT_UUID.defaultValue());
@@ -105,7 +105,7 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
         ViewCoordinateRecord viewCoordinateRecord = preferences.getObject(PreferenceKeys.VIEW_COORDINATE, (ViewCoordinateRecord) PreferenceKeys.VIEW_COORDINATE.defaultValue());
         this.observableView = new ObservableViewNoOverride(viewCoordinateRecord,  contextName);
 
-        this.klPeerable.properties().put(KlPeerable.PropertyKeys.KL_CONTEXT, contextProvider.context());
+        this.klObject.properties().put(KlObject.PropertyKeys.KL_CONTEXT, contextProvider.context());
 
     }
 
@@ -140,9 +140,9 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
     public void save() {
         for (KlContext.PreferenceKeys key : KlContext.PreferenceKeys.values()) {
             switch (key) {
-                case CONTEXT_NAME -> klPeerable.preferences().put(key, this.contextNameProperty.getValue());
-                case CONTEXT_UUID -> klPeerable.preferences().putUuid(key, (UUID) this.contextUuidProperty.getValue());
-                case VIEW_COORDINATE -> klPeerable.preferences().putObject(key, viewCoordinateProperty.getValue());
+                case CONTEXT_NAME -> klObject.preferences().put(key, this.contextNameProperty.getValue());
+                case CONTEXT_UUID -> klObject.preferences().putUuid(key, (UUID) this.contextUuidProperty.getValue());
+                case VIEW_COORDINATE -> klObject.preferences().putObject(key, viewCoordinateProperty.getValue());
             }
         }
     }
@@ -151,9 +151,9 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
     public void revert() {
         for (KlContext.PreferenceKeys key : KlContext.PreferenceKeys.values()) {
             switch (key) {
-                case CONTEXT_NAME -> this.contextNameProperty.setValue(klPeerable.preferences().get(key, (String) key.defaultValue()));
-                case CONTEXT_UUID -> this.contextUuidProperty.setValue(klPeerable.preferences().getUuid(key, (UUID) key.defaultValue()));
-                case VIEW_COORDINATE -> this.viewCoordinateProperty.setValue(klPeerable.preferences().getObject(key, (ViewCoordinateRecord) key.defaultValue()));
+                case CONTEXT_NAME -> this.contextNameProperty.setValue(klObject.preferences().get(key, (String) key.defaultValue()));
+                case CONTEXT_UUID -> this.contextUuidProperty.setValue(klObject.preferences().getUuid(key, (UUID) key.defaultValue()));
+                case VIEW_COORDINATE -> this.viewCoordinateProperty.setValue(klObject.preferences().getObject(key, (ViewCoordinateRecord) key.defaultValue()));
             }
         }
     }
@@ -163,7 +163,7 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
         // This class is encapsulated and uses the preferences of the encapsulator. The encapsulator is
         // responsible for deletion of the preference node.
         for (KlContext.PreferenceKeys key : KlContext.PreferenceKeys.values()) {
-            klPeerable.preferences().remove(key);
+            klObject.preferences().remove(key);
         }
     }
 

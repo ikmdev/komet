@@ -188,8 +188,8 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 	}
 
 	private void runFullReasoner() {
-//		if (!confirmRun("full"))
-//			return;
+		if (!confirmRun("full"))
+			return;
 		TinkExecutor.threadPool().execute(() -> {
 			// TODO use a factory for the service and then create here
 			reasonerService.init(getViewProperties().calculator(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
@@ -214,7 +214,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				ProgressHelper.cancel(javafxTask);
 			}
 
-			LOG.info(String.format("Concept count: %,d in %s", conceptCount, task.durationString()));
+			LOG.info("Concept count: " + conceptCount + " " + task.durationString());
 		});
 	}
 
@@ -255,7 +255,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				ProgressHelper.cancel(javafxTask);
 			}
 
-			LOG.info(String.format("Concept count: %,d in %s", conceptCount, task.durationString()));
+			LOG.info("Concept count: " + conceptCount + " " + task.durationString());
 		});
 	}
 

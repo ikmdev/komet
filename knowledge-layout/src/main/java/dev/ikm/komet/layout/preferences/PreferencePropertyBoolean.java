@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.preferences;
 
-import dev.ikm.komet.layout.KlPeerable;
+import dev.ikm.komet.layout.KlObject;
 import dev.ikm.tinkar.common.bind.ClassConceptBinding;
 import javafx.beans.property.SimpleBooleanProperty;
 
@@ -21,19 +21,15 @@ public class PreferencePropertyBoolean extends PreferenceProperty<Boolean, Simpl
     }
 
     /**
-     * Creates a new instance of {@link PreferencePropertyBoolean} using the provided {@link KlPeerable}
+     * Creates a new instance of {@link PreferencePropertyBoolean} using the provided {@link KlObject}
      * and {@link ClassConceptBinding}.
      *
-     * @param klPeerable the {@link KlPeerable} instance associated with this preference property
+     * @param klObject the {@link KlObject} instance associated with this preference property
      * @param binding  the {@link ClassConceptBinding} instance providing binding details for the property
-     * @return a new {@link PreferencePropertyBoolean} instance with the specified {@link KlPeerable} and binding
+     * @return a new {@link PreferencePropertyBoolean} instance with the specified {@link KlObject} and binding
      */
-    protected static PreferencePropertyBoolean create(KlPeerable klPeerable, ClassConceptBinding binding) {
-        return new PreferencePropertyBoolean(new SimpleBooleanProperty(klPeerable, binding.fullyQualifiedNames().getAny(),
+    protected static PreferencePropertyBoolean create(KlObject klObject, ClassConceptBinding binding) {
+        return new PreferencePropertyBoolean(new SimpleBooleanProperty(klObject, binding.fullyQualifiedNames().getAny(),
                 PreferenceProperty.INITIAL_BOOLEAN_VALUE), binding);
-    }
-    protected static PreferencePropertyBoolean create(KlPeerable klPeerable, ClassConceptBinding binding, boolean initialValue) {
-        return new PreferencePropertyBoolean(new SimpleBooleanProperty(klPeerable, binding.fullyQualifiedNames().getAny(),
-                initialValue), binding);
     }
 }

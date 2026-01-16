@@ -21,7 +21,6 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.component.FieldDefinition;
 import dev.ikm.tinkar.coordinate.stamp.change.FieldChangeRecord;
 import dev.ikm.tinkar.coordinate.stamp.change.VersionChangeRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -193,7 +192,7 @@ public class ChangeListItemController {
             isItAnAxiom = isItAnAxiom || currentFieldRecord.value() instanceof DiTreeEntity;
 
             // Current Field definition
-            FieldDefinition currentFieldDefinition = currentFieldRecord.fieldDefinition(viewCalculator);
+            FieldDefinitionForEntity currentFieldDefinition = currentFieldRecord.fieldDefinition();
             // Current value's field definition's datatype nid
             int dataTypeNid = currentFieldDefinition.dataTypeNid();
             // Current value's field definition's meaning nid

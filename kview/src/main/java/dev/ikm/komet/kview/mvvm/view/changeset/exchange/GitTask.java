@@ -25,7 +25,7 @@ import dev.ikm.tinkar.common.service.SaveState;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.entity.ChangeSetWriterService;
-import dev.ikm.tinkar.common.service.EntityCountSummary;
+import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.reasoner.service.ClassifierResults;
@@ -968,25 +968,18 @@ public class GitTask extends TrackingCallable<Boolean> {
 
             rs.init(Calculators.View.Default(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
 
+            // Use this task as the progress updater
+            rs.setProgressUpdater(this);
+
             try {
                 // Extract
                 updateMessage("Extracting data for reasoning...");
-                rs.extractData(new TrackingCallable<Object>() {
-                    @Override
-                    protected Object compute() throws Exception {
-                        return null;
-                    }
-                });
+                rs.extractData();
                 updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.25);
 
                 // Load
                 updateMessage("Loading data for reasoning...");
-                rs.loadData(new TrackingCallable<Object>() {
-                    @Override
-                    protected Object compute() throws Exception {
-                        return null;
-                    }
-                });
+                rs.loadData();
                 updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.5);
 
                 // Compute
@@ -996,12 +989,12 @@ public class GitTask extends TrackingCallable<Boolean> {
 
                 // Build NNF
                 updateMessage("Building necessary normal form...");
-                rs.buildNecessaryNormalForm(this);
+                rs.buildNecessaryNormalForm();
                 updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.9);
 
                 // Write inferred results
                 updateMessage("Writing inferred results...");
-                ClassifierResults results = rs.writeInferredResults(this);
+                ClassifierResults results = rs.writeInferredResults();
                 updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 1.0);
 
                 LOG.info("After Size of ConceptSet: {}", rs.getReasonerConceptSet().size());

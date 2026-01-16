@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.framework.dnd;
 
-import dev.ikm.tinkar.entity.EntityHandle;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.ListView;
@@ -68,9 +67,10 @@ public class DragDetectedCellEventHandler
         /* drag was detected, start a drag-and-drop gesture */
         /* allow any transfer mode */
         Node eventNode = null;
-        EntityHandle entityHandle = null;
+        EntityFacade identifiedObject = null;
+
         if (nidSupplier != null) {
-            entityHandle = EntityHandle.get(nidSupplier.getAsInt());
+            identifiedObject = EntityService.get().getEntityFast(nidSupplier.getAsInt());
             if (event.getSource() instanceof Node) {
                 eventNode = (Node) event.getSource();
             } else {
@@ -80,27 +80,28 @@ public class DragDetectedCellEventHandler
             eventNode = (Node) event.getSource();
             Object item = ((TreeCell<?>) event.getSource()).getItem();
             if (item instanceof Integer nid) {
-                entityHandle = EntityHandle.get(nid);
+                identifiedObject = Entity.getFast(nid);
             } else if (item instanceof EntityFacade entityFacade) {
-                entityHandle = EntityHandle.get(entityFacade);
+                identifiedObject = entityFacade;
             } else if (item instanceof SearchPanelController.NidTextRecord nidTextRecord) {
-                entityHandle = EntityHandle.get(nidTextRecord.nid());
+                identifiedObject = Entity.getFast(nidTextRecord.nid());
             } else if (item instanceof LatestVersionSearchResult latestVersionSearchResult &&
                     latestVersionSearchResult.latestVersion().isPresent()) {
-                entityHandle = EntityHandle.get(latestVersionSearchResult.latestVersion().get().nid());
+                identifiedObject = Entity.getFast(latestVersionSearchResult.latestVersion().get().nid());
             }
         } else if (event.getSource() instanceof TableCell) {
             eventNode = (TableCell) event.getSource();
             Object item = ((TableCell) eventNode).getItem();
             if (item instanceof String) {
-                entityHandle = EntityHandle.get((EntityFacade) ((TableCell) eventNode).getTableRow().getItem());
+                identifiedObject = (EntityFacade) ((TableCell) eventNode).getTableRow().getItem();
             }
         } else if (event.getSource() instanceof TableView) {
             TableView<EntityFacade> tableView = (TableView) event.getSource();
 
             if (tableView.getSelectionModel()
                     .getSelectedItem() instanceof EntityFacade) {
-                entityHandle = EntityHandle.get(tableView.getSelectionModel().getSelectedItem());
+                identifiedObject = tableView.getSelectionModel()
+                        .getSelectedItem();
                 eventNode = event.getPickResult()
                         .getIntersectedNode();
                 eventNode = eventNode.getParent();
@@ -110,7 +111,7 @@ public class DragDetectedCellEventHandler
             ListView listView = (ListView) event.getSource();
             Object selectedObject = listView.getSelectionModel().getSelectedItem();
             if (selectedObject instanceof EntityFacade entityFacade) {
-                entityHandle = EntityHandle.get(entityFacade);
+                identifiedObject = entityFacade;
                 eventNode = event.getPickResult()
                         .getIntersectedNode().getParent().getParent();
 
@@ -144,10 +145,10 @@ public class DragDetectedCellEventHandler
             }
 
             /* Put a string on a dragboard */
-            if (entityHandle.isPresent()) {
-                String drag = entityHandle.expectEntity().publicId().toString();
+            if (identifiedObject != null) {
+                String drag = identifiedObject.publicId().toString();
                 if ((drag != null) && (drag.length() > 0)) {
-                    KometClipboard content = new KometClipboard(entityHandle.expectEntity());
+                    KometClipboard content = new KometClipboard(identifiedObject);
 
                     db.setContent(content);
                     DragRegistry.dragStart();

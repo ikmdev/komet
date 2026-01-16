@@ -16,12 +16,10 @@
 package dev.ikm.komet.app;
 
 import com.jpro.webapi.WebAPI;
-import de.jangassen.MenuToolkit;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
-import dev.ikm.komet.kview.events.CreateKLEditorWindowEvent;
 import dev.ikm.komet.kview.events.SignInUserEvent;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
@@ -45,12 +43,10 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
-import javafx.stage.Window;
 import javafx.stage.Stage;
 import one.jpro.platform.utils.CommandRunner;
 import one.jpro.platform.utils.PlatformUtils;
@@ -62,7 +58,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.app.AppState.*;
@@ -71,7 +66,6 @@ import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
@@ -234,15 +228,6 @@ public class App extends Application  {
         // Subscribe the subscriber to the JOURNAL_TOPIC
         kViewEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, detailsSubscriber);
 
-        // Create a subscriber for handling KL Window Event
-        Subscriber<CreateKLEditorWindowEvent> createKLEditorWindowEventSubscriber = evt -> {
-            final PrefX journalWindowSettingsObjectMap = evt.getWindowSettingsObjectMap();
-            appPages.launchKLEditorViewPage(journalWindowSettingsObjectMap, userProperty.get(), evt.getWindowToLoad());
-        };
-
-        // Subscribe the subscriber to the KL_TOPIC
-        kViewEventBus.subscribe(KL_TOPIC, CreateKLEditorWindowEvent.class, createKLEditorWindowEventSubscriber);
-
         Subscriber<SignInUserEvent> signInUserEventSubscriber = evt -> {
             final ConceptFacade loggedInUser = (ConceptFacade) evt.getLoggedInUser();
             userProperty.set(loggedInUser);
@@ -268,10 +253,6 @@ public class App extends Application  {
 
     @Override
     public void start(Stage stage) {
-        // Prevent JavaFX from auto-exiting when last window closes
-        // This prevents macOS NSApplication timer race conditions during shutdown
-        Platform.setImplicitExit(false);
-
         appGithub = new AppGithub(this);
         appClassicKomet = new AppClassicKomet(this);
         appMenu = new AppMenu(this);
@@ -498,118 +479,11 @@ public class App extends Application  {
     }
 
     public void quit() {
-        LOG.info(">>> quit() called - thread: {}", Thread.currentThread().getName());
-
         saveJournalWindowsToPreferences();
-        LOG.info(">>> Saved journal windows to preferences");
-
         PrimitiveData.stop();
-        LOG.info(">>> PrimitiveData stopped");
-
         Preferences.stop();
-        LOG.info(">>> Preferences stopped");
-
-        if (IS_MAC) {
-            LOG.info(">>> macOS detected - disabling NSApplication integration");
-
-            // CRITICAL: Must execute synchronously if already on JavaFX thread
-            if (Platform.isFxApplicationThread()) {
-                LOG.info(">>> Executing synchronously on JavaFX thread");
-
-                try {
-                    LOG.info(">>> Clearing NSApplication delegate");
-                    MenuToolkit tk = MenuToolkit.toolkit();
-                    // Force cleanup of NSApplication delegate
-                    tk.setApplicationMenu(new Menu());
-                    LOG.info(">>> NSApplication delegate cleared");
-                } catch (Exception e) {
-                    LOG.error("Error clearing NSApplication delegate", e);
-                }
-
-                LOG.info(">>> Closing {} windows", Window.getWindows().size());
-                List<Window> windowsCopy = new ArrayList<>(Window.getWindows());
-                for (Window window : windowsCopy) {
-                    try {
-                        LOG.info(">>> Closing window: {}", window);
-                        if (window instanceof Stage stage) {
-                            stage.close();
-                        } else {
-                            window.hide();
-                        }
-                    } catch (Exception e) {
-                        LOG.error("Error closing window", e);
-                    }
-                }
-                LOG.info(">>> All windows closed");
-            } else {
-                // If not on FX thread, schedule and wait
-                LOG.info(">>> Scheduling on JavaFX thread");
-
-                CountDownLatch latch = new CountDownLatch(1);
-                Platform.runLater(() -> {
-                    try {
-                        LOG.info(">>> Clearing NSApplication delegate");
-                        MenuToolkit tk = MenuToolkit.toolkit();
-                        tk.setApplicationMenu(new Menu());
-                        LOG.info(">>> NSApplication delegate cleared");
-
-                        LOG.info(">>> Closing {} windows", Window.getWindows().size());
-                        List<Window> windowsCopy = new ArrayList<>(Window.getWindows());
-                        for (Window window : windowsCopy) {
-                            try {
-                                LOG.info(">>> Closing window: {}", window);
-                                if (window instanceof Stage stage) {
-                                    stage.close();
-                                } else {
-                                    window.hide();
-                                }
-                            } catch (Exception e) {
-                                LOG.error("Error closing window", e);
-                            }
-                        }
-                        LOG.info(">>> All windows closed");
-                    } catch (Exception e) {
-                        LOG.error("Error in macOS cleanup", e);
-                    } finally {
-                        latch.countDown();
-                    }
-                });
-
-                try {
-                    latch.await(500, java.util.concurrent.TimeUnit.MILLISECONDS);
-                    LOG.info(">>> macOS cleanup completed");
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    LOG.error("Interrupted waiting for macOS cleanup");
-                }
-            }
-        }
-
-        LOG.info(">>> Calling Platform.exit()");
-
-        // Exit JavaFX
-        if (Platform.isFxApplicationThread()) {
-            LOG.info(">>> Already on FX thread, calling Platform.exit()");
-            Platform.exit();
-        } else {
-            LOG.info(">>> Scheduling Platform.exit() on FX thread");
-            Platform.runLater(() -> {
-                LOG.info(">>> Platform.exit() executing on FX thread");
-                Platform.exit();
-            });
-
-            // Wait for exit to be scheduled
-            try {
-                Thread.sleep(100);
-                LOG.info(">>> Waited for Platform.exit() scheduling");
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-
-        LOG.info(">>> Calling stopServer()");
+        Platform.exit();
         stopServer();
-        LOG.info(">>> quit() method complete");
     }
 
     /**

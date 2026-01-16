@@ -299,10 +299,7 @@ public class SamplerConceptNavigatorController {
                             });
                             box.getChildren().add(option);
                         });
-                        dev.ikm.tinkar.common.service.ServiceLifecycleManager.get().selectServiceForGroup(
-                            dev.ikm.tinkar.common.service.ServiceExclusionGroup.DATA_PROVIDER,
-                            controller.getClass()
-                        );
+                        PrimitiveData.setController(controller);
                     });
 
             state.subscribe(s -> {

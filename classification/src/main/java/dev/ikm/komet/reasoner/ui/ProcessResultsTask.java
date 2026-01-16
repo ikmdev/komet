@@ -31,14 +31,14 @@ public class ProcessResultsTask extends TrackingCallable<ClassifierResults> {
 	public ProcessResultsTask(ReasonerService reasonerService) {
 		super(false, true);
 		this.reasonerService = reasonerService;
-		updateTitle("Processing and writing reasoner results");
+		updateTitle("Processing reasoner results");
 	}
 
 	@Override
 	protected ClassifierResults compute() throws Exception {
 		updateMessage("Getting classified results");
 		LOG.info("Getting classified results...");
-		ClassifierResults classifierResults = reasonerService.writeInferredResults(this);
+		ClassifierResults classifierResults = reasonerService.writeInferredResults();
 		updateMessage("Processed results in " + durationString());
 		return classifierResults;
 	}

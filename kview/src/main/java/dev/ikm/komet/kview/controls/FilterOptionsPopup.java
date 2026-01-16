@@ -17,8 +17,7 @@ public class FilterOptionsPopup extends PopupControl {
 
     public enum FILTER_TYPE {
         NAVIGATOR,
-        SEARCH,
-        CHAPTER_WINDOW
+        SEARCH
     }
 
     private final FILTER_TYPE filterType;

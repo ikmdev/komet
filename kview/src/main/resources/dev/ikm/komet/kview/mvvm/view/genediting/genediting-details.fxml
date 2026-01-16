@@ -185,7 +185,7 @@
         </HBox>
     </right>
     <center>
-        <BorderPane fx:id="detailsInnerBorderPane" prefWidth="762.0" styleClass="main-center-container" BorderPane.alignment="CENTER">
+        <BorderPane prefWidth="762.0" styleClass="main-center-container" BorderPane.alignment="CENTER">
             <top>
                 <GridPane hgap="8.0" maxWidth="1.7976931348623157E308" styleClass="concept-detail-banner-background">
                     

@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.reasoner;
 
-import dev.ikm.komet.framework.observable.collection.ObservableIntList;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import org.eclipse.collections.api.list.primitive.ImmutableIntList;
@@ -55,10 +54,6 @@ public class PrepareConceptSetTask extends TrackingCallable<Void> {
     @Override
     protected Void compute() throws Exception {
 
-        // TODO: Remove performance hack, and get sorting to work better/faster.
-        if (affectedConceptList.size() < 5000) {
-            //TODO: This sorting needs much more efficient algorithms and data structures...
-            //TODO: we need an iterator that will go through the descriptions in concept order, for cache locality.
             ConcurrentSkipListSet<Integer> concurrentSortedSet = new ConcurrentSkipListSet<>(this::compare);
 
             this.affectedConceptList.primitiveParallelStream().forEach(nid -> {
@@ -66,21 +61,8 @@ public class PrepareConceptSetTask extends TrackingCallable<Void> {
                 this.completedUnitOfWork();
             });
             Platform.runLater(() -> {
-                if (affectedConceptsForDisplay instanceof ObservableIntList observableIntList) {
-                    observableIntList.setAll(
-                            concurrentSortedSet.stream()
-                                    .mapToInt(Integer::intValue)
-                                    .toArray()
-                    );
-                } else {
-                    this.affectedConceptsForDisplay.setAll(concurrentSortedSet);
-                }
+                this.affectedConceptsForDisplay.setAll(concurrentSortedSet);
             });
-        } else {
-            if (affectedConceptsForDisplay instanceof ObservableIntList observableIntList) {
-                observableIntList.setAll(affectedConceptList);
-            }
-        }
             return null;
     }
 

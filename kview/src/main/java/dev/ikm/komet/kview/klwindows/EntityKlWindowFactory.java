@@ -315,8 +315,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
                 LOG.warn("No factory registered for window type: {}", windowType);
                 throw new IllegalArgumentException("No factory registered for window type: " + windowType);
             }
-            throw new UnsupportedOperationException("Not yet implemented");
-            //return factory.restore(windowSettings, preferences);
+            return factory.restore(windowSettings, preferences);
         }
 
         /**

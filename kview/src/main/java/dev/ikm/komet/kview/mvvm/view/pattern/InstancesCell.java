@@ -1,12 +1,24 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.IDENTIFIER_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_DEFINITION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.INFERRED_NAVIGATION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.PATH_MEMBERSHIP_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_DEFINITION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.STATED_NAVIGATION_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.UK_DIALECT_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.US_DIALECT_PATTERN_PROXY;
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.VERSION_CONTROL_PATH_ORIGIN_PATTERN_PROXY;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -24,9 +36,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static dev.ikm.tinkar.terms.TinkarTermV2.*;
 
 public class InstancesCell<T> extends ListCell<T> {
 
@@ -87,57 +96,67 @@ public class InstancesCell<T> extends ListCell<T> {
             } else if (item instanceof Integer nid) {
                 StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
 
-                final AtomicReference<String> entityDescriptionText =
-                        new AtomicReference<>(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid));
+                String entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid);
+                Entity entity = Entity.getFast(nid);
 
-                EntityHandle.get(nid).ifPresent(entity -> {
+                // generate the subtitle of status and last updated
+                EntityVersion latest = (EntityVersion) stampCalculator.latest(entity).get();
+                LocalDate date = Instant.ofEpochMilli(latest.stamp().time()).atZone(ZoneId.systemDefault()).toLocalDate();
+                String instanceSubTitle = latest.stamp().state().toString()
+                        + ", Last Updated " + DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(date);
+                if (entity instanceof SemanticEntity<?> semanticEntity) {
+                    if (semanticEntity.patternNid() == IDENTIFIER_PATTERN_PROXY.nid()) {
+                        //TODO Move better string descriptions to language calculator
+                        Latest<? extends SemanticEntityVersion> latestId = viewProperties.calculator().latest(semanticEntity);
+                        ImmutableList fields = latestId.get().fieldValues();
+                        entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
+                                ": " + fields.get(1);
+                    } else if (semanticEntity.patternNid() == INFERRED_DEFINITION_PATTERN_PROXY.nid()) {
+                        entityDescriptionText =
+                                "Inferred definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == INFERRED_NAVIGATION_PATTERN_PROXY.nid()) {
+                        entityDescriptionText =
+                                "Inferred is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == PATH_MEMBERSHIP_PROXY.nid()) {
+                        entityDescriptionText =
+                                viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == STATED_DEFINITION_PATTERN_PROXY.nid()) {
+                        entityDescriptionText =
+                                "Stated definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == STATED_NAVIGATION_PATTERN_PROXY.nid()) {
+                        entityDescriptionText =
+                                "Stated is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == UK_DIALECT_PATTERN_PROXY.nid()) {
+                        Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
+                        ImmutableList fields = latestAcceptability.get().fieldValues();
+                        entityDescriptionText =
+                                "UK dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
+                                        ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == US_DIALECT_PATTERN_PROXY.nid()) {
+                        Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
+                        ImmutableList fields = latestAcceptability.get().fieldValues();
+                        entityDescriptionText =
+                                "US dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
+                                        ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid());
+                    } else if (semanticEntity.patternNid() == VERSION_CONTROL_PATH_ORIGIN_PATTERN_PROXY.nid()) {
+                        Latest<? extends SemanticEntityVersion> latestPathOrigins = viewProperties.calculator().latest(semanticEntity);
+                        ImmutableList fields = latestPathOrigins.get().fieldValues();
+                        entityDescriptionText =
+                                viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()) +
+                                        " origin: " + DateTimeUtil.format((Instant) fields.get(1)) +
+                                        " on " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0));
+                    }
+                }
+
+                title.setText(entityDescriptionText);
+
+                if (!entityDescriptionText.isEmpty()) {
                     Image identicon = Identicon.generateIdenticonImage(entity.publicId());
                     iconImageView.setImage(identicon);
+                }
 
-                    // generate the subtitle of status and last updated
-                    EntityVersion latest = (EntityVersion) stampCalculator.latest(entity).get();
-                    LocalDate date = Instant.ofEpochMilli(latest.stamp().time()).atZone(ZoneId.systemDefault()).toLocalDate();
-                    subTitle.setText(latest.stamp().state().toString()
-                            + ", Last Updated " + DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(date));
+                subTitle.setText(instanceSubTitle);
 
-                    if (entity instanceof SemanticEntity<?> semanticEntity) {
-                        if (semanticEntity.patternNid() == IDENTIFIER_PATTERN.nid()) {
-                            //TODO Move better string descriptions to language calculator
-                            Latest<? extends SemanticEntityVersion> latestId = viewProperties.calculator().latest(semanticEntity);
-                            ImmutableList fields = latestId.get().fieldValues();
-                            entityDescriptionText.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                    ": " + fields.get(1));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.publicId())) {
-                            entityDescriptionText.set("Inferred definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(INFERRED_NAVIGATION_PATTERN.publicId())) {
-                            entityDescriptionText.set("Inferred is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(VERSION_CONTROL_PATH_PATTERN.publicId())) {
-                            entityDescriptionText.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.publicId())) {
-                            entityDescriptionText.set("Stated definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(STATED_NAVIGATION_PATTERN.publicId())) {
-                            entityDescriptionText.set("Stated is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(GB_DIALECT_PATTERN.publicId())) {
-                            Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
-                            ImmutableList fields = latestAcceptability.get().fieldValues();
-                            entityDescriptionText.set("UK dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                            ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(US_DIALECT_PATTERN.publicId())) {
-                            Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
-                            ImmutableList fields = latestAcceptability.get().fieldValues();
-                            entityDescriptionText.set("US dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                            ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(PATH_ORIGINS.publicId())) {
-                            Latest<? extends SemanticEntityVersion> latestPathOrigins = viewProperties.calculator().latest(semanticEntity);
-                            ImmutableList fields = latestPathOrigins.get().fieldValues();
-                            entityDescriptionText.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()) +
-                                            " origin: " + DateTimeUtil.format((Instant) fields.get(1)) +
-                                            " on " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)));
-                        }
-                    }
-                });
-
-                title.setText(entityDescriptionText.get());
                 setText(null);
                 setGraphic(mainContainer);
             }

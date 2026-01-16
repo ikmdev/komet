@@ -282,11 +282,7 @@ public class InvertedTree {
                     return Optional.of(new ConceptItem(-1, item.nid, item.description)); // shouldn't happen
                 } else {
                     // lineage was removed, just get the last concept of the first lineage (the shorter path)
-                    List<ConceptItem> firstKey = thisMap.get(0);
-                    if (firstKey != null) {
-                        return Optional.ofNullable(firstKey.getLast());
-                    }
-                    return Optional.empty();
+                    return Optional.of(thisMap.get(0).getLast());
                 }
             }
             // same number of lineages

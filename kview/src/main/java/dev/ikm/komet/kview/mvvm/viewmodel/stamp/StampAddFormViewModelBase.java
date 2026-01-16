@@ -4,7 +4,6 @@ import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -59,7 +58,7 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
         loadStamp();
         loadStampValuesFromDB();
 
-        setPropertyValue(FORM_TIME_TEXT, DateTimeUtil.format((Long) getPropertyValue(TIME)));
+        setPropertyValue(FORM_TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
 
         save(true);
     }
@@ -83,15 +82,11 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
     protected void loadStampValuesFromDB() {
         StampEntity stampEntity = getPropertyValue(Properties.CURRENT_STAMP);
 
-        // Store canonical observable entities from the start
         setPropertyValue(STATUS, stampEntity.state());
         setPropertyValue(TIME, stampEntity.time());
-        StampProperties.AUTHOR.setTo(this,
-            dev.ikm.komet.framework.observable.ObservableEntityHandle.get(stampEntity.author()).expectConcept());
-        StampProperties.MODULE.setTo(this,
-            dev.ikm.komet.framework.observable.ObservableEntityHandle.get(stampEntity.module()).expectConcept());
-        StampProperties.PATH.setTo(this,
-            dev.ikm.komet.framework.observable.ObservableEntityHandle.get(stampEntity.path()).expectConcept());
+        setPropertyValue(AUTHOR, stampEntity.author());
+        setPropertyValue(MODULE, stampEntity.module());
+        setPropertyValue(PATH, stampEntity.path());
     }
 
     @Override

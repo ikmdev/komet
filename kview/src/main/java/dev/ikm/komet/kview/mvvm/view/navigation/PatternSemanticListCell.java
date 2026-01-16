@@ -6,7 +6,11 @@ import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
-import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
@@ -19,11 +23,15 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.function.Function;
+
+import static dev.ikm.komet.kview.mvvm.view.common.PatternConstants.*;
 
 /**
  * A ListCell for the Pattern Semantic.
@@ -40,7 +48,7 @@ public class PatternSemanticListCell extends ListCell<Object> {
     private Label label;
     private SemanticTooltip tooltip;
 
-    private EntityHandle currentEntityHandle;
+    private SemanticEntity<?> currentSemanticEntity;
     private String currentSemanticTitle;
 
     public PatternSemanticListCell(Function<Integer, String> fetchDescriptionByNid,
@@ -56,9 +64,9 @@ public class PatternSemanticListCell extends ListCell<Object> {
         HBox.setHgrow(label, Priority.ALWAYS);
 
         tooltip = new SemanticTooltip(viewProperties);
-        tooltip.setOnShowing(windowEvent ->
-            currentEntityHandle.ifSemantic(currentSemanticEntity ->
-                    tooltip.update(currentSemanticEntity, currentSemanticTitle)));
+        tooltip.setOnShowing(windowEvent -> {
+            tooltip.update(currentSemanticEntity, currentSemanticTitle);
+        });
 
         label.setTooltip(tooltip);
 
@@ -81,26 +89,24 @@ public class PatternSemanticListCell extends ListCell<Object> {
                 setText(stringItem);
             } else if (item instanceof Integer nid) {
                 String entityDescriptionText = fetchDescriptionByNid.apply(nid);
-                currentEntityHandle = EntityHandle.get(nid);
+                EntityFacade entity = Entity.getFast(nid);
+                currentSemanticEntity = (SemanticEntity<?>) entity;
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
                 currentSemanticTitle = entityDescriptionText;
                 label.setText(currentSemanticTitle);
 
-                currentEntityHandle.ifPresent(entity -> {
+                if (!entityDescriptionText.isEmpty()) {
                     Image identicon = Identicon.generateIdenticonImage(entity.publicId());
                     ImageView imageView = new ImageView(identicon);
                     imageView.setFitWidth(16);
                     imageView.setFitHeight(16);
                     label.setGraphic(imageView);
-                });
+                }
 
                 setGraphic(hbox);
                 // make ListCell (row) draggable to the desktop
-                currentEntityHandle.ifSemantic( semanticEntity -> {
-                    setUpDraggable(hbox, semanticEntity, DragAndDropType.SEMANTIC);
-                });
-
+                setUpDraggable(hbox, entity, DragAndDropType.SEMANTIC);
             }
         } else {
             setGraphic(null);

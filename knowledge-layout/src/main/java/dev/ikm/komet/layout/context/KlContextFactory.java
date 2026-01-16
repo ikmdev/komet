@@ -1,6 +1,7 @@
 package dev.ikm.komet.layout.context;
 
 
+import dev.ikm.komet.layout.KlGadget;
 import dev.ikm.komet.preferences.KometPreferences;
 
 import java.util.function.Supplier;

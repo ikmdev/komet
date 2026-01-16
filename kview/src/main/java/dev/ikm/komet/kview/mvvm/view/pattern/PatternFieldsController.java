@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import static dev.ikm.komet.kview.common.ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.ADD_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
@@ -175,8 +176,8 @@ public class PatternFieldsController {
         loadFieldOrderOptions(totalExistingfields.get());
 
         // Purpose and Meaning
-        KLComponentControl purposeComponentControl = KLComponentControlFactory.createComponentControl(patternFieldsViewModel.getViewProperties().calculator());
-        KLComponentControl meaningComponentControl = KLComponentControlFactory.createComponentControl(patternFieldsViewModel.getViewProperties().calculator());
+        KLComponentControl purposeComponentControl = KLComponentControlFactory.createTypeAheadComponentControl(patternFieldsViewModel.getViewProperties().calculator());
+        KLComponentControl meaningComponentControl = KLComponentControlFactory.createTypeAheadComponentControl(patternFieldsViewModel.getViewProperties().calculator());
 
         purposeComponentControl.setTitle("Purpose");
         meaningComponentControl.setTitle("Meaning");

@@ -58,13 +58,12 @@ public class AddToContextMenuSimple implements AddToContextMenu {
     }
 
     private static void recursiveEntityToString(int nid, StringBuilder sb) {
-        EntityHandle.get(nid).ifPresent(entity -> {
-            sb.append(entity.toString());
-            sb.append("\n\n");
-            for (int semanticNid : PrimitiveData.get().semanticNidsForComponent(nid)) {
-                recursiveEntityToString(semanticNid, sb);
-            }
-        });
+        Entity entity = Entity.getFast(nid);
+        sb.append(entity.toString());
+        sb.append("\n\n");
+        for (int semanticNid : PrimitiveData.get().semanticNidsForComponent(nid)) {
+            recursiveEntityToString(semanticNid, sb);
+        }
     }
 
     @Override
@@ -101,15 +100,13 @@ public class AddToContextMenuSimple implements AddToContextMenu {
                         setFromHistory.getItems().add(historyItem);
                         historyItem.setStyle("-fx-pref-width: 500");
                         historyItem.setOnAction(event -> {
-                            EntityHandle.get(entityFacade)
-                                    .ifConcept(conceptEntity -> entityLabelWithDragAndDrop.setEntity(conceptEntity))
-                                    .ifSemantic(semanticEntity -> entityLabelWithDragAndDrop.setEntity(semanticEntity.topEnclosingComponent()))
-                                    .ifPattern(patternEntity -> AlertStreams.getRoot().dispatch(AlertObject.makeError(
-                                            new IllegalStateException("Unexpected value: " + patternEntity))))
-                                    .ifStamp(stampEntity -> AlertStreams.getRoot().dispatch(AlertObject.makeError(
-                                            new IllegalStateException("Unexpected value: " + stampEntity))))
-                                    .ifAbsent(() -> AlertStreams.getRoot().dispatch(AlertObject.makeError(
-                                            new IllegalStateException("Entity not found: " + entityFacade))));
+                            Entity historicalEntity = Entity.getFast(entityFacade);
+                            switch (historicalEntity) {
+                                case SemanticEntity semanticEntity -> entityLabelWithDragAndDrop.setEntity(semanticEntity.topEnclosingComponent());
+                                case ConceptEntity conceptEntity -> entityLabelWithDragAndDrop.setEntity(conceptEntity);
+                                default -> AlertStreams.getRoot().dispatch(AlertObject.makeError(
+                                        new IllegalStateException("Unexpected value: " + historicalEntity)));
+                            }
                         });
                     }
                 }
@@ -121,12 +118,11 @@ public class AddToContextMenuSimple implements AddToContextMenu {
         copyEntityToString.setOnAction(event -> {
             EntityFacade entityFacade = entityFocusProperty.getValue();
             if (entityFacade != null) {
-                EntityHandle.get(entityFacade).ifPresent(entity -> {
-                    final Clipboard clipboard = Clipboard.getSystemClipboard();
-                    final ClipboardContent content = new ClipboardContent();
-                    content.putString(entity.toString());
-                    clipboard.setContent(content);
-                });
+                Entity entity = Entity.getFast(entityFacade.nid());
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(entity.toString());
+                clipboard.setContent(content);
             }
         });
         contextMenu.getItems().add(copyEntityToString);

@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.preferences;
 
-import dev.ikm.komet.layout.KlPeerable;
+import dev.ikm.komet.layout.KlObject;
 import dev.ikm.tinkar.common.bind.ClassConceptBinding;
 import javafx.beans.property.SimpleIntegerProperty;
 
@@ -25,19 +25,14 @@ public class PreferencePropertyInteger extends PreferenceProperty<Number, Simple
      * Creates a new instance of {@code PreferencePropertyInteger} associated with the given
      * {@code KlObject} and {@code ClassConceptBinding}.
      *
-     * @param klPeerable the {@code KlObject} instance to associate with this property
+     * @param klObject the {@code KlObject} instance to associate with this property
      * @param binding  the {@code ClassConceptBinding} providing the fully qualified names
      *                 for associating semantic meanings
      * @return a new {@code PreferencePropertyInteger} instance
      */
-    protected static PreferencePropertyInteger create(KlPeerable klPeerable, ClassConceptBinding binding) {
-        return new PreferencePropertyInteger(new SimpleIntegerProperty(klPeerable, binding.fullyQualifiedNames().getAny(),
+    protected static PreferencePropertyInteger create(KlObject klObject, ClassConceptBinding binding) {
+        return new PreferencePropertyInteger(new SimpleIntegerProperty(klObject, binding.fullyQualifiedNames().getAny(),
                 PreferenceProperty.INITIAL_INTEGER_VALUE), binding);
-    }
-
-    protected static PreferencePropertyInteger create(KlPeerable klPeerable, ClassConceptBinding binding, int initialValue) {
-        return new PreferencePropertyInteger(new SimpleIntegerProperty(klPeerable, binding.fullyQualifiedNames().getAny(),
-                initialValue), binding);
     }
 
     /**

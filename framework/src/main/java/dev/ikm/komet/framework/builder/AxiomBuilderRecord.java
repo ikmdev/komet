@@ -15,9 +15,7 @@
  */
 package dev.ikm.komet.framework.builder;
 
-import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.eclipse.collections.api.RichIterable;
@@ -70,20 +68,23 @@ public record AxiomBuilderRecord(ConceptFacade axiomMeaning, MutableList<AxiomPr
     }
 
     @Override
-    public Optional<? extends Concept> propertyAsConcept(Concept propertyConcept) {
+    public Optional<Concept> propertyAsConcept(Concept propertyConcept) {
         Optional<?> optionalPropertyValue = property(propertyConcept);
 
         if (optionalPropertyValue.isEmpty()) {
             return Optional.empty();
         }
-        EntityHandle entityHandle = switch (optionalPropertyValue.get()) {
-            case Integer nid -> EntityHandle.get(nid);
-            case EntityFacade facade -> EntityHandle.get(facade);
+        Optional<Entity> optionalEntityValue = switch (optionalPropertyValue.get()) {
+            case Integer nid -> EntityService.get().getEntity(nid);
+            case EntityFacade facade -> EntityService.get().getEntity(facade);
             case null -> throw new IllegalStateException("optionalPropertyValue is null");
             default -> throw new IllegalStateException("optionalPropertyValue is not an identifier or facade: " + optionalPropertyValue.get());
         };
-        if (entityHandle.isConcept()) {
-            return entityHandle.asConcept();
+        if (optionalEntityValue.isEmpty()) {
+            throw new IllegalStateException("Entity specified by property is not in database:: " + optionalPropertyValue.get());
+        }
+        if (optionalEntityValue.get() instanceof Concept conceptFacade) {
+            return Optional.of(conceptFacade);
         }
         throw new IllegalStateException("Cannot convert property to concept. Property: " + optionalPropertyValue.get());
     }

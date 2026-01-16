@@ -523,7 +523,7 @@ public class AppMenu {
             long usedMemory = totalMemory - freeMemory;
 
             cpuUsageLabel.setText("CPU Usage: %.2f%%".formatted(cpuLoad));
-            memoryUsageLabel.setText("Memory Usage: %,d MB / %,d MB".formatted(
+            memoryUsageLabel.setText("Memory Usage: %d MB / %d MB".formatted(
                     usedMemory / (1024 * 1024), totalMemory / (1024 * 1024)));
         }
     }

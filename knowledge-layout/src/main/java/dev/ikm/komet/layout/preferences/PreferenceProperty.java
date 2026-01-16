@@ -1,9 +1,11 @@
 package dev.ikm.komet.layout.preferences;
 
-import dev.ikm.komet.layout.KlPeerable;
-import dev.ikm.komet.layout.KlView;
+import dev.ikm.komet.layout.KlGadget;
+import dev.ikm.komet.layout.KlObject;
+import dev.ikm.tinkar.common.binary.Encodable;
 import dev.ikm.tinkar.common.bind.ClassConceptBinding;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.edit.Activity;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
@@ -58,6 +60,17 @@ public abstract class PreferenceProperty<DT, I extends Property<DT>> implements 
      */
     public static final double INITIAL_DOUBLE_VALUE = Double.NaN;
 
+    /**
+     * Represents the initial default value for an {@link Encodable} property in the {@code PreferenceProperty} class.
+     * This value is set to {@code Activity.DEVELOPING}, indicating a predetermined initial state
+     * for encodable preference properties.
+     *
+     * It is used within the context of preference properties to establish a starting
+     * or default value that can later be modified or further processed as needed.
+     *
+     * The constant is immutable and shared across all instances of the {@code PreferenceProperty} class.
+     */
+    public static final Encodable INITIAL_ENCODABLE_VALUE = Activity.DEVELOPING;
 
     /**
      * Represents the implementation instance of type {@code I} used internally
@@ -77,7 +90,7 @@ public abstract class PreferenceProperty<DT, I extends Property<DT>> implements 
      * The {@code binding} is used to initialize and bind the property with a specific
      * concept, enabling consistent and reusable property management.
      *
-     * This is a final attribute and is assigned during the construction of the
+     * This is a final field and is assigned during the construction of the
      * {@code PreferenceProperty} instance.
      */
     final ClassConceptBinding binding;
@@ -107,48 +120,36 @@ public abstract class PreferenceProperty<DT, I extends Property<DT>> implements 
      * Creates a new {@code PreferencePropertyString} instance for the given {@code KlObject} and {@code ClassConceptBinding}.
      * This method initializes a string property associated with the provided klObject and binding.
      *
-     * @param klPeerable  the {@code KlObject} instance associated with the preference property
+     * @param klObject  the {@code KlObject} instance associated with the preference property
      * @param binding the {@code ClassConceptBinding} used to define bindings and initialize the property
      * @return a new instance of {@code PreferencePropertyString} configured with the given klObject and binding
      */
-    public static PreferencePropertyString stringProp(KlPeerable klPeerable, ClassConceptBinding binding) {
-        return PreferencePropertyString.create(klPeerable, binding);
-    }
-
-    public static PreferencePropertyString stringProp(KlPeerable klPeerable, ClassConceptBinding binding, String initialValue) {
-        return PreferencePropertyString.create(klPeerable, binding, initialValue);
+    public static PreferencePropertyString stringProp(KlObject klObject, ClassConceptBinding binding) {
+        return PreferencePropertyString.create(klObject, binding);
     }
 
     /**
      * Creates a new {@code PreferencePropertyInteger} instance for the given {@code KlObject} and {@code ClassConceptBinding}.
      * This method initializes an integer preference property associated with the specified klObject and binding.
      *
-     * @param klPeerable the {@code KlObject} instance associated with the preference property
+     * @param klObject the {@code KlObject} instance associated with the preference property
      * @param binding  the {@code ClassConceptBinding} used to define bindings and initialize the property
      * @return a new instance of {@code PreferencePropertyInteger} configured with the given gadget and binding
      */
-    public static PreferencePropertyInteger integerProp(KlPeerable klPeerable, ClassConceptBinding binding) {
-        return PreferencePropertyInteger.create(klPeerable, binding);
-    }
-
-    public static PreferencePropertyInteger integerProp(KlPeerable klPeerable, ClassConceptBinding binding, int initialValue) {
-        return PreferencePropertyInteger.create(klPeerable, binding, initialValue);
+    public static PreferencePropertyInteger integerProp(KlObject klObject, ClassConceptBinding binding) {
+        return PreferencePropertyInteger.create(klObject, binding);
     }
 
     /**
      * Creates a new {@code PreferencePropertyBoolean} instance for the specified {@code KlObject} and {@code ClassConceptBinding}.
      * This method initializes a Boolean preference property associated with the given klObject and binding.
      *
-     * @param klPeerable the {@code KlObject} instance associated with the preference property
+     * @param klObject the {@code KlObject} instance associated with the preference property
      * @param binding  the {@code ClassConceptBinding} used to define bindings and initialize the property
      * @return a new instance of {@code PreferencePropertyBoolean} configured with the given klObject and binding
      */
-    public static PreferencePropertyBoolean booleanProp(KlPeerable klPeerable, ClassConceptBinding binding) {
-        return PreferencePropertyBoolean.create(klPeerable, binding);
-    }
-
-    public static PreferencePropertyBoolean booleanProp(KlPeerable klPeerable, ClassConceptBinding binding, boolean initialValue) {
-        return PreferencePropertyBoolean.create(klPeerable, binding, initialValue);
+    public static PreferencePropertyBoolean booleanProp(KlObject klObject, ClassConceptBinding binding) {
+        return PreferencePropertyBoolean.create(klObject, binding);
     }
 
     /**
@@ -156,12 +157,12 @@ public abstract class PreferenceProperty<DT, I extends Property<DT>> implements 
      * and {@code ClassConceptBinding}. This method initializes a double preference
      * property associated with the provided klObject and binding.
      *
-     * @param klPeerable the {@code KlObject} instance associated with the preference property
+     * @param klObject the {@code KlObject} instance associated with the preference property
      * @param binding  the {@code ClassConceptBinding} used to define bindings and initialize the property
      * @return a new instance of {@code PreferencePropertyDouble} configured with the given klObject and binding
      */
-    public static PreferencePropertyDouble doubleProp(KlPeerable klPeerable, ClassConceptBinding binding) {
-        return PreferencePropertyDouble.create(klPeerable, binding);
+    public static PreferencePropertyDouble doubleProp(KlObject klObject, ClassConceptBinding binding) {
+        return PreferencePropertyDouble.create(klObject, binding);
     }
 
     /**
@@ -169,12 +170,12 @@ public abstract class PreferenceProperty<DT, I extends Property<DT>> implements 
      * and {@code ClassConceptBinding}. This method initializes a preference property object
      * configured with the specified klObject and binding.
      *
-     * @param klPeerable the {@code KlObject} instance associated with the preference property.
+     * @param klObject the {@code KlObject} instance associated with the preference property.
      * @param binding  the {@code ClassConceptBinding} used to define bindings and initialize the property.
      * @return a new instance of {@code PreferencePropertyObject} configured with the given klObject and binding.
      */
-    public static PreferencePropertyObject objectProp(KlPeerable klPeerable, ClassConceptBinding binding) {
-        return PreferencePropertyObject.create(klPeerable, binding);
+    public static PreferencePropertyObject objectProp(KlObject klObject, ClassConceptBinding binding) {
+        return PreferencePropertyObject.create(klObject, binding);
     }
 
     @Override
@@ -240,7 +241,7 @@ public abstract class PreferenceProperty<DT, I extends Property<DT>> implements 
      */
     @Override
     public String getName() {
-        if (this.getBean() != null && this.getBean() instanceof KlView gadget) {
+        if (this.getBean() != null && this.getBean() instanceof KlGadget gadget) {
             if (PrimitiveData.get().hasPublicId(this.binding.publicId())) {
                 //TODO need calculator to accept publicIds in addition to nids...
                 Optional<String> optionalText = gadget.viewForContext().getDescriptionText(

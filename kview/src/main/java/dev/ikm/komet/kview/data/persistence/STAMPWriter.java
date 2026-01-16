@@ -18,7 +18,6 @@ package dev.ikm.komet.kview.data.persistence;
 import dev.ikm.komet.kview.data.schema.STAMPDetail;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.*;
-import org.eclipse.collections.impl.factory.primitive.LongLists;
 
 import java.util.UUID;
 
@@ -52,7 +51,7 @@ public class STAMPWriter implements Writer {
                 .nid(stampNid)
                 .leastSignificantBits(primordialUUID.getLeastSignificantBits())
                 .mostSignificantBits(primordialUUID.getMostSignificantBits())
-                .additionalUuidLongs(LongLists.immutable.of(additionalLongs))
+                .additionalUuidLongs(additionalLongs)
                 .versions(versions)
                 .build();
 

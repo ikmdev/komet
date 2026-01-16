@@ -1,11 +1,11 @@
 package dev.ikm.komet.layout.event;
 
-import dev.ikm.komet.layout.component.KlChronologyArea;
+import dev.ikm.komet.layout.component.KlComponentArea;
 import dev.ikm.komet.layout.selection.Selection;
 
 /**
  * Represents a request event within the Kl framework. This event carries
- * necessary information, including the recipient component that handles
+ * necessary information including the recipient component that handles
  * the event.
  */
 public interface KlRequestEvent extends KlEvent {
@@ -14,7 +14,7 @@ public interface KlRequestEvent extends KlEvent {
      *
      * @return the recipient component associated with this event.
      */
-    KlChronologyArea recipient();
+    KlComponentArea recipient();
 
     /**
      * Retrieves the selection upon which the event's requested action is targeted.

@@ -21,7 +21,6 @@ import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -30,7 +29,6 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import dev.ikm.komet.kleditorapp.view.KLEditorMainScreenController;
 
 import java.io.IOException;
 import java.util.*;
@@ -38,10 +36,6 @@ import java.util.*;
 import static dev.ikm.komet.app.App.IS_BROWSER;
 import static dev.ikm.komet.app.App.IS_MAC;
 import static dev.ikm.komet.app.AppState.SHUTDOWN;
-import static dev.ikm.komet.app.util.CssFile.ICONS;
-import static dev.ikm.komet.app.util.CssFile.KLCORE_CSS;
-import static dev.ikm.komet.app.util.CssFile.KLEDITOR_CSS;
-import static dev.ikm.komet.app.util.CssFile.KLEDITOR_WINDOW_CSS;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
@@ -55,7 +49,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.JOURNAL_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.*;
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
-import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
 import static javafx.scene.layout.Region.USE_COMPUTED_SIZE;
 
 public class AppPages {
@@ -325,105 +318,6 @@ public class AppPages {
             app.webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
         } else {
             journalStage.show();
-        }
-    }
-
-    /**
-     * Launchs a new KE Editor Window
-     *
-     * @param klWindowSettings if present will give the size and positioning of the journal window
-     */
-    void launchKLEditorViewPage(PrefX klWindowSettings, ConceptFacade loggedInUser, String windowToLoad) {
-        Objects.requireNonNull(klWindowSettings, "klWindowSettings cannot be null");
-
-        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
-        final WindowSettings windowSettings = new WindowSettings(klEditorAppPreferences);
-
-//        final UUID klTopic = klWindowSettings.getValue(KL_TOPIC);
-//        Objects.requireNonNull(klTopic, "klTopic cannot be null");
-
-        ObservableEditCoordinate editCoordinate = windowSettings.getView().editCoordinate();
-        editCoordinate.authorForChangesProperty().setValue(loggedInUser);
-
-        FXMLLoader loader = new FXMLLoader(KLEditorMainScreenController.class.getResource("KLEditorMainScreen.fxml"));
-        Parent root = null;
-        try {
-            root = loader.load();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        KLEditorMainScreenController klEditorMainScreenController = loader.getController();
-
-        klEditorMainScreenController.init(klEditorAppPreferences, windowSettings, windowToLoad);
-
-        Scene sourceScene = new Scene(root, DEFAULT_JOURNAL_WIDTH, DEFAULT_JOURNAL_HEIGHT);
-        addStylesheets(sourceScene, KLEDITOR_CSS, KLCORE_CSS, KLEDITOR_WINDOW_CSS, ICONS);
-
-        Stage klEditorWindowStage = new Stage();
-        klEditorWindowStage.getIcons().setAll(app.appIcon);
-        klEditorWindowStage.setScene(sourceScene);
-
-//        if (!IS_MAC) {
-//            app.appMenu.generateMsWindowsMenu(root, klEditorWindowStage);
-//        }
-
-        // load journal specific window settings
-        klEditorWindowStage.setTitle("Knowledge Layout Editor");
-
-        // Get the UUID-based directory name from preferences
-//        String journalDirName = klWindowSettings.getValue(JOURNAL_DIR_NAME);
-
-        // For new journals (no UUID yet), generate one using the controller's UUID
-//        if (journalDirName == null) {
-//            journalDirName = journalController.getJournalDirName();
-//            klWindowSettings.setValue(JOURNAL_DIR_NAME, journalDirName);
-//        }
-
-//        if (klWindowSettings.getValue(JOURNAL_HEIGHT) != null) {
-//            klEditorWindowStage.setHeight(klWindowSettings.getValue(JOURNAL_HEIGHT));
-//            klEditorWindowStage.setWidth(klWindowSettings.getValue(JOURNAL_WIDTH));
-//            klEditorWindowStage.setX(klWindowSettings.getValue(JOURNAL_XPOS));
-//            klEditorWindowStage.setY(klWindowSettings.getValue(JOURNAL_YPOS));
-//            journalController.restoreWindows(windowSettings, klWindowSettings);
-//        } else {
-//            klEditorWindowStage.setMaximized(true);
-//        }
-        klEditorWindowStage.setMaximized(true);
-
-        klEditorWindowStage.setOnHidden(windowEvent -> {
-            klEditorMainScreenController.shutdown();
-//            app.saveJournalWindowsToPreferences();
-//            journalController.shutdown();
-//            app.journalControllersList.remove(journalController);
-//
-//            klWindowSettings.setValue(CAN_DELETE, true);
-//            app.kViewEventBus.publish(JOURNAL_TOPIC,
-//                    new JournalTileEvent(this, UPDATE_JOURNAL_TILE, klWindowSettings));
-        });
-
-        klEditorWindowStage.setOnShown(windowEvent -> {
-//            KometNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
-//            KometNodeFactory searchNodeFactory = new SearchNodeFactory();
-//
-//            journalController.launchKometFactoryNodes(
-//                    klWindowSettings.getValue(JOURNAL_TITLE),
-//                    navigatorNodeFactory,
-//                    searchNodeFactory);
-//            // load additional panels
-//            journalController.loadNextGenReasonerPanel();
-//            journalController.loadNextGenSearchPanel();
-        });
-
-        // disable the delete menu option for a Journal Card.
-//        klWindowSettings.setValue(CAN_DELETE, false);
-//        app.kViewEventBus.publish(JOURNAL_TOPIC, new JournalTileEvent(this, UPDATE_JOURNAL_TILE, klWindowSettings));
-//        app.journalControllersList.add(journalController);
-
-        if (IS_BROWSER) {
-            app.webAPI.openStageAsTab(klEditorWindowStage, "KL Editor");
-        } else {
-            klEditorWindowStage.show();
         }
     }
 }

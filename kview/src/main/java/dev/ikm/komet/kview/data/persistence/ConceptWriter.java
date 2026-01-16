@@ -17,7 +17,6 @@ package dev.ikm.komet.kview.data.persistence;
 
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.*;
-import org.eclipse.collections.impl.factory.primitive.LongLists;
 
 import java.util.UUID;
 
@@ -48,7 +47,7 @@ public class ConceptWriter implements Writer {
                 .nid(conceptNid)
                 .leastSignificantBits(primordialUUID.getLeastSignificantBits())
                 .mostSignificantBits(primordialUUID.getMostSignificantBits())
-                .additionalUuidLongs(LongLists.immutable.of(additionalLongs))
+                .additionalUuidLongs(additionalLongs)
                 .versions(versions)
                 .build();
 

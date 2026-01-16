@@ -21,7 +21,6 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.*;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.primitive.LongLists;
 
 import java.util.List;
 import java.util.UUID;
@@ -58,7 +57,7 @@ public class PatternWriter implements Writer {
                 .nid(patternNid)
                 .leastSignificantBits(primordialUUID.getLeastSignificantBits())
                 .mostSignificantBits(primordialUUID.getMostSignificantBits())
-                .additionalUuidLongs(LongLists.immutable.of(additionalLongs))
+                .additionalUuidLongs(additionalLongs)
                 .versions(versions.toImmutable())
                 .build();
 

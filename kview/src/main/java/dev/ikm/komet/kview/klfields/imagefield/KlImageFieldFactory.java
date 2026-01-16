@@ -1,16 +1,17 @@
 package dev.ikm.komet.kview.klfields.imagefield;
 
 import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.layout.version.field.KlField;
-import dev.ikm.komet.layout.version.field.KlFieldFactory;
+import dev.ikm.komet.layout.component.version.field.KlField;
+import dev.ikm.komet.layout.component.version.field.KlFieldFactory;
+import dev.ikm.komet.layout.component.version.field.KlImageField;
+import javafx.scene.image.Image;
 
 public class KlImageFieldFactory implements KlFieldFactory<byte[]> {
 
     @Override
-    public KlField<byte[]> create(ObservableField<byte[]> observableField, ObservableView observableView, ObservableStamp stamp4field) {
-        return new DefaultKlImageField(observableField, observableView, stamp4field);
+    public KlField<byte[]> create(ObservableField<byte[]> observableField, ObservableView observableView, boolean editable) {
+        return new DefaultKlImageField(observableField, observableView, editable);
     }
 
     @Override

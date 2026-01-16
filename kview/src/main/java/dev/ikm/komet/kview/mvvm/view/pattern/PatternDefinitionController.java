@@ -78,8 +78,8 @@ public class PatternDefinitionController {
             patternDefinitionViewModel.setPropertyValue(IS_INVALID, patternDefinitionViewModel.hasErrorMsgs());
         };
 
-        KLComponentControl purposeComponentControl = KLComponentControlFactory.createComponentControl(patternPropertiesViewModel.getViewProperties().calculator());
-        KLComponentControl meaningComponentControl = KLComponentControlFactory.createComponentControl(patternPropertiesViewModel.getViewProperties().calculator());
+        KLComponentControl purposeComponentControl = KLComponentControlFactory.createTypeAheadComponentControl(patternPropertiesViewModel.getViewProperties().calculator());
+        KLComponentControl meaningComponentControl = KLComponentControlFactory.createTypeAheadComponentControl(patternPropertiesViewModel.getViewProperties().calculator());
 
         purposeComponentControl.setTitle("Purpose");
         meaningComponentControl.setTitle("Meaning");

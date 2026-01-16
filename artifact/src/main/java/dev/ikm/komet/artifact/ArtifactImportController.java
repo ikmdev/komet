@@ -22,7 +22,7 @@ import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.progress.ProgressHelper;
-import dev.ikm.tinkar.common.service.EntityCountSummary;
+import dev.ikm.tinkar.entity.EntityCountSummary;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -125,13 +125,13 @@ public class ArtifactImportController {
                if (entityCountSummary != null) {
                    EntityCountSummary ecs = entityCountSummary;
                    String completeMsg = importTask.getMessage();
-                   importTask.updateMessage("%s - total: %,d, C: %,d, Sem: %,d, P: %,d, Stamps: %,d".formatted(
+                   importTask.updateMessage("%s - total: %d, C: %d, Sem: %d, P: %d, Stamps: %d".formatted(
                            completeMsg,
                            ecs.getTotalCount(),
-                           ecs.conceptCount(),
-                           ecs.semanticCount(),
-                           ecs.patternCount(),
-                           ecs.stampCount())
+                           ecs.conceptsCount(),
+                           ecs.semanticsCount(),
+                           ecs.patternsCount(),
+                           ecs.stampsCount())
                    );
                }
                EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(event.getSource(), GLOBAL_REFRESH));

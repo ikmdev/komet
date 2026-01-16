@@ -34,7 +34,6 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.docbook;
     exports dev.ikm.komet.framework.graphics;
     exports dev.ikm.komet.framework.observable;
-    exports dev.ikm.komet.framework.observable.collection;
     exports dev.ikm.komet.framework.panel;
     exports dev.ikm.komet.framework.performance.impl;
     exports dev.ikm.komet.framework.performance;
@@ -52,12 +51,10 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.tabs;
     exports dev.ikm.komet.framework.panel.axiom;
     exports dev.ikm.komet.framework.events.appevents;
-    exports dev.ikm.komet.framework.property;
 
     provides CachingService with dev.ikm.komet.framework.dnd.DragRegistry.CacheProvider;
     requires io.github.classgraph;
     requires dev.ikm.tinkar.collection;
-    requires com.github.benmanes.caffeine;
     requires org.kordamp.ikonli.fontawesome5;
     requires org.kordamp.ikonli.fontawesome;
     requires org.kordamp.ikonli.foundation;

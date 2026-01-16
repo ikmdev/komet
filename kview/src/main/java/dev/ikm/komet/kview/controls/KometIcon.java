@@ -8,9 +8,7 @@ public class KometIcon extends StackPane {
         PENCIL("pencil"),
         TRASH("trash"),
         PLUS("plus"),
-        POPULATE("populate"),
-        KL_VIEW_ONLY("kl-view-only"),           // View only KL Editor Window
-        KL_EDITABLE_VIEW("kl-editable-layout");         // Editable KL Editor Window
+        POPULATE("populate");
 
         private String styleClass;
 

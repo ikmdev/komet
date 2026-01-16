@@ -133,7 +133,9 @@ public class KLExpandableNodeListControl extends Control {
     // Visible count
     // -----------------------------------------------------------------------------------------
 
-    /* The property representing the maximum number of visible items when the control is collapsed.
+    /**
+     * The property representing the maximum number of visible items when the control is collapsed.
+     * <p>
      * This property is lazily initialized with a default value of {@link #DEFAULT_VISIBLE_COUNT}.
      */
     private IntegerProperty visibleCount;
@@ -184,7 +186,9 @@ public class KLExpandableNodeListControl extends Control {
     // Expanded
     // -----------------------------------------------------------------------------------------
 
-    /* The property representing whether this control is in an expanded state.
+    /**
+     * The property representing whether this control is in an expanded state.
+     * <p>
      * This property is lazily initialized with a default value of {@code false}.
      */
     private BooleanProperty expanded;

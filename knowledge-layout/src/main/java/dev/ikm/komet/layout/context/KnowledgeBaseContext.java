@@ -1,7 +1,7 @@
 package dev.ikm.komet.layout.context;
 
 import dev.ikm.komet.layout.KlKnowledgeBaseContext;
-import dev.ikm.komet.layout.KlPeerable;
+import dev.ikm.komet.layout.KlObject;
 import dev.ikm.komet.layout.preferences.KlProfiles;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
@@ -16,7 +16,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import java.io.File;
 import java.util.Optional;
 
-import static dev.ikm.komet.layout.KlRestorable.PreferenceKeys.INITIALIZED;
+import static dev.ikm.komet.layout.KlObject.PreferenceKeys.INITIALIZED;
 
 /**
  * The KnowledgeBaseContext class serves as a singleton implementation of KlKnowledgeBaseContext.
@@ -28,7 +28,7 @@ import static dev.ikm.komet.layout.KlRestorable.PreferenceKeys.INITIALIZED;
  * using a shared knowledge base preferences component. The internal context is initialized
  * based on preference-based configurations or with default values as required.
  */
-public final class KnowledgeBaseContext implements KlKnowledgeBaseContext {
+public class KnowledgeBaseContext implements KlKnowledgeBaseContext {
 
     public static final KnowledgeBaseContext INSTANCE = new KnowledgeBaseContext();
 
@@ -55,10 +55,6 @@ public final class KnowledgeBaseContext implements KlKnowledgeBaseContext {
         }
     }
 
-    @Override
-    public void restoreFromPreferencesOrDefaults() {
-        // All restoration logic is currently handled in the constructor.
-    }
 
     @Override
     public KlContext context() {
@@ -71,7 +67,7 @@ public final class KnowledgeBaseContext implements KlKnowledgeBaseContext {
     }
 
     @Override
-    public KlPeerable klObject() {
+    public KlObject klObject() {
         return this;
     }
 
@@ -105,7 +101,7 @@ public final class KnowledgeBaseContext implements KlKnowledgeBaseContext {
         }
 
         @Override
-        public KlPeerable klPeer() {
+        public KlObject klPeer() {
             return KnowledgeBaseContext.this;
         }
 

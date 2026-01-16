@@ -23,8 +23,8 @@ import dev.ikm.komet.kview.mvvm.view.genediting.GenEditingDetailsController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.terms.EntityBinding;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.property.ObjectProperty;
@@ -73,29 +73,9 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
             semanticComponent = null;
         } else {
             semanticComponent = entityFacade;
-            EntityHandle handle = EntityHandle.get(entityFacade.nid());
-            if (handle.isSemantic()) {
-                SemanticEntity semanticEntity = handle.asSemantic().get();
-                patternFacade = semanticEntity.pattern().toProxy();
-                refComponent = EntityHandle.get(semanticEntity.referencedComponentNid()).entity().get();
-            } else if (handle.isStamp()) {
-                //TODO: Add pattern method (facade/nid) to all entities, so that EntityBinding reference is not needed.
-                 StampEntity stampEntity = handle.asStamp().get();
-                 patternFacade = EntityBinding.Stamp.pattern();
-                 refComponent = null;
-            } else if (handle.isConcept()) {
-                //TODO: Add pattern method (facade/nid) to all entities, so that EntityBinding reference is not needed.
-                ConceptEntity conceptEntity = handle.asConcept().get();
-                patternFacade = EntityBinding.Concept.pattern();
-                refComponent = null;
-            } else if (handle.isPattern()) {
-                //TODO: Add pattern method (facade/nid) to all entities, so that EntityBinding reference is not needed.
-                PatternEntity patternEntity = handle.asPattern().get();
-                patternFacade = EntityBinding.Pattern.pattern();
-                refComponent = null;
-            } else {
-                throw new IllegalStateException("Unexpected entity type: " + handle);
-           }
+            SemanticEntity entity = (SemanticEntity) EntityService.get().getEntity(entityFacade.nid()).get();
+            patternFacade = entity.pattern().toProxy();
+            refComponent = EntityService.get().getEntity(entity.referencedComponentNid()).get();
         }
         Config config = new Config(GenEditingDetailsController.class.getResource("genediting-details.fxml"))
                 .updateViewModel("genEditingViewModel", genEditingViewModel ->

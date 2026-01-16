@@ -53,6 +53,7 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
+import dev.ikm.tinkar.provider.search.TypeAheadSearch;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -70,6 +71,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
+import javafx.util.StringConverter;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -142,6 +144,7 @@ public class NextGenSearchController {
         eventBus = EvtBusFactory.getDefaultEvtBus();
 
         clearView();
+        setUpTypeAhead();
         setUpSearchOptionsPopOver();
 
         Subscriber<SearchSortOptionEvent> searchSortOptionListener = (evt -> {
@@ -236,12 +239,35 @@ public class NextGenSearchController {
                         new SearchCellDescriptionSemantic(getViewProperties(), getJournalTopic(), getViewProperties().parentView()));
             case NID ->
                 searchResultsListView.setCellFactory((Callback<ListView<Integer>, ListCell<Integer>>) param ->
-                        new SearchCellNid(getViewProperties(),  getJournalTopic(), getViewProperties().parentView()));
+                        new SearchCellNid(getViewProperties(), getViewProperties().parentView(), getJournalTopic()));
         }
 
         currentSearchResultType = newSearchResultType;
     }
 
+    private void setUpTypeAhead() {
+        searchField.setCompleter(newSearchText -> {
+            TypeAheadSearch typeAheadSearch = TypeAheadSearch.get();
+            List<EntityFacade> entityFacadeResults = typeAheadSearch.typeAheadSuggestions(
+                getViewProperties().nodeView().calculator().navigationCalculator(), /* nav calculator */
+                searchField.getText(), /* text */
+                10  /* max results returned */
+            );
+            return entityFacadeResults;
+        });
+
+        searchField.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(EntityFacade entityFacade) {
+                return getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(entityFacade.nid());
+            }
+
+            @Override
+            public EntityFacade fromString(String string) {
+                return null;
+            }
+        });
+    }
 
     private void setUpSearchOptionsPopOver() {
         JFXNode<Pane, SortOptionsController> sortJFXNode = FXMLMvvmLoader

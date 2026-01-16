@@ -142,7 +142,9 @@ public class GlassPane extends Pane {
         return showTransition.getToValue();
     }
 
-    /* A property representing the showing state of the glass pane. */
+    /**
+     * A property representing the showing state of the glass pane.
+     */
     private ReadOnlyBooleanWrapper showing;
     
     /**

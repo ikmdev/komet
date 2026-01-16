@@ -19,7 +19,6 @@ import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.tinkar.entity.EntityHandle;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -80,7 +79,7 @@ public class EntityLabel extends Label {
         openConceptButton.setOnMouseClicked(this::handleShowConceptNodeClick);
         ContextMenu contextMenu = new ContextMenu();
         this.setContextMenu(contextMenu);
-        Menu copyMenu = MenuSupplierForFocusedEntity.makeCopyMenuItem(EntityHandle.get(this.entityNid).asEntity(), this.viewProperties);
+        Menu copyMenu = MenuSupplierForFocusedEntity.makeCopyMenuItem(Optional.of(Entity.getFast(this.entityNid)), this.viewProperties);
         contextMenu.getItems().addAll(copyMenu.getItems());
     }
 
@@ -92,10 +91,8 @@ public class EntityLabel extends Label {
 
         db.setDragView(dragImageMaker.getDragImage());
 
-        EntityHandle.get(entityNid).ifPresent(entity -> {
-            KometClipboard content = new KometClipboard(entity);
-            db.setContent(content);
-        });
+        KometClipboard content = new KometClipboard((Entity) Entity.getFast(entityNid));
+        db.setContent(content);
         event.consume();
     }
 

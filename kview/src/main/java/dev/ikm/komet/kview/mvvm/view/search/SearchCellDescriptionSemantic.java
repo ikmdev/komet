@@ -4,12 +4,13 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ListCell;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.Config;
@@ -28,14 +29,18 @@ import java.util.UUID;
 // on and listen for changes in the ListView items. So we always need to check the type of the item passed in
 // to updateItem. We need to check its type to make sure the current ListView item being passed in still applies
 // to the cell
-public class SearchCellDescriptionSemantic extends SearchCellBase {
+public class SearchCellDescriptionSemantic extends ListCell {
     public static final String SORT_SEMANTIC_RESULT_CONCEPT_FXML = "search-result-semantic-entry.fxml";
 
     private SortResultSemanticEntryController controller;
     private Node content;
+    private final ViewProperties viewProperties;
+    private ObservableViewNoOverride observableViewNoOverride;
 
     public SearchCellDescriptionSemantic(ViewProperties viewProperties, UUID journalTopic, ObservableViewNoOverride observableViewNoOverride) {
-        super(viewProperties, journalTopic, observableViewNoOverride);
+
+        this.viewProperties = viewProperties;
+        this.observableViewNoOverride = observableViewNoOverride;
         Config config = new Config(SortResultSemanticEntryController.class.getResource(SORT_SEMANTIC_RESULT_CONCEPT_FXML));
         config.updateViewModel("searchEntryViewModel", (searchEntryViewModel) ->
                 searchEntryViewModel
@@ -47,21 +52,6 @@ public class SearchCellDescriptionSemantic extends SearchCellBase {
         controller = searchSemanticEntryJFXNode.controller();
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
-    }
-
-    @Override
-    protected void onPopulateConcept(ActionEvent actionEvent) {
-        controller.populateConcept(actionEvent);
-    }
-
-    @Override
-    protected void onOpenInConceptNavigator(ActionEvent actionEvent) {
-        controller.openInConceptNavigator(actionEvent);
-    }
-
-    @Override
-    protected void onOpenAsKLWindow(ActionEvent actionEvent, String windowTitle) {
-        controller.openAsKLWindow(actionEvent, windowTitle);
     }
 
     @Override

@@ -39,6 +39,9 @@ public class KLReadOnlyDataTypeControlSkin<T> extends KLReadOnlyBaseControlSkin<
             }
         });
 
+        textLabel.setPrefWidth(Double.MAX_VALUE);
+        textLabel.setMaxWidth(Region.USE_PREF_SIZE);
+
         initTexts(control);
 
         addMenuItemsToContextMenu(control);

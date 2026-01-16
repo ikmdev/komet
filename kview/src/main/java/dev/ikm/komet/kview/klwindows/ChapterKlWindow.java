@@ -28,7 +28,7 @@ import java.util.UUID;
  * @param <T> the type parameter representing the root JavaFX node that this window contains
  *            and manages. Must extend {@link Node}.
  */
-public interface ChapterKlWindow<T extends Node> extends KlJournalWindow {
+public interface ChapterKlWindow<T extends Node> extends KlJournalWindow<T> {
 
     /**
      * Sets a callback that is invoked when this window is closed.

@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.changeset;
 
 import com.jpro.webapi.WebAPI;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -33,6 +34,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -348,7 +350,7 @@ public class ExportController {
             }
 
             ExportEntitiesToProtobufFile exportEntities = new ExportEntitiesToProtobufFile(exportFile, fromDate, toDate);
-            CompletableFuture<dev.ikm.tinkar.common.service.EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
+            CompletableFuture<EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
 
             exportFuture.handle((result, throwable) -> {
                 if (throwable != null) {
@@ -381,7 +383,7 @@ public class ExportController {
                         EntityService.get().getEntityFast(Integer.parseInt(tagsDataModel.tagNid)).publicId()
                     ).toList();
             ExportEntitiesToProtobufFile exportEntities = new ExportEntitiesToProtobufFile(exportFile, membershipPublicIds);
-            CompletableFuture<dev.ikm.tinkar.common.service.EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
+            CompletableFuture<EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
 
             exportFuture.handle((result, throwable) -> {
                 if (throwable != null) {
@@ -400,12 +402,12 @@ public class ExportController {
         });
     }
 
-    private void logExportResults(dev.ikm.tinkar.common.service.EntityCountSummary exportResult) {
-        LOG.info("Exported Total records: {}", exportResult.conceptCount());
-        LOG.info("Exported      Concepts: {}", exportResult.conceptCount());
-        LOG.info("Exported     Patterns : {}", exportResult.patternCount());
-        LOG.info("Exported     Semantics: {}", exportResult.semanticCount());
-        LOG.info("Exported        Stamps: {}", exportResult.stampCount());
+    private void logExportResults(EntityCountSummary exportResult) {
+        LOG.info("Exported Total records: {}", exportResult.conceptsCount());
+        LOG.info("Exported      Concepts: {}", exportResult.conceptsCount());
+        LOG.info("Exported     Patterns : {}", exportResult.patternsCount());
+        LOG.info("Exported     Semantics: {}", exportResult.semanticsCount());
+        LOG.info("Exported        Stamps: {}", exportResult.stampsCount());
     }
 
     private long transformStringInLocalDateTimeToEpochMillis(String localDateTimeFormat) {

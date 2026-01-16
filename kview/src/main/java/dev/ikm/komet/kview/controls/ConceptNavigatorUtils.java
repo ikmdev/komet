@@ -92,11 +92,6 @@ public class ConceptNavigatorUtils {
      */
     public static WritableImage getTileSnapshot(ConceptTile tile) {
         SnapshotParameters p = new SnapshotParameters();
-        if (tile.getScene() == null || tile.getScene().getWindow() == null) {
-            // in case the tile is not yet attached to a scene or window
-            // or was removed from the scene
-            return null;
-        }
         double scale = tile.getScene().getWindow().getOutputScaleY();
         p.setTransform(new Scale(scale, scale));
         return tile.snapshot(p, null);

@@ -50,12 +50,7 @@ public enum EntityKlWindowTypes implements EntityKlWindowType {
     /**
      * Window type for LIDR windows.
      */
-    LIDR("lidr_"),
-
-    /**
-     * Window type for general purpose KL windows.
-     */
-    GEN_PURPOSE_KL("knowledge_layout_");
+    LIDR("lidr_");
 
     /**
      * The unique identifier prefix for this window type.

@@ -1,7 +1,6 @@
 package dev.ikm.komet.layout.preferences;
 
 import dev.ikm.komet.preferences.KometPreferences;
-
 import java.util.function.Supplier;
 
 /**

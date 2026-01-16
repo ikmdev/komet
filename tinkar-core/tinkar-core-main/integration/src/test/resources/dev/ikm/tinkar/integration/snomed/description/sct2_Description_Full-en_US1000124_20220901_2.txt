@@ -1,2 +1,0 @@
-id	effectiveTime	active	moduleId	conceptId	languageCode	typeId	term	caseSignificanceId
-157016	20070731	0	900000000000207008	126869001	en	900000000000013009	Neoplasm of the mesentery	900000000000020002

@@ -289,7 +289,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             double height = desktopPane.getHeight();
 
             workspaceWindows.forEach(win -> {
-                Pane windowPanel = (Pane) win.klObject();
+                Pane windowPanel = win.fxGadget();
                 WindowSupport support = (WindowSupport) windowPanel.getProperties().get(WINDOW_SUPPORT_KEY);
                 if (support != null) {
                     support.constrainToParentBounds(width, height);
@@ -675,7 +675,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      */
     private void addWindow(ChapterKlWindow<Pane> window) {
         Objects.requireNonNull(window, "Window cannot be null");
-        final Pane windowPanel = window.fxObject();
+        final Pane windowPanel = window.fxGadget();
         Objects.requireNonNull(windowPanel, "Window panel cannot be null");
 
         // Create subscriptions list for all window-related subscriptions
@@ -845,7 +845,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * @param window the window to remove
      */
     private void removeWindow(ChapterKlWindow<Pane> window) {
-        final Pane windowPanel = window.fxObject();
+        final Pane windowPanel = window.fxGadget();
         desktopPane.getChildren().remove(windowPanel);
 
         // Clean up WindowSupport and its subscriptions

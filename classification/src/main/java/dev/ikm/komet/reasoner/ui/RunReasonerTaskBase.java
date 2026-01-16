@@ -18,7 +18,6 @@ package dev.ikm.komet.reasoner.ui;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +57,7 @@ public abstract class RunReasonerTaskBase extends TrackingCallable<ReasonerServi
 
 	@Override
 	protected ReasonerService compute() throws Exception {
+		reasonerService.setProgressUpdater(this);
 		int workDone = 0;
 		updateProgress(workDone++);
 		loadData(workDone++);
@@ -73,7 +73,7 @@ public abstract class RunReasonerTaskBase extends TrackingCallable<ReasonerServi
 	protected void computeInferences(int workDone) throws Exception {
 		updateMessage("Step " + workDone + " of " + maxWork + ": Computing inferences");
 		ComputeInferencesTask task = new ComputeInferencesTask(reasonerService);
-		Future<ReasonerService> future = (Future<ReasonerService>) TinkExecutor.threadPool().submit(TaskWrapper.make(task));
+		Future<ReasonerService> future = TinkExecutor.threadPool().submit(task);
 		future.get();
 		updateProgress(workDone);
 	}
@@ -81,9 +81,10 @@ public abstract class RunReasonerTaskBase extends TrackingCallable<ReasonerServi
 	protected void buildNecessaryNormalForm(int workDone) throws Exception {
 		updateMessage("Step " + workDone + " of " + maxWork + ": Building necessary normal form");
 		BuildNecessaryNormalFormTask task = new BuildNecessaryNormalFormTask(reasonerService);
-		Future<ReasonerService> future = (Future<ReasonerService>) TinkExecutor.threadPool().submit(TaskWrapper.make(task));
+		Future<ReasonerService> future = TinkExecutor.threadPool().submit(task);
 		future.get();
 		updateProgress(workDone);
+
 	}
 
 	protected void processResults(int workDone) throws Exception {

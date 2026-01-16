@@ -284,10 +284,6 @@ public class ConceptPatternNavController {
             case POPULATE_SELECTION -> journalController::createConceptWindow;
             case SEND_TO_JOURNAL, SEND_TO_CHAPTER, COPY, SAVE_TO_FAVORITES -> _ -> {}; // TODO: Add implementation
         });
-        conceptNavigatorControl.setOnKLAction((conceptFacade, windowTitle) -> {
-            journalController.newCreateGenPurposeKLWindow(conceptFacade, windowTitle);
-        });
-
         searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
         searchControl.setOnSearchResultClick(_ -> conceptNavigatorControl.unhighlightConceptsWithDelay());
         searchControl.setOnClearSearch(_ -> ConceptNavigatorUtils.resetConceptNavigator(conceptNavigatorControl));

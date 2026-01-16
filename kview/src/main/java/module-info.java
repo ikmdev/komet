@@ -1,6 +1,4 @@
 import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
-import dev.ikm.komet.layout.area.KlAreaForComponent;
-import dev.ikm.komet.layout.area.KlAreaForComponentChronology;
 
 /*
  * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
@@ -45,11 +43,6 @@ module dev.ikm.komet.kview {
     requires org.slf4j;
     requires javafx.base;
     requires dev.ikm.tinkar.common;
-    requires dev.ikm.tinkar.component;
-    requires dev.ikm.tinkar.entity;
-    requires dev.ikm.tinkar.terms;
-    requires dev.ikm.tinkar.events;
-    requires dev.ikm.komet.preferences;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
@@ -143,9 +136,6 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.pattern to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.events.pattern;
 
-    exports dev.ikm.komet.kview.mvvm.view.genpurpose;
-    opens dev.ikm.komet.kview.mvvm.view.genpurpose to javafx.fxml, org.carlfx.cognitive;
-
     exports dev.ikm.komet.kview.mvvm.view.navigation;
     opens dev.ikm.komet.kview.mvvm.view.navigation to javafx.fxml, org.carlfx.cognitive;
 
@@ -180,63 +170,8 @@ module dev.ikm.komet.kview {
             dev.ikm.komet.kview.klwindows.concept.ConceptKlWindowFactory,
             dev.ikm.komet.kview.klwindows.pattern.PatternKlWindowFactory,
             dev.ikm.komet.kview.klwindows.lidr.LidrKlWindowFactory,
-            dev.ikm.komet.kview.klwindows.genediting.GenEditingKlWindowFactory,
-            dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindowFactory;
+            dev.ikm.komet.kview.klwindows.genediting.GenEditingKlWindowFactory;
 
     uses dev.ikm.tinkar.events.EvtBus;
     uses EntityKlWindowFactory;
-
-    // Primary service interface for discovering ALL area factories (built-in and plugins)
-    provides dev.ikm.komet.layout.KlArea.Factory with
-            dev.ikm.komet.kview.klauthoring.readonly.booleanfield.ReadOnlyBooleanFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.booleanfield.EditableBooleanFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.readonly.componentfield.ReadOnlyObservableChronologyFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.componentfield.EditableComponentFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.readonly.componentlistfield.ReadOnlyComponentListFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.componentlistfield.EditableComponentListFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.readonly.componentsetfield.ReadOnlyComponentSetFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.componentsetfield.EditableComponentSetFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.readonly.floatfield.ReadOnlyFloatFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.floatfield.EditableFloatFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.readonly.imagefield.ReadOnlyImageFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.imagefield.EditableImageFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.readonly.integerfield.ReadOnlyIntegerFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.integerfield.EditableIntegerFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.readonly.stringfield.ReadOnlyStringFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.stringfield.EditableStringFieldArea.Factory;
-
-    // Primary service interface for discovering ALL feature area factories (built-in and plugins)
-    provides dev.ikm.komet.layout.area.KlAreaForBoolean.Factory with
-            dev.ikm.komet.kview.klauthoring.readonly.booleanfield.ReadOnlyBooleanFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.booleanfield.EditableBooleanFieldArea.Factory;
-
-    provides KlAreaForComponentChronology.Factory with
-            dev.ikm.komet.kview.klauthoring.readonly.componentfield.ReadOnlyObservableChronologyFieldArea.Factory;
-
-    provides KlAreaForComponent.Factory with
-            dev.ikm.komet.kview.klauthoring.editable.componentfield.EditableComponentFieldArea.Factory;
-
-    provides dev.ikm.komet.layout.area.KlAreaForIntIdList.Factory with
-            dev.ikm.komet.kview.klauthoring.readonly.componentlistfield.ReadOnlyComponentListFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.componentlistfield.EditableComponentListFieldArea.Factory;
-
-    provides dev.ikm.komet.layout.area.KlAreaForIntIdSet.Factory with
-            dev.ikm.komet.kview.klauthoring.readonly.componentsetfield.ReadOnlyComponentSetFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.componentsetfield.EditableComponentSetFieldArea.Factory;
-
-    provides dev.ikm.komet.layout.area.KlAreaForFloat.Factory with
-            dev.ikm.komet.kview.klauthoring.readonly.floatfield.ReadOnlyFloatFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.floatfield.EditableFloatFieldArea.Factory;
-
-    provides dev.ikm.komet.layout.area.KlAreaForImage.Factory with
-            dev.ikm.komet.kview.klauthoring.readonly.imagefield.ReadOnlyImageFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.imagefield.EditableImageFieldArea.Factory;
-
-    provides dev.ikm.komet.layout.area.KlAreaForInteger.Factory with
-            dev.ikm.komet.kview.klauthoring.readonly.integerfield.ReadOnlyIntegerFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.integerfield.EditableIntegerFieldArea.Factory;
-
-    provides dev.ikm.komet.layout.area.KlAreaForString.Factory with
-            dev.ikm.komet.kview.klauthoring.readonly.stringfield.ReadOnlyStringFieldArea.Factory,
-            dev.ikm.komet.kview.klauthoring.editable.stringfield.EditableStringFieldArea.Factory;
 }

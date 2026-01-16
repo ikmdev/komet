@@ -66,27 +66,27 @@ public class DataModelHelper {
     public static Set<ConceptEntity> fetchFieldDefinitionDataTypes() {
         return Set.of(
 // unsupported datatypes are commented out
-                EntityHandle.getConceptOrThrow(STRING.nid()),
-                EntityHandle.getConceptOrThrow(COMPONENT_FIELD.nid()),
-                EntityHandle.getConceptOrThrow(COMPONENT_ID_SET_FIELD.nid()),
-                EntityHandle.getConceptOrThrow(COMPONENT_ID_LIST_FIELD.nid()),
-//                EntityHandle.getConceptOrThrow(DITREE_FIELD.nid()),
-//                EntityHandle.getConceptOrThrow(DIGRAPH_FIELD.nid()),
-//                EntityHandle.getConceptOrThrow(CONCEPT_FIELD.nid()),
-//                EntityHandle.getConceptOrThrow(SEMANTIC_FIELD_TYPE.nid()),
-                EntityHandle.getConceptOrThrow(INTEGER_FIELD.nid()),
-                EntityHandle.getConceptOrThrow(FLOAT_FIELD.nid()),
-                EntityHandle.getConceptOrThrow(BOOLEAN_FIELD.nid()),
+                Entity.getFast(STRING.nid()),
+                Entity.getFast(COMPONENT_FIELD.nid()),
+                Entity.getFast(COMPONENT_ID_SET_FIELD.nid()),
+                Entity.getFast(COMPONENT_ID_LIST_FIELD.nid()),
+//                Entity.getFast(DITREE_FIELD.nid()),
+//                Entity.getFast(DIGRAPH_FIELD.nid()),
+//                Entity.getFast(CONCEPT_FIELD.nid()),
+//                Entity.getFast(SEMANTIC_FIELD_TYPE.nid()),
+                Entity.getFast(INTEGER_FIELD.nid()),
+                Entity.getFast(FLOAT_FIELD.nid()),
+                Entity.getFast(BOOLEAN_FIELD.nid()),
                 //FIXME add byte array as its own type that is NOT an image
-                EntityHandle.getConceptOrThrow(BYTE_ARRAY_FIELD.nid()),
-                EntityHandle.getConceptOrThrow(IMAGE_FIELD.nid())
-//                EntityHandle.getConceptOrThrow(ARRAY_FIELD.nid()),
-//                EntityHandle.getConceptOrThrow(INSTANT_LITERAL.nid()),
-//                EntityHandle.getConceptOrThrow(LONG.nid()),
-//                EntityHandle.getConceptOrThrow(VERTEX_FIELD.nid()),
-//                EntityHandle.getConceptOrThrow(PLANAR_POINT.nid()),
-//                EntityHandle.getConceptOrThrow(SPATIAL_POINT.nid()),
-//                EntityHandle.getConceptOrThrow(UUID_DATA_TYPE.nid())
+                Entity.getFast(BYTE_ARRAY_FIELD.nid()),
+                Entity.getFast(IMAGE_FIELD.nid())
+//                Entity.getFast(ARRAY_FIELD.nid()),
+//                Entity.getFast(INSTANT_LITERAL.nid()),
+//                Entity.getFast(LONG.nid()),
+//                Entity.getFast(VERTEX_FIELD.nid()),
+//                Entity.getFast(PLANAR_POINT.nid()),
+//                Entity.getFast(SPATIAL_POINT.nid()),
+//                Entity.getFast(UUID_DATA_TYPE.nid())
         );
     }
 
@@ -103,9 +103,9 @@ public class DataModelHelper {
         Set<ConceptEntity> conceptEntitySet = new TreeSet<>();
 
         for (int i = 0; i < intIdList.size(); i++) {
-            ConceptEntity concept = EntityHandle.getConceptOrThrow(intIdList.get(i));
-            if (isSupportedDataTypes(concept.nid())) {
-                conceptEntitySet.add(concept);
+            EntityFacade entity = Entity.getFast(intIdList.get(i));
+            if (isSupportedDataTypes(entity.nid())) {
+                conceptEntitySet.add((ConceptEntity) entity);
             }
         }
         return conceptEntitySet;
@@ -182,7 +182,18 @@ public class DataModelHelper {
      *         doesn't exist or isn't a ConceptEntity
      */
     private static ConceptEntity getConceptEntitySafely(int nid) {
-        return EntityHandle.get(nid).expectConcept();
+        Entity<?> entity = Entity.getFast(nid);
+        if (entity instanceof ConceptEntity) {
+            // Using simple raw type cast for consistency
+            return (ConceptEntity) entity;
+        }
+        if (entity == null) {
+            LOG.warn("Entity not found for nid: {}", nid);
+        } else {
+            LOG.warn("Entity is not a ConceptEntity for nid: {}, actual type: {}",
+                    nid, entity.getClass().getName());
+        }
+        return null;
     }
 
     /**
@@ -273,7 +284,7 @@ public class DataModelHelper {
             transaction.addComponent(newSemantic);
             Entity.provider().putEntity(newSemantic);
         }, () -> {
-            throw new IllegalStateException("No latest pattern version for: " + EntityHandle.getEntityOrThrow(pattern));
+            throw new IllegalStateException("No latest pattern version for: " + Entity.getFast(pattern));
         });
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
         TinkExecutor.threadPool().submit(commitTransactionTask);
@@ -281,7 +292,7 @@ public class DataModelHelper {
     }
 
     private static void updateSemantic(EntityFacade pattern, int semanticNid, EditCoordinateRecord editCoordinateRecord, ViewCalculator viewCalculator, boolean active) {
-        SemanticRecord semanticEntity = EntityHandle.get(semanticNid).expectSemanticRecord();
+        SemanticRecord semanticEntity = Entity.getFast(semanticNid);
         Transaction transaction = Transaction.make();
         ViewCoordinateRecord viewRecord = viewCalculator.viewCoordinateRecord();
 
@@ -295,7 +306,7 @@ public class DataModelHelper {
             transaction.addComponent(analogue);
             Entity.provider().putEntity(analogue);
         }, () -> {
-            throw new IllegalStateException("No latest pattern version for: " + EntityHandle.getEntityOrThrow(pattern));
+            throw new IllegalStateException("No latest pattern version for: " + Entity.getFast(pattern));
         });
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
         TinkExecutor.threadPool().submit(commitTransactionTask);
@@ -339,9 +350,7 @@ public class DataModelHelper {
                     semanticEntityVersion.fieldValues().get(i),
                     semanticEntityVersion.nid(),
                     semanticEntityVersion.stampNid(),
-                    fieldDefinitionForEntities.get(i).patternNid(),
-                    fieldDefinitionForEntities.get(i).indexInPattern()
-                    )
+                    fieldDefinitionForEntities.get(i))
             );
         }
         return fieldRecords;
