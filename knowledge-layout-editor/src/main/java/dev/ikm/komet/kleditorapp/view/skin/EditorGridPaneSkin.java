@@ -26,17 +26,19 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
 public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
     private static final int DRAG_LINE_THICKNESS = 5;
-    private static final PseudoClass MOUSE_HOVER_WHILE_DRAGGING_PSEUDO_CLASS = PseudoClass.getPseudoClass("mouse-hover-dragging");
 
     private final GridPane gridPane = new GridPane();
     private final List<GridTile> gridTiles = new ArrayList<>();
 
     private GridTile currentMouseHoverGridTile;
+
+    private HashMap<GridBaseControl, List<Node>> gridControlDragHandles = new HashMap<>();
 
     /**
      * Constructor for EditorGridPaneSkin instances.
@@ -80,6 +82,13 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
                     gridPane.getChildren().add(gridBaseControl);
 
                     initGridControl(gridBaseControl);
+                });
+            }
+            if (change.wasRemoved()) {
+                change.getRemoved().forEach(gridControl -> {
+                    gridPane.getChildren().removeAll(gridControl);
+                    gridPane.getChildren().removeAll(gridControlDragHandles.get(gridControl));
+                    gridControlDragHandles.remove(gridControl);
                 });
             }
         }
@@ -202,12 +211,16 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
         bottomEdge.setFill(Color.TRANSPARENT);
         bottomEdge.setStroke(Color.TRANSPARENT);
 
-        // Add children to scene graph
-        getChildren().addAll(
+        List<Node> dragHandles = List.of(
             rectWhileDragging,
             rightEdge,
             bottomEdge
         );
+
+        // Add children to scene graph AND
+        // add dragHandles to map with gridBaseControl key
+        getChildren().addAll(dragHandles);
+        gridControlDragHandles.put(gridBaseControl, dragHandles);
 
         gridBaseControl.boundsInParentProperty().subscribe(bounds -> {
             // Update drag handles and drag visuals if control changes bounds
@@ -274,6 +287,8 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
 
             currentMouseHoverGridTile = null;
         });
+
+        //=====================  Setup mouse events on Bottom Edge  ==========================
 
         bottomEdge.setOnMouseDragged(mouseEvent -> {
             double mouseY = bottomEdge.localToParent(0, mouseEvent.getY()).getY();

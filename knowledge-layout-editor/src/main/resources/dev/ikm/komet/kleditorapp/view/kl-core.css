@@ -187,6 +187,10 @@
     -fx-border-width: 0;
 }
 
+.text-field:readonly {
+    -fx-opacity: 0.4;
+}
+
 .text-field:focused {
     -fx-background-color: #8ab4f8, white;
     -fx-background-insets: 0, 2;

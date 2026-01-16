@@ -28,6 +28,8 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
     private ObjectProperty<Integer> lastColumnsSectionProperty;
 
     public SectionPropertiesPane() {
+        super(true);
+
         // Section name container
         VBox sectionNameContainer = new VBox();
         sectionNameContainer.getStyleClass().add("section-name-container");
