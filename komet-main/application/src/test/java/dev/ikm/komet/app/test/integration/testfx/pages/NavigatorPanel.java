@@ -29,20 +29,7 @@ import javafx.scene.input.MouseButton;
 
 
 public class NavigatorPanel extends BasePage {
-
-    private static final String SELECTOR_NEXTGEN_NAVIGATOR_BUTTON = "#navigatorToggleButton";
-    private static final String SELECTOR_NEXTGEN_SEARCH_BUTTON = "#nextGenSearchToggleButton";
-    private static final String SELECTOR_REASONER_BUTTON = "#reasonerToggleButton";
-    private static final String SELECTOR_SEARCH_BUTTON = "#searchToggleButton";
-    private static final String SELECTOR_NAVIGATOR_BUTTON = "#conceptNavigatorToggleButton";
-    private static final String SELECTOR_NEXTGEN_REASONER_BUTTON = "#nextGenReasonerToggleButton";
-    private static final String SELECTOR_SETTINGS_BUTTON = "#settingsToggleButton";
-    private static final String SELECTOR_CREATE_BUTTON = "#addButton";
-    private static final String SELECTOR_CONCEPTS_BUTTON = "#conceptsToggleButton";
-    private static final String SELECTOR_PATTERNS_BUTTON = "#patternsToggleButton";
-
-
-    
+   
     public NavigatorPanel(FxRobot robot) {
         super(robot);
     }

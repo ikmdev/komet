@@ -1,9 +1,13 @@
 package dev.ikm.komet.app.test.integration.testfx.helpers.workflows;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testfx.api.FxRobot;
+import dev.ikm.komet.app.test.integration.testfx.pages.GitHubConnectionPage;
 import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
 
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
+
 
 /**
  * Workflow helper for generating Device Extension (DeX) data.
@@ -23,6 +27,10 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
  */
 public class GenerateDeXData extends BaseWorkflow {
 
+    private static final Logger LOG = LoggerFactory.getLogger(GenerateDeXData.class);
+    private final Reasoner reasoner;
+    private final GitHubConnectionPage gitHubConnectionPage;
+
     /**
      * Constructs a GenerateDeXData workflow helper.
      * 
@@ -31,6 +39,8 @@ public class GenerateDeXData extends BaseWorkflow {
      */
     public GenerateDeXData(FxRobot robot, TestReporter reporter) {
         super(robot, reporter);
+        this.reasoner = new Reasoner(robot, reporter);
+        this.gitHubConnectionPage = new GitHubConnectionPage(robot, reporter);
     }
 
     /**
@@ -60,7 +70,6 @@ public class GenerateDeXData extends BaseWorkflow {
                         navigator.clickNextgenSearch();
                         navigator.nextgenSearch(suppliedBrandName);
                         navigator.openNextGenSearchResult(suppliedBrandName);
-                        //navigator.openNextGenSearchResult(identifiedDevice);
                         conceptPane.clickCopyButton();
                         reporter.logAfterStep("Step 35: Searched for the identified device successfully");
                 } catch (Exception e) {
@@ -81,20 +90,9 @@ public class GenerateDeXData extends BaseWorkflow {
                         throw e;
                 }
                 
-                //Steps 37 - 48 omitted
-
-                /*
                 
-                // Step 49: Run Reasoner
-                reasoner.runReasoner();     
-
-                // Step 50: Click Info
-                gitHubConnection.clickInfo();
-
-                // Step 51: Click Sync
-                gitHubConnection.clickSync();
-
-                */
+                //Steps 37 - 48  have been omitted from the DeX data generation process for now
+                
 
                 //Close the journal
                 try {

@@ -1,5 +1,6 @@
 package dev.ikm.komet.app.test.integration.testfx.pages;
 
+import dev.ikm.komet.app.test.integration.testfx.config.TestConfiguration;
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import org.slf4j.Logger;
@@ -15,6 +16,13 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
  * page objects, following the Page Object Model design pattern. It encapsulates core
  * TestFX interactions and provides reusable functionality for UI automation.
  * 
+ * Extends TestConfiguration to provide access to all test configuration constants such as:
+ *   - SUPPLIED_BRAND_NAME
+ *   - GITHUB_USERNAME / GITHUB_PASSWORD
+ *   - DATA_SOURCE_STORE
+ *   - SOLOR_GUDID_DIRECTORY
+ *   - And all other configuration properties
+ * 
  * Key Features:
  *   Centralized FxRobot instance management
  *   Common UI interaction methods (click, type, press keys)
@@ -23,6 +31,7 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
  *   Scrolling and navigation helpers
  *   Dialog management (ESC to close)
  *   Element lookup with type safety
+ *   Access to all test configuration constants
  * 
  * Design Pattern:
  * All concrete page objects extend this base class to inherit common functionality
@@ -30,9 +39,7 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
  * a consistent API across all page objects.
  * 
  */
-
-
-public abstract class BasePage {
+public abstract class BasePage extends TestConfiguration {
     
     protected static final Logger LOG = LoggerFactory.getLogger(BasePage.class);
     protected final FxRobot robot;

@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testfx.api.FxRobot;
 import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
+import javafx.scene.input.KeyCode;
+import org.testfx.api.FxRobot;
 
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
@@ -71,19 +73,55 @@ public class Reasoner extends BaseWorkflow {
         // Step 49.d: Click "OK" on confirmation popup
         try {
             reporter.logBeforeStep("Step 49.d: Click 'OK' on confirmation popup");
-            robot.clickOn("OK");
+            robot.press(KeyCode.ENTER).release(KeyCode.ENTER);
+            waitForFxEvents();
             reporter.logAfterStep("Step 49.d: Clicked 'OK' on confirmation popup successfully");
         } catch (Exception e) {
             reporter.logFailure("Step 49.d: Click 'OK' on confirmation popup", e);
             throw e;
         }
 
-        //Wait until resaoner is completed before proceeding
+        // Wait until reasoner is completed before proceeding
         try {
-            reporter.logBeforeStep("Waiting for reasoner to complete");
-            //TODO: wait until reasoner is complete, periodically checking status
+            reporter.logBeforeStep("Step 49.e: Waiting for reasoner to complete");
+            
+            // Click on Activity to view task status
+            LOG.info("Opening Activity view to monitor reasoner progress");
+            navigator.clickReasoner();
             waitForFxEvents();
-            reporter.logAfterStep("Reasoner completed successfully");
+            robot.clickOn("Activity");
+            waitForFxEvents();
+            waitForMillis(1000);
+            
+            // Wait until "No tasks running" is visible (reasoner completed)
+            LOG.info("Waiting for 'No tasks running' to appear (max 2 minutes)...");
+            boolean reasonerCompleted = false;
+            long startTime = System.currentTimeMillis();
+            long timeout = 120000; // 2 minutes
+            
+            while (!reasonerCompleted && (System.currentTimeMillis() - startTime) < timeout) {
+                try {
+                    if (robot.lookup("No tasks running").tryQuery().isPresent()) {
+                        LOG.info("Reasoner completed - 'No tasks running' is now visible");
+                        reasonerCompleted = true;
+                    } else {
+                        LOG.debug("Reasoner still running, waiting...");
+                        waitForMillis(2000); // Check every 2 seconds
+                    }
+                } catch (Exception e) {
+                    LOG.debug("Still checking for reasoner completion...");
+                    waitForMillis(2000);
+                }
+            }
+            
+            if (!reasonerCompleted) {
+                LOG.error("Reasoner did not complete within 2 minutes");
+                throw new RuntimeException("Reasoner timeout - did not complete within 2 minutes");
+            }
+            
+            waitForFxEvents();
+            reporter.logAfterStep("Reasoner completed successfully - 'No tasks running' detected");
+            
         } catch (Exception e) {
             reporter.logFailure("Waiting for reasoner to complete", e);
             throw e;

@@ -19,7 +19,6 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 public class GitHubConnectionPage extends BasePage {
 
     private static final String GITHUB_REPO_URL = "https://github.com/ikmdev/komet";
-    private static final String SELECTOR_GITHUB_STATUS = "#githubStatusHyperlink";
     
     private final TestReporter reporter;
 
@@ -65,6 +64,9 @@ public class GitHubConnectionPage extends BasePage {
     public void clickSync() {
         try {
             reporter.logBeforeStep("Step 51: Click 'Sync'");
+            robot.clickOn("Exchange");
+            waitForFxEvents();
+            waitFor(500);
             robot.clickOn("Sync");
             waitForFxEvents();
             reporter.logAfterStep("Step 51: Clicked 'Sync' successfully");
@@ -72,20 +74,24 @@ public class GitHubConnectionPage extends BasePage {
             reporter.logFailure("Step 51: Click 'Sync'", e);
             throw e;
         }
-        waitForFxEvents();
+
     }
 
     //Click Info
     public void clickInfo() {
         try {
-            reporter.logBeforeStep("Step 3: CLICK 'Info'");
+            reporter.logBeforeStep("Step 3: Click 'Info'");
+            robot.clickOn("Exchange");
+            waitForFxEvents();
+            waitFor(500);
             robot.clickOn("Info");
             waitForFxEvents();
-            reporter.logAfterStep("Step 3: CLICK 'Info' successful");
+            robot.clickOn("CLOSE");
+            reporter.logAfterStep("Step 3: Clicked 'Info' successfully");
         } catch (Exception e) {
-            reporter.logFailure("Step 3: CLICK 'Info'", e);
+            reporter.logFailure("Step 3: Click 'Info'", e);
             throw e;
         }
-        waitForFxEvents();
+
     }
 }

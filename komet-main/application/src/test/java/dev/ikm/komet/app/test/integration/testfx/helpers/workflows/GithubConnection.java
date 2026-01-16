@@ -3,6 +3,7 @@ package dev.ikm.komet.app.test.integration.testfx.helpers.workflows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testfx.api.FxRobot;
+import dev.ikm.komet.app.test.integration.testfx.pages.GitHubConnectionPage;
 import dev.ikm.komet.app.test.integration.testfx.utils.TestReporter;
 
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
@@ -10,6 +11,7 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 public class GithubConnection extends BaseWorkflow {
 
     private static final Logger LOG = LoggerFactory.getLogger(GithubConnection.class);
+    private final GitHubConnectionPage githubConnectionPage;
 
     /**
      * Constructs a GithubConnection workflow helper.
@@ -19,6 +21,7 @@ public class GithubConnection extends BaseWorkflow {
      */
     public GithubConnection(FxRobot robot, TestReporter reporter) {
         super(robot, reporter);
+        this.githubConnectionPage = new GitHubConnectionPage(robot, reporter);
     }
 
     /**
@@ -60,6 +63,7 @@ public class GithubConnection extends BaseWorkflow {
             reporter.logBeforeStep("Step 3: CLICK 'Info'");
             robot.clickOn("Info");
             waitForFxEvents();
+            waitForMillis(500);
             reporter.logAfterStep("Step 3: CLICK 'Info' successful");
         } catch (Exception e) {
             reporter.logFailure("Step 3: CLICK 'Info'", e);
@@ -69,10 +73,7 @@ public class GithubConnection extends BaseWorkflow {
         // Step 4: Input the repo url and the user's github account info
         try {
             reporter.logBeforeStep("Step 4: INPUT Repo URL and GitHub Credentials");
-            // Note: GitHubConnectionPage needs to be instantiated
-            dev.ikm.komet.app.test.integration.testfx.pages.GitHubConnectionPage gitHubConnectionPage = new dev.ikm.komet.app.test.integration.testfx.pages.GitHubConnectionPage(
-                    robot);
-            gitHubConnectionPage.enterGitHubCredentials(githubRepoUrl, githubEmail, githubUsername, githubPassword);
+            githubConnectionPage.enterGitHubCredentials(githubRepoUrl, githubEmail, githubUsername, githubPassword);
             reporter.logAfterStep("Step 4: INPUT Repo URL and GitHub Credentials successful");
         } catch (Exception e) {
             reporter.logFailure("Step 4: INPUT Repo URL and GitHub Credentials", e);
@@ -137,4 +138,31 @@ public class GithubConnection extends BaseWorkflow {
         }
     }
 
+    /**
+     * Clicks the Info button
+     */
+    public void clickInfoButton() {
+        try {
+            reporter.logBeforeStep("Clicking Info button");
+            githubConnectionPage.clickInfo();
+            reporter.logAfterStep("Info button clicked successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Clicking Info button", e);
+            throw new RuntimeException("Failed to click Info button", e);
+        }
+    }
+    
+    /**
+     * Clicks the Sync button to synchronize with GitHub.
+     */
+    public void clickSyncButton() {
+        try {
+            reporter.logBeforeStep("Clicking Sync button");
+            githubConnectionPage.clickSync();
+            reporter.logAfterStep("Sync button clicked successfully");
+        } catch (Exception e) {
+            reporter.logFailure("Clicking Sync button", e);
+            throw new RuntimeException("Failed to click Sync button", e);
+        }
+    }
 }

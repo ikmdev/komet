@@ -2,6 +2,7 @@ package dev.ikm.komet.app.test.integration.testfx.helpers.workflows;
 
 import dev.ikm.komet.app.App;
 import dev.ikm.komet.app.AppState;
+import dev.ikm.komet.app.test.integration.testfx.config.TestConfiguration;
 import dev.ikm.komet.app.test.integration.testfx.pages.ConceptPane;
 import dev.ikm.komet.app.test.integration.testfx.pages.DataSourceSelectionPage;
 import dev.ikm.komet.app.test.integration.testfx.pages.LandingPage;
@@ -15,17 +16,34 @@ import org.testfx.api.FxRobot;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static java.nio.file.Files.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testfx.util.WaitForAsyncUtils.waitFor;
 import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 /**
- * Base class for workflow helpers.
- * Provides common dependencies and utility methods for all workflow classes.
+ * Base class for all workflow helpers in the test framework.
+ * Provides common dependencies, utility methods, and page object instances.
+ * 
+ * Extends TestConfiguration to provide access to all test configuration constants such as:
+ *   - SUPPLIED_BRAND_NAME
+ *   - GITHUB_USERNAME / GITHUB_PASSWORD
+ *   - DATA_SOURCE_STORE
+ *   - SOLOR_GUDID_DIRECTORY
+ *   - And all other configuration properties
+ * 
+ * Key Features:
+ *   Centralized page object management
+ *   Common workflow utilities (scrolling, waiting)
+ *   App state assertion methods
+ *   Access to FxRobot and TestReporter
+ *   Access to all test configuration constants
+ * 
+ * Design Pattern:
+ * All workflow classes extend this base to inherit common functionality and
+ * page object instances, promoting code reuse and consistency.
  */
-public abstract class BaseWorkflow {
+public abstract class BaseWorkflow extends TestConfiguration {
 
     protected static final Logger LOG = LoggerFactory.getLogger(BaseWorkflow.class);
 
@@ -94,33 +112,33 @@ public abstract class BaseWorkflow {
         }
     }
 
-            protected void assertInitialAppState() throws TimeoutException {
-                waitFor(10, TimeUnit.SECONDS, () -> App.state.get() == AppState.SELECT_DATA_SOURCE);
-                assertEquals(AppState.SELECT_DATA_SOURCE, App.state.get(),
-                                "Application should be in SELECT_DATA_SOURCE state");
-        }
+    protected void assertInitialAppState() throws TimeoutException {
+        waitFor(10, TimeUnit.SECONDS, () -> App.state.get() == AppState.SELECT_DATA_SOURCE);
+        assertEquals(AppState.SELECT_DATA_SOURCE, App.state.get(),
+                        "Application should be in SELECT_DATA_SOURCE state");
+    }
 
-        protected void assertSelectUserState() throws TimeoutException {
-                waitFor(60, TimeUnit.SECONDS, () -> {
-                        AppState current = App.state.get();
-                        System.out.println("Waiting for data load, current state: " + current);
-                        return current == AppState.SELECT_USER || current == AppState.RUNNING;
-                });
-                AppState currentState = App.state.get();
-                assertTrue(currentState == AppState.SELECT_USER || currentState == AppState.RUNNING,
-                                "Application should be in SELECT_USER or RUNNING state after data load, but was: "
-                                                + currentState);
-        }
+    protected void assertSelectUserState() throws TimeoutException {
+        waitFor(60, TimeUnit.SECONDS, () -> {
+                AppState current = App.state.get();
+                System.out.println("Waiting for data load, current state: " + current);
+                return current == AppState.SELECT_USER || current == AppState.RUNNING;
+        });
+        AppState currentState = App.state.get();
+        assertTrue(currentState == AppState.SELECT_USER || currentState == AppState.RUNNING,
+                        "Application should be in SELECT_USER or RUNNING state after data load, but was: "
+                                        + currentState);
+    }
 
-        protected void assertRunningAppState() throws TimeoutException {
-                System.out.println("Current app state before wait: " + App.state.get());
-                waitFor(60, TimeUnit.SECONDS, () -> {
-                        AppState current = App.state.get();
-                        System.out.println("Waiting for RUNNING, current state: " + current);
-                        return current == AppState.RUNNING;
-                });
-                assertEquals(AppState.RUNNING, App.state.get(),
-                                "Application should be in RUNNING state");
-        }
+    protected void assertRunningAppState() throws TimeoutException {
+        System.out.println("Current app state before wait: " + App.state.get());
+        waitFor(60, TimeUnit.SECONDS, () -> {
+                AppState current = App.state.get();
+                System.out.println("Waiting for RUNNING, current state: " + current);
+                return current == AppState.RUNNING;
+        });
+        assertEquals(AppState.RUNNING, App.state.get(),
+                        "Application should be in RUNNING state");
+    }
 
 }

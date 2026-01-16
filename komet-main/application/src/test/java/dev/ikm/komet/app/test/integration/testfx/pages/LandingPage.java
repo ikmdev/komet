@@ -22,10 +22,6 @@ import org.testfx.api.FxRobot;
  */
 public class LandingPage extends BasePage {
     
-    private static final String SELECTOR_LANDING_PAGE_BORDER_PANE = "#landingPageBorderPane";
-    private static final String SELECTOR_NEW_PROJECT_JOURNAL_BUTTON = "#newProjectJournalButton";
-    private static final String SELECTOR_IMPORT_BUTTON = "#importButton";
-    
     public LandingPage(FxRobot robot) {
         super(robot);
     }
@@ -187,19 +183,5 @@ public class LandingPage extends BasePage {
         }
         
         return this;
-    }
-
-    public LandingPage clickInfo(){
-            robot.clickOn("Info");
-            waitForFxEvents();
-            LOG.info("Clicked Info button");
-            return this;
-    }
-
-    public LandingPage clickSync(){
-            robot.clickOn("Sync");
-            waitForFxEvents();
-            LOG.info("Clicked Sync button");
-            return this;
     }
 }

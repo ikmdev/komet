@@ -20,10 +20,6 @@ import org.testfx.api.FxRobot;
  */
 public class LoginPage extends BasePage {
     
-    private static final String SELECTOR_USER_CHOOSER = "#Button";
-    private static final String SELECTOR_PASSWORD_FIELD = "#passwordField";
-    private static final String SELECTOR_SIGN_IN_BUTTON = "#loginButton";
-    
     public LoginPage(FxRobot robot){
         super(robot);
     }

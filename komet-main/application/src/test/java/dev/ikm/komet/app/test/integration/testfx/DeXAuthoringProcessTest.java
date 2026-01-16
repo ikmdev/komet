@@ -19,17 +19,13 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseButton;
-import javafx.geometry.VerticalDirection;
-
-import static dev.ikm.komet.app.test.integration.testfx.config.TestConfiguration.*;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(ApplicationExtension.class)
 @Tag("dex-authoring")
 @DisplayName("DeX Authoring Process Test")
-public class DeXAuthoringProcessTest {
+public class DeXAuthoringProcessTest extends TestConfiguration {
 
         private static final Logger LOG = LoggerFactory.getLogger(DeXAuthoringProcessTest.class);
 
@@ -67,7 +63,14 @@ public class DeXAuthoringProcessTest {
                 overrideUserHome();
                 createScreenshotDirectory();
                 createExtentReportsDirectory();
+                
+                // Read command-line parameters
+                enableInfo = Boolean.parseBoolean(System.getProperty("enableInfo", "true"));
+                enableSync = Boolean.parseBoolean(System.getProperty("enableSync", "true"));
+    
                 LOG.info("=== Starting DeX Authoring Process Test - Version {} ===", APP_VERSION);
+                LOG.info("Click Info enabled: {}", enableInfo);
+                LOG.info("Click Sync enabled: {}", enableSync);
         }
 
         @BeforeEach
@@ -141,7 +144,7 @@ public class DeXAuthoringProcessTest {
 
                 // ========= Steps 2-6: Connect to GitHub Repository ==========
                 githubConnection.connectToGitHub(GITHUB_REPO_URL, GITHUB_EMAIL, GITHUB_USERNAME, GITHUB_PASSWORD);
-                LOG.info("✓ GitHub Connection: Complete");
+                //LOG.info("✓ GitHub Connection: Complete");
 
                 
                 // ========== Steps 7-34: Create Concepts (Target, Analyte, Company/Device Labeler) ==========
@@ -170,7 +173,33 @@ public class DeXAuthoringProcessTest {
 
                 // ========== Steps 35-51: DeX Data Generation ==========
                 generateDeXData.generateDeXData("Albumin Gen2 5166861190", "Roche Diagnostics COBAS Integra Albumin Gen.2");
+
+
                 LOG.info("✓ DeX Data Generation: Complete");
+
+
+                // ========= Step 49: Run the Reasoner ==========
+                reasoner.runReasoner();
+
+                LOG.info("✓ Reasoner Run: Complete");
+
+
+                // ========= Steps 50: Click Info ==========
+                if (enableInfo) {
+                        githubConnection.clickInfoButton();
+                        LOG.info("✓ Click Info Button: COMPLETE");
+                } else {
+                        LOG.info("⊘ Click Info Button: SKIPPED");
+                }
+
+
+                // ========= Steps 51: Click Sync ==========
+                if (enableSync) {
+                        githubConnection.clickSyncButton();
+                        LOG.info("✓ Click Sync Button: COMPLETE");
+                } else {
+                        LOG.info("⊘ Click Sync Button: SKIPPED");
+                }
 
 
                 // ========== Steps 52-62: Add DeX Device Company Semantic ==========
@@ -229,7 +258,7 @@ public class DeXAuthoringProcessTest {
                 LOG.info("✓ Add DeX Quantitative Allowed Result Range Semantic: Complete");
 
 
-                // ========== Steps 111-123: Add Dex Population Reference Range Semantic ==========
+                // ========== Steps 111-125: Add Dex Population Reference Range Semantic ==========
 
                 addPopulationReferenceRangeSemantic.addPopulationReferenceRangeSemantic(
                                 "Population Reference Range Pattern",
@@ -240,7 +269,31 @@ public class DeXAuthoringProcessTest {
                 LOG.info("✓ Add DeX Population Reference Range Semantic: Complete");
 
 
-                //========== Create a Pattern ==========
+                // ========= Steps 126 - 127: Run the Reasoner ==========
+                reasoner.runReasoner();
+
+                LOG.info("✓ Reasoner Run: Complete");
+
+
+                // ========= Steps 128: Click Info ==========
+                if (enableInfo) {
+                        githubConnection.clickInfoButton();
+                        LOG.info("✓ Click Info Button: COMPLETE");
+                } else {
+                        LOG.info("⊘ Click Info Button: SKIPPED");
+                }       
+
+
+                // ========= Steps 129: Click Sync ==========
+                if (enableSync) {
+                        githubConnection.clickSyncButton();
+                        LOG.info("✓ Click Sync Button: COMPLETE");
+                } else {
+                        LOG.info("⊘ Click Sync Button: SKIPPED");
+                }
+
+
+                //========== Additional Steps: Create a Pattern ==========
                 LOG.info("Authoring a Pattern");
                 authorPatterns.authorPatterns("Test Pattern", "Active",
                                 "Device Extension Module", "Development path", "Case insensitive",

@@ -17,8 +17,6 @@ import org.testfx.api.FxRobot;
  */
 public class DataSourceSelectionPage extends BasePage {
     
-    private static final String SELECTOR_OK_BUTTON = "#okButton";
-    
     public DataSourceSelectionPage(FxRobot robot) {
         super(robot);
     }
@@ -101,8 +99,7 @@ public class DataSourceSelectionPage extends BasePage {
      * Clicks the OK button to proceed.
      */
     public LoginPage clickOk() {
-        Button okButton = lookup(SELECTOR_OK_BUTTON, Button.class);
-        robot.clickOn(okButton);
+        robot.clickOn(SELECTOR_OK_BUTTON);
         waitFor(1000); // Wait for login screen to load
         LOG.info("Clicked OK button");
         return new LoginPage(robot);

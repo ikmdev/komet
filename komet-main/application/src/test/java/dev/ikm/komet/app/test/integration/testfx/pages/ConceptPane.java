@@ -30,15 +30,6 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
  */
 public class ConceptPane extends BasePage {
     
-    private static final String SELECTOR_PROPERTIES_TOGGLE = "#propertiesToggleButton";
-    private static final String SELECTOR_ADD_REFERENCE_BUTTON = "#addReferenceButton";
-    private static final String SELECTOR_PUBLISH_BUTTON = "#savePatternButton";
-    private static final String SELECTOR_EDIT_DESCRIPTIONS_BUTTON = "#addDescriptionButton";
-    private static final String SELECTOR_EDIT_DEFINITIONS_BUTTON = "#addDefinitionButton";
-    private static final String SELECTOR_EDIT_FIELDS_BUTTON = "#addFieldsButton";
-    private static final String SELECTOR_SORT_BY_BUTTON = "#sortByButton";
-
-    
     public ConceptPane(FxRobot robot) {
         super(robot);
     }
