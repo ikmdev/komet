@@ -49,6 +49,7 @@ public class EditorWindowModel {
      */
     public static EditorWindowModel load(KometPreferences editorWindowPreferences, ViewCalculator viewCalculator, String title) {
         EditorWindowModel editorWindowModel = new EditorWindowModel();
+
         editorWindowModel.setTitle(title);
 
         editorWindowModel.loadMainSection(editorWindowPreferences, viewCalculator);
@@ -138,6 +139,9 @@ public class EditorWindowModel {
                         ++i;
                     }
                     addedSection.setName(newSectionName);
+
+                    // update parent window on Section model
+                    addedSection.setParentWindow(this);
                 }
             }
         }

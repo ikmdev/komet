@@ -1,4 +1,5 @@
 package dev.ikm.komet.layout.editor.model;
 
-public class EditorModelBase {
+public abstract class EditorModelBase {
+    public abstract void delete();
 }

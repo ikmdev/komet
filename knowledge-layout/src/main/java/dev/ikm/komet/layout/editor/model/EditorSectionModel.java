@@ -3,10 +3,13 @@ package dev.ikm.komet.layout.editor.model;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +29,10 @@ public class EditorSectionModel extends EditorModelBase {
     private static final Logger LOG = LoggerFactory.getLogger(EditorSectionModel.class);
 
     public static final String UNTITLED_SECTION_NAME = "Untitled";
+
+    public EditorSectionModel() {
+        patterns.addListener(this::patternsChanged);
+    }
 
     /*******************************************************************************
      *                                                                             *
@@ -88,6 +95,25 @@ public class EditorSectionModel extends EditorModelBase {
         }
     }
 
+    @Override
+    public void delete() {
+        getParentWindow().getAdditionalSections().remove(this);
+    }
+
+    /*******************************************************************************
+     *                                                                             *
+     * Private Implementation                                                      *
+     *                                                                             *
+     ******************************************************************************/
+
+    private void patternsChanged(ListChangeListener.Change<? extends EditorPatternModel> change) {
+        while(change.next()) {
+            if (change.wasAdded()) {
+                change.getAddedSubList().forEach(pattern -> pattern.setParentSection(this));
+            }
+        }
+    }
+
     private void saveSectionDetails(KometPreferences editorWindowPreferences) {
         final KometPreferences sectionPreferences = editorWindowPreferences.node(getName());
 
@@ -143,4 +169,10 @@ public class EditorSectionModel extends EditorModelBase {
     public int getNumberColumns() { return numberColumns.get(); }
     public IntegerProperty numberColumnsProperty() { return numberColumns; }
     public void setNumberColumns(int number) { numberColumns.set(number); }
+
+    // -- parent window
+    ReadOnlyObjectWrapper<EditorWindowModel> parentWindow = new ReadOnlyObjectWrapper<>();
+    public EditorWindowModel getParentWindow() { return parentWindow.get(); }
+    public ReadOnlyObjectProperty<EditorWindowModel> parentWindowProperty() { return parentWindow; }
+    void setParentWindow(EditorWindowModel editorWindowModel) { parentWindow.set(editorWindowModel); }
 }

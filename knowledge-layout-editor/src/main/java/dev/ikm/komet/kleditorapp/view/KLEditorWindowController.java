@@ -53,13 +53,25 @@ public class KLEditorWindowController {
             if (change.wasAdded()) {
                 addSectionViewAndPatterns(change.getAddedSubList());
             }
+            if (change.wasRemoved()) {
+                change.getRemoved().forEach(sectionModel -> {
+                    editorWindowControl.getSectionViews().remove((SectionViewControl) WindowControlFactory.getView(sectionModel));
+                });
+            }
         }
     }
 
-    private void onSectionModelPatternsChanged(EditorSectionModel sectionModel, ListChangeListener.Change<? extends EditorPatternModel> change) {
+    private void onSectionModelPatternsChanged(EditorSectionModel sectionModel, SectionViewControl sectionViewControl,
+                                               ListChangeListener.Change<? extends EditorPatternModel> change) {
         while(change.next()) {
             if (change.wasAdded()) {
                 addPatternViews(sectionModel, change.getAddedSubList());
+            }
+            if (change.wasRemoved()) {
+                change.getRemoved().forEach(patternModel -> {
+                    PatternViewControl patternViewControl = (PatternViewControl) WindowControlFactory.getView(patternModel);
+                    sectionViewControl.getPatterns().remove(patternViewControl);
+                });
             }
         }
     }
@@ -150,7 +162,7 @@ public class KLEditorWindowController {
         });
 
         // Listen to changes on Section Patterns
-        editorSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) change -> onSectionModelPatternsChanged(editorSectionModel, change));
+        editorSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) change -> onSectionModelPatternsChanged(editorSectionModel, sectionViewControl, change));
     }
 
     @FXML

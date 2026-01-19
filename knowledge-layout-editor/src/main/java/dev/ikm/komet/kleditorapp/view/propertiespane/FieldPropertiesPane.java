@@ -1,6 +1,5 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
-import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.layout.KlRestorable;
 import dev.ikm.komet.layout.area.KlAreaForBoolean;
 import dev.ikm.komet.layout.area.KlAreaForComponent;
@@ -10,6 +9,7 @@ import dev.ikm.komet.layout.area.KlAreaForIntIdList;
 import dev.ikm.komet.layout.area.KlAreaForIntIdSet;
 import dev.ikm.komet.layout.area.KlAreaForInteger;
 import dev.ikm.komet.layout.area.KlAreaForString;
+import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -34,7 +34,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
 
-public class FieldPropertiesPane extends GridNodePropertiesPane<FieldViewControl> {
+public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel> {
     public static final String DEFAULT_STYLE_CLASS = "field-properties";
 
     private final VBox fieldMainContainer = new VBox();
@@ -110,10 +110,10 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<FieldViewControl
         fieldMainContainer.getStyleClass().add("field-main-container");
     }
 
-    private void populateDisplayComboBox(FieldViewControl control) {
+    private void populateDisplayComboBox(EditorFieldModel modelObject) {
         displayComboBox.getItems().clear();
 
-        int dataTypeNid = control.getDataTypeNid();
+        int dataTypeNid = modelObject.getDataTypeNid();
 
         ServiceLoader<? extends KlRestorable.Factory> loader = null;
         if (dataTypeNid == COMPONENT_FIELD.nid()) {
@@ -148,9 +148,9 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<FieldViewControl
     }
 
     @Override
-    protected void doInit(FieldViewControl control) {
-        super.doInit(control);
+    protected void doInit(EditorFieldModel modelObject) {
+        super.doInit(modelObject);
 
-        populateDisplayComboBox(control);
+        populateDisplayComboBox(modelObject);
     }
 }

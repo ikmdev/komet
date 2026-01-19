@@ -172,6 +172,7 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
                 if (rowIndex < numberUsedRows) {
                     gridTile = new GridTile(getSkinnable());
                 } else {
+                    // We add 1 empty Tile below the last one so the user always has an empty row to drag into
                     gridTile = new GridTile(getSkinnable(), true);
                 }
 

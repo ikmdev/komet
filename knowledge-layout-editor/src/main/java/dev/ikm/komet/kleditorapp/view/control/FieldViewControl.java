@@ -73,10 +73,4 @@ public class FieldViewControl extends GridBaseControl {
     public int getFieldNumber() { return fieldNumber.get(); }
     public IntegerProperty fieldNumberProperty() { return fieldNumber; }
     public void setFieldNumber(int number) { fieldNumber.set(number); }
-
-    // -- data type nid
-    private final IntegerProperty dataTypeNid = new SimpleIntegerProperty();
-    public int getDataTypeNid() { return dataTypeNid.get(); }
-    public IntegerProperty dataTypeNidProperty() { return dataTypeNid; }
-    public void setDataTypeNid(int value) { dataTypeNid.set(value); }
 }

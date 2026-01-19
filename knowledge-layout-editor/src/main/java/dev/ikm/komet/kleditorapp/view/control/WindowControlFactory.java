@@ -1,6 +1,7 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
+import dev.ikm.komet.layout.editor.model.EditorGridNodeModel;
 import dev.ikm.komet.layout.editor.model.EditorModelBase;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
@@ -32,9 +33,7 @@ public class WindowControlFactory {
 
         patternViewControl.numberColumnsProperty().bindBidirectional(editorPatternModel.numberColumnsProperty());
 
-        patternViewControl.columnIndexProperty().bindBidirectional(editorPatternModel.columnIndexProperty());
-        patternViewControl.rowIndexProperty().bindBidirectional(editorPatternModel.rowIndexProperty());
-        patternViewControl.columnSpanProperty().bindBidirectional(editorPatternModel.columnSpanProperty());
+        bindGridNodeProperties(editorPatternModel, patternViewControl);
 
         updateMaps(editorPatternModel, patternViewControl);
 
@@ -46,11 +45,7 @@ public class WindowControlFactory {
         fieldViewControl.titleProperty().bind(editorFieldModel.titleProperty());
         fieldViewControl.fieldNumberProperty().bind(editorFieldModel.indexProperty().add(1));
 
-        fieldViewControl.columnIndexProperty().bindBidirectional(editorFieldModel.columnIndexProperty());
-        fieldViewControl.rowIndexProperty().bindBidirectional(editorFieldModel.rowIndexProperty());
-        fieldViewControl.columnSpanProperty().bindBidirectional(editorFieldModel.columnSpanProperty());
-
-        fieldViewControl.dataTypeNidProperty().bind(editorFieldModel.dataTypeNidProperty());
+        bindGridNodeProperties(editorFieldModel, fieldViewControl);
 
         updateMaps(editorFieldModel, fieldViewControl);
 
@@ -68,5 +63,12 @@ public class WindowControlFactory {
     private static void updateMaps(EditorModelBase editorModelBase, EditorWindowBaseControl editorWindowBaseControl) {
         windowControlToModel.put(editorWindowBaseControl, editorModelBase);
         modelToWindowControl.put(editorModelBase, editorWindowBaseControl);
+    }
+
+    private static void bindGridNodeProperties(EditorGridNodeModel gridNodeModel, GridBaseControl gridBaseControl) {
+        gridBaseControl.columnIndexProperty().bindBidirectional(gridNodeModel.columnIndexProperty());
+        gridBaseControl.rowIndexProperty().bindBidirectional(gridNodeModel.rowIndexProperty());
+        gridBaseControl.columnSpanProperty().bindBidirectional(gridNodeModel.columnSpanProperty());
+        gridBaseControl.rowSpanProperty().bindBidirectional(gridNodeModel.rowSpanProperty());
     }
 }
