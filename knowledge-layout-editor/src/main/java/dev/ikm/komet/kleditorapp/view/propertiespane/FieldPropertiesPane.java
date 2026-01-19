@@ -110,13 +110,11 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<FieldViewControl
         fieldMainContainer.getStyleClass().add("field-main-container");
     }
 
-    @Override
-    protected void doInit(FieldViewControl control) {
-        super.doInit(control);
-
-        // Display
+    private void populateDisplayComboBox(FieldViewControl control) {
         displayComboBox.getItems().clear();
+
         int dataTypeNid = control.getDataTypeNid();
+
         ServiceLoader<? extends KlRestorable.Factory> loader = null;
         if (dataTypeNid == COMPONENT_FIELD.nid()) {
             loader = ServiceLoader.load(KlAreaForComponent.Factory.class);
@@ -147,5 +145,12 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<FieldViewControl
                 displayComboBox.getItems().add(factory.factoryName());
             }
         }
+    }
+
+    @Override
+    protected void doInit(FieldViewControl control) {
+        super.doInit(control);
+
+        populateDisplayComboBox(control);
     }
 }

@@ -22,7 +22,7 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.KL_ADDITIONAL_SECTIO
  * Represents a Section. It has properties like the Section name, the patterns inside it (EditorPatternModel instances),
  * number of columns, tag text (e.g. "Section 1").
  */
-public class EditorSectionModel {
+public class EditorSectionModel extends EditorModelBase {
     private static final Logger LOG = LoggerFactory.getLogger(EditorSectionModel.class);
 
     public static final String UNTITLED_SECTION_NAME = "Untitled";

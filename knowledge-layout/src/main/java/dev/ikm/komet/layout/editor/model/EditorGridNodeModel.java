@@ -11,7 +11,7 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRI
 /**
  * Base class for any Editor model that stores in grid cell specific settings
  */
-public abstract class EditorGridNodeModel {
+public abstract class EditorGridNodeModel extends EditorModelBase {
 
     protected void saveGridNodeDetails(KometPreferences preferences) {
         preferences.putInt(KL_GRID_COLUMN_INDEX, getColumnIndex());
