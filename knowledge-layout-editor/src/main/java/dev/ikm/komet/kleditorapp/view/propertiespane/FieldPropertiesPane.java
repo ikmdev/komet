@@ -41,7 +41,7 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
     private final ComboBox<String> displayComboBox;
 
     public FieldPropertiesPane() {
-        super(false);
+        super(true);
 
         VBox titleContainer = new VBox();
         titleContainer.getStyleClass().add("title-container");

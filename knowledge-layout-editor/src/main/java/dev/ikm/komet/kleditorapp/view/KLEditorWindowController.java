@@ -102,16 +102,24 @@ public class KLEditorWindowController {
         PatternViewControl patternViewControl = WindowControlFactory.createPatternView(patternModel);
 
         addFieldViews(patternModel, patternModel.getFields());
-        patternModel.getFields().addListener((ListChangeListener<? super EditorFieldModel>) change -> onPatternModelFieldsChanged(patternModel, change));
+        patternModel.getFields().addListener(
+                (ListChangeListener<? super EditorFieldModel>) change -> onPatternModelFieldsChanged(patternModel, patternViewControl, change));
 
         SectionViewControl sectionViewControl = (SectionViewControl) WindowControlFactory.getView(editorSectionModel);
         sectionViewControl.getPatterns().add(patternViewControl);
     }
 
-    private void onPatternModelFieldsChanged(EditorPatternModel patternModel, ListChangeListener.Change<? extends EditorFieldModel> change) {
+    private void onPatternModelFieldsChanged(EditorPatternModel patternModel, PatternViewControl patternViewControl,
+                                             ListChangeListener.Change<? extends EditorFieldModel> change) {
         while(change.next()) {
             if (change.wasAdded()) {
                 addFieldViews(patternModel, change.getAddedSubList());
+            }
+            if (change.wasRemoved()) {
+                change.getRemoved().forEach(fieldModel -> {
+                    FieldViewControl fieldViewControl = (FieldViewControl) WindowControlFactory.getView(fieldModel);
+                    patternViewControl.getFields().remove(fieldViewControl);
+                });
             }
         }
     }
