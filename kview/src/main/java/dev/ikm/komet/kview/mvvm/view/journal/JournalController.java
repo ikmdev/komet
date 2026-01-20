@@ -15,6 +15,53 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
+import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
+import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.JOURNAL_VIEW;
+import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
+import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.KL_EDITABLE_VIEW;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
+import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromEntity;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromUuids;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.extractEntityFromDragInfo;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.GEN_EDITING;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.PATTERN;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
+import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SET;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SHOWING;
+import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.JOURNAL_NAME;
+import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
+import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
+import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.PROGRESS_TOPIC;
+import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
@@ -33,6 +80,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.controls.NotificationPopup;
@@ -62,6 +110,8 @@ import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
+import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.NidTextEnum;
@@ -115,6 +165,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -137,65 +188,10 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.prefs.BackingStoreException;
-
-import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
-import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
-import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
-import static dev.ikm.komet.kview.controls.KometIcon.IconValue.KL_EDITABLE_VIEW;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
-import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromEntity;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromUuids;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.extractEntityFromDragInfo;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.GEN_EDITING;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.PATTERN;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
-import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.JOURNAL_NAME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
-import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
-import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
-import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
-import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
-import static dev.ikm.tinkar.events.FrameworkTopics.PROGRESS_TOPIC;
-import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.*;
+import java.util.prefs.*;
 
 /**
  * This view is responsible for updating the kView journal window by loading a navigation panel
@@ -257,6 +253,8 @@ public class JournalController {
 
     @FXML
     private MenuButton coordinatesMenuButton;
+
+    private FilterOptionsPopup filterOptionsPopup;
 
     @FXML
     private Menu windowCoordinates;
@@ -362,7 +360,8 @@ public class JournalController {
     private JournalViewModel journalViewModel;
 
     private ObservableViewNoOverride windowView;
-
+    private ObservableViewNoOverride journalViewCoordAsParent;
+    private ViewProperties journalViewProperties;
     private final HashMap<String, MenuItem> windowTitleToMenuItem = new HashMap<>();
 
     /**
@@ -377,6 +376,15 @@ public class JournalController {
 
         // Initialize the journal window view, which is provided in the WindowSettings
         windowView = windowSettings.getView();
+        journalViewCoordAsParent = new ObservableViewNoOverride(windowView);
+        journalViewProperties = windowView.makeOverridableViewProperties("JournalController.filterOptionsPopup");
+
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(journalViewProperties,
+                coordinatesMenuButton, () -> {
+                    System.out.println("JournalController.filterOptionsPopup: updating view due to filter options change");
+                });
+        // FIXME remove the menu option for parent view coordinate
+        coordinatesMenuButton.getItems().remove(windowCoordinates);
 
         // Initialize the journal windows list
         journalWindows = FXCollections.unmodifiableObservableList(workspace.getWindows());
@@ -419,10 +427,10 @@ public class JournalController {
                 createConceptWindow(conceptFacade, NID_TEXT, null);
             } else if (entityFacade instanceof PatternFacade patternFacade) {
                 // TODO is this used??  The makePatternWindowEventSubscriber below is handling the event to create the Pattern Window
-                createPatternWindow(patternFacade, windowView.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.PatternFacade"));
+                createPatternWindow(patternFacade, journalViewCoordAsParent.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.PatternFacade"));
             } else if (entityFacade instanceof SemanticFacade semanticFacade) {
                 // TODO is this used??  The makeGenEditWindowEventSubscriber below is handling the event to create the Semantic (GenEdit) Window
-                createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.SemanticFacade"), false);
+                createGenEditWindow(semanticFacade, journalViewCoordAsParent.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.SemanticFacade"), false);
             }
         };
         journalEventBus.subscribe(journalTopic, MakeConceptWindowEvent.class, makeComponentWindowEventSubscriber);
@@ -1001,7 +1009,7 @@ public class JournalController {
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
                             nextGenSearchViewModel.setPropertyValue(MODE, CREATE)
-                                .setPropertyValue(VIEW_PROPERTIES, this.windowView.makeOverridableViewProperties("JournalController.loadNextGenSearchPanel"))
+                                .setPropertyValue(VIEW_PROPERTIES, windowView.makeOverridableViewProperties("JournalController.loadNextGenSearchPanel"))
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                 );
 
@@ -1340,7 +1348,7 @@ public class JournalController {
                 navigationActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
 
         // What to do when you can double-click on a cell
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.loadClassicConceptNavigator");
+        ViewProperties viewProperties = journalViewCoordAsParent.makeOverridableViewProperties("JournalController.loadClassicConceptNavigator");
         TreeView<ConceptFacade> treeView = navigatorNode.getController().getTreeView();
 
         // Create a context menu allowing user to Launch as a Lidr Record window.
@@ -1695,5 +1703,69 @@ public class JournalController {
     }
 
     public static Toast toast() { return toast; }
+
+    private FilterOptionsPopup setupViewCoordinateOptionsPopup(ViewProperties viewProperties,
+                                                               MenuButton coordinatesMenuButton,
+                                                               Runnable updateViewBlock) {
+        //ObservableViewNoOverride parentView2 = new ObservableViewNoOverride(windowSettings.getView());
+        // Filter Options Popup for the coordinates menu button.
+        FilterOptionsPopup filterOptionsPopup = new FilterOptionsPopup(JOURNAL_VIEW, viewProperties.parentView());
+        filterOptionsPopup.setStyle("-popup-pref-height: " + 600);
+        // Bind the popup's filter options to the view model's filter options. Update details if options change.
+        viewProperties.parentView().subscribe((_, nv) -> {
+            filterOptionsPopup.setNavigator(new ViewNavigator(nv));
+            if (updateViewBlock != null) {
+                updateViewBlock.run();
+            }
+        });
+
+
+        // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
+        // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
+        filterOptionsPopup.getFilterOptionsUtils().subscribeFilterOptionsToView(
+            filterOptionsPopup.getInheritedFilterOptions(), viewProperties.nodeView());
+
+        // Subscribe nodeView to F.O., so changes from the F.O. popup are propagated to this nodeView
+        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, filterOptions) -> {
+            if (oldFilterOptions != null) {
+                filterOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
+            }
+            if (filterOptions != null) {
+                filterOptionsPopup.getFilterOptionsUtils().subscribeViewToFilterOptions(filterOptions, viewProperties.nodeView());
+            }
+        });
+
+        coordinatesMenuButton.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (filterOptionsPopup.getNavigator() == null) {
+                Navigator navigator = new ViewNavigator(viewProperties.nodeView());
+                    filterOptionsPopup.setNavigator(navigator);
+                }
+                if (e.getButton() == MouseButton.PRIMARY) {
+                    if (filterOptionsPopup.isShowing()) {
+                        e.consume();
+                        filterOptionsPopup.hide();
+                    } else {
+
+                        Bounds buttonBounds = coordinatesMenuButton.localToScreen(coordinatesMenuButton.getLayoutBounds());
+                        // Show beneath the button
+                        filterOptionsPopup.show(coordinatesMenuButton, buttonBounds.getMinX(), buttonBounds.getMaxY() + 2);
+                    }
+                }
+            });
+            filterOptionsPopup.showingProperty().subscribe(showing ->
+                            coordinatesMenuButton.pseudoClassStateChanged(FILTER_SHOWING, showing));
+
+            filterOptionsPopup.defaultOptionsSetProperty().subscribe(isDefault ->
+                            coordinatesMenuButton.pseudoClassStateChanged(FILTER_SET, !isDefault));
+
+
+
+        filterOptionsPopup.filterOptionsProperty().addListener( (observable, oldValue, newValue) -> {
+            LOG.info("JournalController - filterOptionsPopup.filterOptionsProperty() " + newValue);
+            // begin altering parent view coordinates
+            viewProperties.parentView().setValue(newValue.observableViewForFilterProperty().getValue());
+        });
+            return filterOptionsPopup;
+        }
 
 }

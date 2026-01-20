@@ -1,13 +1,10 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
-import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.navigator.graph.Navigator;
-import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -40,8 +37,7 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 import javafx.util.Subscription;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * <p>Custom skin implementation for the {@link KLSearchControl}.
@@ -154,7 +150,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
         subscription = Subscription.EMPTY;
 
-        filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.NAVIGATOR);
+        filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.NAVIGATOR, control.getViewProperties().parentView());
 
         filterOptionsPopup.navigatorProperty().bind(control.navigatorProperty());
         filterOptionsPopup.containerProperty().bind(control.containerProperty());

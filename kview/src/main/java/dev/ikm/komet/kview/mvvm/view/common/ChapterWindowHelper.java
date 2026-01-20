@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory;
 public class ChapterWindowHelper {
     private static final Logger LOG = LoggerFactory.getLogger(ChapterWindowHelper.class);
 
-    private static final PseudoClass FILTER_SET = PseudoClass.getPseudoClass("filter-set");
-    private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
+    public static final PseudoClass FILTER_SET = PseudoClass.getPseudoClass("filter-set");
+    public static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
 
     /**
      * Sets up the filter options popup for view coordinates in chapter windows.
@@ -40,7 +40,7 @@ public class ChapterWindowHelper {
                                                                      MenuButton coordinatesMenuButton,
                                                                      Runnable updateViewBlock) {
         // Filter Options Popup for the coordinates menu button.
-        FilterOptionsPopup filterOptionsPopup = new FilterOptionsPopup(filterType);
+        FilterOptionsPopup filterOptionsPopup = new FilterOptionsPopup(filterType, viewProperties.parentView());
 
         // Bind the popup's filter options to the view model's filter options. Update details if options change.
         viewProperties.nodeView().subscribe((_, nv) -> {

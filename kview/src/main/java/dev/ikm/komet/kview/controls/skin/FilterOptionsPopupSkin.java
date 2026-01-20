@@ -284,7 +284,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         if (skipUpdateFilterOptions) {
             return;
         }
-        FilterOptions currentFilterOptions = new FilterOptions();
+        FilterOptions currentFilterOptions = new FilterOptions(getSkinnable().getParentViewCoordinate());
         accordionBox.updateMainPanes(pane -> {
             FilterOptions.Option<T> optionForItem = pane.getOption();
             currentFilterOptions.setOptionForItem(pane.getOption().item(), optionForItem);
@@ -300,7 +300,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     }
 
     private void createAccordionBoxPanes() {
-        FilterOptions filterOptions = new FilterOptions();
+        FilterOptions filterOptions = new FilterOptions(getSkinnable().getParentViewCoordinate());
 
         // Main Coordinates
 
@@ -377,7 +377,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     private void setupDefaultFilterOptions(Navigator navigator) {
         if (defaultFilterOptions == null) {
             // create default filter options
-            defaultFilterOptions = new FilterOptions();
+            defaultFilterOptions = new FilterOptions(getSkinnable().getParentViewCoordinate());
             // once we have navigator, update pending options with av/sel default options
             setAvailableOptionsFromNavigator(defaultFilterOptions, navigator);
         }
