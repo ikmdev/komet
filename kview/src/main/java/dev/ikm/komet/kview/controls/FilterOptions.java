@@ -3,8 +3,6 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
-import dev.ikm.komet.framework.view.ObservableViewWithOverride;
-import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -15,19 +13,11 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import org.eclipse.collections.api.set.ImmutableSet;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.ResourceBundle;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import java.util.*;
+import java.util.stream.*;
 
 public class FilterOptions implements Serializable {
 
@@ -557,15 +547,19 @@ public class FilterOptions implements Serializable {
     private List<LanguageFilterCoordinates> languageCoordinatesList;
 
     private final ObservableView observableViewForFilter;
+    private final ObservableViewNoOverride parentViewCoordinate;
 
-    public FilterOptions() {
+    /**
+     * Constructor for FilterOptions (aka view coordinate options)
+     *
+     * @param parentViewCoordinate the parent view coordinate.
+     */
+    public FilterOptions(ObservableViewNoOverride parentViewCoordinate) {
+        this.parentViewCoordinate = parentViewCoordinate;
         mainCoordinates = new MainFilterCoordinates();
-
         languageCoordinatesList = new ArrayList<>(); // at least one
         languageCoordinatesList.add(new LanguageFilterCoordinates(0));
-
-        observableViewForFilter = new ObservableViewNoOverride(Coordinates.View.DefaultView())
-                .makeOverridableViewProperties().nodeView();
+        observableViewForFilter = parentViewCoordinate.makeOverridableViewProperties().nodeView();
     }
 
     public ObservableView observableViewForFilterProperty() {
@@ -641,7 +635,7 @@ public class FilterOptions implements Serializable {
     }
 
     public FilterOptions copy() {
-        FilterOptions copy = new FilterOptions();
+        FilterOptions copy = new FilterOptions(this.parentViewCoordinate);
         copy.mainCoordinates = mainCoordinates.copy();
         copy.languageCoordinatesList = new ArrayList<>(languageCoordinatesList.stream()
                 .map(LanguageFilterCoordinates::copy)

@@ -167,7 +167,7 @@ public class NextGenSearchController {
 
         initSearchResultType();
 
-        filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH);
+        filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.SEARCH, getViewProperties().parentView());
 
         // listen to changes to the current overrideable view, after changes coming from the parentView
         // or the FilterOptionsPopup, updating the Navigator, and triggering the search
