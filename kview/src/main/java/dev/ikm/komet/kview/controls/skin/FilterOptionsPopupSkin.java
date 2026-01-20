@@ -146,7 +146,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
         revertButton = new Button(resources.getString("button.revert"));
         revertButton.setOnAction(_ -> revertFilterOptions());
-        revertButton.getStyleClass().add("revert-button");
 
         VBox bottomBox = new VBox(saveButton, revertButton);
         bottomBox.getStyleClass().add("bottom-box");
