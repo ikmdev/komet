@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.controls.skin.FilterOptionsPopupSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
 import javafx.beans.property.ObjectProperty;
@@ -18,18 +19,21 @@ public class FilterOptionsPopup extends PopupControl {
     public enum FILTER_TYPE {
         NAVIGATOR,
         SEARCH,
-        CHAPTER_WINDOW
+        CHAPTER_WINDOW,
+        JOURNAL_VIEW
     }
 
     private final FILTER_TYPE filterType;
     private static final String DEFAULT_OPTIONS_KEY = "default-options";
 
     private final FilterOptionsUtils filterOptionsUtils;
+    private final ObservableViewNoOverride parentViewCoordinate;
 
-    public FilterOptionsPopup(FILTER_TYPE filterType) {
+    public FilterOptionsPopup(FILTER_TYPE filterType, ObservableViewNoOverride parentViewCoordinate) {
         this.filterType = filterType;
-
+        this.parentViewCoordinate = parentViewCoordinate;
         filterOptionsUtils = new FilterOptionsUtils();
+        inheritedFilterOptionsProperty = new ReadOnlyObjectWrapper<>(this, "inheritedFilterOptions", new FilterOptions(parentViewCoordinate));
 
         setAutoHide(true);
         getStyleClass().add("filter-options-popup");
@@ -45,8 +49,12 @@ public class FilterOptionsPopup extends PopupControl {
         });
     }
 
+    // readonly baseView
+    public final ObservableViewNoOverride getParentViewCoordinate() {
+        return parentViewCoordinate;
+    }
     // inheritedFilterOptionsProperty
-    private final ReadOnlyObjectWrapper<FilterOptions> inheritedFilterOptionsProperty = new ReadOnlyObjectWrapper<>(this, "inheritedFilterOptions", new FilterOptions());
+    private final ReadOnlyObjectWrapper<FilterOptions> inheritedFilterOptionsProperty;
     public final ReadOnlyObjectProperty<FilterOptions> inheritedFilterOptionsProperty() {
        return inheritedFilterOptionsProperty.getReadOnlyProperty();
     }
