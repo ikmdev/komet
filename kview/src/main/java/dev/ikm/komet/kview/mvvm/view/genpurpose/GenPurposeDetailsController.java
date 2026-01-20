@@ -556,6 +556,8 @@ public class GenPurposeDetailsController {
         // Pattern title
         Label patternTitle = new Label(editorPatternModel.getTitle());
         patternTitle.getStyleClass().add("gen-purpose-pattern-title");
+        patternTitle.visibleProperty().bind(editorPatternModel.titleVisibleProperty());
+        patternTitle.managedProperty().bind(editorPatternModel.titleVisibleProperty());
         patternMainContainer.getChildren().add(patternTitle);
 
         ConceptFacade author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();

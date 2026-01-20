@@ -105,6 +105,7 @@ public class KLEditorWindowController {
         patternModelToView.put(patternModel, patternViewControl);
 
         patternViewControl.titleProperty().bind(patternModel.titleProperty());
+        patternViewControl.titleVisibleProperty().bindBidirectional(patternModel.titleVisibleProperty());
 
         patternViewControl.numberColumnsProperty().bindBidirectional(patternModel.numberColumnsProperty());
 
@@ -141,6 +142,8 @@ public class KLEditorWindowController {
         fieldViewControl.columnIndexProperty().bindBidirectional(fieldModel.columnIndexProperty());
         fieldViewControl.rowIndexProperty().bindBidirectional(fieldModel.rowIndexProperty());
         fieldViewControl.columnSpanProperty().bindBidirectional(fieldModel.columnSpanProperty());
+
+        fieldViewControl.dataTypeNidProperty().bind(fieldModel.dataTypeNidProperty());
 
         PatternViewControl patternViewControl = patternModelToView.get(patternModel);
         patternViewControl.getFields().add(fieldViewControl);

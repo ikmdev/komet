@@ -32,6 +32,7 @@ public class EditorFieldModel extends EditorGridNodeModel {
 
         title.set(fieldDefinitionRecord.meaning().description());
         index.set(fieldDefinitionRecord.indexInPattern());
+        dataTypeNid.set(fieldDefinitionRecord.dataTypeNid());
     }
 
     /**
@@ -76,4 +77,9 @@ public class EditorFieldModel extends EditorGridNodeModel {
     private ReadOnlyIntegerWrapper index = new ReadOnlyIntegerWrapper();
     public int getIndex() { return index.get(); }
     public ReadOnlyIntegerProperty indexProperty() { return index.getReadOnlyProperty(); }
+
+    // -- data type nid
+    private ReadOnlyIntegerWrapper dataTypeNid = new ReadOnlyIntegerWrapper();
+    public int getDataTypeNid() { return dataTypeNid.get(); }
+    public ReadOnlyIntegerProperty dataTypeNidProperty() { return dataTypeNid.getReadOnlyProperty(); }
 }

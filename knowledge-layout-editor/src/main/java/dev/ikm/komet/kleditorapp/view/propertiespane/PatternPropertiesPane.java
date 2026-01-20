@@ -1,7 +1,7 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
-import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
+import dev.ikm.komet.kview.controls.ToggleSwitch;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
@@ -23,21 +23,32 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<PatternViewCon
     private final VBox patternMainContainer = new VBox();
 
     private final TextField titleTextField;
+    private final ToggleSwitch titleVisibleTSwitch;
 
     private final ComboBox<Integer> columnsComboBox = new ComboBox<>();
 
     private ObjectProperty<Integer> previousControlColumnsObjProperty;
 
     public PatternPropertiesPane() {
+        super(true);
+
         // Section name container
         VBox titleContainer = new VBox();
         titleContainer.getStyleClass().add("title-container");
         titleContainer.setSpacing(4);
 
-        Label nameLabel = new Label("Title:");
+        Label titleLabel = new Label("Title:");
         titleTextField = new TextField();
 
-        titleContainer.getChildren().addAll(nameLabel, titleTextField);
+        titleContainer.getChildren().addAll(titleLabel, titleTextField);
+
+        // Visible
+        titleVisibleTSwitch = new ToggleSwitch();
+        titleVisibleTSwitch.setText("Visible");
+        titleVisibleTSwitch.setSelected(false);
+        titleVisibleTSwitch.getStyleClass().add("title-visible");
+
+        titleTextField.editableProperty().bind(titleVisibleTSwitch.selectedProperty());
 
         // Separator
         Separator separator = new Separator();
@@ -88,6 +99,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<PatternViewCon
 
         patternMainContainer.getChildren().addAll(
                 titleContainer,
+                titleVisibleTSwitch,
                 separator,
                 gridTitleLabel,
                 gridLayoutGridPane,
@@ -109,9 +121,11 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<PatternViewCon
 
         if (previouslyShownControl != null) {
             columnsComboBox.valueProperty().unbindBidirectional(previousControlColumnsObjProperty);
+            titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownControl.titleVisibleProperty());
         }
 
         titleTextField.setText(control.getTitle());
+        titleVisibleTSwitch.selectedProperty().bindBidirectional(control.titleVisibleProperty());
 
         // Columns ComboBox
         previousControlColumnsObjProperty = control.numberColumnsProperty().asObject();

@@ -53,4 +53,8 @@ public class KLEditorPreferences {
          */
         public static String KL_GRID_COLUMN_SPAN = "kl-grid-node-column-span";
     }
+
+    public class PatternKey {
+        public static String PATTERN_TITLE_VISIBLE = "pattern-title-visible";
+    }
 }
