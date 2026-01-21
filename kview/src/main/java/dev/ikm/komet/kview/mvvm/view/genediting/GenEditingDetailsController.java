@@ -63,7 +63,6 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.observable.ObservableStamp;
-import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ComponentItem;
@@ -160,14 +159,6 @@ public class GenEditingDetailsController {
      * popup for the filter coordinates menu, used with coordinatesMenuButton. An instance of FilterOptionsPopup.
      */
     private FilterOptionsPopup filterOptionsPopup;
-
-    @FXML
-    private BorderPane detailsInnerBorderPane;
-
-    /**
-     * model required for the filter coordinates menu, used with coordinatesMenuButton
-     */
-    private ViewMenuModel viewMenuModel;
 
     /**
      * Used slide out the properties view
@@ -268,7 +259,7 @@ public class GenEditingDetailsController {
         filterOptionsPopup = setupViewCoordinateOptionsPopup(
                 getViewProperties(),
                 CHAPTER_WINDOW,
-                detailsInnerBorderPane,
+                detailsOuterBorderPane,
                 coordinatesMenuButton,
                 () -> { /* noop TODO: needs a way to redraw details based on view coordinates  */ }
         );
@@ -393,13 +384,6 @@ public class GenEditingDetailsController {
             Image identicon = Identicon.generateIdenticonImage(semantic.publicId());
             identiconImageView.setImage(identicon);
         }
-    }
-
-    /**
-     * Creates the filter coordinates menu using the ViewMenuModel.
-     */
-    public void setupFilterCoordinatesMenu() {
-        this.viewMenuModel = new ViewMenuModel(genEditingViewModel.getViewProperties(), coordinatesMenuButton, "GenEditingDetailsController");
     }
 
     private void setupSemanticDetails() {
