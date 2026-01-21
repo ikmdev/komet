@@ -193,9 +193,6 @@ public class ConceptController {
     private BorderPane detailsOuterBorderPane;
 
     @FXML
-    private BorderPane detailsInnerBorderPane;
-
-    @FXML
     private Button addDescriptionButton;
 
 
@@ -357,7 +354,7 @@ public class ConceptController {
         filterOptionsPopup = setupViewCoordinateOptionsPopup(
                 conceptViewModel.getViewProperties(),
                 CHAPTER_WINDOW,
-                detailsInnerBorderPane,
+                detailsOuterBorderPane,
                 coordinatesMenuButton,
                 this::updateView
         );
