@@ -1,6 +1,5 @@
 package dev.ikm.komet.layout.editor.model;
 
-import dev.ikm.komet.preferences.KLEditorPreferences;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -12,11 +11,14 @@ import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
@@ -57,6 +59,8 @@ public class EditorPatternModel extends EditorGridNodeModel {
 
         setTitle(retrieveDisplayName(patternFacade));
 
+        fields.addListener(this::fieldsChanged);
+
         // -- add fields if they exist
         Entity<EntityVersion> entity = EntityService.get().getEntityFast(patternFacade);
         Latest<EntityVersion> optionalLatest = viewCalculator.latest(entity);
@@ -70,7 +74,14 @@ public class EditorPatternModel extends EditorGridNodeModel {
                 editorFieldModel.setRowIndex(fields.indexOf(editorFieldModel));
             });
         });
+    }
 
+    private void fieldsChanged(ListChangeListener.Change<? extends EditorFieldModel> change) {
+        while (change.next()) {
+            if (change.wasAdded()) {
+                change.getAddedSubList().forEach(field -> field.setParentPattern(this));
+            }
+        }
     }
 
     /**
@@ -158,6 +169,11 @@ public class EditorPatternModel extends EditorGridNodeModel {
         return optionalStringRegularName.orElseGet(optionalStringFQN::get);
     }
 
+    @Override
+    public void delete() {
+        getParentSection().getPatterns().remove(this);
+    }
+
     /*******************************************************************************
      *                                                                             *
      * Properties                                                                  *
@@ -200,4 +216,10 @@ public class EditorPatternModel extends EditorGridNodeModel {
     public int getNumberColumns() { return numberColumns.get(); }
     public IntegerProperty numberColumnsProperty() { return numberColumns; }
     public void setNumberColumns(int number) { numberColumns.set(number); }
+
+    // -- parent section
+    private ReadOnlyObjectWrapper<EditorSectionModel> parentSection = new ReadOnlyObjectWrapper<>();
+    public EditorSectionModel getParentSection() { return parentSection.get(); }
+    public ReadOnlyObjectProperty<EditorSectionModel> parentSectionProperty() { return parentSection.getReadOnlyProperty(); }
+    void setParentSection(EditorSectionModel parentSection) { this.parentSection.set(parentSection); }
 }

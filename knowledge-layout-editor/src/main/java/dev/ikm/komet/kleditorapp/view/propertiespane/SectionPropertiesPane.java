@@ -1,7 +1,7 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
-import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
+import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
@@ -17,7 +17,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.List;
 
-public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionViewControl> {
+public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSectionModel> {
     public static final String DEFAULT_STYLE_CLASS = "section-properties";
 
     private final VBox sectionMainContainer = new VBox();
@@ -99,7 +99,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<SectionView
     }
 
     @Override
-    public void doInit(SectionViewControl section) {
+    public void doInit(EditorSectionModel section) {
         if (previouslyShownControl != null) {
             sectionNameTextField.textProperty().unbindBidirectional(previouslyShownControl.nameProperty());
             columnsComboBox.valueProperty().unbindBidirectional(lastColumnsSectionProperty);

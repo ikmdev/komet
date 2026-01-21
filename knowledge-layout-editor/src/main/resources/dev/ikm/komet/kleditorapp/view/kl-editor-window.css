@@ -291,6 +291,16 @@
     -fx-graphic-text-gap: 10px;
 }
 
+.add-section.button:hover {
+    -fx-background-color: #f0f0f0;
+    -fx-border-color: #f0f0f0;
+}
+
+.add-section.button:armed {
+    -fx-background-color: #e8e8e8;
+    -fx-border-color: #e8e8e8;
+}
+
 .add-section.button .icon {
     -fx-background-color: #4a7ad2;
 }

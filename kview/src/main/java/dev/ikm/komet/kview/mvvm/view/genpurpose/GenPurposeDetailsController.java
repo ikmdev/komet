@@ -617,8 +617,11 @@ public class GenPurposeDetailsController {
                     ObservableEntitySnapshot<?,?> snap = composer.snapshot(semantic.nid()).get();
                     if (snap instanceof ObservableSemanticSnapshot semanticSnapshot) {
                         for(ObservableField<?> observableField : semanticSnapshot.getLatestFields().get()){
-                            EditorFieldModel fieldModel = editorPatternModel.getFields().get(observableField.field().indexInPattern());
-                            createFieldView(observableField, fieldModel, controlItems, fieldsContainer);
+                            for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
+                                if (observableField.field().indexInPattern() == editorFieldModel.getIndex()) {
+                                    createFieldView(observableField, editorFieldModel, controlItems, fieldsContainer);
+                                }
+                            }
                         }
                     }
 
