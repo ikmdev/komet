@@ -112,6 +112,7 @@ public class ViewMenuModel {
     }
 
     /**
+     * @Deprecated Use psuedo state styling in CSS instead. Please look at ChapterWindowHelper for an example of using psuedo states.
      * Change color to indicate it's been overwritten.
      */
     private void styleNextGenMenuButton() {
