@@ -160,6 +160,9 @@ public class ViewMenuModel {
             }
 
             if (menuItems != null) {
+                // TODO creating a new ViewCalculator causes XML and negative nids to be rendered in the view coordinate menu
+                // TODO reusing the existing ViewCalculator causes the Spanish language to not be rendered, remains in English
+                //      (rather than Spanish:  Ingles y Espanol)
                 ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
                 var viewMenuTask = new ViewMenuTask(viewCalculator, viewProperties.nodeView(), whichMenu);
 

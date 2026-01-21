@@ -534,6 +534,9 @@ public class JournalController {
                 }));
 
         windowSettings.getView().addListener((observable, oldValue, newValue) -> {
+            // TODO creating a new ViewCalculator causes XML and negative nids to be rendered in the view coordinate menu
+            // TODO reusing the existing ViewCalculator causes the Spanish language to not be rendered, remains in English
+            //      (rather than Spanish:  Ingles y Espanol)
             ViewCalculatorWithCache listenerViewCalculator = ViewCalculatorWithCache.getCalculator(windowView.toViewCoordinateRecord());
             TinkExecutor.threadPool().execute(TaskWrapper.make(new ViewMenuTask(listenerViewCalculator, windowView, "JournalController"),
                     (List<MenuItem> result) ->
