@@ -1040,12 +1040,15 @@ selected(active) - dark black
 .coordinate.menu-button > .arrow-button > .arrow {
     -fx-padding: 0;
 }
+
 .coordinate.menu-button,
+.coordinate.menu-button:filter-showing,
 .coordinate.menu-button:armed,
 .coordinate.menu-button:showing {
     -fx-background-color: white;
 }
 
+.coordinate.menu-button:filter-set,
 .coordinate.override.menu-button {
     -fx-background-color: #ff9100;
 }

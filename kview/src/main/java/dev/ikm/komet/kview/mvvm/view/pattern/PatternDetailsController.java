@@ -192,9 +192,6 @@ public class PatternDetailsController {
     private BorderPane detailsOuterBorderPane;
 
     @FXML
-    public BorderPane detailsInnerBorderPane;
-
-    @FXML
     private ToggleButton propertiesToggleButton;
 
     @FXML
@@ -337,7 +334,7 @@ public class PatternDetailsController {
         filterOptionsPopup = setupViewCoordinateOptionsPopup(
                 patternViewModel.getViewProperties(),
                 CHAPTER_WINDOW,
-                detailsInnerBorderPane,
+                detailsOuterBorderPane,
                 coordinatesMenuButton,
                 () -> { /* noop TODO: needs a way to redraw details based on view coordinates  */ }
         );

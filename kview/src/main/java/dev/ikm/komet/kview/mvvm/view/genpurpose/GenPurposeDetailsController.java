@@ -15,6 +15,20 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
+import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
+import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableComposer;
@@ -22,9 +36,9 @@ import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
-import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
+import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
@@ -98,19 +112,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
-
 public class GenPurposeDetailsController {
 
     private static final Logger LOG = LoggerFactory.getLogger(GenPurposeDetailsController.class);
@@ -128,9 +129,9 @@ public class GenPurposeDetailsController {
     private MenuButton coordinatesMenuButton;
 
     /**
-     * model required for the filter coordinates menu, used with coordinatesMenuButton
+     * popup for the filter coordinates menu, used with coordinatesMenuButton. An instance of FilterOptionsPopup.
      */
-    private ViewMenuModel viewMenuModel;
+    private FilterOptionsPopup filterOptionsPopup;
 
     /**
      * Used slide out the properties view
@@ -188,6 +189,16 @@ public class GenPurposeDetailsController {
 
     @FXML
     private void initialize() {
+
+        // Set up the filter options popup for the coordinates menu button.
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(
+                genPurposeViewModel.getViewProperties(),
+                CHAPTER_WINDOW,
+                detailsOuterBorderPane,
+                coordinatesMenuButton,
+                this::updateView
+        );
+
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
         // Bind the Publish button's disable property to the ViewModel
@@ -476,13 +487,29 @@ public class GenPurposeDetailsController {
             addPatternViews(section, section.getPatterns());
             mainContent.getChildren().add(titledPane);
         });
+
+        // TODO: will sections need to be refreshed on coordinate changes?
         editorWindowModel.getAdditionalSections().addListener(this::onAdditionalSectionsChanged);
 
+        // Initial view update
+        updateView();
+    }
+
+    /**
+     * Called to update the view when coordinate changes occur.
+     */
+    private void updateView() {
+        LOG.info("Update view called - implement coordinate changes here.");
         EntityFacade refConcept = (EntityFacade) genPurposeViewModel.getProperty(REF_COMPONENT).getValue();
-        updateDisplayIdentifier(refConcept);
-        updateIdenticon(refConcept);
-        updateWindowTitle(refConcept);
-        updateStampControl(refConcept);
+        if (refConcept != null){
+            updateDisplayIdentifier(refConcept);
+            updateIdenticon(refConcept);
+            updateWindowTitle(refConcept);
+            updateStampControl(refConcept);
+        } else {
+            LOG.warn("REF_COMPONENT is null, cannot update view.");
+            // TODO: Handle null refConcept case appropriately. Display no data found in UI.
+        }
     }
 
     private TitledPane createTitledPane(EditorSectionModel sectionModel) {
