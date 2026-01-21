@@ -1,6 +1,6 @@
 package dev.ikm.komet.kleditorapp.view;
 
-import dev.ikm.komet.kleditorapp.view.control.EditorWindowBaseControl;
+import dev.ikm.komet.layout.editor.model.EditorModelBase;
 import javafx.beans.property.Property;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
@@ -12,13 +12,13 @@ import javafx.util.Subscription;
 import java.util.Objects;
 import java.util.function.Function;
 
-public abstract class ControlBasePropertiesPane<T extends EditorWindowBaseControl> extends Region {
+public abstract class ControlBasePropertiesPane<T extends EditorModelBase> extends Region {
     protected final BorderPane mainContainer = new BorderPane();
 
     private final HBox bottomContainer = new HBox();
     private final Button deleteButton = new Button();
 
-    protected T currentlyShownControl;
+    protected T currentlyShownModel;
     protected T previouslyShownControl;
 
     public ControlBasePropertiesPane(boolean isDeletable) {
@@ -60,7 +60,7 @@ public abstract class ControlBasePropertiesPane<T extends EditorWindowBaseContro
     }
 
     private void onDelete(ActionEvent event) {
-        currentlyShownControl.delete();
+        currentlyShownModel.delete();
     }
 
     /**
@@ -69,8 +69,8 @@ public abstract class ControlBasePropertiesPane<T extends EditorWindowBaseContro
      * @param control the control to initialize the properties panel to.
      */
     public final void initControl(T control){
-        previouslyShownControl = currentlyShownControl;
-        currentlyShownControl = control;
+        previouslyShownControl = currentlyShownModel;
+        currentlyShownModel = control;
         doInit(control);
     }
 

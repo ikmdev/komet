@@ -6,6 +6,7 @@ import dev.ikm.komet.kleditorapp.view.control.EditorWindowBaseControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
+import dev.ikm.komet.kleditorapp.view.control.WindowControlFactory;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
@@ -72,7 +73,7 @@ public class PropertiesPane extends Region {
                 }
                 default -> System.out.println("TODO...");
             }
-            currentPropertiesPane.initControl(control);
+            currentPropertiesPane.initControl(WindowControlFactory.getModel(control));
 
         });
     }

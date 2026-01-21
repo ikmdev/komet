@@ -4,6 +4,7 @@ import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
+import dev.ikm.komet.kleditorapp.view.control.WindowControlFactory;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
@@ -18,23 +19,17 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-import java.util.HashMap;
 import java.util.List;
 
 import static dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell.KL_EDITOR_VERSION_PROXY;
 
 public class KLEditorWindowController {
 
-    private EditorWindowControl editorWindowControl;
+    private final EditorWindowControl editorWindowControl;
 
-    private ViewCalculator viewCalculator;
+    private final ViewCalculator viewCalculator;
 
-    private final HashMap<SectionViewControl, EditorSectionModel> sectionViewToModel = new HashMap<>();
-    private final HashMap<EditorSectionModel, SectionViewControl> sectionModelToView = new HashMap<>();
-
-    private final HashMap<EditorPatternModel, PatternViewControl> patternModelToView = new HashMap<>();
-
-    private EditorWindowModel editorWindowModel;
+    private final EditorWindowModel editorWindowModel;
 
     public KLEditorWindowController(EditorWindowModel editorWindowModel, EditorWindowControl editorWindowControl, ViewCalculator viewCalculator) {
         this.viewCalculator = viewCalculator;
@@ -58,13 +53,25 @@ public class KLEditorWindowController {
             if (change.wasAdded()) {
                 addSectionViewAndPatterns(change.getAddedSubList());
             }
+            if (change.wasRemoved()) {
+                change.getRemoved().forEach(sectionModel -> {
+                    editorWindowControl.getSectionViews().remove((SectionViewControl) WindowControlFactory.getView(sectionModel));
+                });
+            }
         }
     }
 
-    private void onSectionModelPatternsChanged(EditorSectionModel sectionModel, ListChangeListener.Change<? extends EditorPatternModel> change) {
+    private void onSectionModelPatternsChanged(EditorSectionModel sectionModel, SectionViewControl sectionViewControl,
+                                               ListChangeListener.Change<? extends EditorPatternModel> change) {
         while(change.next()) {
             if (change.wasAdded()) {
                 addPatternViews(sectionModel, change.getAddedSubList());
+            }
+            if (change.wasRemoved()) {
+                change.getRemoved().forEach(patternModel -> {
+                    PatternViewControl patternViewControl = (PatternViewControl) WindowControlFactory.getView(patternModel);
+                    sectionViewControl.getPatterns().remove(patternViewControl);
+                });
             }
         }
     }
@@ -77,15 +84,7 @@ public class KLEditorWindowController {
     }
 
     private void addSectionView(EditorSectionModel editorSectionModel) {
-        SectionViewControl sectionViewControl = new SectionViewControl();
-
-        sectionViewControl.nameProperty().bindBidirectional(editorSectionModel.nameProperty());
-        sectionViewControl.tagTextProperty().bind(editorSectionModel.tagTextProperty());
-
-        sectionViewControl.numberColumnsProperty().bindBidirectional(editorSectionModel.numberColumnsProperty());
-
-        sectionViewToModel.put(sectionViewControl, editorSectionModel);
-        sectionModelToView.put(editorSectionModel, sectionViewControl);
+        SectionViewControl sectionViewControl = WindowControlFactory.createSectionView(editorSectionModel);
 
         setupDragAndDrop(sectionViewControl);
 
@@ -100,30 +99,27 @@ public class KLEditorWindowController {
     }
 
     private void addPatternView(EditorSectionModel editorSectionModel, EditorPatternModel patternModel) {
-        PatternViewControl patternViewControl = new PatternViewControl();
-
-        patternModelToView.put(patternModel, patternViewControl);
-
-        patternViewControl.titleProperty().bind(patternModel.titleProperty());
-        patternViewControl.titleVisibleProperty().bindBidirectional(patternModel.titleVisibleProperty());
-
-        patternViewControl.numberColumnsProperty().bindBidirectional(patternModel.numberColumnsProperty());
-
-        patternViewControl.columnIndexProperty().bindBidirectional(patternModel.columnIndexProperty());
-        patternViewControl.rowIndexProperty().bindBidirectional(patternModel.rowIndexProperty());
-        patternViewControl.columnSpanProperty().bindBidirectional(patternModel.columnSpanProperty());
+        PatternViewControl patternViewControl = WindowControlFactory.createPatternView(patternModel);
 
         addFieldViews(patternModel, patternModel.getFields());
-        patternModel.getFields().addListener((ListChangeListener<? super EditorFieldModel>) change -> onPatternModelFieldsChanged(patternModel, change));
+        patternModel.getFields().addListener(
+                (ListChangeListener<? super EditorFieldModel>) change -> onPatternModelFieldsChanged(patternModel, patternViewControl, change));
 
-        SectionViewControl sectionViewControl = sectionModelToView.get(editorSectionModel);
+        SectionViewControl sectionViewControl = (SectionViewControl) WindowControlFactory.getView(editorSectionModel);
         sectionViewControl.getPatterns().add(patternViewControl);
     }
 
-    private void onPatternModelFieldsChanged(EditorPatternModel patternModel, ListChangeListener.Change<? extends EditorFieldModel> change) {
+    private void onPatternModelFieldsChanged(EditorPatternModel patternModel, PatternViewControl patternViewControl,
+                                             ListChangeListener.Change<? extends EditorFieldModel> change) {
         while(change.next()) {
             if (change.wasAdded()) {
                 addFieldViews(patternModel, change.getAddedSubList());
+            }
+            if (change.wasRemoved()) {
+                change.getRemoved().forEach(fieldModel -> {
+                    FieldViewControl fieldViewControl = (FieldViewControl) WindowControlFactory.getView(fieldModel);
+                    patternViewControl.getFields().remove(fieldViewControl);
+                });
             }
         }
     }
@@ -135,22 +131,14 @@ public class KLEditorWindowController {
     }
 
     private void addFieldView(EditorPatternModel patternModel, EditorFieldModel fieldModel) {
-        FieldViewControl fieldViewControl = new FieldViewControl();
-        fieldViewControl.titleProperty().bind(fieldModel.titleProperty());
-        fieldViewControl.fieldNumberProperty().bind(fieldModel.indexProperty().add(1));
+        FieldViewControl fieldViewControl = WindowControlFactory.createFieldView(fieldModel);
 
-        fieldViewControl.columnIndexProperty().bindBidirectional(fieldModel.columnIndexProperty());
-        fieldViewControl.rowIndexProperty().bindBidirectional(fieldModel.rowIndexProperty());
-        fieldViewControl.columnSpanProperty().bindBidirectional(fieldModel.columnSpanProperty());
-
-        fieldViewControl.dataTypeNidProperty().bind(fieldModel.dataTypeNidProperty());
-
-        PatternViewControl patternViewControl = patternModelToView.get(patternModel);
+        PatternViewControl patternViewControl = (PatternViewControl) WindowControlFactory.getView(patternModel);
         patternViewControl.getFields().add(fieldViewControl);
     }
 
     private void setupDragAndDrop(SectionViewControl sectionViewControl) {
-        EditorSectionModel editorSectionModel = sectionViewToModel.get(sectionViewControl);
+        EditorSectionModel editorSectionModel = (EditorSectionModel) WindowControlFactory.getModel(sectionViewControl);
 
         sectionViewControl.setOnDragOverIntoTile(dragEvent -> {
             if (dragEvent.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)) {
@@ -182,7 +170,7 @@ public class KLEditorWindowController {
         });
 
         // Listen to changes on Section Patterns
-        editorSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) change -> onSectionModelPatternsChanged(editorSectionModel, change));
+        editorSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) change -> onSectionModelPatternsChanged(editorSectionModel, sectionViewControl, change));
     }
 
     @FXML
@@ -196,7 +184,7 @@ public class KLEditorWindowController {
      */
     public void start() {
         // Select main section initially
-        SelectionManager.instance().setSelectedControl(sectionModelToView.get(editorWindowModel.getMainSection()));
+        SelectionManager.instance().setSelectedControl(WindowControlFactory.getView(editorWindowModel.getMainSection()));
     }
 
     public void shutdown() {

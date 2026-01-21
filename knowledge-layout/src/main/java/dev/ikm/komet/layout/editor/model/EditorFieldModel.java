@@ -5,6 +5,8 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import org.slf4j.Logger;
@@ -56,6 +58,11 @@ public class EditorFieldModel extends EditorGridNodeModel {
         saveGridNodeDetails(fieldPreferences);
     }
 
+    @Override
+    public void delete() {
+        getParentPattern().getFields().remove(this);
+    }
+
     /*******************************************************************************
      *                                                                             *
      * Properties                                                                  *
@@ -82,4 +89,10 @@ public class EditorFieldModel extends EditorGridNodeModel {
     private ReadOnlyIntegerWrapper dataTypeNid = new ReadOnlyIntegerWrapper();
     public int getDataTypeNid() { return dataTypeNid.get(); }
     public ReadOnlyIntegerProperty dataTypeNidProperty() { return dataTypeNid.getReadOnlyProperty(); }
+
+    // -- parent Pattern
+    private ReadOnlyObjectWrapper<EditorPatternModel> parentPattern = new ReadOnlyObjectWrapper<>();
+    public EditorPatternModel getParentPattern() { return parentPattern.get(); }
+    public ReadOnlyObjectProperty<EditorPatternModel> parentPatternProperty() { return parentPattern.getReadOnlyProperty(); }
+    void setParentPattern(EditorPatternModel parentPattern) { this.parentPattern.set(parentPattern); }
 }

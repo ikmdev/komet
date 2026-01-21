@@ -1,7 +1,7 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
-import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
 import dev.ikm.komet.kview.controls.ToggleSwitch;
+import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
@@ -17,7 +17,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.List;
 
-public class PatternPropertiesPane extends GridNodePropertiesPane<PatternViewControl> {
+public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternModel> {
     public static final String DEFAULT_STYLE_CLASS = "pattern-properties";
 
     private final VBox patternMainContainer = new VBox();
@@ -116,19 +116,19 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<PatternViewCon
     }
 
     @Override
-    protected void doInit(PatternViewControl control) {
-        super.doInit(control);
+    protected void doInit(EditorPatternModel modelObject) {
+        super.doInit(modelObject);
 
         if (previouslyShownControl != null) {
             columnsComboBox.valueProperty().unbindBidirectional(previousControlColumnsObjProperty);
             titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownControl.titleVisibleProperty());
         }
 
-        titleTextField.setText(control.getTitle());
-        titleVisibleTSwitch.selectedProperty().bindBidirectional(control.titleVisibleProperty());
+        titleTextField.setText(modelObject.getTitle());
+        titleVisibleTSwitch.selectedProperty().bindBidirectional(modelObject.titleVisibleProperty());
 
         // Columns ComboBox
-        previousControlColumnsObjProperty = control.numberColumnsProperty().asObject();
+        previousControlColumnsObjProperty = modelObject.numberColumnsProperty().asObject();
         columnsComboBox.valueProperty().bindBidirectional(previousControlColumnsObjProperty);
     }
 }

@@ -1,7 +1,7 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
-import dev.ikm.komet.kleditorapp.view.control.GridBaseControl;
+import dev.ikm.komet.layout.editor.model.EditorGridNodeModel;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
@@ -15,7 +15,7 @@ import javafx.util.Subscription;
 
 import java.util.List;
 
-public class GridNodePropertiesPane<D extends GridBaseControl> extends ControlBasePropertiesPane<D> {
+public class GridNodePropertiesPane<D extends EditorGridNodeModel> extends ControlBasePropertiesPane<D> {
 
     protected final ComboBox<Integer> columnPositionCB = new ComboBox<>();
     protected final ComboBox<Integer> rowPositionCB = new ComboBox<>();
@@ -102,7 +102,7 @@ public class GridNodePropertiesPane<D extends GridBaseControl> extends ControlBa
     }
 
     @Override
-    protected void doInit(D control) {
+    protected void doInit(D modelObject) {
         if (previouslyShownControl != null) {
             columnIndexSubscription.unsubscribe();
             rowIndexSubscription.unsubscribe();
@@ -113,24 +113,24 @@ public class GridNodePropertiesPane<D extends GridBaseControl> extends ControlBa
 
         // Column Index
         columnIndexSubscription = bindBidirectionalWithConverter(
-                control.columnIndexProperty(),
+                modelObject.columnIndexProperty(),
                 columnPositionCB.valueProperty(),
                 val -> val - 1,
                 val -> val.intValue() + 1);
 
         // Row Index
         rowIndexSubscription = bindBidirectionalWithConverter(
-                control.rowIndexProperty(),
+                modelObject.rowIndexProperty(),
                 rowPositionCB.valueProperty(),
                 val -> val - 1,
                 val -> val.intValue() + 1);
 
         // Column Span
-        previousControlColumnSpanProperty = control.columnSpanProperty().asObject();
+        previousControlColumnSpanProperty = modelObject.columnSpanProperty().asObject();
         columnSpanCB.valueProperty().bindBidirectional(previousControlColumnSpanProperty);
 
         // Row Span
-        previousControlRowSpanProperty = control.rowSpanProperty().asObject();
+        previousControlRowSpanProperty = modelObject.rowSpanProperty().asObject();
         rowSpanCB.valueProperty().bindBidirectional(previousControlRowSpanProperty);
     }
 }
