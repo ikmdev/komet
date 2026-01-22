@@ -25,6 +25,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -40,6 +41,9 @@ public class KLEditorMainScreenController {
     private static final Logger LOG = LoggerFactory.getLogger(KLEditorMainScreenController.class);
 
     private final EvtBus eventBus = EvtBusFactory.getDefaultEvtBus();
+
+    @FXML
+    private Button saveButton;
 
     @FXML
     private PropertiesPane propertiesPane;
@@ -77,6 +81,7 @@ public class KLEditorMainScreenController {
         viewCalculator = ViewCalculatorWithCache.getCalculator(windowViewCoordinates.toViewCoordinateRecord());
 
         initPatternsList(viewCalculator);
+        saveButton.disableProperty().bind(titleTextField.textProperty().isEmpty());
 
         // Init Window
         initWindow(windowToLoad);

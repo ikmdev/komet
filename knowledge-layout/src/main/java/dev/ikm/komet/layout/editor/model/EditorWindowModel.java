@@ -25,8 +25,6 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.KL_MAIN_SECTION;
  * Every window has to have at least one section that's why there is a main Section property with a getter.
  */
 public class EditorWindowModel {
-    public static final String EMPTY_WINDOW_TITLE = "Untitled";
-
     private static final Logger LOG = LoggerFactory.getLogger(EditorWindowModel.class);
     private final ObservableList<EditorSectionModel> additionalSections = FXCollections.observableArrayList();
 
@@ -187,7 +185,7 @@ public class EditorWindowModel {
     /**
      * The title of the Section.
      */
-    private final StringProperty title = new SimpleStringProperty(EMPTY_WINDOW_TITLE);
+    private final StringProperty title = new SimpleStringProperty();
     public String getTitle() { return title.get(); }
     public StringProperty titleProperty() { return title; }
     public void setTitle(String title) { this.title.set(title);}

@@ -70,6 +70,5 @@ public class EditorWindowManager {
      * Called when the Editor "app" gets closed. It should be used to clean up.
      */
     public static void shutdown() {
-        titleToWindowModel.remove(EditorWindowModel.EMPTY_WINDOW_TITLE);
     }
 }

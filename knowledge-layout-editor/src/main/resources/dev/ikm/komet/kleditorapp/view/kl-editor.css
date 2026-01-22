@@ -32,7 +32,7 @@
 
 .top-toolbar,
 .pattern-browser .header {
-    height: 40px;
+    height: 43px;
 
     -fx-pref-height: height;
     -fx-min-height: height;
@@ -41,17 +41,26 @@
 
 .top-toolbar {
     -fx-background-color: -Grey-11;
-    -fx-padding: 0 8px 0 8px;
+    -fx-padding: 0 10px 0 10px;
 }
 
 .top-toolbar .label {
     -fx-text-fill: white;
-    -fx-font-size: 11px;
+    -fx-font-size: 13px;
+    -fx-padding: 0 0 0 5px;
 }
 
-.top-toolbar .text-field {
+.top-toolbar > .text-field {
     -fx-background-color: -Grey-9;
     -fx-padding: 0.416667em 0.583em 0.416667em 0.583em; /* 4 7 4 7 */
+}
+
+.top-toolbar > .text-field:hover {
+    -fx-background-color: derive(-Grey-9, 5%);
+}
+
+.top-toolbar > .text-field:focused {
+    -fx-background-color: -Grey-10;
 }
 
 .top-toolbar .separator:vertical .line {
@@ -74,6 +83,10 @@
     -fx-pref-width: 260;
 
     -fx-text-fill: #eee;
+}
+
+.top-toolbar > .button {
+    -fx-font-size: 13px;
 }
 
 /*******************************************************************************

@@ -29,7 +29,6 @@
                     <HBox alignment="CENTER_LEFT" prefHeight="44" spacing="8" styleClass="app-header">
                         <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308"
                                styleClass="app-title" text="KNOWLEDGE LAYOUT EDITOR" HBox.hgrow="ALWAYS"/>
-                        <Button styleClass="pill primary" text="DONE"/>
                     </HBox>
                 </VBox>
             </top>
@@ -47,37 +46,12 @@
                         <!-- Secondary toolbar under header -->
                         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="top-toolbar"
                               BorderPane.alignment="CENTER">
-                            <Label minWidth="-Infinity" text="Name:"/>
-                            <TextField fx:id="titleTextField" prefWidth="260" promptText="Untitled"
+
+                            <Label minWidth="-Infinity" text="Window Title:"/>
+                            <TextField fx:id="titleTextField" prefWidth="260" promptText="Enter Window Title"
                                        styleClass="title-name-field"/>
-                            <ComboBox prefWidth="150.0" styleClass="dark"/>
-                            <Label minWidth="-Infinity" text="Preview"/>
-                            <Separator orientation="VERTICAL"/>
                             <Pane HBox.hgrow="ALWAYS"/>
-                            <Button styleClass="light">
-                                <graphic>
-                                    <StackPane>
-                                        <styleClass>
-                                            <String fx:value="icon"/>
-                                            <String fx:value="share"/>
-                                        </styleClass>
-                                    </StackPane>
-                                </graphic>
-                            </Button>
-                            <Button styleClass="light">
-                                <graphic>
-                                    <StackPane>
-                                        <styleClass>
-                                            <String fx:value="icon"/>
-                                            <String fx:value="duplicate"/>
-                                        </styleClass>
-                                    </StackPane>
-                                </graphic>
-                            </Button>
-                            <Button styleClass="dark" text="SAVE AS TEMPLATE"/>
-                            <Separator orientation="VERTICAL" prefHeight="200.0"/>
-                            <Button styleClass="dark" text="CANCEL"/>
-                            <Button defaultButton="true" onAction="#onSave" text="SAVE"/>
+                            <Button defaultButton="true" fx:id="saveButton" onAction="#onSave" text="SAVE WINDOW"/>
                         </HBox>
                     </top>
                     <right>
