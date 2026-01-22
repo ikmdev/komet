@@ -31,6 +31,8 @@ import javafx.scene.layout.BorderPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
+
 import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
 
@@ -49,7 +51,7 @@ public class KLEditorMainScreenController {
     private TextField titleTextField;
 
     @FXML
-    private ListView patternBrowserListView;
+    private ListView<PatternBrowserItem> patternBrowserListView;
 
     private KLEditorWindowController klEditorWindowController;
 
@@ -64,7 +66,7 @@ public class KLEditorMainScreenController {
     private ObservableViewNoOverride windowViewCoordinates;
 
     private ViewCalculator viewCalculator;
-    private ObservableList<Entity<EntityVersion>> patterns;
+    private ObservableList<PatternBrowserItem> patternsList;
 
     public void init(KometPreferences klEditorAppPreferences, WindowSettings windowSettings, String windowToLoad) {
         this.klEditorAppPreferences = klEditorAppPreferences;
@@ -99,18 +101,25 @@ public class KLEditorMainScreenController {
     }
 
     private void initPatternsList(ViewCalculator viewCalculator) {
-        patterns = FXCollections.observableArrayList();
+        patternsList = FXCollections.observableArrayList();
         PrimitiveData.get().forEachPatternNid(patternNid -> {
             Latest<PatternEntityVersion> latestPattern = viewCalculator.latest(patternNid);
             latestPattern.ifPresent(patternEntityVersion -> {
                 if (EntityService.get().getEntity(patternEntityVersion.nid()).isPresent()) {
-                    patterns.add(EntityService.get().getEntity(patternNid).get());
+                    Entity<EntityVersion> entity = EntityService.get().getEntity(patternNid).get();
+                    PatternBrowserItem patternBrowserItem = new PatternBrowserItem(entity, viewCalculator);
+                    patternsList.add(patternBrowserItem);
                 }
             });
         });
 
+        // Sort
+        FXCollections.sort(patternsList,
+                Comparator.comparing(PatternBrowserItem::getTitle,
+                        String.CASE_INSENSITIVE_ORDER));
+
         patternBrowserListView.setCellFactory(param -> new PatternBrowserCell(viewCalculator));
-        patternBrowserListView.setItems(patterns);
+        patternBrowserListView.setItems(patternsList);
     }
 
     private void initWindow(String windowTitle) {
