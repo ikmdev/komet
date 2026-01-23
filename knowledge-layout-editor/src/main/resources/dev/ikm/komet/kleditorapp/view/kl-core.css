@@ -247,3 +247,21 @@
 .titled-pane > *.content {
      -fx-border-width: 0;
 }
+
+/************ Titled Pane Dark mode *************/
+
+.titled-pane.dark > .title {
+    -fx-background-color: -Grey-9;
+}
+
+.titled-pane.dark > .title > .text {
+    -fx-fill: #f0f0f0;
+}
+
+.titled-pane.dark > .title > .arrow-button > .arrow {
+    -fx-background-color: #f0f0f0;
+}
+
+.titled-pane.dark > *.content {
+    -fx-background-color: -Grey-9;
+}

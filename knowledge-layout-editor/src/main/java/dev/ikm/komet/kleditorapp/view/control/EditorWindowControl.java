@@ -37,7 +37,7 @@ public class EditorWindowControl extends Control {
     }
 
     // -- title
-    private final StringProperty title = new SimpleStringProperty(this, "title", "Untitled");
+    private final StringProperty title = new SimpleStringProperty(this, "title", "");
     public StringProperty titleProperty() { return title; }
     public String getTitle() { return title.get(); }
     public void setTitle(String title) { this.title.set(title); }

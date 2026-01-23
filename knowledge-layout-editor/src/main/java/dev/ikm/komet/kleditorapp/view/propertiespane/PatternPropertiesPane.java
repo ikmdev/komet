@@ -37,7 +37,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         titleContainer.getStyleClass().add("title-container");
         titleContainer.setSpacing(4);
 
-        Label titleLabel = new Label("Title:");
+        Label titleLabel = new Label("Pattern Title:");
         titleTextField = new TextField();
 
         titleContainer.getChildren().addAll(titleLabel, titleTextField);

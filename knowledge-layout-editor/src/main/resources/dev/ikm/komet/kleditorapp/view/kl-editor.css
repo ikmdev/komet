@@ -32,7 +32,7 @@
 
 .top-toolbar,
 .pattern-browser .header {
-    height: 40px;
+    height: 43px;
 
     -fx-pref-height: height;
     -fx-min-height: height;
@@ -41,17 +41,26 @@
 
 .top-toolbar {
     -fx-background-color: -Grey-11;
-    -fx-padding: 0 8px 0 8px;
+    -fx-padding: 0 10px 0 10px;
 }
 
 .top-toolbar .label {
     -fx-text-fill: white;
-    -fx-font-size: 11px;
+    -fx-font-size: 13px;
+    -fx-padding: 0 0 0 7px;
 }
 
-.top-toolbar .text-field {
+.top-toolbar > .text-field {
     -fx-background-color: -Grey-9;
     -fx-padding: 0.416667em 0.583em 0.416667em 0.583em; /* 4 7 4 7 */
+}
+
+.top-toolbar > .text-field:hover {
+    -fx-background-color: derive(-Grey-9, 5%);
+}
+
+.top-toolbar > .text-field:focused {
+    -fx-background-color: -Grey-10;
 }
 
 .top-toolbar .separator:vertical .line {
@@ -74,6 +83,10 @@
     -fx-pref-width: 260;
 
     -fx-text-fill: #eee;
+}
+
+.top-toolbar > .button {
+    -fx-font-size: 13px;
 }
 
 /*******************************************************************************
@@ -151,7 +164,7 @@
 
 /*******************************************************************************
  *                                                                             *
- * Pattern Browser                                                             *
+ * Library                                                                     *
  *                                                                             *
  ******************************************************************************/
 
@@ -180,12 +193,12 @@
 
 .pattern-browser > .content-container {
     -fx-background-color: #545d72;
-    -fx-padding: 0 7px 0 7px;
+    -fx-padding: 0 0px 0 0px;
 }
 
 .pattern-browser .content-container .search-container {
     -fx-background-color: #545d72;
-    -fx-padding: 10px 0px 10px 0px;
+    -fx-padding: 10px 7px 10px 7px;
 }
 
 .pattern-browser .content-container .search-container .text-field {
@@ -201,11 +214,21 @@
     -fx-text-fill: #eee;
 }
 
+.pattern-browser .content-container .titled-pane {
+    -fx-max-height: infinity;
+}
+
+.pattern-browser .content-container > .titled-pane.dark > .title {
+    -fx-background-radius: 0;
+    -fx-background-color: derive(-Grey-8, 15%);
+}
+
 /*******************************************************************************
  * Pattern Browser ListView                                                    *
  ******************************************************************************/
 
 .pattern-browser .list-view {
+    -fx-padding: 7px 0 0 0;
     -fx-background-color: transparent;
 }
 
@@ -225,7 +248,7 @@
 
 .pattern-browser .list-view .scroll-bar:vertical .thumb {
     -fx-background-color: #888888;
-    -fx-background-insets: 3 0 3 3;
+    -fx-background-insets: 3 4 3 -1;
     -fx-background-radius: 16px;
 }
 
@@ -243,7 +266,7 @@
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 
-    -fx-padding: 0 0px 5px 0px;
+    -fx-padding: 0 5px 5px 5px;
     -fx-effect: dropshadow(gaussian , rgba(0, 0, 0, 0.7), 2, 0, 0 , 2 );
 }
 
@@ -305,6 +328,12 @@
 .pattern-browser .list-view .list-cell > .main-container .last-updated-container > .label {
     -fx-text-fill: #666666;
     -fx-font-size: 10px;
+}
+
+/************** Controls ***************/
+
+.pattern-browser .controls-titled-pane {
+    -fx-pref-height: 250px;
 }
 
 /*******************************************************************************

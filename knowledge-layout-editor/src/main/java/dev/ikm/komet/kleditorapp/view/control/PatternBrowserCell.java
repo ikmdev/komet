@@ -3,13 +3,11 @@ package dev.ikm.komet.kleditorapp.view.control;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.kleditorapp.view.PatternBrowserItem;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -31,7 +29,7 @@ import java.util.Optional;
 /**
  * A Cell that renders each item in the Pattern Browser List.
  */
-public class PatternBrowserCell extends ListCell<Entity<EntityVersion>> {
+public class PatternBrowserCell extends ListCell<PatternBrowserItem> {
     private static final Logger LOG = LoggerFactory.getLogger(PatternBrowserCell.class);
 
     public static final DataFormat KL_EDITOR_VERSION_PROXY = new DataFormat("kl-editor/komet-pattern-version-proxy");
@@ -91,17 +89,17 @@ public class PatternBrowserCell extends ListCell<Entity<EntityVersion>> {
     }
 
     @Override
-    protected void updateItem(Entity<EntityVersion> entity, boolean empty) {
-        super.updateItem(entity, empty);
+    protected void updateItem(PatternBrowserItem patternBrowserItem, boolean empty) {
+        super.updateItem(patternBrowserItem, empty);
 
         if (!isEmpty()) {
-            Latest<PatternEntityVersion> optionalLatestPattern = viewCalculator.latest(entity.nid());
+            Latest<PatternEntityVersion> optionalLatestPattern = viewCalculator.latest(patternBrowserItem.getNid());
             optionalLatestPattern.ifPresentOrElse(latestPattern -> {
                 // Title
-                titleLabel.setText(retrieveDisplayName(entity.toProxy()));
+                titleLabel.setText(patternBrowserItem.getTitle());
 
                 // Identicon
-                Image identiconImage = Identicon.generateIdenticonImage(entity.publicId());
+                Image identiconImage = Identicon.generateIdenticonImage(patternBrowserItem.getPublicId());
                 identiconImageView.setImage(identiconImage);
 
                 currentPatternEntityVersion = latestPattern;
@@ -131,12 +129,6 @@ public class PatternBrowserCell extends ListCell<Entity<EntityVersion>> {
         statusLabel.setText("");
         lastUpdatedLabel.setText("");
         lastUpdatedTextLabel.setText("");
-    }
-
-    private String retrieveDisplayName(PatternFacade patternFacade) {
-        Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
-        Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
-        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
     }
 
     private void setUpDragAndDrop() {

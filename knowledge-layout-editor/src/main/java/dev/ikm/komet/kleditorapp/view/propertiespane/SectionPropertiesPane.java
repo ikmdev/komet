@@ -35,7 +35,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         sectionNameContainer.getStyleClass().add("section-name-container");
         sectionNameContainer.setSpacing(4);
 
-        Label nameLabel = new Label("Name of the section:");
+        Label nameLabel = new Label("Section Title:");
         sectionNameTextField = new TextField();
 
         sectionNameContainer.getChildren().addAll(nameLabel, sectionNameTextField);
