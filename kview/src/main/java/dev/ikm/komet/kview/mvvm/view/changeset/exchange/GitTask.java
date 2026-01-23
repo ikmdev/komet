@@ -97,6 +97,16 @@ public class GitTask extends TrackingCallable<Boolean> {
     private static final Logger LOG = LoggerFactory.getLogger(GitTask.class);
 
     /**
+     * Maximum number of retry attempts for transient network errors.
+     */
+    private static final int MAX_RETRY_ATTEMPTS = 3;
+
+    /**
+     * Initial delay between retries in milliseconds.
+     */
+    private static final long INITIAL_RETRY_DELAY_MS = 1000;
+
+    /**
      * The operation mode for this Git task.
      */
     public enum OperationMode {
@@ -295,12 +305,14 @@ public class GitTask extends TrackingCallable<Boolean> {
 
             // Check if main branch exists and is tracking remote
             try {
-                LsRemoteCommand lsRemoteCommand = git.lsRemote();
-                lsRemoteCommand.setHeads(true);
-                lsRemoteCommand.setRemote(REMOTE_NAME);
-                lsRemoteCommand.setCredentialsProvider(chainingCredentialsProvider);
+                Collection<Ref> refs = executeWithRetry(() -> {
+                    LsRemoteCommand lsRemoteCommand = git.lsRemote();
+                    lsRemoteCommand.setHeads(true);
+                    lsRemoteCommand.setRemote(REMOTE_NAME);
+                    lsRemoteCommand.setCredentialsProvider(chainingCredentialsProvider);
+                    return lsRemoteCommand.call();
+                }, "ls-remote");
 
-                Collection<Ref> refs = lsRemoteCommand.call();
                 boolean mainBranchExists = refs.stream()
                         .anyMatch(ref -> ref.getName().equals("refs/heads/" + DEFAULT_BRANCH));
 
@@ -309,7 +321,7 @@ public class GitTask extends TrackingCallable<Boolean> {
                     return false;
                 }
             } catch (GitAPIException ex) {
-                LOG.error("Error checking remote branches", ex);
+                LOG.error("Error checking remote branches after {} retries", MAX_RETRY_ATTEMPTS, ex);
                 return false;
             }
 
@@ -317,6 +329,85 @@ public class GitTask extends TrackingCallable<Boolean> {
         } catch (IOException ex) {
             return false;
         }
+    }
+
+    /**
+     * Executes a Git operation with retry logic for transient errors.
+     * Uses exponential backoff between retries.
+     *
+     * @param <T>           the return type of the operation
+     * @param operation     the Git operation to execute
+     * @param operationName a descriptive name for logging purposes
+     * @return the result of the operation
+     * @throws GitAPIException if the operation fails after all retry attempts
+     */
+    private <T> T executeWithRetry(GitOperation<T> operation, String operationName) throws GitAPIException {
+        GitAPIException lastException = null;
+
+        for (int attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
+            try {
+                return operation.execute();
+            } catch (GitAPIException ex) {
+                lastException = ex;
+
+                // Check if this is a retryable error (5xx server errors)
+                if (isRetryableError(ex) && attempt < MAX_RETRY_ATTEMPTS) {
+                    long delayMs = INITIAL_RETRY_DELAY_MS * (1L << (attempt - 1)); // Exponential backoff
+                    LOG.warn("Git {} operation failed with transient error (attempt {}/{}). Retrying in {} ms...",
+                            operationName, attempt, MAX_RETRY_ATTEMPTS, delayMs, ex);
+                    updateMessage("Connection error. Retrying (%d/%d)...".formatted(attempt, MAX_RETRY_ATTEMPTS));
+
+                    try {
+                        Thread.sleep(delayMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw ex; // Re-throw the original exception if interrupted
+                    }
+                } else {
+                    // Non-retryable error or last attempt
+                    throw ex;
+                }
+            }
+        }
+
+        // Should not reach here, but just in case
+        throw lastException;
+    }
+
+    /**
+     * Determines if an exception represents a retryable error.
+     * Server errors (5xx) are considered transient and retryable.
+     *
+     * @param ex the exception to check
+     * @return true if the error is retryable, false otherwise
+     */
+    private boolean isRetryableError(GitAPIException ex) {
+        Throwable cause = ex.getCause();
+        if (cause != null) {
+            String message = cause.getMessage();
+            if (message != null) {
+                // Check for 5xx server errors
+                return message.contains("500 ") ||
+                        message.contains("502 ") ||
+                        message.contains("503 ") ||
+                        message.contains("504 ") ||
+                        message.contains("Internal Server Error") ||
+                        message.contains("Bad Gateway") ||
+                        message.contains("Service Unavailable") ||
+                        message.contains("Gateway Timeout");
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Functional interface for Git operations that can throw GitAPIException.
+     *
+     * @param <T> the return type of the operation
+     */
+    @FunctionalInterface
+    private interface GitOperation<T> {
+        T execute() throws GitAPIException;
     }
 
     // -------------------- CONNECT Operations --------------------
@@ -528,12 +619,13 @@ public class GitTask extends TrackingCallable<Boolean> {
         try {
             updateMessage("Testing connection with remote repository...");
 
-            LsRemoteCommand lsRemoteCommand = git.lsRemote();
-            lsRemoteCommand.setHeads(true);
-            lsRemoteCommand.setRemote(REMOTE_NAME);
-            lsRemoteCommand.setCredentialsProvider(chainingCredentialsProvider);
-
-            final Collection<Ref> refs = lsRemoteCommand.call();
+            Collection<Ref> refs = executeWithRetry(() -> {
+                LsRemoteCommand lsRemoteCommand = git.lsRemote();
+                lsRemoteCommand.setHeads(true);
+                lsRemoteCommand.setRemote(REMOTE_NAME);
+                lsRemoteCommand.setCredentialsProvider(chainingCredentialsProvider);
+                return lsRemoteCommand.call();
+            }, "ls-remote");
 
             // Check if main branch exists
             final boolean mainBranchExists = refs.stream()
@@ -605,12 +697,15 @@ public class GitTask extends TrackingCallable<Boolean> {
                 TaskPhase.CONNECT_COMPLETION.getEnd(),
                 TOTAL_WORK);
 
-        git.push()
-                .setRemote(REMOTE_NAME)
-                .setCredentialsProvider(chainingCredentialsProvider)
-                .setProgressMonitor(progressMonitor)
-                .setPushAll()
-                .call();
+        executeWithRetry(() -> {
+            git.push()
+                    .setRemote(REMOTE_NAME)
+                    .setCredentialsProvider(chainingCredentialsProvider)
+                    .setProgressMonitor(progressMonitor)
+                    .setPushAll()
+                    .call();
+            return null;
+        }, "push");
 
         updateMessage("Connection established successfully! Remote repository is now linked.");
         updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 1.0);
@@ -727,7 +822,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             updateMessage("Pulling changes from remote...");
             updatePhaseProgress(startPercentage, endPercentage, 0.3);
 
-            PullResult pullResult = pullCommand.call();
+            PullResult pullResult = executeWithRetry(() -> pullCommand.call(), "pull");
 
             if (pullResult.isSuccessful()) {
                 // Get the new HEAD after pull
@@ -1125,7 +1220,7 @@ public class GitTask extends TrackingCallable<Boolean> {
 
             pushCommand.setProgressMonitor(progressMonitor);
             pushCommand.setCredentialsProvider(chainingCredentialsProvider);
-            pushCommand.call();
+            executeWithRetry(() -> { pushCommand.call(); return null; }, "push");
             updatePhaseProgress(startPercentage, endPercentage, 0.95);
 
             updateMessage("Changes successfully pushed to remote repository.");
