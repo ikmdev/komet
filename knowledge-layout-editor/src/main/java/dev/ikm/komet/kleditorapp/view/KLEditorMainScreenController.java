@@ -57,6 +57,9 @@ public class KLEditorMainScreenController {
     @FXML
     private ListView<PatternBrowserItem> patternBrowserListView;
 
+    @FXML
+    private ListView controlsListView;
+
     private KLEditorWindowController klEditorWindowController;
 
     @FXML
@@ -81,6 +84,8 @@ public class KLEditorMainScreenController {
         viewCalculator = ViewCalculatorWithCache.getCalculator(windowViewCoordinates.toViewCoordinateRecord());
 
         initPatternsList(viewCalculator);
+        initControlsList();
+
         saveButton.disableProperty().bind(titleTextField.textProperty().isEmpty());
 
         // Init Window
@@ -125,6 +130,10 @@ public class KLEditorMainScreenController {
 
         patternBrowserListView.setCellFactory(param -> new PatternBrowserCell(viewCalculator));
         patternBrowserListView.setItems(patternsList);
+    }
+
+    private void initControlsList() {
+
     }
 
     private void initWindow(String windowTitle) {

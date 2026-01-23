@@ -18,6 +18,7 @@
 
 <?import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl?>
 <?import dev.ikm.komet.kleditorapp.view.propertiespane.PropertiesPane?>
+<?import javafx.scene.control.TitledPane?>
 <BorderPane fx:id="klEditorMainContainer" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="dev.ikm.komet.kleditorapp.view.KLEditorMainScreenController">
     <center>
@@ -63,34 +64,33 @@
                 <VBox styleClass="pattern-browser" BorderPane.alignment="CENTER">
                     <!-- Sidebar header -->
                     <HBox alignment="CENTER_LEFT" spacing="8" styleClass="header">
-                        <Button mnemonicParsing="false" styleClass="clear-button">
-                            <graphic>
-                                <StackPane prefHeight="0.0" prefWidth="0.0">
-                                    <styleClass>
-                                        <String fx:value="icon"/>
-                                        <String fx:value="cross"/>
-                                    </styleClass>
-                                </StackPane>
-                            </graphic>
-                            <HBox.margin>
-                                <Insets left="10.0"/>
-                            </HBox.margin>
-                        </Button>
                         <Label alignment="CENTER" maxWidth="1.7976931348623157E308" styleClass="sidebar-title"
-                               text="Pattern and Semantic Library" wrapText="true" HBox.hgrow="ALWAYS"/>
+                               text="Pattern and Control Library" wrapText="true" HBox.hgrow="ALWAYS"/>
                     </HBox>
                     <VBox styleClass="content-container" VBox.vgrow="ALWAYS">
                         <children>
                             <!-- Search + options row -->
                             <HBox spacing="8" styleClass="search-container">
-                                <TextField promptText="Search patterns" HBox.hgrow="ALWAYS">
+                                <TextField promptText="Search patterns and controls" HBox.hgrow="ALWAYS">
                                 </TextField>
                                 <padding>
                                     <Insets bottom="8" left="12" right="12" top="0"/>
                                 </padding>
                             </HBox>
-                            <ListView fx:id="patternBrowserListView" prefHeight="200.0" prefWidth="200.0"
-                                      VBox.vgrow="ALWAYS"/>
+                            <TitledPane text="Patterns" VBox.vgrow="ALWAYS">
+                                <ListView fx:id="patternBrowserListView"/>
+                                <styleClass>
+                                    <String fx:value="dark"/>
+                                    <String fx:value="patterns-titled-pane"/>
+                                </styleClass>
+                            </TitledPane>
+                            <TitledPane text="Controls" >
+                                <ListView fx:id="controlsListView" />
+                                <styleClass>
+                                    <String fx:value="dark"/>
+                                    <String fx:value="controls-titled-pane"/>
+                                </styleClass>
+                            </TitledPane>
                         </children>
                     </VBox>
                 </VBox>
