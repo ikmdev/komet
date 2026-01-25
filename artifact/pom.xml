@@ -9,6 +9,10 @@
     <artifactId>artifact</artifactId>
     <dependencies>
         <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>framework</artifactId>
         </dependency>

@@ -14,7 +14,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>terms</artifactId>
         </dependency>
         <dependency>

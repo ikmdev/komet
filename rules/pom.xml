@@ -18,7 +18,7 @@
             <artifactId>classification</artifactId>
         </dependency>
         <dependency>
-            <groupId>${ikm-evrete.groupId}</groupId>
+            <groupId>org.evrete</groupId>
             <artifactId>evrete-core</artifactId>
             <exclusions>
                 <exclusion>
@@ -28,7 +28,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>${ikm-evrete.groupId}</groupId>
+            <groupId>org.evrete</groupId>
             <artifactId>evrete-dsl-java</artifactId>
         </dependency>
     </dependencies>

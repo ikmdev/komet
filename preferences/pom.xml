@@ -9,7 +9,7 @@
     <artifactId>preferences</artifactId>
     <dependencies>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>entity</artifactId>
         </dependency>
     </dependencies>

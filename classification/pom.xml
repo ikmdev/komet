@@ -9,19 +9,19 @@
     <artifactId>classification</artifactId>
     <dependencies>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>entity</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>entity-provider</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>data-spinedarray-provider</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>executor-provider</artifactId>
             <scope>test</scope>
         </dependency>
@@ -30,15 +30,15 @@
             <artifactId>framework</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>reasoner-service</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>reasoner-elk-snomed</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>reasoner-hybrid</artifactId>
         </dependency>
         <dependency>

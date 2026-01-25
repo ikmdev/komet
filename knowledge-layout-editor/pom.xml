@@ -17,11 +17,11 @@
             <artifactId>search</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>search-provider</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>composer</artifactId>
         </dependency>
         <dependency>
@@ -72,27 +72,27 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>executor-provider</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>entity-provider</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>data-mvstore-provider</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>data-spinedarray-provider</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>data-ephemeral-provider</artifactId>
             <scope>test</scope>
         </dependency>
