@@ -6,7 +6,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.58.0-FVKB-162-163-164-Chapter-Window-Preferences-support-SNAPSHOT</version>
+        <version>1.58.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>knowledge-layout</artifactId>
