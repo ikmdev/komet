@@ -54,6 +54,7 @@ public class PatternKlWindowFactory implements EntityKlWindowFactory {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    @Override
     public PatternKlWindow restore(WindowSettings windowSettings, KometPreferences preferences) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
         try {
