@@ -29,19 +29,14 @@ public class EditorWindowSkin extends SkinBase<EditorWindowControl> {
         super(control);
 
         root.getStyleClass().add("window");
-        root.setMaxHeight(Control.USE_PREF_SIZE);
         root.setMaxWidth(Control.USE_PREF_SIZE);
-        root.setMinHeight(Control.USE_PREF_SIZE);
         root.setMinWidth(Control.USE_PREF_SIZE);
-        root.setPrefHeight(400.0);
         root.setPrefWidth(600.0);
 
         buildUI();
 
         getChildren().add(root);
     }
-
-
 
     private void buildUI() {
         // Create header

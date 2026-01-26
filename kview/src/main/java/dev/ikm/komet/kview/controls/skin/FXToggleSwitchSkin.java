@@ -85,6 +85,7 @@ public class FXToggleSwitchSkin extends SkinBase<ToggleSwitch> {
 
         labelContainer.getChildren().addAll(label);
         StackPane.setAlignment(label, Pos.CENTER_LEFT);
+        labelContainer.managedProperty().bind(control.textProperty().isEmpty().not());
         labelContainer.getStyleClass().setAll("label-container");
 
         updateThumbDisplay(getThumbDisplay());

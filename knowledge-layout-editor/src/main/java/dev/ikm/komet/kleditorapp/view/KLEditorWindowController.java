@@ -88,7 +88,6 @@ public class KLEditorWindowController {
 
         setupDragAndDrop(sectionViewControl);
 
-        VBox.setVgrow(sectionViewControl, Priority.ALWAYS);
         editorWindowControl.getSectionViews().add(sectionViewControl);
     }
 

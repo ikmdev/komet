@@ -20,6 +20,8 @@ public class WindowControlFactory {
 
         sectionViewControl.numberColumnsProperty().bindBidirectional(editorSectionModel.numberColumnsProperty());
 
+        sectionViewControl.collapsedProperty().bind(editorSectionModel.startCollapsedProperty());
+
         updateMaps(editorSectionModel, sectionViewControl);
 
         return sectionViewControl;

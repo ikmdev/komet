@@ -119,9 +119,9 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     protected void doInit(EditorPatternModel modelObject) {
         super.doInit(modelObject);
 
-        if (previouslyShownControl != null) {
+        if (previouslyShownModel != null) {
             columnsComboBox.valueProperty().unbindBidirectional(previousControlColumnsObjProperty);
-            titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownControl.titleVisibleProperty());
+            titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.titleVisibleProperty());
         }
 
         titleTextField.setText(modelObject.getTitle());
