@@ -8,15 +8,18 @@ import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.GenPurposeDetailsController;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.beans.property.ObjectProperty;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
+import org.carlfx.cognitive.viewmodel.ViewModel;
 
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.Optional;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
@@ -66,6 +69,10 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
             // TODO more clean up such as view models and listeners just in case (memory).
         });
 
+        // tracks viewModel changes and save them into preferences
+        listenToEntityChanges();
+
+        // Initialize the controller
         jfxNode.controller().init(preferences, viewProperties);
     }
 
@@ -109,12 +116,16 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
     }
 
     private void listenToEntityChanges() {
-//        ViewModel conceptViewModel = conceptNode.getConceptDetailsViewController().getConceptViewModel();
-//        ObjectProperty<EntityFacade> conceptProperty = conceptViewModel.getProperty(CURRENT_ENTITY);
-//        conceptProperty.subscribe( entityFacade -> {
-//            this.setEntityFacade(entityFacade);
-//            // save to preference
-//            this.save(); // call captureAdditionalState of AbstractEntityChapterKLWindow
-//        });
+        Optional<ViewModel> optGenPurposeViewModel = jfxNode.getViewModel("genPurposeViewModel");
+        optGenPurposeViewModel.ifPresent(( vm) -> {
+            // Listen to semantic changes (caused by a newly commited semantic)
+            ObjectProperty<EntityFacade> refComponentProperty = vm.getProperty(REF_COMPONENT);
+            refComponentProperty.subscribe((eF) -> {
+                this.setEntityFacade(eF);
+                // save to preference
+                this.save(); // call captureAdditionalState of AbstractEntityChapterKLWindow
+            });
+
+        });
     }
 }
