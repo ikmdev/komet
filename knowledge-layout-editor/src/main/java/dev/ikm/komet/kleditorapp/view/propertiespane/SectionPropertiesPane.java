@@ -1,6 +1,7 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
+import dev.ikm.komet.kview.controls.ToggleSwitch;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
@@ -25,6 +26,8 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
     private final TextField sectionNameTextField;
     private final ComboBox<Integer> columnsComboBox;
 
+    private final ToggleSwitch startCollapsedTS;
+
     private ObjectProperty<Integer> lastColumnsSectionProperty;
 
     public SectionPropertiesPane() {
@@ -48,7 +51,58 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         Label gridTitleLabel = new Label("GRID LAYOUT");
         gridTitleLabel.getStyleClass().add("group-title");
 
-        // GridPane
+        // GridPane of "GRID LAYOUT"
+        GridPane gridLayoutGridPane = createGridPane();
+
+        // "Column(s)" label in grid
+        Label columnsLabel = new Label("Column(s)");
+        GridPane.setHalignment(columnsLabel, HPos.RIGHT);
+        gridLayoutGridPane.add(columnsLabel, 0, 0);
+
+        // ComboBox in grid
+        columnsComboBox = new ComboBox<>();
+        columnsComboBox.setItems(FXCollections.observableArrayList(List.of(1, 2, 3)));
+        columnsComboBox.getSelectionModel().select((Integer)1);
+        columnsComboBox.setMaxWidth(Double.MAX_VALUE);
+        gridLayoutGridPane.add(columnsComboBox, 1, 0);
+
+        Separator separator2 = new Separator();
+        separator2.setPrefWidth(200);
+
+        // "INTERACTION" label
+        Label interactionTitleLabel = new Label("INTERACTION");
+        interactionTitleLabel.getStyleClass().add("group-title");
+
+        // GridPane of "INTERACTION"
+        GridPane interactionGridPane = createGridPane();
+
+        Label startCollapedLabel = new Label("Start Collapsed");
+        GridPane.setHalignment(startCollapedLabel, HPos.RIGHT);
+        interactionGridPane.add(startCollapedLabel, 0, 0);
+
+        startCollapsedTS = new ToggleSwitch();
+        startCollapsedTS.setSelected(false);
+        startCollapsedTS.getStyleClass().add("collapsed");
+        interactionGridPane.add(startCollapsedTS, 1, 0);
+
+        sectionMainContainer.getChildren().addAll(
+            sectionNameContainer,
+            separator,
+            gridTitleLabel,
+            gridLayoutGridPane,
+            separator2,
+            interactionTitleLabel,
+            interactionGridPane
+        );
+
+        mainContainer.setCenter(sectionMainContainer);
+
+        // CSS
+        getStyleClass().add(DEFAULT_STYLE_CLASS);
+        sectionMainContainer.getStyleClass().add("section-main-container");
+    }
+
+    private static GridPane createGridPane() {
         GridPane gridPane = new GridPane();
         gridPane.setHgap(8);
         gridPane.setVgap(8);
@@ -65,49 +119,27 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         gridPane.getColumnConstraints().addAll(col1, col2);
 
         // Row constraints
-        for (int i = 0; i < 3; i++) {
-            RowConstraints row = new RowConstraints();
-            row.setMinHeight(10);
-            row.setPrefHeight(30);
-            gridPane.getRowConstraints().add(row);
-        }
+        RowConstraints row = new RowConstraints();
+        row.setMinHeight(10);
+        row.setPrefHeight(30);
+        gridPane.getRowConstraints().add(row);
 
-        // "Column(s)" label in grid
-        Label columnsLabel = new Label("Column(s)");
-        GridPane.setHalignment(columnsLabel, HPos.RIGHT);
-        gridPane.add(columnsLabel, 0, 0);
-
-        // ComboBox in grid
-        columnsComboBox = new ComboBox<>();
-        columnsComboBox.setItems(FXCollections.observableArrayList(List.of(1, 2, 3)));
-        columnsComboBox.getSelectionModel().select((Integer)1);
-        columnsComboBox.setMaxWidth(Double.MAX_VALUE);
-        gridPane.add(columnsComboBox, 1, 0);
-
-        sectionMainContainer.getChildren().addAll(
-            sectionNameContainer,
-            separator,
-            gridTitleLabel,
-            gridPane
-        );
-
-        mainContainer.setCenter(sectionMainContainer);
-
-        // CSS
-        getStyleClass().add(DEFAULT_STYLE_CLASS);
-        sectionMainContainer.getStyleClass().add("section-main-container");
+        return gridPane;
     }
 
     @Override
     public void doInit(EditorSectionModel section) {
-        if (previouslyShownControl != null) {
-            sectionNameTextField.textProperty().unbindBidirectional(previouslyShownControl.nameProperty());
+        if (previouslyShownModel != null) {
+            sectionNameTextField.textProperty().unbindBidirectional(previouslyShownModel.nameProperty());
             columnsComboBox.valueProperty().unbindBidirectional(lastColumnsSectionProperty);
+            startCollapsedTS.selectedProperty().unbindBidirectional(previouslyShownModel.startCollapsedProperty());
         }
         sectionNameTextField.textProperty().bindBidirectional(section.nameProperty());
 
         // Bind number of columns property
         lastColumnsSectionProperty = section.numberColumnsProperty().asObject();
         columnsComboBox.valueProperty().bindBidirectional(lastColumnsSectionProperty);
+
+        startCollapsedTS.selectedProperty().bindBidirectional(section.startCollapsedProperty());
     }
 }
