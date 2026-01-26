@@ -108,6 +108,13 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
     EntityKlWindowType getWindowType();
 
     /**
+     * A factory method to restore a previously saved chapter window state.
+     * @param windowSettings App parent window settings to create view properties from.
+     * @param preferences komet preferences to restore window state from.
+     * @return AbstractEntityChapterKlWindow restored window.
+     */
+    AbstractEntityChapterKlWindow restore(WindowSettings windowSettings, KometPreferences preferences);
+    /**
      * Registry for locating and retrieving {@link EntityKlWindowFactory} implementations.
      * <p>
      * This class provides a central registry for window factories, allowing the application
@@ -315,8 +322,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
                 LOG.warn("No factory registered for window type: {}", windowType);
                 throw new IllegalArgumentException("No factory registered for window type: " + windowType);
             }
-            throw new UnsupportedOperationException("Not yet implemented");
-            //return factory.restore(windowSettings, preferences);
+            return factory.restore(windowSettings, preferences);
         }
 
         /**

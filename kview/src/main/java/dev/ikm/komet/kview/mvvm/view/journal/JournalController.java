@@ -1554,7 +1554,7 @@ public class JournalController {
         journalWindowPreferences.putList(WINDOW_NAMES, windowNames.castToList());
         try {
             journalWindowPreferences.flush();
-            LOG.info("Saved state for {} window(s) in journal '{}'", windowNames.size(), getTitle());
+            LOG.info("Saved state for {} chapter window(s) in journal '{}'", windowNames.size(), getTitle());
         } catch (BackingStoreException ex) {
             LOG.error("Error saving window states for journal '{}'", getTitle(), ex);
         }
