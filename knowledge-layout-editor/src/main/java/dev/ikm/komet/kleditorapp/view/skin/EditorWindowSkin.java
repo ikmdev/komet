@@ -29,7 +29,6 @@ public class EditorWindowSkin extends SkinBase<EditorWindowControl> {
         super(control);
 
         root.getStyleClass().add("window");
-        root.setMaxHeight(Control.USE_PREF_SIZE);
         root.setMaxWidth(Control.USE_PREF_SIZE);
         root.setMinWidth(Control.USE_PREF_SIZE);
         root.setPrefWidth(600.0);

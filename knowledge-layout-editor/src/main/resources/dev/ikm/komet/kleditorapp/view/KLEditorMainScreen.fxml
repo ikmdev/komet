@@ -19,6 +19,8 @@
 <?import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl?>
 <?import dev.ikm.komet.kleditorapp.view.propertiespane.PropertiesPane?>
 <?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.Group?>
 <BorderPane fx:id="klEditorMainContainer" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="dev.ikm.komet.kleditorapp.view.KLEditorMainScreenController">
     <center>
@@ -37,11 +39,13 @@
             <center>
                 <BorderPane>
                     <center>
-                        <VBox>
-                            <StackPane styleClass="canvas" VBox.vgrow="ALWAYS">
-                                <EditorWindowControl fx:id="editorWindowControl"/>
+                        <ScrollPane fx:id="canvasScrollPane" styleClass="canvas-scroll-pane" hbarPolicy="NEVER">
+                            <StackPane fx:id="canvas" styleClass="canvas" VBox.vgrow="ALWAYS">
+                                <Group>
+                                    <EditorWindowControl fx:id="editorWindowControl"/>
+                                </Group>
                             </StackPane>
-                        </VBox>
+                        </ScrollPane>
                     </center>
                     <top>
                         <!-- Secondary toolbar under header -->
