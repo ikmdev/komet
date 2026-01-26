@@ -53,12 +53,10 @@ public class GridNodePropertiesPane<D extends EditorGridNodeModel> extends Contr
 
         positioningGridPane.getColumnConstraints().addAll(positionColumnConstraints1, positionColumnConstraints2);
 
-        for (int i = 0; i < 3; i++) {
-            RowConstraints row = new RowConstraints();
-            row.setMinHeight(10);
-            row.setPrefHeight(30);
-            positioningGridPane.getRowConstraints().add(row);
-        }
+        RowConstraints row = new RowConstraints();
+        row.setMinHeight(10);
+        row.setPrefHeight(30);
+        positioningGridPane.getRowConstraints().add(row);
 
         // Column Position
         Label columnPositionLabel = new Label("Column Position");
@@ -103,7 +101,7 @@ public class GridNodePropertiesPane<D extends EditorGridNodeModel> extends Contr
 
     @Override
     protected void doInit(D modelObject) {
-        if (previouslyShownControl != null) {
+        if (previouslyShownModel != null) {
             columnIndexSubscription.unsubscribe();
             rowIndexSubscription.unsubscribe();
 

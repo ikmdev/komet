@@ -19,7 +19,7 @@ public abstract class ControlBasePropertiesPane<T extends EditorModelBase> exten
     private final Button deleteButton = new Button();
 
     protected T currentlyShownModel;
-    protected T previouslyShownControl;
+    protected T previouslyShownModel;
 
     public ControlBasePropertiesPane(boolean isDeletable) {
         // Delete button
@@ -69,7 +69,7 @@ public abstract class ControlBasePropertiesPane<T extends EditorModelBase> exten
      * @param control the control to initialize the properties panel to.
      */
     public final void initControl(T control){
-        previouslyShownControl = currentlyShownModel;
+        previouslyShownModel = currentlyShownModel;
         currentlyShownModel = control;
         doInit(control);
     }

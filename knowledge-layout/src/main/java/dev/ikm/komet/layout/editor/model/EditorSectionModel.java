@@ -2,9 +2,11 @@ package dev.ikm.komet.layout.editor.model;
 
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -175,4 +177,10 @@ public class EditorSectionModel extends EditorModelBase {
     public EditorWindowModel getParentWindow() { return parentWindow.get(); }
     public ReadOnlyObjectProperty<EditorWindowModel> parentWindowProperty() { return parentWindow; }
     void setParentWindow(EditorWindowModel editorWindowModel) { parentWindow.set(editorWindowModel); }
+
+    // -- start collapsed
+    private final BooleanProperty startCollapsed = new SimpleBooleanProperty(false);
+    public boolean isStartCollapsed() { return startCollapsed.get(); }
+    public BooleanProperty startCollapsedProperty() { return startCollapsed; }
+    public void setStartCollapsed(boolean value) { startCollapsed.set(value); }
 }

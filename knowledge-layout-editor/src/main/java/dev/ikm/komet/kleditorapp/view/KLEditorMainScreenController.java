@@ -27,8 +27,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +43,12 @@ public class KLEditorMainScreenController {
     private static final Logger LOG = LoggerFactory.getLogger(KLEditorMainScreenController.class);
 
     private final EvtBus eventBus = EvtBusFactory.getDefaultEvtBus();
+
+    @FXML
+    private ScrollPane canvasScrollPane;
+
+    @FXML
+    private StackPane canvas;
 
     @FXML
     private Button saveButton;
@@ -78,6 +86,10 @@ public class KLEditorMainScreenController {
     public void init(KometPreferences klEditorAppPreferences, WindowSettings windowSettings, String windowToLoad) {
         this.klEditorAppPreferences = klEditorAppPreferences;
         this.windowSettings = windowSettings;
+
+        canvasScrollPane.viewportBoundsProperty().subscribe(viewportBounds -> {
+            canvas.setMinSize(viewportBounds.getWidth(), viewportBounds.getHeight());
+        });
 
         this.windowViewCoordinates = windowSettings.getView();
 

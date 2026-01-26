@@ -521,6 +521,8 @@ public class GenPurposeDetailsController {
 
         titledPane.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
 
+        titledPane.setExpanded(!sectionModel.isStartCollapsed());
+
         titledPane.getStyleClass().add("pattern-titled-pane");
 
         GridPane titledPaneContent = new GridPane();

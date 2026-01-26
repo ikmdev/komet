@@ -4,10 +4,12 @@ import dev.ikm.komet.kleditorapp.view.GridDropInfo;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -44,7 +46,10 @@ public class SectionViewControl extends EditorWindowBaseControl {
         titledPane.setMaxHeight(Double.MAX_VALUE);
 
         titledPane.textProperty().bind(name);
+        titledPane.expandedProperty().bind(collapsed.not());
         setTitledPaneUnCollapsible(titledPane);
+
+        titledPane.setAnimated(false);
 
         tagTextLabel.textProperty().bind(tagText);
         Bindings.bindContent(gridPane.getItems(), getPatterns());
@@ -144,4 +149,10 @@ public class SectionViewControl extends EditorWindowBaseControl {
     public BiConsumer<DragEvent, GridDropInfo> getOnDragDroppedIntoTile() { return onDragDroppedIntoTile.get(); }
     public ObjectProperty<BiConsumer<DragEvent, GridDropInfo>> onDragDroppedIntoTileProperty() { return onDragDroppedIntoTile; }
     public void setOnDragDroppedIntoTile(BiConsumer<DragEvent, GridDropInfo> onDragDroppedIntoTile) { this.onDragDroppedIntoTile.set(onDragDroppedIntoTile); }
+
+    // -- start collapsed
+    private final BooleanProperty collapsed = new SimpleBooleanProperty();
+    public boolean getCollapsed() { return collapsed.get(); }
+    public BooleanProperty collapsedProperty() { return collapsed; }
+    public void setCollapsed(boolean value) { collapsed.set(value); }
 }
