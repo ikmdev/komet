@@ -46,6 +46,8 @@ public class EditorPatternModel extends EditorGridNodeModel {
     private final PatternFacade patternFacade;
     private final int nid;
 
+    private static ObservableList<EditorPatternModel> existingPatterns = FXCollections.observableArrayList();
+
     /**
      * Creates a EditorPatternModel given the passed in nid of the Pattern.
      *
@@ -58,6 +60,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
         patternFacade = PatternFacade.make(patternNid);
 
         setTitle(retrieveDisplayName(patternFacade));
+        setIdentifier(getTitle());
 
         fields.addListener(this::fieldsChanged);
 
@@ -74,7 +77,12 @@ public class EditorPatternModel extends EditorGridNodeModel {
                 editorFieldModel.setRowIndex(fields.indexOf(editorFieldModel));
             });
         });
+
+        existingPatterns.add(this);
     }
+
+    private static final ObservableList<EditorPatternModel> readonlyExistingPatterns = FXCollections.unmodifiableObservableList(existingPatterns);
+    public static ObservableList<EditorPatternModel> getExistingPatterns() { return readonlyExistingPatterns; }
 
     private void fieldsChanged(ListChangeListener.Change<? extends EditorFieldModel> change) {
         while (change.next()) {
@@ -222,4 +230,10 @@ public class EditorPatternModel extends EditorGridNodeModel {
     public EditorSectionModel getParentSection() { return parentSection.get(); }
     public ReadOnlyObjectProperty<EditorSectionModel> parentSectionProperty() { return parentSection.getReadOnlyProperty(); }
     void setParentSection(EditorSectionModel parentSection) { this.parentSection.set(parentSection); }
+
+    // -- identifier
+    private StringProperty identifier = new SimpleStringProperty();
+    public String getIdentifier() { return identifier.get(); }
+    public StringProperty identifierProperty() { return identifier; }
+    public void setIdentifier(String identifier) { this.identifier.set(identifier); }
 }

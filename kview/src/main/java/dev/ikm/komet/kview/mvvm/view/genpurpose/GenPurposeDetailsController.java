@@ -62,6 +62,8 @@ import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -73,7 +75,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
-import javafx.geometry.NodeOrientation;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -519,8 +520,6 @@ public class GenPurposeDetailsController {
         titledPane.setMaxHeight(Double.MAX_VALUE);
         titledPane.setMaxWidth(Double.MAX_VALUE);
 
-        titledPane.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
-
         titledPane.setExpanded(!sectionModel.isStartCollapsed());
 
         titledPane.getStyleClass().add("pattern-titled-pane");
@@ -571,14 +570,14 @@ public class GenPurposeDetailsController {
             int nid = editorPatternModel.getNid();
 
             EntityHandle handle = EntityHandle.get(nid);
-            handle.asPattern().ifPresentOrElse(patternEntity -> addPatternView(editorPatternModel, patternEntity, content),
+            handle.asPattern().ifPresentOrElse(patternEntity -> addPatternView(editorPatternModel, patternEntity, content, sectionModel.getReferenceComponent()),
             () -> {
               throw new RuntimeException("Expecting a Pattern");
             });
         }
     }
 
-    private void addPatternView(EditorPatternModel editorPatternModel, PatternEntity patternEntity, GridPane content) {
+    private void addPatternView(EditorPatternModel editorPatternModel, PatternEntity patternEntity, GridPane content, EditorPatternModel referenceComponent) {
         VBox patternMainContainer = new VBox();
         patternMainContainer.getStyleClass().add("pattern-container");
 
@@ -607,7 +606,7 @@ public class GenPurposeDetailsController {
         semanticsContainer.getStyleClass().add("semantics-container");
 
         // Pattern fields
-        createFieldViews(editorPatternModel, patternEntity, composer, semanticsContainer);
+        createFieldViews(editorPatternModel, patternEntity, composer, semanticsContainer, referenceComponent);
 
         editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
             GridPane.setRowIndex(patternMainContainer, newRowIndex.intValue());
@@ -626,52 +625,72 @@ public class GenPurposeDetailsController {
     }
 
     private List<KLReadOnlyBaseControl> createFieldViews(EditorPatternModel editorPatternModel, PatternEntity patternEntity,
-                                                         ObservableComposer composer, Pane semanticsContainer) {
+                                                         ObservableComposer composer, VBox semanticsContainer, EditorPatternModel sectionRefComponent) {
         PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternEntity).get();
-        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
+
+        List<EntityFacade> refComponents = getReferenceComponentsToUse(sectionRefComponent);
+
         List<KLReadOnlyBaseControl> controlItems = new ArrayList<>();
 
         AtomicInteger index = new AtomicInteger(0);
-        EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(), patternEntity.nid(),
+        EntityService.get().forEachSemanticForComponentOfPattern(refComponents.getFirst().nid(), patternEntity.nid(),
                 (semantic) -> {
-                    // add Separator
-                    if (index.get() > 0) {
-                        Separator separator = new Separator();
-                        semanticsContainer.getChildren().add(separator);
-                    }
+            // add Separator
+            if (index.get() > 0) {
+                Separator separator = new Separator();
+                semanticsContainer.getChildren().add(separator);
+            }
 
-                    GridPane fieldsContainer = new GridPane();
-                    fieldsContainer.getStyleClass().add("fields-container");
+            GridPane fieldsContainer = new GridPane();
+            fieldsContainer.getStyleClass().add("fields-container");
 
-                    ObservableEntitySnapshot<?,?> snap = composer.snapshot(semantic.nid()).get();
-                    if (snap instanceof ObservableSemanticSnapshot semanticSnapshot) {
-                        for(ObservableField<?> observableField : semanticSnapshot.getLatestFields().get()){
-                            for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
-                                if (observableField.field().indexInPattern() == editorFieldModel.getIndex()) {
-                                    createFieldView(observableField, editorFieldModel, controlItems, fieldsContainer);
-                                }
-                            }
+            ObservableEntitySnapshot<?,?> snap = composer.snapshot(semantic.nid()).get();
+            if (snap instanceof ObservableSemanticSnapshot semanticSnapshot) {
+                for(ObservableField<?> observableField : semanticSnapshot.getLatestFields().get()){
+                    for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
+                        if (observableField.field().indexInPattern() == editorFieldModel.getIndex()) {
+                            createFieldView(observableField, editorFieldModel, controlItems, fieldsContainer);
                         }
                     }
+                }
+            }
 
-                    editorPatternModel.numberColumnsProperty().subscribe(numberColumns -> {
-                        List<ColumnConstraints> columns = new ArrayList<>();
-                        for (int i = 0; i < numberColumns.intValue(); ++i) {
-                            ColumnConstraints columnConstraints = new ColumnConstraints();
-                            columnConstraints.setHgrow(Priority.ALWAYS);
-                            columnConstraints.setPercentWidth(100 / ((double)numberColumns.intValue()));
-                            columns.add(columnConstraints);
-                        }
-                        fieldsContainer.getColumnConstraints().setAll(columns);
-                    });
+            editorPatternModel.numberColumnsProperty().subscribe(numberColumns -> {
+                List<ColumnConstraints> columns = new ArrayList<>();
+                for (int i = 0; i < numberColumns.intValue(); ++i) {
+                    ColumnConstraints columnConstraints = new ColumnConstraints();
+                    columnConstraints.setHgrow(Priority.ALWAYS);
+                    columnConstraints.setPercentWidth(100 / ((double)numberColumns.intValue()));
+                    columns.add(columnConstraints);
+                }
+                fieldsContainer.getColumnConstraints().setAll(columns);
+            });
 
-                    semanticsContainer.getChildren().add(fieldsContainer);
+            semanticsContainer.getChildren().add(fieldsContainer);
 
-                    index.incrementAndGet();
-                });
+            index.incrementAndGet();
+        });
 
         controls.addAll(controlItems);
         return controlItems;
+    }
+
+    private List<EntityFacade> getReferenceComponentsToUse(EditorPatternModel sectionReferenceComponent) {
+        List<EntityFacade> refComponents = new ArrayList<>();
+
+        EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
+
+        if (sectionReferenceComponent != null) {
+            EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), sectionReferenceComponent.getNid(),
+                    (SemanticEntity<SemanticEntityVersion> semantic) -> {
+                        refComponents.add(semantic);
+                    }
+            );
+        } else {
+            refComponents.add(windowRefComponent);
+        }
+
+        return refComponents;
     }
 
     private void createFieldView(ObservableField<?> observableField, EditorFieldModel fieldModel, List<KLReadOnlyBaseControl> controlItems, GridPane fieldContainer) {

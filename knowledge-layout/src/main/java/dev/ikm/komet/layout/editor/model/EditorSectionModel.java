@@ -4,10 +4,12 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -22,6 +24,7 @@ import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRID_NUMBER_COLUMNS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_ADDITIONAL_SECTIONS;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_REFERENCE_COMPONENT;
 
 /**
  * Represents a Section. It has properties like the Section name, the patterns inside it (EditorPatternModel instances),
@@ -77,6 +80,8 @@ public class EditorSectionModel extends EditorModelBase {
     public void loadSectionDetails(KometPreferences sectionPreferences, ViewCalculator viewCalculator) {
         sectionPreferences.getInt(KL_GRID_NUMBER_COLUMNS).ifPresent(this::setNumberColumns);
 
+        sectionPreferences.getInt(KL_REFERENCE_COMPONENT).ifPresent(nid -> setReferenceComponent(new EditorPatternModel(viewCalculator, nid)));
+
         List<EditorPatternModel> editorPatternModels = EditorPatternModel.load(sectionPreferences, viewCalculator);
         getPatterns().setAll(editorPatternModels);
     }
@@ -120,6 +125,9 @@ public class EditorSectionModel extends EditorModelBase {
         final KometPreferences sectionPreferences = editorWindowPreferences.node(getName());
 
         sectionPreferences.putInt(KL_GRID_NUMBER_COLUMNS, getNumberColumns());
+        if (getReferenceComponent() != null) {
+            sectionPreferences.putInt(KL_REFERENCE_COMPONENT, getReferenceComponent().getNid());
+        }
 
         for (EditorPatternModel editorPatternModel : getPatterns()) {
             editorPatternModel.save(sectionPreferences);
@@ -183,4 +191,10 @@ public class EditorSectionModel extends EditorModelBase {
     public boolean isStartCollapsed() { return startCollapsed.get(); }
     public BooleanProperty startCollapsedProperty() { return startCollapsed; }
     public void setStartCollapsed(boolean value) { startCollapsed.set(value); }
+
+    // -- reference component
+    private final ObjectProperty<EditorPatternModel> referenceComponent = new SimpleObjectProperty<>();
+    public EditorPatternModel getReferenceComponent() { return referenceComponent.get(); }
+    public ObjectProperty<EditorPatternModel> referenceComponentProperty() { return referenceComponent; }
+    public void setReferenceComponent(EditorPatternModel editorPatternModel) { referenceComponent.set(editorPatternModel); }
 }

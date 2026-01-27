@@ -16,8 +16,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 
 import java.util.List;
 

@@ -20,7 +20,7 @@ public class FieldViewControl extends GridBaseControl {
     private final Label fieldTitleLabel = new Label();
     private final Label fieldSeparatorLabel = new Label(":");
 
-    public FieldViewControl() {
+    FieldViewControl() {
         mainContainer.getChildren().addAll(
                 fieldNumberLabel,
                 fieldSeparatorLabel,

@@ -21,6 +21,11 @@ public class KLEditorPreferences {
      */
     public static final String KL_EDITOR_APP = "kl-editor-app";
 
+    /**
+     * Section Reference Component
+     */
+    public static final String KL_REFERENCE_COMPONENT = "kl-reference-component";
+
     public enum ListKey {
         /**
          * List of Patterns in a Section
