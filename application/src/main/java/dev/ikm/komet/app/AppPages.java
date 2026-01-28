@@ -289,7 +289,6 @@ public class AppPages {
             journalStage.setWidth(journalWindowSettings.getValue(JOURNAL_WIDTH));
             journalStage.setX(journalWindowSettings.getValue(JOURNAL_XPOS));
             journalStage.setY(journalWindowSettings.getValue(JOURNAL_YPOS));
-            journalController.restoreWindows(windowSettings, journalWindowSettings);
         } else {
             journalStage.setMaximized(true);
         }
@@ -305,6 +304,8 @@ public class AppPages {
         });
 
         journalStage.setOnShown(windowEvent -> {
+            journalController.restoreWindows(windowSettings, journalWindowSettings);
+
             KometNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
             KometNodeFactory searchNodeFactory = new SearchNodeFactory();
 
