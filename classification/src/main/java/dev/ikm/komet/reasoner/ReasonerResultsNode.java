@@ -192,6 +192,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 //			return;
 		TinkExecutor.threadPool().execute(() -> {
 			// TODO use a factory for the service and then create here
+            LOG.info("Starting full reasoner with coordinate: \n\n " + getViewProperties().calculator().viewCoordinateRecord());
 			reasonerService.init(getViewProperties().calculator(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
 					TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
 			RunReasonerFullTask task = new RunReasonerFullTask(reasonerService, resultsController::setResults);

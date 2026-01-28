@@ -10,6 +10,10 @@
     <dependencies>
         <dependency>
             <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>entity</artifactId>
         </dependency>
         <dependency>
@@ -44,6 +48,22 @@
         <dependency>
             <groupId>com.github.RoaringBitmap.RoaringBitmap</groupId>
             <artifactId>roaringbitmap</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>terms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dev.ikm.komet</groupId>
+            <artifactId>preferences</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
         </dependency>
     </dependencies>
     <build>

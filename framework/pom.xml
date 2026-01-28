@@ -159,6 +159,10 @@
             <artifactId>executor-provider</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

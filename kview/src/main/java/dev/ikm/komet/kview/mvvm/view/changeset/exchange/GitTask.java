@@ -42,8 +42,10 @@ import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.lib.BranchTrackingStatus;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
@@ -387,14 +389,26 @@ public class GitTask extends TrackingCallable<Boolean> {
             String message = cause.getMessage();
             if (message != null) {
                 // Check for 5xx server errors
-                return message.contains("500 ") ||
+                if (message.contains("500 ") ||
                         message.contains("502 ") ||
                         message.contains("503 ") ||
                         message.contains("504 ") ||
                         message.contains("Internal Server Error") ||
                         message.contains("Bad Gateway") ||
                         message.contains("Service Unavailable") ||
-                        message.contains("Gateway Timeout");
+                        message.contains("Gateway Timeout")) {
+                    return true;
+                }
+                if (message.contains("Error writing request body") ||
+                        message.contains("Connection reset") ||
+                        message.contains("broken pipe") ||
+                        message.contains("timed out") ||
+                        message.contains("read failed")) {
+                    return true;
+                }
+            }
+            if (cause instanceof IOException) {
+                return true;
             }
         }
         return false;
@@ -868,9 +882,31 @@ public class GitTask extends TrackingCallable<Boolean> {
                 updatePhaseProgress(startPercentage, endPercentage, 1.0);
                 return addedFiles;
             } else {
+                cleanupAfterFailedPull(git, oldHead);
                 updateMessage("Pull failed: " + pullResult.getMergeResult().getMergeStatus());
-                return Lists.immutable.empty();
+                throw new GitAPIException("Pull failed: " + pullResult.getMergeResult().getMergeStatus()) {
+                };
             }
+        }
+    }
+
+    /**
+     * Attempts to return the repository to its pre-pull state after a failed pull so a retry starts clean.
+     *
+     * @param git     the Git instance
+     * @param oldHead the commit to reset back to (may be null for new repos)
+     */
+    private void cleanupAfterFailedPull(Git git, ObjectId oldHead) {
+        try {
+            if (oldHead != null) {
+                git.reset().setMode(org.eclipse.jgit.api.ResetCommand.ResetType.HARD).setRef(oldHead.getName()).call();
+                LOG.info("Reset repository to {}", oldHead.getName());
+            } else {
+                git.reset().setMode(org.eclipse.jgit.api.ResetCommand.ResetType.HARD).call();
+                LOG.info("Reset repository to clean state after failed pull");
+            }
+        } catch (Exception resetEx) {
+            LOG.warn("Failed to reset repository after pull failure", resetEx);
         }
     }
 
@@ -1136,7 +1172,15 @@ public class GitTask extends TrackingCallable<Boolean> {
 
         updatePhaseProgress(startPercentage, endPercentage, 0.4);
 
-        pushToRemoteRepository(startPercentage, endPercentage);
+        try {
+            pushToRemoteRepository(startPercentage, endPercentage);
+        } catch (GitAPIException | IOException pushEx) {
+            StringBuilder msg = new StringBuilder("Push failed (network/remote error). Local changes are saved; please retry Sync to push them.");
+            appendAheadHintIfAny(msg);
+            updateMessage(msg.toString());
+            LOG.error("Push failed, user can retry safely", pushEx);
+            throw pushEx;
+        }
     }
 
     /**
@@ -1194,18 +1238,24 @@ public class GitTask extends TrackingCallable<Boolean> {
             addCommand.call();
             updatePhaseProgress(startPercentage, endPercentage, 0.6);
 
-            // Create a more descriptive commit message
-            Set<String> addedFiles = git.status().call().getAdded();
-            LOG.info("Commiting Files: {}", filesToAdd.makeString());
-            String commitMessage = "Added %s changesets on %s".formatted(addedFiles.size(), new Date());
+            Status status = git.status().call();
+            if (!status.isClean()) {
+                // Create a more descriptive commit message
+                Set<String> addedFiles = status.getAdded();
+                LOG.info("Commiting Files: {}", filesToAdd.makeString());
+                String commitMessage = "Added %s changesets on %s".formatted(addedFiles.size(), new Date());
 
-            // Commit changes
-            updateMessage("Committing changes...");
-            CommitCommand commitCommand = git.commit();
-            commitCommand.setMessage(commitMessage);
-            commitCommand.setAll(true);
-            commitCommand.call();
-            updatePhaseProgress(startPercentage, endPercentage, 0.7);
+                // Commit changes
+                updateMessage("Committing changes...");
+                CommitCommand commitCommand = git.commit();
+                commitCommand.setMessage(commitMessage);
+                commitCommand.setAll(true);
+                commitCommand.call();
+                updatePhaseProgress(startPercentage, endPercentage, 0.7);
+            } else {
+                LOG.info("No new changes to commit; attempting to push existing commits.");
+                updatePhaseProgress(startPercentage, endPercentage, 0.7);
+            }
 
             // Push changes
             updateMessage("Pushing changes to remote repository...");
@@ -1225,6 +1275,23 @@ public class GitTask extends TrackingCallable<Boolean> {
 
             updateMessage("Changes successfully pushed to remote repository.");
             updatePhaseProgress(startPercentage, endPercentage, 1.0);
+        }
+    }
+
+    /**
+     * Append a hint when the local branch is ahead of remote so the user knows a retry will push existing commits.
+     *
+     * @param msg message builder to append to
+     */
+    private void appendAheadHintIfAny(StringBuilder msg) {
+        try (Git git = Git.open(changeSetFolder.toFile())) {
+            Repository repo = git.getRepository();
+            BranchTrackingStatus trackingStatus = BranchTrackingStatus.of(repo, repo.getBranch());
+            if (trackingStatus != null && trackingStatus.getAheadCount() > 0) {
+                msg.append(" Local branch is ahead of remote; rerun Sync to push the existing commit.");
+            }
+        } catch (Exception ex) {
+            LOG.debug("Unable to determine branch tracking status after push failure", ex);
         }
     }
 

@@ -38,10 +38,18 @@ public class RunReasonerIncrementalTask extends RunReasonerTaskBase {
 
 	@Override
 	protected ReasonerService compute() throws Exception {
-		if (!reasonerService.isIncrementalReady())
-			throw new Exception("Need to run full reasoner first");
-		if (EditedConceptTracker.getEdits().isEmpty())
-			throw new Exception("No edits to process");
+		EditedConceptTracker.ensureSubscribed();
+		EditedConceptTracker.addEditsFromChanges(reasonerService.getViewCalculator());
+		if (!reasonerService.isIncrementalReady()) {
+			updateMessage("Incremental reasoner not ready; running full reasoner");
+			LOG.warn("Incremental reasoner not ready; running full reasoner");
+			return new RunReasonerFullTask(reasonerService, classifierResultsConsumer).compute();
+		}
+		if (EditedConceptTracker.getEdits().isEmpty()) {
+			updateMessage("No incremental edits found; running full reasoner");
+			LOG.warn("No incremental edits found; running full reasoner");
+			return new RunReasonerFullTask(reasonerService, classifierResultsConsumer).compute();
+		}
 		return super.compute();
 	}
 

@@ -217,6 +217,7 @@ public class ReasonerResultsController {
 
                 return;
             }
+            applyCommitTimeToView(classifierResults);
             this.conceptSetPane.setText(String.format("Concept set size: %,d", classifierResults.getClassificationConceptSet().size()));
             this.conceptSetPane.setDisable(true);
             this.conceptSetPane.setExpanded(false);
@@ -284,6 +285,15 @@ public class ReasonerResultsController {
             Platform.runLater(() -> setResults(classifierResults));
         }
 
+    }
+
+    private void applyCommitTimeToView(ClassifierResults classifierResults) {
+        if (viewProperties == null) {
+            return;
+        }
+        long commitTime = classifierResults.getViewCoordinate().stampCoordinate().stampPosition().time();
+        viewProperties.parentView().stampCoordinate().timeProperty().set(commitTime);
+        viewProperties.nodeView().stampCoordinate().timeProperty().set(commitTime);
     }
 
     public void setViewProperties(ViewProperties viewProperties, ActivityStream activityFeed) {
