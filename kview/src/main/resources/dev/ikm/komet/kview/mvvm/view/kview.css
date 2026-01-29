@@ -6379,6 +6379,25 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0 0 3px 0;
 }
 
+/* Section semantics combobox */
+.gen-purpose-window .titled-pane .section-combo-box {
+    -fx-pref-width: 350px;
+
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+.gen-purpose-window .titled-pane .section-combo-box > .list-cell {
+    -fx-font-weight: 500;
+    -fx-text-fill: #555;
+    -fx-padding: 0px 0.666667em 2px 0.666667em; /* 4 8 4 8 */
+}
+
+.gen-purpose-window .titled-pane .section-combo-box > .arrow-button > .arrow {
+    -fx-shape: "M1.40988 0.295017L-0.000122333 1.70502L5.99988 7.70502L11.9999 1.70502L10.5899 0.295017L5.99988 4.87502L1.40988 0.295017Z";
+}
+
+/* Pattern container */
 .gen-purpose-window .pattern-container {
     -fx-padding: 0 0 10px 0;
 }

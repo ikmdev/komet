@@ -77,6 +77,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.Separator;
@@ -174,7 +175,9 @@ public class GenPurposeDetailsController {
 
     private GenPurposePropertiesController propertiesController;
 
-    private final HashMap<EditorSectionModel, TitledPane> sectionModelToTitledPane = new HashMap<>();
+    private final HashMap<EditorSectionModel, GridPane> sectionModelToTitledPaneGridPane = new HashMap<>();
+
+    private final HashMap<EditorSectionModel, ComboBox> sectionModelToTitledPaneComboBox = new HashMap<>();
 
     private EditorWindowModel editorWindowModel;
 
@@ -524,7 +527,16 @@ public class GenPurposeDetailsController {
 
         titledPane.getStyleClass().add("pattern-titled-pane");
 
-        GridPane titledPaneContent = new GridPane();
+        BorderPane topContainer = new BorderPane();
+
+        ComboBox<EntityFacade> semanticsComboBox = new ComboBox<>();
+        semanticsComboBox.getStyleClass().add("section-combo-box");
+
+        topContainer.setRight(semanticsComboBox);
+
+        VBox titledPaneMainContainer = new VBox();
+
+        GridPane titledPaneGridPane = new GridPane();
 
         sectionModel.numberColumnsProperty().subscribe(newNumberColumns -> {
             List<ColumnConstraints> columns = new ArrayList<>();
@@ -534,14 +546,27 @@ public class GenPurposeDetailsController {
                 columnConstraints.setPercentWidth(100 / ((double)newNumberColumns.intValue()));
                 columns.add(columnConstraints);
             }
-            titledPaneContent.getColumnConstraints().setAll(columns);
+            titledPaneGridPane.getColumnConstraints().setAll(columns);
         });
 
-        titledPane.setContent(titledPaneContent);
+        titledPaneMainContainer.getChildren().addAll(
+            topContainer,
+            titledPaneGridPane
+        );
+
+        List<EntityFacade> referenceComponents = getReferenceComponentsToUse(sectionModel.getReferenceComponent());
+
+        semanticsComboBox.getItems().addAll(referenceComponents);
+
+        semanticsComboBox.setVisible(referenceComponents.size() > 1);
+        semanticsComboBox.setManaged(semanticsComboBox.isVisible());
+
+        titledPane.setContent(titledPaneMainContainer);
 
         titledPane.setOnEditAction(this::showAndEditSemanticFieldsPanel);
 
-        sectionModelToTitledPane.put(sectionModel, titledPane);
+        sectionModelToTitledPaneGridPane.put(sectionModel, titledPaneGridPane);
+        sectionModelToTitledPaneComboBox.put(sectionModel, semanticsComboBox);
 
         return titledPane;
     }
@@ -565,19 +590,19 @@ public class GenPurposeDetailsController {
     }
 
     private void addPatternViews(EditorSectionModel sectionModel, List<? extends EditorPatternModel> patternModels) {
-        GridPane content = (GridPane) sectionModelToTitledPane.get(sectionModel).getContent();
+        GridPane content = sectionModelToTitledPaneGridPane.get(sectionModel);
         for (EditorPatternModel editorPatternModel : patternModels) {
             int nid = editorPatternModel.getNid();
 
             EntityHandle handle = EntityHandle.get(nid);
-            handle.asPattern().ifPresentOrElse(patternEntity -> addPatternView(editorPatternModel, patternEntity, content, sectionModel.getReferenceComponent()),
+            handle.asPattern().ifPresentOrElse(patternEntity -> addPatternView(editorPatternModel, patternEntity, content, sectionModel),
             () -> {
               throw new RuntimeException("Expecting a Pattern");
             });
         }
     }
 
-    private void addPatternView(EditorPatternModel editorPatternModel, PatternEntity patternEntity, GridPane content, EditorPatternModel referenceComponent) {
+    private void addPatternView(EditorPatternModel editorPatternModel, PatternEntity patternEntity, GridPane content, EditorSectionModel parentSection) {
         VBox patternMainContainer = new VBox();
         patternMainContainer.getStyleClass().add("pattern-container");
 
@@ -606,7 +631,7 @@ public class GenPurposeDetailsController {
         semanticsContainer.getStyleClass().add("semantics-container");
 
         // Pattern fields
-        createFieldViews(editorPatternModel, patternEntity, composer, semanticsContainer, referenceComponent);
+        createSemanticViews(editorPatternModel, patternEntity, composer, semanticsContainer, parentSection);
 
         editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
             GridPane.setRowIndex(patternMainContainer, newRowIndex.intValue());
@@ -624,14 +649,28 @@ public class GenPurposeDetailsController {
         content.getChildren().add(patternMainContainer);
     }
 
-    private List<KLReadOnlyBaseControl> createFieldViews(EditorPatternModel editorPatternModel, PatternEntity patternEntity,
-                                                         ObservableComposer composer, VBox semanticsContainer, EditorPatternModel sectionRefComponent) {
-        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternEntity).get();
+    private List<KLReadOnlyBaseControl> createSemanticViews(EditorPatternModel editorPatternModel, PatternEntity patternEntity,
+                                                            ObservableComposer composer, VBox semanticsContainer, EditorSectionModel parentSection) {
+//        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternEntity).get();
 
-        List<EntityFacade> refComponents = getReferenceComponentsToUse(sectionRefComponent);
+        List<EntityFacade> refComponents = getReferenceComponentsToUse(parentSection.getReferenceComponent());
 
         List<KLReadOnlyBaseControl> controlItems = new ArrayList<>();
 
+        doCreateSemanticViews(editorPatternModel, patternEntity, composer, semanticsContainer, refComponents, controlItems);
+
+        ComboBox<EntityFacade> semanticsComboBox = sectionModelToTitledPaneComboBox.get(parentSection);
+        semanticsComboBox.valueProperty().subscribe(() -> {
+            semanticsContainer.getChildren().clear();
+            doCreateSemanticViews(editorPatternModel, patternEntity, composer, semanticsContainer, List.of(semanticsComboBox.getValue()), controlItems);
+        });
+
+        controls.addAll(controlItems);
+        return controlItems;
+    }
+
+    private void doCreateSemanticViews(EditorPatternModel editorPatternModel, PatternEntity patternEntity, ObservableComposer composer,
+                                       VBox semanticsContainer, List<EntityFacade> refComponents, List<KLReadOnlyBaseControl> controlItems) {
         AtomicInteger index = new AtomicInteger(0);
         EntityService.get().forEachSemanticForComponentOfPattern(refComponents.getFirst().nid(), patternEntity.nid(),
                 (semantic) -> {
@@ -670,9 +709,6 @@ public class GenPurposeDetailsController {
 
             index.incrementAndGet();
         });
-
-        controls.addAll(controlItems);
-        return controlItems;
     }
 
     private List<EntityFacade> getReferenceComponentsToUse(EditorPatternModel sectionReferenceComponent) {
