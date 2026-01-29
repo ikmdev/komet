@@ -286,7 +286,7 @@ public class NextGenSearchController {
                 });
             } else {
                 List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
-                LOG.info("{} search results returned", results.size());
+                LOG.info("{} search results returned for query: {}", results.size(), queryText);
 
                 List processedResults;
                 switch (sortByButton.getText()) {

@@ -183,6 +183,10 @@
             <groupId>dev.ikm.komet</groupId>
             <artifactId>sync</artifactId>
         </dependency>
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>events</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <resources>
