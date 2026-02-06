@@ -26,5 +26,6 @@ public enum JournalWindowSettings {
     JOURNAL_AUTHOR,
     WINDOW_NAMES,
     WINDOW_COUNT,
-    CAN_DELETE
+    CAN_DELETE,
+    PARENT_VIEW_COORDINATES;
 }
