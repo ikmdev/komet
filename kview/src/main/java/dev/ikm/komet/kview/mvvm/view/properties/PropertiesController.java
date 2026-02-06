@@ -45,7 +45,9 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
+import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -57,7 +59,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.shape.SVGPath;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
@@ -66,6 +67,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -391,6 +393,7 @@ public class PropertiesController implements Serializable {
         // -- create stamp
         createStampSubscriber = evt -> {
             if (evt.getEventType() == CREATE_STAMP) {
+                stampCreateFormViewModel.populateDefaults();
                 stampJFXNode.controller().init(stampCreateFormViewModel);
                 this.stampCreateFormViewModel.update(entityFacade, conceptTopic, viewProperties);
 

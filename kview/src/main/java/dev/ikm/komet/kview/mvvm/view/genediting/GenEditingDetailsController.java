@@ -392,6 +392,7 @@ public class GenEditingDetailsController {
         if (semantic == null) {
             // Set the mode to Create
             genEditingViewModel.setPropertyValue(MODE, CREATE);
+            stampViewControl.setSelected(true);
 
             // Set empty Semantic Details using pattern fields
             PatternFacade patternFacade = (PatternFacade) genEditingViewModel.getProperty(PATTERN).getValue();
