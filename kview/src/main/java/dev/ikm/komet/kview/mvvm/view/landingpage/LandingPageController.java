@@ -16,7 +16,10 @@
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
 import static dev.ikm.komet.framework.controls.TimeUtils.calculateTimeAgoWithPeriodAndDuration;
-import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
+import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SET;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SHOWING;
+import static dev.ikm.komet.preferences.JournalWindowSettings.PARENT_VIEW_COORDINATES;
 import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
@@ -46,6 +49,12 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.tinkar.events.Evt;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -72,12 +81,14 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
@@ -145,6 +156,13 @@ public class LandingPageController implements BasicController {
 
     @FXML
     private ToggleButton progressToggleButton;
+
+    @FXML
+    ToggleButton viewCoordinatesToggleButton;
+
+    private FilterOptionsPopup filterOptionsPopup;
+    private ObservableViewNoOverride viewCoordinates; // main main view coordinates
+    private ObservableViewNoOverride viewCoordinatesForFilterOptionsPopup; // clone for landingpage as main view coordinate
 
     @FXML
     ToggleButton settingsToggleButton;
@@ -246,6 +264,8 @@ public class LandingPageController implements BasicController {
                     // newly added card to landing page.
                     prefX = journalSettingsFinal;
                 }
+                prefX.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.viewCoordinatesForFilterOptionsPopup);
+
                 // fire create journal event... AND this should be the ONLY place it comes from besides the menu
                 landingPageEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
             });
@@ -312,6 +332,21 @@ public class LandingPageController implements BasicController {
 
         // Load the preferences for the landing page
         loadPreferencesForLandingPage();
+
+        // Setup main view coordinates
+        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        KometPreferences windowPreferences = appPreferences.node("main-komet-window");
+        WindowSettings windowSettings = new WindowSettings(windowPreferences);
+
+        // Initialize the journal window view, which is provided in the WindowSettings
+        viewCoordinates = windowSettings.getView();
+
+        viewCoordinatesForFilterOptionsPopup = new ObservableViewNoOverride(viewCoordinates);
+        ViewProperties landingViewProperties = viewCoordinatesForFilterOptionsPopup.makeOverridableViewProperties("LandingController.filterOptionsPopup");
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(landingViewProperties,
+                viewCoordinatesToggleButton, () -> {
+                    LOG.info("LandingController.filterOptionsPopup: updating view due to filter options change");
+                });
     }
 
     /**
@@ -600,7 +635,7 @@ public class LandingPageController implements BasicController {
         journalWindowSettingsObjectMap.setValue(JOURNAL_TOPIC, journalTopic);
         journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
         journalWindowSettingsObjectMap.setValue(JOURNAL_DIR_NAME, journalDirName);
-
+        journalWindowSettingsObjectMap.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.viewCoordinatesForFilterOptionsPopup);
         // publish an event to create the tile on the landing page
         landingPageEventBus.publish(JOURNAL_TOPIC,
                 new JournalTileEvent(newProjectJournalButton, CREATE_JOURNAL_TILE, journalWindowSettingsObjectMap));
@@ -655,5 +690,70 @@ public class LandingPageController implements BasicController {
             klLandingPage = root;
         }
         landingPageBorderPane.setCenter(klLandingPage);
+    }
+
+    private FilterOptionsPopup setupViewCoordinateOptionsPopup(ViewProperties viewProperties,
+                                                               ButtonBase coordinatesButton,
+                                                               Runnable updateViewBlock) {
+        //ObservableViewNoOverride parentView2 = new ObservableViewNoOverride(windowSettings.getView());
+        // Filter Options Popup for the coordinates menu button.
+        FilterOptionsPopup filterOptionsPopup = new FilterOptionsPopup(LANDING_PAGE, viewProperties.parentView());
+        double prefHeight = 600;
+        filterOptionsPopup.setStyle("-popup-pref-height: " + prefHeight);
+        // Bind the popup's filter options to the view model's filter options. Update details if options change.
+        viewProperties.parentView().subscribe((_, nv) -> {
+            filterOptionsPopup.setNavigator(new ViewNavigator(nv));
+            if (updateViewBlock != null) {
+                updateViewBlock.run();
+            }
+        });
+
+
+        // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
+        // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
+        filterOptionsPopup.getFilterOptionsUtils().subscribeFilterOptionsToView(
+                filterOptionsPopup.getInheritedFilterOptions(), viewProperties.nodeView());
+
+        // Subscribe nodeView to F.O., so changes from the F.O. popup are propagated to this nodeView
+        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, filterOptions) -> {
+            if (oldFilterOptions != null) {
+                filterOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
+            }
+            if (filterOptions != null) {
+                filterOptionsPopup.getFilterOptionsUtils().subscribeViewToFilterOptions(filterOptions, viewProperties.nodeView());
+            }
+        });
+
+        coordinatesButton.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (filterOptionsPopup.getNavigator() == null) {
+                Navigator navigator = new ViewNavigator(viewProperties.nodeView());
+                filterOptionsPopup.setNavigator(navigator);
+            }
+            if (e.getButton() == MouseButton.PRIMARY) {
+                if (filterOptionsPopup.isShowing()) {
+                    e.consume();
+                    filterOptionsPopup.hide();
+                } else {
+                    Bounds buttonBounds = coordinatesButton.localToScreen(coordinatesButton.getLayoutBounds());
+                    // Show beneath the button
+                    filterOptionsPopup.show(coordinatesButton, buttonBounds.getMaxX() + 5.5, buttonBounds.getMaxY() - prefHeight);
+                }
+            }
+        });
+
+        filterOptionsPopup.showingProperty().subscribe(showing ->
+                coordinatesButton.pseudoClassStateChanged(FILTER_SHOWING, showing));
+
+        filterOptionsPopup.defaultOptionsSetProperty().subscribe(isDefault ->
+                coordinatesButton.pseudoClassStateChanged(FILTER_SET, !isDefault));
+
+
+
+        filterOptionsPopup.filterOptionsProperty().addListener( (observable, oldValue, newValue) -> {
+            LOG.info("LandingController - filterOptionsPopup.filterOptionsProperty() " + newValue);
+            // begin altering parent view coordinates
+            viewProperties.parentView().setValue(newValue.observableViewForFilterProperty().getValue());
+        });
+        return filterOptionsPopup;
     }
 }

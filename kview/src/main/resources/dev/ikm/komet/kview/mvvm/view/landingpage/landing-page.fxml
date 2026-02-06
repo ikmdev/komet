@@ -135,6 +135,25 @@
                   </StackPane>
                </graphic>
             </ToggleButton>
+            <ToggleButton fx:id="viewCoordinatesToggleButton" mnemonicParsing="false" text="View Options" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <HBox styleClass="icon-container">
+                     <children>
+                        <StackPane styleClass="icon-image-container">
+                           <children>
+                              <Region>
+                                 <styleClass>
+                                    <String fx:value="icon" />
+                                    <String fx:value="coordinate" />
+                                 </styleClass>
+                              </Region>
+                           </children>
+                        </StackPane>
+                        <Label text="View Options" />
+                     </children>
+                  </HBox>
+               </graphic>
+            </ToggleButton>
             <ToggleButton fx:id="settingsToggleButton" mnemonicParsing="false" toggleGroup="$sidebarToggleGroup">
                <graphic>
                   <HBox styleClass="icon-container">

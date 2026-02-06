@@ -209,7 +209,7 @@ public class App extends Application  {
         kViewEventBus = EvtBusFactory.getInstance(EvtBus.class);
 
         // Create a subscriber for handling CreateJournalEvent
-        Subscriber<CreateJournalEvent> detailsSubscriber = evt -> {
+        Subscriber<CreateJournalEvent> summonJournalWindowSubscriber = evt -> {
             final PrefX journalWindowSettingsObjectMap = evt.getWindowSettingsObjectMap();
             final UUID journalTopic = journalWindowSettingsObjectMap.getValue(JOURNAL_TOPIC);
             final String journalName = journalWindowSettingsObjectMap.getValue(JOURNAL_TITLE);
@@ -232,7 +232,7 @@ public class App extends Application  {
         };
 
         // Subscribe the subscriber to the JOURNAL_TOPIC
-        kViewEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, detailsSubscriber);
+        kViewEventBus.subscribe(JOURNAL_TOPIC, CreateJournalEvent.class, summonJournalWindowSubscriber);
 
         // Create a subscriber for handling KL Window Event
         Subscriber<CreateKLEditorWindowEvent> createKLEditorWindowEventSubscriber = evt -> {
