@@ -4,7 +4,7 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.58.0-FVKB-178-add-master-view-coordinates-landing-page-SNAPSHOT</version>
+        <version>1.58.0-SNAPSHOT</version>
     </parent>
     <artifactId>artifact</artifactId>
     <dependencies>
