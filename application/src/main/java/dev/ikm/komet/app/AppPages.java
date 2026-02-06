@@ -3,6 +3,7 @@ package dev.ikm.komet.app;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.events.JournalTileEvent;
@@ -11,6 +12,7 @@ import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
 import dev.ikm.komet.kview.mvvm.view.login.LoginPageController;
 import dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorController;
+import dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNodeFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -242,6 +244,7 @@ public class AppPages {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences windowPreferences = appPreferences.node(MAIN_KOMET_WINDOW);
         final WindowSettings windowSettings = new WindowSettings(windowPreferences);
+        final ObservableViewNoOverride parentViewCoordinates = journalWindowSettings.getValue(PARENT_VIEW_COORDINATES);
         final UUID journalTopic = journalWindowSettings.getValue(JOURNAL_TOPIC);
         Objects.requireNonNull(journalTopic, "journalTopic cannot be null");
 
@@ -252,6 +255,7 @@ public class AppPages {
                 .updateViewModel("journalViewModel", journalViewModel -> {
                     journalViewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
                     journalViewModel.setPropertyValue(WINDOW_SETTINGS, windowSettings);
+                    journalViewModel.setPropertyValue(JournalViewModel.PARENT_VIEW_COORDINATES, parentViewCoordinates);
                     journalViewModel.setPropertyValue(JOURNAL_NAME, journalWindowSettings.getValue(JOURNAL_TITLE));
                 });
         JFXNode<BorderPane, JournalController> journalJFXNode = FXMLMvvmLoader.make(journalConfig);

@@ -372,12 +372,10 @@ public class JournalController {
         // Initialize journal topic (UUID) value
         journalTopic = journalViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
 
-        WindowSettings windowSettings = journalViewModel.getPropertyValue(WINDOW_SETTINGS);
-
         // Initialize the journal window view, which is provided in the WindowSettings
-        windowView = windowSettings.getView();
-        journalViewCoordAsParent = new ObservableViewNoOverride(windowView);
+        windowView = journalViewModel.getPropertyValue(JournalViewModel.PARENT_VIEW_COORDINATES);
         journalViewProperties = windowView.makeOverridableViewProperties("JournalController.filterOptionsPopup");
+        journalViewCoordAsParent = new ObservableViewNoOverride(journalViewProperties.nodeView());
 
         filterOptionsPopup = setupViewCoordinateOptionsPopup(journalViewProperties,
                 coordinatesMenuButton, () -> {
