@@ -905,6 +905,7 @@ public class ConceptController {
             getConceptViewModel().setPropertyValue(MODE, EDIT);
         } else { // create concept
             getConceptViewModel().setPropertyValue(MODE, CREATE);
+            stampViewControl.setSelected(true);
         }
 
         // Display info for top banner area
