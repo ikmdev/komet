@@ -20,7 +20,8 @@ public class FilterOptionsPopup extends PopupControl {
         NAVIGATOR,
         SEARCH,
         CHAPTER_WINDOW,
-        JOURNAL_VIEW
+        JOURNAL_VIEW,
+        LANDING_PAGE
     }
 
     private final FILTER_TYPE filterType;
