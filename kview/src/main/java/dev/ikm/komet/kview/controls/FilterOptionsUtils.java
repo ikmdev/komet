@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import dev.ikm.komet.framework.view.ListPropertyWithOverride;
 import dev.ikm.komet.framework.view.LongPropertyWithOverride;
 import dev.ikm.komet.framework.view.ObjectPropertyWithOverride;
@@ -10,12 +11,12 @@ import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.SetPropertyWithOverride;
 import dev.ikm.komet.navigator.graph.Navigator;
-import dev.ikm.tinkar.common.util.time.DateTimeUtil;
+import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.StampService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -24,18 +25,14 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Subscription;
-import org.eclipse.collections.api.list.primitive.ImmutableLongList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import java.util.*;
+import java.util.stream.*;
 
 public class FilterOptionsUtils {
 
@@ -107,6 +104,7 @@ public class FilterOptionsUtils {
                     mainCoordinates.getTime().selectedOptions().clear();
                     if (t != null) {
                         Long time = t.longValue();
+                        LOG.info("Filter Option date time selected {} - epoch millis: {}", new Date(time), time);
                         mainCoordinates.getTime().selectedOptions().addAll(String.valueOf(time));
                     }
                     observableViewForFilterProperty.stampCoordinate().timeProperty().setValue(t);
@@ -603,12 +601,14 @@ public class FilterOptionsUtils {
     }
 
     public static List<ZonedDateTime> getTimesInUse() {
-        ImmutableLongList times = StampService.get().getTimesInUse().toReversed();
-        return Arrays.stream(times.toArray())
-                .filter(time -> time != PREMUNDANE_TIME)
-                .boxed()
-                .map(DateTimeUtil::epochToZonedDateTime)
-                .toList();
+        SortedSet<ZonedDateTime> sortedSet = new TreeSet<>(Comparator.reverseOrder());
+        PrimitiveData.get().forEachStampNid(nid -> {
+            long time = EntityHandle.get(nid).expectStamp().time();
+            if (time != PREMUNDANE_TIME) {
+                sortedSet.add(Instant.ofEpochMilli(time).atZone(ZoneOffset.systemDefault()));
+            }
+        });
+        return sortedSet.stream().toList();
     }
 
     private static int findNidForDescription(Navigator navigator, int nid, String description) {

@@ -1,9 +1,13 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
+import static dev.ikm.komet.kview.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
 import dev.ikm.komet.kview.controls.DateRange;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.RangeCalendarControl;
+import dev.ikm.komet.kview.controls.TwelveHourTimeSpinner;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -36,25 +40,25 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import javafx.util.Subscription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.function.Consumer;
-
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
+import java.util.*;
+import java.util.function.*;
 
 /**
  * Default skin implementation for the {@link RangeCalendarControl} control
  */
 public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
+    private static final Logger LOG = LoggerFactory.getLogger(RangeCalendarSkin.class);
 
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.range-calendar");
 
@@ -73,6 +77,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
 
     private final DatePicker datePicker;
     private final RangeCalendarControl control;
+    private final TwelveHourTimeSpinner timeSpinner;
     private final VBox root = new VBox();
     private final Node popupContent;
     private final Label monthYearLabel;
@@ -99,6 +104,8 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
      */
     public RangeCalendarSkin(RangeCalendarControl control) {
         this.control = control;
+        this.timeSpinner = new TwelveHourTimeSpinner(LocalTime.MAX.MAX);
+        this.timeSpinner.getStyleClass().add("time-spinner");
 
         datePicker = new DatePicker();
         datePicker.setDayCellFactory(_ -> new DateCell() {
@@ -108,7 +115,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                 super.updateItem(item, empty);
                 if (item != null && !empty) {
                     pseudoClassStateChanged(STAMP_PSEUDO_CLASS,
-                            control.getStampDates().stream().anyMatch(s -> s.toLocalDate().equals(item)));
+                            control.getStampDates().stream().anyMatch(s -> Instant.ofEpochMilli(s).atZone(ZoneId.systemDefault()).toLocalDate().equals(item)));
                 }
             }
 
@@ -198,7 +205,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
         VBox calendarBox = new VBox(popupContent);
         calendarBox.getStyleClass().add("calendar-box");
 
-        root.getChildren().add(calendarBox);
+        root.getChildren().addAll(timeSpinner, calendarBox);
         root.getStyleClass().add("range-calendar");
         root.getStylesheets().add(RangeCalendarControl.class.getResource("range-calendar.css").toExternalForm());
 
@@ -414,7 +421,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
     record DateTime(LocalDate date, ZonedDateTime zonedDateTime) {
 
         public DateTime(LocalDate date) {
-            this(date, date.atStartOfDay().atZone(ZoneOffset.UTC));
+            this(date, date.atStartOfDay().atZone(ZoneOffset.systemDefault()));
         }
 
         @Override
@@ -426,9 +433,9 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
         }
 
         public boolean isInRange(LocalDate date) {
-            ZonedDateTime startDate = date.atStartOfDay().atZone(ZoneOffset.UTC).minusNanos(1);
-            ZonedDateTime endDate = date.atStartOfDay().plusDays(1).atZone(ZoneOffset.UTC);
-            return zonedDateTime != null && zonedDateTime.isAfter(startDate) && zonedDateTime.isBefore(endDate);
+            ZonedDateTime startDate = date.atStartOfDay().atZone(ZoneOffset.systemDefault()).minusNanos(1);
+            ZonedDateTime endOfDayWithZone = ZonedDateTime.of(date, LocalTime.MAX, ZoneId.systemDefault());
+            return zonedDateTime != null && zonedDateTime.isAfter(startDate) && zonedDateTime.isBefore(endOfDayWithZone.plusNanos(1));
         }
 
         public long getStamp() {
@@ -518,14 +525,48 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
             control.stampDatesProperty().subscribe(list -> {
                 timesInUse.clear();
                 timesInUse.addAll(list.stream()
-                        .map(z -> new DateTime(z.toLocalDate(), z))
+                        .map(z -> new DateTime(Instant.ofEpochMilli(z)
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate(), Instant.ofEpochMilli(z).atZone(ZoneId.systemDefault())))
                         .toList());
             });
+            timeSpinner.valueProperty().subscribe((oldValue, newValue) -> {
+                if (newValue != null && newValue != oldValue) {
+                    // When the user changes the time spinner, update the value in the combo box to reflect the new time.
+                    // This will also update the control's timestamp via the valueProperty subscription below.
+                    DateTime currentDateTime = getDateTimeFromDate(getDate());
+                    ZonedDateTime newZonedDateTime = ZonedDateTime.of(currentDateTime.date, newValue, ZoneId.systemDefault());
+                    DateTime newDateTime = new DateTime(currentDateTime.date, newZonedDateTime);
+                    updating = true;
+                    Platform.runLater(() -> {
+                        setValue(newDateTime);
+                        updating = false;
+                    });
+                    LOG.info("TimeSpinner {} and Selected date {}", newDateTime, getValue());
+                }
+            });
+
             valueProperty().subscribe(value -> {
                 if (updating) {
                     return;
                 }
-                control.setTimestamp(value != null ? value.getStamp() : -1L);
+                // When the user changes the value (select the stamp in the dropdown), the time spinner should update to reflect the new time.
+                // If the value is null, set time to end of day. This is to ensure that when a user selects a date from the calendar picker, the time is set to end of day, so that the day is marked as containing a time stamp.
+                // If the value is not null, set the time to the time of the value.
+                long newDateTime = value != null ? value.getStamp() : endOfDayEpochMilli(getDate() == null ? LocalDate.now() : getDate());
+
+                // if the time has changed, update the time spinner. If the same skip setting the same time again to avoid unnecessary or infinite updates to the time spinner.
+                Instant instant = Instant.ofEpochMilli(newDateTime);
+
+                // Define the time zone (crucial for LocalTime)
+                ZoneId zoneId = ZoneId.systemDefault(); // Use your desired time zone
+
+                // Convert the Instant to a LocalTime in the specified zone
+                LocalTime localTime = instant.atZone(zoneId).toLocalTime();
+                if (! localTime.equals(timeSpinner.valueProperty().get())) {
+                    timeSpinner.getValueFactory().setValue(value!=null ? value.zonedDateTime.toLocalTime():LocalTime.MAX);
+                }
+                control.setTimestamp(newDateTime);
             });
 
             itemsProperty().subscribe((_, n) -> {
@@ -545,7 +586,26 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                 }
             });
         }
+        private boolean isEqualTime(long epochMillis, LocalDate date, LocalTime time) {
+            if (date == null || time == null) {
+                return false;
+            }
 
+            ZoneId zoneId = ZoneId.systemDefault();
+
+            // Combine them into a ZonedDateTime
+            // We use atStartOfDay() if only date is known, but here we combine date and time
+            ZonedDateTime zonedDateTime = date.atTime(time).atZone(zoneId);
+
+            // Convert to Instant and get milliseconds to epoch
+            Instant instant = zonedDateTime.toInstant();
+            long millisecondsToEpoch = instant.toEpochMilli();
+            return millisecondsToEpoch == epochMillis;
+        }
+
+        private long endOfDayEpochMilli(LocalDate date) {
+            return date.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        }
         @Override
         protected Skin<?> createDefaultSkin() {
             ComboBoxListViewSkin<DateTime> defaultSkin = (ComboBoxListViewSkin<DateTime>) super.createDefaultSkin();
@@ -555,7 +615,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
             return defaultSkin;
         }
 
-        // dateProperty
+        // dateProperty - called when the user changes the date in the calendar picker.
         private final ObjectProperty<LocalDate> dateProperty = new SimpleObjectProperty<>(this, "date") {
             @Override
             protected void invalidated() {
@@ -569,6 +629,11 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                         setItems(null);
                     }
                 });
+                // examine the cell factory this should be null initially until user chooses a date.
+                LOG.info("Setting date to: {} datetime: {} raw epoch millis: {}",
+                        dateTime,
+                        dateTime != null ? DATE_TIME_FORMATTER.format(dateTime.zonedDateTime) : null,
+                        dateTime != null ? dateTime.zonedDateTime.toInstant().toEpochMilli() :  null);
                 DateComboBox.this.setValue(dateTime);
             }
         };
@@ -600,6 +665,10 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
         }
 
         private DateTime getDateTimeFromDate(LocalDate date, Consumer<List<DateTime>> consumer) {
+            // Derive the end of day. When a user chooses a date (circle) from the calendar picker.
+
+            ZonedDateTime dayBasedOnSpinner = ZonedDateTime.of(date, timeSpinner.getValue(), ZoneId.systemDefault());
+            // iterate through timesInUse to find any DateTime that is in range of the given date. To mark the day containing a time stamp.
             if (timesInUse.stream().anyMatch(dt -> dt.isInRange(date))) {
                 List<DateTime> list = timesInUse.stream()
                         .filter(dt -> dt.isInRange(date))
@@ -607,15 +676,19 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                 if (consumer != null) {
                     consumer.accept(list);
                 }
+
+                // return the first DateTime that is in range of the given date. else return a new DateTime with end of day time.
                 return list.stream()
                         .filter(dt -> dt.getStamp() == control.getTimestamp())
                         .findFirst()
-                        .orElse(list.getLast());
+                        .orElse(new DateTime(date, dayBasedOnSpinner));
             }
             if (consumer != null) {
                 consumer.accept(null);
             }
-            return new DateTime(date);
+            // default return a new DateTime with the end of daytime.
+            //ZonedDateTime endOfDayWithZone = ZonedDateTime.of(date, LocalTime.MAX, ZoneId.systemDefault());
+            return new DateTime(date, dayBasedOnSpinner);
         }
     }
 
