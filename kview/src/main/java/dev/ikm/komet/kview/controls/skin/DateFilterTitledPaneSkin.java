@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import dev.ikm.komet.kview.controls.DateFilterTitledPane;
 import dev.ikm.komet.kview.controls.DateRange;
 import dev.ikm.komet.kview.controls.FilterOptions;
@@ -7,7 +9,6 @@ import dev.ikm.komet.kview.controls.FilterOptionsUtils;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.RangeCalendarControl;
 import dev.ikm.komet.kview.controls.TruncatedTextFlow;
-import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import javafx.collections.FXCollections;
 import javafx.css.PseudoClass;
 import javafx.scene.Parent;
@@ -24,18 +25,13 @@ import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
 
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import java.util.*;
+import java.util.concurrent.atomic.*;
+import java.util.stream.*;
 
 public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
@@ -188,7 +184,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 } else {
                     createDateRangePane(currentOption);
                 }
-                calendarControl.setStampDates(FilterOptionsUtils.getTimesInUse());
+                calendarControl.setStampDates(FilterOptionsUtils.getTimesInUse().stream().map(z -> z.toInstant().toEpochMilli()).toList());
                 if (comboBox.isShowing()) {
                     control.setExpanded(true);
                     control.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, true);
@@ -284,7 +280,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 try {
                     long timestamp = Long.parseLong(value);
                     calendarControl.setTimestamp(timestamp);
-                    ZonedDateTime zonedDateTime = DateTimeUtil.epochToZonedDateTime(timestamp);
+                    ZonedDateTime zonedDateTime = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault());
                     calendarControl.setDate(zonedDateTime.toLocalDate());
                 } catch (NumberFormatException e) {
                     ZonedDateTime now = ZonedDateTime.now();
