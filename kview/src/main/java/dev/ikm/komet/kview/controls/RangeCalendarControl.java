@@ -14,9 +14,8 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>A control implementation that shows a calendar to the user,
@@ -111,14 +110,14 @@ public class RangeCalendarControl extends Control {
     }
 
     // stampDatesProperty
-    private final ObjectProperty<List<ZonedDateTime>> stampDatesProperty = new SimpleObjectProperty<>(this, "stampDates");
-    public final ObjectProperty<List<ZonedDateTime>> stampDatesProperty() {
+    private final ObjectProperty<List<Long>> stampDatesProperty = new SimpleObjectProperty<>(this, "stampDates");
+    public final ObjectProperty<List<Long>> stampDatesProperty() {
        return stampDatesProperty;
     }
-    public final List<ZonedDateTime> getStampDates() {
+    public final List<Long> getStampDates() {
        return stampDatesProperty.get();
     }
-    public final void setStampDates(List<ZonedDateTime> value) {
+    public final void setStampDates(List<Long> value) {
         stampDatesProperty.set(value);
     }
 
