@@ -383,6 +383,7 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
                 .filter(DateCell.class::isInstance)
                 .map(DateCell.class::cast)
                 .toList();
+        // Clear all pseudo classes first
         cells.forEach(d -> {
             d.pseudoClassStateChanged(EXCLUDED_PSEUDO_CLASS, currentExcluding);
             d.pseudoClassStateChanged(START_RANGE_PSEUDO_CLASS, false);
@@ -390,6 +391,8 @@ public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
             d.pseudoClassStateChanged(END_RANGE_PSEUDO_CLASS, false);
             d.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, false);
         });
+
+        // Set pseudo classes based on current selection
         cells.forEach(d -> {
             if (selectedDate != null && selectedDate.isEqual(d.getItem())) {
                 d.pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, true);

@@ -100,7 +100,7 @@ public class FilterOptionsUtils {
                     if (fromFilter) {
                         return;
                     }
-                    fromView = true;
+                    fromView = true; // when user clicks on the titled pane, the time (should be from spinner or dropdown)
                     mainCoordinates.getTime().selectedOptions().clear();
                     if (t != null) {
                         Long time = t.longValue();
