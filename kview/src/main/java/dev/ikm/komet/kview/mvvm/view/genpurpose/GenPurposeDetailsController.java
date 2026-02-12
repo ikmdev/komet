@@ -61,13 +61,13 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntity;
-import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
@@ -111,8 +111,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class GenPurposeDetailsController {
 
@@ -531,11 +533,6 @@ public class GenPurposeDetailsController {
 
         BorderPane topContainer = new BorderPane();
 
-        ComboBox<EntityFacade> semanticsComboBox = new ComboBox<>();
-        semanticsComboBox.getStyleClass().add("section-combo-box");
-
-        topContainer.setRight(semanticsComboBox);
-
         VBox titledPaneMainContainer = new VBox();
 
         GridPane titledPaneGridPane = new GridPane();
@@ -556,12 +553,9 @@ public class GenPurposeDetailsController {
             titledPaneGridPane
         );
 
-        List<EntityFacade> referenceComponents = getReferenceComponentsToUse(sectionModel.getReferenceComponent());
+        ComboBox<EntityFacade> semanticsComboBox = createSectionSemanticsComboBox(sectionModel);
 
-        semanticsComboBox.getItems().addAll(referenceComponents);
-
-        semanticsComboBox.setVisible(referenceComponents.size() > 1);
-        semanticsComboBox.setManaged(semanticsComboBox.isVisible());
+        topContainer.setRight(semanticsComboBox);
 
         titledPane.setContent(titledPaneMainContainer);
 
@@ -571,6 +565,53 @@ public class GenPurposeDetailsController {
         sectionModelToTitledPaneComboBox.put(sectionModel, semanticsComboBox);
 
         return titledPane;
+    }
+
+    private ComboBox<EntityFacade> createSectionSemanticsComboBox(EditorSectionModel sectionModel) {
+        List<EntityFacade> referenceComponents = getReferenceComponentsToUse(sectionModel.getReferenceComponent());
+
+        ComboBox<EntityFacade> semanticsComboBox = new ComboBox<>();
+        semanticsComboBox.getStyleClass().add("section-combo-box");
+
+        semanticsComboBox.getItems().addAll(referenceComponents);
+
+        semanticsComboBox.setVisible(referenceComponents.size() > 1);
+        semanticsComboBox.setManaged(semanticsComboBox.isVisible());
+
+
+        Function<Integer, String> fetchDescriptionFunction = (semanticNid -> {
+            StringBuilder sb = new StringBuilder();
+            ViewCalculator viewCalculator = viewProperties.calculator();
+            EntityHandle.get(semanticNid).ifSemantic(semanticEntity -> {
+                EntityHandle.get(semanticEntity.referencedComponentNid()).ifPresent(referencedComponent -> {
+                    sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(referencedComponent)).append(" in ");
+                }).ifAbsent(() -> {
+                    LOG.error("Unable to find entity for referencedComponent '{}' for Semantic {}: ",
+                            semanticEntity.referencedComponentNid(), semanticEntity);
+                    sb.append(" missing referenced component " + semanticEntity.referencedComponentNid());
+                });
+                sb.append(retriveDisplayName(semanticEntity.pattern(), viewProperties));
+            }).ifStamp(stampEntity -> {
+                sb.append(viewCalculator.getTextForStamp(stampEntity));
+            }).ifConcept(conceptEntity -> {
+                sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(conceptEntity));
+            }).ifPattern(patternEntity -> {
+                sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(patternEntity));
+            }).ifAbsent(() -> LOG.error("Unable to find entity for nid: " + semanticNid));
+            return sb.toString();
+        });
+
+        semanticsComboBox.setCellFactory(_ -> new SectionSemanticsComboBoxCell(fetchDescriptionFunction, viewProperties));
+
+        semanticsComboBox.setButtonCell(new SectionSemanticsComboBoxCell(fetchDescriptionFunction, viewProperties));
+        return semanticsComboBox;
+    }
+
+    private String retriveDisplayName(PatternFacade patternFacade, ViewProperties viewProperties) {
+        ViewCalculator viewCalculator = viewProperties.calculator();
+        Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
+        Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
+        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
     }
 
     private void showAndEditSemanticFieldsPanel(ActionEvent actionEvent) {
@@ -662,6 +703,8 @@ public class GenPurposeDetailsController {
         doCreateSemanticViews(editorPatternModel, patternEntity, composer, semanticsContainer, refComponents, controlItems);
 
         ComboBox<EntityFacade> semanticsComboBox = sectionModelToTitledPaneComboBox.get(parentSection);
+
+        semanticsComboBox.setValue(refComponents.getFirst());
         semanticsComboBox.valueProperty().subscribe(() -> {
             semanticsContainer.getChildren().clear();
             doCreateSemanticViews(editorPatternModel, patternEntity, composer, semanticsContainer, List.of(semanticsComboBox.getValue()), controlItems);
