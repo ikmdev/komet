@@ -198,155 +198,160 @@ public class LandingPageController implements BasicController {
     @FXML
     @Override
     public void initialize() {
-        clearView();
+        try {
+            clearView();
 
-        knowledgeLayoutButtonLabel.setText("Knowledge\nLayout Editor");
+            knowledgeLayoutButtonLabel.setText("Knowledge\nLayout Editor");
 
-        notificationTypeFilterComboBox.getItems().addAll("All types");
-        notificationTypeFilterComboBox.getSelectionModel().selectFirst();
+            notificationTypeFilterComboBox.getItems().addAll("All types");
+            notificationTypeFilterComboBox.getSelectionModel().selectFirst();
 
-        progressPopupPane.getStyleClass().add("progress-popup-pane");
+            progressPopupPane.getStyleClass().add("progress-popup-pane");
 
-        LOG.debug("Event bus instance %s, %s".formatted(this.getClass().getSimpleName(), landingPageEventBus));
-        createJournalTileSubscriber = evt -> {
+            LOG.debug("Event bus instance %s, %s".formatted(this.getClass().getSimpleName(), landingPageEventBus));
+            createJournalTileSubscriber = evt -> {
 
-            // If NOT a CREATE_JOURNAL_TILE type do not execute code below!
-            if (evt.getEventType() != CREATE_JOURNAL_TILE) return;
+                // If NOT a CREATE_JOURNAL_TILE type do not execute code below!
+                if (evt.getEventType() != CREATE_JOURNAL_TILE) return;
 
-            final UUID journalTopic;
-            final String journalName;
+                final UUID journalTopic;
+                final String journalName;
 
-            //Creating a new journal card
-            FXMLLoader journalCardLoader = new FXMLLoader(LandingPageController.class.getResource("journal-card.fxml"));
-            Pane journalCard;
-            JournalCardController journalCardController;
-            try {
-                journalCard = journalCardLoader.load();
-                journalCardController = journalCardLoader.getController();
+                //Creating a new journal card
+                FXMLLoader journalCardLoader = new FXMLLoader(LandingPageController.class.getResource("journal-card.fxml"));
+                Pane journalCard;
+                JournalCardController journalCardController;
+                try {
+                    journalCard = journalCardLoader.load();
+                    journalCardController = journalCardLoader.getController();
 
-            } catch (IOException e) {
-                throw new RuntimeException("unable to load journal card fxml ", e);
-            }
+                } catch (IOException e) {
+                    throw new RuntimeException("unable to load journal card fxml ", e);
+                }
 
-            PrefX journalWindowSettingsObjectMap = evt.getJournalWindowSettingsMap();
-            if (null != journalWindowSettingsObjectMap) {
-                journalTopic = journalWindowSettingsObjectMap.getValue(JOURNAL_TOPIC);
-                journalName = journalWindowSettingsObjectMap.getValue(JOURNAL_TITLE);
-                LocalDateTime nowDateTime = LocalDateTime.now();
-                ZoneId nowZoneId = ZoneId.systemDefault();
-                String calculatedTimeAgo = calculateTimeAgoWithPeriodAndDuration(nowDateTime, nowZoneId);
-                journalCardController.setJournalTimestampValue(calculatedTimeAgo);
-                List<String> journalWindowNames = journalWindowSettingsObjectMap.getValue(WINDOW_NAMES);
-                journalCardController.setJournalCardWindowCount(journalWindowNames != null ?
-                        "Windows: " + journalWindowNames.size() : "Windows: 0");
-            } else {
-                journalTopic = UUID.randomUUID();
-                journalName = "Journal " + JournalCounter.getInstance().get();
-                journalWindowSettingsObjectMap = PrefX.create();
-                journalWindowSettingsObjectMap.setValue(JOURNAL_TOPIC, journalTopic);
-                journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
-                journalCardController.setJournalTimestampValue("Edited Now");
-            }
-            journalCardController.setJournalTopic(journalTopic);
-            journalCardController.setJournalCardName(journalName);
-            final PrefX journalSettingsFinal = journalWindowSettingsObjectMap;
-            // get the correct Journal X name where X is a counting number 1...n
-            // decide if the name comes from the event or not
-            journalCard.setOnMouseClicked(event -> {
-                PrefX prefX;
-                // if card already exists then load from disk.
-                if (gridViewFlowPane.getChildren().contains(journalCard)) {
-                    // fetch preferences from disk for journal settings.
-                    prefX = loadJournalWindowPreference(
-                            journalSettingsFinal.getValue(JOURNAL_TOPIC),
-                            journalSettingsFinal.getValue(JOURNAL_DIR_NAME));
+                PrefX journalWindowSettingsObjectMap = evt.getJournalWindowSettingsMap();
+                if (null != journalWindowSettingsObjectMap) {
+                    journalTopic = journalWindowSettingsObjectMap.getValue(JOURNAL_TOPIC);
+                    journalName = journalWindowSettingsObjectMap.getValue(JOURNAL_TITLE);
+                    LocalDateTime nowDateTime = LocalDateTime.now();
+                    ZoneId nowZoneId = ZoneId.systemDefault();
+                    String calculatedTimeAgo = calculateTimeAgoWithPeriodAndDuration(nowDateTime, nowZoneId);
+                    journalCardController.setJournalTimestampValue(calculatedTimeAgo);
+                    List<String> journalWindowNames = journalWindowSettingsObjectMap.getValue(WINDOW_NAMES);
+                    journalCardController.setJournalCardWindowCount(journalWindowNames != null ?
+                            "Windows: " + journalWindowNames.size() : "Windows: 0");
                 } else {
-                    // newly added card to landing page.
-                    prefX = journalSettingsFinal;
+                    journalTopic = UUID.randomUUID();
+                    journalName = "Journal " + JournalCounter.getInstance().get();
+                    journalWindowSettingsObjectMap = PrefX.create();
+                    journalWindowSettingsObjectMap.setValue(JOURNAL_TOPIC, journalTopic);
+                    journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
+                    journalCardController.setJournalTimestampValue("Edited Now");
                 }
-                prefX.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.viewCoordinatesForFilterOptionsPopup);
-
-                // fire create journal event... AND this should be the ONLY place it comes from besides the menu
-                landingPageEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
-            });
-            journalCardControllerMap.put(journalTopic, journalCardController);
-            journalCard.setUserData(journalSettingsFinal);
-            gridViewFlowPane.getChildren().addFirst(journalCard);
-        };
-
-        landingPageEventBus.subscribe(JOURNAL_TOPIC, JournalTileEvent.class, createJournalTileSubscriber);
-
-        deleteJournalSubscriber = evt -> {
-            // remove the tile by finding its journal name
-            gridViewFlowPane.getChildren().removeIf(node -> {
-
-                boolean removeIt = node.getUserData() != null && ((PrefX) node.getUserData()).getValue(JOURNAL_TOPIC) != null
-                        && ((PrefX) node.getUserData()).getValue(JOURNAL_TOPIC).equals(evt.getJournalTopic());
-
-                if (!removeIt) return false;
-
-                if (node.getUserData() instanceof PrefX prefX) {
-                    final UUID journalTopic = prefX.getValue(JOURNAL_TOPIC);
-                    final String journalDirName = getJournalDirName(journalTopic);
-
-                    // remove preferences.
-                    KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-                    KometPreferences journalsPreferences = appPreferences.node(JOURNALS);
-                    KometPreferences journalWindowPreferences = journalsPreferences.node(journalDirName);
-                    List<String> journalDirNames = journalsPreferences.getList(JOURNAL_IDS);
-                    journalDirNames.remove(journalDirName);
-                    journalsPreferences.putList(JOURNAL_IDS, journalDirNames);
-
-                    try {
-                        journalWindowPreferences.removeNode();
-                        journalsPreferences.sync();
-                        // TODO Remove all concept folders.
-                    } catch (BackingStoreException e) {
-                        throw new RuntimeException(e);
-                    } finally {
-                        journalCardControllerMap.remove((UUID) prefX.getValue(JOURNAL_TOPIC)).cleanup();
+                journalCardController.setJournalTopic(journalTopic);
+                journalCardController.setJournalCardName(journalName);
+                final PrefX journalSettingsFinal = journalWindowSettingsObjectMap;
+                // get the correct Journal X name where X is a counting number 1...n
+                // decide if the name comes from the event or not
+                journalCard.setOnMouseClicked(event -> {
+                    PrefX prefX;
+                    // if card already exists then load from disk.
+                    if (gridViewFlowPane.getChildren().contains(journalCard)) {
+                        // fetch preferences from disk for journal settings.
+                        prefX = loadJournalWindowPreference(
+                                journalSettingsFinal.getValue(JOURNAL_TOPIC),
+                                journalSettingsFinal.getValue(JOURNAL_DIR_NAME));
+                    } else {
+                        // newly added card to landing page.
+                        prefX = journalSettingsFinal;
                     }
-                }
-                return true;
+                    prefX.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.viewCoordinatesForFilterOptionsPopup);
+
+                    // fire create journal event... AND this should be the ONLY place it comes from besides the menu
+                    landingPageEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
+                });
+                journalCardControllerMap.put(journalTopic, journalCardController);
+                journalCard.setUserData(journalSettingsFinal);
+                gridViewFlowPane.getChildren().addFirst(journalCard);
+            };
+
+            landingPageEventBus.subscribe(JOURNAL_TOPIC, JournalTileEvent.class, createJournalTileSubscriber);
+
+            deleteJournalSubscriber = evt -> {
+                // remove the tile by finding its journal name
+                gridViewFlowPane.getChildren().removeIf(node -> {
+
+                    boolean removeIt = node.getUserData() != null && ((PrefX) node.getUserData()).getValue(JOURNAL_TOPIC) != null
+                            && ((PrefX) node.getUserData()).getValue(JOURNAL_TOPIC).equals(evt.getJournalTopic());
+
+                    if (!removeIt) return false;
+
+                    if (node.getUserData() instanceof PrefX prefX) {
+                        final UUID journalTopic = prefX.getValue(JOURNAL_TOPIC);
+                        final String journalDirName = getJournalDirName(journalTopic);
+
+                        // remove preferences.
+                        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+                        KometPreferences journalsPreferences = appPreferences.node(JOURNALS);
+                        KometPreferences journalWindowPreferences = journalsPreferences.node(journalDirName);
+                        List<String> journalDirNames = journalsPreferences.getList(JOURNAL_IDS);
+                        journalDirNames.remove(journalDirName);
+                        journalsPreferences.putList(JOURNAL_IDS, journalDirNames);
+
+                        try {
+                            journalWindowPreferences.removeNode();
+                            journalsPreferences.sync();
+                            // TODO Remove all concept folders.
+                        } catch (BackingStoreException e) {
+                            throw new RuntimeException(e);
+                        } finally {
+                            journalCardControllerMap.remove((UUID) prefX.getValue(JOURNAL_TOPIC)).cleanup();
+                        }
+                    }
+                    return true;
+                });
+
+                // reset Journal counter (The add journal card is in the flow pane)
+                int maxJournalNumber = gridViewFlowPane.getChildren()
+                        .stream()
+                        .filter(node -> node.getUserData() instanceof PrefX)
+                        .map(node -> (PrefX) node.getUserData())
+                        .map(prefX -> parseJournalNumber(prefX.getValue(JOURNAL_TITLE).toString()))
+                        .max(Comparator.naturalOrder())
+                        .orElse(0);
+                JournalCounter.getInstance().set(maxJournalNumber);
+            };
+            landingPageEventBus.subscribe(JOURNAL_TOPIC, DeleteJournalEvent.class, deleteJournalSubscriber);
+
+            journalProjectCardScrollPane.viewportBoundsProperty().addListener((ov, oldBounds, bounds) -> {
+                gridViewFlowPane.setPrefWidth(bounds.getWidth());
+                gridViewFlowPane.setPrefHeight(bounds.getHeight());
             });
 
-            // reset Journal counter (The add journal card is in the flow pane)
-            int maxJournalNumber = gridViewFlowPane.getChildren()
-                    .stream()
-                    .filter(node -> node.getUserData() instanceof PrefX)
-                    .map(node -> (PrefX) node.getUserData())
-                    .map(prefX -> parseJournalNumber(prefX.getValue(JOURNAL_TITLE).toString()))
-                    .max(Comparator.naturalOrder())
-                    .orElse(0);
-            JournalCounter.getInstance().set(maxJournalNumber);
-        };
-        landingPageEventBus.subscribe(JOURNAL_TOPIC, DeleteJournalEvent.class, deleteJournalSubscriber);
+            // Setup the progress listener for task progress events
+            setupProgressListener();
 
-        journalProjectCardScrollPane.viewportBoundsProperty().addListener((ov, oldBounds, bounds) -> {
-            gridViewFlowPane.setPrefWidth(bounds.getWidth());
-            gridViewFlowPane.setPrefHeight(bounds.getHeight());
-        });
+            // Load the preferences for the landing page
+            loadPreferencesForLandingPage();
 
-        // Setup the progress listener for task progress events
-        setupProgressListener();
+            // Setup main view coordinates
+            KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+            KometPreferences windowPreferences = appPreferences.node("main-komet-window");
+            WindowSettings windowSettings = new WindowSettings(windowPreferences);
 
-        // Load the preferences for the landing page
-        loadPreferencesForLandingPage();
+            // Initialize the journal window view, which is provided in the WindowSettings
+            viewCoordinates = windowSettings.getView();
 
-        // Setup main view coordinates
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        KometPreferences windowPreferences = appPreferences.node("main-komet-window");
-        WindowSettings windowSettings = new WindowSettings(windowPreferences);
-
-        // Initialize the journal window view, which is provided in the WindowSettings
-        viewCoordinates = windowSettings.getView();
-
-        viewCoordinatesForFilterOptionsPopup = new ObservableViewNoOverride(viewCoordinates);
-        ViewProperties landingViewProperties = viewCoordinatesForFilterOptionsPopup.makeOverridableViewProperties("LandingController.filterOptionsPopup");
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(landingViewProperties,
-                viewCoordinatesToggleButton, () -> {
-                    LOG.info("LandingController.filterOptionsPopup: updating view due to filter options change");
-                });
+            viewCoordinatesForFilterOptionsPopup = new ObservableViewNoOverride(viewCoordinates);
+            ViewProperties landingViewProperties = viewCoordinatesForFilterOptionsPopup.makeOverridableViewProperties("LandingController.filterOptionsPopup");
+            filterOptionsPopup = setupViewCoordinateOptionsPopup(landingViewProperties,
+                    viewCoordinatesToggleButton, () -> {
+                        LOG.info("LandingController.filterOptionsPopup: updating view due to filter options change");
+                    });
+        } catch (Exception e) {
+            LOG.error("Error initializing landing page view", e);
+            throw new RuntimeException(e);
+        }
     }
 
     /**
