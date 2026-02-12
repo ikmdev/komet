@@ -382,6 +382,7 @@ public class PropertiesController {
         // -- create stamp
         createStampSubscriber = evt -> {
             if (evt.getEventType() == CREATE_STAMP) {
+                stampCreateFormViewModel.populateDefaults();
                 stampJFXNode.controller().init(stampCreateFormViewModel);
                 contentBorderPane.setCenter(stampJFXNode.node());
             }

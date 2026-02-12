@@ -463,6 +463,7 @@ public class PatternDetailsController {
                 identiconImageView.setImage(identicon);
             } else {
                 patternViewModel.setPropertyValue(MODE, CREATE);
+                stampViewControl.setSelected(true);
             }
         });
 
@@ -591,6 +592,7 @@ public class PatternDetailsController {
                 propertiesToggleButton.fire();
             }
             if (CREATE.equals(patternViewModel.getPropertyValue(MODE))) {
+                EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new PropertyPanelEvent(stampViewControl, OPEN_PANEL));
                 EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.CREATE_STAMP));
             } else {
                 EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.ADD_STAMP));

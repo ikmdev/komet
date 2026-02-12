@@ -525,6 +525,8 @@ public class GenPurposeDetailsController {
 
         titledPane.setExpanded(!sectionModel.isStartCollapsed());
 
+        titledPane.setExpanded(!sectionModel.isStartCollapsed());
+
         titledPane.getStyleClass().add("pattern-titled-pane");
 
         BorderPane topContainer = new BorderPane();

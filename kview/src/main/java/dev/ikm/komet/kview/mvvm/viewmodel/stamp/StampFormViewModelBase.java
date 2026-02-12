@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.*;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
@@ -75,13 +76,43 @@ public abstract class StampFormViewModelBase extends FormViewModel {
 
     protected abstract boolean updateIsStampValuesChanged();
 
+    /**
+     * Populate default values for the form. This is called when the form is first opened, and can be
+     * used to set default values for the form fields. Assumes that the view properties have been set and
+     * module and path entities have been fetched.
+     */
+    public void populateDefaults() {
+        setPropertyValue(StampFormViewModelBase.Properties.STATUS, State.ACTIVE);
+        // module
+        int moduleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
+        List<ComponentWithNid> moduleEntities = getObservableList(StampFormViewModelBase.Properties.MODULES);
+        ComponentWithNid module = lookupByNid(moduleNid, moduleEntities);
+        setPropertyValue(StampFormViewModelBase.Properties.MODULE, module);
+
+        // Path
+        int pathNid = getViewProperties().nodeView().editCoordinate().defaultPathProperty().get().nid();
+        List<ComponentWithNid> pathEntities = getObservableList(StampFormViewModelBase.Properties.PATHS);
+        ComponentWithNid path = lookupByNid(pathNid, pathEntities);
+        setPropertyValue(StampFormViewModelBase.Properties.PATH, path);
+
+    }
+
+    private ComponentWithNid lookupByNid(int nid, List<ComponentWithNid> entities) {
+        return entities.stream()
+                .filter(entity ->
+                        entity.nid() == nid)
+                .findFirst().orElse(null);
+    }
+
     public final void update(EntityFacade entity, UUID topic, ViewProperties viewProperties){
         this.viewProperties = viewProperties;
         this.topic = topic;
 
         // initialize observable lists
-        Set<ConceptEntity> modules = fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId());
-        Set<ConceptEntity> paths = fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId());
+        Set<ComponentWithNid> modules = fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
+        // add default module just in case it isn't a descendent
+        modules.add(viewProperties.nodeView().editCoordinate().defaultModuleProperty().get());
+        Set<ComponentWithNid> paths = fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
 
         if (getObservableList(MODULES).isEmpty()) {
             setPropertyValues(MODULES, modules);

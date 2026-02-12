@@ -153,6 +153,7 @@ public class PropertiesController {
         // -- create stamp
         createStampSubscriber = evt -> {
             if (evt.getEventType() == CREATE_STAMP) {
+                stampCreateFormViewModel.populateDefaults();
                 stampJFXNode.controller().init(stampCreateFormViewModel);
                 this.stampCreateFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
                         genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
