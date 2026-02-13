@@ -6416,3 +6416,56 @@ Styling a context menu for kview ui/ux controls
     -fx-border-insets: 0, 0 3px 0 3px;
     -fx-border-color: transparent, transparent transparent #ddd transparent;
 }
+
+/*******************  Section Semantics ComboBox  **************************/
+
+/* ComboBox popup */
+.gen-purpose-window .combo-box-popup > .list-view {
+    -fx-padding: 8px 0px;
+
+    /* border styling (outline stroke) */
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-border-color: #ddd;
+    -fx-border-style: solid;
+
+    /* background styling (fill) */
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-background-color: white;
+
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.2) , 12, 0.0 , 0 , 8 );
+}
+
+/* ComboBox popup List Cell*/
+.gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell {
+    -fx-padding: 10 8;
+
+    -fx-text-fill: #111;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+
+    -fx-graphic-text-gap: 7;
+}
+
+/* ComboBox popup List Cell - Hover */
+.gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:hover {
+    -fx-background: -fx-accent;
+    -fx-background-color: -Grey-2;
+}
+
+/* ComboBox popup List Cell - Selected */
+.gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected {
+    -fx-background-color: -Secondary-06;
+    -fx-text-fill: white;
+}
+
+/* ComboBox popup List Cell - Selected, Hover */
+.gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected:hover {
+    -fx-background-color: derive(-Secondary-06, 10%);
+}
