@@ -579,31 +579,11 @@ public class GenPurposeDetailsController {
         semanticsComboBox.setManaged(semanticsComboBox.isVisible());
 
 
-        Function<Integer, String> fetchDescriptionFunction = (semanticNid -> {
-            StringBuilder sb = new StringBuilder();
-            ViewCalculator viewCalculator = viewProperties.calculator();
-            EntityHandle.get(semanticNid).ifSemantic(semanticEntity -> {
-                EntityHandle.get(semanticEntity.referencedComponentNid()).ifPresent(referencedComponent -> {
-                    sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(referencedComponent)).append(" in ");
-                }).ifAbsent(() -> {
-                    LOG.error("Unable to find entity for referencedComponent '{}' for Semantic {}: ",
-                            semanticEntity.referencedComponentNid(), semanticEntity);
-                    sb.append(" missing referenced component " + semanticEntity.referencedComponentNid());
-                });
-                sb.append(retriveDisplayName(semanticEntity.pattern(), viewProperties));
-            }).ifStamp(stampEntity -> {
-                sb.append(viewCalculator.getTextForStamp(stampEntity));
-            }).ifConcept(conceptEntity -> {
-                sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(conceptEntity));
-            }).ifPattern(patternEntity -> {
-                sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(patternEntity));
-            }).ifAbsent(() -> LOG.error("Unable to find entity for nid: " + semanticNid));
-            return sb.toString();
-        });
+        Function<Integer, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
 
         semanticsComboBox.setCellFactory(_ -> new SectionSemanticsComboBoxCell(fetchDescriptionFunction, viewProperties));
-
         semanticsComboBox.setButtonCell(new SectionSemanticsComboBoxCell(fetchDescriptionFunction, viewProperties));
+
         return semanticsComboBox;
     }
 

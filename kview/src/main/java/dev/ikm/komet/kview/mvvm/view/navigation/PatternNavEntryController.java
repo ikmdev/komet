@@ -2,13 +2,11 @@ package dev.ikm.komet.kview.mvvm.view.navigation;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -127,7 +125,8 @@ public class PatternNavEntryController {
         Image identiconImage = Identicon.generateIdenticonImage(patternFacade.publicId());
         identicon.setImage(identiconImage);
 
-        var patternNameText = retriveDisplayName((PatternFacade)patternFacade);
+        ViewProperties vProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
+        var patternNameText = ViewCalculatorUtils.retrieveDisplayName((PatternFacade)patternFacade, vProperties);
 
         // set the pattern's name
         patternName.setText(patternNameText);
@@ -150,14 +149,6 @@ public class PatternNavEntryController {
             }
         });
         setupListView();
-    }
-
-    private String retriveDisplayName(PatternFacade patternFacade) {
-        ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
-        ViewCalculator viewCalculator = viewProperties.calculator();
-        Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
-        Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
-        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
     }
 
     private void setupListView() {
@@ -185,27 +176,7 @@ public class PatternNavEntryController {
 
         // generate the display name in the format of "Reference Component in Pattern"
         // TODO: This is a candidate for a general purpose description function, rather than a one-off in this class.
-        Function<Integer, String> fetchDescriptionFunction = (semanticNid -> {
-            StringBuilder sb = new StringBuilder();
-            ViewCalculator viewCalculator = viewProperties.calculator();
-            EntityHandle.get(semanticNid).ifSemantic(semanticEntity -> {
-                        EntityHandle.get(semanticEntity.referencedComponentNid()).ifPresent(referencedComponent -> {
-                            sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(referencedComponent)).append(" in ");
-                        }).ifAbsent(() -> {
-                            LOG.error("Unable to find entity for referencedComponent '{}' for Semantic {}: ",
-                                    semanticEntity.referencedComponentNid(), semanticEntity);
-                            sb.append(" missing referenced component " + semanticEntity.referencedComponentNid());
-                        });
-                        sb.append(retriveDisplayName(instancesViewModel.getPropertyValue(PATTERN_FACADE)));
-                    }).ifStamp(stampEntity -> {
-                        sb.append(viewCalculator.getTextForStamp(stampEntity));
-                    }).ifConcept(conceptEntity -> {
-                        sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(conceptEntity));
-                    }).ifPattern(patternEntity -> {
-                        sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(patternEntity));
-                    }).ifAbsent(() -> LOG.error("Unable to find entity for nid: " + semanticNid));
-            return sb.toString();
-        });
+        Function<Integer, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
 
         // set the cell factory for each pattern's instance list
         patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescriptionFunction, viewProperties));
