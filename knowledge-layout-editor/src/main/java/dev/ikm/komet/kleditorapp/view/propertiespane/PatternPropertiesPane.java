@@ -23,6 +23,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     private final VBox patternMainContainer = new VBox();
 
     private final TextField titleTextField;
+    private final TextField identifierTextField;
     private final ToggleSwitch titleVisibleTSwitch;
 
     private final ComboBox<Integer> columnsComboBox = new ComboBox<>();
@@ -40,7 +41,8 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         Label titleLabel = new Label("Pattern Title:");
         titleTextField = new TextField();
 
-        titleContainer.getChildren().addAll(titleLabel, titleTextField);
+        Label identifierLabel = new Label("Identifier:");
+        identifierTextField = new TextField();
 
         // Visible
         titleVisibleTSwitch = new ToggleSwitch();
@@ -49,6 +51,14 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         titleVisibleTSwitch.getStyleClass().add("title-visible");
 
         titleTextField.editableProperty().bind(titleVisibleTSwitch.selectedProperty());
+
+        titleContainer.getChildren().addAll(
+                titleLabel,
+                titleTextField,
+                titleVisibleTSwitch,
+                identifierLabel,
+                identifierTextField
+        );
 
         // Separator
         Separator separator = new Separator();
@@ -99,7 +109,6 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
 
         patternMainContainer.getChildren().addAll(
                 titleContainer,
-                titleVisibleTSwitch,
                 separator,
                 gridTitleLabel,
                 gridLayoutGridPane,
@@ -130,5 +139,8 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         // Columns ComboBox
         previousControlColumnsObjProperty = modelObject.numberColumnsProperty().asObject();
         columnsComboBox.valueProperty().bindBidirectional(previousControlColumnsObjProperty);
+
+        // Identifier
+        identifierTextField.textProperty().bindBidirectional(modelObject.identifierProperty());
     }
 }

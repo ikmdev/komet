@@ -4,14 +4,19 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ComponentWithNid;
+import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -19,6 +24,8 @@ import java.util.function.Supplier;
  * displaying component information in JavaFX UI controls.
  */
 public class ViewCalculatorUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ViewCalculatorUtils.class);
 
     /**
      * Initializes an empty ComboBox for displaying {@link ComponentWithNid} items.
@@ -121,5 +128,36 @@ public class ViewCalculatorUtils {
                 viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampEntity.authorNid()),
                 viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampEntity.moduleNid()),
                 viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampEntity.pathNid()));
+    }
+
+    public static String retrieveDisplayName(PatternFacade patternFacade, ViewProperties viewProperties) {
+        ViewCalculator viewCalculator = viewProperties.calculator();
+        Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
+        Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
+        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
+    }
+
+    public static Function<Integer, String> getFetchSemanticDescriptionFunction(ViewProperties viewProperties) {
+        return semanticNid -> {
+            StringBuilder sb = new StringBuilder();
+            ViewCalculator viewCalculator = viewProperties.calculator();
+            EntityHandle.get(semanticNid).ifSemantic(semanticEntity -> {
+                EntityHandle.get(semanticEntity.referencedComponentNid()).ifPresent(referencedComponent -> {
+                    sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(referencedComponent)).append(" in ");
+                }).ifAbsent(() -> {
+                    LOG.error("Unable to find entity for referencedComponent '{}' for Semantic {}: ",
+                            semanticEntity.referencedComponentNid(), semanticEntity);
+                    sb.append(" missing referenced component " + semanticEntity.referencedComponentNid());
+                });
+                sb.append(ViewCalculatorUtils.retrieveDisplayName(semanticEntity.pattern(), viewProperties));
+            }).ifStamp(stampEntity -> {
+                sb.append(viewCalculator.getTextForStamp(stampEntity));
+            }).ifConcept(conceptEntity -> {
+                sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(conceptEntity));
+            }).ifPattern(patternEntity -> {
+                sb.append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(patternEntity));
+            }).ifAbsent(() -> LOG.error("Unable to find entity for nid: " + semanticNid));
+            return sb.toString();
+        };
     }
 }
