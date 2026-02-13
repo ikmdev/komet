@@ -36,7 +36,7 @@ public class SectionViewControl extends EditorWindowBaseControl {
     private final TitledPane titledPane = new TitledPane();
     private final EditorGridPane gridPane = new EditorGridPane();
 
-    public SectionViewControl() {
+    SectionViewControl() {
         titleContainer.getChildren().add(tagTextLabel);
         titledPane.setContent(gridPane);
         mainContainer.setTop(titleContainer);

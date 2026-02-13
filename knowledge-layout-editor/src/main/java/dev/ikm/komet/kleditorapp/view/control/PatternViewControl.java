@@ -25,7 +25,7 @@ public class PatternViewControl extends GridBaseControl {
     private final Label patternTitle = new Label();
     private final EditorGridPane gridPane = new EditorGridPane();
 
-    public PatternViewControl() {
+    PatternViewControl() {
         patternContainer.getStyleClass().add("pattern-container");
 
         patternTitle.textProperty().bind(title);

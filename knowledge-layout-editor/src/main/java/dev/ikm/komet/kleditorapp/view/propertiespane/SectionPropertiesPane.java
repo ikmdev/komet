@@ -2,12 +2,15 @@ package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.kview.controls.ToggleSwitch;
+import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
@@ -29,6 +32,8 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
     private final ToggleSwitch startCollapsedTS;
 
     private ObjectProperty<Integer> lastColumnsSectionProperty;
+
+    private ComboBox<EditorPatternModel> referenceComponentCB;
 
     public SectionPropertiesPane() {
         super(true);
@@ -76,6 +81,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         // GridPane of "INTERACTION"
         GridPane interactionGridPane = createGridPane();
 
+        // - start collapsed
         Label startCollapedLabel = new Label("Start Collapsed");
         GridPane.setHalignment(startCollapedLabel, HPos.RIGHT);
         interactionGridPane.add(startCollapedLabel, 0, 0);
@@ -85,6 +91,33 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         startCollapsedTS.getStyleClass().add("collapsed");
         interactionGridPane.add(startCollapsedTS, 1, 0);
 
+        // - reference component
+        Label referenceComponentLabel = new Label("R.C.");
+        GridPane.setHalignment(referenceComponentLabel, HPos.RIGHT);
+        interactionGridPane.add(referenceComponentLabel, 0, 1);
+
+        referenceComponentCB = new ComboBox<>();
+        referenceComponentCB.setMaxWidth(Double.MAX_VALUE);
+        Bindings.bindContent(referenceComponentCB.getItems(), EditorPatternModel.getExistingPatterns());
+        interactionGridPane.add(referenceComponentCB, 1, 1);
+
+        referenceComponentCB.setCellFactory(_ -> new ListCell<>() {
+            @Override
+            protected void updateItem(EditorPatternModel item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    textProperty().unbind();
+                    setText(null);
+                } else {
+                    textProperty().bind(item.identifierProperty());
+                }
+            }
+        });
+
+        referenceComponentCB.setButtonCell(referenceComponentCB.getCellFactory().call(null));
+
+        // Add everything to scene graph
         sectionMainContainer.getChildren().addAll(
             sectionNameContainer,
             separator,
@@ -133,6 +166,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
             sectionNameTextField.textProperty().unbindBidirectional(previouslyShownModel.nameProperty());
             columnsComboBox.valueProperty().unbindBidirectional(lastColumnsSectionProperty);
             startCollapsedTS.selectedProperty().unbindBidirectional(previouslyShownModel.startCollapsedProperty());
+            referenceComponentCB.valueProperty().unbindBidirectional(previouslyShownModel.referenceComponentProperty());
         }
         sectionNameTextField.textProperty().bindBidirectional(section.nameProperty());
 
@@ -141,5 +175,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         columnsComboBox.valueProperty().bindBidirectional(lastColumnsSectionProperty);
 
         startCollapsedTS.selectedProperty().bindBidirectional(section.startCollapsedProperty());
+
+        referenceComponentCB.valueProperty().bindBidirectional(section.referenceComponentProperty());
     }
 }
