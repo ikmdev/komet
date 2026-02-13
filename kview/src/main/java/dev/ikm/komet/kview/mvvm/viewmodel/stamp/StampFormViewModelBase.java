@@ -1,28 +1,8 @@
 package dev.ikm.komet.kview.mvvm.viewmodel.stamp;
 
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
-import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.terms.ComponentWithNid;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
-import javafx.event.ActionEvent;
-import javafx.scene.Node;
-import org.carlfx.cognitive.validator.ValidationResult;
-import org.carlfx.cognitive.viewmodel.ViewModel;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.*;
-
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TITLE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_STAMP_VALUES_THE_SAME_OR_EMPTY;
@@ -33,7 +13,22 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUSES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.TIME;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
+import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.terms.ComponentWithNid;
+import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.event.ActionEvent;
+import javafx.scene.Node;
+import org.carlfx.cognitive.validator.ValidationResult;
+import org.carlfx.cognitive.viewmodel.ViewModel;
+
+import java.util.*;
+import java.util.stream.*;
 
 public abstract class StampFormViewModelBase extends FormViewModel {
     protected EntityFacade entityFacade;
@@ -84,7 +79,9 @@ public abstract class StampFormViewModelBase extends FormViewModel {
     public void populateDefaults() {
         setPropertyValue(StampFormViewModelBase.Properties.STATUS, State.ACTIVE);
         // module
-        int moduleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
+        // @TODO Revisit TinkarTerms bindings file because the defaultModuleProperty is returning a module that isn't part of the list of modules available.
+        //       int moduleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
+        int moduleNid = TinkarTerm.DEVELOPMENT_MODULE.nid();
         List<ComponentWithNid> moduleEntities = getObservableList(StampFormViewModelBase.Properties.MODULES);
         ComponentWithNid module = lookupByNid(moduleNid, moduleEntities);
         setPropertyValue(StampFormViewModelBase.Properties.MODULE, module);
