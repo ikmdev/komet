@@ -86,6 +86,12 @@ public class ComponentItemNode extends Region {
     }
 
     @Override
+    protected double computeMinHeight(double width) {
+        // Make the min height be the same as the pref height
+        return super.computePrefHeight(width);
+    }
+
+    @Override
     protected void layoutChildren() {
         double leftInsets = snappedLeftInset();
         double rightInsets = snappedRightInset();
