@@ -161,25 +161,17 @@ public class ConceptViewModel extends FormViewModel {
         // add the Fully Qualified Name to the new concept
         saveFQNwithinCreateConcept(transaction, stampEntity, fqnDescrName, conceptFacade);
 
-
         AxiomBuilderRecord ab = newConceptBuilder.axiomBuilder();
 
         // determine sufficient or necessary
         if (NECESSARY_SET.equals(getValue(AXIOM))) {
             ab.withNecessarySet(
-//                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
-//                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
-                    ab.makeRoleGroup(
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.ANONYMOUS_CONCEPT)
-                            /*ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.LANGUAGE)*/)
+                ab.makeConceptReference(TinkarTerm.ANONYMOUS_CONCEPT)
             );
         } else if (SUFFICIENT_SET.equals(getValue(AXIOM))) {
             ab.withSufficientSet(
-//                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
-//                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
-                    ab.makeRoleGroup(
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.ANONYMOUS_CONCEPT)
-                            /*ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.LANGUAGE)*/));
+                ab.makeConceptReference(TinkarTerm.ANONYMOUS_CONCEPT)
+            );
         }
 
         // add the axiom
