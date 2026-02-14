@@ -63,7 +63,7 @@
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jpackage.version>1.6.6</jpackage.version>
+        <jpackage.version>1.7.3</jpackage.version>
         <maven.github-flow.version>1.21.1-r11</maven.github-flow.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <tinkar-starter-data.version>1.1.2</tinkar-starter-data.version>
