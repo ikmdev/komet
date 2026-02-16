@@ -3,7 +3,7 @@
     -fx-border-width: 1px;
     -fx-border-color: transparent;
 
-    -fx-padding: 0 0.25em 0 0.25em;
+    -fx-padding: 0;
 }
 
 .read-only-data-control .main-container .title {
