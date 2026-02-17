@@ -16,9 +16,13 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.NO_SELECTION_MADE_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
+import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
@@ -65,6 +69,7 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -353,6 +358,30 @@ public class GenPurposeDetailsController {
         this.propertiesBorderPane = propsFXMLLoader.node();
         this.propertiesController = propsFXMLLoader.controller();
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
+
+        // open the panel, allow the state machine to determine which panel to show
+        // listen for open and close events
+        Subscriber<PropertyPanelEvent> propertiesEventSubscriber = (evt) -> {
+            if (evt.getEventType() == CLOSE_PANEL) {
+                LOG.info("propBumpOutListener - Close Properties bumpout toggle = " + propertiesToggleButton.isSelected());
+                propertiesToggleButton.setSelected(false);
+                if (isOpen(propertiesSlideoutTrayPane)) {
+                    slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
+                }
+
+                updateDraggableNodesForPropertiesPanel(false);
+
+                // Turn off edit mode for all read only controls
+//                for (Node node : nodes) {
+//                    KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
+//                    klReadOnlyBaseControl.setEditMode(false);
+//                }
+            } else if (evt.getEventType() == OPEN_PANEL || evt.getEventType() == NO_SELECTION_MADE_PANEL) {
+                openPropertiesPanel();
+            }
+        };
+//        subscriberList.add(propertiesEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, propertiesEventSubscriber);
     }
 
     private void onStampConfirmedOrSubmitted(boolean isSubmittedOrConfirmed) {
@@ -527,8 +556,6 @@ public class GenPurposeDetailsController {
 
         titledPane.setExpanded(!sectionModel.isStartCollapsed());
 
-        titledPane.setExpanded(!sectionModel.isStartCollapsed());
-
         titledPane.getStyleClass().add("pattern-titled-pane");
 
         BorderPane topContainer = new BorderPane();
@@ -559,7 +586,7 @@ public class GenPurposeDetailsController {
 
         titledPane.setContent(titledPaneMainContainer);
 
-        titledPane.setOnEditAction(this::showAndEditSemanticFieldsPanel);
+        titledPane.setOnEditAction(actionEvent -> showAndEditSemanticFieldsPanel(sectionModel, actionEvent));
 
         sectionModelToTitledPaneGridPane.put(sectionModel, titledPaneGridPane);
         sectionModelToTitledPaneComboBox.put(sectionModel, semanticsComboBox);
@@ -594,7 +621,7 @@ public class GenPurposeDetailsController {
         return optionalStringRegularName.orElseGet(optionalStringFQN::get);
     }
 
-    private void showAndEditSemanticFieldsPanel(ActionEvent actionEvent) {
+    private void showAndEditSemanticFieldsPanel(EditorSectionModel editorSectionModel, ActionEvent actionEvent) {
         EntityFacade semantic = genPurposeViewModel.getPropertyValue(SEMANTIC);
 
         // notify bump out to display edit fields in bump out area.
@@ -615,17 +642,11 @@ public class GenPurposeDetailsController {
     private void addPatternViews(EditorSectionModel sectionModel, List<? extends EditorPatternModel> patternModels) {
         GridPane content = sectionModelToTitledPaneGridPane.get(sectionModel);
         for (EditorPatternModel editorPatternModel : patternModels) {
-            int nid = editorPatternModel.getNid();
-
-            EntityHandle handle = EntityHandle.get(nid);
-            handle.asPattern().ifPresentOrElse(patternEntity -> addPatternView(editorPatternModel, patternEntity, content, sectionModel),
-            () -> {
-              throw new RuntimeException("Expecting a Pattern");
-            });
+            addPatternView(editorPatternModel, content, sectionModel);
         }
     }
 
-    private void addPatternView(EditorPatternModel editorPatternModel, PatternEntity patternEntity, GridPane content, EditorSectionModel parentSection) {
+    private void addPatternView(EditorPatternModel editorPatternModel, GridPane content, EditorSectionModel parentSection) {
         VBox patternMainContainer = new VBox();
         patternMainContainer.getStyleClass().add("pattern-container");
 
@@ -636,25 +657,12 @@ public class GenPurposeDetailsController {
         patternTitle.managedProperty().bind(editorPatternModel.titleVisibleProperty());
         patternMainContainer.getChildren().add(patternTitle);
 
-        ConceptFacade author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
-        ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
-        ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
-
-        ObservableComposer composer = ObservableComposer.create(
-                getViewProperties().calculator(),
-                State.ACTIVE,
-                author,
-                module,
-                path,
-                "Edit Semantic Details"
-        );
-
         // Pattern Fields Container
         VBox semanticsContainer = new VBox();
         semanticsContainer.getStyleClass().add("semantics-container");
 
         // Pattern fields
-        createSemanticViews(editorPatternModel, patternEntity, composer, semanticsContainer, parentSection);
+        createSemanticViews(editorPatternModel, semanticsContainer, parentSection);
 
         editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
             GridPane.setRowIndex(patternMainContainer, newRowIndex.intValue());
@@ -672,30 +680,55 @@ public class GenPurposeDetailsController {
         content.getChildren().add(patternMainContainer);
     }
 
-    private List<KLReadOnlyBaseControl> createSemanticViews(EditorPatternModel editorPatternModel, PatternEntity patternEntity,
-                                                            ObservableComposer composer, VBox semanticsContainer, EditorSectionModel parentSection) {
+    private List<KLReadOnlyBaseControl> createSemanticViews(EditorPatternModel editorPatternModel, VBox semanticsContainer,
+                                                            EditorSectionModel parentSection) {
 //        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternEntity).get();
 
         List<EntityFacade> refComponents = getReferenceComponentsToUse(parentSection.getReferenceComponent());
 
         List<KLReadOnlyBaseControl> controlItems = new ArrayList<>();
 
-        doCreateSemanticViews(editorPatternModel, patternEntity, composer, semanticsContainer, refComponents, controlItems);
+        doCreateSemanticViews(editorPatternModel, semanticsContainer, refComponents, controlItems);
 
         ComboBox<EntityFacade> semanticsComboBox = sectionModelToTitledPaneComboBox.get(parentSection);
 
         semanticsComboBox.setValue(refComponents.getFirst());
         semanticsComboBox.valueProperty().subscribe(() -> {
             semanticsContainer.getChildren().clear();
-            doCreateSemanticViews(editorPatternModel, patternEntity, composer, semanticsContainer, List.of(semanticsComboBox.getValue()), controlItems);
+            doCreateSemanticViews(editorPatternModel, semanticsContainer, List.of(semanticsComboBox.getValue()), controlItems);
         });
 
         controls.addAll(controlItems);
         return controlItems;
     }
 
-    private void doCreateSemanticViews(EditorPatternModel editorPatternModel, PatternEntity patternEntity, ObservableComposer composer,
-                                       VBox semanticsContainer, List<EntityFacade> refComponents, List<KLReadOnlyBaseControl> controlItems) {
+    private void doCreateSemanticViews(EditorPatternModel editorPatternModel, VBox semanticsContainer,
+                                       List<EntityFacade> refComponents, List<KLReadOnlyBaseControl> controlItems) {
+
+        // Pattern Entity
+        int patternNid = editorPatternModel.getNid();
+        EntityHandle handle = EntityHandle.get(patternNid);
+        PatternEntity patternEntity;
+        if (handle.asPattern().isEmpty()) {
+            throw new RuntimeException("Expecting a Pattern to be present instead of an empty Optional");
+        }
+        patternEntity = handle.asPattern().get();
+
+        // Composer
+        ConceptFacade author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+        ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
+        ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
+
+        ObservableComposer composer = ObservableComposer.create(
+                getViewProperties().calculator(),
+                State.ACTIVE,
+                author,
+                module,
+                path,
+                "Edit Semantic Details"
+        );
+
+        // Start adding Semantics
         AtomicInteger index = new AtomicInteger(0);
         EntityService.get().forEachSemanticForComponentOfPattern(refComponents.getFirst().nid(), patternEntity.nid(),
                 (semantic) -> {
