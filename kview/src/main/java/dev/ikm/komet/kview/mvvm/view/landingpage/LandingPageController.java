@@ -798,10 +798,10 @@ public class LandingPageController implements BasicController {
         });
 
         editCoordinatesButton.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (editCoordOptionsPopup.getNavigator() == null) {
-                Navigator navigator = new ViewNavigator(viewProperties.nodeView());
-                editCoordOptionsPopup.setNavigator(navigator);
-            }
+//            if (editCoordOptionsPopup.getNavigator() == null) {
+//                Navigator navigator = new ViewNavigator(viewProperties.nodeView());
+//                editCoordOptionsPopup.setNavigator(navigator);
+//            }
             if (e.getButton() == MouseButton.PRIMARY) {
                 if (editCoordOptionsPopup.isShowing()) {
                     e.consume();

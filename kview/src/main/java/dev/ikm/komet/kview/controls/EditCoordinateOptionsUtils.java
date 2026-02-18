@@ -438,15 +438,33 @@ public class EditCoordinateOptionsUtils {
 //                updateModuleExcProperty(filterOptions)));
 //        updateModuleExcProperty(filterOptions);
 //
-        // PATH
-        optionSubscription = optionSubscription.and(mainCoordinates.getPath().selectedOptions().subscribe(() ->
-                updateDefaultPathProperty(filterOptions)));
-        updateDefaultPathProperty(filterOptions);
 
         // AUTHOR FOR CHANGE
         optionSubscription = optionSubscription.and(mainCoordinates.getAuthorForChange().selectedOptions().subscribe(() ->
                 updateAuthorForChangeProperty(filterOptions)));
         updateAuthorForChangeProperty(filterOptions);
+
+        // default Module
+        optionSubscription = optionSubscription.and(mainCoordinates.getDefaultModule().selectedOptions().subscribe(() ->
+                updateDefaultModuleProperty(filterOptions)));
+        updateDefaultModuleProperty(filterOptions);
+
+        // destination Module
+        optionSubscription = optionSubscription.and(mainCoordinates.getDestinationModule().selectedOptions().subscribe(() ->
+                updateDestinationModuleProperty(filterOptions)));
+        updateDestinationModuleProperty(filterOptions);
+
+        // destination Module
+        // default PATH
+        optionSubscription = optionSubscription.and(mainCoordinates.getDefaultPath().selectedOptions().subscribe(() ->
+                updateDefaultPathProperty(filterOptions)));
+        updateDefaultPathProperty(filterOptions);
+
+        // promotion PATH
+        optionSubscription = optionSubscription.and(mainCoordinates.getPromotionPath().selectedOptions().subscribe(() ->
+                updatePromotionPathProperty(filterOptions)));
+        updatePromotionPathProperty(filterOptions);
+
 
 //        // LANGUAGE
 //        optionSubscription = optionSubscription.and(languageCoordinatesList.getFirst().getLanguage().selectedOptions().subscribe(() ->
@@ -534,18 +552,7 @@ public class EditCoordinateOptionsUtils {
 //        fromFilter = false;
 //    }
 
-    private void updateDefaultPathProperty(EditCoordinateOptions filterOptions) {
-        if (fromView) {
-            return;
-        }
-        ObservableList<ConceptFacade> selectedOptions = filterOptions.getMainCoordinates().getPath().selectedOptions();
-        if (!selectedOptions.isEmpty()) {
-            ConceptFacade conceptFacade = selectedOptions.getFirst();
-            fromFilter = true;
-            filterOptions.observableEditCoordinateForOptionsProperty().defaultPathProperty().set(conceptFacade);
-            fromFilter = false;
-        }
-    }
+
     private void updateAuthorForChangeProperty(EditCoordinateOptions filterOptions) {
         if (fromView) {
             return;
@@ -556,6 +563,56 @@ public class EditCoordinateOptionsUtils {
             fromFilter = true;
             // TODO: Please verify and test the authorForChangesProperty is the correct way to set.
             filterOptions.observableEditCoordinateForOptionsProperty().authorForChangesProperty().set(conceptFacade);
+            fromFilter = false;
+        }
+    }
+    private void updateDefaultModuleProperty(EditCoordinateOptions filterOptions) {
+        if (fromView) {
+            return;
+        }
+        ObservableList<ConceptFacade> selectedOptions = filterOptions.getMainCoordinates().getDefaultModule().selectedOptions();
+        if (!selectedOptions.isEmpty()) {
+            ConceptFacade conceptFacade = selectedOptions.getFirst();
+            fromFilter = true;
+            filterOptions.observableEditCoordinateForOptionsProperty().defaultModuleProperty().set(conceptFacade);
+            fromFilter = false;
+        }
+    }
+    private void updateDestinationModuleProperty(EditCoordinateOptions filterOptions) {
+        if (fromView) {
+            return;
+        }
+        ObservableList<ConceptFacade> selectedOptions = filterOptions.getMainCoordinates().getDestinationModule().selectedOptions();
+        if (!selectedOptions.isEmpty()) {
+            ConceptFacade conceptFacade = selectedOptions.getFirst();
+            fromFilter = true;
+            filterOptions.observableEditCoordinateForOptionsProperty().destinationModuleProperty().set(conceptFacade);
+            fromFilter = false;
+        }
+    }
+
+
+    private void updateDefaultPathProperty(EditCoordinateOptions filterOptions) {
+        if (fromView) {
+            return;
+        }
+        ObservableList<ConceptFacade> selectedOptions = filterOptions.getMainCoordinates().getDefaultPath().selectedOptions();
+        if (!selectedOptions.isEmpty()) {
+            ConceptFacade conceptFacade = selectedOptions.getFirst();
+            fromFilter = true;
+            filterOptions.observableEditCoordinateForOptionsProperty().defaultPathProperty().set(conceptFacade);
+            fromFilter = false;
+        }
+    }
+    private void updatePromotionPathProperty(EditCoordinateOptions filterOptions) {
+        if (fromView) {
+            return;
+        }
+        ObservableList<ConceptFacade> selectedOptions = filterOptions.getMainCoordinates().getPromotionPath().selectedOptions();
+        if (!selectedOptions.isEmpty()) {
+            ConceptFacade conceptFacade = selectedOptions.getFirst();
+            fromFilter = true;
+            filterOptions.observableEditCoordinateForOptionsProperty().promotionPathProperty().set(conceptFacade);
             fromFilter = false;
         }
     }

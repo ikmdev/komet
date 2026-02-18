@@ -2,7 +2,6 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.skin.EditCoordinateOptionsPopupSkin;
-import dev.ikm.komet.navigator.graph.Navigator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -33,6 +32,7 @@ public class EditCoordinateOptionsPopup extends PopupControl {
     public EditCoordinateOptionsPopup(FILTER_TYPE filterType, ViewProperties viewProperties) {
         this.filterType = filterType;
         this.viewProperties = viewProperties;
+        viewPropertiesReadOnlyObjectWrapperProperty = new ReadOnlyObjectWrapper<>(this, "viewProperties", viewProperties);
 //        this.parentViewCoordinate = viewProperties.parentView();
         filterOptionsUtils = new EditCoordinateOptionsUtils();
         inheritedFilterOptionsProperty = new ReadOnlyObjectWrapper<>(this, "inheritedFilterOptions", new EditCoordinateOptions(viewProperties.parentView().editCoordinate()));
@@ -66,6 +66,14 @@ public class EditCoordinateOptionsPopup extends PopupControl {
        return inheritedFilterOptionsProperty.get();
     }
 
+    private final ReadOnlyObjectWrapper<ViewProperties> viewPropertiesReadOnlyObjectWrapperProperty;
+    public final ReadOnlyObjectProperty<ViewProperties> viewPropertiesReadOnlyObjectWrapperProperty() {
+       return viewPropertiesReadOnlyObjectWrapperProperty.getReadOnlyProperty();
+    }
+    public final ViewProperties getViewProperties() {
+       return viewPropertiesReadOnlyObjectWrapperProperty.get();
+    }
+
     // filterOptionsProperty
     private final ObjectProperty<EditCoordinateOptions> filterOptionsProperty = new SimpleObjectProperty<>(this, "filterOptions");
     public final ObjectProperty<EditCoordinateOptions> filterOptionsProperty() {
@@ -78,17 +86,17 @@ public class EditCoordinateOptionsPopup extends PopupControl {
         filterOptionsProperty.set(value);
     }
 
-    // navigatorProperty
-    private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator");
-    public final ObjectProperty<Navigator> navigatorProperty() {
-       return navigatorProperty;
-    }
-    public final Navigator getNavigator() {
-       return navigatorProperty.get();
-    }
-    public final void setNavigator(Navigator value) {
-        navigatorProperty.set(value);
-    }
+//    // navigatorProperty
+//    private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator");
+//    public final ObjectProperty<Navigator> navigatorProperty() {
+//       return navigatorProperty;
+//    }
+//    public final Navigator getNavigator() {
+//       return navigatorProperty.get();
+//    }
+//    public final void setNavigator(Navigator value) {
+//        navigatorProperty.set(value);
+//    }
 
     // containerProperty
     private final ObjectProperty<Node> containerProperty = new SimpleObjectProperty<>(this, "container");

@@ -1,14 +1,9 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
-import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -26,22 +21,25 @@ public class EditCoordinateOptions implements Serializable {
 
     public enum OPTION_ITEM {
         // Main Coordinates
-        AUTHOR("author", "Author"),
-        NAVIGATOR("navigator", ""),
-        TYPE("type", ""),
+        AUTHOR_FOR_CHANGE("author_for_change", "Author"),
+//        NAVIGATOR("navigator", ""),
+//        TYPE("type", ""),
         HEADER("header", ""),
-        STATUS("status", "Status"),
-        TIME("time", ""),
-        MODULE("module", "Module"),
-        PATH("path", "Path"),
-        KIND_OF("kindof", ""),
-        MEMBERSHIP("membership", ""),
-        SORT_BY("sortby", ""),
-        // Language Coordinates
-        LANGUAGE("language", "Model concept, Tinkar Model concept, Language"),
-        DIALECT("dialect", ""),
-        PATTERN("pattern", ""),
-        DESCRIPTION_TYPE("description", "");
+//        STATUS("status", "Status"),
+//        TIME("time", ""),
+        DEFAULT_MODULE("default_module", "Module"),
+        DESTINATION_MODULE("dest_module", "Module"),
+        DEFAULT_PATH("default_path", "Path"),
+        PROMOTION_PATH("promotion_path", "Path");
+//        ,
+//        KIND_OF("kindof", ""),
+//        MEMBERSHIP("membership", ""),
+//        SORT_BY("sortby", ""),
+//        // Language Coordinates
+//        LANGUAGE("language", "Model concept, Tinkar Model concept, Language"),
+//        DIALECT("dialect", ""),
+//        PATTERN("pattern", ""),
+//        DESCRIPTION_TYPE("description", "");
 
         private final String name;
         private final String path;
@@ -187,13 +185,13 @@ public class EditCoordinateOptions implements Serializable {
             if (!Objects.equals(title, option.title)) return false;
             if (any != option.any) return false;
             if (inOverride != option.inOverride) return false;
-            if (option.item == OPTION_ITEM.DIALECT || option.item == OPTION_ITEM.DESCRIPTION_TYPE) {
-                if (!compareSortedLists(selectedOptions, option.selectedOptions)) return false;
-                if (!compareSortedLists(excludedOptions, option.excludedOptions)) return false;
-            } else {
+//            if (option.item == OPTION_ITEM.DIALECT || option.item == OPTION_ITEM.DESCRIPTION_TYPE) {
+//                if (!compareSortedLists(selectedOptions, option.selectedOptions)) return false;
+//                if (!compareSortedLists(excludedOptions, option.excludedOptions)) return false;
+//            } else {
                 if (!compareLists(selectedOptions, option.selectedOptions)) return false;
                 if (!compareLists(excludedOptions, option.excludedOptions)) return false;
-            }
+//            }
             return true;
         }
 
@@ -221,7 +219,7 @@ public class EditCoordinateOptions implements Serializable {
     public class MainEditCoordinates implements EditCoordinates {
 
         // MainCoordinates
-        private Option<ConceptFacade> authorForChange = new Option<>(OPTION_ITEM.AUTHOR, "author.title",
+        private Option<ConceptFacade> authorForChange = new Option<>(OPTION_ITEM.AUTHOR_FOR_CHANGE, "author_for_change.title",
                 new ArrayList<>(), FXCollections.observableArrayList(), null, false, false, noneSet, false);
 
 //        private Option<PatternFacade> navigator;
@@ -245,64 +243,74 @@ public class EditCoordinateOptions implements Serializable {
         private Option<String> header = new Option<>(OPTION_ITEM.HEADER, "header.title",
                 new ArrayList<>(), FXCollections.observableArrayList(), null, false, false, allSet, false);
 
-        private Option<State> status;
-        {
-            List<State> ALL_STATES = StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN.toEnumSet().stream().toList();
+//        private Option<State> status;
+//        {
+//            List<State> ALL_STATES = StateSet.ACTIVE_INACTIVE_AND_WITHDRAWN.toEnumSet().stream().toList();
+//
+//            status = new Option<>(OPTION_ITEM.STATUS, "status.title",
+//                    new ArrayList<>(ALL_STATES), FXCollections.observableArrayList(ALL_STATES), null, true, false, allSet, false);
+//        }
+//
+//        private Option<String> time;
+//        {
+//            List<String> dateOptions = Stream.of("time.item1", "time.item2", "time.item3") // , "time.item4" Range not supported yet
+//                    .map(resources::getString)
+//                    .toList();
+//            time = new Option<>(OPTION_ITEM.TIME, "time.title",
+//                    new ArrayList<>(dateOptions), FXCollections.observableArrayList(dateOptions.getFirst()), FXCollections.observableArrayList(), false, false, noneSet, false);
+//        }
 
-            status = new Option<>(OPTION_ITEM.STATUS, "status.title",
-                    new ArrayList<>(ALL_STATES), FXCollections.observableArrayList(ALL_STATES), null, true, false, allSet, false);
+        private Option<ConceptFacade> defaultModule;
+
+        {
+            List<ConceptFacade> defaultModules = StampService.get().getModulesInUse().stream().toList();
+            defaultModule = new Option<>(OPTION_ITEM.DEFAULT_MODULE, "default_module.title",
+                    new ArrayList<>(defaultModules), FXCollections.observableArrayList(), FXCollections.observableArrayList(), true, false, allAnyExcludingSet, false);
         }
 
-        private Option<String> time;
-        {
-            List<String> dateOptions = Stream.of("time.item1", "time.item2", "time.item3") // , "time.item4" Range not supported yet
-                    .map(resources::getString)
-                    .toList();
-            time = new Option<>(OPTION_ITEM.TIME, "time.title",
-                    new ArrayList<>(dateOptions), FXCollections.observableArrayList(dateOptions.getFirst()), FXCollections.observableArrayList(), false, false, noneSet, false);
-        }
-
-        private Option<ConceptFacade> module;
-
-        {
-            List<ConceptFacade> modules = StampService.get().getModulesInUse().stream().toList();
-            module = new Option<>(OPTION_ITEM.MODULE, "module.title",
-                    new ArrayList<>(modules), FXCollections.observableArrayList(), FXCollections.observableArrayList(), true, false, allAnyExcludingSet, false);
-        }
-        private Option<ConceptFacade> path = new Option<>(OPTION_ITEM.PATH, "path.title",
+        private Option<ConceptFacade> destinationModule = new Option<>(OPTION_ITEM.DESTINATION_MODULE, "dest_module.title",
                 new ArrayList<>(), FXCollections.observableArrayList(), null, false, false, noneSet, false);
-        private Option<String> kindOf;
-        {
-            List<String> kindOfOptions = Stream.of(
-                            "kindof.option.item1", "kindof.option.item2", "kindof.option.item3", "kindof.option.item4",
-                            "kindof.option.item5", "kindof.option.item6", "kindof.option.item7", "kindof.option.item8",
-                            "kindof.option.item9", "kindof.option.item10", "kindof.option.item11")
-                    .map(resources::getString)
-                    .toList();
-            kindOf = new Option<>(OPTION_ITEM.KIND_OF, "kindof.title",
-                    new ArrayList<>(kindOfOptions), FXCollections.observableArrayList(kindOfOptions), FXCollections.observableArrayList(), true, false, allExcludingSet, false);
-        }
 
-        private Option<String> membership;
-        {
-            List<String> membershipOptions = Stream.of(
-                            "membership.option.member1", "membership.option.member2", "membership.option.member3",
-                            "membership.option.member4", "membership.option.member5")
-                    .map(resources::getString)
-                    .toList();
-            membership = new Option<>(OPTION_ITEM.MEMBERSHIP, "membership.title",
-                    new ArrayList<>(membershipOptions), FXCollections.observableArrayList(membershipOptions), null, true, false, allSet, false);
-        }
 
-        private Option<String> sortBy;
-        {
-            List<String> sortByOptions = Stream.of(
-                            "sortby.option.relevant", "sortby.option.alphabetical", "sortby.option.groupedby")
-                    .map(resources::getString)
-                    .toList();
-            sortBy = new Option<>(OPTION_ITEM.SORT_BY, "sortby.title",
-                    new ArrayList<>(sortByOptions), FXCollections.observableArrayList(List.of(sortByOptions.getFirst())), null, false, false, allSet, false);
-        }
+        private Option<ConceptFacade> defaultPath = new Option<>(OPTION_ITEM.DEFAULT_PATH, "default_path.title",
+                new ArrayList<>(), FXCollections.observableArrayList(), null, false, false, noneSet, false);
+
+        private Option<ConceptFacade> promotionPath = new Option<>(OPTION_ITEM.PROMOTION_PATH, "promotion_path.title",
+                new ArrayList<>(), FXCollections.observableArrayList(), null, false, false, noneSet, false);
+
+
+//        private Option<String> kindOf;
+//        {
+//            List<String> kindOfOptions = Stream.of(
+//                            "kindof.option.item1", "kindof.option.item2", "kindof.option.item3", "kindof.option.item4",
+//                            "kindof.option.item5", "kindof.option.item6", "kindof.option.item7", "kindof.option.item8",
+//                            "kindof.option.item9", "kindof.option.item10", "kindof.option.item11")
+//                    .map(resources::getString)
+//                    .toList();
+//            kindOf = new Option<>(OPTION_ITEM.KIND_OF, "kindof.title",
+//                    new ArrayList<>(kindOfOptions), FXCollections.observableArrayList(kindOfOptions), FXCollections.observableArrayList(), true, false, allExcludingSet, false);
+//        }
+//
+//        private Option<String> membership;
+//        {
+//            List<String> membershipOptions = Stream.of(
+//                            "membership.option.member1", "membership.option.member2", "membership.option.member3",
+//                            "membership.option.member4", "membership.option.member5")
+//                    .map(resources::getString)
+//                    .toList();
+//            membership = new Option<>(OPTION_ITEM.MEMBERSHIP, "membership.title",
+//                    new ArrayList<>(membershipOptions), FXCollections.observableArrayList(membershipOptions), null, true, false, allSet, false);
+//        }
+//
+//        private Option<String> sortBy;
+//        {
+//            List<String> sortByOptions = Stream.of(
+//                            "sortby.option.relevant", "sortby.option.alphabetical", "sortby.option.groupedby")
+//                    .map(resources::getString)
+//                    .toList();
+//            sortBy = new Option<>(OPTION_ITEM.SORT_BY, "sortby.title",
+//                    new ArrayList<>(sortByOptions), FXCollections.observableArrayList(List.of(sortByOptions.getFirst())), null, false, false, allSet, false);
+//        }
 
         private final List<Option> options;
 
@@ -313,8 +321,10 @@ public class EditCoordinateOptions implements Serializable {
                     header,
 //                    status,
 //                    time,
-                    module,
-                    path
+                    defaultModule,
+                    destinationModule,
+                    defaultPath,
+                    promotionPath
 //                    kindOf, membership, sortBy
             ));
         }
@@ -342,12 +352,18 @@ public class EditCoordinateOptions implements Serializable {
 //            return time;
 //        }
 
-        public Option<ConceptFacade> getModule() {
-            return module;
+        public Option<ConceptFacade> getDefaultModule() {
+            return defaultModule;
+        }
+        public Option<ConceptFacade> getDestinationModule() {
+            return destinationModule;
         }
 
-        public Option<ConceptFacade> getPath() {
-            return path;
+        public Option<ConceptFacade> getDefaultPath() {
+            return defaultPath;
+        }
+        public Option<ConceptFacade> getPromotionPath() {
+            return promotionPath;
         }
 
 //        public Option<String> getKindOf() {
@@ -374,8 +390,10 @@ public class EditCoordinateOptions implements Serializable {
             copy.header = header.copy();
 //            copy.status = status.copy();
 //            copy.time = time.copy();
-            copy.module = module.copy();
-            copy.path = path.copy();
+            copy.defaultModule = defaultModule.copy();
+            copy.destinationModule = destinationModule.copy();
+            copy.defaultPath = defaultPath.copy();
+            copy.promotionPath = promotionPath.copy();
 //            copy.kindOf = kindOf.copy();
 //            copy.membership = membership.copy();
 //            copy.sortBy = sortBy.copy();
@@ -386,8 +404,10 @@ public class EditCoordinateOptions implements Serializable {
                     copy.header,
 //                    copy.status,
 //                    copy.time,
-                    copy.module,
-                    copy.path
+                    copy.defaultModule,
+                    copy.destinationModule,
+                    copy.defaultPath,
+                    copy.promotionPath
 //                    copy.kindOf,
 //                    copy.membership,
 //                    copy.sortBy
@@ -407,8 +427,11 @@ public class EditCoordinateOptions implements Serializable {
                     Objects.equals(header, that.header) &&
 //                    Objects.equals(status, that.status) &&
 //                    Objects.equals(time, that.time) &&
-                    Objects.equals(module, that.module) &&
-                    Objects.equals(path, that.path) &&
+                    Objects.equals(defaultModule, that.defaultModule) &&
+                    Objects.equals(destinationModule, that.destinationModule) &&
+                    Objects.equals(defaultPath, that.defaultPath) &&
+                    Objects.equals(promotionPath, that.promotionPath) &&
+
 //                    Objects.equals(kindOf, that.kindOf) &&
 //                    Objects.equals(membership, that.membership) &&
 //                    Objects.equals(sortBy, that.sortBy) &&
@@ -423,7 +446,10 @@ public class EditCoordinateOptions implements Serializable {
 //                    type,
                     header,
 //                    status, time,
-                    module, path,
+                    defaultModule,
+                    destinationModule,
+                    defaultPath,
+                    promotionPath,
 //                    kindOf, membership, sortBy,
                     options);
         }
@@ -438,138 +464,138 @@ public class EditCoordinateOptions implements Serializable {
         }
     }
 
-    public class LanguageFilterCoordinates implements EditCoordinates, Comparable {
-
-        // Language Coordinates
-        private Option<EntityFacade> language;
-        {
-            List<EntityFacade> languageOptions = FxGet.allowedLanguages().stream().map(lang -> (EntityFacade) lang).toList();
-            language = new Option<>(OPTION_ITEM.LANGUAGE, "language.option.title",
-                    new ArrayList<>(languageOptions), FXCollections.observableArrayList(List.of(languageOptions.getFirst())), FXCollections.observableArrayList(), false, false, noneSet, false);
-        }
-
-        private Option<EntityFacade> dialect;
-        {
-            List<EntityProxy> dialectPattern = List.of(TinkarTerm.US_DIALECT_PATTERN, TinkarTerm.GB_DIALECT_PATTERN);
-            dialect = new Option<>(OPTION_ITEM.DIALECT, "dialect.option.title",
-                    new ArrayList<>(dialectPattern), FXCollections.observableArrayList(dialectPattern), null, true, false, noneSet, false);
-        }
-
-        private Option<EntityFacade> pattern;
-        {
-            EntityFacade patternOption = TinkarTerm.DESCRIPTION_PATTERN;
-            pattern = new Option<>(OPTION_ITEM.PATTERN, "pattern.option.title",
-                    new ArrayList<>(List.of(patternOption)), FXCollections.observableArrayList(List.of(patternOption)), null, false, false, noneSet, false);
-        }
-
-        private Option<EntityFacade> descriptionType;
-        {
-            List<EntityFacade> descriptionTypeOptions = List.of(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
-            descriptionType = new Option<>(OPTION_ITEM.DESCRIPTION_TYPE, "description.option.title",
-                    new ArrayList<>(descriptionTypeOptions), FXCollections.observableArrayList(descriptionTypeOptions), null, true, false, noneSet, false);
-        }
-
-        private final List<Option<EntityFacade>> options;
-        private final int ordinal;
-
-        LanguageFilterCoordinates(int ordinal) {
-            this.ordinal = ordinal;
-            options = new ArrayList<>(List.of(
-                    language, dialect, pattern, descriptionType
-            ));
-        }
-
-        public Option<EntityFacade> getLanguage() {
-            return language;
-        }
-
-        public Option<EntityFacade> getDialect() {
-            return dialect;
-        }
-
-        public Option<EntityFacade> getPattern() {
-            return pattern;
-        }
-
-        public Option<EntityFacade> getDescriptionType() {
-            return descriptionType;
-        }
-
-        public List<Option<EntityFacade>> getOptions() {
-            return options;
-        }
-
-        public int getOrdinal() {
-            return ordinal;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            LanguageFilterCoordinates that = (LanguageFilterCoordinates) o;
-            if (ordinal != that.ordinal) {
-                return false;
-            }
-            if (!Objects.equals(language, that.language)) {
-                return false;
-            }
-            if (!Objects.equals(dialect, that.dialect)) {
-                return false;
-            }
-            if (!Objects.equals(pattern, that.pattern)) {
-                return false;
-            }
-            if (!Objects.equals(descriptionType, that.descriptionType)) {
-                return false;
-            }
-            if (!Objects.equals(options, that.options)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(
-                    language, dialect, pattern, descriptionType, ordinal,
-                    options);
-        }
-
-        @Override
-        public String toString() {
-            return "LangOptions[" + ordinal + "] {\n" +
-                    options.stream()
-                            .map(option -> "> " + option.toString())
-                            .collect(Collectors.joining("\n")) +
-                    "\n}";
-        }
-
-        public LanguageFilterCoordinates copy() {
-            LanguageFilterCoordinates languageCoordinates = new LanguageFilterCoordinates(ordinal);
-            languageCoordinates.language = language.copy();
-            languageCoordinates.dialect = dialect.copy();
-            languageCoordinates.pattern = pattern.copy();
-            languageCoordinates.descriptionType = descriptionType.copy();
-            languageCoordinates.options.clear();
-            languageCoordinates.options.addAll(List.of(
-                    languageCoordinates.language, languageCoordinates.dialect,
-                    languageCoordinates.pattern, languageCoordinates.descriptionType
-            ));
-            return languageCoordinates;
-        }
-
-        @Override
-        public int compareTo(Object o) {
-            if (o instanceof LanguageFilterCoordinates lang) {
-                return this.ordinal - lang.ordinal;
-            }
-            return 1;
-        }
-    }
+//    public class LanguageFilterCoordinates implements EditCoordinates, Comparable {
+//
+//        // Language Coordinates
+//        private Option<EntityFacade> language;
+//        {
+//            List<EntityFacade> languageOptions = FxGet.allowedLanguages().stream().map(lang -> (EntityFacade) lang).toList();
+//            language = new Option<>(OPTION_ITEM.LANGUAGE, "language.option.title",
+//                    new ArrayList<>(languageOptions), FXCollections.observableArrayList(List.of(languageOptions.getFirst())), FXCollections.observableArrayList(), false, false, noneSet, false);
+//        }
+//
+//        private Option<EntityFacade> dialect;
+//        {
+//            List<EntityProxy> dialectPattern = List.of(TinkarTerm.US_DIALECT_PATTERN, TinkarTerm.GB_DIALECT_PATTERN);
+//            dialect = new Option<>(OPTION_ITEM.DIALECT, "dialect.option.title",
+//                    new ArrayList<>(dialectPattern), FXCollections.observableArrayList(dialectPattern), null, true, false, noneSet, false);
+//        }
+//
+//        private Option<EntityFacade> pattern;
+//        {
+//            EntityFacade patternOption = TinkarTerm.DESCRIPTION_PATTERN;
+//            pattern = new Option<>(OPTION_ITEM.PATTERN, "pattern.option.title",
+//                    new ArrayList<>(List.of(patternOption)), FXCollections.observableArrayList(List.of(patternOption)), null, false, false, noneSet, false);
+//        }
+//
+//        private Option<EntityFacade> descriptionType;
+//        {
+//            List<EntityFacade> descriptionTypeOptions = List.of(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+//            descriptionType = new Option<>(OPTION_ITEM.DESCRIPTION_TYPE, "description.option.title",
+//                    new ArrayList<>(descriptionTypeOptions), FXCollections.observableArrayList(descriptionTypeOptions), null, true, false, noneSet, false);
+//        }
+//
+//        private final List<Option<EntityFacade>> options;
+//        private final int ordinal;
+//
+//        LanguageFilterCoordinates(int ordinal) {
+//            this.ordinal = ordinal;
+//            options = new ArrayList<>(List.of(
+//                    language, dialect, pattern, descriptionType
+//            ));
+//        }
+//
+//        public Option<EntityFacade> getLanguage() {
+//            return language;
+//        }
+//
+//        public Option<EntityFacade> getDialect() {
+//            return dialect;
+//        }
+//
+//        public Option<EntityFacade> getPattern() {
+//            return pattern;
+//        }
+//
+//        public Option<EntityFacade> getDescriptionType() {
+//            return descriptionType;
+//        }
+//
+//        public List<Option<EntityFacade>> getOptions() {
+//            return options;
+//        }
+//
+//        public int getOrdinal() {
+//            return ordinal;
+//        }
+//
+//        @Override
+//        public boolean equals(Object o) {
+//            if (this == o) return true;
+//            if (o == null || getClass() != o.getClass()) return false;
+//            LanguageFilterCoordinates that = (LanguageFilterCoordinates) o;
+//            if (ordinal != that.ordinal) {
+//                return false;
+//            }
+//            if (!Objects.equals(language, that.language)) {
+//                return false;
+//            }
+//            if (!Objects.equals(dialect, that.dialect)) {
+//                return false;
+//            }
+//            if (!Objects.equals(pattern, that.pattern)) {
+//                return false;
+//            }
+//            if (!Objects.equals(descriptionType, that.descriptionType)) {
+//                return false;
+//            }
+//            if (!Objects.equals(options, that.options)) {
+//                return false;
+//            }
+//            return true;
+//        }
+//
+//        @Override
+//        public int hashCode() {
+//            return Objects.hash(
+//                    language, dialect, pattern, descriptionType, ordinal,
+//                    options);
+//        }
+//
+//        @Override
+//        public String toString() {
+//            return "LangOptions[" + ordinal + "] {\n" +
+//                    options.stream()
+//                            .map(option -> "> " + option.toString())
+//                            .collect(Collectors.joining("\n")) +
+//                    "\n}";
+//        }
+//
+//        public LanguageFilterCoordinates copy() {
+//            LanguageFilterCoordinates languageCoordinates = new LanguageFilterCoordinates(ordinal);
+//            languageCoordinates.language = language.copy();
+//            languageCoordinates.dialect = dialect.copy();
+//            languageCoordinates.pattern = pattern.copy();
+//            languageCoordinates.descriptionType = descriptionType.copy();
+//            languageCoordinates.options.clear();
+//            languageCoordinates.options.addAll(List.of(
+//                    languageCoordinates.language, languageCoordinates.dialect,
+//                    languageCoordinates.pattern, languageCoordinates.descriptionType
+//            ));
+//            return languageCoordinates;
+//        }
+//
+//        @Override
+//        public int compareTo(Object o) {
+//            if (o instanceof LanguageFilterCoordinates lang) {
+//                return this.ordinal - lang.ordinal;
+//            }
+//            return 1;
+//        }
+//    }
 
     private MainEditCoordinates mainCoordinates;
-    private List<LanguageFilterCoordinates> languageCoordinatesList;
+//    private List<LanguageFilterCoordinates> languageCoordinatesList;
 
     private final ObservableEditCoordinate observableEditCoordinateForOptions;
 //    private final ObservableEditCoordinateNoOverride parentViewCoordinate;
@@ -596,9 +622,9 @@ public class EditCoordinateOptions implements Serializable {
         return mainCoordinates;
     }
 
-    public List<LanguageFilterCoordinates> getLanguageCoordinatesList() {
-        return languageCoordinatesList;
-    }
+//    public List<LanguageFilterCoordinates> getLanguageCoordinatesList() {
+//        return languageCoordinatesList;
+//    }
 
 //    public LanguageFilterCoordinates getLanguageCoordinates(int ordinal) {
 //        if (ordinal < 0 || ordinal >= languageCoordinatesList.size()) {
@@ -630,14 +656,16 @@ public class EditCoordinateOptions implements Serializable {
     @SuppressWarnings("unchecked")
     public void setOptionForItem(OPTION_ITEM item, Option option) {
         switch (item) {
-            case AUTHOR -> mainCoordinates.authorForChange = (Option<ConceptFacade>) option;
+            case AUTHOR_FOR_CHANGE -> mainCoordinates.authorForChange = (Option<ConceptFacade>) option;
 //            case NAVIGATOR -> mainCoordinates.navigator = (Option<PatternFacade>) option;
 //            case TYPE -> mainCoordinates.type = (Option<String>) option;
             case HEADER -> mainCoordinates.header = (Option<String>) option;
 //            case STATUS -> mainCoordinates.status = (Option<State>) option;
 //            case TIME -> mainCoordinates.time = (Option<String>) option;
-            case MODULE -> mainCoordinates.module = (Option<ConceptFacade>) option;
-            case PATH -> mainCoordinates.path = (Option<ConceptFacade>) option;
+            case DEFAULT_MODULE -> mainCoordinates.defaultModule = (Option<ConceptFacade>) option;
+            case DESTINATION_MODULE -> mainCoordinates.destinationModule = (Option<ConceptFacade>) option;
+            case DEFAULT_PATH -> mainCoordinates.defaultPath = (Option<ConceptFacade>) option;
+            case PROMOTION_PATH -> mainCoordinates.promotionPath = (Option<ConceptFacade>) option;
 //            case KIND_OF -> mainCoordinates.kindOf = (Option<String>) option;
 //            case MEMBERSHIP -> mainCoordinates.membership = (Option<String>) option;
 //            case SORT_BY -> mainCoordinates.sortBy = (Option<String>) option;
@@ -649,8 +677,10 @@ public class EditCoordinateOptions implements Serializable {
                 mainCoordinates.header,
 //                mainCoordinates.status,
 //                mainCoordinates.time,
-                mainCoordinates.module,
-                mainCoordinates.path
+                mainCoordinates.defaultModule,
+                mainCoordinates.destinationModule,
+                mainCoordinates.defaultPath,
+                mainCoordinates.promotionPath
 //                mainCoordinates.kindOf,
 //                mainCoordinates.membership, mainCoordinates.sortBy
         ));

@@ -1,16 +1,22 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.kview.controls.EditCoordinateOptions;
 import dev.ikm.komet.kview.controls.EditCoordinateOptionsPopup;
 import dev.ikm.komet.kview.controls.EditCoordinateTitledPane;
+import dev.ikm.komet.kview.controls.FilterOptions;
+import dev.ikm.komet.kview.controls.FilterOptionsUtils;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.SavedFiltersPopup;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
+import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.Preferences;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -155,10 +161,10 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
             }
         }));
         subscription = subscription.and(control.getInheritedFilterOptions().observableEditCoordinateForOptionsProperty().subscribe((_, _) -> {
-            if (control.getNavigator() != null) {
-                // parentView -> inheritedF.O. -> refresh default
+//            if (control.getNavigator() != null) {
+//                // parentView -> inheritedF.O. -> refresh default
                 setupDefaultFilterOptions();
-            }
+//            }
         }));
         subscription = subscription.and(filterPane.selectedProperty().subscribe((_, selected) -> {
             if (selected) {
@@ -312,13 +318,21 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
 //        EditCoordinateOptions.Option<String> timeOption = filterOptions.getMainCoordinates().getTime();
 //        EditCoordinateTitledPane timeFilterTitledPane = setupTitledPane(timeOption);
 
-        // module: all descendants of Module
-        EditCoordinateOptions.Option<ConceptFacade> moduleOption = filterOptions.getMainCoordinates().getModule();
-        EditCoordinateTitledPane moduleFilterTitledPane = setupTitledPane(moduleOption);
+        // default module
+        EditCoordinateOptions.Option<ConceptFacade> defaultModuleOption = filterOptions.getMainCoordinates().getDefaultModule();
+        EditCoordinateTitledPane defaultModuleTitledPane = setupTitledPane(defaultModuleOption);
 
-        // path: all descendants of Path
-        EditCoordinateOptions.Option<ConceptFacade> pathOption = filterOptions.getMainCoordinates().getPath();
-        EditCoordinateTitledPane pathFilterTitledPane = setupTitledPane(pathOption);
+        // default module
+        EditCoordinateOptions.Option<ConceptFacade> destinationModuleOption = filterOptions.getMainCoordinates().getDestinationModule();
+        EditCoordinateTitledPane destinationModuleTitledPane = setupTitledPane(destinationModuleOption);
+
+        // Default Path
+        EditCoordinateOptions.Option<ConceptFacade> defaultPathOption = filterOptions.getMainCoordinates().getDefaultPath();
+        EditCoordinateTitledPane defaultPathTitledPane = setupTitledPane(defaultPathOption);
+
+        // Promotion Path
+        EditCoordinateOptions.Option<ConceptFacade> promotionPathOption = filterOptions.getMainCoordinates().getPromotionPath();
+        EditCoordinateTitledPane promotionPathTitledPane = setupTitledPane(promotionPathOption);
 
 //        EditCoordinateOptions.Option<String> kindOption = filterOptions.getMainCoordinates().getKindOf();
 //        EditCoordinateTitledPane kindOfFilterTitledPane = setupTitledPane(kindOption);
@@ -357,11 +371,13 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
             accordionBox.getPanes().setAll(
 //                    statusFilterTitledPane,
 //                    timeFilterTitledPane,
-//                    authorForChangeTitledPane,
-                    moduleFilterTitledPane,
-                    pathFilterTitledPane);
-        System.out.println(authorForChangeTitledPane);
-            accordionBox.getPanes().add(authorForChangeTitledPane);
+                    authorForChangeTitledPane,
+                    defaultModuleTitledPane,
+                    destinationModuleTitledPane,
+                    defaultPathTitledPane,
+                    promotionPathTitledPane
+            );
+
 //        }
 
         // Language Coordinates
@@ -377,6 +393,14 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
             defaultFilterOptions = new EditCoordinateOptions(getSkinnable().getFilterOptions().observableEditCoordinateForOptionsProperty());
             // once we have navigator, update pending options with av/sel default options
 //            setAvailableOptionsFromNavigator(defaultFilterOptions, navigator);
+            // path: all descendants of Path
+            ViewCalculator viewCalculator = ViewCoordinateHelper.createViewCalculatorLatestByTime(getSkinnable().getViewProperties());
+            Set<ConceptEntity> defaultPaths = DataModelHelper.fetchDescendentsOfConcept(viewCalculator, TinkarTerm.PATH);
+//          List<EntityFacade> descendentsList = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewCalculator)FilterOptionsUtils.getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath());
+//        List<EntityFacade> descendentsList = FxGet.pathCoordinates(navigator.getViewCalculator()).values()
+//                .stream().map(v -> (EntityFacade) v.pathConcept()).toList();
+            setAvailableOptions(defaultFilterOptions.getMainCoordinates().getDefaultPath(), defaultPaths.stream().map(ConceptFacade.class::cast).toList());
+
         }
         // then pass the inherited options, to override av/sel default options where set
         setDefaultOptions(control.getInheritedFilterOptions());
@@ -420,10 +444,10 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
 //        setAvailableOptions(options.getMainCoordinates().getModule(), descendentsList.stream().map(ConceptFacade.class::cast).toList());
 
         // path: all descendants of Path
-//        List<EntityFacade> descendentsList = FilterOptionsUtils.getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath());
-        List<EntityFacade> descendentsList = FxGet.pathCoordinates(navigator.getViewCalculator()).values()
-                .stream().map(v -> (EntityFacade) v.pathConcept()).toList();
-        setAvailableOptions(options.getMainCoordinates().getPath(), descendentsList.stream().map(ConceptFacade.class::cast).toList());
+        List<EntityFacade> descendentsList = FilterOptionsUtils.getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath());
+//        List<EntityFacade> descendentsList = FxGet.pathCoordinates(navigator.getViewCalculator()).values()
+//                .stream().map(v -> (EntityFacade) v.pathConcept()).toList();
+        setAvailableOptions(options.getMainCoordinates().getDefaultPath(), descendentsList.stream().map(ConceptFacade.class::cast).toList());
 
         // TODO: language: all descendants of Model concept->Tinkar Model concept->Language
 //        List<EntityFacade> descendentsList = FilterOptionsUtils.getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.LANGUAGE.getPath());
