@@ -28,6 +28,7 @@ open module dev.ikm.komet.rules {
 
     exports dev.ikm.komet.rules.evrete;
     exports dev.ikm.komet.rules.annotated to dev.ikm.komet.rules.test;
+    exports dev.ikm.komet.rules.actions.axiom;
 
     provides RuleService with EvreteRulesService;
 
