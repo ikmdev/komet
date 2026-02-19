@@ -16,13 +16,8 @@
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
 import static dev.ikm.komet.framework.controls.TimeUtils.calculateTimeAgoWithPeriodAndDuration;
-import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SET;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SHOWING;
-import static dev.ikm.komet.preferences.JournalWindowSettings.PARENT_VIEW_COORDINATES;
-import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
-import static dev.ikm.tinkar.events.FrameworkTopics.LANDING_PAGE_TOPIC;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE;
 import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.CREATE_JOURNAL_TILE;
@@ -30,6 +25,9 @@ import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalDirName;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
 import static dev.ikm.komet.kview.mvvm.model.Constants.JOURNAL_NAME_PREFIX;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SET;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SHOWING;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
@@ -46,31 +44,41 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.PARENT_VIEW_COORDINATES;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
+import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
+import static dev.ikm.tinkar.events.FrameworkTopics.LANDING_PAGE_TOPIC;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
-
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
-import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.framework.window.WindowSettings;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
-import dev.ikm.komet.navigator.graph.Navigator;
-import dev.ikm.komet.navigator.graph.ViewNavigator;
-import dev.ikm.tinkar.events.Evt;
-import dev.ikm.tinkar.events.EvtBus;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.events.appevents.ProgressEvent;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.progress.ProgressHelper;
+import dev.ikm.komet.framework.view.ObservableEditCoordinate;
+import dev.ikm.komet.framework.view.ObservableEditCoordinateNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.EditCoordinateOptionsPopup;
+import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.NotificationPopup;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.DeleteJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
 import dev.ikm.komet.kview.mvvm.model.JournalCounter;
+import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
+import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.events.Evt;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -103,18 +111,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.UUID;
-import java.util.function.Supplier;
-import java.util.prefs.BackingStoreException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
+import java.util.function.*;
+import java.util.prefs.*;
+import java.util.regex.*;
 
 /**
  * Controller for the application's landing page that manages journal cards and their interactions.
@@ -163,6 +163,12 @@ public class LandingPageController implements BasicController {
     private FilterOptionsPopup filterOptionsPopup;
     private ObservableViewNoOverride viewCoordinates; // main main view coordinates
     private ObservableViewNoOverride viewCoordinatesForFilterOptionsPopup; // clone for landingpage as main view coordinate
+
+    @FXML
+    ToggleButton editCoordinatesToggleButton;
+    private EditCoordinateOptionsPopup editCoordinatesOptionsPopup;
+    private ObservableEditCoordinate editCoordinates;
+    private ObservableEditCoordinateNoOverride editCoordinatesParent;
 
     @FXML
     ToggleButton settingsToggleButton;
@@ -346,6 +352,13 @@ public class LandingPageController implements BasicController {
         filterOptionsPopup = setupViewCoordinateOptionsPopup(landingViewProperties,
                 viewCoordinatesToggleButton, () -> {
                     LOG.info("LandingController.filterOptionsPopup: updating view due to filter options change");
+                });
+
+//        editCoordinates = viewCoordinates.editCoordinate();
+//        editCoordinatesParent = new ObservableEditCoordinateNoOverride(editCoordinates);
+        editCoordinatesOptionsPopup = setupEditCoordinateOptionsPopup(landingViewProperties,
+                editCoordinatesToggleButton, () -> {
+                    LOG.info("LandingController.editCoordinatesOptionsPopup: updating view due to edit coordinates change");
                 });
     }
 
@@ -755,5 +768,125 @@ public class LandingPageController implements BasicController {
             viewProperties.parentView().setValue(newValue.observableViewForFilterProperty().getValue());
         });
         return filterOptionsPopup;
+    }
+
+    private EditCoordinateOptionsPopup setupEditCoordinateOptionsPopup(ViewProperties viewProperties,
+                                                                       ButtonBase editCoordinatesButton,
+                                                                       Runnable updateViewBlock) {
+        //ObservableViewNoOverride parentView2 = new ObservableViewNoOverride(windowSettings.getView());
+        // Filter Options Popup for the coordinates menu button.
+        EditCoordinateOptionsPopup editCoordOptionsPopup = new EditCoordinateOptionsPopup(EditCoordinateOptionsPopup.FILTER_TYPE.LANDING_PAGE, viewProperties);
+
+        double prefHeight = 600;
+        editCoordOptionsPopup.setStyle("-popup-pref-height: " + prefHeight);
+        // Bind the popup's filter options to the view model's filter options. Update details if options change.
+//        viewProperties.parentView().subscribe((_, nv) -> {
+//            editCoordOptionsPopup.setNavigator(new ViewNavigator(nv));
+//            if (updateViewBlock != null) {
+//                updateViewBlock.run();
+//            }
+//        });
+
+
+        // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
+        // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
+        editCoordOptionsPopup.getFilterOptionsUtils().subscribeEditCoordinateOptionsToView(
+                editCoordOptionsPopup.getInheritedFilterOptions(), viewProperties.nodeView());
+
+        // Subscribe nodeView to F.O., so changes from the F.O. popup are propagated to this nodeView
+        editCoordOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, filterOptions) -> {
+            if (oldFilterOptions != null) {
+                editCoordOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
+            }
+            if (filterOptions != null) {
+                editCoordOptionsPopup.getFilterOptionsUtils().subscribeViewToFilterOptions(filterOptions, viewProperties.nodeView());
+            }
+        });
+
+        editCoordinatesButton.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (e.getButton() == MouseButton.PRIMARY) {
+                if (editCoordOptionsPopup.isShowing()) {
+                    e.consume();
+                    editCoordOptionsPopup.hide();
+                } else {
+                    try {
+                        /// //////////////////////////////////////////////////////
+                        // populate available options
+                        // look for preferences
+                        //    if available set with these values
+                        // otherwise
+                        //    select default options from EditCoordinate.Default
+                        /// ////////////////////////////////////////////////////
+//                        populateAvailableAuthors(viewProperties, editCoordOptionsPopup);
+//                        List<ConceptFacade> list = new ArrayList<>();
+//                        list.add(TinkarTerm.DEVELOPMENT_PATH);
+//                        list.add(TinkarTerm.PRIMORDIAL_PATH);
+//                        editCoordOptionsPopup.getFilterOptions()
+//                                .getMainCoordinates()
+//                                .getDefaultPath()
+//                                .availableOptions()
+//                                .addAll(list);
+
+
+                        Bounds buttonBounds = editCoordinatesButton.localToScreen(editCoordinatesButton.getLayoutBounds());
+                        // Show beneath the button
+                        editCoordOptionsPopup.show(editCoordinatesButton, buttonBounds.getMaxX() + 5.5, buttonBounds.getMaxY() - prefHeight);
+                    } catch (Exception ex) {
+                        LOG.error("Error showing popup", ex);
+                    }
+                }
+            }
+        });
+
+        editCoordOptionsPopup.showingProperty().subscribe(showing ->
+                editCoordinatesButton.pseudoClassStateChanged(FILTER_SHOWING, showing));
+
+        editCoordOptionsPopup.defaultOptionsSetProperty().subscribe(isDefault ->
+                editCoordinatesButton.pseudoClassStateChanged(FILTER_SET, !isDefault));
+
+
+//        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().selectedOptions().addListener( (ListChangeListener<? super ConceptFacade>) ch -> {
+////            LOG.info("====> LandingController - editCoordOptionsPopup.getFilterOptions().observableEditCoordinateForOptionsProperty() " + newValue);
+//            while (ch.next()) {
+//                if (ch.wasAdded()) {
+//                    ch.getAddedSubList().forEach(option -> {
+//                        LOG.info("====> LandingController - editCoordOptionsPopup.getFilterOptions().observableEditCoordinateForOptionsProperty() " + option);
+//                    });
+//                }
+//            }
+            // begin altering parent view coordinates
+//            viewProperties.parentView().editCoordinate().setValue();
+//            viewProperties.nodeView().editCoordinate().setValue(); // Which to set????
+//            viewProperties.parentView().editCoordinate().setValue(newValue.observableViewForFilterProperty().getValue());
+//        });
+        return editCoordOptionsPopup;
+    }
+
+    private void populateAvailableAuthors(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
+        List<ConceptEntity> authors = conceptEntitySet.stream().toList();
+        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().availableOptions().addAll(authors);
+        ConceptFacade defaultAuthor = authors
+                .stream()
+                .filter(author -> author.nid() == viewProperties.parentView().getAuthorForChanges().nid())
+                .findFirst().orElse(null); // TODO get default author from preferences.
+
+        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().selectedOptions().add(defaultAuthor);
+
+    }
+
+    private void populateAvailablePaths(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.PATH.publicId());
+        List<ConceptEntity> entities = conceptEntitySet.stream().toList();
+        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().availableOptions().addAll(entities);
+        ConceptFacade defaultAuthor = entities
+                .stream()
+                .filter(author -> author.nid() == viewProperties.parentView().getAuthorForChanges().nid())
+                .findFirst().orElse(null); // TODO get default author from preferences.
+
+        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().selectedOptions().add(defaultAuthor);
+
     }
 }

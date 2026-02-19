@@ -15,6 +15,23 @@
  */
 package dev.ikm.komet.app;
 
+import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
+import static dev.ikm.komet.app.AppState.LOGIN;
+import static dev.ikm.komet.app.AppState.RUNNING;
+import static dev.ikm.komet.app.AppState.SELECT_DATA_SOURCE;
+import static dev.ikm.komet.app.AppState.SHUTDOWN;
+import static dev.ikm.komet.app.AppState.STARTING;
+import static dev.ikm.komet.app.LoginFeatureFlag.ENABLED_WEB_ONLY;
+import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
+import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
+import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
+import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
+import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
+import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
 import com.jpro.webapi.WebAPI;
 import de.jangassen.MenuToolkit;
 import dev.ikm.komet.framework.ScreenInfo;
@@ -50,8 +67,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
-import javafx.stage.Window;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import one.jpro.platform.utils.CommandRunner;
 import one.jpro.platform.utils.PlatformUtils;
 import org.slf4j.Logger;
@@ -59,24 +76,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.prefs.BackingStoreException;
-
-import static dev.ikm.komet.app.AppState.*;
-import static dev.ikm.komet.app.LoginFeatureFlag.ENABLED_WEB_ONLY;
-import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
-import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
-import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
-import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
-import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
-import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.prefs.*;
 
 /**
  * Main application class for the Komet application, extending JavaFX {@link Application}.
@@ -279,8 +281,14 @@ public class App extends Application  {
 
         try {
             App.primaryStage = stage;
-            Thread.currentThread().setUncaughtExceptionHandler((thread, exception) ->
-                    AlertStreams.getRoot().dispatch(AlertObject.makeError(exception)));
+            Thread.currentThread().setUncaughtExceptionHandler((thread, exception) -> {
+                AlertStreams.getRoot().dispatch(AlertObject.makeError(exception));
+                LOG.error("Uncaught exception in thread {}", thread.getName(), exception);
+            });
+            Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> {
+                AlertStreams.getRoot().dispatch(AlertObject.makeError(exception));
+                LOG.error("Uncaught exception in thread {}", thread.getName(), exception);
+            });
 
             // Initialize the JPro WebAPI
             if (IS_BROWSER) {

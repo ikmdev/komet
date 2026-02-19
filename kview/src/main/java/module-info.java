@@ -50,6 +50,7 @@ module dev.ikm.komet.kview {
     requires dev.ikm.tinkar.terms;
     requires dev.ikm.tinkar.events;
     requires dev.ikm.komet.preferences;
+    requires dev.ikm.komet.rules;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
