@@ -348,25 +348,14 @@ public class LandingPageController implements BasicController {
             // Initialize the journal window view, which is provided in the WindowSettings
             viewCoordinates = windowSettings.getView();
 
-        viewCoordinatesForFilterOptionsPopup = new ObservableViewNoOverride(viewCoordinates);
-        ViewProperties landingViewProperties = viewCoordinatesForFilterOptionsPopup.makeOverridableViewProperties("LandingController.filterOptionsPopup");
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(landingViewProperties,
-                viewCoordinatesToggleButton, () -> {
-                    LOG.info("LandingController.filterOptionsPopup: updating view due to filter options change");
-                });
-
-//        editCoordinates = viewCoordinates.editCoordinate();
-//        editCoordinatesParent = new ObservableEditCoordinateNoOverride(editCoordinates);
-        editCoordinatesOptionsPopup = setupEditCoordinateOptionsPopup(landingViewProperties,
-                editCoordinatesToggleButton, () -> {
-                    LOG.info("LandingController.editCoordinatesOptionsPopup: updating view due to edit coordinates change");
-                });
             viewCoordinatesForFilterOptionsPopup = new ObservableViewNoOverride(viewCoordinates);
             ViewProperties landingViewProperties = viewCoordinatesForFilterOptionsPopup.makeOverridableViewProperties("LandingController.filterOptionsPopup");
             filterOptionsPopup = setupViewCoordinateOptionsPopup(landingViewProperties,
-                    viewCoordinatesToggleButton, () -> {
-                        LOG.info("LandingController.filterOptionsPopup: updating view due to filter options change");
-                    });
+                    viewCoordinatesToggleButton,
+                    () -> LOG.info("LandingController.filterOptionsPopup: updating view due to filter options change"));
+            editCoordinatesOptionsPopup = setupEditCoordinateOptionsPopup(landingViewProperties,
+                    editCoordinatesToggleButton,
+                    () -> LOG.info("LandingController.editCoordinatesOptionsPopup: updating view due to edit coordinates change"));
         } catch (Exception e) {
             LOG.error("Error initializing landing page view", e);
             throw new RuntimeException(e);
