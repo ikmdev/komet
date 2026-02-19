@@ -16,6 +16,7 @@
 package dev.ikm.komet.navigator.graph;
 
 import javafx.scene.Node;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import dev.ikm.komet.framework.StyleClasses;
 import dev.ikm.komet.framework.graphics.Icon;
@@ -58,6 +59,8 @@ public class DefaultNavigatorDisplayPolicies implements NavigatorDisplayPolicies
                         // See if the parent nid is in the stated navigation pattern...
                         if (viewCalculator.navigationCalculator().unsortedParentsOf(item.getConceptNid(), statedPatternNid).contains(parentNid)) {
                             Node navigationBadge = Icon.STATED.makeIconWithStyles(StyleClasses.NAVIGATION_BADGE.toString());
+                            Tooltip t = new Tooltip("Stated axioms");
+                            Tooltip.install(navigationBadge, t);
                             combinedGraphic.getChildren().add(navigationBadge);
                         }
                     }
@@ -67,6 +70,8 @@ public class DefaultNavigatorDisplayPolicies implements NavigatorDisplayPolicies
                         // See if the parent nid is in the inferred navigation pattern...
                         if (viewCalculator.navigationCalculator().unsortedParentsOf(item.getConceptNid(), inferredPatternNid).contains(parentNid)) {
                             Node navigationBadge = Icon.INFERRED.makeIconWithStyles(StyleClasses.NAVIGATION_BADGE.toString());
+                            Tooltip t = new Tooltip("Inferred axioms");
+                            Tooltip.install(navigationBadge, t);
                             combinedGraphic.getChildren().add(navigationBadge);
                         }
                     }
