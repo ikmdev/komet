@@ -9,6 +9,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.scene.Parent;
 import javafx.scene.control.Accordion;
@@ -53,6 +54,7 @@ public class EditCoordinateTitledPaneSkin extends TitledPaneSkin {
     private boolean allSelection = false, singleSelection = false;
     private ScrollPane scrollPane;
     private Subscription subscription;
+    private ListChangeListener availableOptionsListener;
 
     public EditCoordinateTitledPaneSkin(EditCoordinateTitledPane control) {
         super(control);
@@ -127,9 +129,9 @@ public class EditCoordinateTitledPaneSkin extends TitledPaneSkin {
         control.pseudoClassStateChanged(SINGLE_SELECT_OPTION, !multiSelectionAllowed);
 
         EditCoordinateOptions.Option currentOption = option.copy();
-        // whenever the navigator changes, update the option text
-        subscription = subscription.and(control.navigatorProperty().subscribe(_ ->
-                selectedOption.setText(getOptionText(currentOption))));
+//        // whenever the navigator changes, update the option text
+//        subscription = subscription.and(control.navigatorProperty().subscribe(_ ->
+//                selectedOption.setText(getOptionText(currentOption))));
 
         // add toggles only once
         if (contentBox.getChildren().size() == 1) {
@@ -138,6 +140,23 @@ public class EditCoordinateTitledPaneSkin extends TitledPaneSkin {
         }
         setupToggleBox(currentOption);
 
+        // NEW Code to respond dynamically when user code adds additional options to a section.
+        availableOptionsListener =   (c) -> {
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    c.getAddedSubList().forEach(o -> contentBox.getChildren().add(new OptionToggle<>(o)));
+                    setupToggleBox(currentOption);
+                }
+                if (c.wasRemoved()) {
+                    c.getRemoved().forEach(o -> contentBox.getChildren().removeIf(node -> node instanceof OptionToggle<?> optionToggle && Objects.equals(optionToggle.getT(), o)));
+                }
+            }
+        };
+        option.availableOptions().addListener(availableOptionsListener);
+
+        subscription = subscription.and(option.availableOptions().subscribe( () ->{
+            setupToggleBox(currentOption);
+        }));
         subscription = subscription.and(selectedOption.boundsInParentProperty().subscribe(b ->
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30)));
 
@@ -350,6 +369,9 @@ public class EditCoordinateTitledPaneSkin extends TitledPaneSkin {
         titleBox.translateXProperty().unbind();
         if (subscription != null) {
             subscription.unsubscribe();
+        }
+        if (availableOptionsListener != null) {
+            control.getOption().availableOptions().removeListener(availableOptionsListener);
         }
         super.dispose();
     }

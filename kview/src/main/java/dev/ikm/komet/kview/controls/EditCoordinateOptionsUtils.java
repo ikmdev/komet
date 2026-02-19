@@ -443,6 +443,8 @@ public class EditCoordinateOptionsUtils {
         optionSubscription = optionSubscription.and(mainCoordinates.getAuthorForChange().selectedOptions().subscribe(() ->
                 updateAuthorForChangeProperty(filterOptions)));
         updateAuthorForChangeProperty(filterOptions);
+        optionSubscription = optionSubscription.and(mainCoordinates.getAuthorForChange().availableOptions().subscribe(() ->
+                System.out.println("=======>  changing available options. here is where the UI needs to update it's available options")));
 
         // default Module
         optionSubscription = optionSubscription.and(mainCoordinates.getDefaultModule().selectedOptions().subscribe(() ->

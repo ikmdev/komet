@@ -1,22 +1,22 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import static dev.ikm.komet.kview.controls.EditCoordinateOptions.OPTION_ITEM.AUTHOR_FOR_CHANGE;
+import static dev.ikm.komet.kview.controls.EditCoordinateOptions.OPTION_ITEM.DEFAULT_MODULE;
+import static dev.ikm.komet.kview.controls.EditCoordinateOptions.OPTION_ITEM.DEFAULT_PATH;
+import static dev.ikm.komet.kview.controls.EditCoordinateOptions.OPTION_ITEM.DESTINATION_MODULE;
+import static dev.ikm.komet.kview.controls.EditCoordinateOptions.OPTION_ITEM.PROMOTION_PATH;
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
+import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.kview.controls.EditCoordinateOptions;
 import dev.ikm.komet.kview.controls.EditCoordinateOptionsPopup;
 import dev.ikm.komet.kview.controls.EditCoordinateTitledPane;
-import dev.ikm.komet.kview.controls.FilterOptions;
-import dev.ikm.komet.kview.controls.FilterOptionsUtils;
 import dev.ikm.komet.kview.controls.IconRegion;
 import dev.ikm.komet.kview.controls.SavedFiltersPopup;
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
-import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
-import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.Preferences;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.komet.rules.actions.axiom.ChooseConceptMenu;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -26,7 +26,9 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TitledPane;
@@ -37,6 +39,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -47,6 +51,7 @@ import java.util.*;
 import java.util.function.*;
 
 public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOptionsPopup> {
+    private static final Logger LOG = LoggerFactory.getLogger(EditCoordinateOptionsPopupSkin.class);
 
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.edit-coordinate-options");
     private static final String EDIT_COORDINATE_OPTIONS_KEY = "edit-coordinate-options";
@@ -78,12 +83,6 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
                     control.getProperties().put(DEFAULT_OPTIONS_KEY, isDefault);
                 }
                 revertButton.setDisable(isDefault);
-
-//                List<EditCoordinateOptions.LanguageFilterCoordinates> languageCoordinatesList = filterOptions.getLanguageCoordinatesList();
-//                boolean disable = languageCoordinatesList.stream()
-//                        .anyMatch(l -> l.getLanguage().selectedOptions().isEmpty()) ||
-//                        languageCoordinatesList.size() == FxGet.allowedLanguages().size();
-//                accordionBox.disableAddButton(disable);
 
             }
         }
@@ -176,6 +175,7 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
             }
         }));
 
+//        subscription = subscription.and()
         control.setOnShown(_ -> scrollPane.setVvalue(scrollPane.getVmin()));
     }
 
@@ -195,9 +195,6 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
         accordionBox.updateMainPanes(pane ->
             filterSubscription = filterSubscription.and(pane.optionProperty().subscribe((_, _) ->
                     updateCurrentFilterOptions())));
-//        accordionBox.updateLangPanes(pane ->
-//            filterSubscription = filterSubscription.and(pane.langCoordinatesProperty().subscribe((_, _) ->
-//                    updateCurrentFilterOptions())));
 
         // pass filter options to titledPane controls
         skipUpdateFilterOptions = true;
@@ -214,29 +211,6 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
                     pane.setOption(optionForItem.copy());
                 }
             });
-//        accordionBox.updateLangPanes(pane -> {
-//                int ordinal = pane.getOrdinal();
-//                if (ordinal < filterOptions.getLanguageCoordinatesList().size()) {
-//                    EditCoordinateOptions.LanguageFilterCoordinates languageCoordinates = filterOptions.getLanguageCoordinates(ordinal);
-//                    for (int i = 0; i < languageCoordinates.getOptions().size(); i++) {
-//                        EditCoordinateOptions.Option<EntityFacade> option = languageCoordinates.getOptions().get(i);
-//                        if (option.availableOptions().isEmpty()) {
-//                            option.availableOptions().addAll(pane.getLangCoordinates().getOptions().get(i).availableOptions());
-//                        }
-//                    }
-//                    // update excluded languages
-//                    List<EntityFacade> list = filterOptions.getLanguageCoordinatesList().stream()
-//                            .filter(l -> l.getOrdinal() != ordinal && !l.getLanguage().selectedOptions().isEmpty())
-//                            .map(l -> l.getLanguage().selectedOptions().getFirst())
-//                            .filter(Objects::nonNull)
-//                            .toList();
-//                    languageCoordinates.getLanguage().excludedOptions().clear();
-//                    languageCoordinates.getLanguage().excludedOptions().addAll(list);
-//                    // Will there be an edit coordinate option that is in override mode for language coordinates?
-//                    // If so, we need to handle it here like we do for main coordinate options above.
-//                    //pane.setLangCoordinates(languageCoordinates.copy());
-//                }
-//            });
         skipUpdateFilterOptions = false;
         updateCurrentFilterOptions();
         updating = false;
@@ -264,9 +238,6 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
 
     private void revertFilterOptions() {
         accordionBox.setExpandedPane(null);
-//        accordionBox.getLangAccordion().getPanes().removeIf(t -> t instanceof LangFilterTitledPane langFilterTitledPane
-//                && langFilterTitledPane.getOrdinal() > 0);
-//        accordionBox.disableAddButton(FxGet.allowedLanguages().size() < 2);
         updating = true;
         currentFilterOptionsProperty.set(null);
         setupFilter(null);
@@ -281,42 +252,24 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
         if (skipUpdateFilterOptions) {
             return;
         }
-        EditCoordinateOptions currentFilterOptions = new EditCoordinateOptions(getSkinnable().getFilterOptions().observableEditCoordinateForOptionsProperty());
+//        EditCoordinateOptions currentFilterOptions = new EditCoordinateOptions(getSkinnable().getFilterOptions().observableEditCoordinateForOptionsProperty());
+        EditCoordinateOptions currentFilterOptions = control.getFilterOptions();
         accordionBox.updateMainPanes(pane -> {
             EditCoordinateOptions.Option<T> optionForItem = pane.getOption();
             currentFilterOptions.setOptionForItem(pane.getOption().item(), optionForItem);
         });
-//        accordionBox.updateLangPanes(pane -> {
-//            EditCoordinateOptions.LanguageFilterCoordinates languageCoordinates = pane.getLangCoordinates();
-//            if (pane.getOrdinal() > 0) {
-//                currentFilterOptions.addLanguageCoordinates();
-//            }
-//
-//            currentFilterOptions.setLangCoordinates(pane.getOrdinal(), languageCoordinates.copy());
-//        });
+
         currentFilterOptionsProperty.set(currentFilterOptions);
     }
 
     private void createAccordionBoxPanes() {
-        EditCoordinateOptions filterOptions = new EditCoordinateOptions(getSkinnable().getFilterOptions().observableEditCoordinateForOptionsProperty());
+//        EditCoordinateOptions filterOptions = new EditCoordinateOptions(getSkinnable().getFilterOptions().observableEditCoordinateForOptionsProperty());
+        EditCoordinateOptions filterOptions = control.getFilterOptions();
 
         // Main Coordinates
         // authors: all descendants of Author concept
         EditCoordinateOptions.Option<ConceptFacade> authorForChangeOption = filterOptions.getMainCoordinates().getAuthorForChange();
         EditCoordinateTitledPane authorForChangeTitledPane = setupTitledPane(authorForChangeOption);
-
-//        EditCoordinateOptions.Option<String> typeOption = filterOptions.getMainCoordinates().getType();
-//        EditCoordinateTitledPane typeFilterTitledPane = setupTitledPane(typeOption);
-
-//        EditCoordinateOptions.Option<PatternFacade> navOption = filterOptions.getMainCoordinates().getNavigator();
-//        EditCoordinateTitledPane navigatorFilterTitledPane = setupTitledPane(navOption);
-
-        // status: all descendants of Status
-//        EditCoordinateOptions.Option<State> stateOption = filterOptions.getMainCoordinates().getStatus();
-//        EditCoordinateTitledPane statusFilterTitledPane = setupTitledPane(stateOption);
-
-//        EditCoordinateOptions.Option<String> timeOption = filterOptions.getMainCoordinates().getTime();
-//        EditCoordinateTitledPane timeFilterTitledPane = setupTitledPane(timeOption);
 
         // default module
         EditCoordinateOptions.Option<ConceptFacade> defaultModuleOption = filterOptions.getMainCoordinates().getDefaultModule();
@@ -334,72 +287,30 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
         EditCoordinateOptions.Option<ConceptFacade> promotionPathOption = filterOptions.getMainCoordinates().getPromotionPath();
         EditCoordinateTitledPane promotionPathTitledPane = setupTitledPane(promotionPathOption);
 
-//        EditCoordinateOptions.Option<String> kindOption = filterOptions.getMainCoordinates().getKindOf();
-//        EditCoordinateTitledPane kindOfFilterTitledPane = setupTitledPane(kindOption);
-//
-//        EditCoordinateOptions.Option<String> memberOption = filterOptions.getMainCoordinates().getMembership();
-//        EditCoordinateTitledPane membershipFilterTitledPane = setupTitledPane(memberOption);
+        accordionBox.getPanes().setAll(
+                authorForChangeTitledPane,
+                defaultModuleTitledPane,
+                destinationModuleTitledPane,
+                defaultPathTitledPane,
+                promotionPathTitledPane
+        );
 
-//        if (control.getFilterType() == EditCoordinateOptionsPopup.FILTER_TYPE.NAVIGATOR) {
-//            // header: All first children of root
-//            EditCoordinateOptions.Option<String> headerOption = filterOptions.getMainCoordinates().getHeader();
-//            EditCoordinateTitledPane headerFilterTitledPane = setupTitledPane(headerOption);
-//
-//            accordionBox.getPanes().setAll(
-//                    navigatorFilterTitledPane,
-//                    headerFilterTitledPane,
-//                    statusFilterTitledPane,
-//                    timeFilterTitledPane,
-//                    moduleFilterTitledPane,
-//                    pathFilterTitledPane,
-//                    kindOfFilterTitledPane,
-//                    membershipFilterTitledPane);
-//        } else if (control.getFilterType() == EditCoordinateOptionsPopup.FILTER_TYPE.SEARCH) {
-//            EditCoordinateOptions.Option<String> sortOption = filterOptions.getMainCoordinates().getSortBy();
-//            EditCoordinateTitledPane sortByFilterTitledPane = setupTitledPane(sortOption);
-//
-//            accordionBox.getPanes().setAll(
-//                    typeFilterTitledPane,
-//                    statusFilterTitledPane,
-//                    timeFilterTitledPane,
-//                    moduleFilterTitledPane,
-//                    pathFilterTitledPane,
-//                    kindOfFilterTitledPane,
-//                    membershipFilterTitledPane,
-//                    sortByFilterTitledPane);
-//        } else {
-            accordionBox.getPanes().setAll(
-//                    statusFilterTitledPane,
-//                    timeFilterTitledPane,
-                    authorForChangeTitledPane,
-                    defaultModuleTitledPane,
-                    destinationModuleTitledPane,
-                    defaultPathTitledPane,
-                    promotionPathTitledPane
-            );
-
-//        }
-
-        // Language Coordinates
-
-//        EditCoordinateOptions.LanguageFilterCoordinates languageCoordinates = filterOptions.getLanguageCoordinates(0);
-//        LangEditCoordinateTitledPane langFilterTitledPane = setupLangTitledPane(languageCoordinates);
-//        accordionBox.getLangAccordion().getPanes().add(langFilterTitledPane);
     }
 
     private void setupDefaultFilterOptions() {
         if (defaultFilterOptions == null) {
             // create default filter options
-            defaultFilterOptions = new EditCoordinateOptions(getSkinnable().getFilterOptions().observableEditCoordinateForOptionsProperty());
+            defaultFilterOptions = control.getFilterOptions();
+
             // once we have navigator, update pending options with av/sel default options
 //            setAvailableOptionsFromNavigator(defaultFilterOptions, navigator);
             // path: all descendants of Path
-            ViewCalculator viewCalculator = ViewCoordinateHelper.createViewCalculatorLatestByTime(getSkinnable().getViewProperties());
-            Set<ConceptEntity> defaultPaths = DataModelHelper.fetchDescendentsOfConcept(viewCalculator, TinkarTerm.PATH);
+//            ViewCalculator viewCalculator = ViewCoordinateHelper.createViewCalculatorLatestByTime(getSkinnable().getViewProperties());
+//            Set<ConceptEntity> defaultPaths = DataModelHelper.fetchDescendentsOfConcept(viewCalculator, TinkarTerm.PATH);
 //          List<EntityFacade> descendentsList = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewCalculator)FilterOptionsUtils.getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath());
 //        List<EntityFacade> descendentsList = FxGet.pathCoordinates(navigator.getViewCalculator()).values()
 //                .stream().map(v -> (EntityFacade) v.pathConcept()).toList();
-            setAvailableOptions(defaultFilterOptions.getMainCoordinates().getDefaultPath(), defaultPaths.stream().map(ConceptFacade.class::cast).toList());
+//            setAvailableOptions(defaultFilterOptions.getMainCoordinates().getDefaultPath(), defaultPaths.stream().map(ConceptFacade.class::cast).toList());
 
         }
         // then pass the inherited options, to override av/sel default options where set
@@ -420,62 +331,85 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
     private void setDefaultOptions(EditCoordinateOptions filterOptions) {
         filterOptions.getMainCoordinates().getOptions().forEach(sourceOption ->
                 setInheritedOptions(sourceOption, defaultFilterOptions.getOptionForItem(sourceOption.item())));
-//        filterOptions.getLanguageCoordinates(0).getOptions().forEach(sourceOption ->
-//                setInheritedOptions(sourceOption, defaultFilterOptions.getLangOptionForItem(0, sourceOption.item())));
     }
 
-    private void setAvailableOptionsFromNavigator(EditCoordinateOptions options, Navigator navigator) {
-        if (navigator == null || navigator.getRootNids() == null || navigator.getRootNids().length == 0) {
-            return;
-        }
-        int rootNid = navigator.getRootNids()[0];
-
-//        if (control.getFilterType() == EditCoordinateOptionsPopup.FILTER_TYPE.NAVIGATOR) {
-//            // header: All first children of root
-//            List<String> headerList = navigator.getChildEdges(rootNid).stream()
-//                    .map(edge -> EditCoordinateOptionsUtils.getDescriptionTextOrNid(navigator.getViewCalculator(), edge.destinationNid()))
-//                    .toList();
-//            setAvailableOptions(options.getMainCoordinates().getHeader(), headerList);
-//        }
-
-        // module: all descendants of Module
-        // TODO: modules: all descendants of Module
-//        List<EntityFacade> descendentsList = FilterOptionsUtils.getDescendentsList(navigator, rootNid, MODULE.getPath());
-//        setAvailableOptions(options.getMainCoordinates().getModule(), descendentsList.stream().map(ConceptFacade.class::cast).toList());
-
-        // path: all descendants of Path
-        List<EntityFacade> descendentsList = FilterOptionsUtils.getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.PATH.getPath());
-//        List<EntityFacade> descendentsList = FxGet.pathCoordinates(navigator.getViewCalculator()).values()
-//                .stream().map(v -> (EntityFacade) v.pathConcept()).toList();
-        setAvailableOptions(options.getMainCoordinates().getDefaultPath(), descendentsList.stream().map(ConceptFacade.class::cast).toList());
-
-        // TODO: language: all descendants of Model concept->Tinkar Model concept->Language
-//        List<EntityFacade> descendentsList = FilterOptionsUtils.getDescendentsList(navigator, rootNid, FilterOptions.OPTION_ITEM.LANGUAGE.getPath());
-//        for (int i = 0; i < options.getLanguageCoordinatesList().size(); i++) {
-//            setAvailableOptions(options.getLanguageCoordinates(i).getLanguage(), descendentsList.stream().map(ConceptFacade.class::cast).toList()));
-//        }
-    }
-
+    /**
+     * Creates a titled pane for the given option. A context menu allows user to search for a concept to add as available options.
+     * @param option The option to create a titled pane for.
+     * @return
+     */
     private EditCoordinateTitledPane setupTitledPane(EditCoordinateOptions.Option option) {
-//        EditCoordinateTitledPane titledPane = option.item() == EditCoordinateOptions.OPTION_ITEM.TIME ?
-//                new DateFilterTitledPane() : new EditCoordinateTitledPane();
         EditCoordinateTitledPane titledPane = new EditCoordinateTitledPane();
-//        titledPane.navigatorProperty().bind(control.navigatorProperty());
+        MenuItem chooseConceptMenuItem = new ChooseConceptMenu(
+                "Find " + option.title(),
+                control.getViewProperties().calculator(),
+                titledPane, control.getViewProperties(), nidTextRecord -> {
+                SearchPanelController.NidTextRecord nidTextRecord1 = (SearchPanelController.NidTextRecord) nidTextRecord;
+                LOG.info("══════════════════════════════════════════════════════════════════════════════════════════════════");
+                LOG.info("EditCoordinates - {} : Adding {} to available options. nid: {}", option.title(), nidTextRecord1.text(), nidTextRecord1.nid());
+                LOG.info("══════════════════════════════════════════════════════════════════════════════════════════════════");
+                try {
+                    ObservableEntityHandle
+                            .get(nidTextRecord1.nid())
+                            .asConcept()
+                            .ifPresent( observableConcept -> {
+                                EditCoordinateOptions.Option optionForItem = control.getFilterOptions().getOptionForItem(option.item());
+                                optionForItem.availableOptions().add(observableConcept.entity());
+                                optionForItem.selectedOptions().clear();
+                                optionForItem.selectedOptions().add(observableConcept.entity());
+
+                                option.availableOptions().add(observableConcept.entity());
+//                                option.selectedOptions().clear();
+//                                option.selectedOptions().add(observableConcept.entity());
+
+                            });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+        });
+        ContextMenu contextMenu = new ContextMenu(chooseConceptMenuItem);
+        titledPane.setContextMenu(contextMenu);
+
         titledPane.setTitle(option.title());
         titledPane.setOption(option);
         titledPane.setExpanded(false);
+        titledPane.expandedProperty().addListener((observable, _, expanded) -> {
+            LOG.info("{} expanded: {}", option.title(), expanded);
+            if (!expanded) {
+                // not expanded is accepting the selected option.
+                if (titledPane.getOption().selectedOptions().size() > 0) {
+                    LOG.info("Selected option: {}", titledPane.getOption().selectedOptions().get(0));
+                    updateMainEditCoordinateRecord();
+                }
+            }
+        });
         return titledPane;
     }
 
-//    private LangEditCoordinateTitledPane setupLangTitledPane(EditCoordinateOptions.LanguageFilterCoordinates languageCoordinates) {
-//        LangEditCoordinateTitledPane titledPane = new LangEditCoordinateTitledPane();
-////        titledPane.navigatorProperty().bind(control.navigatorProperty());
-//        titledPane.setOrdinal(languageCoordinates.getOrdinal());
-//        titledPane.setTitle(resources.getString("language.coordinates.ordinal" + (languageCoordinates.getOrdinal() + 1)));
-//        titledPane.setLangCoordinates(languageCoordinates);
-//        titledPane.setExpanded(false);
-//        return titledPane;
-//    }
+    private void updateMainEditCoordinateRecord() {
+        List<EditCoordinateOptions.Option> options = new ArrayList<>(control.getFilterOptions().getMainCoordinates().getOptions());
+        options.forEach(option -> {
+            boolean selected = !option.selectedOptions().isEmpty();
+            Object item = selected ? option.selectedOptions().getFirst() : null;
+            LOG.info("Updating main edit coordinate record for option: {} selected: {} ", option.title(), item);
+            ObservableEditCoordinate editCoordinate = control.getViewProperties().parentView().editCoordinate();
+            EditCoordinateOptions.OPTION_ITEM itemType = option.item();
+            if (selected) {
+                if (itemType == AUTHOR_FOR_CHANGE) {
+                    editCoordinate.authorForChangesProperty().setValue((ConceptFacade) item);
+                } else if (itemType == DEFAULT_MODULE) {
+                    editCoordinate.defaultModuleProperty().setValue((ConceptFacade) item);
+                } else if (itemType == DESTINATION_MODULE) {
+                    editCoordinate.destinationModuleProperty().setValue((ConceptFacade) item);
+                } else if (itemType == DEFAULT_PATH) {
+                    editCoordinate.defaultPathProperty().setValue((ConceptFacade) item);
+                } else if (itemType == PROMOTION_PATH) {
+                    editCoordinate.promotionPathProperty().setValue((ConceptFacade) item);
+                }
+            }
+        });
+        // TODO output all selected options to console
+    }
 
     private <T> void setAvailableOptions(EditCoordinateOptions.Option<T> option, List<? extends T> options) {
         option.availableOptions().clear();
@@ -549,87 +483,14 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
     class AccordionBox extends VBox {
 
         private final ObservableList<EditCoordinateTitledPane> panes = FXCollections.observableArrayList();
-//        private final Accordion langAccordion;
         private TitledPane expandedPane = null;
         private final Map<TitledPane, ChangeListener<Boolean>> listeners = new HashMap<>();
-//        private final StackPane addButton;
 
         public AccordionBox() {
             getStyleClass().add("accordion");
 
-//            langAccordion = new Accordion();
-//            langAccordion.getPanes().addListener((ListChangeListener<TitledPane>) c -> {
-//                while (c.next()) {
-//                    if (c.wasRemoved()) {
-//                        c.getRemoved().stream()
-//                                .filter(LangFilterTitledPane.class::isInstance)
-//                                .map(LangFilterTitledPane.class::cast)
-//                                .map(LangFilterTitledPane::getOrdinal)
-//                                .findFirst()
-//                                .ifPresent(i -> {
-//                                    updateLangPanes(pane -> {
-//                                        if (pane.getOrdinal() > i) {
-//                                            pane.setOrdinal(pane.getOrdinal() - 1);
-//                                            pane.setTitle(resources.getString("language.coordinates.ordinal" + (pane.getOrdinal() + 1)));
-//                                        }
-//                                    });
-//                                });
-//                        updateCurrentFilterOptions();
-//                        Platform.runLater(() -> {
-//                            langAccordion.requestLayout();
-//                            scrollPane.requestLayout();
-//                            scrollPane.setVvalue(scrollPane.getVmax());
-//                        });
-//                    }
-//                }
-//            });
-
-//            Label titleLabel = new Label(resources.getString("language.title"));
-//            titleLabel.getStyleClass().add("title-label");
-//
-//            Region spacer = new Region();
-//            HBox.setHgrow(spacer, Priority.ALWAYS);
-//
-//            addButton = new StackPane(new IconRegion("icon", "add"));
-//            addButton.getStyleClass().add("add-pane");
-//            addButton.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
-//                e.consume();
-//                langAccordion.setExpandedPane(null);
-//                addButton.setDisable(true);
-//                List<EntityFacade> list = currentFilterOptionsProperty.get().getLanguageCoordinatesList().stream()
-//                        .map(l -> l.getLanguage().selectedOptions().getFirst())
-//                        .filter(Objects::nonNull)
-//                        .toList();
-//                EditCoordinateOptions.LanguageFilterCoordinates languageCoordinates = currentFilterOptionsProperty.get().addLanguageCoordinates();
-//                languageCoordinates.getLanguage().excludedOptions().clear();
-//                languageCoordinates.getLanguage().excludedOptions().addAll(list);
-//                languageCoordinates.getLanguage().selectedOptions().clear();
-//                languageCoordinates.getOptions().forEach(sourceOption ->
-//                        setInheritedOptions(sourceOption, defaultFilterOptions.getLangOptionForItem(0, sourceOption.item())));
-//                LangEditCoordinateTitledPane langFilterTitledPane = setupLangTitledPane(languageCoordinates);
-//                langAccordion.getPanes().add(langFilterTitledPane);
-//                // add new pane to subscription
-//                filterSubscription = filterSubscription.and(langFilterTitledPane.langCoordinatesProperty().subscribe(_ ->
-//                        updateCurrentFilterOptions()));
-//            });
-//
-//            HBox titleBox = new HBox(titleLabel, spacer, addButton);
-//            titleBox.getStyleClass().add("title-box");
-//
-//            TitledPane languageTitledPane = new TitledPane();
-//            languageTitledPane.getStyleClass().add("lang-titled-pane");
-//            languageTitledPane.setGraphic(titleBox);
-//            languageTitledPane.setContent(langAccordion);
-//            languageTitledPane.heightProperty().subscribe(_ -> {
-//                if (languageTitledPane.isExpanded() && scrollPane != null) {
-//                    scrollPane.setVvalue(scrollPane.getVmax());
-//                }
-//            });
-
-//            getChildren().add(languageTitledPane);
             panes.addListener((ListChangeListener<EditCoordinateTitledPane>) c -> {
                 getChildren().setAll(panes);
-//                getChildren().add(languageTitledPane);
                 while (c.next()) {
                     if (c.wasRemoved()) {
                         removeTitledPaneListeners(c.getRemoved());
@@ -657,24 +518,11 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
             return panes;
         }
 
-//        public Accordion getLangAccordion() {
-//            return langAccordion;
-//        }
 
-//        public void disableAddButton(boolean disable) {
-//            addButton.setDisable(disable);
-//        }
 
         public void updateMainPanes(Consumer<EditCoordinateTitledPane> onAccept) {
             getPanes().forEach(onAccept);
         }
-
-//        public void updateLangPanes(Consumer<LangEditCoordinateTitledPane> onAccept) {
-//            getLangAccordion().getPanes().stream()
-//                    .filter(LangEditCoordinateTitledPane.class::isInstance)
-//                    .map(LangEditCoordinateTitledPane.class::cast)
-//                    .forEach(onAccept);
-//        }
 
         private void initTitledPaneListeners(List<? extends EditCoordinateTitledPane> list) {
             for (final EditCoordinateTitledPane tp: list) {

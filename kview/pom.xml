@@ -116,6 +116,10 @@
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>entity</artifactId>
         </dependency>
+        <dependency>
+            <groupId>dev.ikm.komet</groupId>
+            <artifactId>rules</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

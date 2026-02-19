@@ -35,10 +35,11 @@ public class EditCoordinateOptionsPopup extends PopupControl {
         viewPropertiesReadOnlyObjectWrapperProperty = new ReadOnlyObjectWrapper<>(this, "viewProperties", viewProperties);
 //        this.parentViewCoordinate = viewProperties.parentView();
         filterOptionsUtils = new EditCoordinateOptionsUtils();
-        inheritedFilterOptionsProperty = new ReadOnlyObjectWrapper<>(this, "inheritedFilterOptions", new EditCoordinateOptions(viewProperties.parentView().editCoordinate()));
+        EditCoordinateOptions masterEditCoordinate = new EditCoordinateOptions(viewProperties.parentView().editCoordinate());
+        inheritedFilterOptionsProperty = new ReadOnlyObjectWrapper<>(this, "inheritedFilterOptions", masterEditCoordinate);
 
         // Set initial filter options to match the parent view's edit coordinate
-        setFilterOptions(new EditCoordinateOptions(viewProperties.parentView().editCoordinate()));
+        setFilterOptions(masterEditCoordinate);
         setAutoHide(true);
         getStyleClass().add("filter-options-popup");
         setAnchorLocation(AnchorLocation.WINDOW_TOP_LEFT);
@@ -85,18 +86,6 @@ public class EditCoordinateOptionsPopup extends PopupControl {
     public final void setFilterOptions(EditCoordinateOptions value) {
         filterOptionsProperty.set(value);
     }
-
-//    // navigatorProperty
-//    private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator");
-//    public final ObjectProperty<Navigator> navigatorProperty() {
-//       return navigatorProperty;
-//    }
-//    public final Navigator getNavigator() {
-//       return navigatorProperty.get();
-//    }
-//    public final void setNavigator(Navigator value) {
-//        navigatorProperty.set(value);
-//    }
 
     // containerProperty
     private final ObjectProperty<Node> containerProperty = new SimpleObjectProperty<>(this, "container");
