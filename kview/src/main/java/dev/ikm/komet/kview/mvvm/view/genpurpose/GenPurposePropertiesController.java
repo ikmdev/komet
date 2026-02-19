@@ -181,7 +181,7 @@ public class GenPurposePropertiesController {
 
     private void setupShowingPanelHandlers() {
         Config config = new Config(this.getClass().getResource("genpurpose-edit-fields.fxml"))
-            .addNamedViewModel(new NamedVm("genEditingViewModel", genPurposeViewModel));
+            .addNamedViewModel(new NamedVm("genPurposeViewModel", genPurposeViewModel));
 
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
 
