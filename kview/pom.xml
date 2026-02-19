@@ -120,6 +120,10 @@
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>events</artifactId>
         </dependency>
+        <dependency>
+            <groupId>dev.ikm.komet</groupId>
+            <artifactId>rules</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
