@@ -24,13 +24,15 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.*;
 
 public class EditCoordinateTitledPaneSkin extends TitledPaneSkin {
-
+    private static final Logger LOG = LoggerFactory.getLogger(EditCoordinateTitledPaneSkin.class);
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.edit-coordinate-options");
     private static final PseudoClass MODIFIED_TITLED_PANE = PseudoClass.getPseudoClass("modified");
     private static final PseudoClass EXCLUDING_BUTTON_TITLED_PANE = PseudoClass.getPseudoClass("excluding");
@@ -116,7 +118,9 @@ public class EditCoordinateTitledPaneSkin extends TitledPaneSkin {
     }
 
     private void setupTitledPane() {
+        LOG.debug(">>>>>> C) Setting up titled pane - id: {} control.getOption(): {} ", System.identityHashCode(control.getOption()), control.getOption());
         if (subscription != null) {
+            LOG.debug(">>>>>>>> C.1) id: {} unsubscribing: {} ", System.identityHashCode(control.getOption()), control.getOption());
             subscription.unsubscribe();
         }
         subscription = Subscription.EMPTY;
@@ -128,10 +132,21 @@ public class EditCoordinateTitledPaneSkin extends TitledPaneSkin {
         boolean multiSelectionAllowed = option.isMultiSelectionAllowed();
         control.pseudoClassStateChanged(SINGLE_SELECT_OPTION, !multiSelectionAllowed);
 
+        // IMPORTANT: The
+        LOG.debug(">>>>>>>> C.2) before id: {} copy option: {} ", System.identityHashCode(option), option);
         EditCoordinateOptions.Option currentOption = option.copy();
-//        // whenever the navigator changes, update the option text
-//        subscription = subscription.and(control.navigatorProperty().subscribe(_ ->
-//                selectedOption.setText(getOptionText(currentOption))));
+        LOG.debug(">>>>>>>> C.3) after id: {} copy currentOption: {} ", System.identityHashCode(currentOption), currentOption);
+//        // whenever the disclosure is collapsed, update the option text
+//        subscription = subscription.and(control.expandedProperty().subscribe(expanded -> {
+//            if (!expanded) {
+//                selectedOption.setText(getOptionText(currentOption));
+//            }
+////            updateModifiedState(currentOption);
+////            if (!currentOption.selectedOptions().isEmpty()) {
+//////                control.setOption(currentOption.copy());
+////                selectedOption.setText(getOptionText(currentOption));
+////            }
+//        }));
 
         // add toggles only once
         if (contentBox.getChildren().size() == 1) {
@@ -329,9 +344,16 @@ public class EditCoordinateTitledPaneSkin extends TitledPaneSkin {
         subscription = subscription.and(control.optionProperty().subscribe((_, _) -> setupTitledPane()));
         subscription = subscription.and(control.expandedProperty().subscribe((_, expanded) -> {
             if (!expanded) {
+                LOG.debug(">>>>>> B) Titled Pane disclosure closed - id: {} currentOption: {} ", System.identityHashCode(currentOption), currentOption);
                 updateModifiedState(currentOption);
-                control.setOption(currentOption.copy());
+                LOG.debug(">>>>>>>> B.1) control's options -   id: {} control.getOption(): {} ", System.identityHashCode(control.getOption()), control.getOption());
+                EditCoordinateOptions.Option copyOption = currentOption.copy();
+                LOG.debug(">>>>>>>> B.2a) control's options - id: {} control.getOption() (copy): {} ", System.identityHashCode(copyOption), copyOption);
+                control.setOption(copyOption);
+                LOG.debug(">>>>>>>> B.2b) control's options - id: {} control.getOption()(after setting copy): {} ", System.identityHashCode(control.getOption()), control.getOption());
+                String text = getOptionText(currentOption);
                 selectedOption.setText(getOptionText(currentOption));
+                LOG.debug(">>>>>>>> B.3) selectedOption.setText(getOptionText(currentOption)): {} ", text);
             }
         }));
         updateModifiedState(currentOption);
