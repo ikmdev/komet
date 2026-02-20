@@ -76,9 +76,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.prefs.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.prefs.BackingStoreException;
 
 /**
  * Main application class for the Komet application, extending JavaFX {@link Application}.
@@ -281,10 +283,6 @@ public class App extends Application  {
 
         try {
             App.primaryStage = stage;
-            Thread.currentThread().setUncaughtExceptionHandler((thread, exception) -> {
-                AlertStreams.getRoot().dispatch(AlertObject.makeError(exception));
-                LOG.error("Uncaught exception in thread {}", thread.getName(), exception);
-            });
             Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> {
                 AlertStreams.getRoot().dispatch(AlertObject.makeError(exception));
                 LOG.error("Uncaught exception in thread {}", thread.getName(), exception);
