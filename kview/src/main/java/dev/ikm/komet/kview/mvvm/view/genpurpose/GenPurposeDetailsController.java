@@ -16,10 +16,10 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.NO_SELECTION_MADE_PANEL;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
+import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_PANEL;
+import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL;
+import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -47,7 +47,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
-import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
@@ -361,7 +361,7 @@ public class GenPurposeDetailsController {
 
         // open the panel, allow the state machine to determine which panel to show
         // listen for open and close events
-        Subscriber<PropertyPanelEvent> propertiesEventSubscriber = (evt) -> {
+        Subscriber<KLPropertyPanelEvent> propertiesEventSubscriber = (evt) -> {
             if (evt.getEventType() == CLOSE_PANEL) {
                 LOG.info("propBumpOutListener - Close Properties bumpout toggle = " + propertiesToggleButton.isSelected());
                 propertiesToggleButton.setSelected(false);
@@ -381,7 +381,7 @@ public class GenPurposeDetailsController {
             }
         };
 //        subscriberList.add(propertiesEventSubscriber);
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), PropertyPanelEvent.class, propertiesEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), KLPropertyPanelEvent.class, propertiesEventSubscriber);
     }
 
     private void onStampConfirmedOrSubmitted(boolean isSubmittedOrConfirmed) {
@@ -622,15 +622,13 @@ public class GenPurposeDetailsController {
     }
 
     private void showAndEditSemanticFieldsPanel(EditorSectionModel editorSectionModel, ActionEvent actionEvent) {
-        EntityFacade semantic = genPurposeViewModel.getPropertyValue(SEMANTIC);
-
         // notify bump out to display edit fields in bump out area.
         EvtBusFactory.getDefaultEvtBus()
                 .publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new PropertyPanelEvent(actionEvent.getSource(),
-                                SHOW_EDIT_SEMANTIC_FIELDS, semantic));
+                        new KLPropertyPanelEvent(actionEvent.getSource(),
+                                SHOW_EDIT_SEMANTIC_FIELDS, editorSectionModel));
         // open properties bump out.
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new PropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
 
         // Set all controls to edit mode
         for (Node node : controls) {
