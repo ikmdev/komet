@@ -31,7 +31,6 @@ import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatest
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
@@ -72,7 +71,6 @@ import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
@@ -82,7 +80,6 @@ import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.Separator;
@@ -116,7 +113,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -184,7 +180,7 @@ public class GenPurposeDetailsController {
 
     private final HashMap<EditorSectionModel, GridPane> sectionModelToTitledPaneGridPane = new HashMap<>();
 
-    private final HashMap<EditorSectionModel, ComboBox> sectionModelToTitledPaneComboBox = new HashMap<>();
+    private final HashMap<EditorSectionModel, SectionTitledPane<EntityFacade>> sectionModelToTitledPane = new HashMap<>();
 
     private EditorWindowModel editorWindowModel;
 
@@ -548,7 +544,7 @@ public class GenPurposeDetailsController {
     }
 
     private TitledPane createTitledPane(EditorSectionModel sectionModel) {
-        SectionTitledPane titledPane = new SectionTitledPane();
+        SectionTitledPane<EntityFacade> titledPane = new SectionTitledPane<>();
         titledPane.textProperty().bind(sectionModel.nameProperty());
 
         titledPane.setMaxHeight(Double.MAX_VALUE);
@@ -557,10 +553,6 @@ public class GenPurposeDetailsController {
         titledPane.setExpanded(!sectionModel.isStartCollapsed());
 
         titledPane.getStyleClass().add("pattern-titled-pane");
-
-        BorderPane topContainer = new BorderPane();
-
-        VBox titledPaneMainContainer = new VBox();
 
         GridPane titledPaneGridPane = new GridPane();
 
@@ -575,50 +567,22 @@ public class GenPurposeDetailsController {
             titledPaneGridPane.getColumnConstraints().setAll(columns);
         });
 
-        titledPaneMainContainer.getChildren().addAll(
-            topContainer,
-            titledPaneGridPane
-        );
+        if (sectionModel.getReferenceComponent() != null) {
+            titledPane.getReferenceComponents().addAll(getSemanticsOfPattern(sectionModel.getReferenceComponent()));
+        }
+        Function<Integer, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
+        titledPane.setReferenceComponentCellFactory(_ -> new SectionSemanticsComboBoxCell(fetchDescriptionFunction, viewProperties));
+        titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(fetchDescriptionFunction, viewProperties));
 
-        ComboBox<EntityFacade> semanticsComboBox = createSectionSemanticsComboBox(sectionModel);
-
-        topContainer.setRight(semanticsComboBox);
-
-        titledPane.setContent(titledPaneMainContainer);
+        titledPane.setContent(titledPaneGridPane);
 
         titledPane.setOnEditAction(actionEvent -> showAndEditSemanticFieldsPanel(sectionModel, actionEvent));
 
         sectionModelToTitledPaneGridPane.put(sectionModel, titledPaneGridPane);
-        sectionModelToTitledPaneComboBox.put(sectionModel, semanticsComboBox);
+
+        sectionModelToTitledPane.put(sectionModel, titledPane);
 
         return titledPane;
-    }
-
-    private ComboBox<EntityFacade> createSectionSemanticsComboBox(EditorSectionModel sectionModel) {
-        List<EntityFacade> referenceComponents = getReferenceComponentsToUse(sectionModel.getReferenceComponent());
-
-        ComboBox<EntityFacade> semanticsComboBox = new ComboBox<>();
-        semanticsComboBox.getStyleClass().add("section-combo-box");
-
-        semanticsComboBox.getItems().addAll(referenceComponents);
-
-        semanticsComboBox.setVisible(referenceComponents.size() > 1);
-        semanticsComboBox.setManaged(semanticsComboBox.isVisible());
-
-
-        Function<Integer, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
-
-        semanticsComboBox.setCellFactory(_ -> new SectionSemanticsComboBoxCell(fetchDescriptionFunction, viewProperties));
-        semanticsComboBox.setButtonCell(new SectionSemanticsComboBoxCell(fetchDescriptionFunction, viewProperties));
-
-        return semanticsComboBox;
-    }
-
-    private String retriveDisplayName(PatternFacade patternFacade, ViewProperties viewProperties) {
-        ViewCalculator viewCalculator = viewProperties.calculator();
-        Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
-        Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
-        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
     }
 
     private void showAndEditSemanticFieldsPanel(EditorSectionModel editorSectionModel, ActionEvent actionEvent) {
@@ -688,12 +652,11 @@ public class GenPurposeDetailsController {
 
         doCreateSemanticViews(editorPatternModel, semanticsContainer, refComponents, controlItems);
 
-        ComboBox<EntityFacade> semanticsComboBox = sectionModelToTitledPaneComboBox.get(parentSection);
-
-        semanticsComboBox.setValue(refComponents.getFirst());
-        semanticsComboBox.valueProperty().subscribe(() -> {
+        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(parentSection);
+        titledPane.setSelectedReferenceComponent(refComponents.getFirst());
+        titledPane.selectedReferenceComponentProperty().subscribe(() -> {
             semanticsContainer.getChildren().clear();
-            doCreateSemanticViews(editorPatternModel, semanticsContainer, List.of(semanticsComboBox.getValue()), controlItems);
+            doCreateSemanticViews(editorPatternModel, semanticsContainer, List.of(titledPane.getSelectedReferenceComponent()), controlItems);
         });
 
         controls.addAll(controlItems);
@@ -781,6 +744,20 @@ public class GenPurposeDetailsController {
         } else {
             refComponents.add(windowRefComponent);
         }
+
+        return refComponents;
+    }
+    
+    private List<EntityFacade> getSemanticsOfPattern(EditorPatternModel editorPatternModel) {
+        EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
+        
+        List<EntityFacade> refComponents = new ArrayList<>();
+
+        EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), editorPatternModel.getNid(),
+                (SemanticEntity<SemanticEntityVersion> semantic) -> {
+                    refComponents.add(semantic);
+                }
+        );
 
         return refComponents;
     }
