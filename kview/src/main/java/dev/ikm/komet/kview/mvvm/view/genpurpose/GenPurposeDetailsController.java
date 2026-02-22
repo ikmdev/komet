@@ -113,86 +113,65 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class GenPurposeDetailsController {
 
     private static final Logger LOG = LoggerFactory.getLogger(GenPurposeDetailsController.class);
+    private final HashMap<EditorSectionModel, GridPane> sectionModelToTitledPaneGridPane = new HashMap<>();
+    private final HashMap<EditorSectionModel, SectionTitledPane<EntityFacade>> sectionModelToTitledPane = new HashMap<>();
+    private final Tooltip publishTooltip = new Tooltip();
+    private final List<KLReadOnlyBaseControl> controls = new ArrayList<>();
 
+    @FXML
+    StampViewControl stampViewControl;
     @FXML
     private VBox mainContent;
-
     @FXML
     private BorderPane detailsOuterBorderPane;
-
     @FXML
     private ToggleButton propertiesToggleButton;
-
     @FXML
     private MenuButton coordinatesMenuButton;
-
     /**
      * popup for the filter coordinates menu, used with coordinatesMenuButton. An instance of FilterOptionsPopup.
      */
     private FilterOptionsPopup filterOptionsPopup;
-
     /**
      * Used slide out the properties view
      */
     @FXML
     private VerticallyFilledPane propertiesSlideoutTrayPane;
-
     @FXML
     private ImageView identiconImageView;
-
     @FXML
     private Label conceptTitleText;
-
     @FXML
     private Tooltip conceptNameTooltip;
-
     @FXML
     private PublicIDListControl identifierControl;
-
-    @FXML
-    StampViewControl stampViewControl;
-
     @FXML
     private Button savePatternButton;
-
     @FXML
     private StackPane publishStackPane;
-
     @FXML
     private HBox tabHeader;
-
     @FXML
     private HBox conceptHeaderControlToolBarHbox;
-
     @FXML
     private Text windowTitleLabel;
-
     private BorderPane propertiesBorderPane;
-
     private GenPurposePropertiesController propertiesController;
-
-    private final HashMap<EditorSectionModel, GridPane> sectionModelToTitledPaneGridPane = new HashMap<>();
-
-    private final HashMap<EditorSectionModel, SectionTitledPane<EntityFacade>> sectionModelToTitledPane = new HashMap<>();
-
     private EditorWindowModel editorWindowModel;
-
     private boolean isUpdatingStampSelection = false;
-
-    private final Tooltip publishTooltip = new Tooltip();
     private ViewProperties viewProperties;
-
     @InjectViewModel
     private GenPurposeViewModel genPurposeViewModel;
-
-    private final List<KLReadOnlyBaseControl> controls = new ArrayList<>();
+    private Consumer<GenPurposeDetailsController> onCloseConceptWindow;
 
     @FXML
     private void initialize() {
@@ -394,12 +373,9 @@ public class GenPurposeDetailsController {
         stampViewControl.setDisable(true);
     }
 
-
     public ViewProperties getViewProperties() {
         return viewProperties;
     }
-
-    private Consumer<GenPurposeDetailsController> onCloseConceptWindow;
 
     public void setOnCloseConceptWindow(Consumer<GenPurposeDetailsController> onClose) {
         this.onCloseConceptWindow = onClose;
@@ -586,11 +562,35 @@ public class GenPurposeDetailsController {
     }
 
     private void showAndEditSemanticFieldsPanel(EditorSectionModel editorSectionModel, ActionEvent actionEvent) {
+        // Get the entity (Semantic) to edit
+        EntityFacade refComponent;
+
+        if (editorSectionModel.getReferenceComponent() == null) {
+            refComponent = genPurposeViewModel.getPropertyValue(GenPurposeViewModel.REF_COMPONENT);
+        } else {
+            SectionTitledPane<EntityFacade> sectionTitledPane = sectionModelToTitledPane.get(editorSectionModel);
+            refComponent = sectionTitledPane.getSelectedReferenceComponent();
+        }
+
+        // -- This boolean is used as a hacky way to only do the foreach once
+        AtomicBoolean semanticAdded = new AtomicBoolean(false);
+
+        AtomicReference<SemanticEntity<SemanticEntityVersion>> semanticEntity = new AtomicReference<>();
+
+        EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
+                editorSectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
+                    if (semanticAdded.get()) {
+                        return;
+                    }
+                    semanticEntity.set(semantic);
+                    semanticAdded.set(true);
+                });
+
         // notify bump out to display edit fields in bump out area.
         EvtBusFactory.getDefaultEvtBus()
                 .publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
                         new KLPropertyPanelEvent(actionEvent.getSource(),
-                                SHOW_EDIT_SEMANTIC_FIELDS, editorSectionModel));
+                                SHOW_EDIT_SEMANTIC_FIELDS, semanticEntity.get()));
         // open properties bump out.
         EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
 
