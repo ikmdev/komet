@@ -58,8 +58,8 @@ public class SectionSemanticsComboBoxCell extends ListCell<EntityFacade> {
             currentEntityHandle.ifPresent(entity -> {
                 Image identicon = Identicon.generateIdenticonImage(entity.publicId());
                 ImageView imageView = new ImageView(identicon);
-                imageView.setFitWidth(16);
-                imageView.setFitHeight(16);
+                imageView.setFitWidth(12);
+                imageView.setFitHeight(12);
                 setGraphic(imageView);
             });
         } else {

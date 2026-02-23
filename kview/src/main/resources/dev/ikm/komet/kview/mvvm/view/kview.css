@@ -6393,16 +6393,32 @@ Styling a context menu for kview ui/ux controls
 
 /* Section semantics combobox */
 .gen-purpose-window .titled-pane .section-combo-box {
-    -fx-pref-width: 350px;
+    -fx-text-fill: -Grey-11;
+    -fx-background-color: -Grey-1;
+    -fx-border-color: -Grey-5;
+    -fx-border-radius: 4;
 
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13px;
+    -fx-font-style: normal;
+    -fx-font-weight: 500;
+
+    width: 300;
+    -fx-min-width: width;
+    -fx-pref-width: width;
+    -fx-max-width: width;
 }
+
+.gen-purpose-window .titled-pane .section-combo-box:hover {
+    -fx-background-color: -Grey-2;
+}
+
 
 .gen-purpose-window .titled-pane .section-combo-box > .list-cell {
     -fx-font-weight: 500;
     -fx-text-fill: #555;
-    -fx-padding: 0px 0.666667em 2px 0.666667em; /* 4 8 4 8 */
+    -fx-padding: 2px 0.666667em 2px 0.666667em; /* 4 8 4 8 */
+    -fx-graphic-text-gap: 6px;
 }
 
 .gen-purpose-window .titled-pane .section-combo-box > .arrow-button > .arrow {

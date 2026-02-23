@@ -16,6 +16,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 
 public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
+    private static final int SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON = 4;
+
     private EditButton editButton;
     private StackPane titleRegion;
 
@@ -67,6 +69,9 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
     protected void layoutChildren(double x, double y, double width, double height) {
         super.layoutChildren(x, y, width, height);
 
+        final double titleRegionX = titleRegion.getLayoutX();
+        final double titleRegionWidth = titleRegion.getWidth();
+        final double titleRegionRightInset = titleRegion.snappedRightInset();
         final double titleRegionHeight = titleRegion.getHeight();
 
         // Edit Button
@@ -78,7 +83,8 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
         // Reference Component Semantics Combobox
         double cbWidth = referenceComponentSemanticsCB.prefWidth(-1);
         double cbHeight = referenceComponentSemanticsCB.prefHeight(cbWidth);
-        double cbX = titleRegion.getLayoutX() + titleRegion.getWidth() - titleRegion.snappedRightInset() - editButtonWidth - cbWidth;
+        double cbX = titleRegionX + titleRegionWidth - titleRegionRightInset
+                - editButtonWidth - cbWidth - SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON;
         double cbY = titleRegionHeight / 2d - cbHeight / 2d;
         referenceComponentSemanticsCB.resize(cbWidth, cbHeight);
         referenceComponentSemanticsCB.relocate(cbX, cbY);
