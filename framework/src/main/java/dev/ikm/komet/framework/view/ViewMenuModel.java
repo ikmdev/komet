@@ -20,6 +20,7 @@ import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
@@ -37,6 +38,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Shape;
 
 import java.util.List;
+
+import static dev.ikm.komet.framework.view.ObservableCoordinateAbstract.LOG;
 
 public class ViewMenuModel {
     private ViewProperties viewProperties;
@@ -83,6 +86,10 @@ public class ViewMenuModel {
      */
     private void initialize(ViewProperties viewProperties, Control baseControlToShowOverride, String whichMenu) {
         this.viewProperties = viewProperties;
+        LOG.info("Initializing ViewMenuModel with valid stamp position time: {}", DateTimeUtil.format(this.viewProperties.calculator().viewCoordinateRecord().stampCoordinate().stampPosition().time()));
+//        if (this.viewProperties.calculator().viewCoordinateRecord().stampCoordinate().stampPosition().time() != Long.MAX_VALUE) {
+//            LOG.info("Initializing ViewMenuModel with valid stamp position time: {}", DateTimeUtil.format(this.viewProperties.calculator().viewCoordinateRecord().stampCoordinate().stampPosition().time()));
+//        }
         this.viewProperties.nodeView().addListener(this.viewChangedListener);
         ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
         FxGet.pathCoordinates(viewCalculator).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change ->

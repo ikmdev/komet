@@ -217,7 +217,7 @@ public class ReasonerResultsController {
 
                 return;
             }
-            applyCommitTimeToView(classifierResults);
+            //applyCommitTimeToView(classifierResults);
             this.conceptSetPane.setText(String.format("Concept set size: %,d", classifierResults.getClassificationConceptSet().size()));
             this.conceptSetPane.setDisable(true);
             this.conceptSetPane.setExpanded(false);
