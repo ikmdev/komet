@@ -6497,3 +6497,48 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected:hover {
     -fx-background-color: derive(-Secondary-06, 10%);
 }
+
+/*******************  Edit Semantic Popup  ***************************/
+
+.edit-semantic-popup {
+    -fx-background-color: #2e2e2e;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 10px 0px 10px 0px;
+    -fx-spacing: 4px;
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 6, 0.3, 0, 1);
+
+    -fx-alignment: center_left;
+
+    -fx-opacity: 0.9;
+}
+
+.edit-semantic-popup .label {
+    -fx-font-family: "Noto Sans";
+    -fx-text-fill: white;
+}
+
+.edit-semantic-popup .title-label {
+    -fx-font-size: 14px;
+    -fx-padding: 0 0 0 6px;
+}
+
+.edit-semantic-popup .separator:horizontal {
+    -fx-padding: 0px 2px 4px 2px;
+}
+
+.edit-semantic-popup .separator:horizontal .line {
+    -fx-border-color: -Grey-9 transparent transparent transparent;
+    -fx-border-insets: 1 0 0 0;
+}
+
+.edit-semantic-popup .semantic-label {
+    -fx-max-width: 350px;
+    -fx-graphic-text-gap: 7;
+    -fx-padding: 4px 6px 4px 6px;
+}
+
+.edit-semantic-popup .semantic-label:hover {
+    -fx-background-color: rgba(200, 200, 200, 0.3);
+}

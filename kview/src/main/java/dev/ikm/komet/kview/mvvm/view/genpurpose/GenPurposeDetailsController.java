@@ -32,6 +32,7 @@ import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupView
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableComposer;
@@ -78,6 +79,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -99,6 +101,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Popup;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -113,7 +116,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -508,7 +510,7 @@ public class GenPurposeDetailsController {
     private void updateView() {
         LOG.info("Update view called - implement coordinate changes here.");
         EntityFacade refConcept = (EntityFacade) genPurposeViewModel.getProperty(REF_COMPONENT).getValue();
-        if (refConcept != null){
+        if (refConcept != null) {
             updateDisplayIdentifier(refConcept);
             updateIdenticon(refConcept);
             updateWindowTitle(refConcept);
@@ -537,7 +539,7 @@ public class GenPurposeDetailsController {
             for (int i = 0; i < newNumberColumns.intValue(); ++i) {
                 ColumnConstraints columnConstraints = new ColumnConstraints();
                 columnConstraints.setHgrow(Priority.ALWAYS);
-                columnConstraints.setPercentWidth(100 / ((double)newNumberColumns.intValue()));
+                columnConstraints.setPercentWidth(100 / ((double) newNumberColumns.intValue()));
                 columns.add(columnConstraints);
             }
             titledPaneGridPane.getColumnConstraints().setAll(columns);
@@ -552,7 +554,7 @@ public class GenPurposeDetailsController {
 
         titledPane.setContent(titledPaneGridPane);
 
-        titledPane.setOnEditAction(actionEvent -> showAndEditSemanticFieldsPanel(sectionModel, actionEvent));
+        titledPane.setOnEditAction(actionEvent -> onEditAction(actionEvent, sectionModel));
 
         sectionModelToTitledPaneGridPane.put(sectionModel, titledPaneGridPane);
 
@@ -561,36 +563,75 @@ public class GenPurposeDetailsController {
         return titledPane;
     }
 
-    private void showAndEditSemanticFieldsPanel(EditorSectionModel editorSectionModel, ActionEvent actionEvent) {
+    private void onEditAction(ActionEvent actionEvent, EditorSectionModel sectionModel) {
+        Popup popup = new Popup();
+        popup.setAutoHide(true);
+
+        VBox popupContent = new VBox();
+        Label titleLabel = new Label("EDIT SEMANTIC");
+        titleLabel.getStyleClass().add("title-label");
+        Separator separator = new Separator();
+
+        popupContent.getChildren().addAll(titleLabel, separator);
+
+        popupContent.getStyleClass().add("edit-semantic-popup");
+
+        popup.getContent().add(popupContent);
+
         // Get the entity (Semantic) to edit
         EntityFacade refComponent;
 
-        if (editorSectionModel.getReferenceComponent() == null) {
+        if (sectionModel.getReferenceComponent() == null) {
             refComponent = genPurposeViewModel.getPropertyValue(GenPurposeViewModel.REF_COMPONENT);
         } else {
-            SectionTitledPane<EntityFacade> sectionTitledPane = sectionModelToTitledPane.get(editorSectionModel);
+            SectionTitledPane<EntityFacade> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
             refComponent = sectionTitledPane.getSelectedReferenceComponent();
         }
 
-        // -- This boolean is used as a hacky way to only do the foreach once
-        AtomicBoolean semanticAdded = new AtomicBoolean(false);
-
-        AtomicReference<SemanticEntity<SemanticEntityVersion>> semanticEntity = new AtomicReference<>();
+        AtomicInteger numberSemantics = new AtomicInteger();
+        AtomicReference<SemanticEntity<SemanticEntityVersion>> lastSemantic = new AtomicReference<>();
 
         EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
-                editorSectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
-                    if (semanticAdded.get()) {
-                        return;
-                    }
-                    semanticEntity.set(semantic);
-                    semanticAdded.set(true);
+                sectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
+                    Function<Integer, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
+                    Image identicon = Identicon.generateIdenticonImage(semantic.publicId());
+                    ImageView imageView = new ImageView(identicon);
+                    imageView.setFitWidth(12);
+                    imageView.setFitHeight(12);
+
+                    String description = fetchDescriptionFunction.apply(semantic.nid());
+                    Label label = new Label(description);
+                    label.setGraphic(imageView);
+                    label.getStyleClass().add("semantic-label");
+
+                    label.setOnMouseClicked(_ -> {
+                        showEditSemanticFieldsPanel(actionEvent, semantic);
+                        popup.hide();
+                    });
+
+                    popupContent.getChildren().add(label);
+
+                    numberSemantics.incrementAndGet();
+                    lastSemantic.set(semantic);
                 });
 
+        if (numberSemantics.get() > 1) {
+            SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
+
+            Point2D popupPosition = sectionTitledPane.getLocalToSceneTransform().transform(sectionTitledPane.getLayoutX() + sectionTitledPane.getWidth(),
+                    sectionTitledPane.getBoundsInLocal().getMinY());
+            popup.show(sectionTitledPane, popupPosition.getX(), popupPosition.getY());
+        } else {
+            showEditSemanticFieldsPanel(actionEvent, lastSemantic.get());
+        }
+    }
+
+    private void showEditSemanticFieldsPanel(ActionEvent actionEvent, SemanticEntity<SemanticEntityVersion> semanticEntity) {
         // notify bump out to display edit fields in bump out area.
         EvtBusFactory.getDefaultEvtBus()
                 .publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
                         new KLPropertyPanelEvent(actionEvent.getSource(),
-                                SHOW_EDIT_SEMANTIC_FIELDS, semanticEntity.get()));
+                                SHOW_EDIT_SEMANTIC_FIELDS, semanticEntity));
         // open properties bump out.
         EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(actionEvent.getSource(), OPEN_PANEL));
 
@@ -693,41 +734,41 @@ public class GenPurposeDetailsController {
         AtomicInteger index = new AtomicInteger(0);
         EntityService.get().forEachSemanticForComponentOfPattern(refComponents.getFirst().nid(), patternEntity.nid(),
                 (semantic) -> {
-            // add Separator
-            if (index.get() > 0) {
-                Separator separator = new Separator();
-                semanticsContainer.getChildren().add(separator);
-            }
+                    // add Separator
+                    if (index.get() > 0) {
+                        Separator separator = new Separator();
+                        semanticsContainer.getChildren().add(separator);
+                    }
 
-            GridPane fieldsContainer = new GridPane();
-            fieldsContainer.getStyleClass().add("fields-container");
+                    GridPane fieldsContainer = new GridPane();
+                    fieldsContainer.getStyleClass().add("fields-container");
 
-            ObservableEntitySnapshot<?,?> snap = composer.snapshot(semantic.nid()).get();
-            if (snap instanceof ObservableSemanticSnapshot semanticSnapshot) {
-                for(ObservableField<?> observableField : semanticSnapshot.getLatestFields().get()){
-                    for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
-                        if (observableField.field().indexInPattern() == editorFieldModel.getIndex()) {
-                            createFieldView(observableField, editorFieldModel, controlItems, fieldsContainer);
+                    ObservableEntitySnapshot<?, ?> snap = composer.snapshot(semantic.nid()).get();
+                    if (snap instanceof ObservableSemanticSnapshot semanticSnapshot) {
+                        for (ObservableField<?> observableField : semanticSnapshot.getLatestFields().get()) {
+                            for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
+                                if (observableField.field().indexInPattern() == editorFieldModel.getIndex()) {
+                                    createFieldView(observableField, editorFieldModel, controlItems, fieldsContainer);
+                                }
+                            }
                         }
                     }
-                }
-            }
 
-            editorPatternModel.numberColumnsProperty().subscribe(numberColumns -> {
-                List<ColumnConstraints> columns = new ArrayList<>();
-                for (int i = 0; i < numberColumns.intValue(); ++i) {
-                    ColumnConstraints columnConstraints = new ColumnConstraints();
-                    columnConstraints.setHgrow(Priority.ALWAYS);
-                    columnConstraints.setPercentWidth(100 / ((double)numberColumns.intValue()));
-                    columns.add(columnConstraints);
-                }
-                fieldsContainer.getColumnConstraints().setAll(columns);
-            });
+                    editorPatternModel.numberColumnsProperty().subscribe(numberColumns -> {
+                        List<ColumnConstraints> columns = new ArrayList<>();
+                        for (int i = 0; i < numberColumns.intValue(); ++i) {
+                            ColumnConstraints columnConstraints = new ColumnConstraints();
+                            columnConstraints.setHgrow(Priority.ALWAYS);
+                            columnConstraints.setPercentWidth(100 / ((double) numberColumns.intValue()));
+                            columns.add(columnConstraints);
+                        }
+                        fieldsContainer.getColumnConstraints().setAll(columns);
+                    });
 
-            semanticsContainer.getChildren().add(fieldsContainer);
+                    semanticsContainer.getChildren().add(fieldsContainer);
 
-            index.incrementAndGet();
-        });
+                    index.incrementAndGet();
+                });
     }
 
     private List<EntityFacade> getReferenceComponentsToUse(EditorPatternModel sectionReferenceComponent) {
@@ -747,10 +788,10 @@ public class GenPurposeDetailsController {
 
         return refComponents;
     }
-    
+
     private List<EntityFacade> getSemanticsOfPattern(EditorPatternModel editorPatternModel) {
         EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
-        
+
         List<EntityFacade> refComponents = new ArrayList<>();
 
         EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), editorPatternModel.getNid(),
@@ -799,7 +840,7 @@ public class GenPurposeDetailsController {
 
 
     private void onSectionPatternsChanged(EditorSectionModel editorSectionModel, ListChangeListener.Change<? extends EditorPatternModel> change) {
-        while(change.next()) {
+        while (change.next()) {
             if (change.wasAdded()) {
                 addPatternViews(editorSectionModel, change.getAddedSubList());
             }
@@ -807,7 +848,7 @@ public class GenPurposeDetailsController {
     }
 
     private void onAdditionalSectionsChanged(ListChangeListener.Change<? extends EditorSectionModel> change) {
-        while(change.next()) {
+        while (change.next()) {
             if (change.wasAdded()) {
                 for (EditorSectionModel additionalSectionModel : change.getAddedSubList()) {
                     TitledPane titledPane = createTitledPane(additionalSectionModel);
