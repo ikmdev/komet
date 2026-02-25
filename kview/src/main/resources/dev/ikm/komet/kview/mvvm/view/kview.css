@@ -6516,11 +6516,13 @@ Styling a context menu for kview ui/ux controls
 
 .edit-semantic-popup .label {
     -fx-font-family: "Noto Sans";
+    -fx-font-weight: 500;
     -fx-text-fill: white;
 }
 
 .edit-semantic-popup .title-label {
     -fx-font-size: 14px;
+    -fx-font-weight: 500;
     -fx-padding: 0 0 0 6px;
 }
 
@@ -6533,12 +6535,12 @@ Styling a context menu for kview ui/ux controls
     -fx-border-insets: 1 0 0 0;
 }
 
-.edit-semantic-popup .semantic-label {
+.edit-semantic-popup .semantic-label > .label {
     -fx-max-width: 350px;
     -fx-graphic-text-gap: 7;
     -fx-padding: 4px 6px 4px 6px;
 }
 
-.edit-semantic-popup .semantic-label:hover {
+.edit-semantic-popup .semantic-label:hover > .label {
     -fx-background-color: rgba(200, 200, 200, 0.3);
 }

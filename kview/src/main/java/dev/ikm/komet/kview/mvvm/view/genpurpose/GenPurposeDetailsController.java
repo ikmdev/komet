@@ -44,9 +44,11 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
+import dev.ikm.komet.kview.controls.KometLabel;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
+import dev.ikm.komet.kview.controls.TitledMenuPopup;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
@@ -564,19 +566,8 @@ public class GenPurposeDetailsController {
     }
 
     private void onEditAction(ActionEvent actionEvent, EditorSectionModel sectionModel) {
-        Popup popup = new Popup();
-        popup.setAutoHide(true);
-
-        VBox popupContent = new VBox();
-        Label titleLabel = new Label("EDIT SEMANTIC");
-        titleLabel.getStyleClass().add("title-label");
-        Separator separator = new Separator();
-
-        popupContent.getChildren().addAll(titleLabel, separator);
-
-        popupContent.getStyleClass().add("edit-semantic-popup");
-
-        popup.getContent().add(popupContent);
+        TitledMenuPopup popup = new TitledMenuPopup();
+        popup.setTitle("EDIT SEMANTIC");
 
         // Get the entity (Semantic) to edit
         EntityFacade refComponent;
@@ -593,23 +584,15 @@ public class GenPurposeDetailsController {
 
         EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
                 sectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
-                    Function<Integer, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
-                    Image identicon = Identicon.generateIdenticonImage(semantic.publicId());
-                    ImageView imageView = new ImageView(identicon);
-                    imageView.setFitWidth(12);
-                    imageView.setFitHeight(12);
+                    KometLabel semanticLabel = new KometLabel(semantic, viewProperties);
+                    semanticLabel.getStyleClass().add("semantic-label");
 
-                    String description = fetchDescriptionFunction.apply(semantic.nid());
-                    Label label = new Label(description);
-                    label.setGraphic(imageView);
-                    label.getStyleClass().add("semantic-label");
-
-                    label.setOnMouseClicked(_ -> {
+                    semanticLabel.setOnMouseClicked(_ -> {
                         showEditSemanticFieldsPanel(actionEvent, semantic);
                         popup.hide();
                     });
 
-                    popupContent.getChildren().add(label);
+                    popup.getItems().add(semanticLabel);
 
                     numberSemantics.incrementAndGet();
                     lastSemantic.set(semantic);
