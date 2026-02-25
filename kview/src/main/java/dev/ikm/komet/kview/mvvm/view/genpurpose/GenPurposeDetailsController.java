@@ -550,9 +550,8 @@ public class GenPurposeDetailsController {
         if (sectionModel.getReferenceComponent() != null) {
             titledPane.getReferenceComponents().addAll(getSemanticsOfPattern(sectionModel.getReferenceComponent()));
         }
-        Function<Integer, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
-        titledPane.setReferenceComponentCellFactory(_ -> new SectionSemanticsComboBoxCell(fetchDescriptionFunction, viewProperties));
-        titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(fetchDescriptionFunction, viewProperties));
+        titledPane.setReferenceComponentCellFactory(_ -> new SectionSemanticsComboBoxCell(viewProperties));
+        titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(viewProperties));
 
         titledPane.setContent(titledPaneGridPane);
 
@@ -585,6 +584,7 @@ public class GenPurposeDetailsController {
         EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
                 sectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
                     KometLabel semanticLabel = new KometLabel(semantic, viewProperties);
+                    semanticLabel.setShowTooltip(true);
                     semanticLabel.getStyleClass().add("semantic-label");
 
                     semanticLabel.setOnMouseClicked(_ -> {

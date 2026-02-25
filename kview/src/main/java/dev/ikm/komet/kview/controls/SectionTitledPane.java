@@ -17,6 +17,10 @@ import javafx.util.Callback;
 
 public class SectionTitledPane<T> extends TitledPane {
 
+    public SectionTitledPane() {
+        getStyleClass().add("section-titled-pane");
+    }
+
     @Override
     protected Skin<?> createDefaultSkin() {
         return new SectionTitledPaneSkin(this);

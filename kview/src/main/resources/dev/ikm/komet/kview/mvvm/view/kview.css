@@ -6447,6 +6447,15 @@ Styling a context menu for kview ui/ux controls
 
 /*******************  Section Semantics ComboBox  **************************/
 
+.gen-purpose-window .section-titled-pane > .section-combo-box {
+    -fx-min-width: -1;
+    -fx-pref-width: -1;
+}
+
+.gen-purpose-window .section-titled-pane > .section-combo-box > .list-cell .komet-label > .label {
+    -fx-text-fill: #111;
+}
+
 /* ComboBox popup */
 .gen-purpose-window .combo-box-popup > .list-view {
     -fx-padding: 8px 0px;
@@ -6469,6 +6478,11 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell {
     -fx-padding: 10 8;
 
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+}
+
+.gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell .komet-label > .label {
     -fx-text-fill: #111;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 12px;
@@ -6490,6 +6504,9 @@ Styling a context menu for kview ui/ux controls
 /* ComboBox popup List Cell - Selected */
 .gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected {
     -fx-background-color: -Secondary-06;
+}
+
+.gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected .komet-label > .label {
     -fx-text-fill: white;
 }
 
