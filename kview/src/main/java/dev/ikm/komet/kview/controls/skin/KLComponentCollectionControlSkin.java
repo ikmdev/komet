@@ -42,7 +42,6 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
     private final static double SPACE_BETWEEN_NUMBER_AND_CONTROL = 5;
 
     private final Label titleLabel;
-    private final Button addEntryButton;
 
     /**
      * This is the list of Components being rendered. The components with their nids will always be in the same
@@ -83,13 +82,7 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
         resetUI();
         control.valueProperty().subscribe(this::resetUI);
 
-        // Add entry button
-        addEntryButton = new Button(getString("add.entry.button.text"));
-        addEntryButton.getStyleClass().add("add-entry-button");
-        addEntryButton.setOnAction(event -> createComponentUI(0));
-        addEntryButton.setDisable(true);
-
-        getChildren().addAll(titleLabel, addEntryButton);
+        getChildren().addAll(titleLabel);
 
         getSkinnable().setOnMouseDragReleased(Event::consume);
 
@@ -379,11 +372,6 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
         // layout final empty component control
         double componentControlUsedHeight = layoutComponentControl(contentWidth, index, padding, y, labelNumber);
         y += componentControlUsedHeight + SPACE_BETWEEN_COMPONENTS;
-
-        // layout add Entry button
-        double buttonPrefWidth = addEntryButton.prefWidth(-1);
-        addEntryButton.resizeRelocate(contentWidth - buttonPrefWidth - padding.getRight(), y,
-                                      buttonPrefWidth, addEntryButton.prefHeight(buttonPrefWidth));
     }
 
     private double layoutTopDropLine(double contentWidth, Insets padding, double y) {
@@ -452,9 +440,5 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
         }
 
         return componentControlPrefHeight;
-    }
-
-    private static String getString(String key) {
-        return ResourceBundle.getBundle("dev.ikm.komet.kview.controls.component-list-control").getString(key);
     }
 }
