@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.view.genpurpose;
+package dev.ikm.komet.kview.mvvm.view.genpurpose.control;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KometLabel;
@@ -10,6 +10,10 @@ import javafx.scene.control.ListCell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A Combobox Cell that shows a Semantic. This is used in a combobox in a Section to choose the Reference Component
+ * used in that Section.
+ */
 public class SectionSemanticsComboBoxCell extends ListCell<EntityFacade> {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatternSemanticListCell.class);
