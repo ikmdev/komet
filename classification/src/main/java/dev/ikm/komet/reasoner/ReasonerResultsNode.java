@@ -229,9 +229,12 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			return;
 		}
 		if (EditedConceptTracker.getEdits().isEmpty()) {
-			Alert dlg = new Alert(Alert.AlertType.CONFIRMATION, "No edits to process", ButtonType.OK);
-			dlg.setHeaderText(null);
-			dlg.showAndWait();
+			Alert dlg = new Alert(Alert.AlertType.CONFIRMATION, "Run full reasoner?", ButtonType.OK, ButtonType.CANCEL);
+			dlg.setHeaderText("No edits to process.");
+			Optional<ButtonType> res = dlg.showAndWait();
+			if (res.isPresent() && res.get() == ButtonType.OK) {
+				runFullReasoner();
+			}
 			return;
 		}
 		TinkExecutor.threadPool().execute(() -> {
