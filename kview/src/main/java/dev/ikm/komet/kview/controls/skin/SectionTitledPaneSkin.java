@@ -1,19 +1,29 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.SectionTitledPane;
+import javafx.beans.binding.Bindings;
+import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Separator;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.skin.TitledPaneSkin;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 
-public class SectionTitledPaneSkin extends TitledPaneSkin {
+public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
+    private static final int SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON = 4;
+
     private EditButton editButton;
     private StackPane titleRegion;
+
+    private GridPane contentContainer;
+
+    private ComboBox<T> referenceComponentSemanticsCB;
 
     /**
      * Creates a new TitledPaneSkin instance, installing the necessary child
@@ -22,27 +32,69 @@ public class SectionTitledPaneSkin extends TitledPaneSkin {
      *
      * @param control The control that this skin should be installed onto.
      */
-    public SectionTitledPaneSkin(SectionTitledPane control) {
+    public SectionTitledPaneSkin(SectionTitledPane<T> control) {
         super(control);
+
+        contentContainer = new GridPane();
 
         editButton = new EditButton(control);
 
+        createReferenceComponentCB(control);
+
         titleRegion = (StackPane) control.lookup(".title");
 
-        getChildren().add(editButton);
+        getChildren().addAll(
+                editButton,
+                referenceComponentSemanticsCB
+        );
+    }
+
+    private void createReferenceComponentCB(SectionTitledPane<T> control) {
+        referenceComponentSemanticsCB = new ComboBox<>();
+
+        referenceComponentSemanticsCB.getStyleClass().add("section-combo-box");
+
+        referenceComponentSemanticsCB.setItems(control.getReferenceComponents());
+
+        referenceComponentSemanticsCB.cellFactoryProperty().bind(control.referenceComponentCellFactoryProperty());
+        referenceComponentSemanticsCB.buttonCellProperty().bind(control.referenceComponentButtonCellFactoryProperty());
+        referenceComponentSemanticsCB.valueProperty().bindBidirectional(control.selectedReferenceComponentProperty());
+
+        ObservableList<T> refs = control.getReferenceComponents();
+        referenceComponentSemanticsCB.visibleProperty().bind(Bindings.isNotEmpty(refs));
+        referenceComponentSemanticsCB.managedProperty().bind(Bindings.isNotEmpty(refs));
     }
 
     @Override
-    protected void layoutChildren(double x, double y, double w, double h) {
-        super.layoutChildren(x, y, w, h);
+    protected void layoutChildren(double x, double y, double width, double height) {
+        super.layoutChildren(x, y, width, height);
 
-        final double editButtonHeight = titleRegion.getHeight();
-        final double editButtonWidth = editButton.prefWidth(editButtonHeight);
+        final double titleRegionX = titleRegion.getLayoutX();
+        final double titleRegionWidth = titleRegion.getWidth();
+        final double titleRegionRightInset = titleRegion.snappedRightInset();
+        final double titleRegionHeight = titleRegion.getHeight();
 
-        editButton.resize(editButtonWidth, editButtonHeight);
+        // Edit Button
+        final double editButtonWidth = editButton.prefWidth(titleRegionHeight);
+        editButton.resize(editButtonWidth, titleRegionHeight);
         editButton.setLayoutX(titleRegion.getLayoutX() + titleRegion.getWidth() - titleRegion.snappedRightInset() - editButtonWidth);
         editButton.setLayoutY(titleRegion.getLayoutY());
+
+        // Reference Component Semantics Combobox
+        double cbWidth = referenceComponentSemanticsCB.prefWidth(-1);
+        double cbHeight = referenceComponentSemanticsCB.prefHeight(cbWidth);
+        double cbX = titleRegionX + titleRegionWidth - titleRegionRightInset
+                - editButtonWidth - cbWidth - SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON;
+        double cbY = titleRegionHeight / 2d - cbHeight / 2d;
+        referenceComponentSemanticsCB.resize(cbWidth, cbHeight);
+        referenceComponentSemanticsCB.relocate(cbX, cbY);
     }
+
+    /*******************************************************************************
+     *                                                                             *
+     * Supporting Classes                                                          *
+     *                                                                             *
+     ******************************************************************************/
 
     private static class EditButton extends Pane {
         private final HBox mainContainer = new HBox();

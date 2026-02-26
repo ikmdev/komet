@@ -43,6 +43,7 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.FieldRecord;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.events.EntityVersionChangeEvent;
@@ -313,7 +314,7 @@ public class GenPurposeFieldsController {
 //        }
         Subscriber<KLPropertyPanelEvent> propertyEventSubscriber = evt -> {
             if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
-                setupEditSemanticDetails(evt.getEditorSectionModel());
+                setupEditSemanticDetails(evt.getSemantic());
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
@@ -337,62 +338,48 @@ public class GenPurposeFieldsController {
         });
     }
 
-    private void setupEditSemanticDetails(EditorSectionModel editorSectionModel) {
-        this.editorSectionModel = editorSectionModel;
+    private void setupEditSemanticDetails(SemanticEntity<SemanticEntityVersion> semanticEntity) {
 
-        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
+        observableEntityHandle = ObservableEntityHandle.get(semanticEntity.nid());
 
-        // This boolean is used as a hacky way to only do the foreach once
-        AtomicBoolean semanticAdded = new AtomicBoolean(false);
+        this.observableEntityHandle.ifSemantic(observableSemantic -> {
+            observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
 
-        EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
-                editorSectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
-                    if (semanticAdded.get()) {
-                        return;
-                    }
-                    observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
-
-                    this.observableEntityHandle.ifSemantic(observableSemantic -> {
-                        observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-
-                        //Setting author to author for change. This value will be used during auto-save
-                        ConceptFacade authorForChanges = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
-                        //TODO: setAuthorForChanges seems to be an API decision to revisit.
-                        if (observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot) {
-                            observableSemanticSnapshot.getLatestVersion().get().setAuthorForChanges(authorForChanges);
-                        }
-                        // Not sure this is needed and needs to be revisted
+            //Setting author to author for change. This value will be used during auto-save
+            ConceptFacade authorForChanges = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
+            //TODO: setAuthorForChanges seems to be an API decision to revisit.
+            if (observableEntitySnapshot instanceof ObservableSemanticSnapshot observableSemanticSnapshot) {
+                observableSemanticSnapshot.getLatestVersion().get().setAuthorForChanges(authorForChanges);
+            }
+            // Not sure this is needed and needs to be revisted
 //            processCommittedValues();
-                        loadUIData(); // And populates Nodes and Observable fields.
-                        entityVersionChangeEventSubscriber = evt -> {
-                            LOG.info("Version has been updated: " + evt.getEventType());
-                            // get payload
-                            if (evt.getEntityVersion().nid() == observableSemantic.nid()
-                                    && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
-                                ImmutableList<Object> values = semanticVersionRecord.fieldValues();
-                                for (int i = 0; i < values.size(); i++) {
-                                    ObservableField.Editable<?> editableField = getKlFields().get(i).fieldEditable();
-                                    // Update via editable field's cached property
-                                    @SuppressWarnings("unchecked")
-                                    ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
-                                    uncheckedField.setValue(values.get(i));
-                                }
-                            }
-                            if (reloadPatternNavigator && genPurposeViewModel.getPropertyValue(MODE) == CREATE) {
-                                // refresh the pattern navigation
-                                EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
-                                        new PatternSavedEvent(this, PatternSavedEvent.PATTERN_CREATION_EVENT));
-                                reloadPatternNavigator = false;
-                            }
+            loadUIData(); // And populates Nodes and Observable fields.
+            entityVersionChangeEventSubscriber = evt -> {
+                LOG.info("Version has been updated: " + evt.getEventType());
+                // get payload
+                if (evt.getEntityVersion().nid() == observableSemantic.nid()
+                        && evt.getEntityVersion() instanceof SemanticVersionRecord semanticVersionRecord) {
+                    ImmutableList<Object> values = semanticVersionRecord.fieldValues();
+                    for (int i = 0; i < values.size(); i++) {
+                        ObservableField.Editable<?> editableField = getKlFields().get(i).fieldEditable();
+                        // Update via editable field's cached property
+                        @SuppressWarnings("unchecked")
+                        ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
+                        uncheckedField.setValue(values.get(i));
+                    }
+                }
+                if (reloadPatternNavigator && genPurposeViewModel.getPropertyValue(MODE) == CREATE) {
+                    // refresh the pattern navigation
+                    EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
+                            new PatternSavedEvent(this, PatternSavedEvent.PATTERN_CREATION_EVENT));
+                    reloadPatternNavigator = false;
+                }
 //                enableDisableButtons();
-                        };
+            };
 
-                        EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
-                                EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
-                    });
-
-                    semanticAdded.set(true);
-                });
+            EvtBusFactory.getDefaultEvtBus().subscribe(VERSION_CHANGED_TOPIC,
+                    EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
+        });
     }
 
     private void loadVBox() {
@@ -619,6 +606,7 @@ public class GenPurposeFieldsController {
 
     /**
      * Reset the observable field values in edit mode.
+     *
      * @param entityVersion
      */
     private void resetFieldValues(EntityVersion entityVersion) {

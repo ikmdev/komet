@@ -1,7 +1,8 @@
 package dev.ikm.komet.kview.events.genpurpose;
 
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
-import dev.ikm.komet.layout.editor.model.EditorSectionModel;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.events.Evt;
 import dev.ikm.tinkar.events.EvtType;
 
@@ -19,7 +20,7 @@ public class KLPropertyPanelEvent extends Evt {
     public static final EvtType<PropertyPanelEvent> SHOW_ADD_REFERENCE_SEMANTIC_FIELD = new EvtType<>(SHOW_PANEL, "SHOW_ADD_REFERENCE_SEMANTIC_FIELD");
 
     /*** private variables ***/
-    private EditorSectionModel editorSectionModel;
+    private SemanticEntity<SemanticEntityVersion> semanticEntity;
 
     /**
      *
@@ -35,13 +36,13 @@ public class KLPropertyPanelEvent extends Evt {
      * @param source
      * @param eventType
      */
-    public KLPropertyPanelEvent(Object source, EvtType<PropertyPanelEvent> eventType, EditorSectionModel sectionModel) {
+    public KLPropertyPanelEvent(Object source, EvtType<PropertyPanelEvent> eventType, SemanticEntity<SemanticEntityVersion> semanticEntity) {
         super(source, eventType);
-        this.editorSectionModel = sectionModel;
+        this.semanticEntity = semanticEntity;
     }
 
-    public EditorSectionModel getEditorSectionModel() {
-        return editorSectionModel;
+    public SemanticEntity<SemanticEntityVersion> getSemantic() {
+        return semanticEntity;
     }
 
 }
