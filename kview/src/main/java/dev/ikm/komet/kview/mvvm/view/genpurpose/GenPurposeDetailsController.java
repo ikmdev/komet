@@ -553,12 +553,14 @@ public class GenPurposeDetailsController {
             titledPaneGridPane.getColumnConstraints().setAll(columns);
         });
 
+        // Section Semantics ComboBox
         if (sectionModel.getReferenceComponent() != null) {
             titledPane.getReferenceComponents().addAll(getSemanticsOfPattern(sectionModel.getReferenceComponent()));
         }
-        titledPane.setReferenceComponentCellFactory(_ -> new SectionSemanticsComboBoxCell(viewProperties));
+        titledPane.setReferenceComponentCellFactory(_ -> createSectionSemanticsComboBoxCell(viewProperties));
         titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(viewProperties));
 
+        // Content
         titledPane.setContent(titledPaneGridPane);
 
         titledPane.setOnEditAction(actionEvent -> onEditAction(actionEvent, sectionModel));
@@ -568,6 +570,18 @@ public class GenPurposeDetailsController {
         sectionModelToTitledPane.put(sectionModel, titledPane);
 
         return titledPane;
+    }
+
+    private SectionSemanticsComboBoxCell createSectionSemanticsComboBoxCell(ViewProperties viewProperties) {
+        SectionSemanticsComboBoxCell sectionSemanticsComboBoxCell = new SectionSemanticsComboBoxCell(viewProperties);
+        sectionSemanticsComboBoxCell.hoverProperty().subscribe(() -> {
+            SemanticEntity<SemanticEntityVersion> semanticEntity = (SemanticEntity<SemanticEntityVersion>) sectionSemanticsComboBoxCell.getItem();
+            SemanticViewControl semanticViewControl = semanticEntityToSemanticView.get(semanticEntity);
+            if (semanticViewControl != null) {
+                semanticViewControl.setPreviewMode(sectionSemanticsComboBoxCell.isHover());
+            }
+        });
+        return sectionSemanticsComboBoxCell;
     }
 
     private void onEditAction(ActionEvent actionEvent, EditorSectionModel sectionModel) {
@@ -596,6 +610,10 @@ public class GenPurposeDetailsController {
                     semanticLabel.setOnMouseClicked(_ -> {
                         showEditSemanticFieldsPanel(actionEvent, semantic);
                         popup.hide();
+                    });
+
+                    semanticLabel.hoverProperty().subscribe(() -> {
+                        semanticEntityToSemanticView.get(semantic).setPreviewMode(semanticLabel.isHover());
                     });
 
                     popup.getItems().add(semanticLabel);

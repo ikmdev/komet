@@ -35,7 +35,9 @@
 }
 
 .read-only-component-control .main-container .text-container:hover .text,
-.read-only-component-control .main-container .text-container:hover .prompt-text {
+.read-only-component-control .main-container .text-container:hover .prompt-text,
+.read-only-component-control:preview-mode .main-container .text-container .text,
+.read-only-component-control:preview-mode .main-container .text-container .prompt-text {
     -fx-background-color: #f4f4f4;
     -fx-border-color: #dfdfdf;
 }

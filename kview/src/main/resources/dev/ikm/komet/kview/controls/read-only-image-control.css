@@ -19,7 +19,8 @@
     -fx-font-size: 1.166667em;
 }
 
-.read-only-image-control:hover .main-container .text-container .text {
+.read-only-image-control:hover .main-container .text-container .text
+.read-only-image-control:preview-mode .main-container .text-container .text {
     -fx-background-color: #f4f4f4;
     -fx-border-color: #dfdfdf;
 }

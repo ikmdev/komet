@@ -17,6 +17,7 @@ import javafx.scene.layout.VBox;
 
 public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleValueControl> extends SkinBase<T> {
     protected static final PseudoClass EDIT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("edit-mode");
+    protected static final PseudoClass PREVIEW_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("preview-mode");
 
     protected final VBox mainContainer = new VBox();
 
@@ -26,6 +27,7 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleVa
     protected final ContextMenu contextMenu = new ContextMenu();
 
     private InvalidationListener editModeChanged = this::onEditModeChanged;
+    private InvalidationListener previewModeChanged = this::onPreviewModeChanged;
 
     private boolean wasEditActionFired = false;
 
@@ -52,6 +54,7 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleVa
         promptTextLabel.textProperty().bind(control.promptTextProperty());
 
         control.editModeProperty().addListener(editModeChanged);
+        control.previewModeProperty().addListener(previewModeChanged);
 
         mainContainer.getChildren().addAll(titleLabel);
         mainContainer.setFillWidth(true);
@@ -105,5 +108,9 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleVa
     private void onEditModeChanged(Observable observable) {
         pseudoClassStateChanged(EDIT_MODE_PSEUDO_CLASS, getSkinnable().isEditMode());
         wasEditActionFired = false;
+    }
+
+    private void onPreviewModeChanged(Observable observable) {
+        pseudoClassStateChanged(PREVIEW_MODE_PSEUDO_CLASS, getSkinnable().isPreviewMode());
     }
 }

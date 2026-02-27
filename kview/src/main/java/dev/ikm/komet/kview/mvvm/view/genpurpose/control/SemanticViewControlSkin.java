@@ -44,5 +44,11 @@ public class SemanticViewControlSkin extends SkinBase<SemanticViewControl> {
                 field.setEditMode(isEditMode);
             }
         });
+
+        control.previewMode.subscribe(isPreviewMode -> {
+            for (KLReadOnlyBaseControl field : control.getFields()) {
+                field.setPreviewMode(isPreviewMode);
+            }
+        });
     }
 }
