@@ -48,6 +48,12 @@ public class EditorPatternModel extends EditorGridNodeModel {
 
     private static ObservableList<EditorPatternModel> existingPatterns = FXCollections.observableArrayList();
 
+    /*=============================================================================*
+     *                                                                             *
+     * Constructors                                                                *
+     *                                                                             *
+     *=============================================================================*/
+
     /**
      * Creates a EditorPatternModel given the passed in nid of the Pattern.
      *
@@ -83,6 +89,11 @@ public class EditorPatternModel extends EditorGridNodeModel {
 
     private static final ObservableList<EditorPatternModel> readonlyExistingPatterns = FXCollections.unmodifiableObservableList(existingPatterns);
     public static ObservableList<EditorPatternModel> getExistingPatterns() { return readonlyExistingPatterns; }
+
+    /**
+     * Clean up any resources that were created during an "editing session" (when created or editing a Window in the KL Editor)
+     */
+    public static void cleanUp() { existingPatterns.clear(); }
 
     private void fieldsChanged(ListChangeListener.Change<? extends EditorFieldModel> change) {
         while (change.next()) {
@@ -182,11 +193,11 @@ public class EditorPatternModel extends EditorGridNodeModel {
         getParentSection().getPatterns().remove(this);
     }
 
-    /*******************************************************************************
+    /*=============================================================================*
      *                                                                             *
      * Properties                                                                  *
      *                                                                             *
-     ******************************************************************************/
+     *=============================================================================*/
 
     // -- title
     /**

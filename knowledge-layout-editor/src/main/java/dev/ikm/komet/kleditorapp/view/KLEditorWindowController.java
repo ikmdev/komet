@@ -186,5 +186,6 @@ public class KLEditorWindowController {
 
     public void shutdown() {
         EditorWindowManager.shutdown();
+        EditorPatternModel.cleanUp();
     }
 }
