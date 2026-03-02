@@ -162,7 +162,7 @@ public class LandingPageController implements BasicController {
 
     private FilterOptionsPopup filterOptionsPopup;
     private ObservableViewNoOverride viewCoordinates; // main main view coordinates
-    private ObservableViewNoOverride viewCoordinatesForFilterOptionsPopup; // clone for landingpage as main view coordinate
+//    private ObservableViewNoOverride viewCoordinatesForFilterOptionsPopup; // clone for landingpage as main view coordinate
 
     @FXML
     ToggleButton editCoordinatesToggleButton;
@@ -270,7 +270,7 @@ public class LandingPageController implements BasicController {
                     // newly added card to landing page.
                     prefX = journalSettingsFinal;
                 }
-                prefX.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.viewCoordinatesForFilterOptionsPopup);
+                prefX.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.viewCoordinates);
 
                 // fire create journal event... AND this should be the ONLY place it comes from besides the menu
                 landingPageEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
@@ -347,8 +347,8 @@ public class LandingPageController implements BasicController {
         // Initialize the journal window view, which is provided in the WindowSettings
         viewCoordinates = windowSettings.getView();
 
-        viewCoordinatesForFilterOptionsPopup = new ObservableViewNoOverride(viewCoordinates);
-        ViewProperties landingViewProperties = viewCoordinatesForFilterOptionsPopup.makeOverridableViewProperties("LandingController.filterOptionsPopup");
+        //viewCoordinatesForFilterOptionsPopup = viewCoordinates; //new ObservableViewNoOverride(viewCoordinates);
+        ViewProperties landingViewProperties = viewCoordinates.makeOverridableViewProperties("LandingController.filterOptionsPopup");
         filterOptionsPopup = setupViewCoordinateOptionsPopup(landingViewProperties,
                 viewCoordinatesToggleButton, () -> {
                     LOG.info("LandingController.filterOptionsPopup: updating view due to filter options change");
@@ -648,7 +648,7 @@ public class LandingPageController implements BasicController {
         journalWindowSettingsObjectMap.setValue(JOURNAL_TOPIC, journalTopic);
         journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
         journalWindowSettingsObjectMap.setValue(JOURNAL_DIR_NAME, journalDirName);
-        journalWindowSettingsObjectMap.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.viewCoordinatesForFilterOptionsPopup);
+        journalWindowSettingsObjectMap.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.viewCoordinates);
         // publish an event to create the tile on the landing page
         landingPageEventBus.publish(JOURNAL_TOPIC,
                 new JournalTileEvent(newProjectJournalButton, CREATE_JOURNAL_TILE, journalWindowSettingsObjectMap));
@@ -791,7 +791,7 @@ public class LandingPageController implements BasicController {
         // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
         // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
         editCoordOptionsPopup.getFilterOptionsUtils().subscribeEditCoordinateOptionsToView(
-                editCoordOptionsPopup.getInheritedFilterOptions(), viewProperties.nodeView());
+                editCoordOptionsPopup.getInheritedFilterOptions());
 
         // Subscribe nodeView to F.O., so changes from the F.O. popup are propagated to this nodeView
         editCoordOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, filterOptions) -> {
@@ -799,7 +799,7 @@ public class LandingPageController implements BasicController {
                 editCoordOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
             }
             if (filterOptions != null) {
-                editCoordOptionsPopup.getFilterOptionsUtils().subscribeViewToFilterOptions(filterOptions, viewProperties.nodeView());
+                editCoordOptionsPopup.getFilterOptionsUtils().subscribeViewToFilterOptions(filterOptions);
             }
         });
 
