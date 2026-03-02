@@ -90,11 +90,6 @@ public class EditorPatternModel extends EditorGridNodeModel {
     private static final ObservableList<EditorPatternModel> readonlyExistingPatterns = FXCollections.unmodifiableObservableList(existingPatterns);
     public static ObservableList<EditorPatternModel> getExistingPatterns() { return readonlyExistingPatterns; }
 
-    /**
-     * Clean up any resources that were created during an "editing session" (when created or editing a Window in the KL Editor)
-     */
-    public static void cleanUp() { existingPatterns.clear(); }
-
     private void fieldsChanged(ListChangeListener.Change<? extends EditorFieldModel> change) {
         while (change.next()) {
             if (change.wasAdded()) {
