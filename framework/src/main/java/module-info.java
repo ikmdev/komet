@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-import dev.ikm.komet.framework.KometNodeFactory;
-import dev.ikm.komet.framework.concurrent.TaskListsService;
-import dev.ikm.komet.framework.dnd.DragRegistry;
-import dev.ikm.tinkar.events.DefaultEvtBus;
-import dev.ikm.komet.framework.rulebase.RuleService;
-import dev.ikm.komet.preferences.PreferencesService;
 import dev.ikm.tinkar.common.service.CachingService;
 
 open module dev.ikm.komet.framework {
@@ -40,7 +34,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.performance;
     exports dev.ikm.komet.framework.preferences;
     exports dev.ikm.komet.framework.progress;
-    exports dev.ikm.komet.framework.propsheet.editor to org.controlsfx.controls, dev.ikm.komet.list, dev.ikm.komet.application;
+    exports dev.ikm.komet.framework.propsheet.editor to org.controlsfx.controls, dev.ikm.komet.list, dev.ikm.komet.desktop, dev.ikm.komet.application;
     exports dev.ikm.komet.framework.propsheet;
     exports dev.ikm.komet.framework.rulebase;
     exports dev.ikm.komet.framework.search;

@@ -18,11 +18,16 @@ package dev.ikm.komet.reasoner.ui;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
+import dev.ikm.komet.framework.EditedConceptTracker;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.reasoner.service.ClassifierResults;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RunReasonerFullTask extends RunReasonerTaskBase {
+
+	private static final Logger LOG = LoggerFactory.getLogger(RunReasonerFullTask.class);
 
 	public RunReasonerFullTask(ReasonerService reasonerService, Consumer<ClassifierResults> classifierResultsConsumer) {
 		super(reasonerService, classifierResultsConsumer);
@@ -35,6 +40,11 @@ public class RunReasonerFullTask extends RunReasonerTaskBase {
 		Future<ReasonerService> future = TinkExecutor.threadPool().submit(task);
 		future.get();
 		updateProgress(workDone);
+		
+		// After full reasoning completes, reset the tracker for incremental updates
+		LOG.info("Full reasoning complete - resetting EditedConceptTracker");
+		EditedConceptTracker.removeEdits();
+		EditedConceptTracker.ensureSubscribed();
 	}
 
 }

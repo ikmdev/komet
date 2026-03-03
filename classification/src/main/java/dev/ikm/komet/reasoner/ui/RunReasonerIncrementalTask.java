@@ -1,3 +1,4 @@
+
 /*
  * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
  *
@@ -16,8 +17,10 @@
 package dev.ikm.komet.reasoner.ui;
 
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
+import dev.ikm.tinkar.common.service.TinkExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,32 +35,49 @@ public class RunReasonerIncrementalTask extends RunReasonerTaskBase {
 	private static final Logger LOG = LoggerFactory.getLogger(RunReasonerIncrementalTask.class);
 
 	public RunReasonerIncrementalTask(ReasonerService reasonerService,
-			Consumer<ClassifierResults> classifierResultsConsumer) {
+	                                  Consumer<ClassifierResults> classifierResultsConsumer) {
 		super(reasonerService, classifierResultsConsumer);
 	}
 
 	@Override
 	protected ReasonerService compute() throws Exception {
-		if (!reasonerService.isIncrementalReady())
-			throw new Exception("Need to run full reasoner first");
-		if (EditedConceptTracker.getEdits().isEmpty())
-			throw new Exception("No edits to process");
+		LOG.info("========================================");
+		LOG.info("STARTING INCREMENTAL REASONER TASK");
+		LOG.info("========================================");
+
+		EditedConceptTracker.ensureSubscribed();
+		EditedConceptTracker.addEditsFromChanges(reasonerService.getViewCalculator());
+
+		if (!reasonerService.isIncrementalReady()) {
+			updateMessage("Incremental reasoner not ready; running full reasoner");
+			LOG.warn("*** Incremental reasoner NOT READY - falling back to FULL reasoner ***");
+			return new RunReasonerFullTask(reasonerService, classifierResultsConsumer).compute();
+		}
+
+		int editCount = EditedConceptTracker.getEdits().size();
+		if (editCount == 0) {
+			updateMessage("No incremental edits found; running full reasoner");
+			LOG.warn("*** NO EDITS FOUND - falling back to FULL reasoner ***");
+			return new RunReasonerFullTask(reasonerService, classifierResultsConsumer).compute();
+		}
+
+		LOG.info("Proceeding with incremental reasoning for {} edits", editCount);
 		return super.compute();
 	}
 
 	private final boolean logParents = false;
 
-	protected void loadData(int workDone) {
-		updateMessage("Step " + workDone + ": Build changes");
-		if (logParents)
-			logParents();
-		for (SemanticEntityVersion edit : EditedConceptTracker.getEdits()) {
-			LOG.info("\nEdit: " + edit.referencedComponentNid() + " "
-					+ PrimitiveData.text(edit.referencedComponentNid()) + "\n" + edit);
-		}
-		reasonerService.processIncremental(List.of(), EditedConceptTracker.getEdits());
-		EditedConceptTracker.removeEdits();
+	protected void loadData(int workDone) throws Exception {
+		updateMessage("Step " + workDone + ": Loading data into reasoner");
+		LoadDataTask task = new LoadDataTask(reasonerService);
+		Future<ReasonerService> future = TinkExecutor.threadPool().submit(task);
+		future.get();
 		updateProgress(workDone);
+		
+		// After full reasoning completes, reset the tracker for incremental updates
+		LOG.info("Full reasoning complete - resetting EditedConceptTracker");
+		EditedConceptTracker.removeEdits();
+		EditedConceptTracker.ensureSubscribed();
 	}
 
 	private void logParents() {

@@ -97,6 +97,7 @@ public class DeviceController {
 
     EvtBus evtBus = EvtBusFactory.getDefaultEvtBus();
     private Consumer<PublicId> deviceDropListener;
+    @SuppressWarnings("removal")
     @FXML
     private void initialize() {
 

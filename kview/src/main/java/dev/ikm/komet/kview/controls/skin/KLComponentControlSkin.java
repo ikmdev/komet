@@ -366,6 +366,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
      * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
      * @return Returns true if user dragged a concept from the new concept navigator, otherwise false.
      */
+    @SuppressWarnings("removal")
     private boolean isFromNexGenConceptNav(DragEvent dragEvent) {
         if (dragEvent.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)) {
             Object uuidsContent = dragEvent.getDragboard().getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);

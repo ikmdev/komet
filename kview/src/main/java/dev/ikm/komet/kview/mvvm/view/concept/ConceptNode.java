@@ -171,6 +171,7 @@ public class ConceptNode extends ExplorationNodeAbstract {
      * Wireup listeners(handler code) that will respond on change. E.g. The entityFocusProperty changes when a user selects a concept (in a Navigator tree view).
      * @param viewProperties
      */
+    @SuppressWarnings("removal")
     private void registerListeners(ViewProperties viewProperties) {
         // remove later when closing
         this.entityFocusChangeListener = (observable, oldEntityFacade, newEntityFacade) -> {

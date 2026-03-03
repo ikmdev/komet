@@ -122,6 +122,7 @@ public class KLEditorMainScreenController {
         klEditorWindowController.shutdown();
     }
 
+    @SuppressWarnings("removal")
     private void initPatternsList(ViewCalculator viewCalculator) {
         patternsList = FXCollections.observableArrayList();
         PrimitiveData.get().forEachPatternNid(patternNid -> {
