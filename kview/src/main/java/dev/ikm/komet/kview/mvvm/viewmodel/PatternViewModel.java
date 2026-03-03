@@ -210,6 +210,7 @@ public class PatternViewModel extends FormViewModel {
         loadPatternValues();
     }
 
+    @SuppressWarnings("removal")
     public void loadPatternValues(){
         ObjectProperty<EntityFacade> patternProperty = getProperty(PATTERN);
         EntityFacade patternFacade = patternProperty.getValue();

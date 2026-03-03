@@ -142,6 +142,7 @@ public class ChangeListItemController {
         this.entityNid = entityNid;
     }
 
+    @SuppressWarnings("removal")
     public void updateView() {
         ViewCalculator viewCalculator = getViewProperties().calculator();
         VersionChangeRecord versionChangeRecord = getChangeCoordinate().versionChangeRecord();

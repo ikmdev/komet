@@ -148,6 +148,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
          * @param preferences    preferences for persisting window settings
          * @return a new {@link AbstractEntityChapterKlWindow} instance, or null if creation fails
          */
+        @SuppressWarnings("removal")
         public static AbstractEntityChapterKlWindow createFromUuids(UUID[] uuids,
                                                                     UUID journalTopic,
                                                                     ViewProperties viewProperties,

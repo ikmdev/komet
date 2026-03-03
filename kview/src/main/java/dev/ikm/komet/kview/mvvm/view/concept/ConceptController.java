@@ -720,6 +720,7 @@ public class ConceptController {
         }
     }
 
+    @SuppressWarnings("removal")
     private void showAddAnotherNameUI() {
         ConceptEntity currentConcept = null;
         if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) instanceof EntityProxy.Concept concept) {

@@ -49,6 +49,7 @@ public class ComponentPanel
         this.componentDetailPane.setCenter(this.scrollPane);
     }
 
+    @SuppressWarnings("removal")
     public ComponentPanel(SimpleObjectProperty<EntityFacade> componentProperty, ViewProperties viewProperties) {
         super(viewProperties);
         this.componentProperty = componentProperty;

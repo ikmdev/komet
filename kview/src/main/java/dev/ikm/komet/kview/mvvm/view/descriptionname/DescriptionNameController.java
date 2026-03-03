@@ -188,6 +188,7 @@ public class DescriptionNameController {
         clearView();
     }
 
+     @SuppressWarnings("removal")
      private void populateDialectComboBoxes() {
         // currently no UNACCEPTABLE in TinkarTerm
         Entity<? extends EntityVersion> acceptable = EntityService.get().getEntityFast(TinkarTerm.ACCEPTABLE);

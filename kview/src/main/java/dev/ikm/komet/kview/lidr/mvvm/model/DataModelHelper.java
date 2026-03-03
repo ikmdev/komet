@@ -114,6 +114,7 @@ public class DataModelHelper {
         return viewProperties;
     }
 
+    @SuppressWarnings("removal")
     public static SpecimenRecord makeSpecimenRecord(PublicId specimenId) {
         Optional<Entity> specimenEntity = EntityService.get().getEntity(specimenId.asUuidArray());
         if (specimenEntity.isEmpty()) {
@@ -129,6 +130,7 @@ public class DataModelHelper {
                 findConceptReferenceForRoleType(findLatestLogicalDefinition(specimenEntity).get(), METHOD_TYPE).get().publicId()
         );
     }
+    @SuppressWarnings("removal")
     public static TargetRecord makeTargetRecord(PublicId targetId) {
         Optional<Entity> targetEntity = EntityService.get().getEntity(targetId.asUuidArray());
         if (targetEntity.isEmpty()) {
@@ -143,6 +145,7 @@ public class DataModelHelper {
                 findConceptReferenceForRoleType(findLatestLogicalDefinition(targetEntity).get(), ANALYTE).get().publicId()
         );
     }
+    @SuppressWarnings("removal")
     public static ResultConformanceRecord makeResultConformanceRecord(PublicId resultConformanceId) {
         Optional<Entity> resultConformanceEntity = EntityService.get().getEntity(resultConformanceId.asUuidArray());
         if (resultConformanceEntity.isEmpty()) {
@@ -166,6 +169,7 @@ public class DataModelHelper {
         }
         return false;
     }
+    @SuppressWarnings("removal")
     public static LidrRecord makeLidrRecord(PublicId lidrRecordId) {
         Optional<Entity> lidrRecordEntity = EntityService.get().getEntity(lidrRecordId.asUuidArray());
         if (lidrRecordEntity.isEmpty()) {
@@ -197,6 +201,7 @@ public class DataModelHelper {
                 targets, specimens, resultConformances);
     }
 
+    @SuppressWarnings("removal")
     public static AnalyteRecord makeAnalyteRecord(PublicId analyteId) {
         Optional<Entity> analyteEntity = EntityService.get().getEntity(analyteId.asUuidArray());
         if (analyteEntity.isEmpty()) {
@@ -365,6 +370,7 @@ public class DataModelHelper {
         return false;
     }
 
+    @SuppressWarnings("removal")
     public static PublicId write(LidrRecord lidrRecord, PublicId referencedComponentPublicId, PublicId stampEntity){
         // LIDR Record must be a Semantic referencing (pointing to) a Diagnostic Device Semantic
         // Diagnostic Device Semantics are expected to have 2 "child" semantics and therefore the structure will be like below:

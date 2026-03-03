@@ -54,6 +54,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
      * @param viewCalculator the view calculator
      * @param patternNid the nid of the Pattern
      */
+    @SuppressWarnings("removal")
     public EditorPatternModel(ViewCalculator viewCalculator, int patternNid) {
         this.viewCalculator = viewCalculator;
         this.nid = patternNid;

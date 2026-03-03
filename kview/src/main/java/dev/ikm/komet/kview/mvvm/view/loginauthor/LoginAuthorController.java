@@ -51,6 +51,7 @@ public class LoginAuthorController {
     @InjectViewModel
     private LoginAuthorViewModel loginAuthorViewModel;
 
+    @SuppressWarnings("removal")
     @FXML
     public void initialize() {
         ViewProperties viewProperties = getViewProperties();

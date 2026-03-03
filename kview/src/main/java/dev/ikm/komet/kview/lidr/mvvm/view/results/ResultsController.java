@@ -260,6 +260,7 @@ public class ResultsController extends AbstractBasicController implements BasicC
      * they will then see:
      *      Allowable Result
      */
+    @SuppressWarnings("removal")
     private void showQualitativeForm(boolean includeLabel) {
         if (qualitativeFields.size() > 0) {
             resultsFormContainer.getChildren().addAll(qualitativeFields);
@@ -533,6 +534,7 @@ public class ResultsController extends AbstractBasicController implements BasicC
         clearView();
     }
 
+    @SuppressWarnings("removal")
     @FXML
     private void createOneResult(ActionEvent event) {
         LOG.info("createOneResult -> Todo publish event containing the result record to be added to analyte group view.");

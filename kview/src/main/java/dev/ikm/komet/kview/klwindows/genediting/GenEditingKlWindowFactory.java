@@ -52,6 +52,7 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    @SuppressWarnings("removal")
     public GenEditingKlWindow restore(WindowSettings windowSettings, KometPreferences preferences) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
         try {
