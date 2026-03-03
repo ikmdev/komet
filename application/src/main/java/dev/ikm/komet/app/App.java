@@ -34,6 +34,7 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
 import com.jpro.webapi.WebAPI;
 import de.jangassen.MenuToolkit;
+import dev.ikm.komet.executor.AlertDialogSubscriber;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.PrefX;
@@ -67,6 +68,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Window;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import one.jpro.platform.utils.CommandRunner;
@@ -79,6 +81,12 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.prefs.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.prefs.BackingStoreException;
 
 /**
  * Main application class for the Komet application, extending JavaFX {@link Application}.
@@ -112,6 +120,8 @@ public class App extends Application  {
     public static final String ICON_LOCATION = "/icons/Komet.png";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
     public static final SimpleObjectProperty<ConceptFacade> userProperty = new SimpleObjectProperty<>();
+
+    private static AlertDialogSubscriber alertDialogSubscriber;
 
     static Stage primaryStage;
 
@@ -281,6 +291,13 @@ public class App extends Application  {
 
         try {
             App.primaryStage = stage;
+            Thread.setDefaultUncaughtExceptionHandler((thread, exception) -> {
+                AlertStreams.getRoot().dispatch(AlertObject.makeError(exception));
+                LOG.error("Uncaught exception in thread {}", thread.getName(), exception);
+            });
+
+            // Make Error Dialogs show up when an Error (Exception) happens
+            alertDialogSubscriber = new AlertDialogSubscriber();
             Thread.currentThread().setUncaughtExceptionHandler((thread, exception) -> {
                 AlertStreams.getRoot().dispatch(AlertObject.makeError(exception));
                 LOG.error("Uncaught exception in thread {}", thread.getName(), exception);

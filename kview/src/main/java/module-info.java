@@ -174,6 +174,8 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.loginauthor;
     exports dev.ikm.komet.kview.mvvm.viewmodel.stamp;
     opens dev.ikm.komet.kview.mvvm.viewmodel.stamp to dev.ikm.komet.desktop, dev.ikm.komet.application, javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.genpurpose.control;
+    opens dev.ikm.komet.kview.mvvm.view.genpurpose.control to javafx.fxml, org.carlfx.cognitive;
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.concept.ConceptNodeFactory;
 

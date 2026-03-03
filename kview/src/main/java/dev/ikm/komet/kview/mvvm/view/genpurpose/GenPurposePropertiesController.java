@@ -17,7 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
-import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
+import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
 import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
 import dev.ikm.komet.kview.mvvm.view.genediting.ReferenceComponentController;
@@ -52,9 +52,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
-import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
-import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
-import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_PANE_FXML_URL;
 import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CLOSE_CONFIRMATION_PANEL;
@@ -113,7 +110,7 @@ public class GenPurposePropertiesController {
     @InjectViewModel
     private GenPurposeViewModel genPurposeViewModel;
 
-    private Subscriber<PropertyPanelEvent> showPanelSubscriber;
+    private Subscriber<KLPropertyPanelEvent> showPanelSubscriber;
 
     private Subscriber<GenEditingEvent> genEditingEventSubscriber;
 
@@ -195,7 +192,7 @@ public class GenPurposePropertiesController {
         closeConfPanelProp.subscribe(closeIt -> {
             if (closeIt) {
                 EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new PropertyPanelEvent(closePropsPane, CLOSE_PANEL));
+                        new KLPropertyPanelEvent(closePropsPane, KLPropertyPanelEvent.CLOSE_PANEL));
 
                 confirmationPaneViewModel.reset();
             }
@@ -219,16 +216,16 @@ public class GenPurposePropertiesController {
             LOG.info("Show Panel by event type: " + evt.getEventType());
             propertyToggleButtonGroup.selectToggle(addEditButton);
 
-            if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
+            if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
                 genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
                 contentBorderPane.setCenter(editFieldsJfxNode.node());
-            } else if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD) {
-                genPurposeViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
-                contentBorderPane.setCenter(editFieldsJfxNode.node());
-            } else if (evt.getEventType() == PropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD) {
-                genPurposeViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
-                contentBorderPane.setCenter(referenceComponentJfxNode.node());
-            } else if (evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
+//            } else if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD) {
+//                genPurposeViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
+//                contentBorderPane.setCenter(editFieldsJfxNode.node());
+//            } else if (evt.getEventType() == KLPropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD) {
+//                genPurposeViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
+//                contentBorderPane.setCenter(referenceComponentJfxNode.node());
+            } else if (evt.getEventType() == KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 // change the heading on the top of the panel
                 genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
 
@@ -239,7 +236,7 @@ public class GenPurposePropertiesController {
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                PropertyPanelEvent.class, showPanelSubscriber);
+                KLPropertyPanelEvent.class, showPanelSubscriber);
 
 
     }

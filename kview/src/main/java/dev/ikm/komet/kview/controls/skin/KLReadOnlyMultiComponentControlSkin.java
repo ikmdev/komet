@@ -1,14 +1,9 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import dev.ikm.tinkar.events.EvtBusFactory;
+import static dev.ikm.komet.kview.controls.skin.KLReadOnlyBaseControlSkin.PREVIEW_MODE_PSEUDO_CLASS;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyMultiComponentControl;
 import dev.ikm.komet.kview.controls.KometIcon;
-import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
-import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.binding.StringBinding;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -81,6 +76,7 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
         promptTextContextMenu.setOnShown(value -> onContextMenuForPromptShown(promptTextContextMenu));
 
         control.editModeProperty().subscribe(this::onEditModeChanged);
+        control.previewModeProperty().subscribe(this::onPreviewModeChanged);
 
         // CSS
         mainContainer.getStyleClass().add("main-container");
@@ -184,5 +180,9 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
     private void onEditModeChanged() {
         pseudoClassStateChanged(EDIT_MODE_PSEUDO_CLASS, getSkinnable().isEditMode());
         wasEditActionFired = false;
+    }
+
+    private void onPreviewModeChanged() {
+        pseudoClassStateChanged(PREVIEW_MODE_PSEUDO_CLASS, getSkinnable().isPreviewMode());
     }
 }

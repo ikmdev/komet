@@ -15,7 +15,8 @@
     -fx-font-size: 13px;
 }
 
-.read-only-component-set-control .main-container .prompt-text:hover {
+.read-only-component-set-control .main-container .prompt-text:hover,
+.read-only-component-set-control:preview-mode .main-container .prompt-text {
     -fx-background-color: #f4f4f4;
     -fx-border-color: #dfdfdf;
 }
@@ -49,7 +50,9 @@
     -fx-padding: 0 0 0 1px;
 }
 
-.read-only-component-set-control .main-container .components-container .component-item:hover > .container > .label {
+
+.read-only-component-set-control .main-container .components-container .component-item:hover > .container > .label,
+.read-only-component-set-control:preview-mode .main-container .components-container .component-item > .container > .label{
     -fx-background-color: #f4f4f4;
     -fx-border-color: #dfdfdf;
 }
