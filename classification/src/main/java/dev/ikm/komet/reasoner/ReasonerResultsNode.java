@@ -204,6 +204,9 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			try {
 				reasonerFuture.get();
 				conceptCount = reasonerService.getConceptCount();
+				// Clear tracker after full run completes — the result-writing phase
+				// dispatches entity changes that would pollute the incremental tracker
+				EditedConceptTracker.removeEdits();
 			} catch (ExecutionException e) {
 				AlertStreams.dispatchToRoot(e);
 			} catch (InterruptedException ie) {
@@ -228,6 +231,9 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			dlg.showAndWait();
 			return;
 		}
+		// Process pending changes before checking if edits exist
+		EditedConceptTracker.addEditsFromChanges(getViewProperties().calculator());
+		
 		if (EditedConceptTracker.getEdits().isEmpty()) {
 			Alert dlg = new Alert(Alert.AlertType.CONFIRMATION, "Run full reasoner?", ButtonType.OK, ButtonType.CANCEL);
 			dlg.setHeaderText("No edits to process.");
