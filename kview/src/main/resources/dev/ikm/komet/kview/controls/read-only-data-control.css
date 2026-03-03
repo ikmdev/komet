@@ -15,7 +15,8 @@
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-size: 13px;
 }
-.read-only-data-control:hover .main-container .text-container {
+.read-only-data-control:hover .main-container .text-container,
+.read-only-data-control:preview-mode .main-container .text-container {
     -fx-background-color: #f4f4f4;
     -fx-border-color: #dfdfdf;
 }

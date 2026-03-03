@@ -16,6 +16,7 @@
 }
 
 .read-only-string-list-control:hover .main-container .text-container {
+.read-only-string-list-control:preview-mode .main-container .text-container {
     -fx-background-color: #f4f4f4;
     -fx-border-color: #dfdfdf;
 }

@@ -34,6 +34,7 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
 import com.jpro.webapi.WebAPI;
 import de.jangassen.MenuToolkit;
+import dev.ikm.komet.executor.AlertDialogSubscriber;
 import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.PrefX;
@@ -114,6 +115,8 @@ public class App extends Application  {
     public static final String ICON_LOCATION = "/icons/Komet.png";
     public static final SimpleObjectProperty<AppState> state = new SimpleObjectProperty<>(STARTING);
     public static final SimpleObjectProperty<ConceptFacade> userProperty = new SimpleObjectProperty<>();
+
+    private static AlertDialogSubscriber alertDialogSubscriber;
 
     static Stage primaryStage;
 
@@ -287,6 +290,9 @@ public class App extends Application  {
                 AlertStreams.getRoot().dispatch(AlertObject.makeError(exception));
                 LOG.error("Uncaught exception in thread {}", thread.getName(), exception);
             });
+
+            // Make Error Dialogs show up when an Error (Exception) happens
+            alertDialogSubscriber = new AlertDialogSubscriber();
 
             // Initialize the JPro WebAPI
             if (IS_BROWSER) {

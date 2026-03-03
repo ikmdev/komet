@@ -27,6 +27,12 @@ public abstract class KLReadOnlyBaseControl extends Control {
     public BooleanProperty editModeProperty() { return editMode; }
     public void setEditMode(boolean editMode) { this.editMode.set(editMode); }
 
+    // -- preview mode
+    private BooleanProperty previewMode = new SimpleBooleanProperty();
+    public boolean isPreviewMode() { return previewMode.get(); }
+    public BooleanProperty previewModeProperty() { return previewMode; }
+    public void setPreviewMode(boolean previewMode) { this.previewMode.set(previewMode); }
+
     // -- on edit action
     private ObjectProperty<Runnable> onEditAction = new SimpleObjectProperty<>();
     public Runnable getOnEditAction() { return onEditAction.get(); }
