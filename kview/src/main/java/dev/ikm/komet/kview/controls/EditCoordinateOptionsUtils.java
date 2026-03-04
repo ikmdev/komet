@@ -13,6 +13,7 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.collections.ObservableList;
 import javafx.util.Subscription;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -203,6 +204,55 @@ public class EditCoordinateOptionsUtils {
 //                }));
             }
         }
+
+        // Subscribe directly to the edit coordinate (ObservableEditCoordinate.getCompositeCoordinates()
+        // returns an empty array so the loop above never handles it).
+        ObservableEditCoordinate editCoordinate = observableView.editCoordinate();
+
+        // AUTHOR
+        viewSubscription = viewSubscription.and(editCoordinate.authorForChangesProperty().subscribe(author -> {
+            if (fromFilter) return;
+            fromView = true;
+            mainCoordinates.getAuthorForChange().selectedOptions().setAll(
+                    author != null ? List.of(author) : List.of());
+            fromView = false;
+        }));
+
+        // DEFAULT MODULE
+        viewSubscription = viewSubscription.and(editCoordinate.defaultModuleProperty().subscribe(module -> {
+            if (fromFilter) return;
+            fromView = true;
+            mainCoordinates.getDefaultModule().selectedOptions().setAll(
+                    module != null ? List.of(module) : List.of());
+            fromView = false;
+        }));
+
+        // DESTINATION MODULE
+        viewSubscription = viewSubscription.and(editCoordinate.destinationModuleProperty().subscribe(module -> {
+            if (fromFilter) return;
+            fromView = true;
+            mainCoordinates.getDestinationModule().selectedOptions().setAll(
+                    module != null ? List.of(module) : List.of());
+            fromView = false;
+        }));
+
+        // DEFAULT PATH
+        viewSubscription = viewSubscription.and(editCoordinate.defaultPathProperty().subscribe(path -> {
+            if (fromFilter) return;
+            fromView = true;
+            mainCoordinates.getDefaultPath().selectedOptions().setAll(
+                    path != null ? List.of(path) : List.of());
+            fromView = false;
+        }));
+
+        // PROMOTION PATH
+        viewSubscription = viewSubscription.and(editCoordinate.promotionPathProperty().subscribe(path -> {
+            if (fromFilter) return;
+            fromView = true;
+            mainCoordinates.getPromotionPath().selectedOptions().setAll(
+                    path != null ? List.of(path) : List.of());
+            fromView = false;
+        }));
     }
 
     private void unsubscribeView() {

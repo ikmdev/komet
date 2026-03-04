@@ -35,7 +35,7 @@ public class EditCoordinateOptionsPopup extends PopupControl {
         viewPropertiesReadOnlyObjectWrapperProperty = new ReadOnlyObjectWrapper<>(this, "viewProperties", viewProperties);
 //        this.parentViewCoordinate = viewProperties.parentView();
         filterOptionsUtils = new EditCoordinateOptionsUtils();
-        EditCoordinateOptions masterEditCoordinate = new EditCoordinateOptions(viewProperties.parentView().editCoordinate());
+        EditCoordinateOptions masterEditCoordinate = new EditCoordinateOptions(viewProperties.nodeView().editCoordinate());
         inheritedFilterOptionsProperty = new ReadOnlyObjectWrapper<>(this, "inheritedFilterOptions", masterEditCoordinate);
 
         // Set initial filter options to match the parent view's edit coordinate

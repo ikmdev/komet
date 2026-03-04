@@ -807,23 +807,9 @@ public class LandingPageController implements BasicController {
                     editCoordOptionsPopup.hide();
                 } else {
                     try {
-                        /// //////////////////////////////////////////////////////
-                        // populate available options
-                        // look for preferences
-                        //    if available set with these values
-                        // otherwise
-                        //    select default options from EditCoordinate.Default
-                        /// ////////////////////////////////////////////////////
-//                        populateAvailableAuthors(viewProperties, editCoordOptionsPopup);
-//                        List<ConceptFacade> list = new ArrayList<>();
-//                        list.add(TinkarTerm.DEVELOPMENT_PATH);
-//                        list.add(TinkarTerm.PRIMORDIAL_PATH);
-//                        editCoordOptionsPopup.getFilterOptions()
-//                                .getMainCoordinates()
-//                                .getDefaultPath()
-//                                .availableOptions()
-//                                .addAll(list);
-
+                        populateAvailableAuthors(viewProperties, editCoordOptionsPopup);
+                        populateAvailablePaths(viewProperties, editCoordOptionsPopup);
+                        populateAvailableModules(viewProperties, editCoordOptionsPopup);
 
                         Bounds buttonBounds = editCoordinatesButton.localToScreen(editCoordinatesButton.getLayoutBounds());
                         // Show beneath the button
@@ -860,30 +846,64 @@ public class LandingPageController implements BasicController {
     }
 
     private void populateAvailableAuthors(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
+        if (!editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().availableOptions().isEmpty()) {
+            return;
+        }
         ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
         Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
         List<ConceptEntity> authors = conceptEntitySet.stream().toList();
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().availableOptions().addAll(authors);
-        ConceptFacade defaultAuthor = authors
-                .stream()
-                .filter(author -> author.nid() == viewProperties.parentView().getAuthorForChanges().nid())
-                .findFirst().orElse(null); // TODO get default author from preferences.
-
-        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().selectedOptions().add(defaultAuthor);
-
+        ConceptFacade currentAuthor = viewProperties.nodeView().editCoordinate().authorForChangesProperty().get();
+        if (currentAuthor != null) {
+            editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().selectedOptions().add(currentAuthor);
+        }
     }
 
     private void populateAvailablePaths(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
+        if (!editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().availableOptions().isEmpty()) {
+            return;
+        }
         ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
         Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.PATH.publicId());
-        List<ConceptEntity> entities = conceptEntitySet.stream().toList();
-        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().availableOptions().addAll(entities);
-        ConceptFacade defaultAuthor = entities
-                .stream()
-                .filter(author -> author.nid() == viewProperties.parentView().getAuthorForChanges().nid())
-                .findFirst().orElse(null); // TODO get default author from preferences.
+        List<ConceptEntity> paths = conceptEntitySet.stream().toList();
+        ObservableEditCoordinate editCoordinate = viewProperties.nodeView().editCoordinate();
 
-        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().selectedOptions().add(defaultAuthor);
+        // Default path
+        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().availableOptions().addAll(paths);
+        ConceptFacade defaultPath = editCoordinate.defaultPathProperty().get();
+        if (defaultPath != null) {
+            editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().selectedOptions().add(defaultPath);
+        }
 
+        // Promotion path
+        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getPromotionPath().availableOptions().addAll(paths);
+        ConceptFacade promotionPath = editCoordinate.promotionPathProperty().get();
+        if (promotionPath != null) {
+            editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getPromotionPath().selectedOptions().add(promotionPath);
+        }
+    }
+
+    private void populateAvailableModules(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
+        if (!editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultModule().availableOptions().isEmpty()) {
+            return;
+        }
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.MODULE.publicId());
+        List<ConceptEntity> modules = conceptEntitySet.stream().toList();
+        ObservableEditCoordinate editCoordinate = viewProperties.nodeView().editCoordinate();
+
+        // Default module
+        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultModule().availableOptions().addAll(modules);
+        ConceptFacade defaultModule = editCoordinate.defaultModuleProperty().get();
+        if (defaultModule != null) {
+            editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultModule().selectedOptions().add(defaultModule);
+        }
+
+        // Destination module
+        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDestinationModule().availableOptions().addAll(modules);
+        ConceptFacade destinationModule = editCoordinate.destinationModuleProperty().get();
+        if (destinationModule != null) {
+            editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDestinationModule().selectedOptions().add(destinationModule);
+        }
     }
 }

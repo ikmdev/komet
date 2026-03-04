@@ -392,7 +392,7 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
             boolean selected = !option.selectedOptions().isEmpty();
             Object item = selected ? option.selectedOptions().getFirst() : null;
             LOG.info("Updating main edit coordinate record for option: {} selected: {} ", option.title(), item);
-            ObservableEditCoordinate editCoordinate = control.getViewProperties().parentView().editCoordinate();
+            ObservableEditCoordinate editCoordinate = control.getViewProperties().nodeView().editCoordinate();
             EditCoordinateOptions.OPTION_ITEM itemType = option.item();
             if (selected) {
                 if (itemType == AUTHOR_FOR_CHANGE) {
