@@ -339,6 +339,9 @@ public class GenPurposeFieldsController {
     }
 
     private void setupEditSemanticDetails(SemanticEntity<SemanticEntityVersion> semanticEntity) {
+        // Clear previous controls that might be there from previously editing another Semantic
+        nodes.clear();
+        klFields.clear();
 
         observableEntityHandle = ObservableEntityHandle.get(semanticEntity.nid());
 

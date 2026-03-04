@@ -37,10 +37,6 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
                                   EntityFacade entityFacade,
                                   ViewProperties viewProperties,
                                   KometPreferences preferences) {
-
-        preferences.put(WINDOW_TYPE, getWindowType().toString());
-        preferences.put(WINDOW_ID, UUID.randomUUID().toString());
-
         return new GenPurposeKLWindow(journalTopic, entityFacade, viewProperties, preferences);
     }
 

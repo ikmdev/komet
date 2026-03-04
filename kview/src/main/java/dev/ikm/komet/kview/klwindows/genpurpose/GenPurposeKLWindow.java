@@ -71,9 +71,11 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
 
         // tracks viewModel changes and save them into preferences
         listenToEntityChanges();
+    }
 
+    public void initKLWindowPreferences(KometPreferences klWindowPreferences, ViewProperties viewProperties) {
         // Initialize the controller
-        jfxNode.controller().init(preferences, viewProperties);
+        jfxNode.controller().init(klWindowPreferences, viewProperties);
     }
 
     /**
