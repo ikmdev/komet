@@ -100,6 +100,7 @@ import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
+import dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
@@ -1158,16 +1159,20 @@ public class JournalController {
         setupWorkspaceWindow(chapterKlWindow);
     }
 
-    private void createGenPurposeKLWindow(EntityFacade entityFacade, KometPreferences preferences) {
+    private void createGenPurposeKLWindow(EntityFacade entityFacade, KometPreferences klEditorWindowPreferences) {
 //        if (preferences != null) {
 //            preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
 //        }
 
         ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.createGenPurposeKLWindow");
 
-        AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.GEN_PURPOSE_KL,
-                journalTopic, entityFacade, viewProperties, preferences);
-        setupWorkspaceWindow(chapterKlWindow);
+        GenPurposeKLWindow genPurposeKLWindow = (GenPurposeKLWindow) createWindow(EntityKlWindowTypes.GEN_PURPOSE_KL,
+                journalTopic, entityFacade, viewProperties, null);
+
+        // Init KL Editor Window preferences
+        genPurposeKLWindow.initKLWindowPreferences(klEditorWindowPreferences, viewProperties);
+
+        setupWorkspaceWindow(genPurposeKLWindow);
     }
 
     /**
