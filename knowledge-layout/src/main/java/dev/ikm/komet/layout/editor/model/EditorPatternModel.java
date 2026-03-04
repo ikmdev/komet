@@ -46,6 +46,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
     private final PatternFacade patternFacade;
     private final int nid;
 
+
     private static ObservableList<EditorPatternModel> existingPatterns = FXCollections.observableArrayList();
 
     /*=============================================================================*
@@ -53,6 +54,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
      * Constructors                                                                *
      *                                                                             *
      *=============================================================================*/
+
     /**
      * Creates a EditorPatternModel given the passed in nid of the Pattern.
      *
