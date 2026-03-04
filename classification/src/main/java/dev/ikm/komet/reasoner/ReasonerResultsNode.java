@@ -45,9 +45,13 @@ import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.reasoner.elksnomed.ElkSnomedReasonerService;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
+
+import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
+import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -207,6 +211,11 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				// Clear tracker after full run completes — the result-writing phase
 				// dispatches entity changes that would pollute the incremental tracker
 				EditedConceptTracker.removeEdits();
+				// Refresh all open concept views so inferred axioms become visible
+				Platform.runLater(() -> EvtBusFactory.getDefaultEvtBus().publish(
+						CALCULATOR_CACHE_TOPIC,
+						new dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent(
+								this, GLOBAL_REFRESH)));
 			} catch (ExecutionException e) {
 				AlertStreams.dispatchToRoot(e);
 			} catch (InterruptedException ie) {
@@ -253,6 +262,11 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			try {
 				reasonerFuture.get();
 				conceptCount = reasonerService.getConceptCount();
+				// Refresh all open concept views so inferred axioms become visible
+				Platform.runLater(() -> EvtBusFactory.getDefaultEvtBus().publish(
+						CALCULATOR_CACHE_TOPIC,
+						new dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent(
+								this, GLOBAL_REFRESH)));
 			} catch (ExecutionException e) {
 				AlertStreams.dispatchToRoot(e);
 			} catch (InterruptedException ie) {

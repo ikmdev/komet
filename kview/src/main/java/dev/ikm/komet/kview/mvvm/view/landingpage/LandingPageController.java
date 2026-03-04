@@ -183,7 +183,7 @@ public class LandingPageController implements BasicController {
     BorderPane landingPageBorderPane;
 
     @FXML
-    ComboBox<String> notificationTypeFilterComboBox;
+    private BorderPane contentBorderPane;
 
     @FXML
     private Label knowledgeLayoutButtonLabel;
@@ -207,9 +207,6 @@ public class LandingPageController implements BasicController {
         clearView();
 
         knowledgeLayoutButtonLabel.setText("Knowledge\nLayout Editor");
-
-        notificationTypeFilterComboBox.getItems().addAll("All types");
-        notificationTypeFilterComboBox.getSelectionModel().selectFirst();
 
         progressPopupPane.getStyleClass().add("progress-popup-pane");
 
@@ -687,7 +684,7 @@ public class LandingPageController implements BasicController {
 
     @FXML
     private void showHomeLandingPage(ActionEvent event) {
-        landingPageBorderPane.setCenter(homePage);
+        contentBorderPane.setCenter(homePage);
     }
 
     @FXML
@@ -702,7 +699,7 @@ public class LandingPageController implements BasicController {
             }
             klLandingPage = root;
         }
-        landingPageBorderPane.setCenter(klLandingPage);
+        contentBorderPane.setCenter(klLandingPage);
     }
 
     private FilterOptionsPopup setupViewCoordinateOptionsPopup(ViewProperties viewProperties,

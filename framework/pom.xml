@@ -185,7 +185,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>--enable-preview</argLine>
+                    <argLine>--enable-preview --add-modules jdk.incubator.vector</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -246,6 +246,7 @@
                             <!-- Add JavaFX arguments for headless testing -->
                             <argLine>
                                 --enable-preview
+                                --add-modules jdk.incubator.vector
                                 -Dtestfx.headless=true
                                 --add-opens=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED
                                 --add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
