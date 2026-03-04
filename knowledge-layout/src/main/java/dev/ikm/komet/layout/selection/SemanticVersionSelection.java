@@ -51,6 +51,7 @@ public record SemanticVersionSelection(PublicId componentPublicId, PublicId stam
         }
     }
 
+    @SuppressWarnings("removal")
     @Override
     public ImmutableList<SelectableElement> dataElements() {
         MutableList<SelectableElement> selectableProperties = Lists.mutable.of();

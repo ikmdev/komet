@@ -29,6 +29,7 @@ public abstract class ChangeToConceptFromObjectAbstract extends AbstractAxiomAct
 
     final ConceptFacade conceptFacade;
 
+    @SuppressWarnings("removal")
     public ChangeToConceptFromObjectAbstract(String text, Object object, AxiomSubjectRecord axiomSubjectRecord, ViewCalculator viewCalculator, EditCoordinate editCoordinate) {
         super(text, axiomSubjectRecord, viewCalculator, editCoordinate);
         switch (object) {

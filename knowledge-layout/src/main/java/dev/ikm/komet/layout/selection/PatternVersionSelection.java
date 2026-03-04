@@ -91,6 +91,7 @@ public record PatternVersionSelection(PublicId componentPublicId, PublicId stamp
 
     }
 
+    @SuppressWarnings("removal")
     @Override
     public ImmutableList<SelectableElement> dataElements() {
         MutableList<SelectableElement> selectableElements = Lists.mutable.of();

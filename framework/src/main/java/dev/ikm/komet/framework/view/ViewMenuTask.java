@@ -74,7 +74,9 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         if (whichMenu != null) {
             this.whichMenu = whichMenu;
         }
-
+        if (viewCalculator.viewCoordinateRecord().stampCoordinate().stampPosition().time() != Long.MAX_VALUE) {
+            LOG.info("View menu task not with latest time: {}", DateTimeUtil.format(viewCalculator.viewCoordinateRecord().stampCoordinate().stampPosition().time()));
+        }
         LOG.info("New ViewMenuTask");
     }
 

@@ -138,6 +138,7 @@ public class AnalyteGroupController implements BasicController {
     @InjectViewModel
     private AnalyteGroupViewModel analyteGroupViewModel;
 
+    @SuppressWarnings("removal")
     @Override
     @FXML
     public void initialize() {
@@ -291,6 +292,7 @@ public class AnalyteGroupController implements BasicController {
         analyteGroupVbox.getChildren().add(2, generateAnalyteSearchControls());
     }
 
+    @SuppressWarnings("removal")
     private Node generateAnalyteSearchControls() {
         // containers
         VBox analyteVbox = new VBox();

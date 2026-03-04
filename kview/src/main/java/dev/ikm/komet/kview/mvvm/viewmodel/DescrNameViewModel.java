@@ -124,6 +124,7 @@ public class DescrNameViewModel extends FormViewModel {
         return CASE_SIGNIFICANCE_OPTIONS;
     }
 
+    @SuppressWarnings("removal")
     public void updateFullyQualifiedName(PublicId publicId, ViewProperties viewProperties) {
         Transaction transaction = Transaction.make();
 
@@ -200,6 +201,7 @@ public class DescrNameViewModel extends FormViewModel {
         editDescrName.setSemanticPublicId(getValue(SEMANTIC_PUBLIC_ID));
     }
 
+    @SuppressWarnings("removal")
     public void updateOtherName(PublicId publicId, ViewProperties viewProperties) {
         Transaction transaction = Transaction.make();
         StampEntity stampEntity = transaction.getStamp(

@@ -38,6 +38,7 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.EntityStringUtil;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,26 +47,6 @@ import java.io.IOException;
 
 public class AddToContextMenuSimple implements AddToContextMenu {
     private static final Logger LOG = LoggerFactory.getLogger(AddToContextMenuSimple.class);
-
-    private static String recursiveEntityToString(EntityFacade entityFacade) {
-        return recursiveEntityToString(entityFacade.nid());
-    }
-
-    private static String recursiveEntityToString(int nid) {
-        StringBuilder sb = new StringBuilder();
-        recursiveEntityToString(nid, sb);
-        return sb.toString();
-    }
-
-    private static void recursiveEntityToString(int nid, StringBuilder sb) {
-        EntityHandle.get(nid).ifPresent(entity -> {
-            sb.append(entity.toString());
-            sb.append("\n\n");
-            for (int semanticNid : PrimitiveData.get().semanticNidsForComponent(nid)) {
-                recursiveEntityToString(semanticNid, sb);
-            }
-        });
-    }
 
     @Override
     public void addToContextMenu(Control control, ContextMenu contextMenu, ViewProperties viewProperties,
@@ -137,7 +118,7 @@ public class AddToContextMenuSimple implements AddToContextMenu {
             if (entityFacade != null) {
                 final Clipboard clipboard = Clipboard.getSystemClipboard();
                 final ClipboardContent content = new ClipboardContent();
-                content.putString(recursiveEntityToString(entityFacade));
+                content.putString(EntityStringUtil.recursiveEntityToString(entityFacade));
                 clipboard.setContent(content);
             }
         });

@@ -367,6 +367,7 @@ public class ExportController {
         });
     }
     
+    @SuppressWarnings("removal")
     private void performMembershipSetExport(final FileSavePicker fileSavePicker) {
         fileSavePicker.setOnFileSelected(exportFile -> {
             closeDialog();

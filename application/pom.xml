@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
+    <modelVersion>4.1.0</modelVersion>
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.58.0-SNAPSHOT</version>
+        <version>1.58.0-kec-jan-24-SNAPSHOT</version>
     </parent>
     <artifactId>application</artifactId>
     <!-- Required for ScenicView. -->
@@ -91,31 +91,31 @@
             <artifactId>knowledge-layout-editor</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>entity</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>entity-provider</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>search-provider</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>data-mvstore-provider</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>data-spinedarray-provider</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>data-ephemeral-provider</artifactId>
         </dependency>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>changeset-writer-provider</artifactId>
         </dependency>
 
@@ -148,7 +148,7 @@
         </dependency>
         <!-- End JPro related dependencies -->
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>composer</artifactId>
         </dependency>
         <dependency>
@@ -182,6 +182,10 @@
         <dependency>
             <groupId>dev.ikm.komet</groupId>
             <artifactId>sync</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>events</artifactId>
         </dependency>
     </dependencies>
     <build>

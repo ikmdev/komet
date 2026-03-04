@@ -1640,6 +1640,7 @@ public class JournalController {
 
     @FXML
     private void popupAddContextMenu(ActionEvent actionEvent) {
+        LOG.info("popupAddContextMenu: " + addButton.getScene().getRoot().getStyleClass().toString());
         MenuHelper.fireContextMenuEvent(actionEvent, Side.BOTTOM, -50, 0);
     }
 

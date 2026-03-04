@@ -373,6 +373,7 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
         return StyleClasses.CONCEPT_DETAIL_PANE.toString();
     }
 
+    @SuppressWarnings("removal")
     @Override
     protected void saveAdditionalPreferences() {
         Optional<EntityFacade> optionalFocus = Optional.ofNullable(this.entityFocusProperty.get());
@@ -533,6 +534,7 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
         return ft;
     }
 
+    @SuppressWarnings("removal")
     private void animateLayout() {
         componentPanelBox.getChildren().clear();
         populateVersionBranchGrid();
@@ -779,6 +781,7 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
 
     }
 
+    @SuppressWarnings("removal")
     private void updateStampControls(Entity entity) {
         if (entity == null) {
             return;

@@ -151,6 +151,7 @@ public class PatternNavEntryController {
         setupListView();
     }
 
+    @SuppressWarnings("removal")
     private void setupListView() {
 
         patternInstancesListView.setFixedCellSize(LIST_VIEW_CELL_SIZE);

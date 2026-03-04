@@ -220,6 +220,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         private ImageView identicon = new ImageView();
         private int currentNid = -1;
 
+        @SuppressWarnings("removal")
         public DescriptionSemanticListCell() {
             cellContainer.getChildren().addAll(
                     identicon,

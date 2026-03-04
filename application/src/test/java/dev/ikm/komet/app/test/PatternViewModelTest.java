@@ -116,6 +116,7 @@ public class PatternViewModelTest {
         });
     }
 
+    @SuppressWarnings("removal")
     public void summonPatternTest () {
         // Some UUIDS that can be used for testing:
         // 561f817a-130e-5e56-984d-910e9991558c
@@ -183,6 +184,7 @@ public class PatternViewModelTest {
     /**
      * test creating a pattern using the composer API
      */
+    @SuppressWarnings("removal")
     public PublicId createPattern() {
 
         // a06158ff-e08a-5d7d-bcfa-6cbfdb138910

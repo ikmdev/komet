@@ -156,6 +156,7 @@ public class AppPages {
      * Returns true if developer specifies a valid user or uuid of concept (decendents of user) otherwise false.
      * @return Returns true if developer specifies a valid user or uuid of concept (decendents of user) otherwise false.
      */
+    @SuppressWarnings("removal")
     private boolean bypassLogin(ViewProperties viewProperties) {
         // Check for developer bypass using a known user.
         String devAuthorPropStr = System.getProperty(DEV_AUTHOR);

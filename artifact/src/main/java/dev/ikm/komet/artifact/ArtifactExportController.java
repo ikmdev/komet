@@ -306,6 +306,7 @@ public class ArtifactExportController {
         membershipPatternSelectionListView.getItems().addAll(findAllMembershipPatterns(handlePathComboBox.getSelectionModel().getSelectedItem().nid()));
     }
 
+    @SuppressWarnings("removal")
     private List<ConceptEntity<ConceptEntityVersion>> findAllPaths() {
         //List of Concepts that represent available Paths in the data
         List<ConceptEntity<ConceptEntityVersion>> paths = new ArrayList<>();
@@ -320,6 +321,7 @@ public class ArtifactExportController {
         return paths;
     }
 
+    @SuppressWarnings("removal")
     private List<PatternEntity<PatternEntityVersion>> findAllMembershipPatterns(int pathConceptNid) {
         List<PatternEntity<PatternEntityVersion>> membershipPatterns = new ArrayList<>();
         PrimitiveData.get()

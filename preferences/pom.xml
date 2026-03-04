@@ -4,12 +4,12 @@
     <parent>
         <groupId>dev.ikm.komet</groupId>
         <artifactId>komet-parent</artifactId>
-        <version>1.58.0-SNAPSHOT</version>
+        <version>1.58.0-kec-jan-24-SNAPSHOT</version>
     </parent>
     <artifactId>preferences</artifactId>
     <dependencies>
         <dependency>
-            <groupId>${tinkar-core.groupId}</groupId>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>entity</artifactId>
         </dependency>
     </dependencies>

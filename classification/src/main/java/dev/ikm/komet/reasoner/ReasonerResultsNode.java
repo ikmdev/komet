@@ -192,6 +192,7 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 //			return;
 		TinkExecutor.threadPool().execute(() -> {
 			// TODO use a factory for the service and then create here
+            LOG.info("Starting full reasoner with coordinate: \n\n " + getViewProperties().calculator().viewCoordinateRecord());
 			reasonerService.init(getViewProperties().calculator(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
 					TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
 			RunReasonerFullTask task = new RunReasonerFullTask(reasonerService, resultsController::setResults);
@@ -203,6 +204,9 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			try {
 				reasonerFuture.get();
 				conceptCount = reasonerService.getConceptCount();
+				// Clear tracker after full run completes — the result-writing phase
+				// dispatches entity changes that would pollute the incremental tracker
+				EditedConceptTracker.removeEdits();
 			} catch (ExecutionException e) {
 				AlertStreams.dispatchToRoot(e);
 			} catch (InterruptedException ie) {
@@ -227,10 +231,16 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			dlg.showAndWait();
 			return;
 		}
+		// Process pending changes before checking if edits exist
+		EditedConceptTracker.addEditsFromChanges(getViewProperties().calculator());
+		
 		if (EditedConceptTracker.getEdits().isEmpty()) {
-			Alert dlg = new Alert(Alert.AlertType.CONFIRMATION, "No edits to process", ButtonType.OK);
-			dlg.setHeaderText(null);
-			dlg.showAndWait();
+			Alert dlg = new Alert(Alert.AlertType.CONFIRMATION, "Run full reasoner?", ButtonType.OK, ButtonType.CANCEL);
+			dlg.setHeaderText("No edits to process.");
+			Optional<ButtonType> res = dlg.showAndWait();
+			if (res.isPresent() && res.get() == ButtonType.OK) {
+				runFullReasoner();
+			}
 			return;
 		}
 		TinkExecutor.threadPool().execute(() -> {

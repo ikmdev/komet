@@ -46,6 +46,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
     private final PatternFacade patternFacade;
     private final int nid;
 
+
     private static ObservableList<EditorPatternModel> existingPatterns = FXCollections.observableArrayList();
 
     /*=============================================================================*
@@ -60,6 +61,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
      * @param viewCalculator the view calculator
      * @param patternNid the nid of the Pattern
      */
+    @SuppressWarnings("removal")
     public EditorPatternModel(ViewCalculator viewCalculator, int patternNid) {
         this.viewCalculator = viewCalculator;
         this.nid = patternNid;

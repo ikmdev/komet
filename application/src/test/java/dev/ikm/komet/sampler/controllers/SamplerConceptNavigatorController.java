@@ -260,6 +260,7 @@ public class SamplerConceptNavigatorController {
         LoadDataset.open(conceptNavigatorControl::setNavigator, datasetBox);
     }
 
+    @SuppressWarnings("removal")
     private void populateArea(List<UUID[]> uuids) {
         for (UUID[] uuid : uuids) {
             Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids(uuid));

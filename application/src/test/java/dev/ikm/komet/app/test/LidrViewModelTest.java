@@ -103,6 +103,7 @@ public class LidrViewModelTest {
         });
     }
 
+    @SuppressWarnings("removal")
     public PublicId createLidrRecordWithWriters() {
         // given a lidr record create a lidr record from a device.
         // Device 1868cec8-600a-3e4c-a27a-f7819b87aadd //BD Respiratory Viral Panel for BD MAX System
@@ -143,6 +144,7 @@ public class LidrViewModelTest {
         System.out.println("Created a LIDR record " + lidrPublicId);
         return lidrPublicId;
     }
+    @SuppressWarnings("removal")
     public PublicId createLidrRecordWithWriters2() {
         // given a lidr record create a lidr record from a device.
         // Device 1868cec8-600a-3e4c-a27a-f7819b87aadd //BD Respiratory Viral Panel for BD MAX System

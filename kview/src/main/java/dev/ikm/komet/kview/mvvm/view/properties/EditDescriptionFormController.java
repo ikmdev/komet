@@ -194,6 +194,7 @@ public class EditDescriptionFormController implements BasicController {
                 || !isStatusComboBoxComboBoxSelected);
     }
 
+    @SuppressWarnings("removal")
     private void populateDialectComboBoxes() {
         // currently no UNACCEPTABLE in TinkarTerm
         Entity<? extends EntityVersion> acceptable = EntityService.get().getEntityFast(TinkarTerm.ACCEPTABLE);
@@ -297,6 +298,7 @@ public class EditDescriptionFormController implements BasicController {
         return conceptOption;
     }
 
+    @SuppressWarnings("removal")
     public void setConceptAndPopulateForm(PublicId publicId) {
         editDescrName = null;
         this.publicId = publicId;

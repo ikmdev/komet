@@ -72,6 +72,7 @@ public class ViewModelHelper {
     public static String findDescrNameText(PublicId publicId) {
         return findDescrNameText(publicId, "");
     }
+    @SuppressWarnings("removal")
     public static String findDescrNameText(PublicId publicId, String defaultValue) {
         if (publicId == null) return defaultValue;
         Optional<Entity> entity = EntityService.get().getEntity(publicId.asUuidArray());
