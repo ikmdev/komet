@@ -2,6 +2,7 @@ package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kleditorapp.KLEditorSession;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell;
 import dev.ikm.komet.kleditorapp.view.propertiespane.PropertiesPane;
@@ -102,6 +103,8 @@ public class KLEditorMainScreenController {
 
         saveButton.disableProperty().bind(titleTextField.textProperty().isEmpty());
 
+        KLEditorSession.startSession();
+
         // Init Window
         initWindow(windowToLoad);
 
@@ -122,6 +125,7 @@ public class KLEditorMainScreenController {
 
     public void shutdown() {
         klEditorWindowController.shutdown();
+        KLEditorSession.getInstance().endSession();
     }
 
     @SuppressWarnings("removal")

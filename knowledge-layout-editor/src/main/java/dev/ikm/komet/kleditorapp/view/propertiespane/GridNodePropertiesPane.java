@@ -100,7 +100,7 @@ public class GridNodePropertiesPane<D extends EditorGridNodeModel> extends Contr
     }
 
     @Override
-    protected void doInit(D modelObject) {
+    protected void doInit() {
         if (previouslyShownModel != null) {
             columnIndexSubscription.unsubscribe();
             rowIndexSubscription.unsubscribe();
@@ -111,24 +111,24 @@ public class GridNodePropertiesPane<D extends EditorGridNodeModel> extends Contr
 
         // Column Index
         columnIndexSubscription = bindBidirectionalWithConverter(
-                modelObject.columnIndexProperty(),
+                currentlyShownModel.columnIndexProperty(),
                 columnPositionCB.valueProperty(),
                 val -> val - 1,
                 val -> val.intValue() + 1);
 
         // Row Index
         rowIndexSubscription = bindBidirectionalWithConverter(
-                modelObject.rowIndexProperty(),
+                currentlyShownModel.rowIndexProperty(),
                 rowPositionCB.valueProperty(),
                 val -> val - 1,
                 val -> val.intValue() + 1);
 
         // Column Span
-        previousControlColumnSpanProperty = modelObject.columnSpanProperty().asObject();
+        previousControlColumnSpanProperty = currentlyShownModel.columnSpanProperty().asObject();
         columnSpanCB.valueProperty().bindBidirectional(previousControlColumnSpanProperty);
 
         // Row Span
-        previousControlRowSpanProperty = modelObject.rowSpanProperty().asObject();
+        previousControlRowSpanProperty = currentlyShownModel.rowSpanProperty().asObject();
         rowSpanCB.valueProperty().bindBidirectional(previousControlRowSpanProperty);
     }
 }

@@ -347,7 +347,7 @@ public class AppPages {
     }
 
     /**
-     * Launchs a new KE Editor Window
+     * Launchs a new KL Editor Window
      *
      * @param klWindowSettings if present will give the size and positioning of the journal window
      */

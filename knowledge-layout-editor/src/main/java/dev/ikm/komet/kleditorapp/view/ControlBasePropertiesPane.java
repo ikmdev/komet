@@ -1,5 +1,6 @@
 package dev.ikm.komet.kleditorapp.view;
 
+import dev.ikm.komet.kleditorapp.KLEditorSession;
 import dev.ikm.komet.layout.editor.model.EditorModelBase;
 import javafx.beans.property.Property;
 import javafx.event.ActionEvent;
@@ -34,9 +35,17 @@ public abstract class ControlBasePropertiesPane<T extends EditorModelBase> exten
 
         getChildren().add(mainContainer);
 
+        KLEditorSession.getInstance().sessionStateProperty().subscribe(() -> {
+           if (KLEditorSession.getInstance().getSessionState() == KLEditorSession.SessionState.ENDING) {
+               onSessionEnding();
+           }
+        });
+
         // CSS
         bottomContainer.getStyleClass().add("bottom-container");
     }
+
+    protected void onSessionEnding() { }
 
     public static <T, U> Subscription bindBidirectionalWithConverter(
             Property<T> property1,
@@ -71,10 +80,10 @@ public abstract class ControlBasePropertiesPane<T extends EditorModelBase> exten
     public final void initControl(T control){
         previouslyShownModel = currentlyShownModel;
         currentlyShownModel = control;
-        doInit(control);
+        doInit();
     }
 
-    protected abstract void doInit(T control);
+    protected abstract void doInit();
 
     @Override
     protected void layoutChildren() {
