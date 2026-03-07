@@ -49,6 +49,7 @@ import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.TitledMenuPopup;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
@@ -73,6 +74,7 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -183,6 +185,8 @@ public class GenPurposeDetailsController {
     private GenPurposeViewModel genPurposeViewModel;
     private Consumer<GenPurposeDetailsController> onCloseConceptWindow;
 
+    private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
+
     @FXML
     private void initialize() {
 
@@ -211,9 +215,13 @@ public class GenPurposeDetailsController {
 
         // Setup window support with explicit draggable nodes
         addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
+
+        // if the user clicks the Close Properties Button from the Edit Descriptions panel
+        // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
+        closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
     }
 
-    @FXML
     private void openPropertiesPanel() {
         LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
 
@@ -223,6 +231,25 @@ public class GenPurposeDetailsController {
         }
 
         updateDraggableNodesForPropertiesPanel(true);
+    }
+
+    /**
+     * User is clicking on the Toggle switch to open or close Properties bump out.
+     *
+     * @param event Button click event.
+     */
+    @FXML
+    private void openPropertiesPanel(ActionEvent event) {
+        ToggleButton propertyToggle = (ToggleButton) event.getSource();
+        EvtType<KLPropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? KLPropertyPanelEvent.OPEN_PANEL : KLPropertyPanelEvent.CLOSE_PANEL;
+
+        updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
+
+//        isUpdatingStampSelection = true;
+//        stampViewControl.setSelected(propertyToggle.isSelected());
+//        isUpdatingStampSelection = false;
+
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {

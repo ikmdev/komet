@@ -1,5 +1,6 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
+import dev.ikm.komet.kleditorapp.KLEditorSession;
 import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.kview.controls.ToggleSwitch;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
@@ -98,7 +99,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
 
         referenceComponentCB = new ComboBox<>();
         referenceComponentCB.setMaxWidth(Double.MAX_VALUE);
-        Bindings.bindContent(referenceComponentCB.getItems(), EditorPatternModel.getExistingPatterns());
+        Bindings.bindContent(referenceComponentCB.getItems(), KLEditorSession.getInstance().getExistingPatterns());
         interactionGridPane.add(referenceComponentCB, 1, 1);
 
         referenceComponentCB.setCellFactory(_ -> new ListCell<>() {
@@ -161,21 +162,29 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
     }
 
     @Override
-    public void doInit(EditorSectionModel section) {
+    public void doInit() {
         if (previouslyShownModel != null) {
-            sectionNameTextField.textProperty().unbindBidirectional(previouslyShownModel.nameProperty());
             columnsComboBox.valueProperty().unbindBidirectional(lastColumnsSectionProperty);
+
+            sectionNameTextField.textProperty().unbindBidirectional(previouslyShownModel.nameProperty());
             startCollapsedTS.selectedProperty().unbindBidirectional(previouslyShownModel.startCollapsedProperty());
             referenceComponentCB.valueProperty().unbindBidirectional(previouslyShownModel.referenceComponentProperty());
         }
-        sectionNameTextField.textProperty().bindBidirectional(section.nameProperty());
+        sectionNameTextField.textProperty().bindBidirectional(currentlyShownModel.nameProperty());
 
         // Bind number of columns property
-        lastColumnsSectionProperty = section.numberColumnsProperty().asObject();
+        lastColumnsSectionProperty = currentlyShownModel.numberColumnsProperty().asObject();
         columnsComboBox.valueProperty().bindBidirectional(lastColumnsSectionProperty);
 
-        startCollapsedTS.selectedProperty().bindBidirectional(section.startCollapsedProperty());
+        startCollapsedTS.selectedProperty().bindBidirectional(currentlyShownModel.startCollapsedProperty());
 
-        referenceComponentCB.valueProperty().bindBidirectional(section.referenceComponentProperty());
+        referenceComponentCB.valueProperty().bindBidirectional(currentlyShownModel.referenceComponentProperty());
+    }
+
+    @Override
+    protected void onSessionEnding() {
+        sectionNameTextField.textProperty().unbindBidirectional(currentlyShownModel.nameProperty());
+        startCollapsedTS.selectedProperty().unbindBidirectional(currentlyShownModel.startCollapsedProperty());
+        referenceComponentCB.valueProperty().unbindBidirectional(currentlyShownModel.referenceComponentProperty());
     }
 }
