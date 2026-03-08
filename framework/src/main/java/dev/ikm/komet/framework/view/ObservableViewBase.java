@@ -106,6 +106,14 @@ public abstract class ObservableViewBase
 
     protected abstract ObservableEditCoordinateBase makeEditCoordinateObservable(ViewCoordinate viewRecord);
 
+    public ViewProperties makeOverridableViewProperties() {
+        return new ViewProperties(new ObservableViewWithOverride(this), this);
+    }
+
+    public ViewProperties makeOverridableViewProperties(String name) {
+        return new ViewProperties(new ObservableViewWithOverride(this, name), this);
+    }
+
     @Override
     public ImmutableList<LanguageCoordinateRecord> languageCoordinateList() {
         return getValue().languageCoordinateList();

@@ -18,14 +18,13 @@ package dev.ikm.komet.kview.klwindows;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.layout.window.KlRenderView;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.PROPERTY_PANEL_OPEN;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.SELECTED_PROPERTY_PANEL;
@@ -45,6 +44,8 @@ import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.SELECTED_PROPERT
 public abstract class AbstractChapterKlWindow<T extends Pane> implements ChapterKlWindow<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractChapterKlWindow.class);
+
+    private static final String VIEW_COORDINATE_OVERRIDES_KEY = "VIEW_COORDINATE_OVERRIDES";
 
     private final ViewProperties viewProperties;
     protected KometPreferences preferences;
@@ -165,6 +166,11 @@ public abstract class AbstractChapterKlWindow<T extends Pane> implements Chapter
 
         windowState = captureWindowState();
         if (windowState.saveToPreferences(preferences)) {
+            // Save chapter window coordinate overrides if any exist
+            if (viewProperties != null && viewProperties.nodeView().hasOverrides()) {
+                preferences.putObject(VIEW_COORDINATE_OVERRIDES_KEY,
+                        viewProperties.nodeView().getValue());
+            }
             LOG.debug("Saved state for window: {}", windowState);
         } else {
             LOG.error("Failed to save window state for {} window: {}", getWindowType(), getWindowTopic());
@@ -185,12 +191,30 @@ public abstract class AbstractChapterKlWindow<T extends Pane> implements Chapter
 
             // Apply the loaded state to the UI component
             if (applyWindowState(windowState)) {
+                // Restore chapter window coordinate overrides
+                restoreViewCoordinateOverrides();
                 LOG.info("Reverted window state for {}", getWindowTopic());
             } else {
                 LOG.warn("Failed to apply window state for {}", getWindowTopic());
             }
         } catch (Exception ex) {
             LOG.error("Error reverting window state for {}", getWindowTopic(), ex);
+        }
+    }
+
+    /**
+     * Restores view coordinate overrides from preferences, if any were saved.
+     * The override mechanism automatically detects which properties differ from the parent
+     * and marks only those as overridden.
+     */
+    protected void restoreViewCoordinateOverrides() {
+        if (preferences != null && viewProperties != null) {
+            ViewCoordinateRecord savedCoordinates = preferences.getObject(
+                    VIEW_COORDINATE_OVERRIDES_KEY, null);
+            if (savedCoordinates != null) {
+                viewProperties.nodeView().setValue(savedCoordinates);
+                LOG.debug("Restored coordinate overrides for window {}", getWindowTopic());
+            }
         }
     }
 

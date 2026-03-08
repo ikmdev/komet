@@ -36,9 +36,6 @@ public class ObservableStampPositionWithOverride
      */
     public ObservableStampPositionWithOverride(ObservableStampPosition stampPosition, String coordinateName) {
         super(stampPosition, coordinateName);
-        if (stampPosition instanceof ObservableStampPositionWithOverride) {
-            throw new IllegalStateException("Cannot override an overridden Coordinate. ");
-        }
     }
     public ObservableStampPositionWithOverride(ObservableStampPosition stampPosition) {
         this(stampPosition, stampPosition.getName());

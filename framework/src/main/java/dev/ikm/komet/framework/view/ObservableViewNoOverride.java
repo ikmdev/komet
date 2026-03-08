@@ -43,14 +43,6 @@ public class ObservableViewNoOverride extends ObservableViewBase {
         super(viewRecord);
     }
 
-    public ViewProperties makeOverridableViewProperties() {
-        return new ViewProperties(new ObservableViewWithOverride(this), this);
-    }
-
-    public ViewProperties makeOverridableViewProperties(String name) {
-        return new ViewProperties(new ObservableViewWithOverride(this, name), this);
-    }
-
     @Override
     protected ObservableStampCoordinateBase makeStampCoordinateObservable(ViewCoordinate viewRecord) {
         return new ObservableStampCoordinateNoOverride(viewRecord.stampCoordinate());

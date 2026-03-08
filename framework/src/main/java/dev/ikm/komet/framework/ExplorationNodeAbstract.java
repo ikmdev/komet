@@ -297,7 +297,7 @@ public abstract class ExplorationNodeAbstract implements KometNode, Subscriber<I
 
     @Override
     public ObservableViewNoOverride windowView() {
-        return viewProperties.parentView();
+        return (ObservableViewNoOverride) viewProperties.parentView();
     }
 
     @Override

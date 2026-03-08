@@ -525,6 +525,11 @@ public class App extends Application  {
     public void quit() {
         LOG.info(">>> quit() called - thread: {}", Thread.currentThread().getName());
 
+        // Save root view coordinates (including logged-in author)
+        if (landingPageController != null) {
+            landingPageController.saveWindowSettings();
+        }
+
         saveJournalWindowsToPreferences();
         LOG.info(">>> Saved journal windows to preferences");
 

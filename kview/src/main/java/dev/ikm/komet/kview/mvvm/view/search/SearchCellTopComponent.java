@@ -2,7 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.search;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.search.SearchPanelController;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
@@ -37,7 +37,7 @@ public class SearchCellTopComponent extends SearchCellBase {
     private final SortResultConceptEntryController controller;
     private final Pane parentPane;
 
-    public SearchCellTopComponent(ViewProperties viewProperties, UUID journalTopic, ObservableViewNoOverride observableViewNoOverride) {
+    public SearchCellTopComponent(ViewProperties viewProperties, UUID journalTopic, ObservableViewBase observableViewNoOverride) {
         super(viewProperties, journalTopic, observableViewNoOverride);
 
         Config config = new Config(SortResultConceptEntryController.class.getResource(SORT_CONCEPT_RESULT_CONCEPT_FXML));

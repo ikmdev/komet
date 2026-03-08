@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.search;
 
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -26,13 +26,13 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
 public abstract class SearchCellBase extends ListCell {
     protected final ViewProperties viewProperties;
     protected final UUID journalTopic;
-    protected final ObservableViewNoOverride observableViewNoOverride;
+    protected final ObservableViewBase observableViewNoOverride;
 
     private final ContextMenu contextMenu = new ContextMenu();
 
     private final HashMap<String, MenuItem> windowTitleToMenuItem = new HashMap<>();
 
-    public SearchCellBase(ViewProperties viewProperties, UUID journalTopic, ObservableViewNoOverride observableViewNoOverride) {
+    public SearchCellBase(ViewProperties viewProperties, UUID journalTopic, ObservableViewBase observableViewNoOverride) {
         this.viewProperties = viewProperties;
         this.journalTopic = journalTopic;
         this.observableViewNoOverride = observableViewNoOverride;

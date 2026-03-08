@@ -24,10 +24,10 @@ import java.util.Optional;
 
 public class ViewProperties {
 
-    private final ObservableViewNoOverride parentView;
+    private final ObservableViewBase parentView;
     private final ObservableViewWithOverride overridableView;
 
-    public ViewProperties(ObservableViewWithOverride overridableView, ObservableViewNoOverride parentView) {
+    public ViewProperties(ObservableViewWithOverride overridableView, ObservableViewBase parentView) {
         this.overridableView = overridableView;
         this.parentView = parentView;
     }
@@ -52,7 +52,7 @@ public class ViewProperties {
         return this.overridableView.calculator();
     }
 
-    public ObservableViewNoOverride parentView() {
+    public ObservableViewBase parentView() {
         return parentView;
     }
 

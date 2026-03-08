@@ -124,6 +124,10 @@
             <groupId>dev.ikm.komet</groupId>
             <artifactId>rules</artifactId>
         </dependency>
+        <dependency>
+            <groupId>dev.ikm.komet</groupId>
+            <artifactId>komet-terms</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

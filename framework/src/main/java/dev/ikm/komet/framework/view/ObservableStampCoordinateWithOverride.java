@@ -35,9 +35,6 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
 
     public ObservableStampCoordinateWithOverride(ObservableStampCoordinate stampFilter, String coordinateName) {
         super(stampFilter, coordinateName);
-        if (stampFilter instanceof ObservableStampCoordinateWithOverride) {
-            throw new IllegalStateException("Cannot override an overridden Coordinate. ");
-        }
     }
 
     @Override

@@ -19,6 +19,7 @@ import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
@@ -83,7 +84,7 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
 
         // Initialize the DetailsNode with a factory.
         KometNodeFactory conceptDetailsNodeFactory = new ConceptNodeFactory();
-        this.conceptNode = (ConceptNode) conceptDetailsNodeFactory.create(viewProperties.parentView(),
+        this.conceptNode = (ConceptNode) conceptDetailsNodeFactory.create((ObservableViewNoOverride) viewProperties.parentView(),
                 detailsActivityStreamKey,
                 ActivityStreamOption.PUBLISH.keyForOption(),
                 AlertStreams.ROOT_ALERT_STREAM_KEY,

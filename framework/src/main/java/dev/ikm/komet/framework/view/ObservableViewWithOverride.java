@@ -30,9 +30,6 @@ public class ObservableViewWithOverride extends ObservableViewBase {
 
     public ObservableViewWithOverride(ObservableViewBase observableViewBase, String name) {
         super(observableViewBase, name);
-        if (observableViewBase instanceof ObservableViewWithOverride) {
-            throw new IllegalStateException("Cannot override an overridden Coordinate. ");
-        }
         observableViewBase.baseCoordinateProperty().addListener(this::overriddenBaseChanged);
         observableViewBase.listening.addListener((observable, oldValue, newValue) -> {
             if (newValue) {
