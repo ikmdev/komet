@@ -39,6 +39,10 @@ public class RunReasonerIncrementalTask extends RunReasonerTaskBase {
 		super(reasonerService, classifierResultsConsumer);
 	}
 
+	protected String titlePrefix() {
+		return "Incremental ";
+	}
+
 	@Override
 	protected ReasonerService compute() throws Exception {
 		LOG.info("========================================");
@@ -58,6 +62,7 @@ public class RunReasonerIncrementalTask extends RunReasonerTaskBase {
 		if (editCount == 0) {
 			updateMessage("No incremental edits found; running full reasoner");
 			LOG.warn("*** NO EDITS FOUND - falling back to FULL reasoner ***");
+			runReasonerTitle("Complete ");
 			return new RunReasonerFullTask(reasonerService, classifierResultsConsumer).compute();
 		}
 

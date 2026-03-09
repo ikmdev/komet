@@ -55,6 +55,13 @@ import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.framework.KometNode.PreferenceKey.ACTIVITY_STREAM_OPTION_KEY;
 
+/**
+ * @deprecated Part of the legacy {@link KometNodeFactory} pattern. New components should
+ * implement {@link dev.ikm.komet.layout.KlArea} and obtain view coordinates via
+ * {@link dev.ikm.komet.layout.context.KlContext#viewCoordinate()}.
+ * See {@code komet/docs/view-coordinate-migration.adoc}.
+ */
+@Deprecated(forRemoval = true)
 public abstract class ExplorationNodeAbstract implements KometNode, Subscriber<ImmutableList<EntityFacade>>, ViewCalculatorDelegate {
 
     /**

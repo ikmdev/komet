@@ -120,36 +120,36 @@ proceeds.
 Mark the old factory interface and its ecosystem as deprecated with clear pointers to
 the replacement.
 
-* [ ] Add `@Deprecated(forRemoval = true)` to `KometNodeFactory` interface
+* [x] Add `@Deprecated(forRemoval = true)` to `KometNodeFactory` interface
       (`framework/src/main/java/dev/ikm/komet/framework/KometNodeFactory.java`)
-* [ ] Add deprecation Javadoc pointing to `KlView.Factory` / `KlArea.Factory`
-* [ ] Add `@Deprecated` to `ExplorationNodeAbstract`
+* [x] Add deprecation Javadoc pointing to `KlView.Factory` / `KlArea.Factory`
+* [x] Add `@Deprecated(forRemoval = true)` to `ExplorationNodeAbstract`
       (`framework/src/main/java/dev/ikm/komet/framework/ExplorationNodeAbstract.java`)
-* [ ] Identify which of the 16 `KometNodeFactory` implementations are still actively
-      used vs. legacy dead code
+* [x] Identify which of the 16 `KometNodeFactory` implementations are still actively
+      used vs. legacy dead code -- 9 active, 6 ServiceLoader-only, 1 dead
 
 === KometNodeFactory implementations inventory
 
-[cols="1,1,1", options="header"]
+[cols="1,1,1,1", options="header"]
 |===
-| Factory class | Module | Status
+| Factory class | Module | Active callers | Status
 
-| `SearchNodeFactory` | search | [ ] assess
-| `CompletionNodeFactory` | progress | [ ] assess
-| `ProgressNodeFactory` | progress | [ ] assess
-| `ListNodeFactory` | list | [ ] assess
-| `SetNodeFactory` | list | [ ] assess
-| `TableNodeFactory` | list | [ ] assess
-| `ConceptNodeFactory` (kview) | kview | [ ] assess
-| `ConceptDetaisNodeFactory` | details | [ ] assess
-| `DetailsNodeFactory` | details | [ ] assess
-| `ReasonerResultsNodeFactory` | classification | [ ] assess
-| `ConceptBuilderNodeFactory` | builder | [ ] assess
-| `PatternBuilderNodeFactory` | builder | [ ] assess
-| `ArtifactExportNodeFactory` | artifact | [ ] assess
-| `ArtifactImportNodeFactory` | artifact | [ ] assess
-| `GraphNavigatorNodeFactory` | navigator | [ ] assess
-| `PatternNavigatorFactory` | navigator | [ ] assess
+| `SearchNodeFactory` | search | AppClassicKomet, AppPages | [x] assessed -- active
+| `CompletionNodeFactory` | progress | AppClassicKomet, JournalController | [x] assessed -- active
+| `ProgressNodeFactory` | progress | AppClassicKomet, JournalController | [x] assessed -- active
+| `ListNodeFactory` | list | AppClassicKomet | [x] assessed -- active
+| `SetNodeFactory` | list | ServiceLoader only | [x] assessed -- low-use
+| `TableNodeFactory` | list | AppClassicKomet | [x] assessed -- active
+| `ConceptNodeFactory` (kview) | kview | ServiceLoader only | [x] assessed -- low-use
+| `ConceptDetaisNodeFactory` | details | None (commented out) | [x] assessed -- dead code
+| `DetailsNodeFactory` | details | AppClassicKomet | [x] assessed -- active
+| `ReasonerResultsNodeFactory` | classification | JournalController | [x] assessed -- active
+| `ConceptBuilderNodeFactory` | builder | ServiceLoader only | [x] assessed -- low-use
+| `PatternBuilderNodeFactory` | builder | ServiceLoader only | [x] assessed -- low-use
+| `ArtifactExportNodeFactory` | artifact | ServiceLoader only | [x] assessed -- low-use
+| `ArtifactImportNodeFactory` | artifact | ServiceLoader only | [x] assessed -- low-use
+| `GraphNavigatorNodeFactory` | navigator | AppClassicKomet, AppPages | [x] assessed -- active
+| `PatternNavigatorFactory` | navigator | AppClassicKomet | [x] assessed -- active
 |===
 
 
