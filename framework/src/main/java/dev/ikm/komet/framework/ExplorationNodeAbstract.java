@@ -297,7 +297,14 @@ public abstract class ExplorationNodeAbstract implements KometNode, Subscriber<I
 
     @Override
     public ObservableViewNoOverride windowView() {
-        return (ObservableViewNoOverride) viewProperties.parentView();
+        // TODO Phase 5: remove this when WindowComponent.windowView() is retired
+        if (viewProperties.parentView() instanceof ObservableViewNoOverride noOverride) {
+            return noOverride;
+        }
+        // parentView() is an ObservableViewWithOverride in the multi-level override
+        // chain (e.g. when created via KlWindowPreferencesUtils). Wrap the current
+        // coordinate values so callers that need an ObservableViewNoOverride still work.
+        return new ObservableViewNoOverride(viewProperties.parentView().getValue());
     }
 
     @Override

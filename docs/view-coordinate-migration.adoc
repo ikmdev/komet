@@ -106,12 +106,13 @@ This is a symptom of the broader problem: the `ViewProperties` class conflates t
 These are tactical fixes to get the application running while the broader migration
 proceeds.
 
-* [ ] Fix `ConceptKlWindow` to not call `KometNodeFactory.create()` -- construct
+* [x] Fix `ConceptKlWindow` to not call `KometNodeFactory.create()` -- construct
       `ConceptNode` directly with the `ViewProperties` it already has
-* [ ] Audit all other `ClassCastException` risks where `parentView()` is cast to
-      `ObservableViewNoOverride` (known location: `ExplorationNodeAbstract:300`)
-* [ ] Verify the `makeOverridableViewProperties()` restoration on `ObservableViewBase`
-      works correctly for all existing call sites
+* [x] Audit all other `ClassCastException` risks where `parentView()` is cast to
+      `ObservableViewNoOverride` (known locations: `ExplorationNodeAbstract:300`,
+      `ConceptKlWindow:87`) -- both fixed with safe fallback
+* [x] Verify the `makeOverridableViewProperties()` restoration on `ObservableViewBase`
+      works correctly for all existing call sites -- full compile passes
 
 
 == Phase 1: Deprecate `KometNodeFactory`
