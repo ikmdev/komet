@@ -21,9 +21,9 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
         ConceptEntity<?> module = StampProperties.MODULE.getFrom(this);
         ConceptEntity<?> path = StampProperties.PATH.getFrom(this);
 
-        String statusString = getViewProperties().calculator().getDescriptionTextOrNid(status.nid());
-        String moduleString = getViewProperties().calculator().getDescriptionTextOrNid(module.nid());
-        String pathString = getViewProperties().calculator().getDescriptionTextOrNid(path.nid());
+        String statusString = getObservableView().calculator().getDescriptionTextOrNid(status.nid());
+        String moduleString = getObservableView().calculator().getDescriptionTextOrNid(module.nid());
+        String pathString = getObservableView().calculator().getDescriptionTextOrNid(path.nid());
 
         String submitMessage = "New " + type.getTextDescription() + " version created (" + statusString +
                 ", " + moduleString + ", " + pathString + ")";
@@ -52,7 +52,7 @@ public class StampAddSubmitFormViewModel extends StampAddFormViewModelBase {
 
         // -----------  Create ObservableComposer for STAMP management --------------
         ObservableComposer composer = ObservableComposer.create(
-                getViewProperties().calculator(),
+                getObservableView().calculator(),
                 status,
                 author,
                 module,

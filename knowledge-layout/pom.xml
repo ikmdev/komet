@@ -31,5 +31,13 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dev.ikm.komet</groupId>
+            <artifactId>preferences</artifactId>
+        </dependency>
     </dependencies>
 </project>

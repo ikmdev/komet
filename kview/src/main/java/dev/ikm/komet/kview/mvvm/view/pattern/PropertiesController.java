@@ -382,6 +382,9 @@ public class PropertiesController {
         // -- create stamp
         createStampSubscriber = evt -> {
             if (evt.getEventType() == CREATE_STAMP) {
+                // update() must precede populateDefaults() — it sets the ObservableView
+                // that populateDefaults() reads for edit coordinate defaults (path, module).
+                this.stampCreateFormViewModel.update(patternFacade, getPatternTopic(), getViewProperties());
                 stampCreateFormViewModel.populateDefaults();
                 stampJFXNode.controller().init(stampCreateFormViewModel);
                 contentBorderPane.setCenter(stampJFXNode.node());

@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.mvvm.viewmodel.stamp;
 
-import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.tinkar.terms.*;
@@ -22,8 +22,8 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
     }
 
     @Override
-    protected void doUpdate(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
-        ConceptFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
+    protected void doUpdate(EntityFacade entity, UUID topic, ObservableView observableView) {
+        ConceptFacade authorConcept = observableView.editCoordinate().getAuthorForChanges();
         setPropertyValue(AUTHOR, authorConcept);
 
         save(true);
@@ -54,9 +54,9 @@ public class StampCreateFormViewModel extends StampFormViewModelBase {
         EntityFacade module = getValue(MODULE);
         EntityFacade path = getValue(PATH);
 
-        String statusString = getViewProperties().calculator().getDescriptionTextOrNid(status.nid());
-        String moduleString = getViewProperties().calculator().getDescriptionTextOrNid(module.nid());
-        String pathString = getViewProperties().calculator().getDescriptionTextOrNid(path.nid());
+        String statusString = getObservableView().calculator().getDescriptionTextOrNid(status.nid());
+        String moduleString = getObservableView().calculator().getDescriptionTextOrNid(module.nid());
+        String pathString = getObservableView().calculator().getDescriptionTextOrNid(path.nid());
 
         String submitMessage = "Stamp definition stored for later use (" + statusString +
                 ", " + moduleString + ", " + pathString + ")";

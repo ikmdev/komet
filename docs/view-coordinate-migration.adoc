@@ -141,7 +141,7 @@ the replacement.
 | `SetNodeFactory` | list | ServiceLoader only | [x] assessed -- low-use
 | `TableNodeFactory` | list | AppClassicKomet | [x] assessed -- active
 | `ConceptNodeFactory` (kview) | kview | ServiceLoader only | [x] assessed -- low-use
-| `ConceptDetaisNodeFactory` | details | None (commented out) | [x] assessed -- dead code
+| `ConceptDetaisNodeFactory` | details | None (commented out) | [x] **deleted** -- dead code (IKM-544)
 | `DetailsNodeFactory` | details | AppClassicKomet | [x] assessed -- active
 | `ReasonerResultsNodeFactory` | classification | JournalController | [x] assessed -- active
 | `ConceptBuilderNodeFactory` | builder | ServiceLoader only | [x] assessed -- low-use
@@ -198,7 +198,49 @@ The `EntityKlWindowFactory` system in kview is the primary consumer of the probl
 manually builds the override chain when creating windows, search panels, and navigation
 panels.
 
-* [ ] Replace `journalViewProperties` field with a `KlContext` set on the journal pane
+=== Phase 3a: Bridge KlContext alongside ViewProperties (additive, no breaking changes)
+
+These steps place `KlContext` on JavaFX nodes *alongside* the existing `ViewProperties`
+usage. Nothing is removed or replaced -- the new architecture becomes available to any
+`KlView`-based component inserted into the journal's scene graph.
+
+* [x] Create `ViewPropertiesKlContext` bridge record
+      (`kview/src/main/java/dev/ikm/komet/kview/klwindows/ViewPropertiesKlContext.java`)
+      -- lightweight `KlContext` that wraps an `ObservableView` from `ViewProperties`,
+      delegates `klPeer()` to `KnowledgeBaseContext.INSTANCE`
+* [x] Set `KlContext` on `journalBorderPane` in `JournalController.initialize()` --
+      any child component can discover the journal's view coordinates via
+      `KlView.context(node)` tree walk
+* [ ] Set `KlContext` on individual window panes in `setupWorkspaceWindow()` if
+      per-window override contexts are needed (deferred: journal-level context is
+      sufficient while all windows share the same override chain)
+* [ ] Set `KlContext` on `LandingPageController` root pane similarly
+
+=== Phase 3b: Migrate STAMP form ViewModels to ObservableView
+
+The `StampFormViewModelBase` hierarchy was the first concrete migration from
+`ViewProperties` to `ObservableView`. This fixes the NPE where `populateDefaults()`
+was called before `update()` had set `viewProperties` in the gen-editing path.
+
+* [x] `StampFormViewModelBase`: new primary field `ObservableView observableView`;
+      new `update(EntityFacade, UUID, ObservableView)` method; old
+      `update(EntityFacade, UUID, ViewProperties)` deprecated, bridges via `nodeView()`.
+      `populateDefaults()` and all internal code use `getObservableView()`.
+* [x] `StampCreateFormViewModel.doUpdate()`: signature changed to `ObservableView`;
+      `showSucessToast()` uses `getObservableView().calculator()`
+* [x] `StampAddFormViewModelBase.doUpdate()`: signature changed to `ObservableView`;
+      `loadStamp()` and `updateIsStampValuesChanged()` use `observableView`
+* [x] `StampAddConfirmFormViewModel.showSucessToast()`: uses `getObservableView()`
+* [x] `StampAddSubmitFormViewModel.showSucessToast()` and `save()`: uses `getObservableView()`
+* [x] All three `PropertiesController` variants (genediting, properties, pattern):
+      fixed ordering bug -- `update()` now runs *before* `populateDefaults()` so that
+      the `ObservableView` is set before edit coordinate defaults are read
+* [x] Pattern `PropertiesController`: added missing `update()` call in `CREATE_STAMP`
+      handler (latent NPE, same root cause)
+
+=== Phase 3c: Replace remaining ViewProperties usage (requires Phase 2 completion)
+
+* [ ] Replace `journalViewProperties` field with `KlContext`-only coordinate source
 * [ ] Replace all `journalViewProperties.nodeView().makeOverridableViewProperties(...)`
       calls with `KlContext` placement on child nodes
 * [ ] Migrate `loadSearchPanel()` -- currently uses `KometNodeFactory` via
@@ -255,6 +297,776 @@ After all consumers are migrated and a release has shipped with deprecation warn
 * [ ] Clean up `module-info.java` service declarations
 
 
+== Layout Area Architecture: Applying the MGC Pattern
+
+=== Design decision: `KlAreaForBoolean` over `KlBooleanField`
+
+The codebase contains two parallel interface hierarchies for field areas under `KlArea`:
+`KlAreaForFeature` (with subtypes like `KlAreaForBoolean<FX>`) and `KlField` (with
+subtypes like `KlBooleanField`). After analysis, we consolidate toward **`KlAreaForBoolean`**
+(dropping its `<FX>` generic) rather than `KlBooleanField`, for these reasons:
+
+1. **Naming consistency**: `KlAreaForBoolean` fits the `KlArea` naming family.
+   `KlBooleanField` is an orphan name that doesn't follow the established convention.
+
+2. **Infrastructure**: The `KlAreaForBoolean` side has full Blueprint implementations
+   (`EditableBooleanFieldArea`, `ReadOnlyBooleanFieldArea`) with lifecycle management,
+   preferences save/restore, context subscription, and ServiceLoader registration.
+   The `KlBooleanField` side has `BaseDefaultKlField` implementations with none of this.
+
+3. **Scene graph integration**: The `KlArea` hierarchy provides `fxObject()`, `context()`,
+   `properties()`, `calculatorForContext()` -- the full scene-graph-based coordinate
+   resolution system. This must be available at the marker/API layer.
+
+=== The `<FX>` type parameter: moving it to the right layer
+
+`KlAreaForBoolean<FX extends Region>` currently carries an `<FX>` type parameter that
+tracks the specific JavaFX control type. Analysis shows this parameter is:
+
+- **Never used externally**: `FieldPropertiesPane` (the only external consumer) erases
+  it via `ServiceLoader.load(KlAreaForBoolean.Factory.class)` -- `.class` literals and
+  wildcard iteration erase all generics.
+- **Only used internally**: Every `getFxPeer()` call is inside the concrete class itself
+  (e.g., `EditableBooleanFieldArea` calling `getFxPeer().valueProperty()`). The class
+  already knows its control type because it created it in the constructor.
+- **Valuable in the abstract layer**: `EditableFieldAreaBlueprint<DT, FX>` uses `<FX>` to
+  provide type-safe `getFxPeer()` without casting. This is the right place for it.
+
+Following the **Marker-Generic-Concrete (MGC) pattern**
+(see `framework/.../observable/adoc/MarkerGenericConcrete.adoc`):
+
+----
+Layer 1 (Marker):    KlAreaForBoolean             ← generic-free, consumer-facing
+Layer 2 (Generic):   EditableFieldAreaBlueprint<DT, FX>  ← tracks FX internally
+Layer 3 (Concrete):  EditableBooleanFieldArea      ← final, no generics in declaration
+----
+
+This means `KlArea` itself drops `<FX>`:
+
+----
+Current:  KlArea<FX extends Region> extends KlView<FX>, KlPeerToRegion<FX>
+Target:   KlArea extends KlView<Region>, KlPeerToRegion<Region>
+----
+
+`KlView<FX>` keeps `<FX>` because it legitimately handles Window, Scene, and Region.
+`KlArea` fixes it to `Region` at the marker level. Concrete classes get the specific
+control type through covariant returns from their abstract superclass.
+
+=== Resolving the `KlPeerToRegion` conflict
+
+Dropping `<FX>` from `KlArea` creates a potential type conflict: a concrete class would
+inherit both `KlPeerToRegion<Region>` (from `KlArea`) and `KlPeerToRegion<KLBooleanControl>`
+(from `AreaBlueprint<KLBooleanControl>`). Java prohibits implementing the same generic
+interface with different type arguments.
+
+The fix: `AreaBlueprint<FX>` implements `KlPeerToRegion<Region>` (not `<FX>`):
+
+[source,java]
+----
+// Layer 1: KlArea (no FX)
+public sealed interface KlArea
+    extends KlView<Region>, KlPeerToRegion<Region> { ... }
+
+// Layer 2: AreaBlueprint (typed internally, Region externally)
+public abstract class AreaBlueprint<FX extends Region>
+    extends StateAndContextBlueprint<FX>
+    implements KlPeerToRegion<Region> {  // ← Region, not FX
+
+    // Internal typed accessor for subclasses
+    protected final FX getFxPeer() { return (FX) fxObject(); }
+}
+----
+
+`StateAndContextBlueprint<KLBooleanControl>.fxObject()` returns `KLBooleanControl`,
+which satisfies `Region fxObject()` from the interface via covariant return types.
+Java generates a bridge method automatically.
+
+=== Current type hierarchy (sealed)
+
+----
+KlArea<FX>  (sealed)                              ← target: drop <FX>
+├── KlAreaForFeature<DT, F, FX>                    ← target: drop <FX>
+│   ├── KlAreaForBoolean<FX>                       ← target: KlAreaForBoolean (no FX)
+│   ├── KlAreaForString<FX>                        ← target: KlAreaForString (no FX)
+│   ├── KlAreaForFloat<FX>                         ← ...
+│   ├── KlAreaForInteger<FX>
+│   ├── KlAreaForImage<FX>
+│   ├── KlAreaForComponent<FX>
+│   ├── KlAreaForComponentChronology<FX>
+│   ├── KlAreaForConcept<FX>
+│   ├── KlAreaForSemantic<FX>
+│   ├── KlAreaForPattern<FX>
+│   ├── KlAreaForStamp<FX>
+│   ├── KlAreaForIntIdList<FX>
+│   ├── KlAreaForIntIdSet<FX>
+│   ├── KlAreaForObject<FX>
+│   ├── KlAreaForPublicId<FX>
+│   ├── KlAreaForFeatureDefinition<FX>
+│   ├── KlFieldArea<DT, FX>                       @Deprecated
+│   └── KlAreaForEntity<FX>                        @Deprecated
+├── KlField<DT>                                    ← to be deprecated (parallel naming)
+│   └── (KlBooleanField, KlStringField, etc.)      ← to be deprecated
+├── KlAreaForList<...>
+├── KlAreaForVersion<...>
+├── KlMultiVersionArea<...>
+├── KlSupplementalArea<...>
+├── KlChronologyArea<...>
+├── KlMultiComponentArea<...>
+├── KlAreaForAssociation<...>
+├── KlParent<...>
+└── KlGenericArea<...>
+----
+
+=== Package structure: before and after (Boolean example)
+
+The following diagrams show the package layout for a single field type (Boolean) across
+all three locations. The pattern repeats identically for String, Integer, Float, Component,
+Image, IntIdSet, and IntIdList.
+
+==== BEFORE: three redundant implementation sets
+
+[listing]
+....
+knowledge-layout/                                       knowledge-layout/
+  layout/                                                 layout_engine/blueprint/
+    area/                                                   StateAndContextBlueprint<FX>    [Layer 2 root]
+      KlAreaForBoolean<FX>          [Layer 1 marker]        AreaBlueprint<FX>               [Layer 2]
+      KlAreaForFeature<DT,F,FX>     [Layer 1 sealed]        FeatureAreaBlueprint<DT,F,FX>   [Layer 2]
+      KlAreaForBoolean.Factory<FX>  [SPI]                   EditableFieldAreaBlueprint<DT,FX>[Layer 2]
+    version/field/                                          FeaturePropertyHelper<F>        [helper]
+      KlField<DT>                   [REDUNDANT marker]
+      KlBooleanField                [REDUNDANT marker]
+      KlFieldFactory<DT>            [REDUNDANT SPI]
+
+
+kview/                                     <<<< THREE sets of concrete implementations >>>>
+  klfields/                                                         SET 1: oldest (hybrid)
+    BaseDefaultKlField<T>                   [REDUNDANT Layer 2]  ──── no lifecycle, no prefs
+    KlFieldHelper                           [dispatcher]
+    KlFieldType                             [enum]
+    booleanfield/
+      DefaultKlBooleanField                 [REDUNDANT Layer 3]  ──── delete
+      KlBooleanFieldFactory                 [REDUNDANT factory]  ──── delete
+
+  klauthoring/                                                      SET 2: split read/edit
+    editable/booleanfield/
+      KlEditableBooleanField                [REDUNDANT Layer 3]  ──── delete
+      KlEditableBooleanFieldFactory         [REDUNDANT factory]  ──── delete
+      EditableBooleanFieldArea              [Layer 3 ✓ KEEP]     ──── Blueprint lifecycle
+    readonly/booleanfield/
+      KlReadOnlyBooleanField                [REDUNDANT Layer 3]  ──── delete
+      KlReadOnlyBooleanFieldFactory         [REDUNDANT factory]  ──── delete
+      ReadOnlyBooleanFieldArea              [Layer 3 ✓ KEEP]     ──── Blueprint lifecycle
+....
+
+Legend: `[REDUNDANT]` = to be deleted in Phase 7a/7c.  `[✓ KEEP]` = surviving implementation.
+
+The core problem: *5 concrete classes and 3 factory classes* exist for a single data type
+(Boolean), where only *2 concrete classes and 2 factory classes* are needed.
+
+==== AFTER: consolidated under MGC pattern
+
+[listing]
+....
+knowledge-layout/                                       knowledge-layout/
+  layout/                                                 layout_engine/blueprint/
+    area/                                                   StateAndContextBlueprint<FX>    [Layer 2 root]
+      KlAreaForBoolean               [Layer 1 marker]      AreaBlueprint<FX>               [Layer 2]
+      KlAreaForFeature<DT,F>         [Layer 1 sealed]      FeatureAreaBlueprint<DT,F,FX>   [Layer 2]
+      KlAreaForBoolean.Factory       [SPI]                  EditableFieldAreaBlueprint<DT,FX>[Layer 2]
+                                                            FeaturePropertyHelper<F>        [helper]
+    (version/field/ ── deleted)
+
+
+kview/                                     <<<< ONE set of concrete implementations >>>>
+  klfields/
+    KlFieldHelper                           [simplified dispatcher]
+
+  klauthoring/
+    editable/booleanfield/
+      EditableBooleanFieldArea              [Layer 3]   ──── implements KlAreaForBoolean
+      EditableBooleanFieldArea.Factory      [SPI impl]  ──── implements KlAreaForBoolean.Factory
+    readonly/booleanfield/
+      ReadOnlyBooleanFieldArea              [Layer 3]   ──── implements KlAreaForBoolean
+      ReadOnlyBooleanFieldArea.Factory      [SPI impl]  ──── implements KlAreaForBoolean.Factory
+....
+
+Changes from BEFORE to AFTER:
+
+* *Interfaces*: `<FX>` dropped from `KlArea`, `KlAreaForFeature`, `KlAreaForBoolean` and
+  their Factory types.  `KlField<DT>` / `KlBooleanField` hierarchy deleted.
+* *Layer 2*: `BaseDefaultKlField<T>` deleted.  Blueprint hierarchy is the only Layer 2.
+* *Layer 3*: 5 concrete classes -> 2 (`EditableBooleanFieldArea`, `ReadOnlyBooleanFieldArea`).
+* *Factories*: 3 factory classes -> 2 (nested in the surviving concrete classes).
+* *Net deletion per field type*: 6 files removed (3 concrete + 3 factory).
+* *Net deletion across all 8 field types*: ~48 files + `BaseDefaultKlField` + `KlFieldHelper`
+  simplification + 26 `KlField` interface files = *~77 files removed*.
+
+==== Full kview package diff (all 8 field types)
+
+[listing]
+....
+DELETED packages/files (Phase 7a):                      SURVIVING packages/files:
+
+klfields/                                               klauthoring/editable/
+  BaseDefaultKlField.java              ×                  booleanfield/
+  KlFieldType.java                     ×                    EditableBooleanFieldArea.java       ✓
+  booleanfield/                                           componentfield/
+    DefaultKlBooleanField.java         ×                    EditableComponentFieldArea.java     ✓
+    KlBooleanFieldFactory.java         ×                  componentlistfield/
+  componentfield/                                           EditableComponentListFieldArea.java ✓
+    DefaultKlComponentField.java       ×                  componentsetfield/
+    KlComponentFieldFactory.java       ×                    EditableComponentSetFieldArea.java  ✓
+  componentlistfield/                                     floatfield/
+    DefaultKlComponentListField.java   ×                    EditableFloatFieldArea.java         ✓
+    KlComponentListFieldFactory.java   ×                  imagefield/
+  componentsetfield/                                        EditableImageFieldArea.java         ✓
+    DefaultKlComponentSetField.java    ×                  integerfield/
+    KlComponentSetFieldFactory.java    ×                    EditableIntegerFieldArea.java       ✓
+  floatfield/                                             stringfield/
+    DefaultKlFloatField.java           ×                    EditableStringFieldArea.java        ✓
+    KlFloatFieldFactory.java           ×
+  imagefield/                                           klauthoring/readonly/
+    DefaultKlImageField.java           ×                  booleanfield/
+    KlImageFieldFactory.java           ×                    ReadOnlyBooleanFieldArea.java       ✓
+  integerfield/                                           componentfield/
+    DefaultKlIntegerField.java         ×                    ReadOnlyObservableChronologyFieldArea ✓
+    KlIntegerFieldFactory.java         ×                  componentlistfield/
+  readonly/                                                 ReadOnlyComponentListFieldArea.java ✓
+    ReadOnlyKLFieldFactory.java        ×                  componentsetfield/
+  stringfield/                                              ReadOnlyComponentSetFieldArea.java  ✓
+    DefaultKlStringField.java          ×                  floatfield/
+    KlStringFieldFactory.java          ×                    ReadOnlyFloatFieldArea.java         ✓
+                                                          imagefield/
+klauthoring/editable/                                       ReadOnlyImageFieldArea.java         ✓
+  booleanfield/                                           integerfield/
+    KlEditableBooleanField.java        ×                    ReadOnlyIntegerFieldArea.java       ✓
+    KlEditableBooleanFieldFactory.java ×                  stringfield/
+  componentfield/                                           ReadOnlyStringFieldArea.java        ✓
+    KlEditableComponentField.java      ×
+    KlEditableComponentFieldFactory.java ×              klfields/
+  componentlistfield/                                     KlFieldHelper.java                    ✓ simplified
+    KlEditableComponentListField.java    ×
+    KlEditableComponentListFieldFactory.java ×
+  componentsetfield/
+    KlEditableComponentSetField.java     ×
+    KlEditableComponentSetFieldFactory.java ×
+  floatfield/
+    KlEditableFloatField.java            ×
+    KlEditableFloatFieldFactory.java     ×
+  imagefield/
+    KlEditableImageField.java            ×
+    KlEditableImageFieldFactory.java     ×
+  integerfield/
+    KlEditableIntegerField.java          ×
+    KlEditableIntegerFieldFactory.java   ×
+  stringfield/
+    KlEditableStringField.java           ×
+    KlEditableStringFieldFactory.java    ×
+
+klauthoring/readonly/
+  booleanfield/
+    KlReadOnlyBooleanField.java          ×
+    KlReadOnlyBooleanFieldFactory.java   ×
+  componentfield/
+    KlReadOnlyComponentField.java        ×
+    KlReadOnlyComponentFieldFactory.java ×
+  componentlistfield/
+    KlReadOnlyComponentListField.java    ×
+    KlReadOnlyComponentListFieldFactory.java ×
+  componentsetfield/
+    KlReadOnlyComponentSetField.java     ×
+    KlReadOnlyComponentSetFieldFactory.java ×
+  floatfield/
+    KlReadOnlyFloatField.java            ×
+    KlReadOnlyFloatFieldFactory.java     ×
+  imagefield/
+    KlReadOnlyImageField.java            ×
+    KlReadOnlyImageFieldFactory.java     ×
+  integerfield/
+    KlReadOnlyIntegerField.java          ×
+    KlReadOnlyIntegerFieldFactory.java   ×
+  stringfield/
+    KlReadOnlyStringField.java           ×
+    KlReadOnlyStringFieldFactory.java    ×
+
+                                                        TOTALS
+× = 51 files deleted                                    ✓ = 17 files surviving
+....
+
+==== knowledge-layout interface diff (Phase 7b + 7c)
+
+[listing]
+....
+DELETED (Phase 7c):                                     SIMPLIFIED (Phase 7b):
+
+version/field/                                          area/
+  KlField.java                         ×                  KlAreaForBoolean<FX>    → KlAreaForBoolean
+  KlBooleanField.java                  ×                  KlAreaForString<FX>     → KlAreaForString
+  KlStringField.java                   ×                  KlAreaForFloat<FX>      → KlAreaForFloat
+  KlFloatField.java                    ×                  KlAreaForInteger<FX>    → KlAreaForInteger
+  KlIntegerField.java                  ×                  KlAreaForImage<FX>      → KlAreaForImage
+  KlImageField.java                    ×                  KlAreaForComponent<FX>  → KlAreaForComponent
+  KlComponentField.java                ×                  KlAreaForIntIdList<FX>  → KlAreaForIntIdList
+  KlComponentListField.java            ×                  KlAreaForIntIdSet<FX>   → KlAreaForIntIdSet
+  KlComponentSetField.java             ×                  KlAreaForFeature<D,F,FX>→ KlAreaForFeature<D,F>
+  KlConceptField.java                  ×                  ...and remaining area interfaces
+  KlSemanticField.java                 ×
+  KlPatternField.java                  ×                KlArea.java
+  KlPublicIdField.java                 ×                  KlArea<FX>              → KlArea
+  KlUuidField.java                     ×
+  KlInstantField.java                  ×                KlArea.Factory
+  KlCollectionField.java               ×                  Factory<FX,KL>          → Factory
+  KlListField.java                     ×
+  KlSetField.java                      ×
+  KlDirectedGraphField.java            ×
+  KlDirectedTreeField.java             ×
+  KlVertexField.java                   ×
+  KlPointPlanarField.java              ×
+  KlPointSpatialField.java             ×
+  KlLogicalExpressionField.java        ×
+  KlFieldFactory.java                  ×
+
+× = 25 files deleted                                    ~19 files simplified (drop <FX>)
+....
+
+
+=== Three duplicate implementations per field type
+
+For each data type (Boolean, String, Integer, etc.), kview has **three** parallel
+implementations that must be consolidated to one:
+
+[cols="1,2,2,1", options="header"]
+|===
+| # | Location | Base class | Status
+
+| 1
+| `klfields/booleanfield/DefaultKlBooleanField`
+| `BaseDefaultKlField` (no lifecycle, no prefs)
+| **delete** -- oldest, hybrid read/edit in constructor
+
+| 2
+| `klauthoring/editable/booleanfield/KlEditableBooleanField` +
+  `klauthoring/readonly/booleanfield/KlReadOnlyBooleanField`
+| `BaseDefaultKlField` (no lifecycle, no prefs)
+| **delete** -- split but same weak base
+
+| 3
+| `klauthoring/editable/booleanfield/EditableBooleanFieldArea` +
+  `klauthoring/readonly/booleanfield/ReadOnlyBooleanFieldArea`
+| `EditableFieldAreaBlueprint` / `FeatureAreaBlueprint` (full lifecycle)
+| **keep** -- Blueprint-based, ServiceLoader registered
+|===
+
+Only #3 has:
+
+* Lifecycle states: `INITIALIZED` -> `UNRESTORED` -> `UNBOUND` -> `BOUND`
+* Preferences save/restore with `FeatureKey` persistence
+* Context subscription (scene graph walk, view coordinate changes)
+* Feature property wrapping (`FeaturePropertyHelper` with automatic subscription management)
+* Template method pattern (`bindControlToEditable`, `unbindControlFromEditable`)
+* ServiceLoader registration in `module-info.java`
+* Grid layout settings
+
+=== Factory consolidation
+
+There are also three factory types:
+
+[cols="1,2,1", options="header"]
+|===
+| Factory | Interface | Status
+
+| `KlBooleanFieldFactory`
+| `KlFieldFactory<Boolean>` (deprecated)
+| **delete**
+
+| `KlEditableBooleanFieldFactory` / `KlReadOnlyBooleanFieldFactory`
+| `KlFieldFactory<Boolean>` (deprecated)
+| **delete**
+
+| `EditableBooleanFieldArea.Factory` / `ReadOnlyBooleanFieldArea.Factory`
+| `KlAreaForBoolean.Factory` (ServiceLoader registered)
+| **keep**
+|===
+
+
+== Phase 7: MGC Field Area Consolidation
+
+This phase consolidates the duplicate field implementations under the Blueprint
+hierarchy and applies the MGC pattern by removing `<FX>` from the interface layer.
+The work is ordered to minimize wasted effort: consolidate first (delete duplicates
+while interfaces are unchanged), then drop `<FX>` (touching only the surviving files).
+
+=== Phase 7a: Consolidate duplicate implementations (kview only)
+
+Delete the `BaseDefaultKlField`-based duplicates and redirect callers to the
+Blueprint-based implementations. No interface changes -- only kview is touched.
+
+==== Per field type (Boolean shown, repeat for all 8 types):
+
+* [ ] Migrate `KlFieldHelper.createReadOnlyKlField()` boolean case from
+      `new KlReadOnlyBooleanFieldFactory()` to `ReadOnlyBooleanFieldArea.factory()`
+* [ ] Migrate `KlFieldHelper.createEditableKlField()` boolean case from
+      `new KlEditableBooleanFieldFactory()` to `EditableBooleanFieldArea.factory()`
+* [ ] Migrate `KlFieldHelper.generateNode()` boolean case from
+      `new KlBooleanFieldFactory()` to Blueprint factory
+* [ ] Delete `DefaultKlBooleanField` (`klfields/booleanfield/`)
+* [ ] Delete `KlBooleanFieldFactory` (`klfields/booleanfield/`)
+* [ ] Delete `KlEditableBooleanField` (`klauthoring/editable/booleanfield/`)
+* [ ] Delete `KlEditableBooleanFieldFactory` (`klauthoring/editable/booleanfield/`)
+* [ ] Delete `KlReadOnlyBooleanField` (`klauthoring/readonly/booleanfield/`)
+* [ ] Delete `KlReadOnlyBooleanFieldFactory` (`klauthoring/readonly/booleanfield/`)
+
+==== Field types to process:
+
+* [ ] Boolean
+* [ ] String
+* [ ] Integer
+* [ ] Float
+* [ ] Component (EntityProxy)
+* [ ] Image (byte[])
+* [ ] IntIdSet (component set)
+* [ ] IntIdList (component list)
+
+==== After all types migrated:
+
+* [ ] Delete `BaseDefaultKlField` (`klfields/`)
+* [ ] Delete `KlFieldFactory<DT>` interface (already `@Deprecated`)
+* [ ] Clean up `KlFieldHelper` -- may be simplified or removed entirely
+
+=== Phase 7b: Drop `<FX>` from interface layer (knowledge-layout, ~19 files)
+
+Apply the MGC pattern: remove the `<FX>` type parameter from the marker/API layer,
+keeping it only in the abstract class layer (Layer 2).
+
+==== Core interface changes:
+
+* [ ] `KlArea<FX extends Region>` -> `KlArea`
+      (extends `KlView<Region>`, `KlPeerToRegion<Region>`)
+* [ ] `KlArea.Factory<FX, KL>` -> `KlArea.Factory` (covariant returns on concrete factories)
+* [ ] `AreaBlueprint<FX>` -- change `implements KlPeerToRegion<FX>` to
+      `implements KlPeerToRegion<Region>`. Keep `<FX>` on the class for internal `getFxPeer()`.
+
+==== `KlAreaForFeature` chain:
+
+* [ ] `KlAreaForFeature<DT, F, FX>` -> `KlAreaForFeature<DT, F>` (drop FX only)
+* [ ] `KlAreaForFeature.Factory<DT, F, FX, KL>` -> simplify
+
+==== Field area interfaces (drop `<FX>`):
+
+* [ ] `KlAreaForBoolean<FX>` -> `KlAreaForBoolean`
+* [ ] `KlAreaForString<FX>` -> `KlAreaForString`
+* [ ] `KlAreaForFloat<FX>` -> `KlAreaForFloat`
+* [ ] `KlAreaForInteger<FX>` -> `KlAreaForInteger`
+* [ ] `KlAreaForImage<FX>` -> `KlAreaForImage`
+* [ ] `KlAreaForComponent<FX>` -> `KlAreaForComponent`
+* [ ] `KlAreaForIntIdList<FX>` -> `KlAreaForIntIdList`
+* [ ] `KlAreaForIntIdSet<FX>` -> `KlAreaForIntIdSet`
+* [ ] Remaining: `KlAreaForConcept`, `KlAreaForSemantic`, `KlAreaForPattern`,
+      `KlAreaForStamp`, `KlAreaForPublicId`, `KlAreaForObject`,
+      `KlAreaForFeatureDefinition`, `KlAreaForComponentChronology`
+
+==== Other sealed subtypes of `KlArea` (drop `<FX>`):
+
+* [ ] `KlParent<FX>` -> `KlParent`
+* [ ] `KlGenericArea<FX>` -> `KlGenericArea`
+* [ ] `KlSupplementalArea<FX>` -> `KlSupplementalArea`
+* [ ] `KlAreaForAssociation<FX>` -> `KlAreaForAssociation`
+* [ ] `KlAreaForList<..., FX>` -> drop FX
+* [ ] `KlAreaForVersion<OV, FX>` -> drop FX
+* [ ] `KlMultiVersionArea<OV, FX>` -> drop FX
+* [ ] `KlChronologyArea<FX>` -> `KlChronologyArea`
+* [ ] `KlMultiComponentArea<FX>` -> `KlMultiComponentArea`
+
+==== Update surviving concrete implementations:
+
+* [ ] `EditableBooleanFieldArea`: `implements KlAreaForBoolean<KLBooleanControl>`
+      -> `implements KlAreaForBoolean`
+* [ ] (same pattern for all field area implementations)
+
+==== `KlPeerToRegion` -- keep `<FX>`:
+
+`KlPeerToRegion<FX extends Region>` keeps its `<FX>` parameter because it is also used
+by non-`KlArea` types. `KlArea` simply fixes it to `Region`.
+
+==== `KlView<FX>` -- keep `<FX>`:
+
+`KlView<FX>` keeps its `<FX>` parameter because it legitimately handles
+Window (`KlTopView`), Scene (`KlRenderView`), and Region (`KlArea`).
+
+=== Phase 7c: Deprecate `KlField` parallel hierarchy
+
+With the `KlAreaForBoolean` hierarchy now generic-free and carrying the MGC marker role,
+the `KlField` / `KlBooleanField` parallel naming is redundant.
+
+* [ ] Mark `KlField<DT>` `@Deprecated(forRemoval = true)` -- replaced by
+      generic-free `KlAreaForXxx` interfaces
+* [ ] Mark all `KlField` subtypes deprecated: `KlBooleanField`, `KlStringField`,
+      `KlFloatField`, `KlIntegerField`, `KlImageField`, `KlPublicIdField`,
+      `KlUuidField`, `KlInstantField`, `KlComponentField`, `KlConceptField`,
+      `KlSemanticField`, `KlPatternField`, `KlCollectionField`, `KlListField`,
+      `KlSetField`, `KlComponentListField`, `KlComponentSetField`,
+      `KlDirectedGraphField`, `KlDirectedTreeField`, `KlVertexField`,
+      `KlPointPlanarField`, `KlPointSpatialField`, `KlLogicalExpressionField`
+* [ ] Remove `KlField` from the `KlArea` permits clause (after all references removed)
+* [ ] Delete `KlField` and all subtypes
+
+
+== Knowledge-Layout-Editor: Migration to New Design
+
+The `knowledge-layout-editor` module (25 files, ~2900 lines) is a visual grid-based
+pattern editor. It is **85-90% aligned** with the new architecture already.
+
+=== Current legacy dependencies
+
+Only two files use legacy types:
+
+[cols="1,2,2", options="header"]
+|===
+| File
+| Legacy dependency
+| What it does
+
+| `KLEditorMainScreenController`
+| `WindowSettings`, `ObservableViewNoOverride`
+| Receives `WindowSettings` in `init()`, extracts `ObservableViewNoOverride`,
+  builds `ViewCalculator`. Used once, then discarded.
+
+| `FieldPropertiesPane`
+| `KlAreaForString.Factory`, `KlAreaForBoolean.Factory`, etc. (8 legacy area factories)
+| Uses ServiceLoader to discover available field display implementations.
+  Maps data types to `KlAreaForXxx.Factory` services for ComboBox population.
+|===
+
+NOTE: The module declares `uses EntityKlWindowFactory` in `module-info.java` but
+**never instantiates it** in code. This declaration can be removed.
+
+=== Already on new design
+
+* Editor models (`EditorPatternModel`, `EditorFieldModel`, etc.) from knowledge-layout
+* `KlRestorable` interface for persistence
+* kview controls (`Toast`, `ToggleSwitch`, events)
+* Framework utilities (`Identicon`, `TimeUtils`, `DragImageMaker`) -- low coupling, can stay
+
+=== Impact of Phase 7 on the layout editor
+
+**Phase 7a (consolidation)** has **no impact** on the layout editor. It only deletes
+kview duplicates and redirects `KlFieldHelper` -- the layout editor does not use
+`KlFieldHelper` or `BaseDefaultKlField`.
+
+**Phase 7b (drop `<FX>`)** has a **small positive impact** on the layout editor:
+
+* `FieldPropertiesPane` currently calls `ServiceLoader.load(KlAreaForBoolean.Factory.class)`.
+  After Phase 7b, `KlAreaForBoolean.Factory` drops its `<FX>` type parameter but the
+  `.class` reference is unchanged. The code continues to work with no modifications needed.
+* The simplified factory types (no generics) make future enhancements easier.
+
+**Phase 7c (deprecate `KlField`)** has **no impact** on the layout editor. It does not
+reference any `KlField` types.
+
+=== Layout editor migration steps
+
+* [ ] `KLEditorMainScreenController`: Replace `WindowSettings` parameter with
+      `ViewCoordinateRecord` or `KlContext`. Remove `ObservableViewNoOverride` field.
+      Construct `ViewCalculator` from the coordinate record directly.
+* [ ] `module-info.java`: Remove unused `uses EntityKlWindowFactory`.
+* [ ] Fix bug: `FieldPropertiesPane` lines 126/128 -- `ServiceLoader.load()` results
+      for `KlAreaForIntIdSet.Factory` and `KlAreaForIntIdList.Factory` are not assigned
+      to the `loader` variable (results discarded).
+
+
+== Comprehensive Deprecation Inventory
+
+This section tracks all types that should carry `@Deprecated(forRemoval = true)` as part
+of the migration. The deprecation itself is non-breaking -- it is a signal to developers
+that these types will be removed.
+
+=== Already marked `@Deprecated(forRemoval = true)`
+
+[cols="1,2", options="header"]
+|===
+| Type | File
+
+| `KometNodeFactory`
+| `framework/.../KometNodeFactory.java`
+
+| `ExplorationNodeAbstract`
+| `framework/.../ExplorationNodeAbstract.java`
+|===
+
+=== Marked `@Deprecated` but missing `forRemoval = true`
+
+[cols="1,2,1", options="header"]
+|===
+| Type | File | Replacement
+
+| `KlFactory`
+| `knowledge-layout/.../KlFactory.java`
+| `KlView.Factory`
+
+| `KlFieldArea`
+| `knowledge-layout/.../area/KlFieldArea.java`
+| `KlAreaForFeature` (after `<FX>` removal)
+
+| `KlListOfFieldArea`
+| `knowledge-layout/.../area/KlListOfFieldArea.java`
+| `KlAreaForListOfFeatures`
+
+| `KlAreaForEntity`
+| `knowledge-layout/.../area/KlAreaForEntity.java`
+| `KlAreaForComponentChronology`
+|===
+
+=== Not deprecated yet -- should add `@Deprecated(forRemoval = true)`
+
+==== KometNodeFactory implementations (15)
+
+[cols="1,1", options="header"]
+|===
+| Factory | Module
+
+| `SearchNodeFactory`           | search
+| `CompletionNodeFactory`       | progress
+| `ProgressNodeFactory`         | progress
+| `ListNodeFactory`             | list
+| `SetNodeFactory`              | list
+| `TableNodeFactory`            | list
+| `ConceptNodeFactory`          | kview
+| `DetailsNodeFactory`          | details
+| `ReasonerResultsNodeFactory`  | classification
+| `ConceptBuilderNodeFactory`   | builder
+| `PatternBuilderNodeFactory`   | builder
+| `ArtifactExportNodeFactory`   | artifact
+| `ArtifactImportNodeFactory`   | artifact
+| `GraphNavigatorNodeFactory`   | navigator
+| `PatternNavigatorFactory`     | navigator
+|===
+
+==== ExplorationNodeAbstract subclasses (15)
+
+All extend `ExplorationNodeAbstract` (already deprecated). Should be explicitly marked.
+
+[cols="1,1,1", options="header"]
+|===
+| Class | Module | Note
+
+| `SearchNode`            | search         | active
+| `CompletionNode`        | progress       | active
+| `ProgressNode`          | progress       | active
+| `DetailNodeAbstract`    | framework      | abstract base
+| `ConceptDetailsNode`    | details        | active
+| `CollectionNode`        | list           | abstract base
+| `TableNode`             | list           | active
+| `GraphNavigatorNode`    | navigator      | active
+| `PatternNavigatorNode`  | navigator      | active
+| `ArtifactExportNode`    | artifact       | ServiceLoader
+| `ArtifactImportNode`    | artifact       | ServiceLoader
+| `ConceptBuilderNode`    | builder        | ServiceLoader
+| `PatternBuilderNode`    | builder        | ServiceLoader
+| `ConceptNode`           | kview          | ServiceLoader
+| `ReasonerResultsNode`   | classification | active
+|===
+
+==== `KlField` parallel hierarchy (Phase 7c)
+
+After consolidation under `KlAreaForXxx`, the entire `KlField` subtree becomes redundant.
+
+[cols="1,1", options="header"]
+|===
+| Type | Replacement
+
+| `KlField<DT>`              | `KlAreaForFeature` (generic-free)
+| `KlBooleanField`           | `KlAreaForBoolean`
+| `KlStringField`            | `KlAreaForString`
+| `KlFloatField`             | `KlAreaForFloat`
+| `KlIntegerField`           | `KlAreaForInteger`
+| `KlImageField`             | `KlAreaForImage`
+| `KlPublicIdField`          | `KlAreaForPublicId`
+| `KlComponentField`         | `KlAreaForComponent`
+| `KlConceptField`           | `KlAreaForConcept`
+| `KlSemanticField`          | `KlAreaForSemantic`
+| `KlPatternField`           | `KlAreaForPattern`
+| `KlComponentListField`     | `KlAreaForIntIdList`
+| `KlComponentSetField`      | `KlAreaForIntIdSet`
+| `KlUuidField`              | _(new `KlAreaForXxx` type if needed)_
+| `KlInstantField`           | _(new `KlAreaForXxx` type if needed)_
+| `KlCollectionField`        | `KlAreaForList` subtypes
+| `KlListField`              | `KlAreaForList` subtypes
+| `KlSetField`               | `KlAreaForList` subtypes
+| `KlDirectedGraphField`     | _(new `KlAreaForXxx` type if needed)_
+| `KlDirectedTreeField`      | _(new `KlAreaForXxx` type if needed)_
+| `KlVertexField`            | _(new `KlAreaForXxx` type if needed)_
+| `KlPointPlanarField`       | _(new `KlAreaForXxx` type if needed)_
+| `KlPointSpatialField`      | _(new `KlAreaForXxx` type if needed)_
+| `KlLogicalExpressionField` | _(new `KlAreaForXxx` type if needed)_
+|===
+
+==== kview duplicate implementations (Phase 7a)
+
+These `BaseDefaultKlField`-based classes are deleted, not deprecated, since they are
+internal to kview and have no external consumers.
+
+[cols="1,1", options="header"]
+|===
+| Class to delete | Surviving replacement
+
+| `DefaultKlBooleanField`           | `EditableBooleanFieldArea` / `ReadOnlyBooleanFieldArea`
+| `KlEditableBooleanField`          | `EditableBooleanFieldArea`
+| `KlReadOnlyBooleanField`          | `ReadOnlyBooleanFieldArea`
+| `KlBooleanFieldFactory`           | `EditableBooleanFieldArea.Factory`
+| `KlEditableBooleanFieldFactory`   | `EditableBooleanFieldArea.Factory`
+| `KlReadOnlyBooleanFieldFactory`   | `ReadOnlyBooleanFieldArea.Factory`
+| (same pattern for String, Integer, Float, Component, Image, IntIdSet, IntIdList)
+| ...
+| `BaseDefaultKlField`              | `EditableFieldAreaBlueprint` / `FeatureAreaBlueprint`
+| `KlFieldFactory<DT>`              | `KlAreaForXxx.Factory` (already `@Deprecated`)
+|===
+
+==== Other framework types
+
+[cols="1,2,1", options="header"]
+|===
+| Type | File | Note
+
+| `TabGroup`
+| `framework/.../tabs/TabGroup.java`
+| Uses `KometNodeFactory` for menu discovery (Phase 4)
+|===
+
+=== Hold for later evaluation
+
+[cols="1,2", options="header"]
+|===
+| Type | Reason to hold
+
+| `WindowComponent`
+| Interface used by both old and new code paths. Phase 5 evaluation.
+
+| `WindowSettings`
+| Used by knowledge-layout-editor and journal restore. Needs replacement design.
+
+| `KometNode`
+| Core interface for old node system. Phase 4/5 evaluation.
+
+| `KlAreaForFeature` (sealed)
+| After `<FX>` removal becomes `KlAreaForFeature<DT, F>`. Evaluate whether the
+  `F extends Feature<DT>` parameter is still needed for non-field features (versions,
+  stamps, feature definitions) or can also be simplified.
+
+| `KlAreaForStamp`
+| Legitimate non-field feature. Stays in `KlAreaForFeature` hierarchy.
+
+| `KlAreaForFeatureDefinition`
+| Legitimate non-field feature. Stays.
+
+| `KlAreaForListOfFeatureDefinitions`
+| Legitimate non-field feature. Stays.
+
+| `KlAreaForObject`
+| Generic type -- evaluate if a concrete `KlAreaForXxx` variant is needed.
+|===
+
+
 == Reference: Key file locations
 
 === Framework (old architecture)
@@ -277,9 +1089,14 @@ After all consumers are migrated and a release has shipped with deprecation warn
 * `knowledge-layout/src/main/java/dev/ikm/komet/layout/context/KlContextFactory.java`
 * `knowledge-layout/src/main/java/dev/ikm/komet/layout/context/KlContextProvider.java`
 * `knowledge-layout/src/main/java/dev/ikm/komet/layout/window/KlJournalWindow.java`
+* `knowledge-layout/src/main/java/dev/ikm/komet/layout/area/KlAreaForFeature.java` (legacy sealed)
+* `knowledge-layout/src/main/java/dev/ikm/komet/layout/area/KlFieldArea.java` (deprecated)
+* `knowledge-layout/src/main/java/dev/ikm/komet/layout/version/field/KlField.java` (new base)
+* `knowledge-layout/src/main/java/dev/ikm/komet/layout/version/field/KlBooleanField.java` (new)
 
 === Kview (boundary / migration target)
 
+* `kview/src/main/java/dev/ikm/komet/kview/klwindows/ViewPropertiesKlContext.java` (bridge)
 * `kview/src/main/java/dev/ikm/komet/kview/klwindows/EntityKlWindowFactory.java`
 * `kview/src/main/java/dev/ikm/komet/kview/klwindows/AbstractEntityChapterKlWindow.java`
 * `kview/src/main/java/dev/ikm/komet/kview/klwindows/AbstractChapterKlWindow.java`

@@ -100,6 +100,9 @@ import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
+import dev.ikm.komet.kview.klwindows.ViewPropertiesKlContext;
+import dev.ikm.komet.layout.KlPeerable;
+import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
 import dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
@@ -364,6 +367,8 @@ public class JournalController {
 
     private ObservableViewNoOverride windowView;
     private ViewProperties journalViewProperties;
+    /** KlContext bridging the journal's view coordinates into the scene graph for KlView-based components. */
+    private KlContext journalKlContext;
     private final HashMap<String, MenuItem> windowTitleToMenuItem = new HashMap<>();
 
     /**
@@ -377,6 +382,12 @@ public class JournalController {
         // Initialize the journal window view, which is provided in the WindowSettings
         windowView = journalViewModel.getPropertyValue(JournalViewModel.PARENT_VIEW_COORDINATES);
         journalViewProperties = windowView.makeOverridableViewProperties("JournalController.filterOptionsPopup");
+
+        // Bridge the journal's view coordinates into the JavaFX scene graph as a KlContext.
+        // Any KlView-based component in this journal can discover these coordinates via
+        // KlView.context(node), which walks the parent chain looking for KL_CONTEXT.
+        journalKlContext = new ViewPropertiesKlContext("Journal", journalViewProperties.nodeView());
+        journalBorderPane.getProperties().put(KlPeerable.PropertyKeys.KL_CONTEXT, journalKlContext);
 
         filterOptionsPopup = setupViewCoordinateOptionsPopup(journalViewProperties,
                 coordinatesMenuButton, () -> {

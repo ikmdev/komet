@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.details.concept;
 
+import dev.ikm.komet.details.DetailsNodeFactory;
 import dev.ikm.komet.framework.*;
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
 import dev.ikm.komet.framework.graphics.Icon;
@@ -466,7 +467,7 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
 
     @Override
     public Class factoryClass() {
-        return ConceptDetaisNodeFactory.class;
+        return DetailsNodeFactory.class;
     }
 
     private void addCategorizedVersions(ObservableEntitySnapshot categorizedVersions,

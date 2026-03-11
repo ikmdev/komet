@@ -13,6 +13,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUSES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.TIME;
+import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
@@ -33,6 +34,13 @@ import java.util.stream.*;
 public abstract class StampFormViewModelBase extends FormViewModel {
     protected EntityFacade entityFacade;
     protected UUID topic;
+    protected ObservableView observableView;
+
+    /**
+     * @deprecated Use {@link #getObservableView()} instead. Retained for callers
+     *             that still pass {@code ViewProperties}; bridges via {@code nodeView()}.
+     */
+    @Deprecated(forRemoval = true)
     protected ViewProperties viewProperties;
 
     protected Type type;
@@ -73,21 +81,21 @@ public abstract class StampFormViewModelBase extends FormViewModel {
 
     /**
      * Populate default values for the form. This is called when the form is first opened, and can be
-     * used to set default values for the form fields. Assumes that the view properties have been set and
+     * used to set default values for the form fields. Assumes that the observable view has been set and
      * module and path entities have been fetched.
      */
     public void populateDefaults() {
         setPropertyValue(StampFormViewModelBase.Properties.STATUS, State.ACTIVE);
         // module
         // @TODO Revisit TinkarTerms bindings file because the defaultModuleProperty is returning a module that isn't part of the list of modules available.
-        //       int moduleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
+        //       int moduleNid = getObservableView().editCoordinate().defaultModuleProperty().get().nid();
         int moduleNid = TinkarTerm.DEVELOPMENT_MODULE.nid();
         List<ComponentWithNid> moduleEntities = getObservableList(StampFormViewModelBase.Properties.MODULES);
         ComponentWithNid module = lookupByNid(moduleNid, moduleEntities);
         setPropertyValue(StampFormViewModelBase.Properties.MODULE, module);
 
         // Path
-        int pathNid = getViewProperties().nodeView().editCoordinate().defaultPathProperty().get().nid();
+        int pathNid = getObservableView().editCoordinate().defaultPathProperty().get().nid();
         List<ComponentWithNid> pathEntities = getObservableList(StampFormViewModelBase.Properties.PATHS);
         ComponentWithNid path = lookupByNid(pathNid, pathEntities);
         setPropertyValue(StampFormViewModelBase.Properties.PATH, path);
@@ -101,15 +109,26 @@ public abstract class StampFormViewModelBase extends FormViewModel {
                 .findFirst().orElse(null);
     }
 
-    public final void update(EntityFacade entity, UUID topic, ViewProperties viewProperties){
-        this.viewProperties = viewProperties;
+    /**
+     * Updates the form with the given entity, topic, and observable view.
+     * The observable view provides edit coordinates and a view calculator for
+     * resolving modules, paths, and other STAMP defaults via the scene-graph
+     * based {@code KlContext} architecture.
+     *
+     * @param entity         the entity being edited/created
+     * @param topic          the event bus topic for this window
+     * @param observableView the observable view coordinate (from {@code KlContext.viewCoordinate()}
+     *                       or {@code ViewProperties.nodeView()})
+     */
+    public final void update(EntityFacade entity, UUID topic, ObservableView observableView) {
+        this.observableView = observableView;
         this.topic = topic;
 
         // initialize observable lists
-        Set<ComponentWithNid> modules = fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
+        Set<ComponentWithNid> modules = fetchDescendentsOfConcept(observableView.calculator(), TinkarTerm.MODULE.publicId()).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
         // add default module just in case it isn't a descendent
-        modules.add(viewProperties.nodeView().editCoordinate().defaultModuleProperty().get());
-        Set<ComponentWithNid> paths = fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
+        modules.add(observableView.editCoordinate().defaultModuleProperty().get());
+        Set<ComponentWithNid> paths = fetchDescendentsOfConcept(observableView.calculator(), TinkarTerm.PATH.publicId()).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
 
         if (getObservableList(MODULES).isEmpty()) {
             setPropertyValues(MODULES, modules);
@@ -121,10 +140,19 @@ public abstract class StampFormViewModelBase extends FormViewModel {
             setPropertyValues(STATUSES, List.of(State.values()));
         }
 
-        doUpdate(entity, topic, viewProperties);
+        doUpdate(entity, topic, observableView);
     }
 
-    protected abstract void doUpdate(EntityFacade entity, UUID topic, ViewProperties viewProperties);
+    /**
+     * @deprecated Use {@link #update(EntityFacade, UUID, ObservableView)} instead.
+     */
+    @Deprecated(forRemoval = true)
+    public final void update(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
+        this.viewProperties = viewProperties;
+        update(entity, topic, viewProperties.nodeView());
+    }
+
+    protected abstract void doUpdate(EntityFacade entity, UUID topic, ObservableView observableView);
 
     public void resetOrClearForm(ActionEvent actionEvent) {
         ConfirmationDialogController.showConfirmationDialog(
@@ -157,6 +185,16 @@ public abstract class StampFormViewModelBase extends FormViewModel {
 
     protected abstract void showSucessToast();
 
+    /**
+     * Returns the observable view coordinate for this form.
+     * Prefer this over {@link #getViewProperties()}.
+     */
+    public ObservableView getObservableView() { return observableView; }
+
+    /**
+     * @deprecated Use {@link #getObservableView()} instead.
+     */
+    @Deprecated(forRemoval = true)
     public ViewProperties getViewProperties() { return viewProperties; }
 
     /**
