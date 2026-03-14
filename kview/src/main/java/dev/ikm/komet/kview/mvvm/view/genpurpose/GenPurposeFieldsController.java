@@ -36,9 +36,11 @@ import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.version.field.KlField;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.Field;
@@ -53,6 +55,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityBinding;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -75,6 +78,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_PANEL;
@@ -175,9 +179,9 @@ public class GenPurposeFieldsController {
         ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
         ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
         if (genPurposeViewModel.getPropertyValue(MODE).equals(CREATE)) {
-            StampFormViewModelBase stampFormViewModel = genPurposeViewModel.getPropertyValue(STAMP_VIEW_MODEL);
-            module = stampFormViewModel.getPropertyValue(MODULE);
-            path = stampFormViewModel.getPropertyValue(PATH);
+//            StampFormViewModelBase stampFormViewModel = genPurposeViewModel.getPropertyValue(STAMP_VIEW_MODEL);
+//            module = stampFormViewModel.getPropertyValue(MODULE);
+//            path = stampFormViewModel.getPropertyValue(PATH);
         } else {
             // Edit MODE
             // get latest module and path from edit coordinate
@@ -281,40 +285,20 @@ public class GenPurposeFieldsController {
 
 //        EntityFacade semantic = genPurposeViewModel.getPropertyValue(SEMANTIC);
         reloadPatternNavigator = true;
-//        ObjectProperty<EntityFacade> semanticProperty = genPurposeViewModel.getProperty(SEMANTIC);
-        // listen if the semantic property is updated during Create mode.
-//        semanticProperty.addListener( _ -> setupEditSemanticDetails());
-
-        // Create a transaction and uncommitted semantic when reference component is confirmed.
-//        Subscriber<GenEditingEvent> createUncommittedSemanticSubscriber = evt -> {
-//            // After confirming stamp  and reference component create
-//            if (evt.getEventType() == CONFIRM_REFERENCE_COMPONENT) {
-//                EntityFacade referencedComponentFacade = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
-//                EntityFacade patternFacade = genPurposeViewModel.getPropertyValue(PATTERN);
-//                ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referencedComponentFacade.nid()).expectEntity();
-//                ObservablePattern observablePattern = ObservableEntityHandle.get(patternFacade.nid()).expectPattern();
-//
-//                initializeComposer();
-//                semanticEditor = getObservableComposer().composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
-//
-//                editableVersion = semanticEditor.getEditableVersion();
-//
-//                semanticEditor.save(); // Save to create an uncommitted version
-//                EntityHandle.get(semanticEditor.getEntity().nid()).asSemantic().ifPresent(semanticEntity ->
-//                        genPurposeViewModel.setPropertyValue(SEMANTIC, semanticEntity));
-//            }
-//        };
-//        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-//                GenEditingEvent.class, createUncommittedSemanticSubscriber);
 
 //        if (semantic != null && genPurposeViewModel.getPropertyValue(MODE) == EDIT) {
 //            //Change the button name to RESET FORM in EDIT MODE
 //            clearOrResetFormButton.setText("RESET FORM");
 //            setupEditSemanticDetails();
 //        }
+
         Subscriber<KLPropertyPanelEvent> propertyEventSubscriber = evt -> {
             if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
                 setupEditSemanticDetails(evt.getSemantic());
+            } else if (evt.getEventType() == KLPropertyPanelEvent.SHOW_ADD_SEMANTIC) {
+                genPurposeViewModel.setPropertyValue(MODE, CREATE);
+                SemanticEntity<SemanticEntityVersion> newSemantic = createUncommitedSemantic(evt.getReferenceComponent(), evt.getPatternFacade());
+                setupEditSemanticDetails(newSemantic);
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
@@ -336,6 +320,35 @@ public class GenPurposeFieldsController {
                 rebindNewEditableVersion();
             }
         });
+    }
+
+    /**
+     * Creates a transaction and uncommited Semantic.
+     *
+     * @param referenceComponent the Reference Component of the Semantic that is going to be created
+     * @param pattern the Pattern of the Semantic that is going to be created
+     * @return The uncommited Semantic
+     */
+    private SemanticEntity<SemanticEntityVersion> createUncommitedSemantic(EntityFacade referenceComponent, PatternFacade pattern) {
+        ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referenceComponent.nid()).expectEntity();
+        ObservablePattern observablePattern = ObservableEntityHandle.get(pattern.nid()).expectPattern();
+
+        initializeComposer();
+        semanticEditor = getObservableComposer().composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
+
+        editableVersion = semanticEditor.getEditableVersion();
+
+        semanticEditor.save(); // Save to create an uncommitted version
+
+        AtomicReference<SemanticEntity<SemanticEntityVersion>> newSemantic = new AtomicReference<>();
+        EntityHandle.get(semanticEditor.getEntity().nid()).asSemantic().ifPresentOrElse(semanticEntity -> {
+            newSemantic.set(semanticEntity);
+        },
+        () -> {
+            throw new RuntimeException("Error creating new uncommited Semantic");
+        });
+
+        return newSemantic.get();
     }
 
     private void setupEditSemanticDetails(SemanticEntity<SemanticEntityVersion> semanticEntity) {

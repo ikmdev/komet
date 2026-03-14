@@ -317,7 +317,7 @@ public class SemanticFieldsController {
         genEditingViewModel.getProperty(MODE).subscribe((mode) -> {
             if(mode == EDIT){
                 clearOrResetFormButton.setText("RESET FORM");
-            }else {
+            } else {
                 clearOrResetFormButton.setText("CLEAR FORM");
             }
         });
