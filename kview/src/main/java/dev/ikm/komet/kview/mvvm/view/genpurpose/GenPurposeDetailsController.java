@@ -655,15 +655,12 @@ public class GenPurposeDetailsController {
             showCreateSemanticPanel(actionEvent, refComponent, patternFacade);
         });
 
-        if (numberSemantics.get() > 1) {
-            SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
+        // show Popup
+        SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
 
-            Point2D popupPosition = sectionTitledPane.getLocalToSceneTransform().transform(sectionTitledPane.getLayoutX() + sectionTitledPane.getWidth(),
-                    sectionTitledPane.getBoundsInLocal().getMinY());
-            popup.show(sectionTitledPane, popupPosition.getX(), popupPosition.getY());
-        } else {
-            showEditSemanticFieldsPanel(actionEvent, lastSemantic.get());
-        }
+        Point2D popupPosition = sectionTitledPane.getLocalToSceneTransform().transform(sectionTitledPane.getLayoutX() + sectionTitledPane.getWidth(),
+                sectionTitledPane.getBoundsInLocal().getMinY());
+        popup.show(sectionTitledPane, popupPosition.getX(), popupPosition.getY());
     }
 
     private void showCreateSemanticPanel(ActionEvent event, EntityFacade refComponent, PatternFacade patternFacade) {
