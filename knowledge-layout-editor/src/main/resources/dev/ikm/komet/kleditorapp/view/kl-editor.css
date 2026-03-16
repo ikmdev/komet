@@ -421,6 +421,10 @@
     -fx-font-size: 13px;
 }
 
+.right-properties-pane .section-properties GridPane {
+    -fx-vgap: 10;
+}
+
 .right-properties-pane .section-properties GridPane > .label {
     -fx-padding: 0 5 0 0;
 }
@@ -438,6 +442,19 @@
 .right-properties-pane .section-properties .group-title {
     -fx-font-family: "Noto Sans Bold";
     -fx-font-size: 14px;
+}
+
+/* Reference Component */
+.right-properties-pane .section-properties .reference-component-container {
+    -fx-spacing: 5px;
+}
+
+.right-properties-pane .section-properties .reference-component-combobox .list-cell {
+    -fx-text-fill: #111;
+}
+
+.right-properties-pane .section-properties .reference-component-combobox .list-cell.empty-selection {
+    -fx-text-fill: #888;
 }
 
 /******************************************************************************
