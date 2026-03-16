@@ -318,12 +318,7 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
         // pass default options to panes
         accordionBox.updateMainPanes(pane ->
                 pane.setDefaultOption(defaultFilterOptions.getOptionForItem(pane.getOption().item())));
-//        accordionBox.updateLangPanes(pane -> {
-//            if (pane.getOrdinal() == 0) {
-//                // only primary language gets synced
-//                pane.setDefaultLangCoordinates(defaultFilterOptions.getLanguageCoordinates(0).copy());
-//            }
-//        });
+
         // finally, setup filter with default options
         setupFilter(defaultFilterOptions);
     }
@@ -373,41 +368,61 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
         titledPane.setTitle(option.title());
         titledPane.setOption(option);
         titledPane.setExpanded(false);
-        titledPane.expandedProperty().addListener((observable, _, expanded) -> {
-            LOG.info("{} expanded: {}", option.title(), expanded);
+
+        // TODO this may need to be moved into the EditCoordinateTitledPane control, and fire an event when the pane is
+        //  collapsed, so that the skin doesn't need to listen to expandedProperty changes It will need the view
+        //  properties to be able to update the defaults. The reason is it's seems theres another expandedProperty()
+        //  listener competting with this one. reduce complexity by putting it in one place.
+        //  more...
+        //    the subscriber chain will change the titledPane's optionProperty with a set.
+        titledPane.expandedProperty().addListener(_ -> {
+            boolean expanded = titledPane.expandedProperty().get();
+
             if (!expanded) {
+                LOG.debug("======= A) Titled Pane disclosure closed - id: {} option: {}", System.identityHashCode(option), option);
                 // not expanded is accepting the selected option.
                 if (titledPane.getOption().selectedOptions().size() > 0) {
-                    LOG.info("Selected option: {}", titledPane.getOption().selectedOptions().get(0));
-                    updateMainEditCoordinateRecord();
+                    EditCoordinateOptions.Option cloneOption = titledPane.getOption().copy();
+                    LOG.debug("========= A.1) Clone of id: {} selected option: {}: ", System.identityHashCode(cloneOption), cloneOption);
+                    LOG.debug("========= A.2) Selected titledPane.getOption() id: {} selected option: {}", System.identityHashCode(titledPane.getOption()), titledPane.getOption());
+                    updateMainEditCoordinateRecord(titledPane.getOption());
+                    LOG.debug("========= A.3) updateMainEditCoordinateRecord() id: {} editCoordinate: \n{}: ", System.identityHashCode(control.getViewProperties().parentView().editCoordinate()), control.getViewProperties().parentView().editCoordinate());
+//                    titledPane.setOption(cloneOption); // did not work!
                 }
             }
         });
         return titledPane;
     }
 
-    private void updateMainEditCoordinateRecord() {
-        List<EditCoordinateOptions.Option> options = new ArrayList<>(control.getFilterOptions().getMainCoordinates().getOptions());
-        options.forEach(option -> {
-            boolean selected = !option.selectedOptions().isEmpty();
-            Object item = selected ? option.selectedOptions().getFirst() : null;
-            LOG.info("Updating main edit coordinate record for option: {} selected: {} ", option.title(), item);
-            ObservableEditCoordinate editCoordinate = control.getViewProperties().parentView().editCoordinate();
-            EditCoordinateOptions.OPTION_ITEM itemType = option.item();
-            if (selected) {
-                if (itemType == AUTHOR_FOR_CHANGE) {
-                    editCoordinate.authorForChangesProperty().setValue((ConceptFacade) item);
-                } else if (itemType == DEFAULT_MODULE) {
-                    editCoordinate.defaultModuleProperty().setValue((ConceptFacade) item);
-                } else if (itemType == DESTINATION_MODULE) {
-                    editCoordinate.destinationModuleProperty().setValue((ConceptFacade) item);
-                } else if (itemType == DEFAULT_PATH) {
-                    editCoordinate.defaultPathProperty().setValue((ConceptFacade) item);
-                } else if (itemType == PROMOTION_PATH) {
-                    editCoordinate.promotionPathProperty().setValue((ConceptFacade) item);
-                }
+    private void updateMainEditCoordinateRecord(EditCoordinateOptions.Option targetOption) {
+        boolean selected = !targetOption.selectedOptions().isEmpty();
+        Object item = selected ? targetOption.selectedOptions().getFirst() : null;
+        LOG.debug("=========== A.1.1) Updating main edit coordinate record for id: {} option: {} selected: {} ", System.identityHashCode(targetOption), targetOption.title(), item);
+        ObservableEditCoordinate observableEditCoordinate = control.getViewProperties().parentView().editCoordinate();
+        EditCoordinateOptions.OPTION_ITEM itemType = targetOption.item();
+        if (selected) {
+            if (itemType == AUTHOR_FOR_CHANGE) {
+                LOG.debug("=========== A.1.1.1.a) option type: {} id: {} targetOption: {}", itemType, System.identityHashCode(targetOption), targetOption);
+                LOG.debug("=========== A.1.1.1.b) current edit coord concept: {} id: {} targetOption: {}", observableEditCoordinate.authorForChangesProperty().get(), System.identityHashCode(observableEditCoordinate.authorForChangesProperty().get()), targetOption);
+                LOG.debug("=========== A.1.1.1.c) id: {} observableEditCoordinate: {}", System.identityHashCode(observableEditCoordinate.editCoordinate()), observableEditCoordinate.editCoordinate());
+                observableEditCoordinate.authorForChangesProperty().setValue((ConceptFacade) item);
+                LOG.debug("=========== A.1.1.1.d) option type: {} id: {} targetOption: {}", itemType, System.identityHashCode(targetOption), targetOption);
+                LOG.debug("=========== A.1.1.1.e) new current edit coord concept: {} id: {} targetOption: {}", observableEditCoordinate.authorForChangesProperty().get(), System.identityHashCode(observableEditCoordinate.authorForChangesProperty().get()), targetOption);
+                LOG.debug("=========== A.1.1.1.f) id: {} observableEditCoordinate: {}", System.identityHashCode(observableEditCoordinate.editCoordinate()), observableEditCoordinate.editCoordinate());
+            } else if (itemType == DEFAULT_MODULE) {
+                LOG.debug("=========== A.1.1.2) option type: {} id: {} targetOption: {}", itemType, System.identityHashCode(targetOption), targetOption);
+                observableEditCoordinate.defaultModuleProperty().setValue((ConceptFacade) item);
+            } else if (itemType == DESTINATION_MODULE) {
+                LOG.debug("=========== A.1.1.3) option type: {} id: {} targetOption: {}", itemType, System.identityHashCode(targetOption), targetOption);
+                observableEditCoordinate.destinationModuleProperty().setValue((ConceptFacade) item);
+            } else if (itemType == DEFAULT_PATH) {
+                LOG.debug("=========== A.1.1.4) option type: {} id: {} targetOption: {}", itemType, System.identityHashCode(targetOption), targetOption);
+                observableEditCoordinate.defaultPathProperty().setValue((ConceptFacade) item);
+            } else if (itemType == PROMOTION_PATH) {
+                LOG.debug("=========== A.1.1.5) option type: {} id: {} targetOption: {}", itemType, System.identityHashCode(targetOption), targetOption);
+                observableEditCoordinate.promotionPathProperty().setValue((ConceptFacade) item);
             }
-        });
+        }
         // TODO output all selected options to console
     }
 

@@ -6,7 +6,7 @@
         <Property name="LOG_BASE_PATH">${sys:user.home}/Solor/komet/logs</Property>
         <Property name="FILE_SIZE_LIMIT">100MB</Property>
         <Property name="LOG_RETENTION_DAYS">P30D</Property>
-        <Property name="ROOT_LOG_LEVEL">INFO</Property>
+        <Property name="ROOT_LOG_LEVEL">DEBUG</Property>
     </Properties>
 
     <Appenders>

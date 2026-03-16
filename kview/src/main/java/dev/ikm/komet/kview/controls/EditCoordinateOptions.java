@@ -1,10 +1,14 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
+import dev.ikm.tinkar.coordinate.Coordinates;
+import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -12,7 +16,7 @@ import java.util.*;
 import java.util.stream.*;
 
 public class EditCoordinateOptions implements Serializable {
-
+    private static final Logger LOG = LoggerFactory.getLogger(EditCoordinateOptions.class);
     @Serial
     private final static long serialVersionUID = 1L;
 
@@ -154,11 +158,18 @@ public class EditCoordinateOptions implements Serializable {
         }
 
         public Option<T> copy() {
-            return new Option<>(item, title,
+            LOG.debug("Copying id: {} option: {} ", System.identityHashCode(this), this);
+//            LOG.debug("   - availableOptions id: {} : {} ", System.identityHashCode(availableOptions), availableOptions);
+//            LOG.debug("   - selectedOptions id: {} : {} ", System.identityHashCode(selectedOptions), selectedOptions);
+            Option copy = new Option<>(item, title,
                     FXCollections.observableArrayList(availableOptions.stream().toList()),
                     FXCollections.observableArrayList(selectedOptions.stream().toList()),
                     excludedOptions != null ? FXCollections.observableArrayList(excludedOptions.stream().toList()) : null,
                     multiSelect, any, buttonType, inOverride);
+            LOG.debug("Copying id: {} copy option: {}", System.identityHashCode(copy), copy);
+//            LOG.debug("   - availableOptions id: {} : {} ", System.identityHashCode(copy.availableOptions), copy.availableOptions);
+//            LOG.debug("   - selectedOptions id: {} : {} ", System.identityHashCode(copy.selectedOptions), copy.selectedOptions);
+            return copy;
         }
 
         @Override
@@ -172,6 +183,9 @@ public class EditCoordinateOptions implements Serializable {
             if (inOverride != option.inOverride) return false;
             if (!compareLists(selectedOptions, option.selectedOptions)) return false;
             if (!compareLists(excludedOptions, option.excludedOptions)) return false;
+            // New code introduced for available options, which is not part of the equals method in the original code, but
+            // MAYBE? necessary to ensure that changes to available options are detected as changes to the option.
+            if (!compareLists(availableOptions, option.availableOptions)) return false;
             return true;
         }
 
@@ -199,21 +213,37 @@ public class EditCoordinateOptions implements Serializable {
     public class MainEditCoordinates implements EditCoordinates {
 
         // MainCoordinates
-        private Option<ConceptFacade> authorForChange = new Option<>(OPTION_ITEM.AUTHOR_FOR_CHANGE, "author_for_change.title",
-                FXCollections.observableArrayList(), FXCollections.observableArrayList(), null, false, false, noneSet, false);
+        private final static EditCoordinateRecord DEFAULT_EDIT_COORD_RECORD = Coordinates.Edit.Default();
+        private Option<ConceptFacade> authorForChange = new Option<>(OPTION_ITEM.AUTHOR_FOR_CHANGE,
+                "author_for_change.title",
+                FXCollections.observableArrayList(List.of(DEFAULT_EDIT_COORD_RECORD.getAuthorForChanges())),
+                FXCollections.observableArrayList(List.of(DEFAULT_EDIT_COORD_RECORD.getAuthorForChanges())),
+                null, false, false, noneSet, false);
 
-        private Option<ConceptFacade> defaultModule = new Option<>(OPTION_ITEM.DEFAULT_MODULE, "default_module.title",
-                FXCollections.observableArrayList(), FXCollections.observableArrayList(), null, false, false, noneSet, false);
+        private Option<ConceptFacade> defaultModule = new Option<>(OPTION_ITEM.DEFAULT_MODULE,
+                "default_module.title",
+                FXCollections.observableArrayList(List.of(DEFAULT_EDIT_COORD_RECORD.getDefaultModule())),
+                FXCollections.observableArrayList(List.of(DEFAULT_EDIT_COORD_RECORD.getDefaultModule())),
+                null, false, false, noneSet, false);
 
-        private Option<ConceptFacade> destinationModule = new Option<>(OPTION_ITEM.DESTINATION_MODULE, "dest_module.title",
-                FXCollections.observableArrayList(), FXCollections.observableArrayList(), null, false, false, noneSet, false);
+        private Option<ConceptFacade> destinationModule = new Option<>(OPTION_ITEM.DESTINATION_MODULE,
+                "dest_module.title",
+                FXCollections.observableArrayList(DEFAULT_EDIT_COORD_RECORD.getDestinationModule()),
+                FXCollections.observableArrayList(DEFAULT_EDIT_COORD_RECORD.getDestinationModule()),
+                null, false, false, noneSet, false);
 
 
-        private Option<ConceptFacade> defaultPath = new Option<>(OPTION_ITEM.DEFAULT_PATH, "default_path.title",
-                FXCollections.observableArrayList(), FXCollections.observableArrayList(), null, false, false, noneSet, false);
+        private Option<ConceptFacade> defaultPath = new Option<>(OPTION_ITEM.DEFAULT_PATH,
+                "default_path.title",
+                FXCollections.observableArrayList(DEFAULT_EDIT_COORD_RECORD.getDefaultPath()),
+                FXCollections.observableArrayList(DEFAULT_EDIT_COORD_RECORD.getDefaultPath()),
+                null, false, false, noneSet, false);
 
-        private Option<ConceptFacade> promotionPath = new Option<>(OPTION_ITEM.PROMOTION_PATH, "promotion_path.title",
-                FXCollections.observableArrayList(), FXCollections.observableArrayList(), null, false, false, noneSet, false);
+        private Option<ConceptFacade> promotionPath = new Option<>(OPTION_ITEM.PROMOTION_PATH,
+                "promotion_path.title",
+                FXCollections.observableArrayList(DEFAULT_EDIT_COORD_RECORD.getPromotionPath()),
+                FXCollections.observableArrayList(DEFAULT_EDIT_COORD_RECORD.getPromotionPath()),
+                null, false, false, noneSet, false);
 
 
         private final List<Option> options;
