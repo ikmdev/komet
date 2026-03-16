@@ -7,6 +7,9 @@ import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 
+/**
+ * An event used for the KL Windows (or GenPurpose...).
+ */
 public class KLPropertyPanelEvent extends Evt {
     public static final EvtType<KLPropertyPanelEvent> OPEN_PANEL = new EvtType<>(Evt.ANY, "OPEN_PANEL");
 
@@ -26,6 +29,7 @@ public class KLPropertyPanelEvent extends Evt {
 
     /**
      *
+     *
      * @param source        the object on which the Event initially occurred
      * @param eventType     type of the event
      */
@@ -34,9 +38,12 @@ public class KLPropertyPanelEvent extends Evt {
     }
 
     /**
+     * Creates a KLPropertyPanelEvent that receives a semantic. Typically used with EvtType SHOW_EDIT_SEMANTIC_FIELDS in
+     * which case the semanticEntity passed in is the semantic to edit.
      *
-     * @param source
-     * @param eventType
+     * @param source the source of the event
+     * @param eventType the event type
+     * @param semanticEntity the Semantic to edit
      */
     public KLPropertyPanelEvent(Object source, EvtType<KLPropertyPanelEvent> eventType, SemanticEntity<SemanticEntityVersion> semanticEntity) {
         super(source, eventType);
@@ -44,9 +51,14 @@ public class KLPropertyPanelEvent extends Evt {
     }
 
     /**
+     * Creates a KLPropertyPanelEvent that receives a Reference Component and Pattern. Typically used with EvtType SHOW_ADD_SEMANTIC
+     * in which case the referenceComponent and the pattern passed in are the Reference Component and the Pattern of the
+     * Semantic that is to be created.
      *
-     * @param source
-     * @param eventType
+     * @param source the source of the event
+     * @param eventType the event type
+     * @param referenceComponent the Reference Component of the Semantic to create
+     * @param pattern the Pattern of the Semantic to create
      */
     public KLPropertyPanelEvent(Object source, EvtType<KLPropertyPanelEvent> eventType, EntityFacade referenceComponent, PatternFacade pattern) {
         super(source, eventType);
