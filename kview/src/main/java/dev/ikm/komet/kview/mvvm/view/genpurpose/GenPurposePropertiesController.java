@@ -216,15 +216,10 @@ public class GenPurposePropertiesController {
             LOG.info("Show Panel by event type: " + evt.getEventType());
             propertyToggleButtonGroup.selectToggle(addEditButton);
 
-            if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
+            if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS
+                    || evt.getEventType() == KLPropertyPanelEvent.SHOW_ADD_SEMANTIC) {
                 genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
                 contentBorderPane.setCenter(editFieldsJfxNode.node());
-//            } else if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD) {
-//                genPurposeViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
-//                contentBorderPane.setCenter(editFieldsJfxNode.node());
-//            } else if (evt.getEventType() == KLPropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD) {
-//                genPurposeViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
-//                contentBorderPane.setCenter(referenceComponentJfxNode.node());
             } else if (evt.getEventType() == KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 // change the heading on the top of the panel
                 genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
@@ -237,8 +232,6 @@ public class GenPurposePropertiesController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
                 KLPropertyPanelEvent.class, showPanelSubscriber);
-
-
     }
 
 
