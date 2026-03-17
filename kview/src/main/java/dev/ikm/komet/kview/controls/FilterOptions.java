@@ -2,7 +2,7 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -547,14 +547,14 @@ public class FilterOptions implements Serializable {
     private List<LanguageFilterCoordinates> languageCoordinatesList;
 
     private final ObservableView observableViewForFilter;
-    private final ObservableViewNoOverride parentViewCoordinate;
+    private final ObservableViewBase parentViewCoordinate;
 
     /**
      * Constructor for FilterOptions (aka view coordinate options)
      *
      * @param parentViewCoordinate the parent view coordinate.
      */
-    public FilterOptions(ObservableViewNoOverride parentViewCoordinate) {
+    public FilterOptions(ObservableViewBase parentViewCoordinate) {
         this.parentViewCoordinate = parentViewCoordinate;
         mainCoordinates = new MainFilterCoordinates();
         languageCoordinatesList = new ArrayList<>(); // at least one

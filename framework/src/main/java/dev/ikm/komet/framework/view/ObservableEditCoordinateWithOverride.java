@@ -37,10 +37,6 @@ public class ObservableEditCoordinateWithOverride
      */
     public ObservableEditCoordinateWithOverride(ObservableEditCoordinate editCoordinate, String coordinateName) {
         super(editCoordinate, coordinateName);
-        if (editCoordinate instanceof ObservableEditCoordinateWithOverride) {
-            throw new IllegalStateException("Cannot override an overridden Coordinate. ");
-        }
-
     }
 
     @Override
@@ -55,7 +51,7 @@ public class ObservableEditCoordinateWithOverride
             this.destinationModuleProperty().setValue(newValue.getDestinationModule());
         }
         if (!this.defaultPathProperty().isOverridden()) {
-            this.defaultPathProperty().setValue(newValue.getPromotionPath());
+            this.defaultPathProperty().setValue(newValue.getDefaultPath());
         }
         if (!this.promotionPathProperty().isOverridden()) {
             this.promotionPathProperty().setValue(newValue.getPromotionPath());
@@ -86,7 +82,7 @@ int authorNid, int defaultModuleNid, int promotionPathNid, int destinationModule
 
             ConceptFacade defaultPath = updatedCoordinate.getDefaultPath();
             if (defaultPathProperty().isOverridden()) {
-                defaultPath = promotionPathProperty().get();
+                defaultPath = defaultPathProperty().get();
             }
 
             ConceptFacade promotionPath = updatedCoordinate.getPromotionPath();

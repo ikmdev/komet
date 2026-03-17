@@ -393,9 +393,11 @@ public class PropertiesController implements Serializable {
         // -- create stamp
         createStampSubscriber = evt -> {
             if (evt.getEventType() == CREATE_STAMP) {
+                // update() must precede populateDefaults() — it sets the ObservableView
+                // that populateDefaults() reads for edit coordinate defaults (path, module).
+                this.stampCreateFormViewModel.update(entityFacade, conceptTopic, viewProperties);
                 stampCreateFormViewModel.populateDefaults();
                 stampJFXNode.controller().init(stampCreateFormViewModel);
-                this.stampCreateFormViewModel.update(entityFacade, conceptTopic, viewProperties);
 
                 contentBorderPane.setCenter(stampJFXNode.node());
                 editButton.setSelected(true);

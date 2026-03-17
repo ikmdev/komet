@@ -33,6 +33,9 @@ public class RunReasonerFullTask extends RunReasonerTaskBase {
 		super(reasonerService, classifierResultsConsumer);
 
 	}
+	protected String titlePrefix() {
+		return "Complete ";
+	}
 
 	protected void loadData(int workDone) throws Exception {
 		updateMessage("Step " + workDone + ": Loading data into reasoner");

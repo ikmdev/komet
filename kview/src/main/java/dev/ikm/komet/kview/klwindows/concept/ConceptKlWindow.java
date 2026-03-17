@@ -15,18 +15,17 @@
  */
 package dev.ikm.komet.kview.klwindows.concept;
 
-import dev.ikm.komet.framework.KometNodeFactory;
+import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.activity.ActivityStreams;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
-import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
-import dev.ikm.komet.kview.mvvm.view.concept.ConceptNodeFactory;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -81,14 +80,18 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
         this.detailsActivityStreamKey = new PublicIdStringKey<>(PublicIds.of(uuid.toString()), uniqueDetailsTopic);
         ActivityStreams.create(detailsActivityStreamKey);
 
-        // Initialize the DetailsNode with a factory.
-        KometNodeFactory conceptDetailsNodeFactory = new ConceptNodeFactory();
-        this.conceptNode = (ConceptNode) conceptDetailsNodeFactory.create(viewProperties.parentView(),
-                detailsActivityStreamKey,
-                ActivityStreamOption.PUBLISH.keyForOption(),
-                AlertStreams.ROOT_ALERT_STREAM_KEY,
-                true,
-                journalTopic);
+        // Set up node preferences with activity stream and journal topic,
+        // then construct ConceptNode directly with the ViewProperties we already have.
+        KometPreferences nodePreferences = KometPreferencesImpl.getConfigurationRootPreferences()
+                .node("/komet-nodes/ConceptNode_" + UUID.randomUUID());
+        nodePreferences.putObject(KometNode.PreferenceKey.ACTIVITY_STREAM_KEY, detailsActivityStreamKey);
+        nodePreferences.putObject(KometNode.PreferenceKey.ACTIVITY_STREAM_OPTION_KEY,
+                ActivityStreamOption.PUBLISH.keyForOption());
+        nodePreferences.putObject(KometNode.PreferenceKey.PARENT_ALERT_STREAM_KEY,
+                AlertStreams.ROOT_ALERT_STREAM_KEY);
+        nodePreferences.putUuid(KometNode.PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
+
+        this.conceptNode = new ConceptNode(viewProperties, nodePreferences, true);
 
         // Configure the details node if we are in create mode.
         if (isCreateMode) {

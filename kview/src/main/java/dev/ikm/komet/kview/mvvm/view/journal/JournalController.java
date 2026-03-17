@@ -55,6 +55,7 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
+import static dev.ikm.komet.preferences.JournalWindowSettings.VIEW_COORDINATE_OVERRIDES;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
@@ -99,7 +100,11 @@ import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
+import dev.ikm.komet.kview.klwindows.ViewPropertiesKlContext;
+import dev.ikm.komet.layout.KlPeerable;
+import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
+import dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
@@ -129,6 +134,7 @@ import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -360,8 +366,9 @@ public class JournalController {
     private JournalViewModel journalViewModel;
 
     private ObservableViewNoOverride windowView;
-    private ObservableViewNoOverride journalViewCoordAsParent;
     private ViewProperties journalViewProperties;
+    /** KlContext bridging the journal's view coordinates into the scene graph for KlView-based components. */
+    private KlContext journalKlContext;
     private final HashMap<String, MenuItem> windowTitleToMenuItem = new HashMap<>();
 
     /**
@@ -375,7 +382,12 @@ public class JournalController {
         // Initialize the journal window view, which is provided in the WindowSettings
         windowView = journalViewModel.getPropertyValue(JournalViewModel.PARENT_VIEW_COORDINATES);
         journalViewProperties = windowView.makeOverridableViewProperties("JournalController.filterOptionsPopup");
-        journalViewCoordAsParent = new ObservableViewNoOverride(journalViewProperties.nodeView());
+
+        // Bridge the journal's view coordinates into the JavaFX scene graph as a KlContext.
+        // Any KlView-based component in this journal can discover these coordinates via
+        // KlView.context(node), which walks the parent chain looking for KL_CONTEXT.
+        journalKlContext = new ViewPropertiesKlContext("Journal", journalViewProperties.nodeView());
+        journalBorderPane.getProperties().put(KlPeerable.PropertyKeys.KL_CONTEXT, journalKlContext);
 
         filterOptionsPopup = setupViewCoordinateOptionsPopup(journalViewProperties,
                 coordinatesMenuButton, () -> {
@@ -425,10 +437,10 @@ public class JournalController {
                 createConceptWindow(conceptFacade, NID_TEXT, null);
             } else if (entityFacade instanceof PatternFacade patternFacade) {
                 // TODO is this used??  The makePatternWindowEventSubscriber below is handling the event to create the Pattern Window
-                createPatternWindow(patternFacade, journalViewCoordAsParent.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.PatternFacade"));
+                createPatternWindow(patternFacade, journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.PatternFacade"));
             } else if (entityFacade instanceof SemanticFacade semanticFacade) {
                 // TODO is this used??  The makeGenEditWindowEventSubscriber below is handling the event to create the Semantic (GenEdit) Window
-                createGenEditWindow(semanticFacade, journalViewCoordAsParent.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.SemanticFacade"), false);
+                createGenEditWindow(semanticFacade, journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.SemanticFacade"), false);
             }
         };
         journalEventBus.subscribe(journalTopic, MakeConceptWindowEvent.class, makeComponentWindowEventSubscriber);
@@ -730,7 +742,7 @@ public class JournalController {
      */
     public void createWindowFromUuids(UUID[] uuids) {
         createAndSetupWindow(() -> createFromUuids(uuids, journalTopic,
-                        windowView.makeOverridableViewProperties("JournalController.createWindowFromUuids"), null),
+                        journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.createWindowFromUuids"), null),
                 "UUID array: " + ArrayIterate.makeString(uuids));
     }
 
@@ -745,7 +757,7 @@ public class JournalController {
         if (entityFacade == null) return;
 
         createAndSetupWindow(() -> createFromEntity(entityFacade, journalTopic,
-                        windowView.makeOverridableViewProperties("JournalController.createWindowFromEntity"), null),
+                        journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.createWindowFromEntity"), null),
                 "entity " + entityFacade.nid());
     }
 
@@ -1007,7 +1019,7 @@ public class JournalController {
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
                             nextGenSearchViewModel.setPropertyValue(MODE, CREATE)
-                                .setPropertyValue(VIEW_PROPERTIES, windowView.makeOverridableViewProperties("JournalController.loadNextGenSearchPanel"))
+                                .setPropertyValue(VIEW_PROPERTIES, journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.loadNextGenSearchPanel"))
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                 );
 
@@ -1048,13 +1060,13 @@ public class JournalController {
                 if (entity instanceof ConceptFacade conceptFacade) {
                     createConceptWindow(conceptFacade, nidTextEnum, null);
                 } else if (entity instanceof PatternFacade patternFacade) {
-                    createPatternWindow(patternFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.ConceptFacade"));
+                    createPatternWindow(patternFacade, journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.ConceptFacade"));
                 } else if (entity instanceof SemanticFacade semanticFacade) {
-                    createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.SemanticFacade"), false);
+                    createGenEditWindow(semanticFacade, journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.SemanticFacade"), false);
                 }
             } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
                 SemanticFacade semanticFacade = semanticEntityVersion.entity();
-                createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.SemanticEntityVersion"), false);
+                createGenEditWindow(semanticFacade, journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.SemanticEntityVersion"), false);
             }
         };
         controller.getDoubleCLickConsumers().add(displayInDetailsView);
@@ -1151,23 +1163,27 @@ public class JournalController {
             preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
         }
 
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.createConceptWindow");
+        ViewProperties viewProperties = journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.createConceptWindow");
 
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
                 journalTopic, conceptFacade, viewProperties, preferences);
         setupWorkspaceWindow(chapterKlWindow);
     }
 
-    private void createGenPurposeKLWindow(EntityFacade entityFacade, KometPreferences preferences) {
+    private void createGenPurposeKLWindow(EntityFacade entityFacade, KometPreferences klEditorWindowPreferences) {
 //        if (preferences != null) {
 //            preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
 //        }
 
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.createGenPurposeKLWindow");
+        ViewProperties viewProperties = journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.createGenPurposeKLWindow");
 
-        AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.GEN_PURPOSE_KL,
-                journalTopic, entityFacade, viewProperties, preferences);
-        setupWorkspaceWindow(chapterKlWindow);
+        GenPurposeKLWindow genPurposeKLWindow = (GenPurposeKLWindow) createWindow(EntityKlWindowTypes.GEN_PURPOSE_KL,
+                journalTopic, entityFacade, viewProperties, null);
+
+        // Init KL Editor Window preferences
+        genPurposeKLWindow.initKLWindowPreferences(klEditorWindowPreferences, viewProperties);
+
+        setupWorkspaceWindow(genPurposeKLWindow);
     }
 
     /**
@@ -1279,7 +1295,7 @@ public class JournalController {
                                   ConceptFacade deviceConcept,
                                   KometPreferences preferences) {
         AbstractEntityChapterKlWindow lidrKlWindow = createWindow(EntityKlWindowTypes.LIDR,
-                journalTopic, deviceConcept, windowView.makeOverridableViewProperties("JournalController.createLidrWindow"), preferences);
+                journalTopic, deviceConcept, journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.createLidrWindow"), preferences);
         setupWorkspaceWindow(lidrKlWindow);
     }
 
@@ -1346,7 +1362,7 @@ public class JournalController {
                 navigationActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
 
         // What to do when you can double-click on a cell
-        ViewProperties viewProperties = journalViewCoordAsParent.makeOverridableViewProperties("JournalController.loadClassicConceptNavigator");
+        ViewProperties viewProperties = journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.loadClassicConceptNavigator");
         TreeView<ConceptFacade> treeView = navigatorNode.getController().getTreeView();
 
         // Create a context menu allowing user to Launch as a Lidr Record window.
@@ -1405,7 +1421,7 @@ public class JournalController {
     }
 
     private void loadNavigationPanel(ObservableViewNoOverride windowView) {
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.loadNavigationPanel");
+        ViewProperties viewProperties = journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.loadNavigationPanel");
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
                 .controller(new ConceptPatternNavController(this))
                 .updateViewModel("patternNavViewModel", (patternNavViewModel) ->
@@ -1548,6 +1564,12 @@ public class JournalController {
         journalWindowPreferences.putLong(JOURNAL_LAST_EDIT, (LocalDateTime.now())
                 .atZone(ZoneId.systemDefault()).toEpochSecond());
 
+        // Save journal-level coordinate overrides
+        if (journalViewProperties != null && journalViewProperties.nodeView().hasOverrides()) {
+            journalWindowPreferences.putObject(VIEW_COORDINATE_OVERRIDES,
+                    journalViewProperties.nodeView().getValue());
+        }
+
         // Putting the list of windows in our preferences.
         journalWindowPreferences.putList(WINDOW_NAMES, windowNames.castToList());
         try {
@@ -1577,6 +1599,14 @@ public class JournalController {
             if (journalPreferences == null) {
                 LOG.info("No saved windows found for journal '{}'", journalName);
                 return;
+            }
+
+            // Restore journal-level coordinate overrides before restoring chapter windows
+            ViewCoordinateRecord savedCoordinates = journalPreferences.getObject(
+                    VIEW_COORDINATE_OVERRIDES, null);
+            if (savedCoordinates != null && journalViewProperties != null) {
+                journalViewProperties.nodeView().setValue(savedCoordinates);
+                LOG.info("Restored coordinate overrides for journal '{}'", journalName);
             }
 
             // Looping through each window in each journal
@@ -1698,7 +1728,7 @@ public class JournalController {
      */
     @FXML
     public void newCreatePatternWindow(ActionEvent actionEvent) {
-        createPatternWindow(null, windowView.makeOverridableViewProperties("JournalController.newCreatePatternWindow"));
+        createPatternWindow(null, journalViewProperties.nodeView().makeOverridableViewProperties("JournalController.newCreatePatternWindow"));
     }
 
     public static Toast toast() { return toast; }

@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.mvvm.view.search;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
@@ -34,7 +34,7 @@ public class SearchCellDescriptionSemantic extends SearchCellBase {
     private SortResultSemanticEntryController controller;
     private Node content;
 
-    public SearchCellDescriptionSemantic(ViewProperties viewProperties, UUID journalTopic, ObservableViewNoOverride observableViewNoOverride) {
+    public SearchCellDescriptionSemantic(ViewProperties viewProperties, UUID journalTopic, ObservableViewBase observableViewNoOverride) {
         super(viewProperties, journalTopic, observableViewNoOverride);
         Config config = new Config(SortResultSemanticEntryController.class.getResource(SORT_SEMANTIC_RESULT_CONCEPT_FXML));
         config.updateViewModel("searchEntryViewModel", (searchEntryViewModel) ->

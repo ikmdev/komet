@@ -15,11 +15,14 @@
  */
 package dev.ikm.komet.kview.klwindows;
 
+import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 
 import java.util.UUID;
 
@@ -28,6 +31,7 @@ import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.WINDOW_TYPE;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_FOLDER_PREFIX;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
+import static dev.ikm.komet.preferences.JournalWindowSettings.VIEW_COORDINATE_OVERRIDES;
 import static java.io.File.separator;
 
 /**
@@ -101,13 +105,25 @@ public interface KlWindowPreferencesUtils {
      * @see ObservableViewNoOverride#makeOverridableViewProperties()
      */
     static ViewProperties getJournalViewProperties(WindowSettings windowSettings, UUID journalTopic) {
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final String journalPath = JOURNALS + separator
-                + JOURNAL_FOLDER_PREFIX + shortenUUID(journalTopic);
-        KometPreferences journalPreferences = appPreferences.node(journalPath);
-        //WindowSettings journalWindowSettings = new WindowSettings(journalPreferences);
-        ObservableViewNoOverride windowView = windowSettings.getView();
-        return windowView.makeOverridableViewProperties("KlWindowPreferencesUtils.getJournalViewProperties");
+        ObservableViewNoOverride rootView = windowSettings.getView();
+
+        // Create an override view wrapping the root, representing the journal level
+        ViewProperties journalViewProperties = rootView.makeOverridableViewProperties(
+                "KlWindowPreferencesUtils.getJournalViewProperties");
+
+        // Apply any saved journal-level coordinate overrides
+        KometPreferences journalPreferences = getJournalPreferences(journalTopic);
+        if (journalPreferences != null) {
+            ViewCoordinateRecord savedCoordinates = journalPreferences.getObject(
+                    VIEW_COORDINATE_OVERRIDES, null);
+            if (savedCoordinates != null) {
+                journalViewProperties.nodeView().setValue(savedCoordinates);
+            }
+        }
+
+        // Create a child override view for the chapter window, parented to the journal's view
+        return journalViewProperties.nodeView().makeOverridableViewProperties(
+                "KlWindowPreferencesUtils.chapterWindowView");
     }
 
     /**

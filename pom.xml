@@ -3,10 +3,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
     <modelVersion>4.1.0</modelVersion>
     <parent>
-        <groupId>dev.ikm.build</groupId>
-        <artifactId>java-parent</artifactId>
-        <version>1.73.0</version>
-        <relativePath/>
+        <groupId>network.ike</groupId>
+        <artifactId>ike-parent</artifactId>
+        <version>20</version>
     </parent>
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
@@ -88,7 +87,7 @@
             <dependency>
                 <groupId>dev.ikm.ike</groupId>
                 <artifactId>ike-bom</artifactId>
-                <version>3.0.7-kec-jan-19-SNAPSHOT</version>
+                <version>3.0.7-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

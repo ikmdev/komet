@@ -153,10 +153,12 @@ public class PropertiesController {
         // -- create stamp
         createStampSubscriber = evt -> {
             if (evt.getEventType() == CREATE_STAMP) {
-                stampCreateFormViewModel.populateDefaults();
-                stampJFXNode.controller().init(stampCreateFormViewModel);
+                // update() must precede populateDefaults() — it sets the ObservableView
+                // that populateDefaults() reads for edit coordinate defaults (path, module).
                 this.stampCreateFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
                         genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+                stampCreateFormViewModel.populateDefaults();
+                stampJFXNode.controller().init(stampCreateFormViewModel);
 
                 contentBorderPane.setCenter(stampJFXNode.node());
                 addEditButton.setSelected(true);

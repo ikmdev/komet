@@ -23,9 +23,9 @@ public class StampAddConfirmFormViewModel extends StampAddFormViewModelBase {
         EntityFacade module = getValue(MODULE);
         EntityFacade path = getValue(PATH);
 
-        String statusString = getViewProperties().calculator().getDescriptionTextOrNid(status.nid());
-        String moduleString = getViewProperties().calculator().getDescriptionTextOrNid(module.nid());
-        String pathString = getViewProperties().calculator().getDescriptionTextOrNid(path.nid());
+        String statusString = getObservableView().calculator().getDescriptionTextOrNid(status.nid());
+        String moduleString = getObservableView().calculator().getDescriptionTextOrNid(module.nid());
+        String pathString = getObservableView().calculator().getDescriptionTextOrNid(path.nid());
 
         String submitMessage = "Stamp definition stored for later use (" + statusString +
                 ", " + moduleString + ", " + pathString + ")";

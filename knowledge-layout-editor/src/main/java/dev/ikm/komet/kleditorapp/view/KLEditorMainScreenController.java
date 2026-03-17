@@ -2,6 +2,7 @@ package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kleditorapp.KLEditorSession;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell;
 import dev.ikm.komet.kleditorapp.view.propertiespane.PropertiesPane;
@@ -29,12 +30,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
+import java.util.function.UnaryOperator;
 
 import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
@@ -100,6 +103,8 @@ public class KLEditorMainScreenController {
 
         saveButton.disableProperty().bind(titleTextField.textProperty().isEmpty());
 
+        KLEditorSession.startSession();
+
         // Init Window
         initWindow(windowToLoad);
 
@@ -120,6 +125,7 @@ public class KLEditorMainScreenController {
 
     public void shutdown() {
         klEditorWindowController.shutdown();
+        KLEditorSession.getInstance().endSession();
     }
 
     @SuppressWarnings("removal")
@@ -151,6 +157,21 @@ public class KLEditorMainScreenController {
 
     private void initWindow(String windowTitle) {
         loadWindow(windowTitle);
+        initTitleText();
+    }
+
+    private void initTitleText() {
+        UnaryOperator<TextFormatter.Change> filter = change -> {
+            String newText = change.getControlNewText();
+
+            // Disallow invalid Windows characters
+            if (newText.matches(".*[\\\\/:*?\"<>|].*")) {
+                return null;
+            }
+
+            return change;
+        };
+        titleTextField.setTextFormatter(new TextFormatter<>(filter));
         titleTextField.textProperty().bindBidirectional(editorWindowModel.titleProperty());
     }
 
@@ -163,8 +184,30 @@ public class KLEditorMainScreenController {
         }
     }
 
+    private String trimTrailingDotsAndSpaces(String input) {
+        int end = input.length();
+
+        while (end > 0) {
+            char c = input.charAt(end - 1);
+            if (c == ' ' || c == '.') {
+                end--;
+            } else {
+                break;
+            }
+        }
+
+        return input.substring(0, end);
+    }
+
+    private void validateTitleText() {
+        titleTextField.setText(trimTrailingDotsAndSpaces(titleTextField.getText()));
+    }
+
     @FXML
     private void onSave(ActionEvent actionEvent) {
+        // Do last validation on title text before actually saving
+        validateTitleText();
+
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
 

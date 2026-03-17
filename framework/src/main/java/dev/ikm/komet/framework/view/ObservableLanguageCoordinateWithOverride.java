@@ -31,9 +31,6 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
 
     public ObservableLanguageCoordinateWithOverride(ObservableLanguageCoordinate overriddenCoordinate, String coordinateName) {
         super(overriddenCoordinate, coordinateName);
-        if (overriddenCoordinate instanceof ObservableLanguageCoordinateWithOverride) {
-            throw new IllegalStateException("Cannot override an overridden Coordinate. ");
-        }
         this.overriddenCoordinate = overriddenCoordinate;
     }
 

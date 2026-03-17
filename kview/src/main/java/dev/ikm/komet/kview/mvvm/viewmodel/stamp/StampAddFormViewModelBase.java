@@ -3,7 +3,7 @@ package dev.ikm.komet.kview.mvvm.viewmodel.stamp;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
-import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.component.Stamp;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -48,7 +48,7 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
     }
 
     @Override
-    protected void doUpdate(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
+    protected void doUpdate(EntityFacade entity, UUID topic, ObservableView observableView) {
         // entityFocusProperty from DetailsNode often calls init with a null entity.
         if (entity == null || entity == this.entityFacade) {
             return; // null entity or the entity hasn't changed
@@ -66,18 +66,15 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
 
     protected void loadStamp() {
         ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
-        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(observableView.calculator());
         Latest<EntityVersion> latestEntityVersion = retrieveCommittedLatestVersion(observableEntitySnapshot);
         latestEntityVersion
                 .ifPresentOrElse(latestVersion -> setPropertyValue(CURRENT_STAMP, latestEntityVersion.get().stamp())
                     , () -> {
-                               EntityVersion latestVersion = viewProperties.calculator().latest(entityFacade).get();
+                               EntityVersion latestVersion = observableView.calculator().latest(entityFacade).get();
                                setPropertyValue(CURRENT_STAMP, latestVersion.stamp());
                     }
                 );
-
-
-
     }
 
     protected void loadStampValuesFromDB() {
@@ -111,7 +108,7 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
         } else {
             setPropertyValue(FORM_TITLE, "New " + type.getTextDescription() + " Version");
             setPropertyValue(FORM_TIME_TEXT, "Uncommitted");
-            ConceptFacade authorConcept = viewProperties.nodeView().editCoordinate().getAuthorForChanges();
+            ConceptFacade authorConcept = observableView.editCoordinate().getAuthorForChanges();
             setPropertyValue(AUTHOR, authorConcept);
         }
 

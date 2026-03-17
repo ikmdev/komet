@@ -20,7 +20,7 @@ import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.setUp
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.MakeKLWindowEvent;
@@ -91,7 +91,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
 
     private Entity<EntityVersion> entity;
 
-    private ObservableViewNoOverride windowView;
+    private ObservableViewBase windowView;
 
     @InjectViewModel
     private SimpleViewModel searchEntryViewModel;
@@ -185,7 +185,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         this.entity = entity;
     }
 
-    public void setWindowView(ObservableViewNoOverride windowView) {
+    public void setWindowView(ObservableViewBase windowView) {
         this.windowView = windowView;
     }
 

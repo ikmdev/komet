@@ -18,7 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.search;
 import dev.ikm.komet.kview.events.MakeKLWindowEvent;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -77,7 +77,7 @@ public class SortResultSemanticEntryController  {
 
     private boolean retired;
 
-    private ObservableViewNoOverride windowView;
+    private ObservableViewBase windowView;
 
     @FXML
     public void initialize() {
@@ -160,7 +160,7 @@ public class SortResultSemanticEntryController  {
         this.entity = entity;
     }
 
-    public void setWindowView(ObservableViewNoOverride windowView) {
+    public void setWindowView(ObservableViewBase windowView) {
         this.windowView = windowView;
     }
 }

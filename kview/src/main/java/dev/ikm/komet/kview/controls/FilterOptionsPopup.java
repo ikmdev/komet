@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.kview.controls.skin.FilterOptionsPopupSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
 import javafx.beans.property.ObjectProperty;
@@ -28,9 +28,9 @@ public class FilterOptionsPopup extends PopupControl {
     private static final String DEFAULT_OPTIONS_KEY = "default-options";
 
     private final FilterOptionsUtils filterOptionsUtils;
-    private final ObservableViewNoOverride parentViewCoordinate;
+    private final ObservableViewBase parentViewCoordinate;
 
-    public FilterOptionsPopup(FILTER_TYPE filterType, ObservableViewNoOverride parentViewCoordinate) {
+    public FilterOptionsPopup(FILTER_TYPE filterType, ObservableViewBase parentViewCoordinate) {
         this.filterType = filterType;
         this.parentViewCoordinate = parentViewCoordinate;
         filterOptionsUtils = new FilterOptionsUtils();
@@ -51,7 +51,7 @@ public class FilterOptionsPopup extends PopupControl {
     }
 
     // readonly baseView
-    public final ObservableViewNoOverride getParentViewCoordinate() {
+    public final ObservableViewBase getParentViewCoordinate() {
         return parentViewCoordinate;
     }
     // inheritedFilterOptionsProperty

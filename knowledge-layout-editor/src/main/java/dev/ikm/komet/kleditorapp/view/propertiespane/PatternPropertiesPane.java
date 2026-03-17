@@ -125,22 +125,22 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     }
 
     @Override
-    protected void doInit(EditorPatternModel modelObject) {
-        super.doInit(modelObject);
+    protected void doInit() {
+        super.doInit();
 
         if (previouslyShownModel != null) {
             columnsComboBox.valueProperty().unbindBidirectional(previousControlColumnsObjProperty);
             titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.titleVisibleProperty());
         }
 
-        titleTextField.setText(modelObject.getTitle());
-        titleVisibleTSwitch.selectedProperty().bindBidirectional(modelObject.titleVisibleProperty());
+        titleTextField.setText(currentlyShownModel.getTitle());
+        titleVisibleTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.titleVisibleProperty());
 
         // Columns ComboBox
-        previousControlColumnsObjProperty = modelObject.numberColumnsProperty().asObject();
+        previousControlColumnsObjProperty = currentlyShownModel.numberColumnsProperty().asObject();
         columnsComboBox.valueProperty().bindBidirectional(previousControlColumnsObjProperty);
 
         // Identifier
-        identifierTextField.textProperty().bindBidirectional(modelObject.identifierProperty());
+        identifierTextField.textProperty().bindBidirectional(currentlyShownModel.identifierProperty());
     }
 }

@@ -18,6 +18,7 @@ package dev.ikm.komet.framework;
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.activity.ActivityStreamOption;
 import dev.ikm.komet.framework.graphics.Icon;
+import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -36,6 +37,16 @@ import java.util.stream.StreamSupport;
 import static dev.ikm.tinkar.common.alert.AlertCategory.TAXONOMY;
 import static dev.ikm.tinkar.common.alert.AlertType.INFORMATION;
 
+/**
+ * @deprecated Use {@code dev.ikm.komet.layout.KlView.Factory} and its subtypes
+ * ({@code dev.ikm.komet.layout.KlArea.Factory}, {@code dev.ikm.komet.layout.KlTopView.Factory})
+ * instead. This factory forces the view coordinate to be passed at construction time as an
+ * {@link ObservableViewNoOverride}, which limits the coordinate hierarchy to two levels.
+ * The knowledge-layout system resolves coordinates from the JavaFX scene graph via
+ * {@code dev.ikm.komet.layout.context.KlContext}, supporting an N-level override chain.
+ * See {@code komet/docs/view-coordinate-migration.adoc} for the migration plan.
+ */
+@Deprecated(forRemoval = true)
 public interface KometNodeFactory {
 
     String KOMET_NODES = "/komet-nodes/";

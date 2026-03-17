@@ -19,6 +19,8 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
+import dev.ikm.tinkar.common.bind.ClassConceptBinding;
+import dev.ikm.tinkar.entity.EntityStringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,10 +43,16 @@ public abstract class RunReasonerTaskBase extends TrackingCallable<ReasonerServi
 		super(true, true);
 		this.reasonerService = reasonerService;
 		this.classifierResultsConsumer = classifierResultsConsumer;
-		updateTitle("Running reasoner (" + reasonerService.getClass().getSimpleName() + "): "
+		runReasonerTitle(titlePrefix());
+	}
+
+	protected void runReasonerTitle(String prefix) {
+		updateTitle(titlePrefix() + ClassConceptBinding.camelCaseToWords(reasonerService.getClass().getSimpleName()) + " over "
 				+ reasonerService.getViewCalculator()
 						.getPreferredDescriptionTextWithFallbackOrNid(reasonerService.getStatedAxiomPattern()));
 	}
+
+	protected abstract String titlePrefix();
 
 	@Override
 	public void updateMessage(String msg) {
