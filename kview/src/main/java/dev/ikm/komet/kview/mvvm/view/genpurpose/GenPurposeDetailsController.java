@@ -19,6 +19,7 @@ import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTE
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.OPEN_PANEL;
+import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_ADD_SEMANTIC;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
@@ -48,7 +49,8 @@ import dev.ikm.komet.kview.controls.KometLabel;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
-import dev.ikm.komet.kview.controls.TitledMenuPopup;
+import dev.ikm.komet.kview.controls.SectionEditPopup;
+import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
@@ -73,9 +75,11 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
@@ -183,6 +187,8 @@ public class GenPurposeDetailsController {
     private GenPurposeViewModel genPurposeViewModel;
     private Consumer<GenPurposeDetailsController> onCloseConceptWindow;
 
+    private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
+
     @FXML
     private void initialize() {
 
@@ -211,9 +217,13 @@ public class GenPurposeDetailsController {
 
         // Setup window support with explicit draggable nodes
         addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
+
+        // if the user clicks the Close Properties Button from the Edit Descriptions panel
+        // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
+        closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
     }
 
-    @FXML
     private void openPropertiesPanel() {
         LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
 
@@ -223,6 +233,25 @@ public class GenPurposeDetailsController {
         }
 
         updateDraggableNodesForPropertiesPanel(true);
+    }
+
+    /**
+     * User is clicking on the Toggle switch to open or close Properties bump out.
+     *
+     * @param event Button click event.
+     */
+    @FXML
+    private void openPropertiesPanel(ActionEvent event) {
+        ToggleButton propertyToggle = (ToggleButton) event.getSource();
+        EvtType<KLPropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? KLPropertyPanelEvent.OPEN_PANEL : KLPropertyPanelEvent.CLOSE_PANEL;
+
+        updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
+
+//        isUpdatingStampSelection = true;
+//        stampViewControl.setSelected(propertyToggle.isSelected());
+//        isUpdatingStampSelection = false;
+
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
@@ -585,10 +614,9 @@ public class GenPurposeDetailsController {
     }
 
     private void onEditAction(ActionEvent actionEvent, EditorSectionModel sectionModel) {
-        TitledMenuPopup popup = new TitledMenuPopup();
-        popup.setTitle("EDIT SEMANTIC");
+        SectionEditPopup popup = new SectionEditPopup();
 
-        // Get the entity (Semantic) to edit
+        // The Reference Component to use
         EntityFacade refComponent;
 
         if (sectionModel.getReferenceComponent() == null) {
@@ -601,11 +629,11 @@ public class GenPurposeDetailsController {
         AtomicInteger numberSemantics = new AtomicInteger();
         AtomicReference<SemanticEntity<SemanticEntityVersion>> lastSemantic = new AtomicReference<>();
 
+        // Populate the Popup
         EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
                 sectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
                     KometLabel semanticLabel = new KometLabel(semantic, viewProperties);
                     semanticLabel.setShowTooltip(true);
-                    semanticLabel.getStyleClass().add("semantic-label");
 
                     semanticLabel.setOnMouseClicked(_ -> {
                         showEditSemanticFieldsPanel(actionEvent, semantic);
@@ -622,27 +650,39 @@ public class GenPurposeDetailsController {
                     lastSemantic.set(semantic);
                 });
 
-        if (numberSemantics.get() > 1) {
-            SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
+        popup.setOnCreateSemanticAction(() -> {
+            PatternFacade patternFacade = PatternFacade.make(sectionModel.getPatterns().getFirst().getNid());
+            showCreateSemanticPanel(actionEvent, refComponent, patternFacade);
+        });
 
-            Point2D popupPosition = sectionTitledPane.getLocalToSceneTransform().transform(sectionTitledPane.getLayoutX() + sectionTitledPane.getWidth(),
-                    sectionTitledPane.getBoundsInLocal().getMinY());
-            popup.show(sectionTitledPane, popupPosition.getX(), popupPosition.getY());
-        } else {
-            showEditSemanticFieldsPanel(actionEvent, lastSemantic.get());
-        }
+        // show Popup
+        SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
+
+        Point2D popupPosition = sectionTitledPane.getLocalToSceneTransform().transform(sectionTitledPane.getLayoutX() + sectionTitledPane.getWidth(),
+                sectionTitledPane.getBoundsInLocal().getMinY());
+        popup.show(sectionTitledPane, popupPosition.getX(), popupPosition.getY());
+    }
+
+    private void showCreateSemanticPanel(ActionEvent event, EntityFacade refComponent, PatternFacade patternFacade) {
+        // Notify to open right side with edit fields in Semantic Creation mode
+        EvtBusFactory.getDefaultEvtBus()
+                .publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new KLPropertyPanelEvent(event.getSource(),
+                                SHOW_ADD_SEMANTIC, refComponent, patternFacade));
+        // Notify to open properties bump out.
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(event.getSource(), OPEN_PANEL));
     }
 
     private void showEditSemanticFieldsPanel(Event event, SemanticEntity<SemanticEntityVersion> semanticEntity) {
-        // notify bump out to display edit fields in bump out area.
+        // Notify bump out (right side) to display edit fields in Semantic Editing mode
         EvtBusFactory.getDefaultEvtBus()
                 .publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
                         new KLPropertyPanelEvent(event.getSource(),
                                 SHOW_EDIT_SEMANTIC_FIELDS, semanticEntity));
-        // open properties bump out.
+        // Notify to open properties bump out.
         EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(event.getSource(), OPEN_PANEL));
 
-        // Turn on Edit mode for the Semantic
+        // Turn on Edit mode on the left side for the Semantic being edited
         if (previousSemanticViewInEditMode != null) {
             previousSemanticViewInEditMode.setEditMode(false);
         }

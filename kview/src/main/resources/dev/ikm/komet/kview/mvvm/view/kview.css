@@ -6537,6 +6537,12 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: white;
 }
 
+.edit-semantic-popup .icon {
+    -fx-background-color: white;
+    -fx-pref-width: 16px;
+    -fx-pref-height: 16px;
+}
+
 .edit-semantic-popup .title-label {
     -fx-font-size: 14px;
     -fx-font-weight: 500;
@@ -6552,12 +6558,14 @@ Styling a context menu for kview ui/ux controls
     -fx-border-insets: 1 0 0 0;
 }
 
-.edit-semantic-popup .semantic-label > .label {
+.edit-semantic-popup .popup-entry.komet-label > .label,
+.edit-semantic-popup .popup-entry.label {
     -fx-max-width: 350px;
     -fx-graphic-text-gap: 7;
     -fx-padding: 4px 6px 4px 6px;
 }
 
-.edit-semantic-popup .semantic-label:hover > .label {
+.edit-semantic-popup .popup-entry.komet-label:hover > .label,
+.edit-semantic-popup .popup-entry.label:hover {
     -fx-background-color: rgba(200, 200, 200, 0.3);
 }

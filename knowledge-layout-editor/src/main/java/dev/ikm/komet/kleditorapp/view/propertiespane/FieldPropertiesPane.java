@@ -148,9 +148,9 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
     }
 
     @Override
-    protected void doInit(EditorFieldModel modelObject) {
-        super.doInit(modelObject);
+    protected void doInit() {
+        super.doInit();
 
-        populateDisplayComboBox(modelObject);
+        populateDisplayComboBox(currentlyShownModel);
     }
 }
