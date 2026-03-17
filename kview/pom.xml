@@ -1,11 +1,7 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
     <modelVersion>4.1.0</modelVersion>
-    <parent>
-        <groupId>dev.ikm.komet</groupId>
-        <artifactId>komet-parent</artifactId>
-        <version>1.58.0-kec-jan-24-SNAPSHOT</version>
-    </parent>
+    <parent/>
     <artifactId>kview</artifactId>
     <dependencies>
         <dependency>
@@ -123,6 +119,10 @@
         <dependency>
             <groupId>dev.ikm.komet</groupId>
             <artifactId>rules</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>terms</artifactId>
         </dependency>
     </dependencies>
     <build>
