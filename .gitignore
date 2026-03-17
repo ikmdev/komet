@@ -233,3 +233,4 @@ htmlReport
  # Develocity
 ###################
 **.develocity/
+.claude

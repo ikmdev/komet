@@ -215,6 +215,7 @@ public class AppPages {
             KometPreferences windowPreferences = appPreferences.node("main-komet-window");
 
             WindowSettings windowSettings = new WindowSettings(windowPreferences);
+
             FXMLLoader landingPageLoader = LandingPageViewFactory.createFXMLLoader();
             BorderPane landingPageBorderPane = landingPageLoader.load();
 
@@ -224,6 +225,9 @@ public class AppPages {
 
             String username = windowSettings.getView().calculator().getPreferredDescriptionTextWithFallbackOrNid(loggedInUser.nid());
             app.landingPageController = landingPageLoader.getController();
+
+            // Set the logged-in user as author on the controller's single edit coordinate
+            app.landingPageController.editCoordinate().authorForChangesProperty().setValue(loggedInUser);
             app.landingPageController.getWelcomeTitleLabel().setText("Welcome " + username);
             app.landingPageController.setSelectedDatasetTitle(PrimitiveData.get().name());
             app.landingPageController.getGithubStatusHyperlink().setOnAction(_ -> app.appGithub.connectToGithub());

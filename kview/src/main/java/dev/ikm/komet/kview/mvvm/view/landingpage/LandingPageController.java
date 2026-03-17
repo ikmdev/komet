@@ -671,6 +671,15 @@ public class LandingPageController implements BasicController {
         return githubStatusHyperlink;
     }
 
+    /**
+     * Returns the single observable edit coordinate for the landing page.
+     * This is the same instance used by the edit coordinate options popup.
+     * AppPages should use this to set the logged-in user as author.
+     */
+    public ObservableEditCoordinate editCoordinate() {
+        return viewCoordinatesForFilterOptionsPopup.editCoordinate();
+    }
+
     public void setSelectedDatasetTitle(String value) {
         selectedDatasetTitleLabel.setText(value);
     }
@@ -810,24 +819,6 @@ public class LandingPageController implements BasicController {
                     editCoordOptionsPopup.hide();
                 } else {
                     try {
-                        /// //////////////////////////////////////////////////////
-                        // populate available options
-                        // look for preferences
-                        //    if available set with these values
-                        // otherwise
-                        //    select default options from EditCoordinate.Default
-                        /// ////////////////////////////////////////////////////
-//                        populateAvailableAuthors(viewProperties, editCoordOptionsPopup);
-//                        List<ConceptFacade> list = new ArrayList<>();
-//                        list.add(TinkarTerm.DEVELOPMENT_PATH);
-//                        list.add(TinkarTerm.PRIMORDIAL_PATH);
-//                        editCoordOptionsPopup.getFilterOptions()
-//                                .getMainCoordinates()
-//                                .getDefaultPath()
-//                                .availableOptions()
-//                                .addAll(list);
-
-
                         Bounds buttonBounds = editCoordinatesButton.localToScreen(editCoordinatesButton.getLayoutBounds());
                         // Show beneath the button
                         editCoordOptionsPopup.show(editCoordinatesButton, buttonBounds.getMaxX() + 5.5, buttonBounds.getMaxY() - prefHeight);
