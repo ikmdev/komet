@@ -1,7 +1,9 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.skin.EditCoordinateOptionsPopupSkin;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -35,7 +37,9 @@ public class EditCoordinateOptionsPopup extends PopupControl {
         viewPropertiesReadOnlyObjectWrapperProperty = new ReadOnlyObjectWrapper<>(this, "viewProperties", viewProperties);
 //        this.parentViewCoordinate = viewProperties.parentView();
         filterOptionsUtils = new EditCoordinateOptionsUtils();
-        EditCoordinateOptions masterEditCoordinate = new EditCoordinateOptions(viewProperties.parentView().editCoordinate());
+        ObservableEditCoordinate editCoordinate = viewProperties.parentView().editCoordinate();
+        EditCoordinateOptions masterEditCoordinate = new EditCoordinateOptions(editCoordinate);
+        populateFromEditCoordinate(masterEditCoordinate, editCoordinate);
         inheritedFilterOptionsProperty = new ReadOnlyObjectWrapper<>(this, "inheritedFilterOptions", masterEditCoordinate);
 
         // Set initial filter options to match the parent view's edit coordinate
@@ -114,6 +118,25 @@ public class EditCoordinateOptionsPopup extends PopupControl {
 
     public EditCoordinateOptionsUtils getFilterOptionsUtils() {
         return filterOptionsUtils;
+    }
+
+    /**
+     * Populates the edit coordinate options from the current edit coordinate values.
+     * Each option gets a single available + selected value from the coordinate.
+     */
+    private static void populateFromEditCoordinate(EditCoordinateOptions options, ObservableEditCoordinate editCoordinate) {
+        setSingleOption(options.getMainCoordinates().getAuthorForChange(), editCoordinate.getAuthorForChanges());
+        setSingleOption(options.getMainCoordinates().getDefaultModule(), editCoordinate.getDefaultModule());
+        setSingleOption(options.getMainCoordinates().getDestinationModule(), editCoordinate.getDestinationModule());
+        setSingleOption(options.getMainCoordinates().getDefaultPath(), editCoordinate.getDefaultPath());
+        setSingleOption(options.getMainCoordinates().getPromotionPath(), editCoordinate.getPromotionPath());
+    }
+
+    private static void setSingleOption(EditCoordinateOptions.Option<ConceptFacade> option, ConceptFacade value) {
+        if (value != null) {
+            option.availableOptions().setAll(value);
+            option.selectedOptions().setAll(value);
+        }
     }
 
     @Override
