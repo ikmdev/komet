@@ -124,6 +124,10 @@
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>terms</artifactId>
         </dependency>
+        <dependency>
+            <groupId>dev.ikm.komet</groupId>
+            <artifactId>preferences</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
