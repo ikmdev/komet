@@ -93,14 +93,13 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         interactionGridPane.add(startCollapsedTS, 1, 0);
 
         // - reference component
-        Label referenceComponentLabel = new Label("R.C.");
-        GridPane.setHalignment(referenceComponentLabel, HPos.RIGHT);
-        interactionGridPane.add(referenceComponentLabel, 0, 1);
+        VBox referenceComponentContainer = new VBox();
+
+        Label referenceComponentLabel = new Label("Reference Component:");
 
         referenceComponentCB = new ComboBox<>();
         referenceComponentCB.setMaxWidth(Double.MAX_VALUE);
         Bindings.bindContent(referenceComponentCB.getItems(), KLEditorSession.getInstance().getExistingPatterns());
-        interactionGridPane.add(referenceComponentCB, 1, 1);
 
         referenceComponentCB.setCellFactory(_ -> new ListCell<>() {
             @Override
@@ -116,7 +115,27 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
             }
         });
 
-        referenceComponentCB.setButtonCell(referenceComponentCB.getCellFactory().call(null));
+        referenceComponentCB.setButtonCell(new ListCell<>() {
+            private final static String EMPTY_SELECTION_STYLE_CLASS = "empty-selection";
+
+            @Override
+            protected void updateItem(EditorPatternModel item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    textProperty().unbind();
+                    getStyleClass().add(EMPTY_SELECTION_STYLE_CLASS);
+                } else {
+                    textProperty().bind(item.identifierProperty());
+                    getStyleClass().remove(EMPTY_SELECTION_STYLE_CLASS);
+                }
+            }
+        });
+
+        referenceComponentCB.setPromptText("<Window Reference Component>");
+
+        referenceComponentContainer.getChildren().addAll(referenceComponentLabel, referenceComponentCB);
+        interactionGridPane.add(referenceComponentContainer, 0, 1, 2, 1);
 
         // Add everything to scene graph
         sectionMainContainer.getChildren().addAll(
@@ -134,6 +153,8 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         // CSS
         getStyleClass().add(DEFAULT_STYLE_CLASS);
         sectionMainContainer.getStyleClass().add("section-main-container");
+        referenceComponentContainer.getStyleClass().add("reference-component-container");
+        referenceComponentCB.getStyleClass().add("reference-component-combobox");
     }
 
     private static GridPane createGridPane() {
