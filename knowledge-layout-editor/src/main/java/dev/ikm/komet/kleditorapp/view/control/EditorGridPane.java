@@ -14,6 +14,7 @@ import javafx.scene.input.DragEvent;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class EditorGridPane extends Control {
     public static final String DEFAULT_STYLE_CLASS = "editor-grid-pane";
@@ -60,4 +61,15 @@ public class EditorGridPane extends Control {
     public BiConsumer<DragEvent, GridDropInfo> getOnDragDroppedIntoTile() { return onDragDroppedIntoTile.get(); }
     public ObjectProperty<BiConsumer<DragEvent, GridDropInfo>> onDragDroppedIntoTileProperty() {return onDragDroppedIntoTile; }
     public void setOnDragDroppedIntoTile(BiConsumer<DragEvent, GridDropInfo> onDragDroppedIntoTile) { this.onDragDroppedIntoTile.set(onDragDroppedIntoTile); }
+
+    // -- on should drag and drop rearrange
+    /**
+     * Predicate that when set gets called when there is a drag and drop to rearrange a control
+     * within its parent GridPane (change it to a different row and/or column).
+     * If this method returns true then that drag and drop is allowed.
+     */
+    private final ObjectProperty<Predicate<GridBaseControl>> onShouldDragAndDropRearrange = new SimpleObjectProperty<>();
+    public Predicate<GridBaseControl> getOnShouldDragAndDropRearrange() { return onShouldDragAndDropRearrange.get(); }
+    public ObjectProperty<Predicate<GridBaseControl>> onShouldDragAndDropRearrangeProperty() { return onShouldDragAndDropRearrange; }
+    public void setOnShouldDragAndDropRearrange(Predicate<GridBaseControl> value) { onShouldDragAndDropRearrange.set(value); }
 }

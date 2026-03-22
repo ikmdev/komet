@@ -63,6 +63,7 @@ public class SectionViewControl extends EditorWindowBaseControl {
 
         gridPane.onDragDroppedIntoTileProperty().bind(onDragDroppedIntoTileProperty());
         gridPane.onDragOverIntoTileProperty().bind(onDragOverIntoTileProperty());
+        gridPane.setOnShouldDragAndDropRearrange(gridBaseControl -> gridBaseControl instanceof PatternViewControl);
 
         // CSS
         titleContainer.getStyleClass().add("title-container");

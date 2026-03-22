@@ -42,6 +42,8 @@ public class PatternViewControl extends GridBaseControl {
         gridPane.setHgap(5);
         gridPane.setVgap(0);
 
+        gridPane.setOnShouldDragAndDropRearrange(gridBaseControl -> gridBaseControl instanceof FieldViewControl);
+
         // CSS
         patternTitle.getStyleClass().add("pattern-title");
         getStyleClass().add(DEFAULT_STYLE_CLASS);

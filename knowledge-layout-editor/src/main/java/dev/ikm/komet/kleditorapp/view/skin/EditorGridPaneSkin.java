@@ -16,6 +16,7 @@ import javafx.scene.Node;
 import javafx.scene.control.SkinBase;
 import javafx.scene.image.Image;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.ColumnConstraints;
@@ -369,7 +370,11 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
 
         private void setupDragAndDrop() {
             setOnDragOver(event -> {
-                if (event.getGestureSource() instanceof GridBaseControl) {
+                if (event.getGestureSource() instanceof GridBaseControl gridBaseControl) {
+                    if (!checkIfShouldAllowDragAndDropRearrange(gridBaseControl, event)) {
+                        return;
+                    }
+
                     event.acceptTransferModes(TransferMode.MOVE);
                     event.consume();
                     return;
@@ -382,6 +387,10 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
 
             setOnDragDropped(event -> {
                 if (event.getGestureSource() instanceof GridBaseControl gridBaseControl) {
+                    if (!checkIfShouldAllowDragAndDropRearrange(gridBaseControl, event)) {
+                        return;
+                    }
+
                     moveGridBaseControl(gridBaseControl, getRowIdex(), getColumnIndex());
                     event.setDropCompleted(true);
                     event.consume();
@@ -401,6 +410,21 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
             setOnDragExited(event -> {
                 pseudoClassStateChanged(DRAG_HOVER_CLASS, false);
             });
+        }
+
+        private boolean checkIfShouldAllowDragAndDropRearrange(GridBaseControl gridBaseControl, DragEvent event){
+            if (editorGridPane.getOnShouldDragAndDropRearrange() != null) {
+                boolean shouldDragAndDropRearrange = editorGridPane.getOnShouldDragAndDropRearrange().test(gridBaseControl);
+                if (!shouldDragAndDropRearrange){
+                    event.setDropCompleted(true);
+                    event.consume();
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                return true;
+            }
         }
 
         private void moveGridBaseControl(GridBaseControl gridBaseControl, int rowIdex, int columnIndex) {
