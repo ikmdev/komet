@@ -13,6 +13,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.util.Subscription;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GridNodePropertiesPane<D extends EditorGridNodeModel> extends ControlBasePropertiesPane<D> {
@@ -109,7 +110,19 @@ public class GridNodePropertiesPane<D extends EditorGridNodeModel> extends Contr
             rowSpanCB.valueProperty().unbindBidirectional(previousControlRowSpanProperty);
         }
 
-        // Column Index
+        // Available column indexes list
+        int maxColumnPosition = currentlyShownModel.getParentGrid().getNumberColumns();
+        List<Integer> columnValuesList = new ArrayList<>();
+        for (int i = 1; i <= maxColumnPosition; i++) {
+            columnValuesList.add(i);
+        }
+
+        // Column index combobox items
+        columnPositionCB.getItems().setAll(columnValuesList);
+        // - disable combobox column if there is only one value  to choose from
+        columnPositionCB.setDisable(columnValuesList.size() == 1);
+
+        //  - Current column index
         columnIndexSubscription = bindBidirectionalWithConverter(
                 currentlyShownModel.columnIndexProperty(),
                 columnPositionCB.valueProperty(),
@@ -122,6 +135,12 @@ public class GridNodePropertiesPane<D extends EditorGridNodeModel> extends Contr
                 rowPositionCB.valueProperty(),
                 val -> val - 1,
                 val -> val.intValue() + 1);
+
+
+        // Column span combobox items
+        columnSpanCB.getItems().setAll(columnValuesList);
+        // - disable combobox column if there is only one value  to choose from
+        columnSpanCB.setDisable(columnValuesList.size() == 1);
 
         // Column Span
         previousControlColumnSpanProperty = currentlyShownModel.columnSpanProperty().asObject();

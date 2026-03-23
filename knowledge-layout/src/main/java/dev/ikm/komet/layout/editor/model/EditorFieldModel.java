@@ -35,6 +35,8 @@ public class EditorFieldModel extends EditorGridNodeModel {
         title.set(fieldDefinitionRecord.meaning().description());
         index.set(fieldDefinitionRecord.indexInPattern());
         dataTypeNid.set(fieldDefinitionRecord.dataTypeNid());
+
+        parentGridProperty().bind(parentPatternProperty());
     }
 
     /**

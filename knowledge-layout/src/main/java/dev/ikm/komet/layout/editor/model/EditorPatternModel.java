@@ -39,7 +39,7 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_T
  * Represents a Pattern. It has properties like the title of the Pattern, the fields inside it (EditorFieldModel instances),
  * number of columns, its nid.
  */
-public class EditorPatternModel extends EditorGridNodeModel {
+public class EditorPatternModel extends EditorGridNodeModel implements ParentGridModel {
     private static final Logger LOG = LoggerFactory.getLogger(EditorPatternModel.class);
 
     private final ViewCalculator viewCalculator;
@@ -98,6 +98,8 @@ public class EditorPatternModel extends EditorGridNodeModel {
         });
 
         existingPatterns.add(this);
+
+        parentGridProperty().bind(parentSectionProperty());
     }
 
     // -- existing patterns
@@ -243,9 +245,8 @@ public class EditorPatternModel extends EditorGridNodeModel {
      * The number of columns the Grid layout inside this Pattern should have.
      */
     private final IntegerProperty numberColumns = new SimpleIntegerProperty(1);
-    public int getNumberColumns() { return numberColumns.get(); }
+    @Override
     public IntegerProperty numberColumnsProperty() { return numberColumns; }
-    public void setNumberColumns(int number) { numberColumns.set(number); }
 
     // -- parent section
     private ReadOnlyObjectWrapper<EditorSectionModel> parentSection = new ReadOnlyObjectWrapper<>();

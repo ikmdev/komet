@@ -30,7 +30,7 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.KL_REFERENCE_COMPONE
  * Represents a Section. It has properties like the Section name, the patterns inside it (EditorPatternModel instances),
  * number of columns, tag text (e.g. "Section 1").
  */
-public class EditorSectionModel extends EditorModelBase {
+public class EditorSectionModel extends EditorModelBase implements ParentGridModel {
     private static final Logger LOG = LoggerFactory.getLogger(EditorSectionModel.class);
 
     public static final String UNTITLED_SECTION_NAME = "Untitled";
@@ -173,12 +173,11 @@ public class EditorSectionModel extends EditorModelBase {
 
     // -- number columns
     /**
-     * The number of columns that this Section should have.
+     * The number of columns that this Section has.
      */
     private final IntegerProperty numberColumns = new SimpleIntegerProperty(1);
-    public int getNumberColumns() { return numberColumns.get(); }
+    @Override
     public IntegerProperty numberColumnsProperty() { return numberColumns; }
-    public void setNumberColumns(int number) { numberColumns.set(number); }
 
     // -- parent window
     ReadOnlyObjectWrapper<EditorWindowModel> parentWindow = new ReadOnlyObjectWrapper<>();

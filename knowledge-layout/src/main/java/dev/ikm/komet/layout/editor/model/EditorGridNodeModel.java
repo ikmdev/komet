@@ -2,7 +2,9 @@ package dev.ikm.komet.layout.editor.model;
 
 import dev.ikm.komet.preferences.KometPreferences;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRID_COLUMN_INDEX;
 import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRID_COLUMN_SPAN;
@@ -30,6 +32,12 @@ public abstract class EditorGridNodeModel extends EditorModelBase {
      * Properties                                                                  *
      *                                                                             *
      ******************************************************************************/
+
+    // -- parent grid
+    private final ObjectProperty<ParentGridModel> parentGrid = new SimpleObjectProperty<>();
+    public ParentGridModel getParentGrid() { return parentGrid.get(); }
+    public ObjectProperty<ParentGridModel> parentGridProperty() { return parentGrid; }
+    void setParentGrid(ParentGridModel parentGrid) { this.parentGrid.set(parentGrid); }
 
     // -- column Index
     /**
