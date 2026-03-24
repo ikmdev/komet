@@ -1,8 +1,10 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.SectionTitledPaneSkin;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -23,7 +25,7 @@ public class SectionTitledPane<T> extends TitledPane {
 
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new SectionTitledPaneSkin(this);
+        return new SectionTitledPaneSkin<>(this);
     }
 
     // -- on edit action
@@ -31,6 +33,12 @@ public class SectionTitledPane<T> extends TitledPane {
     public EventHandler<ActionEvent> getOnEditAction() { return onEditAction.get(); }
     public ObjectProperty<EventHandler<ActionEvent>> onEditActionProperty() { return onEditAction; }
     public void setOnEditAction(EventHandler<ActionEvent> onEditAction) { this.onEditAction.set(onEditAction); }
+
+    // -- edit enabled
+    private final BooleanProperty editEnabled = new SimpleBooleanProperty(true);
+    public boolean isEditEnabled() { return editEnabled.get(); }
+    public BooleanProperty editEnabledProperty() { return editEnabled; }
+    public void setEditEnabled(boolean editEnabled) { this.editEnabled.set(editEnabled); }
 
     // -- number columns
     private final IntegerProperty numberColumns = new SimpleIntegerProperty();

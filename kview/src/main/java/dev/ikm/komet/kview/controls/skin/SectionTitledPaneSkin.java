@@ -27,7 +27,7 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
 
     /**
      * Creates a new TitledPaneSkin instance, installing the necessary child
-     * nodes into the Control {@link Control#getChildren() children} list, as
+     * nodes into the Control children list, as
      * well as the necessary input mappings for handling key, mouse, etc events.
      *
      * @param control The control that this skin should be installed onto.
@@ -38,6 +38,7 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
         contentContainer = new GridPane();
 
         editButton = new EditButton(control);
+        editButton.disableProperty().bind(control.editEnabledProperty().not());
 
         createReferenceComponentCB(control);
 

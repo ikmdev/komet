@@ -583,8 +583,10 @@ public class GenPurposeDetailsController {
         });
 
         // Section Semantics ComboBox
+        List<EntityFacade> semanticsOfPattern = null;
         if (sectionModel.getReferenceComponent() != null) {
-            titledPane.getReferenceComponents().addAll(getSemanticsOfPattern(sectionModel.getReferenceComponent()));
+            semanticsOfPattern = getSemanticsOfPattern(sectionModel.getReferenceComponent());
+            titledPane.getReferenceComponents().addAll(semanticsOfPattern);
         }
         titledPane.setReferenceComponentCellFactory(_ -> createSectionSemanticsComboBoxCell(viewProperties));
         titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(viewProperties));
@@ -593,6 +595,8 @@ public class GenPurposeDetailsController {
         titledPane.setContent(titledPaneGridPane);
 
         titledPane.setOnEditAction(actionEvent -> onEditAction(actionEvent, sectionModel));
+        titledPane.setEditEnabled(sectionModel.getReferenceComponent() == null
+                || (semanticsOfPattern != null && !semanticsOfPattern.isEmpty()));
 
         sectionModelToTitledPaneGridPane.put(sectionModel, titledPaneGridPane);
 
@@ -740,10 +744,13 @@ public class GenPurposeDetailsController {
 
         List<KLReadOnlyBaseControl> controlItems = new ArrayList<>();
 
-        doCreateSemanticViews(editorPatternModel, semanticsContainer, refComponents, controlItems);
-
         SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(parentSection);
-        titledPane.setSelectedReferenceComponent(refComponents.getFirst());
+
+        if (!refComponents.isEmpty()) {
+            doCreateSemanticViews(editorPatternModel, semanticsContainer, refComponents, controlItems);
+            titledPane.setSelectedReferenceComponent(refComponents.getFirst());
+        }
+
         titledPane.selectedReferenceComponentProperty().subscribe(() -> {
             semanticsContainer.getChildren().clear();
             doCreateSemanticViews(editorPatternModel, semanticsContainer, List.of(titledPane.getSelectedReferenceComponent()), controlItems);
