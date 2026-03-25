@@ -20,6 +20,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.service.PrimitiveData.SCOPED_PATTERN_PUBLICID_FOR_NID;
 import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
 import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
@@ -49,12 +50,7 @@ import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.PatternFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
 import org.carlfx.axonic.StateMachine;
@@ -320,6 +316,11 @@ public class PatternViewModel extends FormViewModel {
         }
         PublicId patternPublicId =  getPropertyValue(PATTERN) == null ? PublicIds.newRandom():  ((PatternFacade) getPropertyValue(PATTERN)).publicId();
         Pattern pattern = Pattern.make(null, patternPublicId);
+
+        // Generate the nid now, since tinkar composer is not handling the ScopedValue...
+        ScopedValue
+                .where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Pattern.pattern())
+                .call(() -> Entity.nid(patternPublicId));
 
         Composer composer = new Composer("Save Pattern Definition");
 
