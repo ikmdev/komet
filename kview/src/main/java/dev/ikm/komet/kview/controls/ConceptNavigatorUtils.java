@@ -61,7 +61,6 @@ public class ConceptNavigatorUtils {
      * <p>This is the content of a CSS stylesheet created on memory at runtime, with all the styles needed for the
      * connecting-lines that decorate the {@link KLConceptNavigatorControl}, which depend on
      * the {@link KLConceptNavigatorControl#MAX_LEVEL} value.
-     * </p>
      */
     public static final String STYLE;
     static {
@@ -86,7 +85,6 @@ public class ConceptNavigatorUtils {
     /**
      * <p>Creates a snapshot of a {@link ConceptTile} that can be used in a
      * drag and drop gesture.
-     * </p>
      * @param tile the {@link ConceptTile}
      * @return a {@link WritableImage}
      */
@@ -109,7 +107,6 @@ public class ConceptNavigatorUtils {
      * <p>Recursive method that for a given nid, finds all of its parents, and for
      * each parent nid, repeats the process, until all ancestors are discovered. As
      * a result, the starting {@link InvertedTree} gets completed.
-     * </p>
      * @param nid the nid of the concept
      * @param tree the {@link InvertedTree}
      * @param navigator the {@link Navigator} that holds the dataset
@@ -121,7 +118,6 @@ public class ConceptNavigatorUtils {
     /**
      * <p>Given a child nid, and a {@link Navigator}, this method finds all the possible
      * parents of this child.
-     * </p>
      * @param childNid the nid of a given child
      * @param navigator the {@link Navigator} that holds the dataset
      * @return a list of {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
@@ -133,7 +129,6 @@ public class ConceptNavigatorUtils {
     /**
      * <p>Given a child nid, and a {@link Navigator}, this method finds all the possible
      * parents of this child, but excludes the parent with primary nid, if set.
-     * </p>
      * @param childNid the nid of a given child
      * @param primaryNid the nid of the primary parent, or -1 if not set
      * @param navigator the {@link Navigator} that holds the dataset
@@ -149,7 +144,6 @@ public class ConceptNavigatorUtils {
     /**
      * <p>Utility method that builds and {@link InvertedTree} starting from
      * a given nid and a given {@link Navigator}, and finds its maximum depth.
-     * </p>
      * @param nid the nid of the concept
      * @param navigator the {@link Navigator} that holds the dataset
      * @return the depth of the {@link InvertedTree}
@@ -162,7 +156,6 @@ public class ConceptNavigatorUtils {
     /**
      * <p>Builds an {@link InvertedTree} from a given nid and a {@link Navigator} with
      * a dataset
-     * </p>
      * @param nid the nid of the concept
      * @param navigator the {@link Navigator} that holds the dataset
      * @return an {@link InvertedTree}
@@ -179,7 +172,6 @@ public class ConceptNavigatorUtils {
      * <p>Utility method that can be use for debugging purposes, as it prints out the inverted tree,
      * starting from the root, which is set at the farthest nid possible from the dataset,
      * and prints out the maximum level, the deepest concept (nid, and description).
-     * </p>
      * <p> For instance, the following is the output of a call to this method from a given dataset:
      * <pre>
      * Tree =======
@@ -206,7 +198,6 @@ public class ConceptNavigatorUtils {
      *
      * Max level = 12, nid = -2147479877, description = GrandChild_1
      * </pre>
-     * </p>
      *
      * @param rootNid the nid of the root
      * @param navigator the {@link Navigator} that holds the dataset
@@ -225,7 +216,6 @@ public class ConceptNavigatorUtils {
     /**
      * <p>Iterate recursively the dataset from top to bottom to find the deepest nid and
      * its depth level.
-     * </p>
      * @param nid The nid of the concept
      * @param level The level of the concept
      * @param navigator The {@link Navigator} that holds the dataset
@@ -242,7 +232,6 @@ public class ConceptNavigatorUtils {
 
     /**
      * <p>Prints out the inverted tree, starting from a given nid
-     * </p>
      * @param nid the nid of the concept
      * @param navigator the {@link Navigator} that holds the dataset
      */
@@ -253,7 +242,6 @@ public class ConceptNavigatorUtils {
 
     /**
      * <p>Recursive method that prints out the tree hierarchy starting from a given {@link ConceptNavigatorTreeItem},
-     * </p>
      * @param treeView the {@link KLConceptNavigatorControl}
      * @param treeItem a {@link ConceptNavigatorTreeItem}
      * @param printAll if set to true, prints all children, else only those that have a non empty
@@ -276,7 +264,6 @@ public class ConceptNavigatorUtils {
      * <p>Builds the {@link InvertedTree} for a given {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem},
      * finds the sorted map of lineages, and takes the shorter lineage that matches the nid and child nid of
      * such item, unless the nid is -1, in which case, it takes the first route.
-     * </p>
      * @param conceptItem a given {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
      * @param navigator the {@link Navigator} that holds the dataset
      * @return a {@link List<InvertedTree.ConceptItem>} with the shorter lineage that matches nid and child nid of
@@ -295,7 +282,6 @@ public class ConceptNavigatorUtils {
     /**
      * <p>Resets selection, highlighted and expanded states of every concept TreeItem of the TreeView,
      * removing also all items, starting from the second generation
-     * </p>
      * @param treeView the {@link KLConceptNavigatorControl}
      */
     public static void resetConceptNavigator(KLConceptNavigatorControl treeView) {
@@ -312,9 +298,8 @@ public class ConceptNavigatorUtils {
     /**
      * <p>Recursive method that traverses the children of a {@link ConceptNavigatorTreeItem}, applying a certain
      * function to each of them.
-     * </p>
      * @param treeItem a {@link ConceptNavigatorTreeItem}
-     * @param consumer a {@link Consumer <ConceptNavigatorTreeItem>} to apply to each tree item
+     * @param consumer a {@code Consumer<ConceptNavigatorTreeItem>} to apply to each tree item
      */
     public static void iterateTree(ConceptNavigatorTreeItem treeItem, Consumer<ConceptNavigatorTreeItem> consumer) {
         for (TreeItem<ConceptFacade> child : treeItem.getChildren()) {

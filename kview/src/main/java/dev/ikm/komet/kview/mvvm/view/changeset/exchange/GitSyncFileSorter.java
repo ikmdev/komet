@@ -10,8 +10,7 @@ import java.util.regex.Pattern;
 /**
  * Compares GitSync file path Strings for sorting / ordering. If either or both file paths do not contain a datetime
  * in the expected format, then the fallback defaults to the default lexicographic comparison.
- * <p>
- * GitSync file paths are expected to have a datetime in the filename unless renamed by a user. In the case that the
+ * <p>GitSync file paths are expected to have a datetime in the filename unless renamed by a user. In the case that the
  * file is renamed by the user, it is assumed the changeset is a more prominent "milestone" containing committed data.
  * Due to this assumption, we load those files last to reduce any side effects of loading uncommitted data from the
  * (likely less prominent) auto-named files. To avoid these assumptions, we should update this class to interrogate

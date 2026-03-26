@@ -33,8 +33,7 @@ import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getWindowPr
 /**
  * An abstract implementation of {@link AbstractChapterKlWindow} specifically designed for windows
  * that display or edit knowledge management entities in the Komet system.
- * <p>
- * This class extends the basic window functionality to provide entity-specific capabilities,
+ * <p>This class extends the basic window functionality to provide entity-specific capabilities,
  * including:
  * <ul>
  *   <li>Management of the entity being displayed or edited through {@link EntityFacade}</li>
@@ -42,8 +41,7 @@ import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getWindowPr
  *   <li>Type-specific handling of different knowledge entities (concepts, patterns, etc.)</li>
  *   <li>Persistence of entity references in window state</li>
  * </ul>
- * <p>
- * Entity chapter windows serve as specialized containers for different types of knowledge entities
+ * <p>Entity chapter windows serve as specialized containers for different types of knowledge entities
  * within the system and provide the foundation for type-specific windows like concept editors,
  * pattern browsers, or LIDR viewers.
  *
@@ -61,8 +59,7 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
 
     /**
      * The UUID identifying the journal topic that owns this window.
-     * <p>
-     * The journal topic is used by the owning Journal Window to communicate events
+     * <p>     * The journal topic is used by the owning Journal Window to communicate events
      * related to this window, allowing for coordination between multiple windows
      * that may be displaying related content.
      */
@@ -70,8 +67,7 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
 
     /**
      * The entity being displayed or edited in this window.
-     * <p>
-     * The entity facade provides access to the underlying knowledge entity (concept,
+     * <p>     * The entity facade provides access to the underlying knowledge entity (concept,
      * pattern, semantic, etc.) that this window is responsible for presenting or
      * allowing the user to modify.
      */
@@ -80,8 +76,7 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
     /**
      * Constructs a new entity-focused chapter window with references to the journal topic,
      * entity facade, view properties, and user preferences.
-     * <p>
-     * This constructor initializes the window with its core components and either creates
+     * <p>     * This constructor initializes the window with its core components and either creates
      * a new window state or loads an existing one from preferences. If preferences are not
      * provided, a new UUID is generated for the window and appropriate preferences are created.
      *

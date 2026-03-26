@@ -172,8 +172,7 @@ public abstract class FXUtils {
 
     /**
      * Retrieves the currently focused {@link Window}.
-     * <p>
-     * This method iterates through all available windows and returns the first window
+     * <p>     * This method iterates through all available windows and returns the first window
      * that is currently focused. If no window is focused, it returns {@code null}.
      *
      * @return the focused {@link Window}, or {@code null} if no window is currently focused.

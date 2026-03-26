@@ -24,8 +24,7 @@ import org.eclipse.collections.api.list.MutableList;
 
 /**
  * Concrete observable concept version - fully type-reified, no generic parameters.
- * <p>
- * This is Layer 3 (Concrete) of the MGC pattern for concept versions.
+ * <p>This is Layer 3 (Concrete) of the MGC pattern for concept versions.
  * All generic types are resolved to concrete types.
  *
  * <h2>MGC Pattern Layers for Concept Versions</h2>
@@ -56,8 +55,7 @@ public final class ObservableConceptVersion
 
     /**
      * Type-safe accessor for the containing concept entity.
-     * <p>
-     * Overrides the generic method with specific return type.
+     * <p>     * Overrides the generic method with specific return type.
      */
     public ObservableConcept getObservableConcept() {
         return getObservableEntity();
@@ -70,11 +68,9 @@ public final class ObservableConceptVersion
 
     /**
      * Editable version wrapper for ObservableConceptVersion.
-     * <p>
-     * Implements {@link EditableVersion} marker
+     * <p>     * Implements {@link EditableVersion} marker
      * interface through the base {@link ObservableEntityVersion.Editable} class.
-     * <p>
-     * Concepts have minimal fields (just stamp fields), so this class mainly
+     * <p>     * Concepts have minimal fields (just stamp fields), so this class mainly
      * provides the infrastructure for saving and committing concept versions.
      * 
      * <h2>Usage Example</h2>
@@ -104,8 +100,7 @@ public final class ObservableConceptVersion
 
         /**
          * Gets or creates the canonical editable concept version for the given stamp.
-         * <p>
-         * Returns the exact same instance for multiple calls with the same stamp, ensuring
+         * <p>         * Returns the exact same instance for multiple calls with the same stamp, ensuring
          * a single canonical editable version per ObservableStamp.
          *
          * @param observableVersion the ObservableConceptVersion to edit

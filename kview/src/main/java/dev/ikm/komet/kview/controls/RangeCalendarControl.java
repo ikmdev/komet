@@ -21,7 +21,6 @@ import java.util.*;
  * <p>A control implementation that shows a calendar to the user,
  * in order to define a {@link #dateProperty() date}, if {@link MODE#DATE} is set,
  * or one or more {@link DateRange date ranges}, if {@link MODE#RANGE} is set.
- * </p>
  *
  */
 public class RangeCalendarControl extends Control {

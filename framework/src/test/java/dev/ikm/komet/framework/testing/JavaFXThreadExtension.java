@@ -26,8 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * JUnit 5 extension that automatically executes test methods on the JavaFX Application Thread.
- * <p>
- * Usage:
+ * <p>Usage:
  * <pre>{@code
  * @ExtendWith(JavaFXThreadExtension.class)
  * class MyTest {

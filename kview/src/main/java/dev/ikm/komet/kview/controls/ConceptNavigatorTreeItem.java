@@ -19,9 +19,7 @@ import static dev.ikm.komet.kview.controls.KLConceptNavigatorControl.MAX_LEVEL;
 /**
  * <p>{@link ConceptNavigatorTreeItem} is the model for a single node supplying a hierarchy of values to the
  * {@link KLConceptNavigatorControl}.
- * </p>
  * <p>The model uses {@link ConceptFacade} as the type of the value property.
- *</p>
  */
 public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
 
@@ -30,7 +28,6 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
     /**
      * <p>Tags are used in conjunction with the timeline. By default, no tag is set,
      * but it can be "added" or "retired" from a certain timeline point.
-     * </p>
      * @see #tagProperty
      * @see KLConceptNavigatorControl#showTagsProperty()
      */
@@ -44,9 +41,7 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
      * <p>A ConceptNavigatorTreeItem by default has no state, but it can be hovered, if the user
      * moves the mouse over it, and after some time, this is set as long_hovered state. If the
      * user press the mouse and selects the item, it gets the selected state.
-     * </p>
      * <p>Note: The STATE enum is only used internally.
-     * </p>
      * @see KLConceptNavigatorControl#activationProperty()
      * @see PS_STATE
      */
@@ -59,13 +54,9 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
      * <p>This enum is used to set the required pseudoClasses that are used to visually display the
      * connecting lines between different ConceptNavigatorTreeItem in the long_hovered state or in
      * the selected state.
-     * </p>
      * <p>Note: The PS_STATE enum is only used internally. Each enum holds a fixed bit value.
      * If the {@link #bitset} is set or not for that position, the related pseudoClass is set or not.
-     * </p>
-     * <p>
      *
-     * </p>
      * @see STATE
      * @see ConceptNavigatorUtils#STYLE
      * @see KLConceptNavigatorControl#MAX_LEVEL
@@ -148,9 +139,7 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
 
     /**
      * <p>Creates a ConceptNavigatorTreeItem instance.
-     * </p>
      * <p>By default, an empty {@link InvertedTree} instance is created for this concept.
-     * </p>
      * @param navigator The {@link Navigator} that holds the dataset
      * @param conceptFacade The {@link ConceptFacade} that defines the concept for this concept TreeItem
      * @param parentNid the nid of the parent of this concept
@@ -165,12 +154,10 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
     /**
      * <p>Boolean property that toggles the defined (when set to true) or primitive (false, by default) feature of the
      * concept associated to this concept TreeItem.
-     * </p>
      * <p>For the nid of this concept, this value is set based on the following:
      * <pre><code>
      * getNavigator().getViewCalculator().hasSufficientSet(Entity.getFast(nid))
      * </code></pre>
-     * </p>
      */
     private final BooleanProperty definedProperty = new SimpleBooleanProperty(this, "defined");
     public final BooleanProperty definedProperty() {
@@ -186,12 +173,10 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
     /**
      * <p>Boolean property that toggles the multi-parent (when set to true) or single-parent (false, by default) feature
      * of the concept associated to this concept TreeItem.
-     * </p>
      * <p>For the nid of this concept, this value is set based on tte following:
      * <pre><code>
      * getNavigator().getParentNids(nid).length &gt; 1
      * </code></pre>
-     * </p>
      */
     private final BooleanProperty multiParentProperty = new SimpleBooleanProperty(this, "multiParent");
     public final BooleanProperty multiParentProperty() {
@@ -207,7 +192,6 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
     /**
      * <p>Boolean property that toggles the visibility of the {@link LineageBox} (visible, when set to true, or hidden
      * when set to false, by default) associated to this concept TreeItem.
-     * </p>
      */
     private final BooleanProperty viewLineageProperty = new SimpleBooleanProperty(this, "viewLineage");
     public final BooleanProperty viewLineageProperty() {
@@ -266,7 +250,6 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
 
     /**
      * <p>Gets the {@link InvertedTree} instance of this concept TreeItem, which might by empty.
-     * </p>
      * @return an {@link InvertedTree}
      * @see ConceptNavigatorUtils#buildInvertedTree(int, Navigator)
      */
@@ -279,7 +262,6 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
     /**
      * <p>Returns the bitSet that holds the information for the 4 + 2 * MAX_LEVEL pseudoClasses
      * that are used to highlight the connecting lines when there is a long-hover or selected {@link STATE}.
-     * </p>
      * @return a bitSet
      */
     public BitSet getBitSet() {
@@ -293,7 +275,6 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
      * <p>A ConceptNavigatorTreeItem is a leaf if it has no children. Given that the {@link KLConceptNavigatorControl}
      * doesn't have the full dataset in memory, to find out if this item has children or not, this method
      * overrides the default implementation in order to use {@link Navigator#isLeaf(int)} instead.
-     * </p>
      * @return true if this ConceptNavigatorTreeItem has no children
      */
     @Override

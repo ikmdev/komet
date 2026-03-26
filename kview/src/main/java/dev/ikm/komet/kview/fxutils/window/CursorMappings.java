@@ -30,8 +30,7 @@ import java.util.function.BiConsumer;
 
 /**
  * Provides bidirectional mappings and handlers for window resize operations.
- * <p>
- * This utility class implements a singleton enum pattern to provide a centralized registry
+ * <p>This utility class implements a singleton enum pattern to provide a centralized registry
  * for mappings between resize directions and their corresponding cursor types, as well as
  * specialized handlers for resize operations.
  *
@@ -49,15 +48,13 @@ public enum CursorMappings {
 
     /**
      * Defines the eight cardinal directions for window resizing, plus a NONE value.
-     * <p>
-     * These directions correspond to the standard window resize handles positions:
+     * <p>     * These directions correspond to the standard window resize handles positions:
      * <ul>
      *   <li>Four corners: NW (northwest), NE (northeast), SE (southeast), SW (southwest)</li>
      *   <li>Four edges: N (north), E (east), S (south), W (west)</li>
      *   <li>NONE: Represents no resize direction (default state)</li>
      * </ul>
-     * <p>
-     * Each direction maps to a specific cursor type to provide visual feedback during resize
+     * <p>     * Each direction maps to a specific cursor type to provide visual feedback during resize
      * operations and to specific resize behaviors when mouse events occur.
      *
      * @see Cursor
@@ -123,8 +120,7 @@ public enum CursorMappings {
 
     /**
      * Adds a bidirectional mapping between a resize direction and cursor type.
-     * <p>
-     * This method populates both the direction-to-cursor and cursor-to-direction
+     * <p>     * This method populates both the direction-to-cursor and cursor-to-direction
      * maps to enable efficient lookups in either direction.
      *
      * @param direction The resize direction to map
@@ -137,8 +133,7 @@ public enum CursorMappings {
 
     /**
      * Returns the appropriate cursor for a given resize direction.
-     * <p>
-     * This method is used to determine which cursor should be displayed when
+     * <p>     * This method is used to determine which cursor should be displayed when
      * the mouse is over a specific type of resize handle or during a resize
      * operation in progress.
      *
@@ -151,8 +146,7 @@ public enum CursorMappings {
 
     /**
      * Determines the resize direction that corresponds to a given cursor type.
-     * <p>
-     * This reverse mapping is useful when processing mouse events where the cursor
+     * <p>     * This reverse mapping is useful when processing mouse events where the cursor
      * type is known and the appropriate resize behavior needs to be determined.
      *
      * @param cursor The cursor to look up
@@ -164,8 +158,7 @@ public enum CursorMappings {
 
     /**
      * Determines if the given direction represents a corner resize operation.
-     * <p>
-     * Corner resize operations affect both width and height simultaneously,
+     * <p>     * Corner resize operations affect both width and height simultaneously,
      * while edge operations affect only one dimension.
      *
      * @param direction The direction to check
@@ -179,8 +172,7 @@ public enum CursorMappings {
 
     /**
      * Returns the set of all edge (non-corner) resize directions.
-     * <p>
-     * Edge directions represent resize operations that affect only one dimension
+     * <p>     * Edge directions represent resize operations that affect only one dimension
      * (either width or height, but not both).
      *
      * @return A set containing N, E, S, W directions
@@ -192,8 +184,7 @@ public enum CursorMappings {
 
     /**
      * Returns the set of all corner resize directions.
-     * <p>
-     * Corner directions represent resize operations that affect both width
+     * <p>     * Corner directions represent resize operations that affect both width
      * and height simultaneously.
      *
      * @return A set containing NW, NE, SE, SW directions
@@ -205,8 +196,7 @@ public enum CursorMappings {
 
     /**
      * Returns a set of all valid resize directions (excluding NONE).
-     * <p>
-     * This method returns both edge and corner directions, which is useful
+     * <p>     * This method returns both edge and corner directions, which is useful
      * when iterating through all possible resize handles.
      *
      * @return A set of all valid resize directions
@@ -217,8 +207,7 @@ public enum CursorMappings {
 
     /**
      * Executes the appropriate resize operation based on the specified direction.
-     * <p>
-     * This method selects and executes the appropriate resize handler based on the
+     * <p>     * This method selects and executes the appropriate resize handler based on the
      * provided direction. For corner directions (like NW), it combines multiple
      * resize operations (e.g., North and West) to provide the expected diagonal
      * resize behavior.
@@ -240,8 +229,7 @@ public enum CursorMappings {
 
     /**
      * Creates a subscription for cursor changes based on mouse interactions with a node.
-     * <p>
-     * This method sets up mouse enter/exit event handlers that change the scene's cursor
+     * <p>     * This method sets up mouse enter/exit event handlers that change the scene's cursor
      * when the mouse enters or exits the specified node.
      *
      * @param node      The node to manage cursor changes for

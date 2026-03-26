@@ -35,14 +35,12 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
      * coordinate configuration for this instance, linking it to the associated
      * preferences to ensure synchronization between user-defined settings and
      * default values.
-     * <p>
-     * The `viewCoordinate` property serves as a reactive binding to handle changes
+     * <p>     * The `viewCoordinate` property serves as a reactive binding to handle changes
      * in user preferences or system configurations dynamically. Designed as a
      * final immutable object, it provides encapsulated access to the underlying
      * `ViewCoordinateRecord`, ensuring both data consistency and thread safety
      * during interactions.
-     * <p>
-     * This property is initialized during instance creation of the `ViewBlueprint`
+     * <p>     * This property is initialized during instance creation of the `ViewBlueprint`
      * class, either with user preferences or default values, and is updated
      * as needed through reactive subscriptions implemented in the class methods.
      * Changes to this property may trigger dependent operations such as view
@@ -53,12 +51,10 @@ public abstract class ContextBlueprint implements KlContext, KlStateCommands {
     /**
      * Represents a property containing the context name as a string in the {@code Context} class.
      * It is a constant preference property used to manage and persist the context name.
-     * <p>
-     * This property may be used for associating a specific name or identifier
+     * <p>     * This property may be used for associating a specific name or identifier
      * with a given context instance, enabling better traceability and management
      * of multiple contexts in an application.
-     * <p>
-     * The property is declared as final to ensure immutability and safeguard its association
+     * <p>     * The property is declared as final to ensure immutability and safeguard its association
      * with the context instance and preferences it represents.
      */
     private final PreferencePropertyString contextNameProperty;

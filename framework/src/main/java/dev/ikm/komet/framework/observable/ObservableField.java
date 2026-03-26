@@ -29,14 +29,12 @@ public final class ObservableField<DT> extends ObservableSemanticField<DT> {
 
     /**
      * Editable field wrapper providing cached editing for semantic version fields.
-     * <p>
-     * Symmetric counterpart to {@link ObservableField}:
+     * <p>     * Symmetric counterpart to {@link ObservableField}:
      * <ul>
      *   <li>ObservableField - read-only, writes directly to DB</li>
      *   <li>ObservableField.Editable - editable, caches changes in ObservableSemanticVersion.Editable</li>
      * </ul>
-     * <p>
-     * Editable fields are obtained from {@link ObservableSemanticVersion.Editable#getEditableFields()}
+     * <p>     * Editable fields are obtained from {@link ObservableSemanticVersion.Editable#getEditableFields()}
      * and provide JavaFX properties that can be bound to GUI controls. Changes accumulate until
      * the parent editable version's save() or commit() is called.
      *

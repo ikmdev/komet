@@ -383,10 +383,8 @@ public class NextGenSearchController {
 
     /**
      * Configures the specified {@link Node} to support drag-and-drop operations associated with the given {@link Entity}.
-     * <p>
-     * When a drag is detected on the node, this method initializes a dragboard with the entity's identifier and
+     * <p>     * When a drag is detected on the node, this method initializes a dragboard with the entity's identifier and
      * sets a custom drag image for visual feedback.
-     * </p>
      *
      * @param node   the JavaFX {@link Node} to be made draggable
      * @param entity the {@link Entity} associated with the node, providing data for the drag operation

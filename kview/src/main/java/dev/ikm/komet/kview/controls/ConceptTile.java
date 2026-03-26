@@ -36,7 +36,6 @@ import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NA
  * - The description of a {@link dev.ikm.tinkar.terms.ConceptFacade}, for a given {@link ConceptNavigatorTreeItem}
  * - a selection button
  * - a show lineage button
- * </p>
  * <p>The concept tile is set as the graphic node of a {@link KLConceptNavigatorTreeCell} and when
  * {@link KLConceptNavigatorTreeCell#updateItem(ConceptFacade, boolean)} is called, the {@link #conceptProperty()}
  * gets updated with the @link ConceptNavigatorTreeItem} for such cell, and the tile components get updated
@@ -69,11 +68,9 @@ public class ConceptTile extends HBox {
 
     /**
      * <p>Creates a {@link ConceptTile} instance.
-     * </p>
      * <p>The custom disclosure node replaces the one from the regular treeCell, and takes care of
      * expanding or collapsing the related treeItem.</p>
      * <p>The select pane allows dragging this concept tile to the {@link KLWorkspace}.
-     * </p>
      * @param cell the {@link KLConceptNavigatorTreeCell} for which this tile is the graphic node
      * @param treeView the {@link KLConceptNavigatorControl}
      */
@@ -175,7 +172,6 @@ public class ConceptTile extends HBox {
     /**
      * <p>The concept property holds the {@link ConceptNavigatorTreeItem} of a given {@link KLConceptNavigatorTreeCell},
      * for which this tile is the graphic node.
-     * </p>
      * <p>When the property gets invalidated, the tile gets cleaned up first, and then, if there is a valid
      * treeItem, its components get properly updated.</p>
      */

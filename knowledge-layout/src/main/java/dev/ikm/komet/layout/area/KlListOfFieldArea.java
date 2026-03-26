@@ -36,8 +36,7 @@ public non-sealed interface KlListOfFieldArea<FX extends Region>
      * within the Knowledge Layout (KL) framework. This factory handles the instantiation and
      * restoration of {@link KlListOfFieldArea} objects, which manage {@link ObservableField} components
      * in JavaFX {@link Region} structures.
-     * <p>
-     * The primary purpose of this factory is to provide a structured mechanism for creating
+     * <p>     * The primary purpose of this factory is to provide a structured mechanism for creating
      * field list areas, ensuring consistency in implementation and supporting functionality such as
      * preference restoration and class type retrieval.
      *

@@ -55,8 +55,7 @@ public record AreaGridSettings(
     /**
      * Constructs an instance of {@code AreaGridSettings} with default column and row indices
      * set to 0, as well as default configurations for other properties.
-     * <p>
-     * This constructor initializes a {@code AreaGridSettings} with:
+     * <p>     * This constructor initializes a {@code AreaGridSettings} with:
      * <p> - Column index: 0
      * <p> - Row index: 0
      * <p> - Column span: 1
@@ -102,8 +101,7 @@ public record AreaGridSettings(
      * of the {@code column} and {@code row} fields within the {@code GridIncrementer}.
      * Default values are used for other layout properties, such as span, alignment,
      * grow priorities, margins, and size constraints.
-     *  <p>
-     * The caller is responsible for calling the
+     *  <p>     * The caller is responsible for calling the
      *
      * @param incrementer the {@code GridIncrementer} instance used to determine the
      *                    initial column and row indices of the layout. The {@code GridIncrementer}'s

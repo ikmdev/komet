@@ -35,15 +35,12 @@ import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
  * <p>KLComponentControl is a custom control that acts as a template capable of populating a single,
  * independent item, with relevant information.
  * Initially, if the control is empty, the user can either:
- * </p>
  * <p>- type in a {@link javafx.scene.control.TextField} to search for a concept The {@link #searchTextProperty} holds
  * the text to search for.</p>
  * <p>- or drag and drop a concept from any other external JavaFX node that holds a valid {@link Entity}.
  * The {@link #entityProperty} keeps the entity that was added.
- *</p>
  * <p>When an entity is added to the control, a close button is enabled to remove it, based on
  * the {@link #onRemoveActionProperty}.
- * </p>
  * <pre><code>KLComponentControl componentControl = new KLComponentControl();
  * componentControl.setTitle("Component definition");
  * componentControl.setOnSearchAction(e -> System.out.println("Search for " + componentControl.getSearchText()));
@@ -160,7 +157,6 @@ public class KLComponentControl extends Control {
     // -- type ahead string converter
     /**
      * Converts the user-typed input to an object of type T, or the object of type T to a String.
-     * @return the converter property
      */
     private final ObjectProperty<StringConverter<EntityProxy>> typeAheadStringConverter = new SimpleObjectProperty<>(this, "converter");
     public final ObjectProperty<StringConverter<EntityProxy>> typeAheadStringConverterProperty() { return typeAheadStringConverter; }

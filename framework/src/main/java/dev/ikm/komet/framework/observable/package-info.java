@@ -57,7 +57,7 @@
  *
  * <h2>Key Concepts</h2>
  *
- * <h3>1. Observable Entities</h3>
+ * <p><b>1. Observable Entities</b></p>
  * <p>Observable entities wrap Tinkar's immutable entities and provide JavaFX observable properties:
  * <ul>
  *   <li>{@link dev.ikm.komet.framework.observable.ObservableEntity} - Base class for all observable entities</li>
@@ -70,7 +70,7 @@
  * <p><b>Canonical Instance Guarantee:</b> Each Tinkar entity NID maps to exactly one Observable instance,
  * maintained through a weak-value cache. This ensures UI consistency and prevents memory leaks.
  *
- * <h3>2. Observable Versions</h3>
+ * <p><b>2. Observable Versions</b></p>
  * <p>Versions represent specific states of entities at particular points in time (STAMPs):
  * <ul>
  *   <li>{@link dev.ikm.komet.framework.observable.ObservableVersion} - Base class for observable versions</li>
@@ -83,7 +83,7 @@
  * <p>Each version provides JavaFX properties for all its fields, enabling direct UI binding without
  * manual synchronization.
  *
- * <h3>3. Editable Versions (Inner Classes)</h3>
+ * <p><b>3. Editable Versions (Inner Classes)</b></p>
  * <p>Editable versions cache changes for transactional editing with save/commit/rollback semantics:
  * <ul>
  *   <li>{@link dev.ikm.komet.framework.observable.ObservableEntityVersion.Editable} - Base editable version</li>
@@ -96,7 +96,7 @@
  * <p><b>Design Rationale:</b> Editable versions are inner classes to clearly express their relationship
  * with their read-only counterparts, reduce namespace pollution, and enable simpler, more intuitive names.
  *
- * <h3>4. Observable Features and Fields</h3>
+ * <p><b>4. Observable Features and Fields</b></p>
  * <p>Features represent individual data points within versions:
  * <ul>
  *   <li>{@link dev.ikm.komet.framework.observable.ObservableSemanticField} - Base class for features</li>
@@ -113,7 +113,7 @@
  *
  * <h2>Usage Patterns</h2>
  *
- * <h3>Pattern 1: Reading Entities with UI Binding</h3>
+ * <p><b>Pattern 1: Reading Entities with UI Binding</b></p>
  * <pre>{@code
  * // Get a canonical observable entity by NID
  * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(conceptNid);
@@ -131,7 +131,7 @@
  * // through the event bus and property notifications
  * }</pre>
  *
- * <h3>Pattern 2: Creating New Entities with ObservableComposer</h3>
+ * <p><b>Pattern 2: Creating New Entities with ObservableComposer</b></p>
  * <pre>{@code
  * // Create a composer with STAMP coordinates
  * ObservableComposer composer = ObservableComposer.builder()
@@ -162,7 +162,7 @@
  * composer.commit();
  * }</pre>
  *
- * <h3>Pattern 3: Editing Semantics with Fields</h3>
+ * <p><b>Pattern 3: Editing Semantics with Fields</b></p>
  * <pre>{@code
  * ObservableComposer composer = ObservableComposer.builder()
  *     .stampCalculator(stampCalculator)
@@ -207,7 +207,7 @@
  * composer.commit();
  * }</pre>
  *
- * <h3>Pattern 4: Observing Entity Changes</h3>
+ * <p><b>Pattern 4: Observing Entity Changes</b></p>
  * <pre>{@code
  * // Subscribe to entity changes via event bus
  * EvtBus.subscribe(conceptNid, EvtType.ENTITY_UPDATE, evt -> {

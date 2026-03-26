@@ -32,8 +32,7 @@ public sealed interface KlAreaForFeature<DT, F extends Feature<DT>, FX extends R
 
     /**
      * Sets the {@link FeatureKey} used to identify the feature associated with this area.
-     * <p>
-     * The provided key must be resolvable; that is, it must be sufficiently specified
+     * <p>     * The provided key must be resolvable; that is, it must be sufficiently specified
      * to uniquely identify and retrieve a single feature.
      * If the given key is not resolvable (for example, if it is a wildcard or ambiguous),
      * this method throws an {@link IllegalArgumentException}.

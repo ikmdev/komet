@@ -8,18 +8,15 @@ In order to ensure code quality, we recommend forking the repository you wish to
 
 ## Create a Branch Using Maven
 
-Before beginning development, create a new branch designated for the work you are about to do using Maven plugin commands.
+Before beginning development, create a new branch designated for the work you are about to do using the IKE Maven plugin:
 
 | Branch Type | Maven Command | Outcome |
 | ------ | ------ | ------ |
-| Feature Branch | `mvn gitflow: feature-start` | Creates a new feature branch and updates the Komet version |
-| Hotfix Branch | `mvn gitflow: hotfix-start` | Creates a new hotfix branch and updates the hotfix version |
+| Feature Branch | `mvn ike:feature-start -Dfeature=my-feature` | Creates a new feature branch with branch-qualified SNAPSHOT versions |
 
-Maven will prompt you to create a name for your new feature or hotfix branch. The branch name should follow the convention of starting with a JIRA project code (IKM, AR, IAT, IC, IKMC, IKDT, IKMD, IIA, IKMW, IKMM, or TE), followed by a dash, followed by the issue number it applies to, followed by a short description (without spaces) (e.g., `IA-30-branch-documentation`). If there is no JIRA ticket, it is ok to move on without one, but this will be applied at a later point by a team developer as they are reviewing and merging it in.
+The branch name should follow lowercase alphanumeric with hyphens (e.g., `shield-terminology`, `fix-search-bug`).
 
-Once your new branch has been created, begin development in your newly created branch. 
-
-**Note:** There is currently no way to create a bugfix branch using the Maven plugin. You can create a bugfix branch using the git commands in the [Common Git Commands](#common-git-commands) section below.
+Once your new branch has been created, begin development in your newly created branch.
 
 #### Create a Branch Using Git
 
@@ -46,7 +43,7 @@ This will allow other developers to pull your code. Don't forget to run `git add
 Ideally at this point, you have created an isolated change, which are best for code reviews, cherry-picking and
 rollbacks. Now you can push your changes.
 
-If you haven't already, run `git add .` and `git commit -m "[MESSAGE]"` to commit your changes. Then run `mvn gitflow:feature-finish` to complete your Maven feature and update the version. This will push your code to the main branch of your repository.
+If you haven't already, run `git add .` and `git commit -m "[MESSAGE]"` to commit your changes. Then run `mvn ike:feature-finish -Dfeature=my-feature` to complete your feature branch and update the version. This will merge your code back to the main branch.
 
 Finally, [create a pull request][3] based off your main branch to the main branch of the original repository.
 

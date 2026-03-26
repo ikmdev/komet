@@ -10,13 +10,10 @@ import dev.ikm.komet.kview.klfields.KlFieldHelper;
 
 /**
  * Image field implementation supporting both read-only and editable patterns.
- * <p>
- * <b>Editable Pattern (Recommended):</b> Use with {@link Editable} for
+ * <p><b>Editable Pattern (Recommended):</b> Use with {@link Editable} for
  * transaction management, dirty tracking, and save/commit/rollback capabilities.
- * <p>
- * <b>Legacy Pattern:</b> Use with {@link ObservableField} for immediate write-through.
- * <p>
- * When using the editable pattern, changes are cached in the {@link Editable}
+ * <p><b>Legacy Pattern:</b> Use with {@link ObservableField} for immediate write-through.
+ * <p>When using the editable pattern, changes are cached in the {@link Editable}
  * and do not persist to the database until the parent {@link dev.ikm.komet.framework.observable.ObservableSemanticVersion.Editable}
  * is saved and committed via {@link dev.ikm.komet.framework.observable.ObservableComposer}.
  */
@@ -26,8 +23,7 @@ public class KlReadOnlyImageField extends BaseDefaultKlField<byte[]> {
 
     /**
      * Constructor using the legacy pattern (for backward compatibility).
-     * <p>
-     * Changes write through immediately to the ObservableField.
+     * <p>     * Changes write through immediately to the ObservableField.
      * Use the editable constructor for better transaction management.
      *
      * @param observableImageField the observable field

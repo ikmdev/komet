@@ -35,7 +35,7 @@ public non-sealed interface KlMultiVersionArea<OV extends ObservableVersion, FX 
     /**
      * Retrieves the list of single version panes associated with this multi-version pane.
      *
-     * @return an ObservableList of KlVersionPane<V> objects, representing the individual version panes
+     * @return an ObservableList of {@code KlVersionPane<V>} objects, representing the individual version panes
      *         that handle and display single versions of the entity managed by this multi-version pane.
      */
     ObservableList<KlAreaForVersion<OV, FX>> klVersionAreas();

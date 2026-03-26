@@ -13,13 +13,10 @@ import java.io.ByteArrayOutputStream;
 
 /**
  * Image field implementation supporting both read-only and editable patterns.
- * <p>
- * <b>Editable Pattern (Recommended):</b> Use with {@link Editable} for
+ * <p><b>Editable Pattern (Recommended):</b> Use with {@link Editable} for
  * transaction management, dirty tracking, and save/commit/rollback capabilities.
- * <p>
- * <b>Legacy Pattern:</b> Use with {@link ObservableField} for immediate write-through.
- * <p>
- * When using the editable pattern, changes are cached in the {@link Editable}
+ * <p><b>Legacy Pattern:</b> Use with {@link ObservableField} for immediate write-through.
+ * <p>When using the editable pattern, changes are cached in the {@link Editable}
  * and do not persist to the database until the parent {@link dev.ikm.komet.framework.observable.ObservableSemanticVersion.Editable}
  * is saved and committed via {@link dev.ikm.komet.framework.observable.ObservableComposer}.
  */
@@ -30,8 +27,7 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
 
     /**
      * Constructor using the editable pattern (recommended).
-     * <p>
-     * Provides transaction management, dirty tracking, and cached editing.
+     * <p>     * Provides transaction management, dirty tracking, and cached editing.
      * Changes do not persist until the editable version is saved and committed.
      *
      * @param observableFieldEditable the editable field from an ObservableSemanticVersion.Editable

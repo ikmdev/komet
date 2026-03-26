@@ -21,8 +21,7 @@ import static dev.ikm.komet.kview.fxutils.window.CursorMappings.ResizeDirection;
 
 /**
  * Base class for resize handle implementations that provides common functionality.
- * <p>
- * This class serves as the foundation for concrete resize handle implementations by
+ * <p>This class serves as the foundation for concrete resize handle implementations by
  * providing storage for the resize direction and common utility methods such as cursor
  * mapping. It implements the core behaviors required by the {@link ResizeHandle}
  * interface while allowing subclasses to focus on specific visual representation and
@@ -42,8 +41,7 @@ abstract class AbstractResizeHandle implements ResizeHandle {
 
     /**
      * Creates a new resize handle for the specified direction.
-     * <p>
-     * All subclasses should call this constructor to initialize the
+     * <p>     * All subclasses should call this constructor to initialize the
      * resize direction, which determines both the handle's positioning and
      * the cursor feedback provided during user interaction.
      *

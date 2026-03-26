@@ -35,19 +35,16 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.G
 
 /**
  * View model for GitHub preferences that handles validation of GitHub credentials and repository information.
- * <p>
- * This class manages and validates the following GitHub-related information:
+ * <p>This class manages and validates the following GitHub-related information:
  * <ul>
  *   <li>Git repository URL - Must be a valid Git URL format (HTTPS or SSH)</li>
  *   <li>Git email - Must be a valid email format</li>
  *   <li>GitHub username - Must follow GitHub username conventions</li>
  *   <li>GitHub password - Must meet security requirements</li>
  * </ul>
- * <p>
- * The class implements validation rules for each field and manages the state of the connect button
+ * <p>The class implements validation rules for each field and manages the state of the connect button
  * based on the validity of all fields. It also handles connection error messages.
- * <p>
- * The view model follows the MVVM (Model-View-ViewModel) pattern and extends {@code ValidationViewModel}
+ * <p>The view model follows the MVVM (Model-View-ViewModel) pattern and extends {@code ValidationViewModel}
  * to provide validation functionality.
  *
  * @see ValidationViewModel

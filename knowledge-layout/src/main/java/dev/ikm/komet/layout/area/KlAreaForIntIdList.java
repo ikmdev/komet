@@ -28,8 +28,7 @@ public non-sealed interface KlAreaForIntIdList<FX extends Region>
      * {@link KlAreaForIntIdList}, which are specialized field areas in the
      * Knowledge Layout framework designed for managing observable IntIdList fields
      * and their associated JavaFX {@link Region}.
-     * <p>
-     * This interface extends {@link KlFieldArea.Factory} with IntIdList-specific
+     * <p>     * This interface extends {@link KlFieldArea.Factory} with IntIdList-specific
      * behavior, enabling the creation of field areas that bind observable IntIdList
      * fields to JavaFX regions. It defines the contract for building, configuring,
      * and interacting with these field areas in a type-safe manner, ensuring proper

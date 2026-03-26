@@ -242,11 +242,9 @@ public class SheetItem<T> implements PropertySheet.Item {
 
     /**
      * Creates a SheetItem for an editable field from ObservableSemanticVersion.Editable.
-     * <p>
-     * This is used when you want to edit a semantic field with changes cached in the
+     * <p>     * This is used when you want to edit a semantic field with changes cached in the
      * ObservableSemanticVersion.Editable until save() or commit() is called.
-     * <p>
-     * <b>API Symmetry:</b>
+     * <p>     * <b>API Symmetry:</b>
      * <ul>
      *   <li>{@link #make(ObservableField, ViewProperties)} - read-only field</li>
      *   <li>{@link #makeEditable(ObservableSemanticVersion.Editable, int, ViewProperties)} - editable field</li>
@@ -266,8 +264,7 @@ public class SheetItem<T> implements PropertySheet.Item {
 
     /**
      * Creates a SheetItem directly from an ObservableField.Editable.
-     * <p>
-     * Symmetric to {@link #make(ObservableField, ViewProperties)}.
+     * <p>     * Symmetric to {@link #make(ObservableField, ViewProperties)}.
      *
      * @param editableField the editable field
      * @param viewProperties view properties for field definition lookup
@@ -281,8 +278,7 @@ public class SheetItem<T> implements PropertySheet.Item {
 
     /**
      * Creates a SheetItem for an editable field from ObservableSemanticVersion.Editable with a category.
-     * <p>
-     * This is used when you want to edit a semantic field with changes cached in the
+     * <p>     * This is used when you want to edit a semantic field with changes cached in the
      * ObservableSemanticVersion.Editable until save() or commit() is called.
      *
      * @param editableVersion the editable version containing editable fields
@@ -304,8 +300,7 @@ public class SheetItem<T> implements PropertySheet.Item {
 
     /**
      * Creates a SheetItem for an editable field with a category.
-     * <p>
-     * Symmetric to {@link #make(ObservableField, String, ViewProperties)}.
+     * <p>     * Symmetric to {@link #make(ObservableField, String, ViewProperties)}.
      *
      * @param editableField the editable field
      * @param category optional category for grouping in property sheet
@@ -376,8 +371,7 @@ public class SheetItem<T> implements PropertySheet.Item {
 
     /**
      * Creates a SheetItem for an editable field with custom property and field definition.
-     * <p>
-     * This is a lower-level method that allows binding to any SimpleObjectProperty
+     * <p>     * This is a lower-level method that allows binding to any SimpleObjectProperty
      * with metadata from a FieldDefinition.
      *
      * @param editableProperty the editable property to bind to

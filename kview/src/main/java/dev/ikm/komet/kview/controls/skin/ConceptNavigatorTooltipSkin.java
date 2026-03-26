@@ -9,7 +9,6 @@ import javafx.scene.control.Skin;
  * <p>CSS based skin for {@link ConceptNavigatorTooltip}, which has the same implementation
  * as the default {@link javafx.scene.control.Tooltip}, except that it relocates the graphic node of the {@link Label}
  * node to the bottom-left, instead of the default bottom-center.
- * </p>
  */
 public class ConceptNavigatorTooltipSkin implements Skin<ConceptNavigatorTooltip> {
 

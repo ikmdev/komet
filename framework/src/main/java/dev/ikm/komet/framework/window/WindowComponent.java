@@ -25,13 +25,10 @@ import dev.ikm.komet.preferences.KometPreferences;
  * <br>public static WindowComponent create(ObservableViewNoOverride windowView, KometPreferences nodePreferences);
  * <br>so that they can be constructed with default values saved to preferences, and reconstructed from preferences.
  * Two scenarios:
- * <p>
- * 1. First creation of a WindowComponent
+ * <p>1. First creation of a WindowComponent
  * <p>Look for an absent INITIALIZED key, and then set defaults accordingly.
  * <p>2. Restore a WindowComponent from its preferences.
- * <p>
- * If the INITIALIZED key is present, read configuration from preferences and set fields accordingly.
- * </p>
+ * <p>If the INITIALIZED key is present, read configuration from preferences and set fields accordingly.
  */
 public interface WindowComponent {
     ObservableViewNoOverride windowView();

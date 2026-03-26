@@ -25,12 +25,10 @@ import java.util.ResourceBundle;
  * <p>Custom skin implementation for the {@link KLConceptNavigatorTreeCell} control.
  * Uses a {@link ConceptFacade} as the type of the value contained within the
  * {@link ConceptNavigatorTreeItem}
- * </p>
  * <p>Besides rendering as usual the graphic node of the cell (a {@link dev.ikm.komet.kview.controls.ConceptTile}),
  * this implementation also takes care of adding the connecting lines that belong to
  * the cell, the {@link LineageBox}, and the tags, which are added to the cell as extra nodes,
  * and rendered accordingly during the {@link #layoutChildren(double, double, double, double)} pass.
- * </p>
  */
 public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> {
 
@@ -46,10 +44,8 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
 
     /**
      * <p>Creates a new KLConceptNavigatorTreeCellSkin instance.
-     * </p>
      * <p>Creates also a {@link LineageBox} instance and an {@link HBox} instance for the tags,
      * which will be added as children to the cell only when needed.
-     * </p>
      * @param treeCell The control that this skin should be installed onto.
      * @see KLConceptNavigatorTreeCell#viewLineageProperty()
      * @see KLConceptNavigatorTreeCell#tagProperty()
@@ -123,7 +119,6 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
 
     /**
      * <p>Calculates the preferred width of this skin, removing the disclosure node width.
-     * </p>
      * @param height the height that should be used if preferred width depends on it
      * @param topInset the pixel snapped top inset
      * @param rightInset the pixel snapped right inset
@@ -262,7 +257,6 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
     /**
      * <p>Create a vertical line, spanning the cell height, at a given indentation level,
      * with a given style class.
-     * </p>
      * @param x the x coordinate based on the indentation level for this line
      * @param styleClass the style class to be applied to this line
      * @return a {@link Path}
@@ -279,7 +273,6 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
      * <p>Create a curved line, that goes from the top of the cell to the center, at a given indentation level,
      * with a given style class, if the cell is the last sibling, or else, add a vertical line to the bottom
      * of the cell.
-     * </p>
      * @param x the x coordinate based on the indentation level for this line
      * @param isLastSibling if the treeItem for this cell is the last sibling
      * @param styleClass the style class to be applied to this line

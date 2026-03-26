@@ -618,12 +618,10 @@ public class MultiParentGraphViewController implements RefreshListener {
 
     /**
      * The first call you make to this should pass in the root node.
-     * <p>
-     * After that you can call it repeatedly to walk down the tree (you need to
+     * <p>     * After that you can call it repeatedly to walk down the tree (you need to
      * know the path first) This will handle the waiting for each node to open,
      * before moving on to the next node.
-     * <p>
-     * This should be called on a background thread.
+     * <p>     * This should be called on a background thread.
      *
      * @param item
      * @param targetChildNid

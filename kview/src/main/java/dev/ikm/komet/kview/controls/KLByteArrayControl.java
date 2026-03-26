@@ -23,10 +23,8 @@ import java.util.ResourceBundle;
  * and upload it to Komet, providing the file matches any of the allowed file extensions set via
  * {@link #fileExtensionsProperty()}, which already include a default set of valid ones, and its
  * size fits within the maximum size allowed by {@link #maxFileSizeProperty()}.
- * </p>
  * <p>Then the file will be saved as byte array, along with its
  * name and size in a {@link FileData} record, and available via {@link #fileDataProperty()}.
- * </p>
  * <p>The progress of the file upload can be monitored enabling {@link #showUploadProgressProperty()},
  * and the upload can be cancelled at any moment, or when it ends, removing the file and its data.</p>
  *

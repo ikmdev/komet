@@ -84,15 +84,13 @@ import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 
 /**
  * A unified task for Git operations involving medical terminology data.
- * <p>
- * This class handles three main operations:
+ * <p>This class handles three main operations:
  * <ul>
  *   <li>CONNECT: Initialize a Git repository and connect to a remote repository</li>
  *   <li>PULL: Pull changes from remote repository and load them into the system</li>
  *   <li>SYNC: Pull changes and then push local changes back to the remote repository</li>
  * </ul>
- * <p>
- * Each operation follows a series of phases, with detailed progress tracking throughout.
+ * <p>Each operation follows a series of phases, with detailed progress tracking throughout.
  */
 public class GitTask extends TrackingCallable<Boolean> {
 
@@ -148,8 +146,7 @@ public class GitTask extends TrackingCallable<Boolean> {
 
     /**
      * Defines the progress phases for each operation mode with their progress boundaries.
-     * <p>
-     * Each phase has a start and end percentage that defines its portion of the total
+     * <p>     * Each phase has a start and end percentage that defines its portion of the total
      * work. These percentages are used for progress tracking and reporting.
      */
     private enum TaskPhase {

@@ -47,13 +47,11 @@ import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.PATTERN;
 
 /**
  * Factory interface for creating entity chapter windows within the Journal workspace.
- * <p>
- * Implementations of this interface produce specialized window instances
+ * <p>Implementations of this interface produce specialized window instances
  * (e.g., concept, pattern, semantic windows) that display details for particular entity types
  * within the workspace. Each factory is associated with a specific {@link EntityKlWindowType}
  * and creates windows specialized for displaying and editing entities of that type.
- * <p>
- * Example usage:
+ * <p>Example usage:
  * <pre>{@code
  * // Get a factory for concept windows
  * EntityKlWindowFactory factory = Registry.getFactory(EntityKlWindowTypes.CONCEPT);
@@ -75,12 +73,10 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
     /**
      * Creates a new chapter window for the specified entity under the given journal topic.
-     * <p>
-     * This method constructs a specialized window that displays and allows editing
+     * <p>     * This method constructs a specialized window that displays and allows editing
      * of the provided entity. The window is associated with a journal topic for
      * communication with other components in the workspace.
-     * <p>
-     * The returned window is initialized with the entity data but may load additional
+     * <p>     * The returned window is initialized with the entity data but may load additional
      * information asynchronously. If the entity facade is null, an empty or default
      * view should be created.
      *
@@ -99,8 +95,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
     /**
      * Returns the unique type identifier for windows created by this factory.
-     * <p>
-     * This type is used for registry lookup, window identification, and persistence
+     * <p>     * This type is used for registry lookup, window identification, and persistence
      * of window state. Each factory implementation must return a unique window type.
      *
      * @return the {@link EntityKlWindowType} associated with this factory
@@ -116,11 +111,9 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
     AbstractEntityChapterKlWindow restore(WindowSettings windowSettings, KometPreferences preferences);
     /**
      * Registry for locating and retrieving {@link EntityKlWindowFactory} implementations.
-     * <p>
-     * This class provides a central registry for window factories, allowing the application
+     * <p>     * This class provides a central registry for window factories, allowing the application
      * to locate and create windows of various types by their {@link EntityKlWindowType}.
-     * <p>
-     * The registry is automatically populated with factories discovered via Java's
+     * <p>     * The registry is automatically populated with factories discovered via Java's
      * {@link ServiceLoader} mechanism at class initialization time. Additional factories
      * can be manually registered using the {@link #registerFactory} method.
      */
@@ -138,8 +131,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
         /**
          * Creates a chapter window from a UUID array representing an entity.
-         * <p>
-         * This method resolves the entity from the UUID array, determines the appropriate
+         * <p>         * This method resolves the entity from the UUID array, determines the appropriate
          * window type, and creates the corresponding window.
          *
          * @param uuids          the UUID array identifying the entity
@@ -176,8 +168,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
         /**
          * Creates a chapter window from an EntityFacade with automatic type detection.
-         * <p>
-         * This method determines the appropriate window type based on the facade type
+         * <p>         * This method determines the appropriate window type based on the facade type
          * and creates the corresponding specialized window.
          *
          * @param entityFacade   the entity facade to display
@@ -203,8 +194,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
         /**
          * Determines the appropriate window type based on the EntityFacade type.
-         * <p>
-         * This method provides a centralized mapping from entity facade types to
+         * <p>         * This method provides a centralized mapping from entity facade types to
          * their corresponding window types.
          *
          * @param facade the entity facade to analyze
@@ -225,8 +215,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
         /**
          * Creates the appropriate EntityFacade for any Entity type.
-         * <p>
-         * This method handles all known entity types and creates the corresponding
+         * <p>         * This method handles all known entity types and creates the corresponding
          * facade.
          *
          * @param entity the raw entity to create a facade for
@@ -247,8 +236,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
         /**
          * Extracts an EntityFacade from drag and drop information.
-         * <p>
-         * This method creates the appropriate facade based on the drag and drop
+         * <p>         * This method creates the appropriate facade based on the drag and drop
          * type and entity identifier.
          *
          * @param dragInfo the drag and drop information
@@ -300,13 +288,11 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
         /**
          * Restores a previously saved entity chapter window using stored preferences.
-         * <p>
-         * This method reconstructs a window instance from serialized state information
+         * <p>         * This method reconstructs a window instance from serialized state information
          * stored in the provided preferences. It first extracts the window type from
          * the preferences, locates the appropriate factory for that type, and then
          * delegates the actual restoration to the factory's restore method.
-         * <p>
-         * The window is fully initialized with its previous state when this method returns.
+         * <p>         * The window is fully initialized with its previous state when this method returns.
          *
          * @param windowSettings the parent's window settings
          * @param preferences preferences containing the serialized window state
@@ -328,8 +314,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
         /**
          * Registers a new {@link EntityKlWindowFactory} with the registry.
-         * <p>
-         * This method adds a factory to the registry, allowing its window type
+         * <p>         * This method adds a factory to the registry, allowing its window type
          * to be created through the registry's creation methods. If a factory
          * for the same window type already exists, it will be replaced.
          *
@@ -343,8 +328,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
         /**
          * Retrieves the factory registered for the specified window type.
-         * <p>
-         * This method looks up the factory associated with the given window type
+         * <p>         * This method looks up the factory associated with the given window type
          * in the registry. It returns null if no factory is registered for that type.
          *
          * @param windowType the window type to look up
@@ -356,8 +340,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
         /**
          * Checks whether a factory is registered for the given window type.
-         * <p>
-         * This is a convenience method for checking if a factory exists without
+         * <p>         * This is a convenience method for checking if a factory exists without
          * retrieving it. It's useful for validation before attempting to create
          * a window of a specific type.
          *
@@ -370,8 +353,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
         /**
          * Returns all window types for which factories have been registered.
-         * <p>
-         * This method provides a way to discover all available window types
+         * <p>         * This method provides a way to discover all available window types
          * in the current application context. It returns an array of all
          * window types that can be created through this registry.
          *

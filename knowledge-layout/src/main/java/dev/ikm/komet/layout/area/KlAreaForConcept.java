@@ -27,8 +27,7 @@ public non-sealed interface KlAreaForConcept<FX extends Region>
     /**
      * Represents a factory interface for creating and managing instances of {@code KlFieldAreaForConcept}
      * associated with the {@code ConceptFacade} data type and JavaFX {@code Region} components.
-     * <p>
-     * This interface extends the generic {@code KlFieldArea.Factory} to provide specialized contract definitions
+     * <p>     * This interface extends the generic {@code KlFieldArea.Factory} to provide specialized contract definitions
      * for constructing, configuring, and managing field areas tied specifically to the {@code ConceptFacade} domain.
      * It ensures the type-safe creation of field areas that bind observable fields of type {@code ConceptFacade}
      * with their respective JavaFX regions of type {@code FX}.

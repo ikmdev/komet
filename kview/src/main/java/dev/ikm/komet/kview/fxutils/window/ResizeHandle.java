@@ -19,13 +19,11 @@ import javafx.scene.Node;
 
 /**
  * Interface for resize handle components that encapsulates their visual appearance and behavior.
- * <p>
- * Resize handles provide the user interface elements that allow users to resize windows
+ * <p>Resize handles provide the user interface elements that allow users to resize windows
  * or panels by dragging from different positions (corners and edges). This interface
  * defines the contract that all resize handle implementations must fulfill, regardless
  * of their visual representation or specific behavior.
- * <p>
- * Typical implementations include:
+ * <p>Typical implementations include:
  * <ul>
  *   <li>{@code CornerResizeHandle} - For corners (NW, NE, SE, SW), usually represented as circles</li>
  *   <li>{@code EdgeResizeHandle} - For edges (N, E, S, W), usually represented as lines</li>
@@ -39,8 +37,7 @@ import javafx.scene.Node;
 public interface ResizeHandle {
     /**
      * Updates the position of this handle based on the current window dimensions.
-     * <p>
-     * This method should position the handle appropriately, according to its resize
+     * <p>     * This method should position the handle appropriately, according to its resize
      * direction and the window's current size.
      *
      * @param width The current width of the window or panel
@@ -50,8 +47,7 @@ public interface ResizeHandle {
 
     /**
      * Returns the underlying node that renders this resize handle.
-     * <p>
-     * This node is what gets added to the scene graph to represent the handle visually.
+     * <p>     * This node is what gets added to the scene graph to represent the handle visually.
      * The node should have appropriate event handlers attached to it (typically in the
      * implementing class) to handle mouse interactions for resizing.
      *
@@ -61,8 +57,7 @@ public interface ResizeHandle {
 
     /**
      * Returns the resize direction this handle represents.
-     * <p>
-     * Each handle controls resizing in a specific direction.
+     * <p>     * Each handle controls resizing in a specific direction.
      * This direction determines both the handle's positioning and the
      * type of resize operation that occurs when the user interacts with it.
      *
@@ -73,8 +68,7 @@ public interface ResizeHandle {
 
     /**
      * Returns the z-order priority of this handle for proper layering in the scene graph.
-     * <p>
-     * Corner handles (NW, NE, SE, SW) are assigned a higher priority (1) to be drawn on top
+     * <p>     * Corner handles (NW, NE, SE, SW) are assigned a higher priority (1) to be drawn on top
      * of edge handles (N, E, S, W), which have a lower priority (0). This ensures that when
      * a corner and edge handle might overlap visually, the corner handle remains accessible.
      *

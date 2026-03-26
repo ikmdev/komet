@@ -24,15 +24,12 @@ import java.util.Optional;
  * regions. This sealed interface defines the contract for various specialized
  * pane or area types, enabling structured, type-safe layouts and interactions
  * within the framework.
- * <p>
- * Implementations of this interface can serve distinct purposes, such as managing
+ * <p>Implementations of this interface can serve distinct purposes, such as managing
  * components, versions, fields, or supplemental layouts. By leveraging a type-safe
  * hierarchy, the {@code KlArea} interface ensures consistent and extensible design
  * across different areas of the framework.
- * <p>
- * <b>Design Rationale: Why {@code Region} instead of {@code Parent}?</b>
- * <p>
- * The type parameter {@code FX} is constrained to {@code Region} rather than {@code Parent} for several critical reasons:
+ * <p><b>Design Rationale: Why {@code Region} instead of {@code Parent}?</b>
+ * <p>The type parameter {@code FX} is constrained to {@code Region} rather than {@code Parent} for several critical reasons:
  * <ul>
  *   <li><b>CSS Styling Support:</b> {@code Region} provides full CSS styling capabilities (backgrounds, borders, padding),
  *       which {@code Parent} lacks. This enables consistent visual theming across the application.</li>
@@ -47,9 +44,7 @@ import java.util.Optional;
  * </ul>
  * The requirement for bindable properties was the primary driver—JavaFX's reactive programming model depends on
  * property binding, and {@code Parent}'s lack of property accessors makes it unsuitable for dynamic, data-driven layouts.
- * <p>
  * @param <FX> the type of JavaFX {@code Region} that serves as the base node for this area
- * <p>
  * @see KlChronologyArea
  * @see KlAreaForVersion
  * @see KlSupplementalArea
@@ -75,8 +70,7 @@ public sealed interface KlArea<FX extends Region>
          * or behavior, which could include layout configurations, preferences, or contextual information.
          * This key facilitates the management of layout-specific data and behaviors within the system,
          * supporting complex UI arrangements or hierarchical relationships between components.
-         * <p>
-         * A Master Layout contains the LayoutOverrides that is passed to all dependent {@code LayoutComputer} objects.
+         * <p>         * A Master Layout contains the LayoutOverrides that is passed to all dependent {@code LayoutComputer} objects.
          */
         MASTER_LAYOUT,
         LAYOUT_OVERRIDES_IN_MEMORY
@@ -170,16 +164,13 @@ public sealed interface KlArea<FX extends Region>
 
     /**
      * Unbinds the current KlArea and all its descendants in the knowledge layout hierarchy.
-     * <p>
-     * This method ensures that the knowledge layout bindings are removed from the current KlArea
+     * <p>     * This method ensures that the knowledge layout bindings are removed from the current KlArea
      * by invoking {@code knowledgeLayoutUnbind()} on itself. It then performs a depth-first traversal
      * of all descendant elements, applying the {@code knowledgeLayoutUnbind()} method to each.
-     * <p>
-     * The traversal is carried out using {@code dfsProcessKlAreaDescendents}, a utility method that
+     * <p>     * The traversal is carried out using {@code dfsProcessKlAreaDescendents}, a utility method that
      * processes each descendant node and executes the specified action—in this case, unbinding its
      * knowledge layout.
-     * <p>
-     * This method is useful for cleaning up resources and removing bindings when the KlArea
+     * <p>     * This method is useful for cleaning up resources and removing bindings when the KlArea
      * and its descendants are no longer needed or are being replaced in the context of the knowledge
      * layout. It helps prevent resource leaks and ensures proper disconnection from event sources.
      */
@@ -191,16 +182,13 @@ public sealed interface KlArea<FX extends Region>
     /**
      * Binds the knowledge layout to the current KlArea and all its descendant elements in the
      * knowledge layout hierarchy.
-     * <p>
-     * This method first invokes {@code knowledgeLayoutBind()} on the current KlArea,
+     * <p>     * This method first invokes {@code knowledgeLayoutBind()} on the current KlArea,
      * ensuring its layout is properly bound. It then performs a depth-first traversal
      * of all descendant KlArea elements, applying the {@code knowledgeLayoutBind()} method
      * to each descendant.
-     * <p>
-     * During the traversal, the method utilizes {@code dfsProcessKlAreaDescendents},
+     * <p>     * During the traversal, the method utilizes {@code dfsProcessKlAreaDescendents},
      * which systematically processes each descendant node and applies the provided action.
-     * <p>
-     * The purpose of this method is to establish bindings across the entire structure
+     * <p>     * The purpose of this method is to establish bindings across the entire structure
      * of the knowledge layout, ensuring that all elements are correctly bound to their
      * respective layout configurations.
      */
@@ -214,11 +202,9 @@ public sealed interface KlArea<FX extends Region>
      * the knowledge layout hierarchy. It performs a depth-first traversal of
      * knowledge layout descendants and calls {@code knowledgeLayoutUnbind()}
      * on each encountered descendant.
-     * <p>
-     * The method is defined as a default method, allowing implementing classes
+     * <p>     * The method is defined as a default method, allowing implementing classes
      * to inherit the behavior without requiring an explicit implementation.
-     * <p>
-     * It makes use of {@code dfsProcessKlAreaDescendents}, which is responsible
+     * <p>     * It makes use of {@code dfsProcessKlAreaDescendents}, which is responsible
      * for depth-first traversal and processing of descendant components.
      */
     default void unbindKnowledgeLayoutDescendents() {
@@ -227,12 +213,10 @@ public sealed interface KlArea<FX extends Region>
 
     /**
      * Binds the knowledge layout to all descendant elements of the knowledge layout structure.
-     * <p>
-     * This method iterates recursively over all descendants in the knowledge layout structure
+     * <p>     * This method iterates recursively over all descendants in the knowledge layout structure
      * using a depth-first search approach. Each descendant element is processed to bind its
      * respective knowledge layout by invoking the `knowledgeLayoutBind` method.
-     * <p>
-     * The method achieves this by calling the `dfsProcessKlAreaDescendents` with a lambda
+     * <p>     * The method achieves this by calling the `dfsProcessKlAreaDescendents` with a lambda
      * function as an argument. The lambda function specifies the operation to perform on each
      * descendant, which in this case is invoking `knowledgeLayoutBind` on the provided
      * knowledge layout view.

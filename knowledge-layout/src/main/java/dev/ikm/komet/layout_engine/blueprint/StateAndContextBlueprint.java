@@ -26,8 +26,7 @@ import static dev.ikm.komet.layout.KlRestorable.camelCaseToWords;
 
 /**
  * Abstract base class representing a gadget blueprint.
- * <p>
- * This class defines the foundational behavior and state for gadgets, including
+ * <p>This class defines the foundational behavior and state for gadgets, including
  * preference management, initialization, and subscription handling. It is designed
  * to enable both the restoration of gadgets from previously stored preferences and
  * the creation of new gadgets from a factory.
@@ -69,13 +68,11 @@ public sealed abstract class StateAndContextBlueprint<FX>
 
     /**
      * The preferences associated with this {@code GadgetBlueprint} instance.
-     * <p>
-     * This field is used to store and manage configuration data required
+     * <p>     * This field is used to store and manage configuration data required
      * by the {@code GadgetBlueprint}. The preferences enable synchronization
      * of state and behavior, and they are utilized for state restoration,
      * initialization, and handling preference changes.
-     * <p>
-     * {@code preferences} is immutable and is typically provided during object
+     * <p>     * {@code preferences} is immutable and is typically provided during object
      * construction. It forms the backbone for both state restoration and updates
      * triggered by preference changes.
      */
@@ -83,8 +80,7 @@ public sealed abstract class StateAndContextBlueprint<FX>
     /**
      * Holds an atomic reference to the current subscription for managing
      * changes or updates related to preferences associated with this gadget blueprint.
-     * <p>
-     * The `preferenceSubscriptionReference` is initialized with an empty subscription and can be
+     * <p>     * The `preferenceSubscriptionReference` is initialized with an empty subscription and can be
      * updated as new subscriptions are added. This ensures thread-safe handling of
      * preference-related notifications and updates. Subscriptions are automatically canceled when the
      * fxGadget is unassigned from a parent.
@@ -101,8 +97,7 @@ public sealed abstract class StateAndContextBlueprint<FX>
 
     /**
      * Indicates whether the gadget blueprint has been modified.
-     * <p>
-     * This property is primarily used to track the state of the blueprint
+     * <p>     * This property is primarily used to track the state of the blueprint
      * in terms of changes. It is set to {@code true} when modifications
      * to preferences or internal state occur. This allows for monitoring
      * and handling updates related to the blueprint's configuration or behavior.
@@ -242,8 +237,7 @@ public sealed abstract class StateAndContextBlueprint<FX>
      * or events. This method ensures the gadget is actively synchronized with any relevant contextual
      * updates within the knowledge layout system. The specific subscription logic and its scope
      * are left to the implementing class.
-     * <p>
-     * It is the responsibility of the implementing class to define how and which properties or
+     * <p>     * It is the responsibility of the implementing class to define how and which properties or
      * events of the {@code KlContext} are subscribed to. This provides flexibility for the gadget
      * to interact with its contextual environment according to its requirements.
      */
@@ -258,8 +252,7 @@ public sealed abstract class StateAndContextBlueprint<FX>
      * This method is typically invoked to perform the necessary updates or actions
      * in response to a change in the application's execution environment, user interface,
      * or other relevant context.
-     *<p>
-     * This implementation does not take any parameters or return a value. It
+     *<p>     * This implementation does not take any parameters or return a value. It
      * serves as a simple method that developers can override to take action when the context changes.
      */
     public void contextChanged() {
@@ -295,11 +288,6 @@ public sealed abstract class StateAndContextBlueprint<FX>
         changed.set(true);
     }
 
-    /**
-     * Retrieves the property indicating whether the gadget blueprint has undergone changes.
-     *
-     * @return the {@code BooleanProperty} representing the change state of the gadget blueprint.
-     */
     protected BooleanProperty changedProperty() {
         return changed;
     }

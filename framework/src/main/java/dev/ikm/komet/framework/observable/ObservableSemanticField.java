@@ -166,22 +166,18 @@ public sealed class ObservableSemanticField<DT> implements Feature<DT>, Field<DT
 
     /**
      * Base class for editable features that cache field changes for GUI editing.
-     * <p>
-     * Provides the same symmetric API as {@link ObservableSemanticField}, but for editable scenarios
+     * <p>     * Provides the same symmetric API as {@link ObservableSemanticField}, but for editable scenarios
      * where changes are cached in an {@link EditableVersion} until save() or commit().
-     * <p>
-     * <b>Symmetry with ObservableFeature:</b>
+     * <p>     * <b>Symmetry with ObservableFeature:</b>
      * <ul>
      *   <li>ObservableFeature → read-only, immediate DB writes</li>
      *   <li>ObservableFeature.Editable → editable, cached changes</li>
      * </ul>
-     * <p>
-     * Subclasses:
+     * <p>     * Subclasses:
      * <ul>
      *   <li>{@link ObservableField.Editable} - for semantic version fields</li>
      * </ul>
-     * <p>
-     * Note: {@link ObservableFeatureDefinition.Editable} is NOT a subclass of ObservableFeature.Editable
+     * <p>     * Note: {@link ObservableFeatureDefinition.Editable} is NOT a subclass of ObservableFeature.Editable
      * because {@link ObservableFeatureDefinition} does not extend {@link ObservableSemanticField} - it directly
      * implements the Feature interface. However, ObservableFeatureDefinition.Editable provides the same
      * API surface for consistency.

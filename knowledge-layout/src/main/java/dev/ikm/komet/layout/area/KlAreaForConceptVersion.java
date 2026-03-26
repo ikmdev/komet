@@ -8,10 +8,8 @@ import javafx.scene.layout.Pane;
  * The {@code KlConceptVersionPane} interface represents a pane that displays a single version
  * of a concept.
  *
- * <p>
- * This interface is a specialization of {@link KlAreaForVersion} for handling
+ * <p>This interface is a specialization of {@link KlAreaForVersion} for handling
  * {@link ObservableConceptVersion} types.
- * </p>
  *
  *
  * @see KlAreaForVersion

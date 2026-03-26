@@ -53,8 +53,7 @@ import static javafx.scene.paint.Color.TRANSPARENT;
 
 /**
  * Provides window-like behaviors for JavaFX Panes, including resizing, dragging, and visual feedback.
- * <p>
- * This class transforms a regular JavaFX {@link Pane} into a window-like component with the
+ * <p>This class transforms a regular JavaFX {@link Pane} into a window-like component with the
  * following capabilities:
  * <ul>
  *   <li><b>Resizing</b>: Allows resizing from any edge or corner with appropriate cursor feedback</li>
@@ -63,8 +62,7 @@ import static javafx.scene.paint.Color.TRANSPARENT;
  *   <li><b>Parent Bounds Constraints</b>: Optionally constrains the window within its parent bounds</li>
  *   <li><b>Auto-height</b>: Optional configuration for automatic height adjustment based on content</li>
  * </ul>
- * <p>
- * The implementation follows modern JavaFX patterns for resource management:
+ * <p>The implementation follows modern JavaFX patterns for resource management:
  * <ul>
  *   <li>Uses the {@link Subscription} pattern for clean, deterministic cleanup of resources</li>
  *   <li>Categorizes subscriptions for better organization and lifecycle management</li>
@@ -100,8 +98,7 @@ public class WindowSupport {
 
     /**
      * Represents the current interaction state of the window.
-     * <p>
-     * The window can be in one of three states:
+     * <p>     * The window can be in one of three states:
      * <ul>
      *   <li>{@code IDLE}: No active interaction, the window is at rest</li>
      *   <li>{@code DRAGGING}: The window is being moved via a drag operation</li>
@@ -159,15 +156,12 @@ public class WindowSupport {
 
     /**
      * Creates a new WindowSupport instance that transforms the specified pane into a window-like component.
-     * <p>
-     * This constructor initializes all necessary parts for window functionality, including
+     * <p>     * This constructor initializes all necessary parts for window functionality, including
      * resize handles for all edges and corners, visual feedback elements, event handlers for
      * resize operations, and property bindings for synchronized layout updates.
-     * <p>
-     * After construction, the pane will support resizing with visual feedback and be ready for
+     * <p>     * After construction, the pane will support resizing with visual feedback and be ready for
      * dragging behavior addition via {@link DraggableSupport}.
-     * <p>
-     * Note: This constructor is private. Use {@link #setupWindowSupport(Pane)} to get WindowSupport instances.
+     * <p>     * Note: This constructor is private. Use {@link #setupWindowSupport(Pane)} to get WindowSupport instances.
      *
      * @param container The pane to transform into a window-like component; must not be null
      * @throws IllegalArgumentException if the container is null
@@ -228,12 +222,10 @@ public class WindowSupport {
 
     /**
      * Sets up position constraints that keep the window within its parent's bounds.
-     * <p>
-     * When position constraints are active, the window will automatically adjust its position
+     * <p>     * When position constraints are active, the window will automatically adjust its position
      * to stay completely visible within its parent container, even after resize operations
      * or when the parent container changes size.
-     * <p>
-     * An optional callback can be provided to perform additional actions after constraints
+     * <p>     * An optional callback can be provided to perform additional actions after constraints
      * are applied, such as saving the window state.
      *
      * @param afterConstraintCallback Optional callback to execute after constraints are applied,
@@ -341,8 +333,7 @@ public class WindowSupport {
 
     /**
      * Adds a node as a draggable region for the window.
-     * <p>
-     * This method registers mouse event handlers for the specified node to allow
+     * <p>     * This method registers mouse event handlers for the specified node to allow
      * dragging the window by clicking and dragging that specific element. If a node
      * is already draggable, its existing handlers will be replaced with new ones.
      *
@@ -388,8 +379,7 @@ public class WindowSupport {
 
     /**
      * Removes a draggable node from the window.
-     * <p>
-     * This method unregisters the mouse event handlers for the specified node and
+     * <p>     * This method unregisters the mouse event handlers for the specified node and
      * removes it from the list of draggable nodes. If the node was not previously
      * registered, no action is taken.
      *
@@ -771,8 +761,7 @@ public class WindowSupport {
 
     /**
      * Handle for resizing from the north (top) edge.
-     * <p>
-     * This method implements the resize logic for the north edge or north corners,
+     * <p>     * This method implements the resize logic for the north edge or north corners,
      * adjusting both the window's Y position and height while respecting parent bounds
      * and minimum/maximum size constraints.
      *
@@ -819,8 +808,7 @@ public class WindowSupport {
 
     /**
      * Handle for resizing from the south (bottom) edge.
-     * <p>
-     * This method implements the resize logic for the south edge or south corners,
+     * <p>     * This method implements the resize logic for the south edge or south corners,
      * adjusting the window's height while respecting parent bounds and
      * minimum/maximum size constraints.
      *
@@ -863,8 +851,7 @@ public class WindowSupport {
 
     /**
      * Handle for resizing from the east (right) edge.
-     * <p>
-     * This method implements the resize logic for the east edge or east corners,
+     * <p>     * This method implements the resize logic for the east edge or east corners,
      * adjusting the window's width while respecting parent bounds and
      * minimum/maximum size constraints.
      *
@@ -907,8 +894,7 @@ public class WindowSupport {
 
     /**
      * Handle for resizing from the west (left) edge.
-     * <p>
-     * This method implements the resize logic for the west edge or west corners,
+     * <p>     * This method implements the resize logic for the west edge or west corners,
      * adjusting both the window's X position and width while respecting parent bounds
      * and minimum/maximum size constraints.
      *
@@ -955,8 +941,7 @@ public class WindowSupport {
 
     /**
      * Ensures that the window stays within the bounds of its container.
-     * <p>
-     * This method adjusts the window's position to keep it fully visible within
+     * <p>     * This method adjusts the window's position to keep it fully visible within
      * the specified container dimensions. It only adjusts position, not size,
      * and handles cases where the window is larger than the container by
      * aligning with the top-left.
@@ -992,8 +977,7 @@ public class WindowSupport {
 
     /**
      * Configures the window pane to automatically adjust its height based on content.
-     * <p>
-     * When enabled, the window will dynamically resize its height to fit its content
+     * <p>     * When enabled, the window will dynamically resize its height to fit its content
      * up to the specified maximum height.
      *
      * @param useComputedHeight When true, the window's minimum height will be set to
@@ -1051,8 +1035,7 @@ public class WindowSupport {
 
     /**
      * Removes all window support functionality and cleans up resources.
-     * <p>
-     * This method:
+     * <p>     * This method:
      * <ul>
      *   <li>Unregisters all event handlers and listeners</li>
      *   <li>Removes visual elements (resize handles, highlight outline)</li>
@@ -1142,8 +1125,7 @@ public class WindowSupport {
 
     /**
      * Clean up the WindowSupport from a container.
-     * <p>
-     * This method will remove the WindowSupport instance from the container's properties
+     * <p>     * This method will remove the WindowSupport instance from the container's properties
      * and clean up any resources associated with it. If no support exists, no action is taken.
      *
      * @param container The container to remove support from; must not be null

@@ -17,13 +17,11 @@ package dev.ikm.komet.kview.klwindows;
 
 /**
  * Standard enumeration of window types available in the Komet workspace.
- * <p>
- * This enum implements the {@link EntityKlWindowType} interface, providing
+ * <p>This enum implements the {@link EntityKlWindowType} interface, providing
  * built-in window categories with predefined identifier prefixes. Each window type
  * represents a distinct functional category of window used for specific
  * tasks within the application.
- * <p>
- * These window types are automatically registered with the {@link EntityKlWindowType.Registry}
+ * <p>These window types are automatically registered with the {@link EntityKlWindowType.Registry}
  * during initialization and can be looked up using their enum name, prefix, or
  * string representation.
  *
@@ -59,8 +57,7 @@ public enum EntityKlWindowTypes implements EntityKlWindowType {
 
     /**
      * The unique identifier prefix for this window type.
-     * <p>
-     * This prefix is used to generate unique identifiers for windows of this type
+     * <p>     * This prefix is used to generate unique identifiers for windows of this type
      * and to associate persisted window configurations with their appropriate type
      * during workspace restoration.
      */

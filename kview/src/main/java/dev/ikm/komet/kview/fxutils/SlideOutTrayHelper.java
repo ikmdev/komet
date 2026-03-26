@@ -30,8 +30,7 @@ import static javafx.animation.Interpolator.EASE_IN;
 /**
  * Slide out tray helper is a utility class to create JavaFX slide out tray capability.
  * Pressing the search button on a sidebar control will slide out a tray panel allowing the user to search.
- * <p>
- * Example usage:
+ * <p>Example usage:
  * <pre>{@code
  * // Create tray and panel
  * Pane trayPane = new Pane();
@@ -70,8 +69,7 @@ public interface SlideOutTrayHelper {
 
     /**
      * Performs an animated slide out effect with the tray pane using default animation settings.
-     * <p>
-     * This is a convenience method that calls {@link #slideOut(Pane, boolean)} with
+     * <p>     * This is a convenience method that calls {@link #slideOut(Pane, boolean)} with
      * animation enabled.
      *
      * @param trayPane A tray pane consisting of one child (the panel to display).
@@ -83,8 +81,7 @@ public interface SlideOutTrayHelper {
 
     /**
      * Performs a slide out effect with the tray pane, optionally animated.
-     * <p>
-     * When sliding out:
+     * <p>     * When sliding out:
      * <ul>
      *   <li>The panel moves from left (hidden) to its normal position</li>
      *   <li>The tray pane expands from 0 width to the panel's width</li>
@@ -125,8 +122,7 @@ public interface SlideOutTrayHelper {
 
     /**
      * Performs an animated slide in effect with the tray pane using default animation settings.
-     * <p>
-     * This is a convenience method that calls {@link #slideIn(Pane, boolean)} with
+     * <p>     * This is a convenience method that calls {@link #slideIn(Pane, boolean)} with
      * animation enabled.
      *
      * @param trayPane A tray pane consisting of one child (the panel to hide).
@@ -138,8 +134,7 @@ public interface SlideOutTrayHelper {
 
     /**
      * Performs a slide in effect with the tray pane, optionally animated.
-     * <p>
-     * When sliding in:
+     * <p>     * When sliding in:
      * <ul>
      *   <li>The panel moves from its normal position to the left (hidden)</li>
      *   <li>The tray pane shrinks from the panel's width to 0</li>
@@ -178,8 +173,7 @@ public interface SlideOutTrayHelper {
 
     /**
      * Performs an animated slide out effect with the tray pane beside the owning panel.
-     * <p>
-     * This is a convenience method that calls {@link #slideOut(Pane, Pane, boolean)} with
+     * <p>     * This is a convenience method that calls {@link #slideOut(Pane, Pane, boolean)} with
      * animation enabled.
      *
      * @param trayPane    A tray pane consisting of one child (the panel to display).
@@ -192,8 +186,7 @@ public interface SlideOutTrayHelper {
 
     /**
      * Performs a slide out effect with the tray pane beside (right side) the owning pane.
-     * <p>
-     * When sliding out:
+     * <p>     * When sliding out:
      * <ul>
      *   <li>The tray panel slides from left (hidden) to its normal position</li>
      *   <li>The owning panel's width increases by the tray panel's width</li>
@@ -235,8 +228,7 @@ public interface SlideOutTrayHelper {
 
     /**
      * Performs an animated slide in effect with the tray pane beside the owning panel.
-     * <p>
-     * This is a convenience method that calls {@link #slideIn(Pane, Pane, boolean)} with
+     * <p>     * This is a convenience method that calls {@link #slideIn(Pane, Pane, boolean)} with
      * animation enabled.
      *
      * @param trayPane    A tray pane consisting of one child (the panel to hide).
@@ -249,8 +241,7 @@ public interface SlideOutTrayHelper {
 
     /**
      * Performs a slide in effect with the tray pane beside (right side) the owning pane.
-     * <p>
-     * When sliding in:
+     * <p>     * When sliding in:
      * <ul>
      *   <li>The tray panel slides from its normal position to the left (hidden)</li>
      *   <li>The owning panel's width decreases by the tray panel's width</li>

@@ -23,7 +23,7 @@
  *
  * <h2>Creating a New Control</h2>
  *
- * <h3>Step 1: Define the Control Class</h3>
+ * <p><b>Step 1: Define the Control Class</b></p>
  * <pre>{@code
  * public class KlIntegerControl extends Control {
  *
@@ -56,7 +56,7 @@
  * }
  * }</pre>
  *
- * <h3>Step 2: Define the Skin</h3>
+ * <p><b>Step 2: Define the Skin</b></p>
  * <pre>{@code
  * public class KlIntegerControlSkin extends SkinBase<KlIntegerControl> {
  *
@@ -93,7 +93,7 @@
  * }
  * }</pre>
  *
- * <h3>Step 3: Create CSS (Optional)</h3>
+ * <p><b>Step 3: Create CSS (Optional)</b></p>
  * Place in {@code resources/dev/ikm/komet/layout_engine/controls/integer-control.css}:
  * <pre>{@code
  * .kl-integer-control {
@@ -109,14 +109,14 @@
  *
  * <h2>Control Design Patterns</h2>
  *
- * <h3>Property Pattern</h3>
+ * <p><b>Property Pattern</b></p>
  * All controls use JavaFX properties for clean binding:
  * <pre>{@code
  * // In your field area:
  * myControl.valueProperty().bindBidirectional(editable.editableValueProperty());
  * }</pre>
  *
- * <h3>Null Handling</h3>
+ * <p><b>Null Handling</b></p>
  * Use {@code ObjectProperty<T>} instead of primitive properties to support null values:
  * <pre>{@code
  * // Good - supports null
@@ -126,7 +126,7 @@
  * private final BooleanProperty value = new SimpleBooleanProperty(false);
  * }</pre>
  *
- * <h3>Skin Separation</h3>
+ * <p><b>Skin Separation</b></p>
  * Keep visual logic in the Skin, not the Control:
  * <ul>
  *   <li><b>Control:</b> Properties, behavior, CSS loading</li>

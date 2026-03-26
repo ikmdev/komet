@@ -17,9 +17,7 @@ import java.time.ZoneOffset;
  * <p>A popup control implementation that shows a date picker and a
  * time picker to the user, in order to define a {@link #localDateProperty() date},
  * a {@link #localTimeProperty() time} and a {@link #zoneOffsetProperty() zone-offset}.
- * </p>
  * <p>This popup is meant to be launched from a {@link KLInstantControl}.
- * </p>
  *
  * @see KLInstantControl
  */

@@ -15,14 +15,11 @@ import java.util.Optional;
 /**
  * The Feature class represents an attribute or characteristic within an {@code ObservableComponent}.
  * It serves as a data encapsulation for metadata and associated values of a field in the component.
- * <p>
- *  Features contain their field definition, and therefore require a {@code StampCalculator} to determine
+ * <p> Features contain their field definition, and therefore require a {@code StampCalculator} to determine
  *  the correct pattern version based on the {@code StampCalculator}, which is used to determine current meaning and purpose.
- *  <p>
- *  Because JavaFX writable properties (the {@code Property} interface) extend {@code ReadOnlyProperty}, feature may be
+ *  <p> Because JavaFX writable properties (the {@code Property} interface) extend {@code ReadOnlyProperty}, feature may be
  *  writable if the valueProperty is a type of {@code WritableProperty}.
- * <p>
- * Example usage:
+ * <p>Example usage:
  * <pre>
  * {@code
  * public void updateIfWritable(ReadOnlyProperty<?> property, Object value) {

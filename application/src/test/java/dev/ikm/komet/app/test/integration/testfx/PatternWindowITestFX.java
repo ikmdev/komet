@@ -47,11 +47,9 @@ import static org.testfx.util.WaitForAsyncUtils.waitForFxEvents;
 
 /**
  * Integration test class for testing the PatternWindow functionality using TestFX.
- * <p>
- * This class sets up a JavaFX application environment for testing the UI and interaction
+ * <p>This class sets up a JavaFX application environment for testing the UI and interaction
  * of the PatternWindow in the application. It uses JUnit 5 and TestFX to simulate user interactions
  * and verify UI behavior.
- * </p>
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(ApplicationExtension.class)

@@ -25,8 +25,7 @@ public interface KlContextSensitiveComponent {
      * or events. This method ensures the gadget is actively synchronized with any relevant contextual
      * updates within the knowledge layout system. The specific subscription logic and its scope
      * are left to the implementing class.
-     * <p>
-     * It is the responsibility of the implementing class to define how and which properties or
+     * <p>     * It is the responsibility of the implementing class to define how and which properties or
      * events of the {@code KlContext} are subscribed to. This provides flexibility for the gadget
      * to interact with its contextual environment according to its requirements.
      */

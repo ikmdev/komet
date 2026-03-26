@@ -21,8 +21,7 @@ import javafx.scene.paint.Color;
 
 /**
  * A record class representing a validation component.
- * <p>
- * This class encapsulates a label for displaying error messages and a VBox container
+ * <p>This class encapsulates a label for displaying error messages and a VBox container
  * for layout purposes. It provides methods to show and clear error messages.
  *
  * @param errorLabel    The label used to display error messages
@@ -32,8 +31,7 @@ public record ValidationComponent(Label errorLabel, VBox containerVBox) {
 
     /**
      * Creates a new validation component with the specified container.
-     * <p>
-     * This constructor initializes a validation component with a new error label
+     * <p>     * This constructor initializes a validation component with a new error label
      * and the provided container VBox.
      *
      * @param containerVBox The VBox container that will hold the error label
@@ -56,8 +54,7 @@ public record ValidationComponent(Label errorLabel, VBox containerVBox) {
 
     /**
      * Shows an error message in the validation component.
-     * <p>
-     * This method displays the specified error message in the error label and adds
+     * <p>     * This method displays the specified error message in the error label and adds
      * the label to the container VBox if it's not already present.
      *
      * @param errorMessage The error message to display
@@ -75,8 +72,7 @@ public record ValidationComponent(Label errorLabel, VBox containerVBox) {
 
     /**
      * Clears any displayed error message.
-     * <p>
-     * This method removes the error label from the container VBox,
+     * <p>     * This method removes the error label from the container VBox,
      * effectively hiding any previously displayed error message.
      */
     void clearError() {

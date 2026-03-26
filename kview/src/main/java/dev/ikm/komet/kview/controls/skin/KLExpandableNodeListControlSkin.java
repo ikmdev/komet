@@ -24,16 +24,14 @@ import java.util.ResourceBundle;
 /**
  * A skin implementation for the {@link KLExpandableNodeListControl} that provides
  * animated expansion and collapse functionality for a list of nodes.
- * <p>
- * This skin divides the control's items into two sections:
+ * <p>This skin divides the control's items into two sections:
  * <ul>
  *   <li>A "visible" section that always displays the first N items (where N is determined by
  *       {@link KLExpandableNodeListControl#getVisibleCount()})</li>
  *   <li>A "hidden" section that contains the remaining items and can be shown/hidden by toggling
  *       the control's {@link KLExpandableNodeListControl#expandedProperty()}</li>
  * </ul>
- * <p>
- * The skin provides a toggle button that allows users to expand or collapse the hidden content
+ * <p>The skin provides a toggle button that allows users to expand or collapse the hidden content
  * with a smooth animation. The button is only displayed when there are more items than the
  * visible count.
  *
@@ -93,8 +91,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * Constructs a new skin for the KLExpandableNodeListControl.
-     * <p>
-     * This initializes all UI components, sets up property bindings, and registers
+     * <p>     * This initializes all UI components, sets up property bindings, and registers
      * listeners for control property changes.
      *
      * @param control The control that this skin is attached to
@@ -181,8 +178,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * Updates the node containers based on the current control state.
-     * <p>
-     * This method distributes the control's items between the visible and hidden
+     * <p>     * This method distributes the control's items between the visible and hidden
      * containers based on the {@link KLExpandableNodeListControl#getVisibleCount()}.
      * It also manages the visibility of the toggle button based on whether there
      * are expandable items.
@@ -230,8 +226,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * Updates the expanded state of the control.
-     * <p>
-     * When the expanded state changes, this method initiates the appropriate
+     * <p>     * When the expanded state changes, this method initiates the appropriate
      * transition animation and updates the content containers accordingly.
      *
      * @param expanded The new expanded state
@@ -257,8 +252,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * Animates the transition between expanded and collapsed states.
-     * <p>
-     * This method creates and plays a timeline animation that smoothly transitions
+     * <p>     * This method creates and plays a timeline animation that smoothly transitions
      * between states. It ensures that any running animation is properly stopped
      * before starting a new one to prevent conflicts.
      *
@@ -298,8 +292,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * The property that tracks the current transition state.
-     * <p>
-     * This value ranges from 0.0 (fully collapsed) to 1.0 (fully expanded),
+     * <p>     * This value ranges from 0.0 (fully collapsed) to 1.0 (fully expanded),
      * with intermediate values representing transition states during animation.
      */
     private DoubleProperty transition;
@@ -324,8 +317,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * Gets the transition property.
-     * <p>
-     * This property is lazily initialized and triggers a layout request
+     * <p>     * This property is lazily initialized and triggers a layout request
      * whenever its value changes.
      *
      * @return The transition property
@@ -344,8 +336,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * Calculates the minimum width required to display the skin.
-     * <p>
-     * This considers both the content container and toggle button to determine
+     * <p>     * This considers both the content container and toggle button to determine
      * the minimum width required.
      *
      * @param height      The height constraint
@@ -367,8 +358,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * Calculates the minimum height required to display the skin.
-     * <p>
-     * This accounts for the visible content, the toggle button, and the
+     * <p>     * This accounts for the visible content, the toggle button, and the
      * expanded content based on the current transition value.
      *
      * @param width       The width constraint
@@ -412,8 +402,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * Calculates the preferred width for the skin.
-     * <p>
-     * This considers both the content container and toggle button to determine
+     * <p>     * This considers both the content container and toggle button to determine
      * the preferred width.
      *
      * @param height      The height constraint
@@ -435,8 +424,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * Calculates the preferred height for the skin.
-     * <p>
-     * This accounts for the visible content, the toggle button, and the
+     * <p>     * This accounts for the visible content, the toggle button, and the
      * expanded content based on the current transition value.
      *
      * @param width       The width constraint
@@ -480,8 +468,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * Positions and sizes all child nodes during layout.
-     * <p>
-     * This method handles the layout of the content container and toggle button,
+     * <p>     * This method handles the layout of the content container and toggle button,
      * ensuring proper positioning and sizing based on the current state.
      * It also updates the clip rectangle to match the content dimensions.
      *
@@ -545,8 +532,7 @@ public class KLExpandableNodeListControlSkin extends SkinBase<KLExpandableNodeLi
 
     /**
      * Cleans up resources when the skin is no longer needed.
-     * <p>
-     * This ensures that any running animations are properly stopped to
+     * <p>     * This ensures that any running animations are properly stopped to
      * prevent memory leaks.
      */
     @Override

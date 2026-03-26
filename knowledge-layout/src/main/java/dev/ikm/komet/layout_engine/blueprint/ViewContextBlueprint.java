@@ -59,13 +59,11 @@ public abstract class ViewContextBlueprint extends ParentAreaBlueprint
     /**
      * The `viewBorderPane` is a UI component of type `BorderPane` responsible for providing
      * a flexible layout for arranging its children in top, left, right, bottom, and center regions.
-     * <p>
-     * This variable is a key element of the `ViewBlueprint` class, used to manage and display
+     * <p>     * This variable is a key element of the `ViewBlueprint` class, used to manage and display
      * the visual structure of the view. It serves as a container for dynamic content,
      * which is updated based on the `viewCoordinate` property and other preference-driven
      * configurations.
-     * <p>
-     * The `viewBorderPane` is initialized as a final instance, ensuring it is immutable
+     * <p>     * The `viewBorderPane` is initialized as a final instance, ensuring it is immutable
      * and consistently structured throughout the lifecycle of the class. Updates to its properties
      * and content are typically handled through internal methods, such as
      * `updateViewCalculator`, which refreshes the view state when necessary.
@@ -78,13 +76,11 @@ public abstract class ViewContextBlueprint extends ParentAreaBlueprint
      * Configures the `ViewBlueprint` instance by restoring initial values
      * using stored preferences or default settings, and establishing necessary
      * subscriptions to monitor and react to changes in preferences.
-     * <p>
-     * This method initializes and binds internal properties to ensure that
+     * <p>     * This method initializes and binds internal properties to ensure that
      * the `ViewBlueprint` remains synchronized with both the user preferences
      * and the system defaults. It sets up event-driven behavior to handle updates
      * dynamically.
-     * <p>
-     * Internally, this method performs the following actions:
+     * <p>     * Internally, this method performs the following actions:
      * 1. Invokes `restoreFromPreferencesOrDefaults` to load initial property values from preferences.
      * 2. Calls `subscribeToChanges` to establish reactive behavior for any changes in configured preferences.
      */
@@ -101,19 +97,16 @@ public abstract class ViewContextBlueprint extends ParentAreaBlueprint
 
     /**
      * Establishes subscriptions to handle changes in preferences for the `ViewBlueprint` instance.
-     * <p>
-     * This method iterates through all keys defined in the `KlView.PreferenceKeys` enumeration,
+     * <p>     * This method iterates through all keys defined in the `KlView.PreferenceKeys` enumeration,
      * creating a subscription specific to each key and registering them using the
      * `addPreferenceSubscription` method.
-     * <p>
-     * The subscription logic includes the following:
+     * <p>     * The subscription logic includes the following:
      * - For the `VIEW_COORDINATE` key, it sets up two reactive behaviors:
      *   1. Invoking `updateViewCalculator` to refresh components dynamically based on
      *      changes to the `viewCoordinate` property.
      *   2. Triggering the `preferencesChanged` method to notify that modifications
      *      in preferences have occurred, setting the `changed` property to `true`.
-     * <p>
-     * By establishing these subscriptions, the method ensures that any updates to
+     * <p>     * By establishing these subscriptions, the method ensures that any updates to
      * application preferences are appropriately handled, keeping the `ViewBlueprint`
      * instance synchronized with user-defined or default values.
      */

@@ -39,8 +39,7 @@ public class AppGithub {
 
     /**
      * Prompts the user for GitHub preferences and repository information.
-     * <p>
-     * This method displays a dialog where the user can enter their GitHub credentials
+     * <p>     * This method displays a dialog where the user can enter their GitHub credentials
      * and repository URL. It creates a CompletableFuture that will be resolved with
      * {@code true} if the user successfully enters valid credentials and connects,
      * or {@code false} if they cancel the operation.
@@ -89,12 +88,10 @@ public class AppGithub {
 
     /**
      * Sets up the UI to reflect a disconnected GitHub state.
-     * <p>
-     * This method updates the GitHub status hyperlink in the landing page to show that
+     * <p>     * This method updates the GitHub status hyperlink in the landing page to show that
      * the application is disconnected from GitHub. When clicked, the hyperlink will
      * attempt to connect to GitHub by calling the {@link #connectToGithub()} method.
-     * <p>
-     * The method runs on the JavaFX application thread to ensure thread safety when
+     * <p>     * The method runs on the JavaFX application thread to ensure thread safety when
      * updating UI components.
      */
     private void gotoGitHubDisconnectedState() {
@@ -109,12 +106,10 @@ public class AppGithub {
 
     /**
      * Sets up the UI to reflect a connected GitHub state.
-     * <p>
-     * This method updates the GitHub status hyperlink in the landing page to show that
+     * <p>     * This method updates the GitHub status hyperlink in the landing page to show that
      * the application is successfully connected to GitHub. When clicked, the hyperlink
      * will disconnect from GitHub by calling the {@link #disconnectFromGithub()} method.
-     * <p>
-     * The method runs on the JavaFX application thread to ensure thread safety when
+     * <p>     * The method runs on the JavaFX application thread to ensure thread safety when
      * updating UI components.
      */
     private void gotoGitHubConnectedState() {
@@ -129,8 +124,7 @@ public class AppGithub {
 
     /**
      * Executes a Git task, ensuring preferences are valid first.
-     * <p>
-     * This method performs the following operations:
+     * <p>     * This method performs the following operations:
      * <ol>
      *   <li>Verifies that the data store root is available</li>
      *   <li>Creates a changeset folder if it doesn't exist</li>
@@ -179,8 +173,7 @@ public class AppGithub {
 
     /**
      * Creates and runs a GitTask with the specified operation mode.
-     * <p>
-     * This helper method is called after GitHub preferences have been validated. It:
+     * <p>     * This helper method is called after GitHub preferences have been validated. It:
      * <ol>
      *   <li>Creates a new GitTask with the specified operation mode</li>
      *   <li>Registers a success callback to update the UI state</li>
@@ -214,12 +207,10 @@ public class AppGithub {
 
     /**
      * Initiates a connection to GitHub.
-     * <p>
-     * This method establishes a connection to GitHub by executing a GitTask in CONNECT mode.
+     * <p>     * This method establishes a connection to GitHub by executing a GitTask in CONNECT mode.
      * If successful, the UI will be updated to reflect the connected state, and the local
      * Git repository will be initialized and configured with the remote origin.
-     * <p>
-     * If GitHub preferences are missing or invalid, the user will be prompted to
+     * <p>     * If GitHub preferences are missing or invalid, the user will be prompted to
      * enter them before the connection is established.
      */
     void connectToGithub() {
@@ -229,8 +220,7 @@ public class AppGithub {
 
     /**
      * Disconnects from GitHub and cleans up local resources.
-     * <p>
-     * This method performs the following cleanup operations:
+     * <p>     * This method performs the following cleanup operations:
      * <ol>
      *   <li>Logs the disconnection attempt</li>
      *   <li>Removes all GitHub-related preferences from user preferences</li>
@@ -293,13 +283,11 @@ public class AppGithub {
 
     /**
      * Displays information about the current Git repository.
-     * <p>
-     * This method checks if a Git repository exists and displays basic information about it.
+     * <p>     * This method checks if a Git repository exists and displays basic information about it.
      * If no repository exists or is not properly configured, the user will be prompted to
      * enter GitHub preferences before proceeding. Upon successful connection to GitHub,
      * repository information will be fetched and displayed in a dialog.
-     * <p>
-     * The method performs the following operations:
+     * <p>     * The method performs the following operations:
      * <ol>
      *   <li>Verifies that the data store root is available</li>
      *   <li>Checks if a Git repository exists in the changeset folder</li>
@@ -338,8 +326,7 @@ public class AppGithub {
 
     /**
      * Fetches repository information and displays it in a dialog.
-     * <p>
-     * This method asynchronously retrieves information about the Git repository
+     * <p>     * This method asynchronously retrieves information about the Git repository
      * located in the specified folder using an {@code InfoTask}, then displays
      * the results in a dialog. The operation is performed on a background thread
      * to avoid blocking the UI.
@@ -365,12 +352,10 @@ public class AppGithub {
 
     /**
      * Displays the repository information dialog.
-     * <p>
-     * This method creates and displays a dialog showing Git repository information
+     * <p>     * This method creates and displays a dialog showing Git repository information
      * including URL, username, email, and status. The dialog is displayed using a
      * glass pane overlay on top of the landing page.
-     * <p>
-     * The method returns a CompletableFuture that will be completed when the user
+     * <p>     * The method returns a CompletableFuture that will be completed when the user
      * closes the dialog.
      *
      * @param repoInfo Map containing repository information with keys defined in {@code GitPropertyName}

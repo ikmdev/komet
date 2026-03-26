@@ -23,8 +23,7 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.REMOTE_NA
  * The InfoTask class is a task that retrieves information about a Git repository.
  * It extends the {@code Task<Map<GitPropertyName, String>>} class, indicating that it returns a map of
  * Git properties upon completion.
- * <p>
- * This task fetches various repository details including the remote URL, user information,
+ * <p>This task fetches various repository details including the remote URL, user information,
  * and the current status of the repository.
  */
 public class InfoTask extends Task<Map<GitPropertyName, String>> {

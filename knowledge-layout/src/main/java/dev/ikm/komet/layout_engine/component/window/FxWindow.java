@@ -37,20 +37,18 @@ import java.util.prefs.BackingStoreException;
 import static dev.ikm.komet.layout.window.KlFxWindow.PreferenceKeys.*;
 
 /**
- * The StageBlueprint class is a concrete implementation derived from GadgetBlueprint<Stage>
+ * The StageBlueprint class is a concrete implementation derived from {@code GadgetBlueprint<Stage>}
  * and KlFxWindow. It serves as a blueprint for defining, configuring, and synchronizing
  * stage-specific properties such as location, size, visibility, opacity, and other
  * related settings with user preferences. This class ensures consistency between the
  * application's state and the user's configured preferences for the stage window.
- * <p>
- * Key functionalities of this class include:
+ * <p>Key functionalities of this class include:
  * - Initializing properties based on user preferences or default values.
  * - Restoring the state of the window from saved preferences.
  * - Subscribing to changes and establishing bidirectional synchronization
  * between preferences and window properties.
  * - Allowing further subclass-specific initialization with the classInitialize method.
- * <p>
- * Fields:
+ * <p>Fields:
  * - LOG: Logger instance for handling debugging, error reporting, or informational messages.
  * - locationX: The X-coordinate of the stage window's position on the screen.
  * - locationY: The Y-coordinate of the stage window's position on the screen.
@@ -59,14 +57,12 @@ import static dev.ikm.komet.layout.window.KlFxWindow.PreferenceKeys.*;
  * - opacity: The transparency level of the stage window.
  * - visible: A boolean indicating whether the stage window is visible or hidden.
  * - windowStage: The actual Stage object associated with this blueprint.
- * <p>
- * Interfaces/Inheritance:
- * - Extends GadgetBlueprint<Stage>: Provides fundamental blueprinting behavior
+ * <p>Interfaces/Inheritance:
+ * - Extends {@code GadgetBlueprint<Stage>}: Provides fundamental blueprinting behavior
  * and manages preference-related configurations.
  * - Extends KlFxWindow: Adds window-specific functionality to manage stage-related
  * properties such as location, size, and visibility.
- * <p>
- * This class forms the foundational implementation for creating and managing
+ * <p>This class forms the foundational implementation for creating and managing
  * customizable and synchronized stage layouts using user-defined settings.
  */
 public final class FxWindow
@@ -77,13 +73,11 @@ public final class FxWindow
      * Represents the X-coordinate of the stage window's location. This property is
      * synchronized with user preferences and maintains the horizontal position of
      * the window on the screen.
-     * <p>
-     * The `locationX` property retrieves its initial value from the user preferences
+     * <p>     * The `locationX` property retrieves its initial value from the user preferences
      * store during the setup process of the {@code StageBlueprint} class. If no
      * value is stored, a default value is applied. Any changes to this property
      * are automatically synchronized back to the preferences to maintain consistency.
-     * <p>
-     * This property is primarily used to ensure that the window reopens at the
+     * <p>     * This property is primarily used to ensure that the window reopens at the
      * same horizontal position it was at when last used.
      */
     private final PreferencePropertyDouble locationX = PreferencePropertyDouble.doubleProp(klView(), WINDOW_X_LOCATION);
@@ -91,44 +85,36 @@ public final class FxWindow
      * Represents the Y-coordinate of the window's position in the user interface.
      * This property is tied to user preferences, allowing for persistent storage
      * and retrieval of the window's vertical position.
-     * <p>
-     * The value is stored as a double and synchronized with the user's preferences
+     * <p>     * The value is stored as a double and synchronized with the user's preferences
      * through the {@link PreferencePropertyDouble} mechanism. This ensures that
      * changes to the Y-coordinate are reflected in both the application state and
      * the stored user preferences, providing consistency across application sessions.
-     * <p>
-     * The property is initialized with the preference key {@code WINDOW_Y_LOCATION},
+     * <p>     * The property is initialized with the preference key {@code WINDOW_Y_LOCATION},
      * which identifies the stored value in the preference infrastructure.
-     * <p>
-     * This field is immutable and is finalized to prevent reassignment.
+     * <p>     * This field is immutable and is finalized to prevent reassignment.
      */
     private final PreferencePropertyDouble locationY = PreferencePropertyDouble.doubleProp(klView(), WINDOW_Y_LOCATION);
     /**
      * Represents the width of the stage window, managed as a preference-backed property.
      * This property is synchronized with the user's stored preferences, allowing for
      * restoration of the stage's width when the application is initialized.
-     * <p>
-     * The value is stored as a double precision floating-point number and reflects the
+     * <p>     * The value is stored as a double precision floating-point number and reflects the
      * current width of the window in pixels. Changes to this property are automatically
      * persisted to the preferences system, ensuring that the preferred width is retained
      * across application sessions.
-     * <p>
-     * This property also allows bidirectional synchronization with the stage's actual width,
+     * <p>     * This property also allows bidirectional synchronization with the stage's actual width,
      * so updates to either the stage or the preferences will keep them in sync.
-     * <p>
-     * The field is declared as final to enforce immutability, ensuring the property itself
+     * <p>     * The field is declared as final to enforce immutability, ensuring the property itself
      * cannot be reassigned after initialization.
      */
     private final PreferencePropertyDouble width = PreferencePropertyDouble.doubleProp(klView(), WINDOW_WIDTH);
     /**
      * Represents the height property of the stage window in the `StageBlueprint` class.
      * This property is synchronized with the user preferences to persist the height value of the window.
-     * <p>
-     * The value is stored as a double-precision floating-point number through
+     * <p>     * The value is stored as a double-precision floating-point number through
      * the `PreferencePropertyDouble` abstraction, which provides functionality
      * for binding and bidirectional synchronization.
-     * <p>
-     * Key characteristics:
+     * <p>     * Key characteristics:
      * - The property's default or restored value is derived from the user preferences.
      * - Changes to this property are reflected in user preferences, and vice versa.
      * - This ensures that the height of the stage window respects user settings
@@ -139,14 +125,12 @@ public final class FxWindow
      * Represents the opacity level of the stage window as a user preference.
      * This property allows the storage, retrieval, and synchronization of the
      * stage's transparency setting with user preferences.
-     * <p>
-     * The opacity value is managed using the `PreferencePropertyDouble` class,
+     * <p>     * The opacity value is managed using the `PreferencePropertyDouble` class,
      * which provides mechanisms for interacting with the stored preference and
      * synchronizing changes between the application state and the preferences
      * system. The variable is initialized with the associated key `OPACITY`
      * to uniquely identify this property in the preferences store.
-     * <p>
-     * This property is used in the context of a StageBlueprint to restore,
+     * <p>     * This property is used in the context of a StageBlueprint to restore,
      * persist, and synchronize the opacity level of the stage window, ensuring
      * consistency between the user's preferences and the window's appearance.
      */
@@ -155,16 +139,13 @@ public final class FxWindow
      * Represents a boolean property for controlling the visibility state of the stage window.
      * This property is used to synchronize and store the visibility preference of the stage
      * between the application's runtime state and the user's preference storage.
-     * <p>
-     * The visibility state is managed as a preference property, ensuring bidirectional
+     * <p>     * The visibility state is managed as a preference property, ensuring bidirectional
      * synchronization such that changes in the application's window visibility setting are
      * reflected in stored preferences, and vice versa. This integration allows the application
      * to restore the user's preferred visibility state across sessions.
-     * <p>
-     * The property is declared as final, emphasizing that it is a constant member of the
+     * <p>     * The property is declared as final, emphasizing that it is a constant member of the
      * containing class and its reference cannot be reassigned.
-     * <p>
-     * Usage Context:
+     * <p>     * Usage Context:
      * - Automatically updated when the user toggles the visibility of the stage.
      * - Used during the initialization to restore the visibility state from user preferences
      * or to set its default value if no preference is available.
@@ -215,15 +196,13 @@ public final class FxWindow
      * such as its size, location, visibility, transparency, and behavior,
      * which are synchronized with user preferences for consistency and state
      * restoration.
-     * <p>
-     * The {@code windowStage} is initialized upon {@code StageBlueprint}
+     * <p>     * The {@code windowStage} is initialized upon {@code StageBlueprint}
      * instantiation and serves as the core UI window that reflects changes
      * made to its properties from user interactions or preference updates.
      * Modifications to the properties of this stage, such as position or
      * visibility, are persisted and restored across sessions based on the
      * synchronized user preferences.
-     * <p>
-     * Responsibilities and interactions:
+     * <p>     * Responsibilities and interactions:
      * - It is managed and configured by methods like {@code restoreFromPreferencesOrDefaults()}
      * to apply initial property settings.
      * - Changes to the stage properties are tracked and synchronized using
@@ -231,8 +210,7 @@ public final class FxWindow
      * and application state remain consistent.
      * - It is foundational for configuring the visual and functional aspects
      * of the user interface provided by the blueprint.
-     * <p>
-     * This stage remains final to ensure that its core responsibilities and
+     * <p>     * This stage remains final to ensure that its core responsibilities and
      * behavior are not altered, maintaining a consistent interface and ensuring
      * stability across applications using this blueprint.
      */
@@ -255,23 +233,19 @@ public final class FxWindow
     /**
      * Restores the state of window properties (such as opacity, visibility, location, width, and height)
      * from user preferences if available, or default values if preferences are not set.
-     * <p>
-     * This method iterates through each key defined in {@link KlFxWindow.PreferenceKeys}
+     * <p>     * This method iterates through each key defined in {@link KlFxWindow.PreferenceKeys}
      * and assigns the corresponding value from the preferences store or the default value
      * associated with the key to the stage-related properties.
-     * <p>
-     * Preference keys and their purpose:
+     * <p>     * Preference keys and their purpose:
      * - OPACITY: Represents the transparency level of the window.
      * - VISIBLE: Determines whether the window is visible or hidden.
      * - WINDOW_X_LOCATION: Refers to the X-coordinate of the window's position.
      * - WINDOW_Y_LOCATION: Refers to the Y-coordinate of the window's position.
      * - WINDOW_WIDTH: The width of the window in pixels.
      * - WINDOW_HEIGHT: The height of the window in pixels.
-     * <p>
-     * For each key, the method retrieves its stored value using the preferences API.
+     * <p>     * For each key, the method retrieves its stored value using the preferences API.
      * If no stored value exists for the key, the key's default value is used instead.
-     * <p>
-     * This method is typically invoked during initialization to restore the user's
+     * <p>     * This method is typically invoked during initialization to restore the user's
      * previously saved preferences or initialize with default settings.
      */
     public void restoreFromPreferencesOrDefaults() {
@@ -293,27 +267,23 @@ public final class FxWindow
      * Subscribes to changes in specific window preference properties and sets up
      * bidirectional synchronization between the application state and window stage
      * properties such as opacity, visibility, location, width, and height.
-     * <p>
-     * This method iterates through the defined {@link KlFxWindow.PreferenceKeys} enums
+     * <p>     * This method iterates through the defined {@link KlFxWindow.PreferenceKeys} enums
      * and establishes subscriptions for each key. These subscriptions ensure that
      * any changes to the preferences are reflected in the corresponding window stage
      * properties and vice versa. It additionally links each subscription to a
      * handler for recording preference changes.
-     * <p>
-     * The following preference keys are supported:
+     * <p>     * The following preference keys are supported:
      * - OPACITY: Synchronizes stage opacity.
      * - VISIBLE: Synchronizes stage visibility (show or hide).
      * - WINDOW_X_LOCATION: Synchronizes X coordinate of the stage.
      * - WINDOW_Y_LOCATION: Synchronizes Y coordinate of the stage.
      * - WINDOW_WIDTH: Synchronizes the width of the stage.
      * - WINDOW_HEIGHT: Synchronizes the height of the stage.
-     * <p>
-     * For each key, a set of subscriptions are created:
+     * <p>     * For each key, a set of subscriptions are created:
      * - One to listen for changes in preferences and apply them to the stage properties.
      * - One to listen for changes in the stage properties and update the preference values.
      * - One to monitor changes and trigger the `preferencesChanged` handler.
-     * <p>
-     * Note: This method currently raises questions regarding the use of bidirectional
+     * <p>     * Note: This method currently raises questions regarding the use of bidirectional
      * bindings versus separate subscriptions, particularly for the OPACITY property.
      * Further discussion and decisions on this matter may be required for consistency.
      */
@@ -473,19 +443,15 @@ public final class FxWindow
 
     /**
      * Saves the current state of the window and its preferences to persistent storage.
-     * <p>
-     * This method iterates over all defined preference keys and updates the associated
+     * <p>     * This method iterates over all defined preference keys and updates the associated
      * preferences with the current state of the window properties such as opacity,
      * visibility, location, and size. It ensures that the updated preferences are
      * persisted by flushing the preferences to the backing store.
-     * <p>
-     * If there are any additional stage-specific preferences to be saved, it delegates
+     * <p>     * If there are any additional stage-specific preferences to be saved, it delegates
      * that responsibility to the subStageSave method.
-     * <p>
-     * Upon successful completion of the saving process, the changed property is reset
+     * <p>     * Upon successful completion of the saving process, the changed property is reset
      * to indicate that there are no unsaved changes.
-     * <p>
-     * Throws a RuntimeException if an error occurs while flushing preferences to the
+     * <p>     * Throws a RuntimeException if an error occurs while flushing preferences to the
      * backing store.
      */
     @Override
@@ -505,18 +471,15 @@ public final class FxWindow
 
     /**
      * Reverts the current stage blueprint to its last saved state or default configuration.
-     * <p>
-     * This method performs the following operations:
+     * <p>     * This method performs the following operations:
      * 1. Restores properties of the stage to their values from user preferences or defaults,
      * ensuring that the stage location, size, visibility, and other attributes are
      * reset accordingly.
      * 2. Triggers the `subStageRevert` method, which allows subclasses to implement specific
      * revert logic for sub-stage components or additional properties.
-     * <p>
-     * This method is typically invoked to undo changes made to the stage or to restore
+     * <p>     * This method is typically invoked to undo changes made to the stage or to restore
      * its state to a consistent baseline, either due to user action or system requirements.
-     * <p>
-     * The `revert` mechanism ensures that the stage and its subcomponents are aligned with
+     * <p>     * The `revert` mechanism ensures that the stage and its subcomponents are aligned with
      * the user's preferences or default configuration.
      *
      */
@@ -530,8 +493,7 @@ public final class FxWindow
      * to determine how to proceed based on the current state of the window. If there are
      * unsaved changes, users are presented with multiple options such as canceling the
      * close action, saving the current state, deleting the window, or reverting changes.
-     * <p>
-     * The method ensures that user preferences and the state of the window are updated
+     * <p>     * The method ensures that user preferences and the state of the window are updated
      * or reverted based on the selected action. If an unexpected error occurs during
      * preference updates, an exception is thrown.
      *

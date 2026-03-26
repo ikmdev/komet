@@ -36,8 +36,7 @@ import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalV
 /**
  * A factory for creating {@link LidrKlWindow} instances, which display LIDR (Logical Instrumentation,
  * Devices, and Records) details within a Komet-based application.
- * <p>
- * This class extends {@link EntityKlWindowFactory} to provide implementations
+ * <p>This class extends {@link EntityKlWindowFactory} to provide implementations
  * for constructing specialized LIDR windows. It also supplies a description of the widget
  * and its implementing class for use within a desktop workspace or user interface.
  */

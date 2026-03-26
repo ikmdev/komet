@@ -38,8 +38,7 @@ import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalV
 /**
  * A factory for creating {@link ConceptKlWindow} instances to display and manage
  * concept details within a Komet-based application.
- * <p>
- * This class extends {@link EntityKlWindowFactory} to build
+ * <p>This class extends {@link EntityKlWindowFactory} to build
  * specialized windows for concept creation and editing. It also associates
  * relevant view settings to the resulting windows.
  */

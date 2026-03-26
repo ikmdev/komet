@@ -52,8 +52,7 @@ class JGitProgressMonitor implements ProgressMonitor {
 
     /**
      * Ends the current task being monitored.
-     * <p>
-     * This method is called when the current task is completed or canceled.
+     * <p>     * This method is called when the current task is completed or canceled.
      * It logs the end of the task using a logger.
      */
     @Override

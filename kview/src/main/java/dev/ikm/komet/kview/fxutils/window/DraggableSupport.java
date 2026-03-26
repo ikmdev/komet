@@ -28,15 +28,13 @@ import static dev.ikm.komet.kview.fxutils.window.WindowSupport.setupWindowSuppor
 
 /**
  * Utility class that provides a clean, declarative API for adding window dragging behavior to JavaFX panes.
- * <p>
- * This class serves as a façade over the more complex {@link WindowSupport} implementation, providing
+ * <p>This class serves as a façade over the more complex {@link WindowSupport} implementation, providing
  * simplified static methods for common operations. It creates a clear separation between:
  * <ul>
  *   <li>The styling of UI elements (handled through CSS)</li>
  *   <li>The behavior of draggable regions (managed through explicit Java code)</li>
  * </ul>
- * <p>
- * Usage example:
+ * <p>Usage example:
  * <pre>{@code
  * // Create a draggable window with a header as the drag handle
  * Pane window = new VBox();
@@ -56,12 +54,10 @@ public interface DraggableSupport {
 
     /**
      * Adds one or more draggable nodes to a container.
-     * <p>
-     * Creates WindowSupport if it doesn't exist. This method can be used for both
+     * <p>     * Creates WindowSupport if it doesn't exist. This method can be used for both
      * initial setup and incremental additions of drag handles when the window
      * structure changes dynamically.
-     * <p>
-     * Each draggable node allows users to drag the entire window by clicking
+     * <p>     * Each draggable node allows users to drag the entire window by clicking
      * and dragging that specific element. If a node is already draggable, its
      * existing handlers will be replaced with new ones.
      *
@@ -102,8 +98,7 @@ public interface DraggableSupport {
 
     /**
      * Removes specific draggable nodes from a container.
-     * <p>
-     * Safely removes the specified nodes from acting as drag handles for the window.
+     * <p>     * Safely removes the specified nodes from acting as drag handles for the window.
      * Null nodes are ignored. If the container has no WindowSupport, no action is taken.
      *
      * @param container      The container pane must not be null

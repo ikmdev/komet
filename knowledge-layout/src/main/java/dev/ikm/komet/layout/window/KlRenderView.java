@@ -32,12 +32,10 @@ public non-sealed interface KlRenderView extends KlView<Scene> {
     /**
      * Enumerates preference keys for managing transformations and properties of a Knowledge Layout (KL) Scene in the Komet application.
      * Each key represents a specific transformation or property applied to visual elements within the scene.
-     * <p>
-     * This enumeration implements the {@link PropertyWithDefault} interface, allowing each key
+     * <p>     * This enumeration implements the {@link PropertyWithDefault} interface, allowing each key
      * to provide a predefined default value. The default value serves as a fallback for the associated
      * property when no specific value is explicitly defined.
-     * <p>
-     * Key definitions:
+     * <p>     * Key definitions:
      * <p> - TRANSLATE_X: Default horizontal translation, measured in units (default: 0.0).
      * <p> - TRANSLATE_Y: Default vertical translation, measured in units (default: 0.0).
      * <p> - TRANSLATE_Z: Default depth translation, measured in units (default: 0.0).
@@ -45,8 +43,7 @@ public non-sealed interface KlRenderView extends KlView<Scene> {
      * <p> - SCALE_Y: Default scale factor along the vertical axis (default: 1.0).
      * <p> - SCALE_Z: Default scale factor along the depth axis (default: 1.0).
      * <p> - ROTATE: Default rotation angle, measured in degrees (default: 0.0).
-     * <p>
-     * These keys are typically used for managing user preferences related to the layout's transformations,
+     * <p>     * These keys are typically used for managing user preferences related to the layout's transformations,
      * ensuring consistency in visual presentation and interaction across sessions.
      */
     enum PreferenceKeys implements PropertyWithDefault {

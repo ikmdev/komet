@@ -30,8 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Concrete observable semantic version - fully type-reified, no generic parameters.
- * <p>
- * This is Layer 3 (Concrete) of the MGC pattern for semantic versions.
+ * <p>This is Layer 3 (Concrete) of the MGC pattern for semantic versions.
  */
 public final class ObservableSemanticVersion
         extends ObservableEntityVersion<ObservableSemantic, SemanticVersionRecord>
@@ -120,11 +119,9 @@ public final class ObservableSemanticVersion
 
     /**
      * Editable version wrapper for ObservableSemanticVersion.
-     * <p>
-     * Implements {@link EditableVersion} marker
+     * <p>     * Implements {@link EditableVersion} marker
      * interface through the base {@link ObservableEntityVersion.Editable} class.
-     * <p>
-     * Provides field-level editing for semantic versions with proper validation
+     * <p>     * Provides field-level editing for semantic versions with proper validation
      * and type safety.
      * 
      * <h2>Semantic Field Editing</h2>
@@ -209,8 +206,7 @@ public final class ObservableSemanticVersion
 
         /**
          * Gets or creates the canonical editable semantic version for the given stamp.
-         * <p>
-         * Returns the exact same instance for multiple calls with the same stamp, ensuring
+         * <p>         * Returns the exact same instance for multiple calls with the same stamp, ensuring
          * a single canonical editable version per ObservableStamp.
          *
          * @param observableVersion the ObservableSemanticVersion to edit
@@ -223,17 +219,14 @@ public final class ObservableSemanticVersion
 
         /**
          * Returns the editable fields for JavaFX UI binding and display.
-         * <p>
-         * <b>List Structure Immutability:</b> The returned list has a fixed structure - fields cannot be
+         * <p>         * <b>List Structure Immutability:</b> The returned list has a fixed structure - fields cannot be
          * added or removed. This is by design: new fields can only be added by editing a {@link ObservablePattern},
          * not by editing individual semantic versions. Attempting to call {@code add()}, {@code remove()}, or
          * similar mutation operations on the returned list will throw {@link UnsupportedOperationException}.
-         * <p>
-         * <b>Field Value Mutability:</b> While the list structure is immutable, each {@link ObservableField.Editable}
+         * <p>         * <b>Field Value Mutability:</b> While the list structure is immutable, each {@link ObservableField.Editable}
          * within the list contains observable properties that are fully editable. These properties can be bound
          * bidirectionally to UI controls for editing field values.
-         * <p>
-         * <b>Usage Patterns:</b>
+         * <p>         * <b>Usage Patterns:</b>
          * <pre>{@code
          * // Pattern 1: Display in ListView/TableView
          * ObservableList<ObservableField.Editable<?>> fields = editableVersion.getEditableFields();
@@ -254,20 +247,16 @@ public final class ObservableSemanticVersion
          * ObservableField.Editable<?> field = editableVersion.getEditableField(0);
          * textField.textProperty().bind(field.editableValueProperty().asString());
          * }</pre>
-         * <p>
-         * <b>Return Type Rationale:</b> Returns {@link ObservableList} (rather than Eclipse Collections
+         * <p>         * <b>Return Type Rationale:</b> Returns {@link ObservableList} (rather than Eclipse Collections
          * {@link ImmutableList}) to provide seamless JavaFX integration. This allows the list to be used
          * directly with JavaFX controls like {@link javafx.scene.control.ListView} and
          * {@link javafx.scene.control.TableView}. The unmodifiable wrapper ensures structural immutability
          * while maintaining JavaFX observability for UI updates.
-         * <p>
-         * <b>Performance Note:</b> The returned list is created once during construction and cached.
+         * <p>         * <b>Performance Note:</b> The returned list is created once during construction and cached.
          * Multiple calls to this method return the same canonical list instance.
-         * <p>
-         * <b>Thread Safety:</b> Must be called from the JavaFX application thread, consistent with
+         * <p>         * <b>Thread Safety:</b> Must be called from the JavaFX application thread, consistent with
          * the Observable framework's threading requirements.
-         * <p>
-         * Symmetric to {@link ObservableSemanticVersion#fields()}, which returns read-only fields.
+         * <p>         * Symmetric to {@link ObservableSemanticVersion#fields()}, which returns read-only fields.
          *
          * @return an unmodifiable {@link ObservableList} of editable fields. The list structure is
          *         immutable (fixed size), but each field's value properties are observable and editable.
@@ -291,8 +280,7 @@ public final class ObservableSemanticVersion
 
         /**
          * Gets the editable property for a specific field index (convenience method).
-         * <p>
-         * Equivalent to {@code getEditableField(index).editableValueProperty()}.
+         * <p>         * Equivalent to {@code getEditableField(index).editableValueProperty()}.
          *
          * @param index the field index
          * @return the editable property for that field

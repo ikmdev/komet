@@ -5,7 +5,7 @@
     <parent>
         <groupId>network.ike</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>23</version>
+        <version>34</version>
     </parent>
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
@@ -40,26 +40,26 @@
         <name>Integrated Knowledge Management</name>
         <url>http://www.ikm.dev</url>
     </organization>
-    <modules>
-        <module>komet-terms</module>
-        <module>preferences</module>
-        <module>framework</module>
-        <module>artifact</module>
-        <module>builder</module>
-        <module>classification</module>
-        <module>details</module>
-        <module>executor</module>
-        <module>list</module>
-        <module>navigator</module>
-        <module>progress</module>
-        <module>rules</module>
-        <module>search</module>
-        <module>knowledge-layout</module>
-        <module>kview</module>
-        <module>sync</module>
-        <module>knowledge-layout-editor</module>
-        <module>application</module>
-    </modules>
+    <subprojects>
+        <subproject>komet-terms</subproject>
+        <subproject>preferences</subproject>
+        <subproject>framework</subproject>
+        <subproject>artifact</subproject>
+        <subproject>builder</subproject>
+        <subproject>classification</subproject>
+        <subproject>details</subproject>
+        <subproject>executor</subproject>
+        <subproject>list</subproject>
+        <subproject>navigator</subproject>
+        <subproject>progress</subproject>
+        <subproject>rules</subproject>
+        <subproject>search</subproject>
+        <subproject>knowledge-layout</subproject>
+        <subproject>kview</subproject>
+        <subproject>sync</subproject>
+        <subproject>knowledge-layout-editor</subproject>
+        <subproject>application</subproject>
+    </subprojects>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jpackage.version>1.7.3</jpackage.version>

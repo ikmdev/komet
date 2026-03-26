@@ -21,9 +21,8 @@ import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 /**
  * View model for tracking the progress of a {@link Task} and related UI properties.
  * It extends {@link ValidationViewModel} to leverage property management, making it
- * easier to bind UI elements in a JavaFX application to these properties.</p>
- * <p>
- * This class defines several property keys that represent the state of a
+ * easier to bind UI elements in a JavaFX application to these properties.
+ * <p>This class defines several property keys that represent the state of a
  * long-running operation, such as whether the operation can be canceled, the text
  * for a cancel button, and whether the progress or close buttons are shown.</p>
  *

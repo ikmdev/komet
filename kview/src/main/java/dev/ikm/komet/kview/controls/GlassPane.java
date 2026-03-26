@@ -41,8 +41,7 @@ import static dev.ikm.komet.kview.fxutils.FXUtils.DEFAULT_ANIMATION_DURATION;
  * A glass pane component that provides a semi-transparent overlay (scrim) on top of a root pane.
  * The glass pane can be shown/hidden with fade animations and can contain additional content
  * that appears above the scrim.
- * <p>
- * The glass pane automatically resizes itself to match the dimensions of the root pane.
+ * <p>The glass pane automatically resizes itself to match the dimensions of the root pane.
  */
 public class GlassPane extends Pane {
 

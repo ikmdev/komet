@@ -22,11 +22,9 @@ import one.jpro.platform.auth.core.authentication.User;
 
 /**
  * Event representing a user sign-in action.
- * <p>
- * This event is published when a user successfully signs in. It contains
+ * <p>This event is published when a user successfully signs in. It contains
  * information about the authenticated user and is used to notify other components
  * within the application about the sign-in event.
- * </p>
  *
  * @see Evt
  * @see EvtType
@@ -36,10 +34,8 @@ public class SignInUserEvent extends Evt {
 
     /**
      * The event type for a user sign-in event.
-     * <p>
-     * This constant defines the specific type of the {@code SignInUserEvent},
+     * <p>     * This constant defines the specific type of the {@code SignInUserEvent},
      * which can be used for event filtering and handling.
-     * </p>
      */
     public static final EvtType<SignInUserEvent> SIGN_IN_USER = new EvtType<>(Evt.ANY, "SIGN_IN_USER");
 

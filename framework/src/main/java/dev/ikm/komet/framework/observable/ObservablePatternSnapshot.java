@@ -29,8 +29,7 @@ import java.util.function.Predicate;
 /**
  * View-specific projection of an {@link ObservablePattern} providing access to pattern versions
  * categorized by their temporal and coordination state.
- * <p>
- * Patterns define the structure of semantic records. This snapshot provides view-filtered access
+ * <p>Patterns define the structure of semantic records. This snapshot provides view-filtered access
  * to pattern versions, enabling analysis of how pattern definitions evolve over time.
  *
  * <h2>Pattern Snapshot Characteristics</h2>
@@ -129,8 +128,7 @@ public final class ObservablePatternSnapshot extends ObservableEntitySnapshot<Ob
 
     /**
      * Returns the field definitions from the latest pattern version.
-     * <p>
-     * Convenience method equivalent to {@code getLatestVersion().get().fieldDefinitions()}.
+     * <p>     * Convenience method equivalent to {@code getLatestVersion().get().fieldDefinitions()}.
      *
      * @return field definitions, or empty list if no latest version
      */

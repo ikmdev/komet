@@ -94,7 +94,6 @@ public class AutoCompleteTextField<T> extends TextField {
     // --- string converter
     /**
      * Converts the user-typed input to an object of type T, or the object of type T to a String.
-     * @return the converter property
      */
     private final ObjectProperty<StringConverter<T>> converter = new SimpleObjectProperty<>(this, "converter", AutoCompleteTextField.defaultStringConverter());
     public final ObjectProperty<StringConverter<T>> converterProperty() { return converter; }

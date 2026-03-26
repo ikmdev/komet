@@ -34,10 +34,8 @@ import static dev.ikm.komet.kview.mvvm.view.login.LoginViewPropertyName.*;
 
 /**
  * Controller class for the Login Page.
- * <p>
- * This class handles user interactions with the login page, including input validation,
+ * <p>This class handles user interactions with the login page, including input validation,
  * property bindings between the view and the view model, and the authentication process.
- * </p>
  */
 public class LoginPageController implements Initializable {
 

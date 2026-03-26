@@ -39,12 +39,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration tests for ObservableField.Editable behavior.
- * <p>
- * Tests the editable field functionality within the Observable framework,
+ * <p>Tests the editable field functionality within the Observable framework,
  * including property binding, change tracking, value modification, and
  * integration with semantic version editing.
- * <p>
- * Uses real Tinkar entities loaded from test data to ensure the Observable
+ * <p>Uses real Tinkar entities loaded from test data to ensure the Observable
  * framework works correctly with actual database operations.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

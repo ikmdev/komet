@@ -5,8 +5,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 
 /**
  * Marker interface for observable entity versions.
- * <p>
- * Provides a generic-free type for working with observable versions without
+ * <p>Provides a generic-free type for working with observable versions without
  * exposing entity and version record type parameters. This is Layer 1 (Marker)
  * of the MGC pattern for observable versions.
  *
@@ -19,8 +18,7 @@ import org.eclipse.collections.api.list.ImmutableList;
  * </ul>
  *
  * <h2>Relationship to EditableVersion</h2>
- * <p>
- * {@code ObservableVersion} represents read-only versions with JavaFX properties for UI binding.
+ * <p>{@code ObservableVersion} represents read-only versions with JavaFX properties for UI binding.
  * {@link EditableVersion} represents editable versions with cached changes.
  *
  * <pre>{@code

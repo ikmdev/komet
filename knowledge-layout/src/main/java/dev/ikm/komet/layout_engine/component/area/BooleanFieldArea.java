@@ -14,11 +14,9 @@ import javafx.scene.layout.StackPane;
 
 /**
  * An editable area for Boolean fields.
- * <p>
- * This area uses {@link KlBooleanControl} and handles all the binding plumbing
+ * <p>This area uses {@link KlBooleanControl} and handles all the binding plumbing
  * via its parent class {@link EditableFieldAreaBlueprint}.
- * <p>
- * <b>Usage:</b>
+ * <p><b>Usage:</b>
  * <pre>{@code
  * // Create the area
  * BooleanFieldArea booleanArea = BooleanFieldArea.create(preferencesFactory);

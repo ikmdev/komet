@@ -1540,8 +1540,7 @@ public class ConceptController {
 
     /**
      * Updates draggable behavior for the properties panel based on its open/closed state.
-     * <p>
-     * When opened, adds the properties tabs pane as a draggable node. When closed,
+     * <p>     * When opened, adds the properties tabs pane as a draggable node. When closed,
      * safely removes the draggable behavior to prevent memory leaks.
      *
      * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
@@ -1639,8 +1638,7 @@ public class ConceptController {
 
     /**
      * Checks whether the properties panel is currently open (slid out).
-     * <p>
-     * This method determines the open state by checking if the properties
+     * <p>     * This method determines the open state by checking if the properties
      * slideout tray pane is visible and expanded.
      *
      * @return {@code true} if the properties panel is open and visible,
@@ -1652,8 +1650,7 @@ public class ConceptController {
 
     /**
      * Sets the open/closed state of the properties panel programmatically.
-     * <p>
-     * The animation is performed without transitions when called programmatically
+     * <p>     * The animation is performed without transitions when called programmatically
      * to ensure immediate state changes.
      *
      * @param isOpen {@code true} to open (slide out) the properties panel,

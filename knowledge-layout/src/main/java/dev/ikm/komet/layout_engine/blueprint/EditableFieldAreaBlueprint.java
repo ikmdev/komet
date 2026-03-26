@@ -16,8 +16,7 @@ import java.util.List;
 
 /**
  * An abstract blueprint for editable field areas.
- * <p>
- * This class handles the common plumbing required for binding a UI control to an
+ * <p>This class handles the common plumbing required for binding a UI control to an
  * {@link ObservableField.Editable}, including:
  * <ul>
  *   <li>Managing the {@link ObservableField.Editable} reference.</li>
@@ -25,8 +24,7 @@ import java.util.List;
  *   <li>Managing change listener subscriptions and cleaning them up on unbind/rebind.</li>
  *   <li>Delegating {@code save()} and {@code revert()} to the editable field.</li>
  * </ul>
- * <p>
- * Subclasses only need to implement:
+ * <p>Subclasses only need to implement:
  * <ul>
  *   <li>{@link #createControl()}: Create the UI control instance.</li>
  *   <li>{@link #bindControlToEditable(ObservableField.Editable)}: Bind the control's value property to the editable.</li>
@@ -81,8 +79,7 @@ public abstract class EditableFieldAreaBlueprint<DT, FX extends Region>
 
     /**
      * Creates the UI control and adds it to {@link #fxObject()}.
-     * <p>
-     * This method is called once during construction. Implementations should
+     * <p>     * This method is called once during construction. Implementations should
      * instantiate the control (e.g., KLBooleanControl) and add it to the
      * layout container returned by {@link #fxObject()}.
      */
@@ -90,8 +87,7 @@ public abstract class EditableFieldAreaBlueprint<DT, FX extends Region>
 
     /**
      * Returns the value property of the UI control.
-     * <p>
-     * This is used for standard bidirectional binding with the editable's
+     * <p>     * This is used for standard bidirectional binding with the editable's
      * {@code editableValueProperty()}.
      *
      * @return the control's value property
@@ -100,8 +96,7 @@ public abstract class EditableFieldAreaBlueprint<DT, FX extends Region>
 
     /**
      * Binds the UI control to the given editable field.
-     * <p>
-     * This method is called after {@link #unbindControlFromEditable()} when a new
+     * <p>     * This method is called after {@link #unbindControlFromEditable()} when a new
      * editable is set. Implementations should:
      * <ol>
      *   <li>Bind the control's value property bidirectionally to {@code editable.editableValueProperty()}.</li>
@@ -115,8 +110,7 @@ public abstract class EditableFieldAreaBlueprint<DT, FX extends Region>
 
     /**
      * Unbinds the UI control from the current editable field.
-     * <p>
-     * This method is called before binding to a new editable. Implementations should
+     * <p>     * This method is called before binding to a new editable. Implementations should
      * unbind any bidirectional bindings. Subscriptions added via {@link #addEditableSubscription(Subscription)}
      * are automatically unsubscribed by this blueprint.
      */
@@ -157,8 +151,7 @@ public abstract class EditableFieldAreaBlueprint<DT, FX extends Region>
 
     /**
      * Sets a new editable field, unbinding from the previous one.
-     * <p>
-     * This is the primary entry point for connecting this area to an editable field
+     * <p>     * This is the primary entry point for connecting this area to an editable field
      * obtained from an {@code ObservableComposer} or similar source.
      *
      * @param editable the new editable field
@@ -169,8 +162,7 @@ public abstract class EditableFieldAreaBlueprint<DT, FX extends Region>
 
     /**
      * Rebinds the UI control to a new editable field.
-     * <p>
-     * This method handles the full unbind/bind cycle:
+     * <p>     * This method handles the full unbind/bind cycle:
      * <ol>
      *   <li>Unbind from the current editable (if any).</li>
      *   <li>Clear all editable subscriptions.</li>
@@ -201,8 +193,7 @@ public abstract class EditableFieldAreaBlueprint<DT, FX extends Region>
 
     /**
      * Derives a title from the observable field's definition.
-     * <p>
-     * Override this method to customize how the title is generated.
+     * <p>     * Override this method to customize how the title is generated.
      *
      * @param observableField the observable field
      * @return the derived title
@@ -215,8 +206,7 @@ public abstract class EditableFieldAreaBlueprint<DT, FX extends Region>
 
     /**
      * Called when the feature property changes.
-     * <p>
-     * If the new feature is an {@code ObservableField}, this method sets up
+     * <p>     * If the new feature is an {@code ObservableField}, this method sets up
      * an editable wrapper. Subclasses generally don't need to override this.
      */
     @Override

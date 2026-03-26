@@ -17,14 +17,12 @@
 /**
  * Provides interfaces and implementations for a comprehensive window management framework
  * within the Komet application.
- * <p>
- * This package enables the creation, persistence, and management of specialized windows
+ * <p>This package enables the creation, persistence, and management of specialized windows
  * that display and edit various types of knowledge entities (concepts, patterns, etc.)
  * within a unified workspace environment. The framework is built around a type-based
  * system that allows for consistent handling of different window categories while
  * supporting specialized behavior for each entity type.
- * <p>
- * Key components include:
+ * <p>Key components include:
  * <ul>
  *   <li><b>Window Type System</b> - Interfaces and implementations for classifying windows
  *       by their purpose and content type ({@link dev.ikm.komet.kview.klwindows.EntityKlWindowType},
@@ -42,20 +40,17 @@
  *       ({@link dev.ikm.komet.kview.klwindows.AbstractChapterKlWindow},
  *       {@link dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow})</li>
  * </ul>
- * <p>
- * The framework supports four primary window types, each with specialized factories:
+ * <p>The framework supports four primary window types, each with specialized factories:
  * <ul>
  *   <li>Concept Windows - For viewing and editing conceptual entities</li>
  *   <li>Pattern Windows - For viewing and editing pattern entity structures</li>
  *   <li>LIDR Windows - For viewing and editing LIDR interfaces</li>
  *   <li>General Editing Windows - For pattern-semantic editing functionality</li>
  * </ul>
- * <p>
  * <h2>Extensibility Architecture</h2>
  * The framework is designed for maximum extensibility, making it
  * straightforward to add new window types as the application evolves. This flexibility is
  * achieved through several architectural patterns:
- * <p>
  * <ul>
  *   <li><b>Pluggable Type System</b> - New window types can be created by either:
  *     <ul>
@@ -81,10 +76,8 @@
  *       immediate access to core functionality while allowing specialization through template
  *       method patterns</li>
  * </ul>
- * <p>
  * <p><b>Adding a New Window Type</b>
  * The process to add a new window type requires minimal code and follows these steps:
- * <p>
  * <ol>
  *   <li>Define a new window type identifier:
  *     <pre>{@code
@@ -138,18 +131,15 @@
  *     }</pre>
  *   </li>
  * </ol>
- * <p>
- * This extensible architecture ensures that the Komet application can evolve to support
+ * <p>This extensible architecture ensures that the Komet application can evolve to support
  * new entity types and specialized visualization/editing requirements without requiring
  * modifications to the core window management framework. The combination of interfaces,
  * abstract base classes, and registry patterns creates a system where "closed for modification,
  * open for extension" principles are fully realized.
- * <p>
- * The window system integrates with the Komet preferences framework to enable persistence
+ * <p>The window system integrates with the Komet preferences framework to enable persistence
  * of window positions, sizes, and content across application sessions. It also supports
  * event-based communication between related windows through journal topics.
- * <p>
- * Example usage:
+ * <p>Example usage:
  * <pre>{@code
  * // Get a factory for a specific window type
  * EntityKlWindowFactory factory = EntityKlWindowFactory.Registry.getFactory(EntityKlWindowTypes.CONCEPT);

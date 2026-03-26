@@ -487,8 +487,7 @@ public class GenPurposeDetailsController {
 
     /**
      * Updates draggable behavior for the properties panel based on its open/closed state.
-     * <p>
-     * When opened, adds the properties tabs pane as a draggable node. When closed,
+     * <p>     * When opened, adds the properties tabs pane as a draggable node. When closed,
      * safely removes the draggable behavior to prevent memory leaks.
      *
      * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them

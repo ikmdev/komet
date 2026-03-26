@@ -15,11 +15,9 @@ import javafx.scene.layout.StackPane;
 
 /**
  * An editable area for String fields.
- * <p>
- * This area uses {@link KlStringControl} and handles all the binding plumbing
+ * <p>This area uses {@link KlStringControl} and handles all the binding plumbing
  * via its parent class {@link EditableFieldAreaBlueprint}.
- * <p>
- * <b>Usage:</b>
+ * <p><b>Usage:</b>
  * <pre>{@code
  * // Create the area
  * StringFieldArea stringArea = StringFieldArea.create(preferencesFactory);

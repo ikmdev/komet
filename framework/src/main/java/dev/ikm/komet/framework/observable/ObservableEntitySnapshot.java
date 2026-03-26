@@ -31,14 +31,12 @@ import java.util.function.Predicate;
  * View-specific projection of an {@link ObservableEntity} that provides access to versions categorized
  * by their temporal and coordination state, enabling "time travel" and version analysis within a specific
  * view context.
- * <p>
- * {@code ObservableEntitySnapshot} is the bridge between raw entity versions and meaningful clinical or
+ * <p>{@code ObservableEntitySnapshot} is the bridge between raw entity versions and meaningful clinical or
  * business semantics by filtering and categorizing versions according to a {@link ViewCalculator}'s
  * coordinate rules (what paths are visible, which modules are included, what time range applies, etc.).
  *
  * <h2>What is an ObservableEntitySnapshot?</h2>
- * <p>
- * An {@code ObservableEntitySnapshot} represents a <b>view-specific, temporally-aware projection</b> of an
+ * <p>An {@code ObservableEntitySnapshot} represents a <b>view-specific, temporally-aware projection</b> of an
  * observable entity that provides:
  * <ul>
  *   <li><b>Latest Version:</b> The most current version(s) according to view coordinates, which may include
@@ -57,8 +55,7 @@ import java.util.function.Predicate;
  * </ul>
  *
  * <h2>Why Use Snapshots?</h2>
- * <p>
- * Direct access to {@link ObservableEntity} gives you <i>all</i> versions across <i>all</i> paths and modules.
+ * <p>Direct access to {@link ObservableEntity} gives you <i>all</i> versions across <i>all</i> paths and modules.
  * Snapshots solve three critical problems:
  * <ol>
  *   <li><b>Coordination-Aware Access:</b> Automatically filters versions according to view coordinates
@@ -70,8 +67,7 @@ import java.util.function.Predicate;
  * </ol>
  *
  * <h2>⚠️ How to Create: Use ObservableEntityHandle</h2>
- * <p>
- * <b>DO NOT</b> construct {@code ObservableEntitySnapshot} instances directly using {@code new}. Instead,
+ * <p><b>DO NOT</b> construct {@code ObservableEntitySnapshot} instances directly using {@code new}. Instead,
  * use {@link ObservableEntityHandle}, which provides type-safe factory methods for creating snapshots:
  *
  * <pre>{@code
@@ -97,8 +93,7 @@ import java.util.function.Predicate;
  * }</pre>
  *
  * <h2>Understanding Version Categories</h2>
- * <p>
- * Each version in the snapshot is categorized by {@link #getVersionCategory(EntityVersion)}:
+ * <p>Each version in the snapshot is categorized by {@link #getVersionCategory(EntityVersion)}:
  *
  * <table style="border: 1px solid black; border-collapse: collapse;">
  * <caption>Version Category Meanings</caption>
@@ -201,8 +196,7 @@ import java.util.function.Predicate;
  * }</pre>
  *
  * <h2>Thread Safety</h2>
- * <p>
- * Like {@link ObservableEntity}, snapshots <b>must be accessed from the JavaFX application thread</b>.
+ * <p>Like {@link ObservableEntity}, snapshots <b>must be accessed from the JavaFX application thread</b>.
  * The {@link ViewCalculator} and underlying entity properties require JavaFX threading. If you need
  * snapshot data in background threads, extract the necessary data first, then process it off-thread:
  *
@@ -222,21 +216,18 @@ import java.util.function.Predicate;
  * }</pre>
  *
  * <h2>Snapshot Lifecycle</h2>
- * <p>
- * Snapshots are <b>point-in-time</b> projections. They capture the state of the {@link ObservableEntity}
+ * <p>Snapshots are <b>point-in-time</b> projections. They capture the state of the {@link ObservableEntity}
  * and {@link ViewCalculator} at the moment of creation. If the entity receives updates or the view
  * coordinates change, create a new snapshot to see the updated state.
  *
  * <h2>Canonical Version Guarantee for Property Binding</h2>
- * <p>
- * <b>Critical Guarantee:</b> The {@link ObservableVersion} instances returned by snapshot methods
+ * <p><b>Critical Guarantee:</b> The {@link ObservableVersion} instances returned by snapshot methods
  * (like {@link #getLatestVersion()}, {@link #getHistoricVersions()}, {@link #getUncommittedVersions()})
  * are the <b>exact same canonical instances</b> from the underlying {@link ObservableEntity}'s
  * {@code versionPropertyMap()}.
  *
  * <p><b>Why This Matters</b>
- * <p>
- * Because snapshots return canonical version instances, you can <b>reliably bind UI properties</b> to
+ * <p>Because snapshots return canonical version instances, you can <b>reliably bind UI properties</b> to
  * versions extracted from a snapshot, and <b>all observers will receive change notifications</b>:
  *
  * <pre>{@code
@@ -266,15 +257,13 @@ import java.util.function.Predicate;
  * }</pre>
  *
  * <p><b>Implementation Detail</b>
- * <p>
- * The snapshot constructor iterates over the {@code observableEntity.versionPropertyMap().values()},
+ * <p>The snapshot constructor iterates over the {@code observableEntity.versionPropertyMap().values()},
  * which contains the canonical {@link ObservableVersion} instances managed by the
  * {@link ObservableEntity#CANONICAL_INSTANCES} pool. The snapshot does not create copies - it
  * categorizes and stores <i>references</i> to the canonical versions.
  *
  * <p><b>Contrast with Immutable Entity Versions</b>
- * <p>
- * Unlike immutable {@link dev.ikm.tinkar.entity.EntityVersion} instances (which can have multiple
+ * <p>Unlike immutable {@link dev.ikm.tinkar.entity.EntityVersion} instances (which can have multiple
  * copies in memory with the same data), {@link ObservableVersion} instances follow the "canonical
  * instance" pattern - exactly one instance per (entity NID, stamp NID) combination exists in memory
  * while referenced. This is what makes property binding and change notification reliable.
@@ -303,15 +292,13 @@ import java.util.function.Predicate;
  * }</pre>
  *
  * <h2>Three Snapshot Types</h2>
- * <p>
- * This sealed class has three permitted implementations mirroring the three observable entity types:
+ * <p>This sealed class has three permitted implementations mirroring the three observable entity types:
  * <ul>
  *   <li>{@link ObservableConceptSnapshot} - Snapshot of {@link ObservableConcept}</li>
  *   <li>{@link ObservableSemanticSnapshot} - Snapshot of {@link ObservableSemantic}</li>
  *   <li>{@link ObservablePatternSnapshot} - Snapshot of {@link ObservablePattern}</li>
  * </ul>
- * <p>
- * Note: {@link ObservableStamp} does not have a snapshot variant because stamps represent immutable
+ * <p>Note: {@link ObservableStamp} does not have a snapshot variant because stamps represent immutable
  * change metadata and don't have multiple versions in the same sense as other entities.
  *
  * @param <OE> the observable entity type ({@link ObservableConcept}, {@link ObservableSemantic},

@@ -3,8 +3,7 @@ package dev.ikm.komet.framework.observable;
 
 /**
  * Marker interface for observable feature types.
- * <p>
- * Completes the Marker-Generic-Concrete pattern for the observable feature hierarchy,
+ * <p>Completes the Marker-Generic-Concrete pattern for the observable feature hierarchy,
  * providing a generic-free type for downstream method signatures.
  * 
  * <h2>MGC Pattern Layers for Observable Features</h2>

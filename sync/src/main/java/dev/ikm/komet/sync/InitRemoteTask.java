@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The GetRemoteTask class is a task that prompts the user to enter a Git Remote URL.
- * It extends the Task<Boolean> class, indicating that it returns a Boolean value upon completion.
+ * It extends the Task&lt;Boolean&gt; class, indicating that it returns a Boolean value upon completion.
  *
  * This task adds the URL to the git config as the `origin` remote, so git commands will use the supplied remote by default.
  */

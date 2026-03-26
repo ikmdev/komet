@@ -24,8 +24,7 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.DEFAULT_WINDOW_WIDTH;
 
 /**
  * A draggable and stylable region that indicates a drop target in a Komet workspace.
- * <p>
- * This class can be used to represent areas where items (e.g., concept panels) can be
+ * <p>This class can be used to represent areas where items (e.g., concept panels) can be
  * dragged and dropped. By default, it uses a pseudo-class to toggle between two visual
  * states: {@code BOX} or {@code LINE}.
  */
@@ -108,8 +107,7 @@ public class KLDropRegion extends Region {
 
     /**
      * An {@link ObjectProperty} that holds the current {@link Type} of this drop region.
-     * <p>
-     * Changes in this property will trigger updates to the CSS pseudo-classes.
+     * <p>     * Changes in this property will trigger updates to the CSS pseudo-classes.
      *
      * @return the property storing this region's {@link Type}
      */

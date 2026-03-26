@@ -29,8 +29,7 @@ import java.util.Optional;
 /**
  * A non-interactive credentials provider for GitHub that retrieves authentication
  * information from stored preferences.
- * <p>
- * Retrieves GitHub credentials from the application's preference store and provides them
+ * <p>Retrieves GitHub credentials from the application's preference store and provides them
  * to JGit for repository operations. Supports username/password authentication only.
  *
  * @see CredentialsProvider

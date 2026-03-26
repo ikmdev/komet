@@ -58,8 +58,7 @@ import java.util.Optional;
 
 /**
  * JavaFX-native composer for building and managing observable entities with full UI binding support.
- * <p>
- * ObservableComposer simplifies the creation and editing of Tinkar entities by providing a fluent,
+ * <p>ObservableComposer simplifies the creation and editing of Tinkar entities by providing a fluent,
  * type-safe API that integrates seamlessly with JavaFX properties and the Observable framework.
  * Unlike traditional composers that work with immutable entities, ObservableComposer leverages
  * {@link ObservableEntity}, {@link ObservableEntityVersion.Editable}, {@link ObservableField.Editable},
@@ -128,8 +127,7 @@ import java.util.Optional;
  * </table>
  *
  * <h2>Simplified Unified API</h2>
- * <p>
- * ObservableComposer provides a simplified API through the {@link EntityComposer} interface that
+ * <p>ObservableComposer provides a simplified API through the {@link EntityComposer} interface that
  * eliminates the need to know whether you're creating or editing an entity. Simply provide a PublicId,
  * and the framework handles the rest:
  * <pre>{@code
@@ -153,15 +151,13 @@ import java.util.Optional;
  * conceptComposer.save();
  * composer.commit();
  * }</pre>
- * <p>
- * The same pattern works for all entity types:
+ * <p>The same pattern works for all entity types:
  * <ul>
  *   <li>{@link #composeConcept(PublicId)} - Compose concepts</li>
  *   <li>{@link #composeSemantic(PublicId, EntityFacade, PatternFacade)} - Compose semantics</li>
  *   <li>{@link #composePattern(PublicId)} - Compose patterns</li>
  * </ul>
- * <p>
- * <b>Key Benefits:</b>
+ * <p><b>Key Benefits:</b>
  * <ul>
  *   <li>No need to know if entity exists - framework handles it automatically</li>
  *   <li>No builder vs editor classes to learn - just use {@link EntityComposer}</li>
@@ -306,14 +302,12 @@ import java.util.Optional;
  * }</pre>
  *
  * <h2>Thread Safety</h2>
- * <p>
- * <b>⚠️ IMPORTANT:</b> ObservableComposer must be used exclusively on the JavaFX application thread.
+ * <p><b>⚠️ IMPORTANT:</b> ObservableComposer must be used exclusively on the JavaFX application thread.
  * All methods enforce this requirement and will throw {@link RuntimeException} if called from
  * other threads. This is consistent with the Observable framework's threading model.
  *
  * <h2>Transaction Lifecycle</h2>
- * <p>
- * ObservableComposer manages transactions automatically:
+ * <p>ObservableComposer manages transactions automatically:
  * <ol>
  *   <li><b>Creation:</b> Transaction created lazily on first entity modification</li>
  *   <li><b>Uncommitted:</b> Changes saved to database but transaction not committed
@@ -321,8 +315,7 @@ import java.util.Optional;
  *   <li><b>Committed:</b> Transaction committed, stamps updated to actual time</li>
  *   <li><b>Rollback:</b> Uncommitted changes discarded, transaction cancelled</li>
  * </ol>
- * <p>
- * Transaction state is exposed via observable properties, enabling UI components to react
+ * <p>Transaction state is exposed via observable properties, enabling UI components to react
  * to state changes automatically.
  *
  * @see ObservableEntity
@@ -388,8 +381,7 @@ public final class ObservableComposer {
 
     /**
      * Creates a new ObservableComposer with the specified STAMP coordinates.
-     * <p>
-     * This static factory method provides a convenient way to create a composer without
+     * <p>     * This static factory method provides a convenient way to create a composer without
      * needing to extract NIDs from EntityFacades manually.
      *
      * @param viewCalculator
@@ -406,8 +398,7 @@ public final class ObservableComposer {
 
     /**
      * Creates a new ObservableComposer with the specified STAMP coordinates and transaction comment.
-     * <p>
-     * The transaction comment is used to identify the transaction for debugging and logging purposes.
+     * <p>     * The transaction comment is used to identify the transaction for debugging and logging purposes.
      *
      * @param viewCalculator
      * @param state              the default state for entities (typically State.ACTIVE)
@@ -431,8 +422,7 @@ public final class ObservableComposer {
 
     /**
      * Creates a snapshot of the specified entity using the composer's view calculator.
-     * <p>
-     * Convenience method that eliminates the need to extract the view calculator separately.
+     * <p>     * Convenience method that eliminates the need to extract the view calculator separately.
      *
      * @param entity the observable entity to snapshot
      * @return view-specific snapshot of the entity
@@ -463,8 +453,7 @@ public final class ObservableComposer {
     }
     /**
      * Creates a snapshot by NID, automatically determining entity type.
-     * <p>
-     * Uses {@link ObservableEntityHandle} internally for type-safe snapshot creation.
+     * <p>     * Uses {@link ObservableEntityHandle} internally for type-safe snapshot creation.
      *
      * @param nid the NID of the entity to snapshot
      * @return snapshot of the entity, or empty if entity doesn't exist
@@ -484,8 +473,7 @@ public final class ObservableComposer {
 
     /**
      * Creates a new builder for ObservableComposer.
-     * <p>
-     * Note: Consider using the static factory methods {@link #create(ViewCalculator, State, EntityFacade, EntityFacade, EntityFacade)}
+     * <p>     * Note: Consider using the static factory methods {@link #create(ViewCalculator, State, EntityFacade, EntityFacade, EntityFacade)}
      * for a more concise API.
      */
     public static Builder builder() {
@@ -523,8 +511,7 @@ public final class ObservableComposer {
 
     /**
      * Creates a composer for a new concept entity.
-     * <p>
-     * For a unified API that automatically handles existing entities, use {@link #composeConcept(PublicId)}.
+     * <p>     * For a unified API that automatically handles existing entities, use {@link #composeConcept(PublicId)}.
      *
      * @return a new concept composer
      */
@@ -536,8 +523,7 @@ public final class ObservableComposer {
 
     /**
      * Creates a composer for a new semantic entity.
-     * <p>
-     * For a unified API that automatically handles existing entities, use {@link #composeSemantic(PublicId, EntityFacade, PatternFacade)}.
+     * <p>     * For a unified API that automatically handles existing entities, use {@link #composeSemantic(PublicId, EntityFacade, PatternFacade)}.
      *
      * @param referencedComponent the component this semantic references
      * @param pattern the pattern defining the semantic's structure
@@ -556,8 +542,7 @@ public final class ObservableComposer {
 
     /**
      * Creates a composer for a new pattern entity.
-     * <p>
-     * For a unified API that automatically handles existing entities, use {@link #composePattern(PublicId)}.
+     * <p>     * For a unified API that automatically handles existing entities, use {@link #composePattern(PublicId)}.
      *
      * @return a new pattern composer
      */
@@ -569,11 +554,9 @@ public final class ObservableComposer {
 
     /**
      * Creates a unified composer for a concept entity.
-     * <p>
-     * This is the primary API for working with concepts in ObservableComposer. It automatically
+     * <p>     * This is the primary API for working with concepts in ObservableComposer. It automatically
      * determines whether to create a new entity or edit an existing one based on the PublicId.
-     * <p>
-     * <b>Usage:</b>
+     * <p>     * <b>Usage:</b>
      * <pre>{@code
      * // If entity with publicId exists, it will be edited; otherwise a new one is created
      * EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> composer =
@@ -617,8 +600,7 @@ public final class ObservableComposer {
 
     /**
      * Creates a unified composer for a semantic entity by PublicId.
-     * <p>
-     * This is the primary API for working with semantics in ObservableComposer. It automatically
+     * <p>     * This is the primary API for working with semantics in ObservableComposer. It automatically
      * determines whether to create a new entity or edit an existing one based on the PublicId.
      *
      * @param publicId the PublicId of the semantic; if an entity with this ID exists, it will be edited,
@@ -703,8 +685,7 @@ public final class ObservableComposer {
 
     /**
      * Creates a unified composer for a pattern entity by PublicId.
-     * <p>
-     * This is the primary API for working with patterns in ObservableComposer. It automatically
+     * <p>     * This is the primary API for working with patterns in ObservableComposer. It automatically
      * determines whether to create a new entity or edit an existing one based on the PublicId.
      *
      * @param publicId the PublicId of the pattern; if an entity with this ID exists, it will be edited,
@@ -849,11 +830,9 @@ public final class ObservableComposer {
 
     /**
      * Gets or creates the underlying Transaction for advanced use cases.
-     * <p>
-     * This method is intended for scenarios where direct Transaction access is needed,
+     * <p>     * This method is intended for scenarios where direct Transaction access is needed,
      * such as creating stamps programmatically without using the Observable entity builders.
-     * <p>
-     * <b>Note:</b> Direct transaction manipulation bypasses the Observable framework's
+     * <p>     * <b>Note:</b> Direct transaction manipulation bypasses the Observable framework's
      * tracking and binding capabilities. Use the standard create/edit methods when possible.
      *
      * @return the Transaction instance, creating it if necessary
@@ -949,8 +928,7 @@ public final class ObservableComposer {
 
         /**
          * Sets an optional comment describing the transaction.
-         * <p>
-         * This comment is used when creating the underlying {@link Transaction} and can be helpful
+         * <p>         * This comment is used when creating the underlying {@link Transaction} and can be helpful
          * for debugging and logging purposes.
          *
          * @param transactionComment descriptive comment for the transaction (may be empty or null)
@@ -983,8 +961,7 @@ public final class ObservableComposer {
 
     /**
      * Unified API for both editing existing entities and building new ones.
-     * <p>
-     * This interface provides a consistent API regardless of whether you're creating
+     * <p>     * This interface provides a consistent API regardless of whether you're creating
      * a new entity or modifying an existing one. Users don't need to know the difference.
      *
      * @param <V> the type of editable version (e.g., ObservableConceptVersion.Editable)
@@ -1046,8 +1023,7 @@ public final class ObservableComposer {
 
     /**
      * Builder for creating NEW concept entities with fluent configuration.
-     * <p>
-     * Use this when you need to create a brand new concept from scratch. The builder provides
+     * <p>     * Use this when you need to create a brand new concept from scratch. The builder provides
      * a fluent API for configuring the concept before it's saved to the database.
      *
      * <p><b>When to Use Builder vs Editor</b>
@@ -1212,8 +1188,7 @@ public final class ObservableComposer {
 
     /**
      * Builder for creating NEW semantic entities with fluent field configuration.
-     * <p>
-     * Use this when you need to create a new semantic annotation on an existing entity.
+     * <p>     * Use this when you need to create a new semantic annotation on an existing entity.
      * Semantics attach meaning to entities through patterns with typed fields.
      *
      * <p><b>When to Use Builder vs Editor</b>
@@ -1570,8 +1545,7 @@ public final class ObservableComposer {
 
     /**
      * Editor for modifying EXISTING concept entities.
-     * <p>
-     * Use this when you need to edit a concept that already exists in the database.
+     * <p>     * Use this when you need to edit a concept that already exists in the database.
      * The editor creates a new editable version with the composer's STAMP coordinates,
      * allowing you to modify the entity while tracking changes.
      *
@@ -1680,8 +1654,7 @@ public final class ObservableComposer {
 
     /**
      * Editor for modifying EXISTING semantic entities.
-     * <p>
-     * Use this when you need to edit a semantic that already exists in the database.
+     * <p>     * Use this when you need to edit a semantic that already exists in the database.
      * The editor creates a new editable version with the composer's STAMP coordinates,
      * providing access to editable fields for UI binding and modification.
      *

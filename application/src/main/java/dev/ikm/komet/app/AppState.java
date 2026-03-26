@@ -17,11 +17,9 @@ package dev.ikm.komet.app;
 
 /**
  * Represents the various states of the Komet application lifecycle.
- * <p>
- * The {@code AppState} enum defines the different stages that the application transitions through,
+ * <p>The {@code AppState} enum defines the different stages that the application transitions through,
  * from initialization to shutdown. These states help manage the application's behavior
  * and user interactions at each phase of its execution.
- * </p>
  */
 public enum AppState {
     /**

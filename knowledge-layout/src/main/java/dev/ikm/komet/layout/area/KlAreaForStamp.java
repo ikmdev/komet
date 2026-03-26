@@ -13,8 +13,7 @@ import javafx.scene.layout.Region;
  * designed for managing stamp-based field areas within a field layout.
  * This interface extends {@link KlFieldArea} with a fixed data type of {@link StampFacade}
  * and a generic type for JavaFX regions.
- * <p>
- * The KlFieldAreaForStamp interface establishes a contract for interacting with
+ * <p>The KlFieldAreaForStamp interface establishes a contract for interacting with
  * and managing fields that are specifically tied to stamp data. It inherits
  * the core functionality from its parent interface while providing additional
  * specificity for handling stamps, encapsulated in the {@link StampFacade}.
@@ -32,8 +31,7 @@ public non-sealed interface KlAreaForStamp<FX extends Region>
      * Represents a factory interface for creating and managing instances of {@code KlFieldAreaForStamp},
      * which are specialized field areas designed for managing observable fields of type {@code StampFacade}
      * associated with JavaFX {@code Region} elements.
-     * <p>
-     * This interface extends {@code KlFieldArea.Factory} and provides the contract for
+     * <p>     * This interface extends {@code KlFieldArea.Factory} and provides the contract for
      * creating and configuring field areas specifically for stamp-based observable fields.
      * It leverages the type-safe operations defined in the parent interface to bind and
      * manage {@code StampFacade} fields within JavaFX components.

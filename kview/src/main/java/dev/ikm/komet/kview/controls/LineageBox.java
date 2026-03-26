@@ -27,11 +27,9 @@ import static dev.ikm.komet.kview.controls.ConceptNavigatorUtils.getSecondaryPar
 /**
  * <p>The LineageBox is a customized {@link ScrollPane}, and provides a scrolled, clipped viewport
  * of its content.
- * </p>
  * <p>The LineageBox is the control that renders an {@link InvertedTree} for a given
  * {@link ConceptNavigatorTreeItem} that has two or more parents. This happens whenever a
  * concept appears in the regular {@link KLConceptNavigatorControl} in two or more lineages.
- * </p>
  * <p>For instance, if D is part of the lineages A-B-C-D and A-E-D, then C and E are its parents:</p>
  * <pre><code>
  *     A --- B --- C -- D
@@ -49,15 +47,12 @@ import static dev.ikm.komet.kview.controls.ConceptNavigatorUtils.getSecondaryPar
  *      |
  *        D
  * </code></pre>
- * </p>
  * <p>The control's content is a {@link VBox} that holds one {@link ParentHBox} per item of the
  * inverted tree, starting by the secondary parents of the selected concept, resembling a TreeView, but
  * there is no TreeView control.
- * </p>
  * <p>For a selected {@link ConceptNavigatorTreeItem}, when
  * {@link ConceptNavigatorTreeItem#viewLineageProperty()} is set to true, the LineageBox is displayed
  * as node of the {@link KLConceptNavigatorTreeCell} that holds the concept.
- * </p>
  */
 public class LineageBox extends ScrollPane {
 
@@ -82,7 +77,6 @@ public class LineageBox extends ScrollPane {
     /**
      * <p>Creates a {@link LineageBox} instance, which initially is just an
      * empty {@link VBox} as content of the {@link ScrollPane}.
-     * </p>
      */
     public LineageBox() {
 
@@ -97,7 +91,6 @@ public class LineageBox extends ScrollPane {
     /**
      * <p>An object property that holds the {@link ConceptNavigatorTreeItem} for which the
      * {@link LineageBox} will be created.
-     * </p>
      */
     private final ObjectProperty<ConceptNavigatorTreeItem> conceptProperty = new SimpleObjectProperty<>(this, "concept") {
 
@@ -118,7 +111,6 @@ public class LineageBox extends ScrollPane {
 
     /**
      * <p>An object property that holds the {@link Navigator}.
-     * </p>
      */
     private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator");
     public final ObjectProperty<Navigator> navigatorProperty() {
@@ -135,12 +127,10 @@ public class LineageBox extends ScrollPane {
      * <p>For a given {@link ConceptNavigatorTreeItem}, gets it primary parent, and the list of
      * secondary parents. For each of these, a {@link ParentHBox} instance is created and
      * added to the root {@link VBox#getChildren()}.
-     * </p>
      * <p>Note: Since the {@link LineageBox} is part of a cell, due to scrolling and cell reuse,
      * this method can be called when the inverted tree was already showing and expanded up until
      * some level, so {@link InvertedTree#iterateTree(InvertedTree, Consumer)} is called to
      * rebuild all existing {@link ParentHBox} objects.
-     * </p>
      */
     private void initialize() {
         root.getChildren().removeIf(HBox.class::isInstance);
@@ -179,18 +169,15 @@ public class LineageBox extends ScrollPane {
      * - a spacer region, with a width strictly set based on the indentation level.
      * - an icon
      * - a concept label
-     * </p>
      * <p>The icon is set via style classes that are set based on the following:
      * - is root
      * - has multiple parents
      * - has siblings, is first sibling, is last sibling
      * - the current level of indentation
-     * </p>
      * <p>PseudoClasses are set based on the following:
      * - is root
      * - is leaf
      * - has siblings
-     * </p>
      */
     private class ParentHBox extends HBox {
 
@@ -199,7 +186,6 @@ public class LineageBox extends ScrollPane {
 
         /**
          * <p>Create a ParentHBox instance.
-         * </p>
          * @param lineageBoxRoot The root {@link VBox}.
          * @param parentTree the {@link InvertedTree}
          * @param treeItem the {@link InvertedTree.ConceptItem} of the parent {@link InvertedTree}.
@@ -277,13 +263,10 @@ public class LineageBox extends ScrollPane {
 
         /**
          * <p>Create a {@link Label} for the concept
-         * </p>
          * <p>A tooltip is set in case the label text is too long and it gets truncated.
-         * </p>
          * <p>A mouse click listener is added to mimic the tree expand/collapse gesture.
          * When the item is collapsed, new {@link ParentHBox} are added, with the ancestors.
          * When the item is expanded, the existing ancestors are removed.
-         * </p>
          * @param treeItem the {@link InvertedTree.ConceptItem}
          * @return a {@link Label}
          */

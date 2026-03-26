@@ -17,8 +17,7 @@ package dev.ikm.komet.reasoner;
 
 /**
  * The Interface SubstitutionFieldSpecification.
- * <p>
- * Placeholder for now. Implementation would pull value from a semantic when
+ * <p>Placeholder for now. Implementation would pull value from a semantic when
  * extracting axioms.
  *
  * 

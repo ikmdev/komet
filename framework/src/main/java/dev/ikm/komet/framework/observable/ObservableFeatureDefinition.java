@@ -238,22 +238,18 @@ public final class ObservableFeatureDefinition
 
     /**
      * Editable feature definition wrapper for pattern version field definitions.
-     * <p>
-     * Provides an editable counterpart to {@link ObservableFeatureDefinition}, though with a simpler
+     * <p>     * Provides an editable counterpart to {@link ObservableFeatureDefinition}, though with a simpler
      * implementation since pattern field definitions are typically edited as complete metadata units
      * rather than individual field values.
-     * <p>
-     * <b>Design Note:</b> Unlike {@link ObservableField.Editable} which extends {@link ObservableSemanticField.Editable},
+     * <p>     * <b>Design Note:</b> Unlike {@link ObservableField.Editable} which extends {@link ObservableSemanticField.Editable},
      * this class is standalone because {@link ObservableFeatureDefinition} does not extend
      * {@link ObservableSemanticField} - it directly implements the Feature interface. This maintains
      * architectural consistency while providing API symmetry.
-     * <p>
-     * <b>Usage Context:</b> For pattern editing, the purpose and meaning are typically edited through
+     * <p>     * <b>Usage Context:</b> For pattern editing, the purpose and meaning are typically edited through
      * {@link ObservablePatternVersion.Editable} properties rather than through individual field definition
      * editors. This class exists primarily for API completeness and potential future enhancements where
      * fine-grained field definition editing may be needed.
-     * <p>
-     * <b>Example Usage:</b>
+     * <p>     * <b>Example Usage:</b>
      * <pre>{@code
      * // Typically accessed through pattern version editing
      * ObservablePatternVersion.Editable editablePattern = pattern.getEditableVersion(stamp);

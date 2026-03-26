@@ -19,9 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The InfoTask class is a task that prompts the user to enter a Git Remote URL.
- * It extends the Task<Boolean> class, indicating that it returns a Boolean value upon completion.
- * <p>
- * This task adds the URL to the git config as the `origin` remote, so git commands will use the supplied remote by default.
+ * It extends the Task&lt;Boolean&gt; class, indicating that it returns a Boolean value upon completion.
+ * <p>This task adds the URL to the git config as the `origin` remote, so git commands will use the supplied remote by default.
  */
 public class InfoTask extends Task<Boolean>  {
 

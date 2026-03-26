@@ -10,8 +10,7 @@ import javafx.scene.layout.Region;
  * and interacting with areas that handle observable lists of elements. This interface defines
  * contract methods for managing and observing list-based properties and their JavaFX
  * region-based representation.
- * <p>
- * The primary purpose of this interface is to provide functionality for retrieving
+ * <p>The primary purpose of this interface is to provide functionality for retrieving
  * and updating the managed list of elements, as well as observing the selected elements
  * in the list. These methods facilitate seamless integration between the observable
  * data structure and its UI representation.
@@ -65,8 +64,7 @@ public sealed interface KlAreaForList<LE, OL extends ObservableList<LE>, FX exte
      * Represents a factory interface within the Knowledge Layout (KL) framework for creating
      * and managing instances of list areas that handle observable lists of elements and their
      * associated JavaFX regions.
-     * <p>
-     * This factory extends the functionality of {@code KlPropertyArea.Factory} by specializing
+     * <p>     * This factory extends the functionality of {@code KlPropertyArea.Factory} by specializing
      * in the creation of list-based property areas. It focuses on regions containing observable
      * lists and provides support for bindings and operations specific to such lists.
      *

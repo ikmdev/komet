@@ -96,8 +96,7 @@ public class ObservableLongList extends ModifiableObservableListBase<Long> {
 
     /**
      * Creates an ObservableLongList with the specified initial capacity.
-     * <p>
-     * <b>Important:</b> This creates an <i>empty</i> list with pre-allocated storage capacity.
+     * <p>     * <b>Important:</b> This creates an <i>empty</i> list with pre-allocated storage capacity.
      * To create a list with a single value, use {@code new ObservableLongList(new long[]{value})}
      * or {@code new ObservableLongList(value1, value2, ...)} for multiple values.
      *
@@ -120,16 +119,14 @@ public class ObservableLongList extends ModifiableObservableListBase<Long> {
 
     /**
      * Creates an ObservableLongList containing the specified values.
-     * <p>
-     * <b>Examples:</b>
+     * <p>     * <b>Examples:</b>
      * <ul>
      *   <li>{@code new ObservableLongList()} - empty list</li>
      *   <li>{@code new ObservableLongList(42)} - <b>CREATES EMPTY LIST WITH CAPACITY 42</b></li>
      *   <li>{@code new ObservableLongList(new long[]{42L})} - list with single value 42</li>
      *   <li>{@code new ObservableLongList(1L, 2L, 3L)} - list with values [1, 2, 3]</li>
      * </ul>
-     * <p>
-     * <b>⚠️ Important:</b> Due to Java's overload resolution rules, passing a single
+     * <p>     * <b>⚠️ Important:</b> Due to Java's overload resolution rules, passing a single
      * int value calls the capacity constructor, not this varargs constructor. To create
      * a list with a single value, wrap it in an array: {@code new ObservableLongList(new long[]{value})}
      *
@@ -166,8 +163,7 @@ public class ObservableLongList extends ModifiableObservableListBase<Long> {
 
     /**
      * Adds a primitive long value at the specified index without boxing.
-     * <p>
-     * This is the unboxed version of {@link #doAdd(int, Long)}, avoiding the creation
+     * <p>     * This is the unboxed version of {@link #doAdd(int, Long)}, avoiding the creation
      * of temporary Long wrapper objects. Use this method when working with primitive values
      * for maximum performance.
      *
@@ -180,8 +176,7 @@ public class ObservableLongList extends ModifiableObservableListBase<Long> {
 
     /**
      * Sets the primitive long value at the specified index without boxing, returning the old value.
-     * <p>
-     * This is the unboxed version of {@link #doSet(int, Long)}, avoiding the creation
+     * <p>     * This is the unboxed version of {@link #doSet(int, Long)}, avoiding the creation
      * of temporary Long wrapper objects. Use this method when working with primitive values
      * for maximum performance.
      *
@@ -197,8 +192,7 @@ public class ObservableLongList extends ModifiableObservableListBase<Long> {
 
     /**
      * Removes and returns the primitive long value at the specified index without boxing.
-     * <p>
-     * This is the unboxed version of {@link #doRemove(int)}, avoiding the creation
+     * <p>     * This is the unboxed version of {@link #doRemove(int)}, avoiding the creation
      * of temporary Long wrapper objects. Use this method when working with primitive values
      * for maximum performance.
      *
@@ -256,8 +250,7 @@ public class ObservableLongList extends ModifiableObservableListBase<Long> {
 
     /**
      * Removes the first occurrence of the specified primitive long value from this list, if present.
-     * <p>
-     * This method operates directly on primitive values without boxing, providing better performance
+     * <p>     * This method operates directly on primitive values without boxing, providing better performance
      * and eliminating garbage collection pressure compared to {@code remove(Long.valueOf(value))}.
      *
      * <p><b>Performance Benefits</b>

@@ -100,7 +100,7 @@ public class XmlForKometPreferences {
      * an XML document conforming to the definition in the Preferences spec.
      *
      * @throws IOException if writing to the specified output stream
-     *         results in an <tt>IOException</tt>.
+     *         results in an {@code IOException}.
      * @throws BackingStoreException if preference data cannot be read from
      *         backing store.
      * @throws IllegalStateException if this node (or an ancestor) has been
@@ -202,7 +202,7 @@ public class XmlForKometPreferences {
      * spec.
      *
      * @throws IOException if reading from the specified output stream
-     *         results in an <tt>IOException</tt>.
+     *         results in an {@code IOException}.
      * @throws InvalidPreferencesFormatException Data on input stream does not
      *         constitute a valid XML document with the mandated document type.
      */
@@ -354,7 +354,7 @@ public class XmlForKometPreferences {
      * as the internal (undocumented) format for FileSystemPrefs.
      *
      * @throws IOException if writing to the specified output stream
-     *         results in an <tt>IOException</tt>.
+     *         results in an {@code IOException}.
      */
     static void exportMap(OutputStream os, Map<String, String> map) throws IOException {
         Document doc = createPrefsDoc("map");
@@ -381,7 +381,7 @@ public class XmlForKometPreferences {
      * the key-value pairs int the XML-document when this method returns.)
      *
      * @throws IOException if reading from the specified output stream
-     *         results in an <tt>IOException</tt>.
+     *         results in an {@code IOException}.
      * @throws InvalidPreferencesFormatException Data on input stream does not
      *         constitute a valid XML document with the mandated document type.
      */

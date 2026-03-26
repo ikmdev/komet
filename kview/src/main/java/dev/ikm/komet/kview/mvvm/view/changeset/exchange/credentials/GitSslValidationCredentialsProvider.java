@@ -37,8 +37,7 @@ import java.util.regex.Pattern;
 
 /**
  * Interactive credentials provider that handles SSL certificate validation failures.
- * <p>
- * This provider presents user dialogs when SSL certificate validation fails, allowing users to
+ * <p>This provider presents user dialogs when SSL certificate validation fails, allowing users to
  * choose appropriate trust levels for their Git operations. It maintains session-level decisions
  * to avoid repeated prompts for the same repository during the application session, creating a
  * smoother user experience while maintaining security awareness.
@@ -63,8 +62,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
 
     /**
      * Removes JGit formatting placeholders from internationalized message strings.
-     * <p>
-     * JGit uses placeholder patterns like {0}, {1} in its internationalized messages
+     * <p>     * JGit uses placeholder patterns like {0}, {1} in its internationalized messages
      * that need to be cleaned up for proper string matching in our SSL detection logic.
      *
      * @param string the input string that may contain formatting placeholders
@@ -76,8 +74,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
 
     /**
      * SSL certificate trust decision options available to users.
-     * <p>
-     * These options provide a graduated approach to SSL trust, allowing users to choose
+     * <p>     * These options provide a graduated approach to SSL trust, allowing users to choose
      * the appropriate level of trust based on their security requirements and the
      * specific context of their Git operations.
      */
@@ -141,8 +138,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
 
     /**
      * Determines if a credential item is SSL-related and supported by this provider.
-     * <p>
-     * This provider specifically handles SSL certificate validation failures, so it
+     * <p>     * This provider specifically handles SSL certificate validation failures, so it
      * only supports credential items related to SSL trust decisions. Other credential
      * types (like username/password) are handled by different providers.
      *
@@ -155,8 +151,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
 
     /**
      * Checks if the item is an SSL-related informational message.
-     * <p>
-     * JGit provides informational messages explaining SSL trust failures before
+     * <p>     * JGit provides informational messages explaining SSL trust failures before
      * presenting trust options. We support these to provide complete SSL handling.
      *
      * @param item the credential item to check
@@ -170,8 +165,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
 
     /**
      * Checks if the item is SSL-related yes/no prompt.
-     * <p>
-     * JGit presents SSL trust decisions as yes/no questions with specific prompt text
+     * <p>     * JGit presents SSL trust decisions as yes/no questions with specific prompt text
      * patterns. This method identifies those patterns using JGit's internationalized
      * text constants to ensure compatibility across different locales.
      *
@@ -223,8 +217,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
 
     /**
      * Determines if a YesNoType item is specifically SSL-related.
-     * <p>
-     * This method provides more specific SSL detection for YesNoType items,
+     * <p>     * This method provides more specific SSL detection for YesNoType items,
      * complementing the general SSL detection in isSslYesNoType.
      *
      * @param item the yes/no credential item to check
@@ -239,8 +232,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
 
     /**
      * Determines the user's SSL trust decision, checking cache first, then prompting if needed.
-     * <p>
-     * This method implements a caching strategy to avoid repeatedly prompting users for
+     * <p>     * This method implements a caching strategy to avoid repeatedly prompting users for
      * the same repository during a session. If no cached decision exists, it presents
      * the SSL trust dialog to get a fresh decision from the user.
      *
@@ -258,8 +250,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
 
     /**
      * Gets user decision from dialog and manages session-level caching.
-     * <p>
-     * This method coordinates between the dialog presentation and the session cache,
+     * <p>     * This method coordinates between the dialog presentation and the session cache,
      * ensuring that TRUST_NOW decisions are cached to avoid repeated prompts during
      * the same application session.
      *
@@ -281,8 +272,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
 
     /**
      * Applies the SSL trust decision to a yes/no credential item.
-     * <p>
-     * This method translates the user's high-level trust decision into the specific
+     * <p>     * This method translates the user's high-level trust decision into the specific
      * yes/no responses that JGit expects for each type of SSL trust prompt. The
      * switch expression provides clear mapping between decision types and responses.
      *

@@ -24,13 +24,11 @@ import static dev.ikm.komet.kview.fxutils.window.CursorMappings.getEdgeDirection
 
 /**
  * Utility for creating and managing window resize handles.
- * <p>
- * This class provides functionality to create and configure {@link ResizeHandle}
+ * <p>This class provides functionality to create and configure {@link ResizeHandle}
  * instances for window resizing operations. It centralizes the creation logic and
  * configuration parameters for both edge handles (N, E, S, W) and corner handles
  * (NW, NE, SE, SW).
- * <p>
- * The class allows for consistent configuration across all resize handles by
+ * <p>The class allows for consistent configuration across all resize handles by
  * specifying common properties once at initialization:
  * <ul>
  *   <li>Edge hit area width - controls the thickness of edge resize handles</li>
@@ -66,8 +64,7 @@ public class ResizeHandleFactory {
 
     /**
      * Creates a complete set of resize handles for all supported directions.
-     * <p>
-     * This convenience method creates all eight standard resize handles (four edges
+     * <p>     * This convenience method creates all eight standard resize handles (four edges
      * and four corners) with a consistent configuration. The handles are mapped by
      * their direction for easy retrieval and positioning.
      *

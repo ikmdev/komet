@@ -41,13 +41,11 @@ public class ConfirmationPaneTestFX {
 
     /**
      * Sets up the test environment before each test.
-     * <p>
-     * This method performs the following actions:
+     * <p>     * This method performs the following actions:
      * <ul>
      *   <li>Registers the primary stage in TestFX.</li>
      *   <li>Loads the ConfirmationPane from FXML and displays it in the stage.</li>
      * </ul>
-     * </p>
      *
      * @throws Exception if an error occurs during setup
      */
@@ -75,12 +73,10 @@ public class ConfirmationPaneTestFX {
 
     /**
      * Cleans up the test environment after each test.
-     * <p>
-     * This method performs the following actions:
+     * <p>     * This method performs the following actions:
      * <ul>
      *   <li>Cleans up TestFX stages and mocked resources.</li>
      * </ul>
-     * </p>
      *
      * @throws Exception if an error occurs during cleanup
      */

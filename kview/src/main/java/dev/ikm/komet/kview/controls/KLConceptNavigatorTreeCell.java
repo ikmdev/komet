@@ -27,10 +27,8 @@ import static dev.ikm.komet.kview.controls.KLConceptNavigatorControl.MAX_LEVEL;
 
 /**
  * <p>The {@link Cell} type used with the {@link KLConceptNavigatorControl} control.
- * </p>
  * <p>Uses a {@link ConceptFacade} as the type of the value contained within the
  * {@link #treeItemProperty() TreeItem} property.
- * </p>
  */
 public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
 
@@ -56,7 +54,6 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
 
     /**
      * <p>Several pseudoClasses definitions for connecting lines.
-     * </p>
      * @see PS_STATE
      */
     public static final PseudoClass LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-long-hover");
@@ -80,14 +77,12 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
      * <p>PseudoClasses related to the {@link LineageBox}. When the viewLineage property of the
      * concept navigator tree item is set to true, the cell has to accommodate some space to
      * show the lineage box, and apply some visual changes to the {@link ConceptTile}.
-     * </p>
      * @see #viewLineageProperty()
      */
     private static final PseudoClass SHOW_LINEAGE_PSEUDO_CLASS = PseudoClass.getPseudoClass("show-lineage");
 
     /**
      * <p>PseudoClasses for tags
-     * </p>
      * @see ConceptNavigatorTreeItem#tagProperty()
      */
     private static final PseudoClass ADDED_TAG_PSEUDO_CLASS = PseudoClass.getPseudoClass("added-tag");
@@ -97,10 +92,8 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
     /**
      * <p>Custom data format identifier used as means of identifying the data stored on a dragboard
      * when one or more concept items are selected and dragged to a given target.
-     * </p>
      * <p>For each item, a list of UUID[] is added to the dragboard, from
      * <pre><code>conceptFacade.publicId().asUuidArray()</code></pre>
-     * </p>
      */
     public static final DataFormat CONCEPT_NAVIGATOR_DRAG_FORMAT;
     static {
@@ -113,16 +106,12 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
 
     /**
      * <p>Creates a KLConceptNavigatorTreeCell instance.
-     * </p>
      * <p>A {@link ConceptTile} instance is created as well. It will be set as the
      * graphic node for this cell.
-     * </p>
      * <p>The default disclosure node of the {@link TreeCell} is removed, since the
      * conceptTile provides a custom one.
-     * </p>
      * <p>A double click event on this cell is processed passing its concept to the
      * {@link KLConceptNavigatorControl#onActionProperty()}.
-     * </p>
      * @param treeView the {@link KLConceptNavigatorControl} that holds this cell
      */
     public KLConceptNavigatorTreeCell(KLConceptNavigatorControl treeView) {
@@ -157,9 +146,7 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
 
     /**
      * <p>Updates the index associated with this IndexedCell.
-     * </p>
      * <p>This is overridden to force a cleanup of discarded cells
-     * </p>
      * @param newIndex the index associated with this indexed cell
      */
     @Override
@@ -172,10 +159,8 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
 
     /**
      * <p>Invoked during the layout pass to layout the children in this parent.
-     * </p>
      * <p>This is overridden to force a call to {@link #updateItem(ConceptFacade, boolean)} when
      * the cell is marked dirty.
-     * </p>
      */
     @Override
     protected void layoutChildren() {
@@ -190,7 +175,6 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
      * <p>Set the {@link ConceptTile} as graphic for not empty cells, with an
      * updated {@link ConceptFacade}, updating the pseudoClasses state of this
      * cell, and its tooltip.
-     * </p>
      * @param item The new item for the cell.
      * @param empty whether or not this cell represents data from the list. If it
      *        is empty, then it does not represent any domain data, but is a cell
@@ -222,7 +206,6 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
 
     /**
      * <p>Boolean property that toggles the 'show-lineage' pseudoClass, related to the {@link LineageBox}.
-     * </p>
      * @see ConceptNavigatorTreeItem#viewLineageProperty()
      */
     private final BooleanProperty viewLineageProperty = new SimpleBooleanProperty(this, "viewLineage") {
@@ -244,7 +227,6 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
     /**
      * <p>Property that toggles the 'added-tag' and 'retired-tag' pseudoClasses, when the {@link ConceptNavigatorTreeItem.TAG}
      * for the concept associated to this treeCell is set.
-     * </p>
      * @see ConceptNavigatorTreeItem#tagProperty()
      */
     private final ObjectProperty<ConceptNavigatorTreeItem.TAG> tagProperty = new SimpleObjectProperty<>(this, "tag", ConceptNavigatorTreeItem.TAG.NONE) {
@@ -267,7 +249,6 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
 
     /**
      * <p>Property that toggles the 'highlighted' pseudo class.
-     * </p>
      * @see ConceptNavigatorTreeItem#highlightedProperty()
      */
     private final BooleanProperty highlightedProperty = new SimpleBooleanProperty(this, "highlighted") {

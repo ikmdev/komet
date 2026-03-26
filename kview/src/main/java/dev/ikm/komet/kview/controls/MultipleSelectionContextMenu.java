@@ -10,10 +10,8 @@ import java.util.ResourceBundle;
 
 /**
  * <p>A popup control containing an ObservableList of menu items.
- * </p>
  * <p>It is used by the {@link KLConceptNavigatorControl}, to show different options to the user, when there is
  * a multiple selection of {@link ConceptNavigatorTreeItem}.
- * </p>
  */
 public class MultipleSelectionContextMenu extends ContextMenu {
 
@@ -43,7 +41,6 @@ public class MultipleSelectionContextMenu extends ContextMenu {
     /**
      * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #populateMenuItem} menu
      * item is fired.
-     * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
     public void setPopulateMenuItemAction(EventHandler<ActionEvent> eventHandler) {
@@ -53,7 +50,6 @@ public class MultipleSelectionContextMenu extends ContextMenu {
     /**
      * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #journalMenuItem} menu
      * item is fired.
-     * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
     public void setJournalMenuItemAction(EventHandler<ActionEvent> eventHandler) {
@@ -63,7 +59,6 @@ public class MultipleSelectionContextMenu extends ContextMenu {
     /**
      * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #chapterMenuItem} menu
      * item is fired.
-     * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
     public void setChapterMenuItemAction(EventHandler<ActionEvent> eventHandler) {
@@ -73,7 +68,6 @@ public class MultipleSelectionContextMenu extends ContextMenu {
     /**
      * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #copyMenuItem} menu
      * item is fired.
-     * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
     public void setCopyMenuItemAction(EventHandler<ActionEvent> eventHandler) {
@@ -83,7 +77,6 @@ public class MultipleSelectionContextMenu extends ContextMenu {
     /**
      * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #saveMenuItem} menu
      * item is fired.
-     * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
     public void setSaveMenuItemAction(EventHandler<ActionEvent> eventHandler) {
@@ -93,7 +86,6 @@ public class MultipleSelectionContextMenu extends ContextMenu {
     /**
      * {@inheritDoc}
      * <p>Overridden to add the stylesheets from the control to the contextMenu.
-     * </p>
      * @param ownerWindow The owner of the popup. This must not be null.
      * @param anchorX the x position of the popup anchor in screen coordinates
      * @param anchorY the y position of the popup anchor in screen coordinates

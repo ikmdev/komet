@@ -22,8 +22,7 @@ import java.util.function.Supplier;
 
 /**
  * Generic abstract base for type-safe observable version implementations.
- * <p>
- * Provides the generic type parameters and shared implementation for all observable
+ * <p>Provides the generic type parameters and shared implementation for all observable
  * entity version types. This is Layer 2 of the Marker-Generic-Concrete pattern,
  * sitting between the simple {@link ObservableVersion} marker interface and
  * concrete final implementations like {@link ObservableConceptVersion}.
@@ -87,8 +86,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
     /**
      * Returns the observable entity (chronology) containing this version.
-     * <p>
-     * Implements the marker interface method with concrete return type.
+     * <p>     * Implements the marker interface method with concrete return type.
      */
     @Override
     public final OE getObservableEntity() {
@@ -234,15 +232,12 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
     /**
      * Returns the canonical editable version for this ObservableVersion with the specified stamp.
-     * <p>
-     * The same stamp will always return the same editable version instance, allowing multiple
+     * <p>     * The same stamp will always return the same editable version instance, allowing multiple
      * GUI components to bind to and edit the same working copy. Different stamps (e.g., for
      * different authors) will return different editable versions.
-     * <p>
-     * Uses {@link ObservableStamp} instead of immutable StampEntity because the stamp can change
+     * <p>     * Uses {@link ObservableStamp} instead of immutable StampEntity because the stamp can change
      * from uncommitted to committed state during the editing lifecycle.
-     * <p>
-     * The editable version caches all field changes until either:
+     * <p>     * The editable version caches all field changes until either:
      * <ul>
      *   <li>{@link Editable#save()} - writes uncommitted version to database</li>
      *   <li>{@link Editable#commit()} - commits transaction and writes committed version</li>
@@ -256,8 +251,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
     /**
      * Base class for editable versions that cache field changes for GUI editing.
-     * <p>
-     * Implements {@link EditableVersion} marker interface to provide clean API usage.
+     * <p>     * Implements {@link EditableVersion} marker interface to provide clean API usage.
      *
      * @param <OE> the observable entity type
      * @param <OV> the observable version type
@@ -291,8 +285,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
         /**
          * Returns the original ObservableVersion being edited.
-         * <p>
-         * Implements {@link EditableVersion#getObservableVersion()}.
+         * <p>         * Implements {@link EditableVersion#getObservableVersion()}.
          */
         @Override
         public OV getObservableVersion() {
@@ -301,8 +294,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
         /**
          * Returns the observable edit stamp for this editable version.
-         * <p>
-         * Implements {@link EditableVersion#getEditStamp()}
+         * <p>         * Implements {@link EditableVersion#getEditStamp()}
          */
         @Override
         public ObservableStamp getEditStamp() {
@@ -311,8 +303,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
         /**
          * Returns the current working version with all cached changes.
-         * <p>
-         * This is the version that will be saved/committed.
+         * <p>         * This is the version that will be saved/committed.
          */
         public V getWorkingVersion() {
             return workingVersion;
@@ -320,8 +311,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
         /**
          * Returns whether this editable version has unsaved changes.
-         * <p>
-         * Implements {@link EditableVersion#hasUnsavedChanges()}.
+         * <p>         * Implements {@link EditableVersion#hasUnsavedChanges()}.
          */
         @Override
         public boolean hasUnsavedChanges() {
@@ -340,8 +330,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
         /**
          * Saves the current working version as an uncommitted version to the database.
-         * <p>
-         * Implements {@link EditableVersion#save()}.
+         * <p>         * Implements {@link EditableVersion#save()}.
          */
         @Override
         public void save() {
@@ -383,8 +372,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
         /**
          * Commits the transaction and writes the committed version to the database.
-         * <p>
-         * Implements {@link EditableVersion#commit()}.
+         * <p>         * Implements {@link EditableVersion#commit()}.
          */
         @Override
         public void commit() {
@@ -404,8 +392,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
         /**
          * Discards all cached changes and reverts to the original version.
-         * <p>
-         * Implements {@link EditableVersion#reset()}.
+         * <p>         * Implements {@link EditableVersion#reset()}.
          */
         @Override
         public void reset() {
@@ -414,8 +401,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
         /**
          * Returns the observable chronology containing this editable version.
-         * <p>
-         * <b>Note:</b> Currently returns the entity containing the version.
+         * <p>         * <b>Note:</b> Currently returns the entity containing the version.
          * This is a forward-compatible implementation for potential future
          * entity-level editing features.
          */
@@ -449,8 +435,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
     /**
      * Composite key combining component nid and stamp nid for cache lookup.
-     * <p>
-     * This record ensures that each combination of component (entity) and stamp
+     * <p>     * This record ensures that each combination of component (entity) and stamp
      * maps to exactly one canonical editable version instance.
      *
      * @param nid the nid of the component (entity) whose version is being edited
@@ -460,12 +445,10 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
     /**
      * Caffeine cache with weak values ensuring canonical editable versions.
-     * <p>
-     * Uses weak references so that editable versions are automatically garbage collected
+     * <p>     * Uses weak references so that editable versions are automatically garbage collected
      * when no longer referenced by GUI components or application code, preventing memory leaks
      * from unused editing sessions.
-     * <p>
-     * The cache is thread-safe and lock-free, avoiding the need for synchronized blocks
+     * <p>     * The cache is thread-safe and lock-free, avoiding the need for synchronized blocks
      * while maintaining the canonical instance guarantee.
      */
     private static final Cache<EditableVersionKey, EditableVersion>
@@ -476,15 +459,12 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
     /**
      * Gets or creates the canonical editable version for the given observable version and stamp.
-     * <p>
-     * <b>Canonical Instance Guarantee:</b> For any given combination of ObservableVersion and ObservableStamp,
+     * <p>     * <b>Canonical Instance Guarantee:</b> For any given combination of ObservableVersion and ObservableStamp,
      * this method will always return the same Editable instance. Multiple calls with the same
      * stamp will return the exact same object reference.
-     * <p>
-     * This ensures that all GUI components binding to the same stamp for editing share the same working copy,
+     * <p>     * This ensures that all GUI components binding to the same stamp for editing share the same working copy,
      * preventing inconsistent state.
-     * <p>
-     * <b>Thread-Safe and Lock-Free:</b> Uses Caffeine's atomic get-or-create operation, avoiding the need
+     * <p>     * <b>Thread-Safe and Lock-Free:</b> Uses Caffeine's atomic get-or-create operation, avoiding the need
      * for synchronized blocks while maintaining the canonical instance guarantee under concurrent access.
      *
      * @param observableVersion the ObservableVersion to create an editable version for

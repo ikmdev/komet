@@ -42,17 +42,13 @@ import static dev.ikm.komet.kview.mvvm.view.login.LoginViewPropertyName.*;
 
 /**
  * ViewModel for the Login View.
- * <p>
- * This class manages the state and validation logic for the login view,
+ * <p>This class manages the state and validation logic for the login view,
  * including handling user input, validating credentials, and performing authentication.
  * It interacts with the {@link BasicUserManager} for user management and uses
  * {@link BasicAuthenticationProvider} for authentication operations.
- * </p>
- * <p>
- * The {@code LoginViewModel} extends {@link ValidationViewModel}, leveraging its
+ * <p>The {@code LoginViewModel} extends {@link ValidationViewModel}, leveraging its
  * property management and validation framework to ensure that user inputs meet
  * the required criteria before attempting authentication.
- * </p>
  */
 public class LoginViewModel extends ValidationViewModel {
 
@@ -93,12 +89,10 @@ public class LoginViewModel extends ValidationViewModel {
 
     /**
      * Constructs a new {@code LoginViewModel} and initializes properties and validators.
-     * <p>
-     * This constructor sets up the necessary properties for username, password, sign-in button state,
+     * <p>     * This constructor sets up the necessary properties for username, password, sign-in button state,
      * and error messages. It also adds validators to ensure that the username and password meet
      * the required criteria and manages the state of the sign-in button based on input population.
      * Additionally, it asynchronously loads the users file.
-     * </p>
      */
     public LoginViewModel() {
         eventBus = EvtBusFactory.getDefaultEvtBus();
@@ -180,11 +174,9 @@ public class LoginViewModel extends ValidationViewModel {
 
     /**
      * Authenticates the user with the provided username and password.
-     * <p>
-     * This method attempts to authenticate the user using the {@link BasicAuthenticationProvider}.
+     * <p>     * This method attempts to authenticate the user using the {@link BasicAuthenticationProvider}.
      * On successful authentication, it publishes a {@link SignInUserEvent} to notify other components.
      * If authentication fails, it sets an appropriate error message.
-     * </p>
      *
      * @param username The username entered by the user.
      * @param password The password entered by the user.

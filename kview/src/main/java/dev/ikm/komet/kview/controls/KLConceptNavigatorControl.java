@@ -35,13 +35,11 @@ import java.util.function.Function;
  * <p>The KLConceptNavigatorControl control is a {@link TreeView} that provides a view on to a tree root
  * (of type {@link ConceptNavigatorTreeItem}), allowing traversing down into the children of a TreeItem, recursively
  * until a TreeItem has no children (that is, it is a leaf node in the tree).
- * </p>
  * <p>In the simplest case, ConceptNavigatorTreeItem instances may be created in memory, starting from a rootNid and
  * a {@link Navigator}, as such:
- * </p>
  * <pre><code>
  *
- * private List<ConceptNavigatorTreeItem> getChildren(int nid) {
+ * private List&lt;ConceptNavigatorTreeItem&gt; getChildren(int nid) {
  *     return getNavigator().getChildEdges(nid).stream()
  *             .map(edge -&gt; getConceptNavigatorTreeItem(edge.destinationNid(), nid))
  *             .toList();
@@ -64,14 +62,12 @@ import java.util.function.Function;
  *
  * <p>This approach works well for simple tree structures, or when the data is not
  * excessive (so that it can easily fit in memory).
- * </p>
  * <p>However, the current implementation takes into account that the tree data can be huge, so
  * the ConceptNavigatorTreeItem instances are created on-demand in a memory-efficient way, only when
  * the user requires them, which is when the treeItem gets expanded:
- * </p>
  * <pre><code>
  *
- * private List<ConceptNavigatorTreeItem> getChildren(int nid) {
+ * private List&lt;ConceptNavigatorTreeItem&gt; getChildren(int nid) {
  *     return getNavigator().getChildEdges(nid).stream()
  *             .map(edge -&gt; getConceptNavigatorTreeItem(edge.destinationNid(), nid))
  *             .toList();
@@ -98,11 +94,9 @@ import java.util.function.Function;
  * <p>The visuals of the KLConceptNavigatorControl are customized by replacing the default cell factory with a cell
  * factory is used to generate {@link KLConceptNavigatorTreeCell} instances, which are used to represent an item
  * in the TreeView.
- * </p>
  * <p>This TreeView implementation is customized with connecting lines are added between a
  * {@link ConceptNavigatorTreeItem} and all its ancestors, to illustrate the concept lineage. These lines become
  * highlighted when the concepts are long-hovered or selected.
- * </p>
  * <p>A floating or sticky header is added, on top of the cells.</p>
  */
 public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
@@ -111,7 +105,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * <p>Sets the maximum level of indentation expected in the dataset. This is required to create in advance
      * the pseudoClasses for all the connecting lines that are drawn per {@link KLConceptNavigatorTreeCell} based
      * on the indentation level of a given {@link ConceptNavigatorTreeItem}.
-     * </p>
      * <p>If needed, it can be increased without any significant performance lost.</p>
      * @see ConceptNavigatorUtils#STYLE
      */
@@ -141,12 +134,9 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     /**
      * <p>Creates a {@link KLConceptNavigatorControl} instance, and sets by default a hidden root tree item, and a
      * multiple selection mode.
-     * </p>
      * <p>{@link KLConceptNavigatorTreeCell} is set as the cell factory.
-     * </p>
      * <p>Listeners are added to keep the highlighted {@link ConceptNavigatorTreeItem} in sync with
      * the current selected item.
-     * </p>
      * @see KLConceptNavigatorTreeViewSkin#selectAllAncestors(ConceptNavigatorTreeItem)
      */
     public KLConceptNavigatorControl() {
@@ -186,7 +176,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
 
     /**
      * <p>String property that is used to define the text for the floating or sticky header.
-     * </p>
      * <p>If null or not set, the header is not visible</p>
      */
     private final StringProperty headerProperty = new SimpleStringProperty(this, "header");
@@ -205,10 +194,8 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * a given {@link CONTEXT_MENU_ACTION action}, so when one or more {@link ConceptFacade} items are
      * selected from the {@link KLConceptNavigatorControl}, the operation defined for such function can be performed for
      * each of them.
-     * </p>
      * <p>For instance, after selecting a number of items, a drag and drop gesture would drag those items from
      * the control and drop them in the {@link KLWorkspace}.
-     * </p>
      */
     private final ObjectProperty<Function<CONTEXT_MENU_ACTION, Consumer<ConceptFacade>>> onActionProperty = new SimpleObjectProperty<>(this, "onAction");
     public final ObjectProperty<Function<CONTEXT_MENU_ACTION, Consumer<ConceptFacade>>> onActionProperty() {
@@ -258,7 +245,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * <p>The root is hidden, so all its direct children are initially visible and collapsed. Only when
      * the user expands any of those items, the related children are created and added to the treeView,
      * and so on and so forth.
-     * </p>
      */
     private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator") {
         @Override
@@ -283,7 +269,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
 
     /**
      * <p>Boolean property that toggles the visibility of the tags that are applied to some concepts.
-     * </p>
      */
     private final BooleanProperty showTagsProperty = new SimpleBooleanProperty(this, "showTags");
     public final BooleanProperty showTagsProperty() {
@@ -299,7 +284,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     /**
      * <p>This enum defines the possible actions that can be executed from the
      * different context menus that are shown for this control.
-     * </p>
      * @see #onActionProperty()
      * @see SingleSelectionContextMenu
      * @see MultipleSelectionContextMenu
@@ -308,7 +292,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         /**
          * <p>For a single ConceptNavigatorTreeItem, when this action is fired, show a submenu with a menuItem
          * per related concept, with its own action.
-         * </p>
          * @see ConceptNavigatorTreeItem#relatedConceptsProperty()
          */
         SHOW_RELATED_CONCEPTS,
@@ -316,7 +299,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         /**
          * <p>For a single ConceptNavigatorTreeItem, when this action is fired, open it in the
          * workspace.
-         * </p>
          * @see KLWorkspace
          */
         OPEN_IN_WORKSPACE,
@@ -377,7 +359,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * {@link ConceptNavigatorTreeItem}</p>
      * <p>While {@link Navigator#getRootNids()} returns an array, only the first item will be actually
      * set as root of this {@link KLConceptNavigatorControl}.
-     * </p>
      * @return a list of {@link ConceptNavigatorTreeItem}
      */
     private List<ConceptNavigatorTreeItem> getConceptNavigatorRoot() {
@@ -406,10 +387,8 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
 
     /**
      * <p>Create a {@link ConceptNavigatorTreeItem} without descendents.
-     * </p>
      * <p> Only if this item is not a leaf and the user expands it, its children are
      * really generated, in a background thread.
-     * </p>
      * @param nid the nid of the concept
      * @param parentNid the nid of the parent of the concept, or -1 if root.
      * @return a {@link ConceptNavigatorTreeItem} for that concept
@@ -448,7 +427,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     /**
      * <p>Gets the children of a given {@link ConceptNavigatorTreeItem} that doesn't have its descendents
      * generated yet, in the JavaFX Application Thread.
-     * </p>
      * @param conceptNavigatorTreeItem the {@link ConceptNavigatorTreeItem} that doesn't have its children added yet.
      */
     private void fetchChildren(ConceptNavigatorTreeItem conceptNavigatorTreeItem) {
@@ -461,7 +439,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     /**
      * <p>A task that generates the children of a given {@link ConceptNavigatorTreeItem}, in a background thread,
      * and returns true if a non-empty children list is found.
-     * </p>
      * @param conceptNavigatorTreeItem the {@link ConceptNavigatorTreeItem} that doesn't have its children added yet.
      * @return a future with a boolean result that is true if the {@link ConceptNavigatorTreeItem} has its children
      * added, false if the list is null or empty, or null if the item doesn't have any children to fetch
@@ -487,11 +464,9 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     /**
      * <p>Creates a {@link ConceptNavigatorTreeItem} without children, based on a given nid of the related
      * {@link ConceptFacade}, and the parent nid of the parent concept (or -1 if root).
-     * </p>
      * <p>Sets its {@link ConceptNavigatorTreeItem#definedProperty()},
      * {@link ConceptNavigatorTreeItem#multiParentProperty()} and {@link ConceptNavigatorTreeItem#tagProperty()},
      * but it doesn't fetch any children.
-     * </p>
      * @param nid the nid of the concept
      * @param parentNid the nid of the parent of the concept, or -1 if root.
      * @return a {@link ConceptNavigatorTreeItem} for that concept, without children.
@@ -510,10 +485,8 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     /**
      * <p>Expands the treeView starting from its root node, so this concept gets visible, and
      * then highlights it.
-     * </p>
      * <p>From all the possible concept's lineages, the one that gets expanded is the shorter one
      * that matches both its nid and parent nid.
-     * </p>
      * @param conceptItem a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
      * @see ConceptNavigatorUtils#findShorterLineage(InvertedTree.ConceptItem, Navigator)
      */
@@ -523,7 +496,6 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
 
     /**
      * <p>Toggles off the highlight state of every concept that might have it in this treeView.
-     * </p>
      */
     public void unhighlightConceptsWithDelay() {
         PauseTransition pause = new PauseTransition(Duration.millis(getActivation()));
@@ -534,10 +506,8 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     /**
      * <p>Expands the treeView starting from its root node, so this concept gets visible, and
      * then selects it.
-     * </p>
      * <p>From all the possible concept's lineages, the one that gets expanded is the shorter one
      * that matches both its nid and parent nid.
-     * </p>
      * @param conceptItem a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
      * @see ConceptNavigatorUtils#findShorterLineage(InvertedTree.ConceptItem, Navigator)
      */

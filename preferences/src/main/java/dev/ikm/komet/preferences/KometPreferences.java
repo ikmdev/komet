@@ -205,10 +205,10 @@ public interface KometPreferences {
      *
      * @param key   key with which the specified value is to be associated.
      * @param value value to be associated with the specified key.
-     * @throws NullPointerException     if key or value is <tt>null</tt>.
-     * @throws IllegalArgumentException if <tt>key.length()</tt> exceeds
-     *                                  <tt>MAX_KEY_LENGTH</tt> or if <tt>value.length</tt> exceeds
-     *                                  <tt>MAX_VALUE_LENGTH</tt>.
+     * @throws NullPointerException     if key or value is {@code null}.
+     * @throws IllegalArgumentException if {@code key.length()} exceeds
+     *                                  {@code MAX_KEY_LENGTH} or if {@code value.length} exceeds
+     *                                  {@code MAX_VALUE_LENGTH}.
      * @throws IllegalStateException    if this node (or an ancestor) has been
      *                                  removed with the {@link #removeNode()} method.
      */
@@ -259,10 +259,10 @@ public interface KometPreferences {
      *
      * @param key   key with which the specified value is to be associated.
      * @param value UUID value to be associated with the specified key.
-     * @throws NullPointerException     if key or value is <tt>null</tt>.
-     * @throws IllegalArgumentException if <tt>key.length()</tt> exceeds
-     *                                  <tt>MAX_KEY_LENGTH</tt> or if <tt>value.length</tt> exceeds
-     *                                  <tt>MAX_VALUE_LENGTH</tt>.
+     * @throws NullPointerException     if key or value is {@code null}.
+     * @throws IllegalArgumentException if {@code key.length()} exceeds
+     *                                  {@code MAX_KEY_LENGTH} or if {@code value.length} exceeds
+     *                                  {@code MAX_VALUE_LENGTH}.
      * @throws IllegalStateException    if this node (or an ancestor) has been
      *                                  removed with the {@link #removeNode()} method.
      */
@@ -277,10 +277,10 @@ public interface KometPreferences {
      *
      * @param key
      * @param defaultValue
-     * @return the value associated with <tt>key</tt>, or <tt>defaultValue</tt>
-     * if no value is associated with <tt>key</tt>, or the backing store is
+     * @return the value associated with {@code key}, or {@code defaultValue}
+     * if no value is associated with {@code key}, or the backing store is
      * inaccessible.
-     * @throws NullPointerException if key or defaultValue is <tt>null</tt>.
+     * @throws NullPointerException if key or defaultValue is {@code null}.
      */
     default UUID getUuid(Enum key, UUID defaultValue) {
         if (defaultValue != null) {
@@ -306,22 +306,21 @@ public interface KometPreferences {
      * node. Returns the specified default if there is no value associated with
      * the key, or the backing store is inaccessible.
      *
-     * <p>
-     * Some implementations may store default values in their backing stores. If
+     * <p>     * Some implementations may store default values in their backing stores. If
      * there is no value associated with the specified key but there is such a
      * <i>stored default</i>, it is returned in preference to the specified
      * default.
      *
      * @param key          key whose associated value is to be returned.
      * @param defaultValue the value to be returned in the event that this
-     *                     preference node has no value associated with <tt>key</tt>.
-     * @return the value associated with <tt>key</tt>, or <tt>defaultValue</tt>
-     * if no value is associated with <tt>key</tt>, or the backing store is
+     *                     preference node has no value associated with {@code key}.
+     * @return the value associated with {@code key}, or {@code defaultValue}
+     * if no value is associated with {@code key}, or the backing store is
      * inaccessible.
      * @throws IllegalStateException if this node (or an ancestor) has been
      *                               removed with the {@link #removeNode()} method.
-     * @throws NullPointerException  if <tt>key</tt> or <tt>defaultValue</tt> is
-     *                               <tt>null</tt>.
+     * @throws NullPointerException  if {@code key} or {@code defaultValue} is
+     *                               {@code null}.
      */
     String get(String key, String defaultValue);
 
@@ -359,14 +358,13 @@ public interface KometPreferences {
      * Removes the value associated with the specified key in this preference
      * node, if any.
      *
-     * <p>
-     * If this implementation supports <i>stored defaults</i>, and there is such
+     * <p>     * If this implementation supports <i>stored defaults</i>, and there is such
      * a default for the specified preference, the stored default will be
      * "exposed" by this call, in the sense that it will be returned by a
-     * succeeding call to <tt>get</tt>.
+     * succeeding call to {@code get}.
      *
      * @param key key whose mapping is to be removed from the preference node.
-     * @throws NullPointerException  if <tt>key</tt> is <tt>null</tt>.
+     * @throws NullPointerException  if {@code key} is {@code null}.
      * @throws IllegalStateException if this node (or an ancestor) has been
      *                               removed with the {@link #removeNode()} method.
      */
@@ -376,11 +374,10 @@ public interface KometPreferences {
      * Removes all of the preferences (key-value associations) in this
      * preference node. This call has no effect on any descendants of this node.
      *
-     * <p>
-     * If this implementation supports <i>stored defaults</i>, and this node in
+     * <p>     * If this implementation supports <i>stored defaults</i>, and this node in
      * the preferences hierarchy contains any such defaults, the stored defaults
      * will be "exposed" by this call, in the sense that they will be returned
-     * by succeeding calls to <tt>get</tt>.
+     * by succeeding calls to {@code get}.
      *
      * @throws BackingStoreException if this operation cannot be completed due
      *                               to a failure in the backing store, or inability to communicate with it.
@@ -409,9 +406,9 @@ public interface KometPreferences {
      *
      * @param key   key with which the string form of value is to be associated.
      * @param value value whose string form is to be associated with key.
-     * @throws NullPointerException     if <tt>key</tt> is <tt>null</tt>.
-     * @throws IllegalArgumentException if <tt>key.length()</tt> exceeds
-     *                                  <tt>MAX_KEY_LENGTH</tt>.
+     * @throws NullPointerException     if {@code key} is {@code null}.
+     * @throws IllegalArgumentException if {@code key.length()} exceeds
+     *                                  {@code MAX_KEY_LENGTH}.
      * @throws IllegalStateException    if this node (or an ancestor) has been
      *                                  removed with the {@link #removeNode()} method.
      * @see #getInt(String, int)
@@ -436,27 +433,26 @@ public interface KometPreferences {
      * integer as by {@link Integer#parseInt(String)}. Returns the specified
      * default if there is no value associated with the key, the backing store
      * is inaccessible, or if
-     * <tt>Integer.parseInt(String)</tt> would throw a {@link
+     * {@code Integer.parseInt(String)} would throw a {@link
      * NumberFormatException} if the associated value were passed. This method
      * is intended for use in conjunction with {@link #putInt}.
      *
-     * <p>
-     * If the implementation supports <i>stored defaults</i> and such a default
+     * <p>     * If the implementation supports <i>stored defaults</i> and such a default
      * exists, is accessible, and could be converted to an int with
-     * <tt>Integer.parseInt</tt>, this int is returned in preference to the
+     * {@code Integer.parseInt}, this int is returned in preference to the
      * specified default.
      *
      * @param key          key whose associated value is to be returned as an int.
      * @param defaultValue the value to be returned in the event that this
-     *                     preference node has no value associated with <tt>key</tt>
+     *                     preference node has no value associated with {@code key}
      *                     or the associated value cannot be interpreted as an int, or the backing
      *                     store is inaccessible.
      * @return the int value represented by the string associated with
-     * <tt>key</tt> in this preference node, or <tt>defaultValue</tt> if the
+     * {@code key} in this preference node, or {@code defaultValue} if the
      * associated value does not exist or cannot be interpreted as an int.
      * @throws IllegalStateException if this node (or an ancestor) has been
      *                               removed with the {@link #removeNode()} method.
-     * @throws NullPointerException  if <tt>key</tt> is <tt>null</tt>.
+     * @throws NullPointerException  if {@code key} is {@code null}.
      * @see #putInt(String, int)
      * @see #get(String, String)
      */
@@ -505,9 +501,9 @@ public interface KometPreferences {
      *
      * @param key   key with which the string form of value is to be associated.
      * @param value value whose string form is to be associated with key.
-     * @throws NullPointerException     if <tt>key</tt> is <tt>null</tt>.
-     * @throws IllegalArgumentException if <tt>key.length()</tt> exceeds
-     *                                  <tt>MAX_KEY_LENGTH</tt>.
+     * @throws NullPointerException     if {@code key} is {@code null}.
+     * @throws IllegalArgumentException if {@code key.length()} exceeds
+     *                                  {@code MAX_KEY_LENGTH}.
      * @throws IllegalStateException    if this node (or an ancestor) has been
      *                                  removed with the {@link #removeNode()} method.
      * @see #getLong(String, long)
@@ -520,27 +516,26 @@ public interface KometPreferences {
      * as by {@link Long#parseLong(String)}. Returns the specified default if
      * there is no value associated with the key, the backing store is
      * inaccessible, or if
-     * <tt>Long.parseLong(String)</tt> would throw a {@link
+     * {@code Long.parseLong(String)} would throw a {@link
      * NumberFormatException} if the associated value were passed. This method
      * is intended for use in conjunction with {@link #putLong}.
      *
-     * <p>
-     * If the implementation supports <i>stored defaults</i> and such a default
+     * <p>     * If the implementation supports <i>stored defaults</i> and such a default
      * exists, is accessible, and could be converted to a long with
-     * <tt>Long.parseLong</tt>, this long is returned in preference to the
+     * {@code Long.parseLong}, this long is returned in preference to the
      * specified default.
      *
      * @param key          key whose associated value is to be returned as a long.
      * @param defaultValue the value to be returned in the event that this
-     *                     preference node has no value associated with <tt>key</tt>
+     *                     preference node has no value associated with {@code key}
      *                     or the associated value cannot be interpreted as a long, or the backing
      *                     store is inaccessible.
      * @return the long value represented by the string associated with
-     * <tt>key</tt> in this preference node, or <tt>defaultValue</tt> if the
+     * {@code key} in this preference node, or {@code defaultValue} if the
      * associated value does not exist or cannot be interpreted as a long.
      * @throws IllegalStateException if this node (or an ancestor) has been
      *                               removed with the {@link #removeNode()} method.
-     * @throws NullPointerException  if <tt>key</tt> is <tt>null</tt>.
+     * @throws NullPointerException  if {@code key} is {@code null}.
      * @see #putLong(String, long)
      * @see #get(String, String)
      */
@@ -585,15 +580,15 @@ public interface KometPreferences {
     /**
      * Associates a string representing the specified boolean value with the
      * specified key in this preference node. The associated string is
-     * <tt>"true"</tt> if the value is true, and <tt>"false"</tt> if it is
+     * {@code"true"} if the value is true, and {@code"false"} if it is
      * false. This method is intended for use in conjunction with
      * {@link #getBoolean}.
      *
      * @param key   key with which the string form of value is to be associated.
      * @param value value whose string form is to be associated with key.
-     * @throws NullPointerException     if <tt>key</tt> is <tt>null</tt>.
-     * @throws IllegalArgumentException if <tt>key.length()</tt> exceeds
-     *                                  <tt>MAX_KEY_LENGTH</tt>.
+     * @throws NullPointerException     if {@code key} is {@code null}.
+     * @throws IllegalArgumentException if {@code key.length()} exceeds
+     *                                  {@code MAX_KEY_LENGTH}.
      * @throws IllegalStateException    if this node (or an ancestor) has been
      *                                  removed with the {@link #removeNode()} method.
      * @see #getBoolean(String, boolean)
@@ -615,36 +610,34 @@ public interface KometPreferences {
 
     /**
      * Returns the boolean value represented by the string associated with the
-     * specified key in this preference node. Valid strings are <tt>"true"</tt>,
-     * which represents true, and <tt>"false"</tt>, which represents false. Case
-     * is ignored, so, for example, <tt>"TRUE"</tt>
-     * and <tt>"False"</tt> are also valid. This method is intended for use in
+     * specified key in this preference node. Valid strings are {@code"true"},
+     * which represents true, and {@code"false"}, which represents false. Case
+     * is ignored, so, for example, {@code"TRUE"}
+     * and {@code"False"} are also valid. This method is intended for use in
      * conjunction with {@link #putBoolean}.
      *
-     * <p>
-     * Returns the specified default if there is no value associated with the
+     * <p>     * Returns the specified default if there is no value associated with the
      * key, the backing store is inaccessible, or if the associated value is
-     * something other than <tt>"true"</tt> or
-     * <tt>"false"</tt>, ignoring case.
+     * something other than {@code"true"} or
+     * {@code"false"}, ignoring case.
      *
-     * <p>
-     * If the implementation supports <i>stored defaults</i> and such a default
+     * <p>     * If the implementation supports <i>stored defaults</i> and such a default
      * exists and is accessible, it is used in preference to the specified
      * default, unless the stored default is something other than
-     * <tt>"true"</tt> or <tt>"false"</tt>, ignoring case, in which case the
+     * {@code"true"} or {@code"false"}, ignoring case, in which case the
      * specified default is used.
      *
      * @param key          key whose associated value is to be returned as a boolean.
      * @param defaultValue the value to be returned in the event that this
-     *                     preference node has no value associated with <tt>key</tt>
+     *                     preference node has no value associated with {@code key}
      *                     or the associated value cannot be interpreted as a boolean, or the
      *                     backing store is inaccessible.
      * @return the boolean value represented by the string associated with
-     * <tt>key</tt> in this preference node, or <tt>defaultValue</tt> if the
+     * {@code key} in this preference node, or {@code defaultValue} if the
      * associated value does not exist or cannot be interpreted as a boolean.
      * @throws IllegalStateException if this node (or an ancestor) has been
      *                               removed with the {@link #removeNode()} method.
-     * @throws NullPointerException  if <tt>key</tt> is <tt>null</tt>.
+     * @throws NullPointerException  if {@code key} is {@code null}.
      * @see #get(String, String)
      * @see #putBoolean(String, boolean)
      */
@@ -768,9 +761,9 @@ public interface KometPreferences {
      *
      * @param key   key with which the string form of value is to be associated.
      * @param value value whose string form is to be associated with key.
-     * @throws NullPointerException     if <tt>key</tt> is <tt>null</tt>.
-     * @throws IllegalArgumentException if <tt>key.length()</tt> exceeds
-     *                                  <tt>MAX_KEY_LENGTH</tt>.
+     * @throws NullPointerException     if {@code key} is {@code null}.
+     * @throws IllegalArgumentException if {@code key.length()} exceeds
+     *                                  {@code MAX_KEY_LENGTH}.
      * @throws IllegalStateException    if this node (or an ancestor) has been
      *                                  removed with the {@link #removeNode()} method.
      * @see #getDouble(String, double)
@@ -793,27 +786,26 @@ public interface KometPreferences {
      * specified key in this preference node. The string is converted to an
      * integer as by {@link Double#parseDouble(String)}. Returns the specified
      * default if there is no value associated with the key, the backing store
-     * is inaccessible, or if <tt>Double.parseDouble(String)</tt> would throw a
+     * is inaccessible, or if {@code Double.parseDouble(String)} would throw a
      * {@link NumberFormatException} if the associated value were passed. This
      * method is intended for use in conjunction with {@link #putDouble}.
      *
-     * <p>
-     * If the implementation supports <i>stored defaults</i> and such a default
+     * <p>     * If the implementation supports <i>stored defaults</i> and such a default
      * exists, is accessible, and could be converted to a double with
-     * <tt>Double.parseDouble</tt>, this double is returned in preference to the
+     * {@code Double.parseDouble}, this double is returned in preference to the
      * specified default.
      *
      * @param key          key whose associated value is to be returned as a double.
      * @param defaultValue the value to be returned in the event that this
-     *                     preference node has no value associated with <tt>key</tt>
+     *                     preference node has no value associated with {@code key}
      *                     or the associated value cannot be interpreted as a double, or the backing
      *                     store is inaccessible.
      * @return the double value represented by the string associated with
-     * <tt>key</tt> in this preference node, or <tt>defaultValue</tt> if the
+     * {@code key} in this preference node, or {@code defaultValue} if the
      * associated value does not exist or cannot be interpreted as a double.
      * @throws IllegalStateException if this node (or an ancestor) has been
      *                               removed with the {@link #removeNode()} method.
-     * @throws NullPointerException  if <tt>key</tt> is <tt>null</tt>.
+     * @throws NullPointerException  if {@code key} is {@code null}.
      * @see #putDouble(String, double)
      * @see #get(String, String)
      */
@@ -984,13 +976,13 @@ public interface KometPreferences {
      * one minor change: the string will consist solely of characters from the
      * <i>Base64 Alphabet</i>; it will not contain any newline characters. Note
      * that the maximum length of the byte array is limited to three quarters of
-     * <tt>MAX_VALUE_LENGTH</tt> so that the length of the Base64 encoded String
-     * does not exceed <tt>MAX_VALUE_LENGTH</tt>. This method is intended for
+     * {@code MAX_VALUE_LENGTH} so that the length of the Base64 encoded String
+     * does not exceed {@code MAX_VALUE_LENGTH}. This method is intended for
      * use in conjunction with {@link #getByteArray}.
      *
      * @param key   key with which the string form of value is to be associated.
      * @param value value whose string form is to be associated with key.
-     * @throws NullPointerException     if key or value is <tt>null</tt>.
+     * @throws NullPointerException     if key or value is {@code null}.
      * @throws IllegalArgumentException if key.length() exceeds MAX_KEY_LENGTH
      *                                  or if value.length exceeds MAX_VALUE_LENGTH*3/4.
      * @throws IllegalStateException    if this node (or an ancestor) has been
@@ -1056,29 +1048,27 @@ public interface KometPreferences {
      * are permitted. This method is intended for use in conjunction with
      * {@link #putByteArray}.
      *
-     * <p>
-     * Returns the specified default if there is no value associated with the
+     * <p>     * Returns the specified default if there is no value associated with the
      * key, the backing store is inaccessible, or if the associated value is not
      * a valid Base64 encoded byte array (as defined above).
      *
-     * <p>
-     * If the implementation supports <i>stored defaults</i> and such a default
+     * <p>     * If the implementation supports <i>stored defaults</i> and such a default
      * exists and is accessible, it is used in preference to the specified
      * default, unless the stored default is not a valid Base64 encoded byte
      * array (as defined above), in which case the specified default is used.
      *
      * @param key          key whose associated value is to be returned as a byte array.
      * @param defaultValue the value to be returned in the event that this
-     *                     preference node has no value associated with <tt>key</tt>
+     *                     preference node has no value associated with {@code key}
      *                     or the associated value cannot be interpreted as a byte array, or the
      *                     backing store is inaccessible.
      * @return the byte array value represented by the string associated with
-     * <tt>key</tt> in this preference node, or <tt>defaultValue</tt> if the
+     * {@code key} in this preference node, or {@code defaultValue} if the
      * associated value does not exist or cannot be interpreted as a byte array.
      * @throws IllegalStateException if this node (or an ancestor) has been
      *                               removed with the {@link #removeNode()} method.
-     * @throws NullPointerException  if <tt>key</tt> or <tt>defaultValue</tt> is
-     *                               <tt>null</tt>.
+     * @throws NullPointerException  if {@code key} or {@code defaultValue} is
+     *                               {@code null}.
      * @see #get(String, String)
      * @see #putByteArray(String, byte[])
      */
@@ -1231,13 +1221,12 @@ public interface KometPreferences {
      * Returns the named preference node in the same tree as this node, creating
      * it and any of its ancestors if they do not already exist. Accepts a
      * relative or absolute path name. Relative path names (which do not begin
-     * with the slash character <tt>('/')</tt>) are interpreted relative to this
+     * with the slash character {@code('/')}) are interpreted relative to this
      * preference node.
      *
-     * <p>
-     * If the returned node did not exist prior to this call, this node and any
+     * <p>     * If the returned node did not exist prior to this call, this node and any
      * ancestors that were created by this call are not guaranteed to become
-     * permanent until the <tt>flush</tt> method is called on the returned node
+     * permanent until the {@code flush} method is called on the returned node
      * (or one of its ancestors or descendants).
      *
      * @param pathName the path name of the preference node to return.
@@ -1245,7 +1234,7 @@ public interface KometPreferences {
      * @throws IllegalArgumentException if the path name is invalid (i.e., it
      *                                  contains multiple consecutive slash characters, or ends with a slash
      *                                  character and is more than one character long).
-     * @throws NullPointerException     if path name is <tt>null</tt>.
+     * @throws NullPointerException     if path name is {@code null}.
      * @throws IllegalStateException    if this node (or an ancestor) has been
      *                                  removed with the {@link #removeNode()} method.
      * @see #flush()
@@ -1263,7 +1252,7 @@ public interface KometPreferences {
     }
 
     /**
-     * Returns the parent of this preference node, or <tt>null</tt> if this is
+     * Returns the parent of this preference node, or {@code null} if this is
      * the root.
      *
      * @return the parent of this preference node.
@@ -1287,7 +1276,7 @@ public interface KometPreferences {
      * If the class belongs to an array, an {@link IllegalArgumentException} is thrown.
      * The node name is constructed by replacing dots in the package name with slashes,
      * prefixed by a slash. If the specified class does not belong to any package,
-     * returns "/<unnamed>" as the node name.
+     * returns "/&lt;unnamed&gt;" as the node name.
      *
      * @param c the class to generate the preferences node name for
      * @return the preferences node name based on the class's package name
@@ -1322,14 +1311,13 @@ public interface KometPreferences {
     /**
      * Returns true if the named preference node exists in the same tree as this
      * node. Relative path names (which do not begin with the slash character
-     * <tt>('/')</tt>) are interpreted relative to this preference node.
+     * {@code('/')}) are interpreted relative to this preference node.
      *
-     * <p>
-     * If this node (or an ancestor) has already been removed with the
+     * <p>     * If this node (or an ancestor) has already been removed with the
      * {@link #removeNode()} method, it <i>is</i> legal to invoke this method,
-     * but only with the path name <tt>""</tt>; the invocation will return
-     * <tt>false</tt>. Thus, the idiom <tt>p.nodeExists("")</tt> may be used to
-     * test whether <tt>p</tt> has been removed.
+     * but only with the path name {@code""}; the invocation will return
+     * {@code false}. Thus, the idiom {@code p.nodeExists("")} may be used to
+     * test whether {@code p} has been removed.
      *
      * @param pathName the path name of the node whose existence is to be
      *                 checked.
@@ -1339,10 +1327,10 @@ public interface KometPreferences {
      * @throws IllegalArgumentException if the path name is invalid (i.e., it
      *                                  contains multiple consecutive slash characters, or ends with a slash
      *                                  character and is more than one character long).
-     * @throws NullPointerException     if path name is <tt>null</tt>.
+     * @throws NullPointerException     if path name is {@code null}.
      * @throws IllegalStateException    if this node (or an ancestor) has been
      *                                  removed with the {@link #removeNode()} method and
-     *                                  <tt>pathName</tt> is not the empty string (<tt>""</tt>).
+     *                                  {@code pathName} is not the empty string ({@code""}).
      */
     boolean nodeExists(String pathName)
             throws BackingStoreException;
@@ -1353,21 +1341,19 @@ public interface KometPreferences {
      * attempting any method other than {@link #name()},
      * {@link #absolutePath()}, {@link #flush()} or
      * {@link #node(String) nodeExists("")} on the corresponding
-     * <tt>Preferences</tt> instance will fail with an
-     * <tt>IllegalStateException</tt>. (The methods defined on {@link Object}
+     * {@code Preferences} instance will fail with an
+     * {@code IllegalStateException}. (The methods defined on {@link Object}
      * can still be invoked on a node after it has been removed; they will not
-     * throw <tt>IllegalStateException</tt>.)
+     * throw {@code IllegalStateException}.)
      *
-     * <p>
-     * The removal is not guaranteed to be persistent until the
-     * <tt>flush</tt> method is called on this node (or an ancestor).
+     * <p>     * The removal is not guaranteed to be persistent until the
+     * {@code flush} method is called on this node (or an ancestor).
      *
-     * <p>
-     * If this implementation supports <i>stored defaults</i>, removing a node
+     * <p>     * If this implementation supports <i>stored defaults</i>, removing a node
      * exposes any stored defaults at or below this node. Thus, a subsequent
-     * call to <tt>nodeExists</tt> on this node's path name may return
-     * <tt>true</tt>, and a subsequent call to <tt>node</tt> on this path name
-     * may return a (different) <tt>Preferences</tt> instance representing a
+     * call to {@code nodeExists} on this node's path name may return
+     * {@code true}, and a subsequent call to {@code node} on this path name
+     * may return a (different) {@code Preferences} instance representing a
      * non-empty collection of preferences and/or children.
      *
      * @throws BackingStoreException         if this operation cannot be completed due
@@ -1405,18 +1391,15 @@ public interface KometPreferences {
      * successfully, it is safe to assume that all changes made in the subtree
      * rooted at this node prior to the method invocation have become permanent.
      *
-     * <p>
-     * Implementations are free to flush changes into the persistent store at
+     * <p>     * Implementations are free to flush changes into the persistent store at
      * any time. They do not need to wait for this method to be called.
      *
-     * <p>
-     * When a flush occurs on a newly created node, it is made persistent, as
+     * <p>     * When a flush occurs on a newly created node, it is made persistent, as
      * are any ancestors (and descendants) that have yet to be made persistent.
      * Note however that any preference value changes in ancestors are
      * <i>not</i> guaranteed to be made persistent.
      *
-     * <p>
-     * If this method is invoked on a node that has been removed with the
+     * <p>     * If this method is invoked on a node that has been removed with the
      * {@link #removeNode()} method, flushSpi() is invoked on this node, but not
      * on others.
      *
@@ -1429,9 +1412,9 @@ public interface KometPreferences {
     /**
      * Ensures that future reads from this preference node and its descendants
      * reflect any changes that were committed to the persistent store (from any
-     * VM) prior to the <tt>sync</tt> invocation. As a side-effect, forces any
+     * VM) prior to the {@code sync} invocation. As a side-effect, forces any
      * changes in the contents of this preference node and its descendants to
-     * the persistent store, as if the <tt>flush</tt>
+     * the persistent store, as if the {@code flush}
      * method had been invoked on this node.
      *
      * @throws BackingStoreException if this operation cannot be completed due
@@ -1449,11 +1432,10 @@ public interface KometPreferences {
      * node, or when the value associated with a preference is changed.
      * (Preference change events are <i>not</i> generated by the {@link
      * #removeNode()} method, which generates a <i>node change event</i>.
-     * Preference change events <i>are</i> generated by the <tt>clear</tt>
+     * Preference change events <i>are</i> generated by the {@code clear}
      * method.)
      *
-     * <p>
-     * Events are only guaranteed for changes made within the same JVM as the
+     * <p>     * Events are only guaranteed for changes made within the same JVM as the
      * registered listener, though some implementations may generate events for
      * changes made outside this JVM. Events may be generated before the changes
      * have been made persistent. Events are not generated when preferences are
@@ -1461,7 +1443,7 @@ public interface KometPreferences {
      * register with each descendant.
      *
      * @param pcl The preference change listener to add.
-     * @throws NullPointerException  if <tt>pcl</tt> is null.
+     * @throws NullPointerException  if {@code pcl} is null.
      * @throws IllegalStateException if this node (or an ancestor) has been
      *                               removed with the {@link #removeNode()} method.
      * @see #removePreferenceChangeListener(PreferenceChangeListener)
@@ -1475,7 +1457,7 @@ public interface KometPreferences {
      * receives preference change events.
      *
      * @param pcl The preference change listener to remove.
-     * @throws IllegalArgumentException if <tt>pcl</tt> was not a registered
+     * @throws IllegalArgumentException if {@code pcl} was not a registered
      *                                  preference change listener on this node.
      * @throws IllegalStateException    if this node (or an ancestor) has been
      *                                  removed with the {@link #removeNode()} method.
@@ -1491,16 +1473,14 @@ public interface KometPreferences {
      * invocation results in multiple <i>node change events</i>, one for every
      * node in the subtree rooted at the removed node.)
      *
-     * <p>
-     * Events are only guaranteed for changes made within the same JVM as the
+     * <p>     * Events are only guaranteed for changes made within the same JVM as the
      * registered listener, though some implementations may generate events for
      * changes made outside this JVM. Events may be generated before the changes
      * have become permanent. Events are not generated when indirect descendants
      * of this node are added or removed; a caller desiring such events must
      * register with each descendant.
      *
-     * <p>
-     * Few guarantees can be made regarding node creation. Because nodes are
+     * <p>     * Few guarantees can be made regarding node creation. Because nodes are
      * created implicitly upon access, it may not be feasible for an
      * implementation to determine whether a child node existed in the backing
      * store prior to access (for example, because the backing store is
@@ -1508,8 +1488,8 @@ public interface KometPreferences {
      * circumstances, implementations are neither required to generate node
      * change events nor prohibited from doing so.
      *
-     * @param ncl The <tt>NodeChangeListener</tt> to add.
-     * @throws NullPointerException  if <tt>ncl</tt> is null.
+     * @param ncl The {@code NodeChangeListener} to add.
+     * @throws NullPointerException  if {@code ncl} is null.
      * @throws IllegalStateException if this node (or an ancestor) has been
      *                               removed with the {@link #removeNode()} method.
      * @see #removeNodeChangeListener(NodeChangeListener)
@@ -1518,12 +1498,12 @@ public interface KometPreferences {
     void addNodeChangeListener(NodeChangeListener ncl);
 
     /**
-     * Removes the specified <tt>NodeChangeListener</tt>, so it no longer
+     * Removes the specified {@code NodeChangeListener}, so it no longer
      * receives change events.
      *
-     * @param ncl The <tt>NodeChangeListener</tt> to remove.
-     * @throws IllegalArgumentException if <tt>ncl</tt> was not a registered
-     *                                  <tt>NodeChangeListener</tt> on this node.
+     * @param ncl The {@code NodeChangeListener} to remove.
+     * @throws IllegalArgumentException if {@code ncl} was not a registered
+     *                                  {@code NodeChangeListener} on this node.
      * @throws IllegalStateException    if this node (or an ancestor) has been
      *                                  removed with the {@link #removeNode()} method.
      * @see #addNodeChangeListener(NodeChangeListener)
@@ -1535,14 +1515,12 @@ public interface KometPreferences {
      * the preferences contained in this node (but not its descendants). This
      * XML document is, in effect, an offline backup of the node.
      *
-     * <p>
-     * The XML document will have the following DOCTYPE declaration:
+     * <p>     * The XML document will have the following DOCTYPE declaration:
      * <pre>{@code
      * <!DOCTYPE preferences SYSTEM "http://java.sun.com/dtd/preferences.dtd">
      * }</pre> The UTF-8 character encoding will be used.
      *
-     * <p>
-     * This method is an exception to the general rule that the results of
+     * <p>     * This method is an exception to the general rule that the results of
      * concurrently executing multiple methods in this class yields results
      * equivalent to some serial execution. If the preferences at this node are
      * modified concurrently with an invocation of this method, the exported
@@ -1552,7 +1530,7 @@ public interface KometPreferences {
      *
      * @param os the output stream on which to emit the XML document.
      * @throws IOException           if writing to the specified output stream results in
-     *                               an <tt>IOException</tt>.
+     *                               an {@code IOException}.
      * @throws BackingStoreException if preference data cannot be read from
      *                               backing store.
      * @throws IllegalStateException if this node (or an ancestor) has been
@@ -1566,14 +1544,12 @@ public interface KometPreferences {
      * this node and all of its descendants. This XML document is, in effect, an
      * offline backup of the subtree rooted at the node.
      *
-     * <p>
-     * The XML document will have the following DOCTYPE declaration:
+     * <p>     * The XML document will have the following DOCTYPE declaration:
      * <pre>{@code
      * <!DOCTYPE preferences SYSTEM "http://java.sun.com/dtd/preferences.dtd">
      * }</pre> The UTF-8 character encoding will be used.
      *
-     * <p>
-     * This method is an exception to the general rule that the results of
+     * <p>     * This method is an exception to the general rule that the results of
      * concurrently executing multiple methods in this class yields results
      * equivalent to some serial execution. If the preferences or nodes in the
      * subtree rooted at this node are modified concurrently with an invocation
@@ -1583,7 +1559,7 @@ public interface KometPreferences {
      *
      * @param os the output stream on which to emit the XML document.
      * @throws IOException           if writing to the specified output stream results in
-     *                               an <tt>IOException</tt>.
+     *                               an {@code IOException}.
      * @throws BackingStoreException if preference data cannot be read from
      *                               backing store.
      * @throws IllegalStateException if this node (or an ancestor) has been
@@ -2278,8 +2254,7 @@ public interface KometPreferences {
      * node. (The returned array will be of size zero if this node has no
      * preferences.)
      *
-     * <p>
-     * If the implementation supports <i>stored defaults</i> and there are any
+     * <p>     * If the implementation supports <i>stored defaults</i> and there are any
      * such defaults at this node that have not been overridden, by explicit
      * preferences, the defaults are returned in the array in addition to any
      * explicit preferences.

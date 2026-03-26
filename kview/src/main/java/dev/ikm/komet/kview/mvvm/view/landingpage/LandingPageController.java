@@ -118,8 +118,7 @@ import java.util.regex.*;
 
 /**
  * Controller for the application's landing page that manages journal cards and their interactions.
- * <p>
- * This controller implements the BasicController interface and is responsible for:
+ * <p>This controller implements the BasicController interface and is responsible for:
  * <ul>
  *     <li>Displaying journal cards in a grid view</li>
  *     <li>Creating new journal instances</li>
@@ -127,8 +126,7 @@ import java.util.regex.*;
  *     <li>Loading and saving journal preferences</li>
  *     <li>Handling journal-related events (create, delete)</li>
  * </ul>
- * <p>
- * The controller uses an event bus system to communicate with other parts of the application
+ * <p>The controller uses an event bus system to communicate with other parts of the application
  * and manages preferences storage for persistent journal data.
  */
 public class LandingPageController implements BasicController {
@@ -365,8 +363,7 @@ public class LandingPageController implements BasicController {
     /**
      * Subscribes to progress events (on {@code PROGRESS_TOPIC}) and displays a
      * {@link NotificationPopup} to show progress information.
-     * <p>
-     * When a new {@link ProgressEvent} with the event type {@code SUMMON} is received,
+     * <p>     * When a new {@link ProgressEvent} with the event type {@code SUMMON} is received,
      * this method:
      * <ul>
      *   <li>Creates and configures the {@link NotificationPopup} that displays the
@@ -474,8 +471,7 @@ public class LandingPageController implements BasicController {
      * ({@link #progressNotificationPopup}) should be anchored, ensuring it appears to
      * the right of the {@code progressToggleButton} and near the lower edge of
      * the workspace.
-     * <p>
-     * The resulting anchor point is used by {@link NotificationPopup#show(Node, Supplier)}
+     * <p>     * The resulting anchor point is used by {@link NotificationPopup#show(Node, Supplier)}
      * or similar popup methods to place the popup on the screen.
      *
      * @return a {@code Point2D} representing the (X, Y) coordinates where the progress
@@ -499,8 +495,7 @@ public class LandingPageController implements BasicController {
 
     /**
      * Loads journal window preferences from storage.
-     * <p>
-     * This method retrieves the saved preferences for a specific journal identified by its UUID
+     * <p>     * This method retrieves the saved preferences for a specific journal identified by its UUID
      * and directory name, creating a preferences map with all the journal settings.
      *
      * @param journalTopic The UUID of the journal
@@ -537,8 +532,7 @@ public class LandingPageController implements BasicController {
 
     /**
      * Loads all journal preferences from storage and creates journal tiles.
-     * <p>
-     * This method:
+     * <p>     * This method:
      * <ul>
      *     <li>Retrieves all saved journals from preferences</li>
      *     <li>Creates journal tiles for each valid journal entry</li>
@@ -626,8 +620,7 @@ public class LandingPageController implements BasicController {
 
     /**
      * Creates a new journal view from the card.
-     * <p>
-     * This method is triggered when the user clicks on the "Create New Journal" button.
+     * <p>     * This method is triggered when the user clicks on the "Create New Journal" button.
      * It:
      * <ul>
      *     <li>Creates a new UUID for the journal</li>

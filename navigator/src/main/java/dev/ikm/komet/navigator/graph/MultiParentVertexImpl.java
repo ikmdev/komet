@@ -46,8 +46,7 @@ import java.util.regex.Pattern;
 
 /**
  * A {@link TreeItem} for modeling nodes in ISAAC taxonomies.
- * <p>
- * The {@code MultiParentGraphItemImpl} is not a visual component. The
+ * <p>The {@code MultiParentGraphItemImpl} is not a visual component. The
  * {@code MultiParentGraphCell} provides the rendering for this tree item.
  *
  *

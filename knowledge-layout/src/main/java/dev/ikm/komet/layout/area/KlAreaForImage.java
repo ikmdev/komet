@@ -27,8 +27,7 @@ public non-sealed interface KlAreaForImage<FX extends Region>
      * {@link KlAreaForImage}, which are specialized field areas in the
      * Knowledge Layout framework designed for managing observable byte[] fields
      * and their associated JavaFX {@link Region}.
-     * <p>
-     * This interface extends {@link KlFieldArea.Factory} with byte[]-specific
+     * <p>     * This interface extends {@link KlFieldArea.Factory} with byte[]-specific
      * behavior, enabling the creation of field areas that bind observable byte[]
      * fields to JavaFX regions. It defines the contract for building, configuring,
      * and interacting with these field areas in a type-safe manner, ensuring proper

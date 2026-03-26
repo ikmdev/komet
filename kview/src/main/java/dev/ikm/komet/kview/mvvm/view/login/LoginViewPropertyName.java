@@ -17,11 +17,9 @@ package dev.ikm.komet.kview.mvvm.view.login;
 
 /**
  * Enum representing property names used in the Login View.
- * <p>
- * This enum provides constants that represent various properties
+ * <p>This enum provides constants that represent various properties
  * related to user authentication, such as username, password,
  * sign-in button state, and error messages.
- * </p>
  */
 public enum LoginViewPropertyName {
 

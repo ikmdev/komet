@@ -9,8 +9,7 @@ import javafx.scene.layout.VBox;
 
 /**
  * An editable control for String data types.
- * <p>
- * Displays a title label and a TextField for text entry.
+ * <p>Displays a title label and a TextField for text entry.
  */
 @DefaultProperty("text")
 public class KlStringControl extends Control {

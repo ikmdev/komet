@@ -9,8 +9,7 @@ import java.util.function.Supplier;
  * A factory interface for creating instances of {@link KlContext}.
  * This factory extends {@link Supplier} to provide a functional programming
  * approach for generating KlContext instances.
- * <p>
- * KlContexts are hierarchical, but the hierarchy is not defined by, or represented within,
+ * <p>KlContexts are hierarchical, but the hierarchy is not defined by, or represented within,
  * the factory. The hierarchy is defined dynamically (late binding) by discovering
  * the other contexts within the KlGadgets hierarchy, and then finally the top level
  * application or user context stored in the KometPreferences for the user, or the

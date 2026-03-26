@@ -21,8 +21,7 @@ import java.util.function.Supplier;
  * A specialized {@link PopupControl} that provides fade-in and fade-out animations
  * when shown or hidden. This {@code NotificationPopup} automatically hides when the
  * {@code ESCAPE} key is pressed or when focus is lost (via {@link #setAutoHide(boolean)}).
- * <p>
- * The {@link #fadeInDuration} and {@link #fadeOutDuration} properties allow customization
+ * <p>The {@link #fadeInDuration} and {@link #fadeOutDuration} properties allow customization
  * of the animation durations. By default, they use a duration of 200 milliseconds.
  *
  * <p><b>Usage Example:</b></p>
@@ -69,8 +68,7 @@ public class NotificationPopup extends PopupControl {
 
     /**
      * Creates a new {@code NotificationPopup} with default settings.
-     * <p>
-     * This constructor sets up the default style class, enables auto-hide,
+     * <p>     * This constructor sets up the default style class, enables auto-hide,
      * and installs event filters/handlers to handle {@code ESCAPE} key events
      * and initiate fade-in animations when the popup is shown.
      */
@@ -242,8 +240,7 @@ public class NotificationPopup extends PopupControl {
     /**
      * Shows this notification popup relative to the given {@code ownerNode},
      * positioning it at a location supplied by the given {@code anchorPointSupplier}.
-     * <p>
-     * This method is useful for more complex positioning where you compute
+     * <p>     * This method is useful for more complex positioning where you compute
      * an anchor point.
      *
      * @param ownerNode           the node that owns this popup; often used for
@@ -261,8 +258,7 @@ public class NotificationPopup extends PopupControl {
 
     /**
      * Hides this notification popup using the configured fade-out duration.
-     * <p>
-     * If the fade-out duration is zero or less, it hides immediately.
+     * <p>     * If the fade-out duration is zero or less, it hides immediately.
      */
     @Override
     public final void hide() {
@@ -271,8 +267,7 @@ public class NotificationPopup extends PopupControl {
 
     /**
      * Hides this notification popup using a custom fade-out duration.
-     * <p>
-     * If the specified duration is {@code null} or zero, it hides immediately.
+     * <p>     * If the specified duration is {@code null} or zero, it hides immediately.
      *
      * @param fadeOutDuration the duration to use for the fade-out animation;
      *                        if {@code null}, the default duration is used

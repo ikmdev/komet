@@ -24,8 +24,7 @@ public non-sealed interface KlAreaForListOfFeatureDefinitions<FX extends Region>
      * {@code KlListOfFieldDefinitionArea} associated with JavaFX {@code Region} components.
      * This interface specializes in handling observable field definitions within
      * list-based areas in the Knowledge Layout (KL) framework.
-     * <p>
-     * Implementations of this factory are responsible for defining methods to create,
+     * <p>     * Implementations of this factory are responsible for defining methods to create,
      * restore, and identify implementations of {@code KlListOfFieldDefinitionArea},
      * enabling dynamic instantiation and configuration of field definition areas.
      *

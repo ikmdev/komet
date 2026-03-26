@@ -83,8 +83,7 @@ public interface KlContext {
      * {@code Subscription.unsubscribe()} in response to this signal. {@code KlContext.unsubscribeDependentContexts}
      * should be called prior to {@code KlGadget} deletion or insertion of a new {@code KlContext} into
      * JavaFx object hierarchy.
-     * <p>
-     * The existing JavaFx Node tree must be retained before calling this method, as the Node tree is
+     * <p>     * The existing JavaFx Node tree must be retained before calling this method, as the Node tree is
      * how the dependent contexts are identified.
      */
     void unsubscribeDependentContexts();
@@ -98,13 +97,11 @@ public interface KlContext {
      * These dependencies may involve dynamic subscriptions to property
      * changes or event-based interactions among contexts. Implementation is determined by specific
      * dependency requirements of the {@code KlContext} hierarchy.
-     * <p>
-     * This method must be called after the JavaFX Node tree has been constructed to ensure
+     * <p>     * This method must be called after the JavaFX Node tree has been constructed to ensure
      * proper identification and subscription of dependent contexts. Calling this method at the appropriate
      * time ensures that dependents are initialized and ready for subsequent updates or state changes in
      * the current context.
-     * <p>
-     * A complete JavaFx Object (Node, Scene, Window, and Stage) tree must be in place before calling this method, as
+     * <p>     * A complete JavaFx Object (Node, Scene, Window, and Stage) tree must be in place before calling this method, as
      * this Node tree is how the dependent {@code KlGadget} objects are identified.
      */
     void subscribeDependentContexts();

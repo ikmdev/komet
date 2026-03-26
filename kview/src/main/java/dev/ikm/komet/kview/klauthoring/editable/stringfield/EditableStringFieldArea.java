@@ -11,11 +11,9 @@ import javafx.beans.property.Property;
 
 /**
  * An editable area for String fields.
- * <p>
- * This area uses {@link KLStringControl} and handles all the binding plumbing
+ * <p>This area uses {@link KLStringControl} and handles all the binding plumbing
  * via its parent class {@link EditableFieldAreaBlueprint}.
- * <p>
- * <b>Usage:</b>
+ * <p><b>Usage:</b>
  * <pre>{@code
  * // Create the area
  * EditableStringFieldArea stringArea = EditableStringFieldArea.create(preferencesFactory);

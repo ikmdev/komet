@@ -27,8 +27,7 @@ public non-sealed interface KlAreaForInteger<FX extends Region>
      * {@link KlAreaForInteger}, which are specialized field areas in the
      * Knowledge Layout framework designed for managing observable Integer fields
      * and their associated JavaFX {@link Region}.
-     * <p>
-     * This interface extends {@link KlFieldArea.Factory} with Integer-specific
+     * <p>     * This interface extends {@link KlFieldArea.Factory} with Integer-specific
      * behavior, enabling the creation of field areas that bind observable Integer
      * fields to JavaFX regions. It defines the contract for building, configuring,
      * and interacting with these field areas in a type-safe manner, ensuring proper

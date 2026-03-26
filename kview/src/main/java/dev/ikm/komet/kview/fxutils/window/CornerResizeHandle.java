@@ -25,8 +25,7 @@ import static dev.ikm.komet.kview.fxutils.window.CursorMappings.ResizeDirection;
 
 /**
  * Implementation for corner-based resize handles represented as circular regions.
- * <p>
- * This class provides resize handles for the corner positions of a resizable component
+ * <p>This class provides resize handles for the corner positions of a resizable component
  * (NW, NE, SE, SW). Each handle is implemented as a Circle shape positioned in the
  * corresponding corner of the parent container with the appropriate cursor feedback.
  *

@@ -10,10 +10,8 @@ import javafx.scene.layout.Region;
  * Represents a specialized field area in the Knowledge Layout framework specifically for
  * String data types. This interface extends {@link KlAreaForFeature} and provides type-safe
  * operations for managing observable String fields and their associated JavaFX {@code Region}.
- * <p>
- * It is a non-sealed interface, allowing for further extension and customization.
- * <p>
- * <h2>MGC Pattern Position</h2>
+ * <p>It is a non-sealed interface, allowing for further extension and customization.
+ * <p><b>MGC Pattern Position</b>
  * This interface represents the <b>Generic</b> layer of the Marker-Generic-Concrete pattern:
  * <ul>
  *   <li><b>Marker:</b> {@link KlAreaForFeature} - sealed interface defining the contract</li>
@@ -35,8 +33,7 @@ public non-sealed interface KlAreaForString<FX extends Region>
      * {@link KlAreaForString}, which are specialized field areas in the
      * Knowledge Layout framework designed for managing observable String fields
      * and their associated JavaFX {@link Region}.
-     * <p>
-     * This interface extends {@link KlAreaForFeature.Factory} with String-specific
+     * <p>     * This interface extends {@link KlAreaForFeature.Factory} with String-specific
      * behavior, enabling the creation of field areas that bind observable String
      * fields to JavaFX regions. It defines the contract for building, configuring,
      * and interacting with these field areas in a type-safe manner, ensuring proper

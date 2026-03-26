@@ -452,8 +452,7 @@ public class TimelineController implements BasicController {
 
     /**
      * Configures the timeline UI range slider controls.
-     * <p>
-     * Initializes the top and bottom range sliders, binds listeners to update the range view rectangle
+     * <p>     * Initializes the top and bottom range sliders, binds listeners to update the range view rectangle
      * and selected date points, and sets layout bindings and debugging callbacks.
      */
     private void bindRangeSliderControls() {

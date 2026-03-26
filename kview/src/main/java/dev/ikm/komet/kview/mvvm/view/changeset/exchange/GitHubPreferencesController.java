@@ -41,12 +41,10 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.G
 
 /**
  * Controller class for handling GitHub preferences in the application.
- * <p>
- * This controller manages the UI components and user interactions for configuring
+ * <p>This controller manages the UI components and user interactions for configuring
  * GitHub repository settings. It validates input fields, displays error messages,
  * and persists GitHub connection information to the application preferences.
- * <p>
- * The controller follows the MVVM (Model-View-ViewModel) pattern, with field validation
+ * <p>The controller follows the MVVM (Model-View-ViewModel) pattern, with field validation
  * and business logic delegated to the associated {@link GitHubPreferencesViewModel}.
  *
  * @see GitHubPreferencesViewModel
@@ -120,8 +118,7 @@ public class GitHubPreferencesController implements Initializable {
 
     /**
      * Sets up the validation components for all input fields.
-     * <p>
-     * This method establishes the validation logic for each form field by:
+     * <p>     * This method establishes the validation logic for each form field by:
      * <ul>
      *   <li>Creating validation components for each input field</li>
      *   <li>Binding validation error display to the view model's validation results</li>
@@ -153,8 +150,7 @@ public class GitHubPreferencesController implements Initializable {
 
     /**
      * Handles the connect button click event.
-     * <p>
-     * This method:
+     * <p>     * This method:
      * <ul>
      *   <li>Attempts to save the GitHub configuration</li>
      *   <li>Validates all input fields</li>
@@ -188,8 +184,7 @@ public class GitHubPreferencesController implements Initializable {
 
     /**
      * Opens a URL in the appropriate way depending on the runtime environment.
-     * <p>
-     * This method handles opening URLs differently based on whether the application
+     * <p>     * This method handles opening URLs differently based on whether the application
      * is running in a browser environment:
      * <ul>
      *   <li>In a browser environment, it opens the URL in a new browser tab using WebAPI</li>

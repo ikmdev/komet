@@ -29,16 +29,12 @@ import java.util.Objects;
 
 /**
  * Utility class for managing and applying CSS stylesheets in JavaFX applications.
- * <p>
- * This class provides static methods to add CSS stylesheets to JavaFX {@link Scene} objects.
+ * <p>This class provides static methods to add CSS stylesheets to JavaFX {@link Scene} objects.
  * It first attempts to load CSS files from the local file system for development purposes
  * and falls back to loading them from the classpath resources for production environments.
  * Additionally, it integrates with CSSFX to enable live-reloading of CSS files during development.
- * </p>
- * <p>
- * Supported CSS files are declared within the {@link CssFile} enum. To include additional CSS files,
+ * <p>Supported CSS files are declared within the {@link CssFile} enum. To include additional CSS files,
  * declare new enum constants in {@link CssFile} and ensure they are referenced appropriately in the methods.
- * </p>
  *
  * <p><strong>Usage Example:</strong></p>
  * <pre>{@code

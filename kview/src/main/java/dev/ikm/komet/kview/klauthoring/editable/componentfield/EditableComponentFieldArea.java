@@ -12,11 +12,9 @@ import javafx.beans.property.Property;
 
 /**
  * An editable area for EntityFacade fields.
- * <p>
- * This area uses {@link KLComponentControl} and handles all the binding plumbing
+ * <p>This area uses {@link KLComponentControl} and handles all the binding plumbing
  * via its parent class {@link EditableFieldAreaBlueprint}.
- * <p>
- * <b>Usage:</b>
+ * <p><b>Usage:</b>
  * <pre>{@code
  * // Create the area
  * EditableComponentFieldArea componentArea = EditableComponentFieldArea.create(preferencesFactory);

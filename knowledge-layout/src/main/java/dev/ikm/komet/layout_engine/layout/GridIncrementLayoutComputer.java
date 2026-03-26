@@ -36,27 +36,23 @@ import java.util.concurrent.atomic.AtomicInteger;
  * a structure for defining specific grid stepping behavior for layout management.
  * Implementing classes are expected to specify the stepping strategy by overriding
  * the abstract `step` method.
- * <p>
- * This class interacts with a designated KlWidget instance, tying its lifecycle to
+ * <p>This class interacts with a designated KlWidget instance, tying its lifecycle to
  * the widget by setting itself as the layout computer during construction and clearing
  * the reference during closure.
- * <p>
- * Responsibilities of this class include:
+ * <p>Responsibilities of this class include:
  * <p> - Managing the computation of layout positions for a set of attribute locators.
  * <p> - Utilizing the provided `GridStepper` instance internally to increment and
  * <p>   decrement row and column positions based on specific grid stepping logic.
  * <p> - Handling different layout categories to determine the type of factories
  * (e.g., KlAttributeAreaFactory, KlSupplementalAreaFactory) required for creating
  * layout components.
- * <p>
- * Key Methods:
+ * <p>Key Methods:
  * <p> - `create`: Accepts a list of attribute locators to generate the layout configuration
  * for the grid. It processes various layout categories and configures the appropriate
  * factories based on the category.
  * <p> - `step`: Abstract method to be implemented by subclasses to define the specific grid
  * stepping behavior (e.g., row-wise or column-wise increment).
- * <p>
- * Nested Class:
+ * <p>Nested Class:
  * <p> - `Stepper`: A concrete implementation of the GridStepper interface to handle low-level
  * grid position operations. It tracks and manipulates the current row and column values
  * for grid layouts.

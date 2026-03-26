@@ -20,13 +20,11 @@ import javafx.scene.image.Image;
 /**
  * The {@code DraggableWithImage} interface defines a contract for draggable entities that provide
  * a visual representation (image) during drag-and-drop operations.
- * <p>
- * Implementing this interface allows an object to supply an image that visually represents it
+ * <p>Implementing this interface allows an object to supply an image that visually represents it
  * when it is being dragged. Additionally, it provides an offset value to correctly position
  * the drag image relative to the cursor.
  *
- * <p>
- * <strong>Usage Example:</strong>
+ * <p><strong>Usage Example:</strong>
  * <pre>{@code
  * public class DraggableItem implements DraggableWithImage {
  *
@@ -49,8 +47,7 @@ import javafx.scene.image.Image;
  * }
  * }</pre>
  *
- * <p>
- * This interface is particularly useful in GUI applications where visual feedback during
+ * <p>This interface is particularly useful in GUI applications where visual feedback during
  * drag-and-drop enhances user experience. By providing a custom image and offset, developers
  * can ensure that the drag operation is intuitive and visually consistent.
  *
@@ -61,8 +58,7 @@ public interface DraggableWithImage {
 
     /**
      * Retrieves the image to be used as the visual representation during a drag operation.
-     * <p>
-     * This image is typically displayed under the cursor or at a specific offset when the
+     * <p>     * This image is typically displayed under the cursor or at a specific offset when the
      * user initiates a drag-and-drop action. It should accurately represent the draggable
      * entity to provide clear visual feedback.
      *
@@ -74,8 +70,7 @@ public interface DraggableWithImage {
 
     /**
      * Retrieves the horizontal offset to be applied to the drag image relative to the cursor.
-     * <p>
-     * This offset ensures that the drag image is positioned correctly during the drag operation.
+     * <p>     * This offset ensures that the drag image is positioned correctly during the drag operation.
      * It accounts for any discrepancies between the cursor's position and the desired location
      * of the drag image to provide a seamless user experience.
      *

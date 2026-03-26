@@ -31,8 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Concrete observable pattern version - fully type-reified, no generic parameters.
- * <p>
- * This is Layer 3 (Concrete) of the MGC pattern for pattern versions.
+ * <p>This is Layer 3 (Concrete) of the MGC pattern for pattern versions.
  */
 public final class ObservablePatternVersion
         extends ObservableEntityVersion<ObservablePattern, PatternVersionRecord>
@@ -200,11 +199,9 @@ public final class ObservablePatternVersion
     }
     /**
      * Editable version wrapper for ObservablePatternVersion.
-     * <p>
-     * Implements {@link EditableVersion} marker
+     * <p>     * Implements {@link EditableVersion} marker
      * interface through the base {@link ObservableEntityVersion.Editable} class.
-     * <p>
-     * Provides editable properties for pattern purpose and meaning that can be
+     * <p>     * Provides editable properties for pattern purpose and meaning that can be
      * bound to GUI components. Changes are cached until save() or commit() is called.
      * 
      * <h2>Pattern-Specific Editable Properties</h2>
@@ -273,8 +270,7 @@ public final class ObservablePatternVersion
 
         /**
          * Returns the editable purpose property for GUI binding.
-         * <p>
-         * This property is specific to pattern versions and provides direct
+         * <p>         * This property is specific to pattern versions and provides direct
          * bidirectional binding support for UI controls.
          */
         public SimpleObjectProperty<EntityFacade> getPurposeProperty() {
@@ -283,8 +279,7 @@ public final class ObservablePatternVersion
         
         /**
          * Returns the editable meaning property for GUI binding.
-         * <p>
-         * This property is specific to pattern versions and provides direct
+         * <p>         * This property is specific to pattern versions and provides direct
          * bidirectional binding support for UI controls.
          */
         public SimpleObjectProperty<EntityFacade> getMeaningProperty() {

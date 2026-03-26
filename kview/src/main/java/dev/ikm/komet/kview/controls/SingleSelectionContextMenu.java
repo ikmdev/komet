@@ -22,10 +22,8 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
 
 /**
  * <p>A popup control containing an ObservableList of menu items.
- * </p>
  * <p>It is used by the {@link KLConceptNavigatorControl}, to show different options to the user, when there is
  * a single selection of {@link ConceptNavigatorTreeItem}.
- * </p>
  */
 public class SingleSelectionContextMenu extends ContextMenu {
 
@@ -105,7 +103,6 @@ public class SingleSelectionContextMenu extends ContextMenu {
     /**
      * <p>Sets the {@link EventHandler<ActionEvent>} that will be handled when the {@link #workspaceMenuItem} menu
      * item is fired.
-     * </p>
      * @param eventHandler a {@link EventHandler<ActionEvent>}
      */
     public void setWorkspaceMenuItemAction(EventHandler<ActionEvent> eventHandler) {
@@ -118,10 +115,8 @@ public class SingleSelectionContextMenu extends ContextMenu {
 
     /**
      * <p>The passed {@link List<ConceptFacade>} is used to create a subMenu for {@link #relatedMenuItem}.
-     * </p>
      * <p>For each menu item, it sets the {@link Consumer<ConceptFacade>} that will be accepted if such
      * item is fired.
-     * </p>
      * @param conceptFacadeList a {@link List<ConceptFacade>}
      * @param consumer a {@link Consumer<ConceptFacade>}
      * @see ConceptNavigatorTreeItem#relatedConceptsProperty()

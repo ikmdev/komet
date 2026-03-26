@@ -11,8 +11,7 @@ import javafx.scene.layout.Region;
  * Represents a non-sealed interface for defining field areas dedicated to semantic data
  * within the Knowledge Layout framework. This interface specializes in managing
  * semantic-specific data representations and their integration with JavaFX regions.
- * <p>
- * Extending {@link KlFieldArea}, this interface introduces type-specific operations
+ * <p>Extending {@link KlFieldArea}, this interface introduces type-specific operations
  * for handling fields that utilize a {@link SemanticFacade} data type alongside
  * JavaFX regional components. It enforces a semantic context to the field area structure,
  * ensuring modular and extensible interaction with semantic data aspects.
@@ -28,8 +27,7 @@ public non-sealed interface KlAreaForSemantic<FX extends Region>
     /**
      * Represents a factory interface for creating and managing instances of semantic field areas in the
      * Knowledge Layout framework that are associated with a specific JavaFX {@link Region} component.
-     * <p>
-     * This interface extends {@code KlFieldArea.Factory}, specializing in the creation and configuration
+     * <p>     * This interface extends {@code KlFieldArea.Factory}, specializing in the creation and configuration
      * of field areas that bind {@link SemanticFacade} data types to JavaFX regions. It defines a contract
      * for constructing semantic field areas with a focus on modular and extensible integration of semantic
      * data within a GUI layout.

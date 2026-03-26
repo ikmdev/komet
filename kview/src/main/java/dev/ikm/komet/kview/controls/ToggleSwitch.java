@@ -42,9 +42,9 @@ import javafx.scene.control.Skin;
  *
  * <p> Shown below is a screenshot of the ToggleSwitch control in its on and off state:
  * <br>
- * <center>
+ * <div style="text-align:center">
  * <img src="ToggleSwitch.png" alt="Screenshot of ToggleSwitch">
- * </center>
+ * </div>
  */
 public class ToggleSwitch extends Labeled {
 
@@ -101,9 +101,6 @@ public class ToggleSwitch extends Labeled {
         return selected == null ? false : selected.get();
     }
 
-    /**
-     * Returns the selected property
-     */
     public final BooleanProperty selectedProperty() {
         if (selected == null) {
             selected = new BooleanPropertyBase() {

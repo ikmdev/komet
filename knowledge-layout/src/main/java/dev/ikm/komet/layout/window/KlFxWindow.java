@@ -24,20 +24,17 @@ public non-sealed interface KlFxWindow extends KlStateCommands, KlContextProvide
      * of a top-level window in the Komet application. Each key corresponds to a specific
      * property of the window, such as its size, position, visibility, or opacity. These keys
      * are used to define and retrieve default values for the associated properties.
-     * <p>
-     * This enumeration implements the {@link PropertyWithDefault} interface, allowing each key
+     * <p>     * This enumeration implements the {@link PropertyWithDefault} interface, allowing each key
      * to provide a predefined default value. The default value acts as a fallback when explicit
      * values are not specified or available.
-     * <p>
-     * Key definitions:
+     * <p>     * Key definitions:
      * - WINDOW_X_LOCATION: The horizontal location of the window on the screen, defaulting to 0.
      * - WINDOW_Y_LOCATION: The vertical location of the window on the screen, defaulting to 0.
      * - WINDOW_WIDTH: The width of the window, defaulting to 800 pixels.
      * - WINDOW_HEIGHT: The height of the window, defaulting to 500 pixels.
      * - VISIBLE: Indicates whether the window is visible, defaulting to false.
      * - OPACITY: The opacity level of the window, defaulting to 1.0 (fully opaque).
-     * <p>
-     * This enumeration is typically used within the context of managing and restoring window
+     * <p>     * This enumeration is typically used within the context of managing and restoring window
      * preferences, ensuring a consistent user experience across sessions.
      */
     enum PreferenceKeys implements PropertyWithDefault {
@@ -100,8 +97,7 @@ public non-sealed interface KlFxWindow extends KlStateCommands, KlContextProvide
 
         /**
          * Represents the title of the window in the Komet layout system.
-         * <p>
-         * The {@code WINDOW_TITLE} variable holds the default title to be displayed for
+         * <p>         * The {@code WINDOW_TITLE} variable holds the default title to be displayed for
          * a window. This title may be used as a placeholder until it is explicitly
          * set by the end-user or the application logic. By default, the value is "Untitled".
          *

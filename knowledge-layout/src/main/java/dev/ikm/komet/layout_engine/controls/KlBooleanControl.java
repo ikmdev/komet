@@ -14,8 +14,7 @@ import javafx.scene.layout.VBox;
 
 /**
  * An editable control for Boolean data types.
- * <p>
- * Displays a title label and a ComboBox with True/False options.
+ * <p>Displays a title label and a ComboBox with True/False options.
  */
 public class KlBooleanControl extends Control {
 

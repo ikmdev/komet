@@ -26,8 +26,7 @@ import java.util.function.Predicate;
 /**
  * View-specific projection of an {@link ObservableConcept} providing access to concept versions
  * categorized by their temporal and coordination state.
- * <p>
- * Concepts are the foundational building blocks representing clinical or business ideas.
+ * <p>Concepts are the foundational building blocks representing clinical or business ideas.
  * This snapshot filters concept versions according to view coordinates, providing access to
  * current, historic, and uncommitted versions.
  *
@@ -40,8 +39,7 @@ import java.util.function.Predicate;
  * </ul>
  *
  * <h2>⚠️ How to Create: Use ObservableEntityHandle</h2>
- * <p>
- * <b>DO NOT</b> construct {@code ObservableConceptSnapshot} instances directly. Instead,
+ * <p><b>DO NOT</b> construct {@code ObservableConceptSnapshot} instances directly. Instead,
  * use {@link ObservableEntityHandle} for type-safe snapshot creation:
  *
  * <pre>{@code

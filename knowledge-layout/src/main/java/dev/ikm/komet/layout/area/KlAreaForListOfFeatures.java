@@ -115,8 +115,7 @@ public sealed interface KlAreaForListOfFeatures<F extends Feature<?>, FX extends
      * observable features and their corresponding JavaFX regions. This interface extends the
      * functionality of the {@code KlListArea.Factory} by focusing specifically on areas dealing
      * with observable features.
-     * <p>
-     * The factory is specialized to produce areas that manage observable lists of elements extending
+     * <p>     * The factory is specialized to produce areas that manage observable lists of elements extending
      * {@code ObservableFeature} and are associated with JavaFX regions of type {@code Region}.
      * Implementations of this interface will provide the necessary mechanisms for creating and
      * customizing these areas within the Knowledge Layout (KL) framework.

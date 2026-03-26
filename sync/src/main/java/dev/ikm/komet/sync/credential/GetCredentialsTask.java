@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The GetCredentialsTask class is a task that prompts the user to enter credentials for a given URL.
- * It extends the Task<Boolean> class, indicating that it returns a Boolean value upon completion.
+ * It extends the Task&lt;Boolean&gt; class, indicating that it returns a Boolean value upon completion.
  *
  * This task stores the credentials for a URL in the user preferences (using encryption), so that the next execution
  * will check the stored credentials and populate the dialog with the stored values.

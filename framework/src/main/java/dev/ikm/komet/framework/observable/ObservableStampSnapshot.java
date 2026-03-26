@@ -10,15 +10,13 @@ import java.util.function.Predicate;
 /**
  * View-specific projection of an {@link ObservableStamp} providing access to stamp versions
  * categorized by their temporal and coordination state.
- * <p>
- * Unlike other snapshot types, {@code ObservableStampSnapshot} has simplified semantics because
+ * <p>Unlike other snapshot types, {@code ObservableStampSnapshot} has simplified semantics because
  * stamps represent immutable change metadata (Status, Time, Author, Module, Path) rather than
  * domain concepts that evolve over time. A stamp entity typically has a single version that
  * captures the metadata about when and by whom a change was made.
  *
  * <h2>Stamp Snapshot Characteristics</h2>
- * <p>
- * While stamps technically can have versions (for rare metadata corrections), in practice:
+ * <p>While stamps technically can have versions (for rare metadata corrections), in practice:
  * <ul>
  *   <li><b>Single Version Common:</b> Most stamp entities have exactly one version</li>
  *   <li><b>No Contradictions Expected:</b> Stamp metadata corrections are rare and typically sequential</li>
@@ -27,8 +25,7 @@ import java.util.function.Predicate;
  * </ul>
  *
  * <h2>⚠️ How to Create: Use ObservableEntityHandle</h2>
- * <p>
- * <b>DO NOT</b> construct {@code ObservableStampSnapshot} instances directly. Instead,
+ * <p><b>DO NOT</b> construct {@code ObservableStampSnapshot} instances directly. Instead,
  * use {@link ObservableEntityHandle} for type-safe snapshot creation:
  *
  * <pre>{@code
@@ -101,14 +98,12 @@ import java.util.function.Predicate;
  * }</pre>
  *
  * <h2>Thread Safety</h2>
- * <p>
- * Like all observable snapshots, {@code ObservableStampSnapshot} <b>must be accessed from the
+ * <p>Like all observable snapshots, {@code ObservableStampSnapshot} <b>must be accessed from the
  * JavaFX application thread</b>. The underlying {@link ObservableStamp} and {@link ViewCalculator}
  * require JavaFX threading.
  *
  * <h2>Canonical Version Guarantee</h2>
- * <p>
- * {@link ObservableStampVersion} instances returned by this snapshot are the <b>same canonical
+ * <p>{@link ObservableStampVersion} instances returned by this snapshot are the <b>same canonical
  * instances</b> from the underlying {@link ObservableStamp}'s {@code versionPropertyMap()}.
  * This means UI property bindings to stamp versions work correctly and receive change notifications.
  *
@@ -123,8 +118,7 @@ public final class ObservableStampSnapshot
 
     /**
      * Creates a new stamp snapshot for the given view calculator and observable stamp.
-     * <p>
-     * <b>Package-private constructor:</b> External code should use {@link ObservableEntityHandle}
+     * <p>     * <b>Package-private constructor:</b> External code should use {@link ObservableEntityHandle}
      * to create snapshots, not this constructor directly.
      *
      * @param viewCalculator the view calculator defining what versions are visible
@@ -140,8 +134,7 @@ public final class ObservableStampSnapshot
 
     /**
      * Returns the processed versions as an immutable list.
-     * <p>
-     * Processed versions start as all versions in the stamp, but can be filtered,
+     * <p>     * Processed versions start as all versions in the stamp, but can be filtered,
      * sorted, and locked via {@link #filterProcessedVersions(Predicate)},
      * {@link #sortProcessedVersions(Comparator)}, and {@link #lockProcessedVersions()}.
      *
@@ -156,8 +149,7 @@ public final class ObservableStampSnapshot
 
     /**
      * Filters the processed versions according to the given predicate.
-     * <p>
-     * Only versions matching the predicate are retained. This can be called multiple
+     * <p>     * Only versions matching the predicate are retained. This can be called multiple
      * times to progressively narrow the version set.
      *
      * <pre>{@code
@@ -175,8 +167,7 @@ public final class ObservableStampSnapshot
 
     /**
      * Sorts the processed versions according to the given comparator.
-     * <p>
-     * Common use case: Sort by time to show chronological order of any metadata corrections.
+     * <p>     * Common use case: Sort by time to show chronological order of any metadata corrections.
      *
      * <pre>{@code
      * // Sort by time (newest first)
@@ -193,8 +184,7 @@ public final class ObservableStampSnapshot
 
     /**
      * Returns the observable stamp entity this snapshot represents.
-     * <p>
-     * The stamp entity contains all versions across all paths and modules.
+     * <p>     * The stamp entity contains all versions across all paths and modules.
      * This snapshot filters those versions according to view coordinates.
      *
      * @return the observable stamp entity
@@ -206,8 +196,7 @@ public final class ObservableStampSnapshot
 
     /**
      * Returns uncommitted stamp versions (unsaved local changes).
-     * <p>
-     * Uncommitted stamp versions are rare - they would only exist if stamp metadata
+     * <p>     * Uncommitted stamp versions are rare - they would only exist if stamp metadata
      * was being edited but not yet persisted. In most cases, stamps are created once
      * and never modified.
      *
@@ -220,8 +209,7 @@ public final class ObservableStampSnapshot
 
     /**
      * Returns historic stamp versions (superseded by newer versions).
-     * <p>
-     * Historic stamp versions indicate metadata corrections after initial creation.
+     * <p>     * Historic stamp versions indicate metadata corrections after initial creation.
      * This is rare - stamps are typically created once with correct metadata and never changed.
      * When present, historic versions show the evolution of stamp metadata over time.
      *
@@ -234,8 +222,7 @@ public final class ObservableStampSnapshot
 
     /**
      * Returns the latest stamp version(s) according to view coordinates.
-     * <p>
-     * In typical cases, this returns a single stamp version with no contradictions.
+     * <p>     * In typical cases, this returns a single stamp version with no contradictions.
      * Contradictions would only occur if metadata corrections were made on different
      * development paths and not yet merged.
      *

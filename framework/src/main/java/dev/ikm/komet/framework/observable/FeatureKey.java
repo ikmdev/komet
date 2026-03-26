@@ -27,8 +27,7 @@ public sealed interface FeatureKey extends Encodable {
     /**
      * Determines whether this {@code FeatureKey} is sufficiently specified
      * to uniquely identify and retrieve a single feature.
-     * <p>
-     * A resolvable key contains enough information (i.e., is not a wildcard or ambiguous)
+     * <p>     * A resolvable key contains enough information (i.e., is not a wildcard or ambiguous)
      * to be used for unambiguous feature lookup.
      *
      * @return {@code true} if this key uniquely identifies a specific feature;
@@ -254,13 +253,11 @@ public sealed interface FeatureKey extends Encodable {
      * This interface provides a method to retrieve a locator that contains the index of the item
      * and serves as a base for various types of list items with specific characteristics.
      *
-     * <p>
-     * Key Characteristics:
+     * <p>     * Key Characteristics:
      * <p>- A sealed interface, ensuring the implementation subclasses are finite and known.
      * <p>- Permits derivation by specific list item types with additional properties or behaviors.
      * <p>- Focuses on maintaining an index for each item.
-     * <p>
-     * Implementing classes are expected to refine this interface to represent specific
+     * <p>     * Implementing classes are expected to refine this interface to represent specific
      * types of list items while adhering to the index-based organizational model.
      */
     sealed interface ListItem {
@@ -291,8 +288,7 @@ public sealed interface FeatureKey extends Encodable {
          * interface extends the `ChronologyProperty` interface and is a sealed interface
          * restricted to known implementations. This allows for controlled subtype hierarchies
          * directly related to version list functionalities.
-         * <p>
-         * Key characteristics:
+         * <p>         * Key characteristics:
          * <p> - Provides a method to retrieve an instance of a version list locator.
          * <p> - Acts as a specific property type in the broader chronology property hierarchy.
          * <p> - Designed to ensure compile-time safety for supported implementations.
@@ -306,20 +302,17 @@ public sealed interface FeatureKey extends Encodable {
          * This interface extends both `ListItem` and `ChronologyProperty` to define an item
          * that is associated with a specific index and belongs to the version-related scope
          * of a chronology.
-         * <p>
-         * Key characteristics:
+         * <p>         * Key characteristics:
          * - Sealed interface ensuring implementations are finite and explicitly defined.
          * - Combines indexing capabilities from `ListItem` with properties tied to
          * chronology versioning.
          * - Provides a static factory method to retrieve a specific implementation
          * of `VersionListItem` based on its index.
-         * <p>
-         * Method Details:
+         * <p>         * Method Details:
          * - `get(int index)`: Retrieves an instance of `VersionListItem` with the specified index.
          * This is implemented via an underlying constructor call to the appropriate subtype
          * (`VersionListItemLocator`).
-         * <p>
-         * Intended use cases include scenarios requiring the association of specific
+         * <p>         * Intended use cases include scenarios requiring the association of specific
          * indices with properties in a versioned chronology data structure.
          */
         sealed interface Version extends ChronologyFeature, EnclosingComponent permits VersionKey {

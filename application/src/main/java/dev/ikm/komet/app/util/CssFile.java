@@ -20,14 +20,10 @@ import java.nio.file.Paths;
 
 /**
  * Enum representing supported CSS files along with their associated metadata.
- * <p>
- * Each enum constant encapsulates the CSS file name, module name, resource path within the module
+ * <p>Each enum constant encapsulates the CSS file name, module name, resource path within the module
  * and the base directory for resources.
- * </p>
- * <p>
- * To add a new CSS file, declare a new enum constant with the appropriate metadata.
+ * <p>To add a new CSS file, declare a new enum constant with the appropriate metadata.
  * Ensure that the resource path uses forward slashes (/) and matches the actual file location.
- * </p>
  *
  * @see CssUtils
  */

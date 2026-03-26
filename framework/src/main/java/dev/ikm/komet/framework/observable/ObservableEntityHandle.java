@@ -13,14 +13,12 @@ import java.util.function.Supplier;
 /**
  * A fluent handle for an observable entity that may be absent or one of the four observable entity subtypes
  * (ObservableConcept, ObservableSemantic, ObservablePattern, ObservableStamp).
- * <p>
- * This interface parallels {@link dev.ikm.tinkar.entity.EntityHandle} but operates on observable entities
+ * <p>This interface parallels {@link dev.ikm.tinkar.entity.EntityHandle} but operates on observable entities
  * rather than immutable entities. While {@code EntityHandle} works with immutable, thread-safe entity snapshots,
  * {@code ObservableEntityHandle} provides access to JavaFX observable entities backed by a canonical object pool.
  *
  * <h2>Understanding the Observable Entity Paradigm</h2>
- * <p>
- * Three classes work together to provide comprehensive access to observable entities with view-specific filtering:
+ * <p>Three classes work together to provide comprehensive access to observable entities with view-specific filtering:
  * <ol>
  *   <li><b>{@link ObservableEntityHandle}</b> (this interface) - Type-safe entry point for accessing entities
  *       and creating snapshots. Provides fluent API with three patterns: side effects, safe extraction, and
@@ -78,14 +76,12 @@ import java.util.function.Supplier;
  *   <td>{@code concept.versionProperty().addListener(...)}</td>
  * </tr>
  * </table>
- * <p>
- * <b>Typical Workflow:</b> Use {@code ObservableEntityHandle} to safely retrieve an {@link ObservableEntity},
+ * <p><b>Typical Workflow:</b> Use {@code ObservableEntityHandle} to safely retrieve an {@link ObservableEntity},
  * then either bind its properties directly to UI <i>or</i> create an {@link ObservableEntitySnapshot} to
  * analyze versions within a specific view context.
  *
  * <h2>Flexible Entity Access</h2>
- * <p>
- * Observable entities can be accessed using three different identifier types, providing flexibility
+ * <p>Observable entities can be accessed using three different identifier types, providing flexibility
  * across different contexts and API boundaries:
  *
  * <table style="border: 1px solid black; border-collapse: collapse;">
@@ -112,8 +108,7 @@ import java.util.function.Supplier;
  * </tr>
  * </table>
  *
- * <p>
- * All three access methods are available for every API method that accepts an entity identifier:
+ * <p>All three access methods are available for every API method that accepts an entity identifier:
  *
  * <pre>{@code
  * // Using nid (native identifier)
@@ -140,8 +135,7 @@ import java.util.function.Supplier;
  * }</pre>
  *
  * <h2>Design Decision: Why Not Generics?</h2>
- * <p>
- * A generic {@code EntityHandle<E extends Entity>} was considered but rejected because:
+ * <p>A generic {@code EntityHandle<E extends Entity>} was considered but rejected because:
  * <ul>
  *   <li><b>Different Method Signatures:</b> ObservableEntity requires JavaFX thread checks and has
  *       different return types (Observable* vs Entity*)</li>
@@ -154,13 +148,11 @@ import java.util.function.Supplier;
  *   <li><b>Thread Safety:</b> Observable operations require Platform.runLater() wrapping that doesn't
  *       apply to immutable entities</li>
  * </ul>
- * <p>
- * The parallel interface design maintains clarity while allowing each handle type to provide
+ * <p>The parallel interface design maintains clarity while allowing each handle type to provide
  * ecosystem-specific operations (snapshots for Observable, direct access for Entity).
  *
  * <h2>Why a Separate Interface Rather Than Extension?</h2>
- * <p>
- * While {@code ObservableEntity} and {@code Entity} share similar structure (both have Concept, Semantic, Pattern,
+ * <p>While {@code ObservableEntity} and {@code Entity} share similar structure (both have Concept, Semantic, Pattern,
  * and Stamp variants), they have fundamentally different characteristics that make a parallel interface design
  * more appropriate than extending {@code EntityHandle}:
  *
@@ -198,8 +190,7 @@ import java.util.function.Supplier;
  * </tr>
  * </table>
  *
- * <p>
- * <b>Design Decision Rationale:</b>
+ * <p><b>Design Decision Rationale:</b>
  * <ul>
  *   <li><b>Not Extending:</b> Extending {@code EntityHandle} would inherit methods returning wrong types
  *       (Entity instead of ObservableEntity)</li>
@@ -210,8 +201,7 @@ import java.util.function.Supplier;
  * </ul>
  *
  * <h2>The Three Patterns: When to Use Each</h2>
- * <p>
- * Like {@code EntityHandle}, this interface provides three complementary patterns for type-safe entity processing
+ * <p>Like {@code EntityHandle}, this interface provides three complementary patterns for type-safe entity processing
  * without manual instanceof checks or casts. Choose the right pattern based on your use case.
  *
  * <table style="border: 1px solid black; border-collapse: collapse;">
@@ -247,8 +237,7 @@ import java.util.function.Supplier;
  * </table>
  *
  * <h2>Pattern 1: Side Effects with {@code ifXxx} Methods</h2>
- * <p>
- * <b>When to use:</b> You want to execute code based on entity type but don't need to return anything.
+ * <p><b>When to use:</b> You want to execute code based on entity type but don't need to return anything.
  * Common for UI bindings and listener registration.
  * <br><b>Returns:</b> {@code this} for chaining.
  * <br><b>Key benefit:</b> Fluent branching for reactive operations.
@@ -288,8 +277,7 @@ import java.util.function.Supplier;
  * }</pre>
  *
  * <h2>Pattern 2: Safe Extraction with {@code asXxx} Methods</h2>
- * <p>
- * <b>When to use:</b> Wrong type is a valid possibility, or you need Optional chaining.
+ * <p><b>When to use:</b> Wrong type is a valid possibility, or you need Optional chaining.
  * <br><b>Returns:</b> {@code Optional<ObservableXxx>} - allows standard Optional operations.
  * <br><b>Key benefit:</b> Explicit handling of the "not this type" case.
  *
@@ -316,8 +304,7 @@ import java.util.function.Supplier;
  * }</pre>
  *
  * <h2>Pattern 3: Assertion with {@code expectXxx} Methods</h2>
- * <p>
- * <b>When to use:</b> Entity type is guaranteed by your data model. Wrong type means data corruption.
+ * <p><b>When to use:</b> Entity type is guaranteed by your data model. Wrong type means data corruption.
  * <br><b>Returns:</b> {@code ObservableConcept} (never null) - throws if wrong type.
  * <br><b>Key benefit:</b> Clean, direct access when type is certain. Avoids unsafe casts.
  *
@@ -345,8 +332,7 @@ import java.util.function.Supplier;
  * }</pre>
  *
  * <h2>Static Convenience Methods</h2>
- * <p>
- * For the common "get by nid and assert type" pattern, static methods combine fetch + assertion:
+ * <p>For the common "get by nid and assert type" pattern, static methods combine fetch + assertion:
  *
  * <pre>{@code
  * // Equivalent to ObservableEntityHandle.get(nid).expectConcept()
@@ -357,8 +343,7 @@ import java.util.function.Supplier;
  * }</pre>
  *
  * <h2>Working with Snapshots</h2>
- * <p>
- * Observable entities support snapshot retrieval, which provides a point-in-time view of the entity
+ * <p>Observable entities support snapshot retrieval, which provides a point-in-time view of the entity
  * according to a {@link ViewCalculator}'s coordinate configuration. Snapshots include latest, uncommitted,
  * and historic versions. Snapshot methods follow the same three patterns as entity access:
  *
@@ -418,8 +403,7 @@ import java.util.function.Supplier;
  * }</pre>
  *
  * <h2>Thread Safety Requirements</h2>
- * <p>
- * <b>IMPORTANT:</b> All operations must execute on the JavaFX application thread. The underlying
+ * <p><b>IMPORTANT:</b> All operations must execute on the JavaFX application thread. The underlying
  * {@link ObservableEntity#get(int)} method enforces this requirement. If you need to access
  * observable entities from a background thread, use {@code Platform.runLater()}:
  *
@@ -437,16 +421,14 @@ import java.util.function.Supplier;
  * }</pre>
  *
  * <h2>Canonical Instance Guarantee</h2>
- * <p>
- * Due to the {@link ObservableEntity#CANONICAL_INSTANCES} cache, multiple calls to {@code get(nid)} for the same
+ * <p>Due to the {@link ObservableEntity#CANONICAL_INSTANCES} cache, multiple calls to {@code get(nid)} for the same
  * nid return handles to the <b>same observable instance</b> (while strong references exist). This ensures:
  * <ul>
  *   <li>All UI components observe the same object</li>
  *   <li>Changes propagate to all bound properties</li>
  *   <li>Memory efficient - no duplicate observable wrappers</li>
  * </ul>
- * <p>
- * Note: The cache uses weak references, so instances may be garbage collected when no longer strongly
+ * <p>Note: The cache uses weak references, so instances may be garbage collected when no longer strongly
  * referenced. A subsequent call would create a new instance, but while any instance exists, all access
  * returns that same canonical instance.
  *
@@ -469,8 +451,7 @@ import java.util.function.Supplier;
  * </ol>
  *
  * <h2>Implementation</h2>
- * <p>
- * Implementors need only provide {@link #entity()} which returns an {@link Optional}
+ * <p>Implementors need only provide {@link #entity()} which returns an {@link Optional}
  * containing the observable entity (or empty if absent). All fluent methods are provided as
  * default implementations.
  *
@@ -487,8 +468,7 @@ public interface ObservableEntityHandle {
     
     /**
      * Returns the observable entity as an Optional, regardless of its specific type.
-     * <p>
-     * This is the core method that all other methods build upon. Use this when you need access
+     * <p>     * This is the core method that all other methods build upon. Use this when you need access
      * to the entity without caring about its specific type (Concept, Semantic, Pattern, or Stamp).
      *
      * @return Optional containing the entity if present, empty otherwise
@@ -499,8 +479,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Executes the consumer if an entity is present, regardless of type.
-     * <p>
-     * Use this when you want to perform operations that work on any entity type,
+     * <p>     * Use this when you want to perform operations that work on any entity type,
      * such as logging, caching, or accessing common entity properties (nid, publicId, versions).
      *
      * <pre>{@code
@@ -524,8 +503,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Executes the runnable if no entity is present.
-     * <p>
-     * This complements the {@code ifXxx} methods by handling the absent case. Use this
+     * <p>     * This complements the {@code ifXxx} methods by handling the absent case. Use this
      * for error handling, logging, or default behavior when an entity is not found.
      *
      * <pre>{@code
@@ -555,8 +533,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns this handle's entity as an {@link Optional}.
-     * <p>
-     * This is a convenience method that simply returns {@link #entity()}, providing symmetry
+     * <p>     * This is a convenience method that simply returns {@link #entity()}, providing symmetry
      * with the {@code asXxx()} pattern used for type-specific extraction. Use this when you
      * want Optional-based extraction of the entity regardless of type.
      *
@@ -601,8 +578,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns the entity or throws if absent, regardless of specific type.
-     * <p>
-     * Use this when you know an entity must exist but don't need a specific type.
+     * <p>     * Use this when you know an entity must exist but don't need a specific type.
      * Throws {@link NoSuchElementException} if the entity is not found.
      *
      * <pre>{@code
@@ -625,8 +601,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns the entity or throws with a custom message if absent.
-     * <p>
-     * Use this when you want more descriptive error messages for debugging.
+     * <p>     * Use this when you want more descriptive error messages for debugging.
      *
      * <pre>{@code
      * ObservableEntity<?> entity = ObservableEntityHandle.get(nid)
@@ -646,12 +621,10 @@ public interface ObservableEntityHandle {
 
     /**
      * Retrieves an observable entity by nid and returns a fluent handle for type-safe processing.
-     * <p>
-     * The returned handle allows chaining type-specific operations without manual
+     * <p>     * The returned handle allows chaining type-specific operations without manual
      * instanceof checks or casts. Due to the canonical object pool, multiple calls with
      * the same nid return handles to the same observable instance.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * @param nid the native identifier
      * @return an ObservableEntityHandle representing the entity, or an empty handle if absent
@@ -669,11 +642,9 @@ public interface ObservableEntityHandle {
 
     /**
      * Retrieves an observable entity by PublicId and returns a fluent handle for type-safe processing.
-     * <p>
-     * Converts the PublicId to nid and retrieves the entity. Due to the canonical object pool,
+     * <p>     * Converts the PublicId to nid and retrieves the entity. Due to the canonical object pool,
      * multiple calls with the same PublicId return handles to the same observable instance.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * @param publicId the public identifier
      * @return an ObservableEntityHandle representing the entity, or an empty handle if absent
@@ -685,11 +656,9 @@ public interface ObservableEntityHandle {
 
     /**
      * Retrieves an observable entity by EntityFacade and returns a fluent handle for type-safe processing.
-     * <p>
-     * Extracts the nid from the EntityFacade and retrieves the entity. Due to the canonical object pool,
+     * <p>     * Extracts the nid from the EntityFacade and retrieves the entity. Due to the canonical object pool,
      * multiple calls with the same EntityFacade return handles to the same observable instance.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * @param entityFacade the entity facade
      * @return an ObservableEntityHandle representing the entity, or an empty handle if absent
@@ -701,8 +670,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns a singleton handle representing an absent observable entity.
-     * <p>
-     * Use this when you need to explicitly represent absence.
+     * <p>     * Use this when you need to explicitly represent absence.
      *
      * @return the absent observable entity handle singleton
      */
@@ -727,8 +695,7 @@ public interface ObservableEntityHandle {
 
     /**
      * If entity is present and is an {@link ObservableConcept}, executes the consumer.
-     * <p>
-     * No casting required - consumer receives ObservableConcept directly.
+     * <p>     * No casting required - consumer receives ObservableConcept directly.
      * Returns {@code this} for chaining regardless of whether consumer executed.
      *
      * @param consumer the action to perform on the ObservableConcept
@@ -891,10 +858,8 @@ public interface ObservableEntityHandle {
 
     /**
      * If this entity is a concept, gets its snapshot and executes the consumer.
-     * <p>
-     * Returns {@code this} for chaining regardless of whether consumer executed.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * Returns {@code this} for chaining regardless of whether consumer executed.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
@@ -944,12 +909,9 @@ public interface ObservableEntityHandle {
 
     /**
      * If this entity is a stamp, gets its snapshot and executes the consumer.
-     * <p>
-     * Returns {@code this} for chaining regardless of whether consumer executed.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
-     * <p>
-     * <b>Note:</b> Stamp snapshots have simplified semantics compared to other entity types
+     * <p>     * Returns {@code this} for chaining regardless of whether consumer executed.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Note:</b> Stamp snapshots have simplified semantics compared to other entity types
      * because stamps represent immutable change metadata (Status, Time, Author, Module, Path).
      * Most stamps have a single version with no contradictions. Historic versions are rare and
      * typically indicate metadata corrections after creation.
@@ -977,12 +939,9 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns a snapshot of this entity as an {@link ObservableStampSnapshot} if it is a stamp.
-     * <p>
-     * Use this method when wrong type is a valid possibility.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
-     * <p>
-     * <b>Note:</b> Stamp snapshots typically contain a single version with no contradictions.
+     * <p>     * Use this method when wrong type is a valid possibility.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Note:</b> Stamp snapshots typically contain a single version with no contradictions.
      * Historic versions are rare and indicate metadata corrections. Uncommitted stamp versions
      * would only exist if stamp metadata was being edited but not yet persisted (very unusual).
      *
@@ -1009,14 +968,11 @@ public interface ObservableEntityHandle {
 
     /**
      * Retrieves an observable stamp snapshot by nid and view calculator in a single call.
-     * <p>
-     * This is the <b>primary API</b> for retrieving stamp snapshots when you have the nid and
+     * <p>     * This is the <b>primary API</b> for retrieving stamp snapshots when you have the nid and
      * the entity type is guaranteed by your data model. Combines entity retrieval, type checking,
      * and snapshot creation in one call.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
-     * <p>
-     * <b>Stamp Snapshot Characteristics:</b>
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Stamp Snapshot Characteristics:</b>
      * <ul>
      *   <li>Most stamps have exactly one version (the original metadata record)</li>
      *   <li>Contradictions are extremely rare (would require metadata corrections on different paths)</li>
@@ -1061,8 +1017,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Retrieves an observable stamp snapshot by PublicId and view calculator.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
@@ -1084,8 +1039,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Retrieves an observable stamp snapshot by EntityFacade and view calculator.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
@@ -1113,14 +1067,11 @@ public interface ObservableEntityHandle {
 
     /**
      * Retrieves a generic snapshot for an entity of unknown type.
-     * <p>
-     * Use this method when you don't know the entity type in advance. The returned Optional
+     * <p>     * Use this method when you don't know the entity type in advance. The returned Optional
      * will contain the appropriate snapshot type (Concept, Semantic, Pattern, or Stamp) based
      * on the actual entity type.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
-     * <p>
-     * <b>Note:</b> For most use cases, prefer the type-specific methods ({@link #getConceptSnapshotOrThrow},
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Note:</b> For most use cases, prefer the type-specific methods ({@link #getConceptSnapshotOrThrow},
      * {@link #getSemanticSnapshotOrThrow}, {@link #getPatternSnapshotOrThrow}, {@link #getStampSnapshotOrThrow})
      * which provide better type safety and clearer semantics.
      *
@@ -1161,10 +1112,8 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns a snapshot of this entity as an {@link ObservableConceptSnapshot} if it is a concept.
-     * <p>
-     * Use this method when wrong type is a valid possibility.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * Use this method when wrong type is a valid possibility.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
@@ -1204,12 +1153,10 @@ public interface ObservableEntityHandle {
 
     /**
      * Retrieves an observable concept snapshot by nid and view calculator in a single call.
-     * <p>
-     * This is the <b>primary API</b> for retrieving concept snapshots when you have the nid and
+     * <p>     * This is the <b>primary API</b> for retrieving concept snapshots when you have the nid and
      * the entity type is guaranteed by your data model. Combines entity retrieval, type checking,
      * and snapshot creation in one call.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
@@ -1257,11 +1204,9 @@ public interface ObservableEntityHandle {
 
     /**
      * Retrieves an observable semantic snapshot by nid and view calculator in a single call.
-     * <p>
-     * This is the <b>primary API</b> for retrieving semantic snapshots when you have the nid and
+     * <p>     * This is the <b>primary API</b> for retrieving semantic snapshots when you have the nid and
      * the entity type is guaranteed by your data model.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
@@ -1308,11 +1253,9 @@ public interface ObservableEntityHandle {
 
     /**
      * Retrieves an observable pattern snapshot by nid and view calculator in a single call.
-     * <p>
-     * This is the <b>primary API</b> for retrieving pattern snapshots when you have the nid and
+     * <p>     * This is the <b>primary API</b> for retrieving pattern snapshots when you have the nid and
      * the entity type is guaranteed by your data model.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
@@ -1385,11 +1328,9 @@ public interface ObservableEntityHandle {
 
     /**
      * Gets observable entity by nid and returns it as an {@link ObservableConcept}, throwing if absent or wrong type.
-     * <p>
-     * Convenience method equivalent to {@code get(nid).expectConcept()}.
+     * <p>     * Convenience method equivalent to {@code get(nid).expectConcept()}.
      * Use when you need to fetch and assert type in one call.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * @param nid the entity nid
      * @return the ObservableConcept (never null)
@@ -1427,10 +1368,8 @@ public interface ObservableEntityHandle {
 
     /**
      * Gets observable entity by nid and returns it as an {@link ObservableSemantic}, throwing if absent or wrong type.
-     * <p>
-     * Convenience method equivalent to {@code get(nid).expectSemantic()}.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * Convenience method equivalent to {@code get(nid).expectSemantic()}.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * @param nid the entity nid
      * @return the ObservableSemantic (never null)
@@ -1467,10 +1406,8 @@ public interface ObservableEntityHandle {
 
     /**
      * Gets observable entity by nid and returns it as an {@link ObservablePattern}, throwing if absent or wrong type.
-     * <p>
-     * Convenience method equivalent to {@code get(nid).expectPattern()}.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * Convenience method equivalent to {@code get(nid).expectPattern()}.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * @param nid the entity nid
      * @return the ObservablePattern (never null)
@@ -1507,10 +1444,8 @@ public interface ObservableEntityHandle {
 
     /**
      * Gets observable entity by nid and returns it as an {@link ObservableStamp}, throwing if absent or wrong type.
-     * <p>
-     * Convenience method equivalent to {@code get(nid).expectStamp()}.
-     * <p>
-     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     * <p>     * Convenience method equivalent to {@code get(nid).expectStamp()}.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
      *
      * @param nid the entity nid
      * @return the ObservableStamp (never null)
@@ -1549,8 +1484,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns this entity as an {@link ObservableConcept} if it is one.
-     * <p>
-     * Use this method when you need to extract and return the concept, or when you
+     * <p>     * Use this method when you need to extract and return the concept, or when you
      * want to apply transformations using {@link Optional#map(java.util.function.Function)}.
      *
      * <p><b>Usage Examples:</b>
@@ -1583,8 +1517,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns this entity as an {@link ObservableSemantic} if it is one.
-     * <p>
-     * Use this method when you need to extract and return the semantic, or when you
+     * <p>     * Use this method when you need to extract and return the semantic, or when you
      * want to apply transformations using {@link Optional#map(java.util.function.Function)}.
      *
      * <p><b>Usage Examples:</b>
@@ -1611,8 +1544,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns this entity as an {@link ObservablePattern} if it is one.
-     * <p>
-     * Use this method when you need to extract and return the pattern, or when you
+     * <p>     * Use this method when you need to extract and return the pattern, or when you
      * want to apply transformations using {@link Optional#map(java.util.function.Function)}.
      *
      * <p><b>Usage Examples:</b>
@@ -1638,8 +1570,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns this entity as an {@link ObservableStamp} if it is one.
-     * <p>
-     * Use this method when you need to extract and return the stamp, or when you
+     * <p>     * Use this method when you need to extract and return the stamp, or when you
      * want to apply transformations using {@link Optional#map(java.util.function.Function)}.
      *
      * <p><b>Usage Examples:</b>
@@ -1668,8 +1599,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns this entity as an {@link ObservableConcept}, throwing an exception if absent or wrong type.
-     * <p>
-     * <b>Use this method when:</b> Entity type is guaranteed by your data model. Wrong type indicates
+     * <p>     * <b>Use this method when:</b> Entity type is guaranteed by your data model. Wrong type indicates
      * data corruption or programming error, not a legitimate alternative case.
      *
      * <p><b>Common Use Cases:</b>
@@ -1708,8 +1638,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns this entity as an {@link ObservableConcept}, throwing an exception with custom message if absent or wrong type.
-     * <p>
-     * Use this variant when you want to provide domain-specific error context.
+     * <p>     * Use this variant when you want to provide domain-specific error context.
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
@@ -1729,8 +1658,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns this entity as an {@link ObservableSemantic}, throwing an exception if absent or wrong type.
-     * <p>
-     * <b>Use this method when:</b> Entity type is guaranteed by your data model.
+     * <p>     * <b>Use this method when:</b> Entity type is guaranteed by your data model.
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
@@ -1766,8 +1694,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns this entity as an {@link ObservablePattern}, throwing an exception if absent or wrong type.
-     * <p>
-     * <b>Use this method when:</b> Entity type is guaranteed by your data model.
+     * <p>     * <b>Use this method when:</b> Entity type is guaranteed by your data model.
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
@@ -1803,8 +1730,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Returns this entity as an {@link ObservableStamp}, throwing an exception if absent or wrong type.
-     * <p>
-     * <b>Use this method when:</b> Entity type is guaranteed by your data model.
+     * <p>     * <b>Use this method when:</b> Entity type is guaranteed by your data model.
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
@@ -1928,17 +1854,14 @@ public interface ObservableEntityHandle {
 
     /**
      * Hidden record implementation for a present observable entity.
-     * <p>
-     * This implementation is immutable and provides all fluent methods via the default implementations
+     * <p>     * This implementation is immutable and provides all fluent methods via the default implementations
      * in {@link ObservableEntityHandle}. The only functionality it provides is holding the entity
      * reference and exposing it via {@link #entity()}.
-     * <p>
-     * <b>Canonical Instance Behavior:</b> Due to the canonical object pool in {@link ObservableEntity},
+     * <p>     * <b>Canonical Instance Behavior:</b> Due to the canonical object pool in {@link ObservableEntity},
      * multiple {@code PresentHandle} instances may wrap the same underlying observable entity instance.
      * This ensures all handles to the same nid observe the same mutable entity, enabling proper
      * JavaFX property binding and change notification.
-     * <p>
-     * <b>Implementation Note:</b> This is a record rather than a class to leverage automatic
+     * <p>     * <b>Implementation Note:</b> This is a record rather than a class to leverage automatic
      * immutability guarantees, equals/hashCode generation, and compact syntax. The compact
      * constructor enforces non-null validation.
      *
@@ -1947,8 +1870,7 @@ public interface ObservableEntityHandle {
     record PresentHandle(ObservableEntity<?> entityValue) implements ObservableEntityHandle {
         /**
          * Compact constructor validates entity is non-null.
-         * <p>
-         * This validation ensures that PresentHandle never wraps a null entity,
+         * <p>         * This validation ensures that PresentHandle never wraps a null entity,
          * maintaining the invariant that {@link #entity()} always returns a
          * non-empty Optional for present handles.
          *
@@ -1962,8 +1884,7 @@ public interface ObservableEntityHandle {
 
         /**
          * Returns an Optional containing the wrapped observable entity.
-         * <p>
-         * For PresentHandle, this always returns a non-empty Optional.
+         * <p>         * For PresentHandle, this always returns a non-empty Optional.
          *
          * @return Optional containing the observable entity (never empty for PresentHandle)
          */
@@ -1986,8 +1907,7 @@ public interface ObservableEntityHandle {
 
     /**
      * Hidden singleton implementation for an absent observable entity.
-     * <p>
-     * This implementation represents the absence of an observable entity (entity not found,
+     * <p>     * This implementation represents the absence of an observable entity (entity not found,
      * not yet loaded, or lookup failed). It provides all fluent methods via the default
      * implementations in {@link ObservableEntityHandle}, which gracefully handle the empty
      * case by:
@@ -1998,33 +1918,28 @@ public interface ObservableEntityHandle {
      *   <li>{@code isPresent()}: Return false</li>
      *   <li>{@code isAbsent()}: Return true</li>
      * </ul>
-     * <p>
-     * <b>Singleton Pattern:</b> Since all absent handles are identical (they all represent "not found"),
+     * <p>     * <b>Singleton Pattern:</b> Since all absent handles are identical (they all represent "not found"),
      * a single instance {@link #INSTANCE} is shared across the application. This is more memory-efficient
      * than creating new instances and allows identity comparison for absence checks.
-     * <p>
-     * <b>Thread Safety:</b> Immutable and stateless, therefore inherently thread-safe.
+     * <p>     * <b>Thread Safety:</b> Immutable and stateless, therefore inherently thread-safe.
      */
     final class AbsentHandle implements ObservableEntityHandle {
         /**
          * The singleton instance representing an absent observable entity.
-         * <p>
-         * This is the only instance of AbsentHandle that should ever exist.
+         * <p>         * This is the only instance of AbsentHandle that should ever exist.
          * Access via {@link ObservableEntityHandle#absent()}.
          */
         static final AbsentHandle INSTANCE = new AbsentHandle();
 
         /**
          * Private constructor prevents external instantiation.
-         * <p>
-         * Use {@link ObservableEntityHandle#absent()} to obtain the singleton instance.
+         * <p>         * Use {@link ObservableEntityHandle#absent()} to obtain the singleton instance.
          */
         private AbsentHandle() {}
 
         /**
          * Returns an empty Optional, indicating no observable entity is present.
-         * <p>
-         * For AbsentHandle, this always returns {@link Optional#empty()}.
+         * <p>         * For AbsentHandle, this always returns {@link Optional#empty()}.
          *
          * @return empty Optional (always empty for AbsentHandle)
          */

@@ -84,15 +84,13 @@ public class LoginUTestFX {
 
     /**
      * Initialize users before any tests run.
-     * <p>
-     * This method performs the following actions:
+     * <p>     * This method performs the following actions:
      * <ul>
      *   <li>Checks if the users file exists in the user's home directory.</li>
      *   <li>If the users file does not exist, it creates the file with mock user data.</li>
      *   <li>Loads user credentials from the users file.</li>
      *   <li>Logs the loaded users and asserts that the users file is not empty or corrupted.</li>
      * </ul>
-     * </p>
      *
      * @throws Exception if an error occurs during setup
      */
@@ -114,14 +112,12 @@ public class LoginUTestFX {
 
     /**
      * Sets up the test environment before each test.
-     * <p>
-     * This method performs the following actions:
+     * <p>     * This method performs the following actions:
      * <ul>
      *   <li>Registers the primary stage in TestFX.</li>
      *   <li>Mocks the {@link EvtBusFactory} to provide a mock event bus.</li>
      *   <li>Loads the LoginPage from FXML and displays it in the stage.</li>
      * </ul>
-     * </p>
      *
      * @throws Exception if an error occurs during setup
      */
@@ -149,15 +145,13 @@ public class LoginUTestFX {
 
     /**
      * Creates the temporary directory and the users file.
-     * <p>
-     * This method performs the following actions:
+     * <p>     * This method performs the following actions:
      * <ul>
      *   <li>Creates a temporary directory for the user home.</li>
      *   <li>Sets the system property for user.home to the temporary directory.</li>
      *   <li>Creates the "Solor" directory if it does not exist.</li>
      *   <li>Creates and populates the users file with mock user data.</li>
      * </ul>
-     * </p>
      *
      * @return the path to the created users file
      * @throws RuntimeException if an error occurs during the creation of the directory or file
@@ -207,13 +201,11 @@ public class LoginUTestFX {
 
     /**
      * Cleans up the test environment after each test.
-     * <p>
-     * This method performs the following actions:
+     * <p>     * This method performs the following actions:
      * <ul>
      *   <li>Cleans up TestFX stages and mocked resources.</li>
      *   <li>Closes the mocked static resources for {@link EvtBusFactory}.</li>
      * </ul>
-     * </p>
      *
      * @throws Exception if an error occurs during cleanup
      */
@@ -287,10 +279,8 @@ public class LoginUTestFX {
 
     /**
      * Test to verify input validation for the login form.
-     * <p>
-     * This test uses parameterized inputs to check various scenarios for username and password validation.
+     * <p>     * This test uses parameterized inputs to check various scenarios for username and password validation.
      * It verifies that the appropriate error messages are displayed for invalid inputs.
-     * </p>
      *
      * @param username the username to test
      * @param password the password to test
@@ -315,12 +305,10 @@ public class LoginUTestFX {
 
     /**
      * Provides a stream of arguments for input validation tests.
-     * <p>
-     * This method returns a stream of arguments, each containing a username, password,
+     * <p>     * This method returns a stream of arguments, each containing a username, password,
      * expected username error message, expected password error message, and expected
      * authentication error message. These arguments are used to test various scenarios
      * for username and password validation.
-     * </p>
      *
      * @return a stream of {@link Arguments} for input validation tests
      */
@@ -334,10 +322,8 @@ public class LoginUTestFX {
 
     /**
      * Test to verify successful authentication.
-     * <p>
-     * This test enters valid credentials and clicks the sign-in button.
+     * <p>     * This test enters valid credentials and clicks the sign-in button.
      * It then checks that the authentication error label is empty, indicating a successful login.
-     * </p>
      *
      * @param user the valid user credentials to test
      */
@@ -358,10 +344,8 @@ public class LoginUTestFX {
 
     /**
      * Provides a stream of valid users.
-     * <p>
-     * This method returns a stream of {@link UsernamePasswordCredentials} representing valid users.
+     * <p>     * This method returns a stream of {@link UsernamePasswordCredentials} representing valid users.
      * If no valid users are available, it throws an {@link IllegalStateException}.
-     * </p>
      *
      * @return a stream of {@link UsernamePasswordCredentials} representing valid users
      * @throws IllegalStateException if no valid users are available for testing

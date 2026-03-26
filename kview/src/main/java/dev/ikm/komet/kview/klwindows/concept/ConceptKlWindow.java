@@ -47,8 +47,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 
 /**
  * A specialized Komet window for creating or editing concept entities.
- * <p>
- * This class extends {@link AbstractEntityChapterKlWindow} and incorporates a {@link ConceptNode}
+ * <p>This class extends {@link AbstractEntityChapterKlWindow} and incorporates a {@link ConceptNode}
  * for viewing or modifying concept details. It leverages the activity stream framework
  * to broadcast and receive updates about concept changes.
  */

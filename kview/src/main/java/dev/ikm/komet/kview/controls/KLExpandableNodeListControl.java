@@ -16,21 +16,18 @@ import javafx.scene.control.Skin;
 
 /**
  * A custom JavaFX control that displays a collapsible/expandable list of nodes with animated transitions.
- * <p>
- * This control holds a list of nodes (UI components) but only displays a configurable
+ * <p>This control holds a list of nodes (UI components) but only displays a configurable
  * number of them by default. When collapsed, it shows only up to {@link #visibleCountProperty()} items.
  * A toggle button at the bottom allows users to expand the control to view all items or
  * collapse it back to show only the visible count.
- * <p>
- * Key features:
+ * <p>Key features:
  * <ul>
  *   <li>Configurable number of always-visible items via {@link #visibleCountProperty()}</li>
  *   <li>Animated expand/collapse transitions</li>
  *   <li>CSS styling support through pseudo-classes and style classes</li>
  *   <li>Accessibility support via JavaFX's accessibility framework</li>
  * </ul>
- * <p>
- * Usage example:
+ * <p>Usage example:
  * <pre>{@code
  * // Create a control with some items
  * Label label1 = new Label("Item 1");
@@ -74,8 +71,7 @@ public class KLExpandableNodeListControl extends Control {
 
     /**
      * Constructs an empty {@code KLExpandableNodeListControl} with default styling.
-     * <p>
-     * The control is initialized in the collapsed state, showing up to
+     * <p>     * The control is initialized in the collapsed state, showing up to
      * {@link #DEFAULT_VISIBLE_COUNT} items initially.
      */
     public KLExpandableNodeListControl() {
@@ -85,8 +81,7 @@ public class KLExpandableNodeListControl extends Control {
 
     /**
      * Constructs a {@code KLExpandableNodeListControl} with the specified items.
-     * <p>
-     * The control is initialized in the collapsed state, showing up to
+     * <p>     * The control is initialized in the collapsed state, showing up to
      * {@link #DEFAULT_VISIBLE_COUNT} items initially.
      *
      * @param items the initial items (Nodes) to add to this control
@@ -102,19 +97,16 @@ public class KLExpandableNodeListControl extends Control {
 
     /**
      * The observable list that holds all the items (nodes) contained in this control.
-     * <p>
-     * This list is exposed via the {@link #getItems()} method and can be modified directly
+     * <p>     * This list is exposed via the {@link #getItems()} method and can be modified directly
      * to add or remove items from the control.
      */
     private final ObservableList<Node> items = FXCollections.observableArrayList();
 
     /**
      * Returns the {@link ObservableList} of items (Nodes) contained in this control.
-     * <p>
-     * Adding or removing items from this list will automatically reflect in the UI,
+     * <p>     * Adding or removing items from this list will automatically reflect in the UI,
      * subject to the value of {@link #getVisibleCount()} and {@link #isExpanded()}.
-     * <p>
-     * Example usage:
+     * <p>     * Example usage:
      * <pre>{@code
      * // Add a node to the control
      * control.getItems().add(new Label("New Item"));
@@ -140,12 +132,10 @@ public class KLExpandableNodeListControl extends Control {
 
     /**
      * Returns the maximum number of items to display when the control is not expanded.
-     * <p>
-     * This value determines how many items from the beginning of the {@link #getItems()} list
+     * <p>     * This value determines how many items from the beginning of the {@link #getItems()} list
      * will be visible when the control is in a collapsed state. Additional items beyond this count
      * are only visible when the control is expanded.
-     * <p>
-     * If the property has not been instantiated yet, the default value
+     * <p>     * If the property has not been instantiated yet, the default value
      * ({@link #DEFAULT_VISIBLE_COUNT}) is returned.
      *
      * @return the maximum number of items visible when collapsed
@@ -156,8 +146,7 @@ public class KLExpandableNodeListControl extends Control {
 
     /**
      * Sets the maximum number of items to display when the control is not expanded.
-     * <p>
-     * This value determines how many items from the beginning of the {@link #getItems()} list
+     * <p>     * This value determines how many items from the beginning of the {@link #getItems()} list
      * will be visible when the control is in a collapsed state. Additional items beyond this count
      * are only visible when the control is expanded.
      *
@@ -192,8 +181,7 @@ public class KLExpandableNodeListControl extends Control {
     /**
      * Returns {@code true} if this control is in the expanded state (showing all items),
      * or {@code false} if it is collapsed (showing only up to {@link #getVisibleCount()} items).
-     * <p>
-     * The expanded state is reflected visually with an animated transition between states.
+     * <p>     * The expanded state is reflected visually with an animated transition between states.
      *
      * @return {@code true} if the control is expanded; {@code false} otherwise
      */
@@ -204,11 +192,9 @@ public class KLExpandableNodeListControl extends Control {
     /**
      * Sets whether this control should be expanded (showing all items) or collapsed
      * (showing only up to {@link #getVisibleCount()} items).
-     * <p>
-     * Changing this value will trigger an animated transition between the expanded
+     * <p>     * Changing this value will trigger an animated transition between the expanded
      * and collapsed states.
-     * <p>
-     * This change also updates the CSS pseudo-classes {@link #PSEUDO_CLASS_EXPANDED} and
+     * <p>     * This change also updates the CSS pseudo-classes {@link #PSEUDO_CLASS_EXPANDED} and
      * {@link #PSEUDO_CLASS_COLLAPSED} which can be used for styling.
      *
      * @param value {@code true} to expand the control; {@code false} to collapse it
@@ -219,16 +205,13 @@ public class KLExpandableNodeListControl extends Control {
 
     /**
      * The property indicating whether this control is expanded.
-     * <p>
-     * When this property is {@code true}, the control shows all items in its
+     * <p>     * When this property is {@code true}, the control shows all items in its
      * {@link #getItems()} list. When it is {@code false}, the control shows only
      * up to {@link #getVisibleCount()} items.
-     * <p>
-     * Changing this property's value triggers an animated transition between states
+     * <p>     * Changing this property's value triggers an animated transition between states
      * and updates the CSS pseudo-classes {@link #PSEUDO_CLASS_EXPANDED} and
      * {@link #PSEUDO_CLASS_COLLAPSED} which can be used for styling.
-     * <p>
-     * If this property is not yet instantiated, it will be created with a default value of {@code false}.
+     * <p>     * If this property is not yet instantiated, it will be created with a default value of {@code false}.
      *
      * @return the expanded BooleanProperty
      */

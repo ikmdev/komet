@@ -19,15 +19,13 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
 
 /**
  * Type-safe property wrapper for Cognitive ViewModel properties.
- * <p>
- * Provides compile-time type safety for property access while delegating to the underlying
+ * <p>Provides compile-time type safety for property access while delegating to the underlying
  * Cognitive framework's property system. This is a specialized version of
  * {@link dev.ikm.tinkar.common.util.TypedKey} designed specifically for the MVVM pattern
  * and Cognitive ViewModels.
  *
  * <h2>Why TypedProperty Exists: The ViewModel Property Problem</h2>
- * <p>
- * Cognitive ViewModels use a dynamic property system with string keys and Object values:
+ * <p>Cognitive ViewModels use a dynamic property system with string keys and Object values:
  * <pre>{@code
  * // Traditional approach - unsafe and error-prone:
  * public class StampViewModel extends FormViewModel {
@@ -47,8 +45,7 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
  * }
  * }</pre>
  *
- * <p>
- * {@code TypedProperty} eliminates these problems:
+ * <p>{@code TypedProperty} eliminates these problems:
  * <pre>{@code
  * // Type-safe approach - clean and correct:
  * public class StampViewModel extends FormViewModel {
@@ -120,15 +117,13 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
  * </table>
  *
  * <h2>Architectural Context</h2>
- * <p>
- * {@code TypedProperty} is part of a layered type-safe property system:
+ * <p>{@code TypedProperty} is part of a layered type-safe property system:
  * <ul>
  *   <li><b>tinkar-common:</b> {@link dev.ikm.tinkar.common.util.TypedKey} - Generic map-based type safety</li>
  *   <li><b>komet-framework:</b> {@code TypedProperty} - ViewModel-specific specialization (this class)</li>
  *   <li><b>Application layer:</b> Domain-specific constants (e.g., {@code StampProperties})</li>
  * </ul>
- * <p>
- * Use {@code TypedProperty} when working with Cognitive ViewModels in the UI layer.
+ * <p>Use {@code TypedProperty} when working with Cognitive ViewModels in the UI layer.
  * Use {@code TypedKey} for general-purpose maps, caches, or configuration.
  *
  * <h2>Migration from Raw Properties</h2>
@@ -176,8 +171,7 @@ public final class TypedProperty<T> {
 
     /**
      * Creates a typed property with the specified key and type.
-     * <p>
-     * This is the primary factory method for creating TypedProperty instances.
+     * <p>     * This is the primary factory method for creating TypedProperty instances.
      * Typically used to define property constants in a dedicated class.
      *
      * <p><b>Example:</b>
@@ -198,8 +192,7 @@ public final class TypedProperty<T> {
 
     /**
      * Gets the typed value from the specified ViewModel.
-     * <p>
-     * Returns the value with compile-time type safety. Performs a runtime type check
+     * <p>     * Returns the value with compile-time type safety. Performs a runtime type check
      * and throws ClassCastException if the stored value doesn't match the expected type.
      *
      * <p><b>Example:</b>
@@ -224,8 +217,7 @@ public final class TypedProperty<T> {
 
     /**
      * Sets the typed value in the specified ViewModel.
-     * <p>
-     * Provides compile-time type safety through generic parameter. Performs runtime
+     * <p>     * Provides compile-time type safety through generic parameter. Performs runtime
      * validation to ensure type correctness before storing.
      *
      * <p><b>Example:</b>

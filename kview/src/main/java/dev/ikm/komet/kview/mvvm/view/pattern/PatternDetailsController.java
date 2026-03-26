@@ -623,10 +623,8 @@ public class PatternDetailsController {
 
     /**
      * Configures the specified {@link Node} to support drag-and-drop operations associated with the given {@link EntityFacade}.
-     * <p>
-     * When a drag is detected on the node, this method initializes a dragboard with the entity's identifier and
+     * <p>     * When a drag is detected on the node, this method initializes a dragboard with the entity's identifier and
      * sets a custom drag image for visual feedback.
-     * </p>
      *
      * @param node   the JavaFX {@link Node} to be made draggable
      * @param entityProperty the {@link EntityFacade} associated with the node, providing data for the drag operation
@@ -1152,8 +1150,7 @@ public class PatternDetailsController {
 
     /**
      * Updates draggable behavior for the properties panel based on its open/closed state.
-     * <p>
-     * When opened, adds the properties tabs pane as a draggable node. When closed,
+     * <p>     * When opened, adds the properties tabs pane as a draggable node. When closed,
      * safely removes the draggable behavior to prevent memory leaks.
      *
      * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
@@ -1172,8 +1169,7 @@ public class PatternDetailsController {
 
     /**
      * Checks whether the properties panel is currently open.
-     * <p>
-     * This method determines the open state by checking if the properties
+     * <p>     * This method determines the open state by checking if the properties
      * slideout tray pane is visible and expanded.
      *
      * @return {@code true} if the properties panel is open and visible,
@@ -1185,8 +1181,7 @@ public class PatternDetailsController {
 
     /**
      * Sets the open/closed state of the properties panel programmatically.
-     * <p>
-     * The animation is performed without transitions when called programmatically
+     * <p>     * The animation is performed without transitions when called programmatically
      * to ensure immediate state changes.
      *
      * @param isOpen {@code true} to open (slide out) the properties panel,

@@ -10,8 +10,7 @@ import java.util.Objects;
 
 /**
  * A default {@link Skin} implementation for the {@link NotificationPopup} control.
- * <p>
- * This skin manages the display of a single content {@link Node} within a {@link VBox}.
+ * <p>This skin manages the display of a single content {@link Node} within a {@link VBox}.
  * It also listens for content changes on the {@code NotificationPopup} and updates
  * the displayed content accordingly.
  */
@@ -63,8 +62,7 @@ public class NotificationPopupSkin implements Skin<NotificationPopup> {
 
     /**
      * {@inheritDoc}
-     * <p>
-     * Returns the underlying {@link NotificationPopup} that this skin is attached to.
+     * <p>     * Returns the underlying {@link NotificationPopup} that this skin is attached to.
      */
     @Override
     public NotificationPopup getSkinnable() {
@@ -73,8 +71,7 @@ public class NotificationPopupSkin implements Skin<NotificationPopup> {
 
     /**
      * {@inheritDoc}
-     * <p>
-     * Returns the root {@link Node} for this skin, which is a {@link VBox}
+     * <p>     * Returns the root {@link Node} for this skin, which is a {@link VBox}
      * containing the popup's content.
      */
     @Override
@@ -84,8 +81,7 @@ public class NotificationPopupSkin implements Skin<NotificationPopup> {
 
     /**
      * {@inheritDoc}
-     * <p>
-     * Cleans up listeners and references when this skin is disposed.
+     * <p>     * Cleans up listeners and references when this skin is disposed.
      */
     @Override
     public void dispose() {

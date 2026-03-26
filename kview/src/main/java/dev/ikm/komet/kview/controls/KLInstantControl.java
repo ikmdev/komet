@@ -16,7 +16,6 @@ import java.util.ResourceBundle;
  * <p>KLInstantControl allows setting or getting a time instant, defined by a {@link #localDateTimeProperty()} and
  * a {@link #zoneOffsetProperty()}, by using a {@link CalendarPopup popup} that shows the initial date and time (or the
  * current ones, if not set) and allows removing the initial value (if set), or setting a new value.
- * </p>
  * <pre><code>
  * KLInstantControl instantControl = new KLInstantControl();
  * instantControl.setTitle("Instant");

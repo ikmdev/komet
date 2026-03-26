@@ -25,8 +25,7 @@ import static dev.ikm.komet.kview.fxutils.window.CursorMappings.ResizeDirection;
 
 /**
  * Implementation for edge-based resize handles represented as line segments.
- * <p>
- * This class provides resize handles for the edge positions of a resizable component
+ * <p>This class provides resize handles for the edge positions of a resizable component
  * (N, E, S, W). Each handle is implemented as a Line shape positioned along the
  * corresponding edge of the parent container with the appropriate cursor feedback.
  *

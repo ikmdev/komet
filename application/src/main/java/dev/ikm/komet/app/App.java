@@ -85,24 +85,18 @@ import java.util.prefs.BackingStoreException;
 
 /**
  * Main application class for the Komet application, extending JavaFX {@link Application}.
- * <p>
- * The {@code WebApp} class serves as the entry point for launching the Komet application,
+ * <p>The {@code WebApp} class serves as the entry point for launching the Komet application,
  * which is a JavaFX-based application supporting both desktop and web platforms via JPro.
  * It manages initialization, startup, and shutdown processes, and handles various application states
  * such as starting, login, data source selection, running, and shutdown.
- * </p>
- * <p>
- * <h4>Platform-Specific Features:</h4>
+ * <p><p><b>Platform-Specific Features:</b></p>
  * <ul>
  *   <li><strong>Web Support:</strong> Utilizes JPro's {@link WebAPI} to support running the application in a web browser.</li>
  *   <li><strong>macOS Integration:</strong> Configures macOS-specific properties and menus.</li>
  * </ul>
- * </p>
- * <p>
- * <h4>Event Bus and Subscriptions:</h4>
+ * <p><p><b>Event Bus and Subscriptions:</b></p>
  * The application uses an event bus ({@link EvtBus}) for inter-component communication. It subscribes to various events like
  * {@code CreateJournalEvent} and {@code SignInUserEvent} to handle user actions and state changes.
- * </p>
  *
  * @see Application
  * @see AppState
@@ -430,8 +424,7 @@ public class App extends Application  {
 
     /**
      * Saves the current state of the journals and its windows to the application's preferences system.
-     * <p>
-     * This method persists all journal-related data, including:
+     * <p>     * This method persists all journal-related data, including:
      * <ul>
      *   <li>All open window states (via {@link JournalController#saveWindows(KometPreferences)})</li>
      *   <li>Journal metadata (topic UUID, title, directory name)</li>
@@ -439,8 +432,7 @@ public class App extends Application  {
      *   <li>Author information</li>
      *   <li>Last edit timestamp</li>
      * </ul>
-     * <p>
-     * The preferences are stored in a hierarchical structure:
+     * <p>     * The preferences are stored in a hierarchical structure:
      * <pre>
      * Root Configuration Preferences
      *   └── journals

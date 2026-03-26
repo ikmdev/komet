@@ -41,14 +41,12 @@ import java.util.*;
 
 /**
  * <p>Custom skin implementation for the {@link KLSearchControl}.
- * </p>
  * <p>This implementation takes care of adding a {@link TextField} as a search field for the user,
  * with a clear button in it, a filter button and results area to display a
  * {@link ListView<dev.ikm.komet.kview.controls.KLSearchControl.SearchResult>} with the
  * search results, with a limited height. This area is only shown when the search field contains some text,
  * the user has pressed ENTER and a search engine has performed a certain search, setting the results in
  * the {@link KLSearchControl#resultsProperty()}.
- * </p>
  */
 public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
@@ -67,15 +65,11 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
     /**
      * <p>Creates a {@link KLSearchControlSkin} instance.
-     * </p>
      * <p>Create the {@link ListView<dev.ikm.komet.kview.controls.KLSearchControl.SearchResult>} instance, and
      * provide a custom cell factory that uses a {@link SearchResultBox} instance for the graphic node.
-     * </p>
      * <p>The list height is limited, and up until 4 search results will be visible.
-     * </p>
      * <p>Adds bindings and listeners to perform the necessary actions based on the {@link KLSearchControl}
      * properties.
-     * </p>
      * @param control The control that this skin should be installed onto
      */
     public KLSearchControlSkin(KLSearchControl control) {
@@ -328,9 +322,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
     /**
      * <p>Custom implementation of a {@link Pane} layout, to render the content of a
      * {@link dev.ikm.komet.kview.controls.KLSearchControl.SearchResult}.
-     * </p>
      * <p>This can be used to render search results in a {@link ListView} control.
-     * </p>
      */
     static class SearchResultBox extends Pane {
 
@@ -349,12 +341,9 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
         /**
          * <p>Creates an instance of a {@link SearchResultBox}.
-         * </p>
          * <p>A {@link Label} node is used on top with the {@link ConceptFacade#description()} of the parent concept.
-         * </p>
          * <p>A {@link Label} node is used below with the {@link ConceptFacade#description()} of the concept found in
          * the search, highlighting the occurrences of the {@link KLSearchControl#textProperty()}.
-         * </p>
          * @param searchControl the {@link KLSearchControl} with a {@link ListView} control, that
          *                      will use this box as graphic node for its cells.
          */
@@ -396,7 +385,6 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         /**
          * <p>Update the content of this {@link SearchResultBox} with a new
          * {@link dev.ikm.komet.kview.controls.KLSearchControl.SearchResult}
-         * </p>
          * @param result a {@link dev.ikm.komet.kview.controls.KLSearchControl.SearchResult}
          */
         void setSearchResult(KLSearchControl.SearchResult result) {

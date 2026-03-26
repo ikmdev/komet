@@ -2,8 +2,7 @@ package dev.ikm.komet.framework.observable;
 
 /**
  * Marker interface for editable entity versions that cache field changes.
- * <p>
- * Provides a generic-free type for working with editable versions without exposing
+ * <p>Provides a generic-free type for working with editable versions without exposing
  * entity and version type parameters. This is Layer 1 (Marker) of the MGC pattern
  * for editable versions.
  *
@@ -60,8 +59,7 @@ package dev.ikm.komet.framework.observable;
  * }</pre>
  *
  * <h2>Relationship to ObservableVersion</h2>
- * <p>
- * Every {@link ObservableVersion} can produce an {@code EditableVersion} via
+ * <p>Every {@link ObservableVersion} can produce an {@code EditableVersion} via
  * {@code getEditableVersion(ObservableStamp)}. The editable version wraps the
  * read-only version and provides cached modification capabilities.
  *

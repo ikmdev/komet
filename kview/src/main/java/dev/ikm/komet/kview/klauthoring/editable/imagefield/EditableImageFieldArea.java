@@ -17,11 +17,9 @@ import javafx.scene.image.Image;
 /**
  * TODO: Work in progress: finalize the bidirectional binding between Image and byte[]
  * An editable area for Image fields.
- * <p>
- * This area uses {@link KLImageControl} and handles all the binding plumbing
+ * <p>This area uses {@link KLImageControl} and handles all the binding plumbing
  * via its parent class {@link EditableFieldAreaBlueprint}.
- * <p>
- * <b>Usage:</b>
+ * <p><b>Usage:</b>
  * <pre>{@code
  * // Create the area
  * EditableImageFieldArea imageArea = EditableImageFieldArea.create(preferencesFactory);

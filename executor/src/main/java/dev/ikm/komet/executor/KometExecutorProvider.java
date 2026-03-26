@@ -31,21 +31,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Generally available thread pools for doing background processing in an ISAAC application.
- * <p>
- * The {@link #forkJoinThreadPool()} that this provides is identical to the @{link {@link ForkJoinPool#commonPool()}
+ * <p>The {@link #forkJoinThreadPool()} that this provides is identical to the @{link {@link ForkJoinPool#commonPool()}
  * with the exception that it will bottom out at 6 processing threads, rather than 1, to help prevent
  * deadlock situations in common ISAAC usage patterns.  This has an unbounded queue depth, and LIFO behavior.
- * <p>
- * The {@link #blockingThreadPool()} that this provides is a standard thread pool with (up to) the same number of threads
+ * <p>The {@link #blockingThreadPool()} that this provides is a standard thread pool with (up to) the same number of threads
  * as there are cores present on the computer - with a minimum of 6 threads.  This executor has no queue - internally
  * it uses a {@link SynchronousQueue} - so if no thread is available to accept the task being queued, it will block
  * submission of the task until a thread is available to accept the job.
- * <p>
- * The {@link #threadPool()} that this provides is a standard thread pool with (up to) the same number of threads
+ * <p>The {@link #threadPool()} that this provides is a standard thread pool with (up to) the same number of threads
  * as there are cores present on the computer - with a minimum of 6 threads.  This executor has an unbounded queue
  * depth, and FIFO behavior.
- * <p>
- * The {@link #ioThreadPool()} that this provides is a standard thread pool with 6 threads.  This executor has an unbounded queue
+ * <p>The {@link #ioThreadPool()} that this provides is a standard thread pool with 6 threads.  This executor has an unbounded queue
  * depth, and FIFO behavior.  This executor is good for jobs that tend to block on disk IO, where you don't want many running in parallel.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
@@ -266,10 +262,8 @@ public class KometExecutorProvider implements ExecutorService {
 
     /**
      * Controller for KometExecutorProvider lifecycle management.
-     * <p>
-     * Integrates with {@link ServiceLifecycleManager} and provides
+     * <p>     * Integrates with {@link ServiceLifecycleManager} and provides
      * {@link ExecutorController} interface for programmatic access.
-     * </p>
      */
     public static class Controller extends ProviderController<KometExecutorProvider>
             implements ExecutorController {

@@ -274,8 +274,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
     /**
      * Creates a subscription that ensures windows remain within the desktop pane's boundaries when its size changes.
-     * <p>
-     * This method establishes listeners on the desktop pane's width and height properties that, when invalidated,
+     * <p>     * This method establishes listeners on the desktop pane's width and height properties that, when invalidated,
      * adjust all workspace windows to ensure they remain fully visible within the resized desktop. This prevents
      * windows from becoming inaccessible by being positioned outside the viewable area after a desktop resize.
      *
@@ -313,12 +312,10 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     /**
      * Sets up keyboard and mouse event handlers to enable panning of the {@link KLWorkspace}'s
      * desktop via Ctrl+drag.
-     * <p>
-     * When the user presses and holds the {@code Control} key, the {@code DesktopPane} becomes
+     * <p>     * When the user presses and holds the {@code Control} key, the {@code DesktopPane} becomes
      * mouse-transparent, and the enclosing {@link ScrollPane} is set to pannable. This allows
      * the user to click and drag anywhere on the desktop to pan the visible area.
-     * <p>
-     * Upon releasing the Control key, default interaction is restored: the desktop accepts
+     * <p>     * Upon releasing the Control key, default interaction is restored: the desktop accepts
      * mouse events, and the scroll pane is no longer pannable. The mouse cursor is updated
      * accordingly (e.g., open hand, closed hand) during these interactions.
      *
@@ -386,8 +383,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Configures drag-and-drop behavior for the specified {@code KLWorkspace}. This method sets up the
      * necessary event handlers to display or hide a drop region on the desktop pane when a valid drag
      * action occurs over the workspace.
-     * <p>
-     * Specifically:
+     * <p>     * Specifically:
      * <ul>
      *   <li>When an item is dragged over the workspace, this method checks if it is a valid draggable
      *       item and then delegates to {@link #findDropRegionPlacement(double, double)} to determine
@@ -504,8 +500,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Finds a horizontal gap (including the left side of the first occupant in a row, or the
      * right side of the last occupant in the row) under the mouse position and determines whether
      * it can show a default-size BOX region or a LINE region that indicates insertion.
-     * <p>
-     * <strong>Key Details:</strong>
+     * <p>     * <strong>Key Details:</strong>
      * <ul>
      *   <li>If the gap is at least {@link KLWorkspace#DEFAULT_WINDOW_WIDTH} + 2 * hgap,
      *       a {@code BOX} drop region is placed at {@code occupantRight + hgap} (or at
@@ -652,8 +647,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
     /**
      * Adds a {@link ChapterKlWindow} to the {@code desktopPane}.
-     * <p>
-     * The logic for determining the initial placement of the new window is as follows:
+     * <p>     * The logic for determining the initial placement of the new window is as follows:
      * <ol>
      *     <li>If the drop region is visible and is of type {@code BOX}, place the window at the drop region
      *     coordinates (top-left) with the drop region's dimensions.</li>
@@ -665,8 +659,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      *         existing windows, use that saved position.</li>
      *     <li>Otherwise, fall back on the three-row placement strategy from the top-left.</li>
      * </ol>
-     * <p>
-     * Note: We only manipulate {@code desktopPane.getChildren()} here, not {@code workspace.getWindows()}.
+     * <p>     * Note: We only manipulate {@code desktopPane.getChildren()} here, not {@code workspace.getWindows()}.
      *
      * @param window The {@link ChapterKlWindow} to be added.
      * @throws NullPointerException if window or window.fxGadget() is null
@@ -887,8 +880,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Retrieves the bounds of a given node, handling both Pane nodes (which have
      * layout coordinates and actual dimensions) and other nodes (which use
      * preferred dimensions).
-     * <p>
-     * This method also checks for target positions during animations and uses
+     * <p>     * This method also checks for target positions during animations and uses
      * those instead of current positions when available.
      *
      * @param node The node to get bounds for
@@ -979,8 +971,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     /**
      * Identifies windows that need to be shifted due to a LINE drop insertion.
      * These are windows in the same row whose minX >= lineX, and all windows in subsequent rows.
-     * <p>
-     * The returned list is sorted in ascending order by row index, then by minX. This
+     * <p>     * The returned list is sorted in ascending order by row index, then by minX. This
      * ensures that when these windows are shifted, they maintain their relative positions
      * and flow naturally from one row to the next.
      *
@@ -1034,8 +1025,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * Calculates the target positions for windows that need to be shifted.
      * Windows flow continuously from one row to the next as needed, maintaining
      * proper spacing and wrapping to subsequent rows when necessary.
-     * <p>
-     * The algorithm starts placing windows from the specified (startX, startY) position
+     * <p>     * The algorithm starts placing windows from the specified (startX, startY) position
      * and continues in a left-to-right, top-to-bottom flow, respecting the horizontal
      * and vertical gaps between windows.
      *
@@ -1198,8 +1188,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     /**
      * Core internal method for scanning up to three rows for a valid placement that does not overlap
      * occupant windows. Used by the general {@code findThreeRowPlacement}.
-     * <p>
-     * The algorithm attempts to place the window in each row, starting from the row containing
+     * <p>     * The algorithm attempts to place the window in each row, starting from the row containing
      * {@code startY} and continuing through subsequent rows. Within each row, it tries multiple
      * candidate X positions based on the edges of existing windows and attempts to find a Y position
      * that avoids overlaps.
@@ -1299,8 +1288,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     /**
      * Smoothly scrolls the {@link ScrollPane} so that the top edge of the specified node
      * is visible. Uses a brief animation for a user-friendly experience.
-     * <p>
-     * The scroll animation centers the viewport horizontally on the node while positioning
+     * <p>     * The scroll animation centers the viewport horizontally on the node while positioning
      * the top of the node (minus the vertical gap) at the top of the viewport. This ensures
      * the newly placed window is fully visible with appropriate spacing.
      *
@@ -1418,8 +1406,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
     /**
      * Sets the specified cursor on the {@code ScrollPane}'s internal viewport, if available.
-     * <p>
-     * This method looks up the node with the CSS selector <em>.viewport</em> inside the
+     * <p>     * This method looks up the node with the CSS selector <em>.viewport</em> inside the
      * associated {@code ScrollPane} and updates its cursor, typically to indicate
      * user interactions such as panning or dragging. If the viewport node cannot be found,
      * this method does nothing.
@@ -1465,8 +1452,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
     /**
      * Cleans up listeners and references to avoid potential memory leaks.
      * This method is called when the skin is detached from its control.
-     * <p>
-     * The cleanup process includes:
+     * <p>     * The cleanup process includes:
      * <ul>
      *   <li>Removing the window list change listener</li>
      *   <li>Unsubscribing from desktop resize notifications</li>
@@ -1515,8 +1501,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
     /**
      * Cleans up a subscription stored in the skinnable's properties map.
-     * <p>
-     * This utility method retrieves a {@link Subscription} from the control's properties
+     * <p>     * This utility method retrieves a {@link Subscription} from the control's properties
      * using the specified key, unsubscribes from it to release resources, and then
      * removes the entry from the properties map. If no subscription exists for the
      * given key, this method does nothing.
@@ -1539,8 +1524,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      * A custom pane that acts as the "desktop" for the workspace.
      * It hosts multiple {@link ChapterKlWindow} nodes and displays
      * a {@link KLDropRegion} when an external drag enters the workspace.
-     * <p>
-     * The desktop pane provides methods to show and hide drop regions
+     * <p>     * The desktop pane provides methods to show and hide drop regions
      * during drag-and-drop operations, indicating where new windows
      * can be placed.
      */

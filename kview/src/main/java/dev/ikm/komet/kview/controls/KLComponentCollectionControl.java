@@ -28,7 +28,6 @@ import java.util.function.Function;
  * gestures.</p>
  * <p>If there are no empty KLComponentControls, a {@link javafx.scene.control.Button} allows
  * adding one empty more, so the user can keep adding more items.
- * </p>
  *
  * <pre><code>
  * KLComponentListControl componentListControl = new KLComponentListControl();
@@ -90,7 +89,6 @@ public class KLComponentCollectionControl<T extends IntIdCollection> extends Con
     // -- type ahead string converter
     /**
      * Converts the user-typed input to an object of type T, or the object of type T to a String.
-     * @return the converter property
      */
     private final ObjectProperty<StringConverter<EntityProxy>> typeAheadStringConverter = new SimpleObjectProperty<>(this, "converter");
     public final ObjectProperty<StringConverter<EntityProxy>> typeAheadStringConverterProperty() { return typeAheadStringConverter; }

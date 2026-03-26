@@ -6,8 +6,7 @@ import dev.ikm.tinkar.common.service.SaveState;
  * {@code KnowledgeLayout} implementations provide an encapsulated, customizable,
  * and restorable layout of knowledge components. The knowledge layout will be responsive
  * to the value of the {@code componentProperty()}.
- * <p>
- * When the value of the {@code componentProperty()} changes, the implementation is expected to:
+ * <p>When the value of the {@code componentProperty()} changes, the implementation is expected to:
  * <ol>
  *     <li>Retrieve the observable fields of that component</li>
  *     <li>Pass those observable fields to a {@code LayoutComputerFactory} via the

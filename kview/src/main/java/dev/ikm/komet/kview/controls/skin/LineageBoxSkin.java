@@ -12,7 +12,6 @@ import javafx.scene.layout.StackPane;
  * <p>Custom skin implementation for the {@link LineageBox} control.
  * It just extends the {@link ScrollPaneSkin} by adding a close icon
  * to the top right side of the lineage box, that allows closing it.
- * </p>
  */
 public class LineageBoxSkin extends ScrollPaneSkin {
     private final StackPane closePane;

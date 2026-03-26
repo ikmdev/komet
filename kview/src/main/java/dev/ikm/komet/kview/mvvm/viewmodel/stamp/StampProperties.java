@@ -25,8 +25,7 @@ import java.util.List;
 
 /**
  * Type-safe property constants for Stamp form ViewModels using enum-based pattern.
- * <p>
- * Provides compile-time type safety for all STAMP-related properties used in
+ * <p>Provides compile-time type safety for all STAMP-related properties used in
  * {@link StampFormViewModelBase} and its subclasses. Uses an inner enum for
  * enumeration benefits (iteration, exhaustiveness) while maintaining full type safety
  * through static constants.
@@ -100,8 +99,7 @@ public final class StampProperties {
 
     /**
      * Inner enum providing enumeration and sealed type benefits.
-     * <p>
-     * Each enum constant wraps a {@link TypedProperty} with the correct type.
+     * <p>     * Each enum constant wraps a {@link TypedProperty} with the correct type.
      * Type safety is achieved through the static constant wrappers below,
      * while the enum provides iteration and exhaustiveness checking.
      */
@@ -155,8 +153,7 @@ public final class StampProperties {
 
     /**
      * The current stamp being edited or viewed.
-     * <p>
-     * Represents the full STAMP coordinate (Status, Time, Author, Module, Path)
+     * <p>     * Represents the full STAMP coordinate (Status, Time, Author, Module, Path)
      * for the entity version being managed by the form.
      */
     public static final TypedProperty<Stamp> CURRENT_STAMP =
@@ -164,16 +161,14 @@ public final class StampProperties {
 
     /**
      * The status component of the STAMP (Active, Inactive, Canceled, Primordial, Withdrawn).
-     * <p>
-     * User-selected status that determines the lifecycle state of the entity version.
+     * <p>     * User-selected status that determines the lifecycle state of the entity version.
      */
     public static final TypedProperty<State> STATUS =
             (TypedProperty<State>) Keys.STATUS.property();
 
     /**
      * The author component of the STAMP - who made the change.
-     * <p>
-     * Represents the user or system that created this entity version.
+     * <p>     * Represents the user or system that created this entity version.
      * Always an {@link ObservableConcept} representing the author.
      */
     public static final TypedProperty<ConceptEntity<?>> AUTHOR =
@@ -181,8 +176,7 @@ public final class StampProperties {
 
     /**
      * The module component of the STAMP - organizational context.
-     * <p>
-     * Represents the module or organizational unit responsible for this change.
+     * <p>     * Represents the module or organizational unit responsible for this change.
      * Always an {@link ObservableConcept} that is a descendant of TinkarTerm.MODULE.
      */
     public static final TypedProperty<ConceptEntity<?>> MODULE =
@@ -190,8 +184,7 @@ public final class StampProperties {
 
     /**
      * The path component of the STAMP - development/classification context.
-     * <p>
-     * Represents the development path or classification branch for this change.
+     * <p>     * Represents the development path or classification branch for this change.
      * Always an {@link ObservableConcept} that is a descendant of TinkarTerm.PATH.
      */
     public static final TypedProperty<ConceptEntity<?>> PATH =
@@ -199,16 +192,14 @@ public final class StampProperties {
 
     /**
      * The time component of the STAMP - when the change was made.
-     * <p>
-     * Epoch milliseconds representing the timestamp of this entity version.
+     * <p>     * Epoch milliseconds representing the timestamp of this entity version.
      */
     public static final TypedProperty<Long> TIME =
             (TypedProperty<Long>) Keys.TIME.property();
 
     /**
      * Whether the STAMP values in the form match the current STAMP.
-     * <p>
-     * Used for validation - if true, the form values haven't changed and
+     * <p>     * Used for validation - if true, the form values haven't changed and
      * submission should be prevented (no point creating identical STAMP).
      */
     public static final TypedProperty<Boolean> IS_STAMP_VALUES_THE_SAME_OR_EMPTY =
@@ -216,40 +207,35 @@ public final class StampProperties {
 
     /**
      * Whether the user has confirmed or submitted the form.
-     * <p>
-     * Signals that the form has been successfully processed and can be closed.
+     * <p>     * Signals that the form has been successfully processed and can be closed.
      */
     public static final TypedProperty<Boolean> IS_CONFIRMED_OR_SUBMITTED =
             (TypedProperty<Boolean>) Keys.IS_CONFIRMED_OR_SUBMITTED.property();
 
     /**
      * Observable list of available status values for selection.
-     * <p>
-     * Contains all {@link State} enum values (Active, Inactive, etc.)
+     * <p>     * Contains all {@link State} enum values (Active, Inactive, etc.)
      */
     public static final TypedProperty<List> STATUSES =
             (TypedProperty<List>) Keys.STATUSES.property();
 
     /**
      * Observable list of available modules for selection.
-     * <p>
-     * Contains all concepts that are descendants of TinkarTerm.MODULE.
+     * <p>     * Contains all concepts that are descendants of TinkarTerm.MODULE.
      */
     public static final TypedProperty<List> MODULES =
             (TypedProperty<List>) Keys.MODULES.property();
 
     /**
      * Observable list of available paths for selection.
-     * <p>
-     * Contains all concepts that are descendants of TinkarTerm.PATH.
+     * <p>     * Contains all concepts that are descendants of TinkarTerm.PATH.
      */
     public static final TypedProperty<List> PATHS =
             (TypedProperty<List>) Keys.PATHS.property();
 
     /**
      * The title text displayed at the top of the form.
-     * <p>
-     * Dynamic title that changes based on form state (e.g., "New Concept Version"
+     * <p>     * Dynamic title that changes based on form state (e.g., "New Concept Version"
      * vs "Latest Concept Version").
      */
     public static final TypedProperty<String> FORM_TITLE =
@@ -257,8 +243,7 @@ public final class StampProperties {
 
     /**
      * The formatted time text displayed in the form.
-     * <p>
-     * Human-readable representation of the STAMP timestamp, or "Uncommitted"
+     * <p>     * Human-readable representation of the STAMP timestamp, or "Uncommitted"
      * for unsaved changes.
      */
     public static final TypedProperty<String> FORM_TIME_TEXT =
@@ -266,16 +251,14 @@ public final class StampProperties {
 
     /**
      * The text label for the clear/reset button.
-     * <p>
-     * Changes based on form mode: "CLEAR" for create forms, "RESET" for edit forms.
+     * <p>     * Changes based on form mode: "CLEAR" for create forms, "RESET" for edit forms.
      */
     public static final TypedProperty<String> CLEAR_RESET_BUTTON_TEXT =
             (TypedProperty<String>) Keys.CLEAR_RESET_BUTTON_TEXT.property();
 
     /**
      * The text label for the submit button.
-     * <p>
-     * Changes based on form mode: "SUBMIT", "CONFIRM", etc.
+     * <p>     * Changes based on form mode: "SUBMIT", "CONFIRM", etc.
      */
     public static final TypedProperty<String> SUBMIT_BUTTON_TEXT =
             (TypedProperty<String>) Keys.SUBMIT_BUTTON_TEXT.property();
@@ -293,8 +276,7 @@ public final class StampProperties {
 
     /**
      * Returns only the STAMP coordinate keys (status, author, module, path, time).
-     * <p>
-     * Use for validating that all required STAMP coordinates are set.
+     * <p>     * Use for validating that all required STAMP coordinates are set.
      *
      * @return array of coordinate Keys
      */
@@ -318,8 +300,7 @@ public final class StampProperties {
 
     /**
      * Private constructor prevents instantiation.
-     * <p>
-     * This is a utility class with only static constants - no instances needed.
+     * <p>     * This is a utility class with only static constants - no instances needed.
      */
     private StampProperties() {
         throw new AssertionError("StampProperties is a utility class and cannot be instantiated");

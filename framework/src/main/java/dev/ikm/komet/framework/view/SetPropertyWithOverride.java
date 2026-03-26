@@ -129,8 +129,7 @@ public class SetPropertyWithOverride <T> extends SimpleEqualityBasedSetProperty<
 
     /**
      * called by ViewMenuTask when view coordinate Set is added to
-     * <p>
-     * Note:  cannot use the parent's overriddenProperty because doing so causes the
+     * <p>     * Note:  cannot use the parent's overriddenProperty because doing so causes the
      * parent property to be changed when the child property is changed
      *
      * see https://openjfx.io/javadoc/21/javafx.base/javafx/collections/FXCollections.html#observableSet(java.util.Set)

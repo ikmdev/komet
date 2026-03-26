@@ -6,13 +6,11 @@ import org.eclipse.collections.api.list.ImmutableList;
  * ObservableComponent defines a sealed interface that represents a
  * foundational construct for components in a system. This interface
  * is designed to be extended by specific observable component types.
- * <p>
- * As a sealed interface, the extensions of ObservableComponent are
+ * <p>As a sealed interface, the extensions of ObservableComponent are
  * explicitly restricted to the defined permits. The interface serves
  * as a common type for observing and interacting with various system-level
  * components, managing their versioning, state, and observable behaviors.
- * <p>
- * Permitted subtypes:
+ * <p>Permitted subtypes:
  * <ul>
  * <li>ObservableEntity: Represents an observable construct associated
  *   with an entity, which includes fields and versions for observation.</li>
@@ -23,8 +21,7 @@ import org.eclipse.collections.api.list.ImmutableList;
  * <li>ObservableFieldDefinition: Defines an observable definition
  *   for fields, including metadata such as data type and purpose.</li>
  * </ul>
- * <p>
- * This interface enables consistent handling and interaction with
+ * <p>This interface enables consistent handling and interaction with
  * observable components across the system, leveraging its extensions
  * for specific component behaviors.
  */

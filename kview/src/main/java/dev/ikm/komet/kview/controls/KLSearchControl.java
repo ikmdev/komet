@@ -26,14 +26,11 @@ import java.util.function.Consumer;
  * <p>The Search control provides a search field for the user to type any term. It can be used for any purpose, like
  * searching through a dataset of concepts (the actual search implementation should be done outside this control), and
  * includes a filter button that can be used to open a menu with filter options.
- * </p>
  * <p>The {@link SearchResult search results} that are passed to the control via {@link #resultsProperty()}, if any,
  * are shown below the search field in a {@link javafx.scene.control.ListView} with limited height. When there are no
  * results, a placeholder text is shown instead.
- * </p>
  * <p>This control can interact with a {@link KLConceptNavigatorControl}, for instance, in order to show the results
  * of a search through the dataset in the treeView.
- * </p>
  * <p>A simple implementation of this control, for a given {@link dev.ikm.komet.navigator.graph.Navigator} holding
  * a valid dataset, can be as follows:
  * <pre><code>
@@ -53,13 +50,11 @@ import java.util.function.Consumer;
  *     searchControl.setOnSearchResultClick(result -&gt; System.out.println("Result " + result + " was selected"));
  *     searchControl.setOnClearSearch(_ -&gt; System.out.println("Results have been cleared"));
  * </code></pre>
- * </p>
  */
 public class KLSearchControl extends Control {
 
     /**
      * <p>Creates a {@link KLSearchControl} instance.
-     * </p>
      */
     public KLSearchControl() {
 
@@ -100,11 +95,9 @@ public class KLSearchControl extends Control {
      * <p>The action handler associated with this search field, or null if no action handler is assigned.
      * Typically, this can be used to call the implementation that searches the dataset with the
      * {@link #textProperty()}.
-     * </p>
      * <p>When the search field is not empty, after the user presses the ENTER key, the event handler
      * is called invoking the search action, and the results area becomes visible, waiting for
      * {@link SearchResult search results} that are passed to the control via {@link #resultsProperty()}.
-     * </p>
      */
     private final ObjectProperty<EventHandler<ActionEvent>> onActionProperty = new SimpleObjectProperty<>(this, "onAction");
     public final ObjectProperty<EventHandler<ActionEvent>> onActionProperty() {
@@ -121,7 +114,6 @@ public class KLSearchControl extends Control {
      * <p>The search field includes a button that when pressed by the user clears the field and closes the results area.
      * Therefore, {@link #textProperty()} and {@link #resultsProperty()} are cleared.
      * This property can be used to include an external action to be invoked right before that happens.
-     * </p>
      */
     private final ObjectProperty<EventHandler<ActionEvent>> onClearSearchProperty = new SimpleObjectProperty<>(this, "onClearSearch");
     public final ObjectProperty<EventHandler<ActionEvent>> onClearSearchProperty() {
@@ -166,7 +158,6 @@ public class KLSearchControl extends Control {
      * <p>The results area becomes visible when the search action defined by {@link #onActionProperty()} starts, and
      * until the {@link SearchResult} are not available, or if {@link #resultsProperty()} is empty, this property can
      * be used to set a message in the results area.
-     * </p>
      * <p>When set to null (by default), the default placeholder text is displayed. When set to an empty string,
      * no placeholder text is displayed.</p>
      */
@@ -203,7 +194,6 @@ public class KLSearchControl extends Control {
      * <p>This property sets a consumer that accepts a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem},
      * so when a long-hover event occurs over a {@link SearchResult}, the action defined for such consumer can be
      * performed for it.
-     * </p>
      */
     private final ObjectProperty<Consumer<InvertedTree.ConceptItem>> onLongHoverProperty = new SimpleObjectProperty<>(this, "onLongHover");
     public final ObjectProperty<Consumer<InvertedTree.ConceptItem>> onLongHoverProperty() {
@@ -220,7 +210,6 @@ public class KLSearchControl extends Control {
      * <p>This property sets a consumer that accepts a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem},
      * so when a click event occurs over a {@link SearchResult}, the action defined for such consumer can be
      * performed for it.
-     * </p>
      */
     private final ObjectProperty<Consumer<InvertedTree.ConceptItem>> onSearchResultClickProperty = new SimpleObjectProperty<>(this, "onSearchResultClick");
     public final ObjectProperty<Consumer<InvertedTree.ConceptItem>> onSearchResultClickProperty() {
@@ -273,7 +262,6 @@ public class KLSearchControl extends Control {
      * <p>The {@link SearchResult} record holds a result after searching a dataset with a given term. This
      * result includes the {@link ConceptFacade} found, the {@link ConceptFacade} of one of its possible
      * parents, and the string that was searched for.
-     * </p>
      * @param parentConcept the {@link ConceptFacade} of one of the possible parents
      * @param concept the {@link ConceptFacade} found as a result of a search in a dataset of {@link #textProperty()}
      * @param highlight the term searched, typically defined by {@link #textProperty()}.
@@ -283,7 +271,6 @@ public class KLSearchControl extends Control {
     /**
      * <p>An {@link ObservableList<SearchResult>} that holds the {@link SearchResult} of a search performed
      * through a dataset.
-     * </p>
      * <p>This list of items defines the underlying data model a {@link javafx.scene.control.ListView} that
      * is shown in the results area, with limited height.</p>
      */

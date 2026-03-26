@@ -13,8 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Concrete observable stamp version - fully type-reified, no generic parameters.
- * <p>
- * This is Layer 3 (Concrete) of the MGC pattern for stamp versions.
+ * <p>This is Layer 3 (Concrete) of the MGC pattern for stamp versions.
  */
 public final class ObservableStampVersion
         extends ObservableEntityVersion<ObservableStamp, StampVersionRecord>
@@ -175,11 +174,9 @@ public final class ObservableStampVersion
 
     /**
      * Editable version wrapper for ObservableStampVersion.
-     * <p>
-     * Implements {@link EditableVersion} marker
+     * <p>     * Implements {@link EditableVersion} marker
      * interfaces through the base {@link ObservableEntityVersion.Editable} class.
-     * <p>
-     * <b>Note:</b> Stamp editing is typically restricted as stamps represent
+     * <p>     * <b>Note:</b> Stamp editing is typically restricted as stamps represent
      * metadata about changes (who, when, where). This editable is provided for
      * completeness and special administrative operations.
      */
@@ -241,8 +238,7 @@ public final class ObservableStampVersion
 
         /**
          * Gets or creates the canonical editable stamp version for the given stamp.
-         * <p>
-         * Returns the exact same instance for multiple calls with the same stamp, ensuring
+         * <p>         * Returns the exact same instance for multiple calls with the same stamp, ensuring
          * a single canonical editable version per ObservableStamp.
          *
          * @param observableVersion the ObservableStampVersion to edit

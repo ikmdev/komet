@@ -26,11 +26,21 @@ import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.util.broadcast.Broadcaster;
 import javafx.application.Platform;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
- * Presents dialogs for alerts
+ * Presents dialogs for alerts.
+ * <p>Alerts are queued and shown one at a time to prevent infinite nesting:
+ * {@code showAndWait()} enters a nested JavaFX event loop that would
+ * otherwise process the next queued {@code Platform.runLater} alert,
+ * causing unbounded stack growth.
  */
 public class AlertDialogSubscriber implements AlertReportingService {
     private static final Logger LOG = LoggerFactory.getLogger(AlertDialogSubscriber.class);
+
+    private final ConcurrentLinkedQueue<AlertObject> alertQueue = new ConcurrentLinkedQueue<>();
+    private final AtomicBoolean showing = new AtomicBoolean(false);
 
     public AlertDialogSubscriber() {
         this(AlertStreams.ROOT_ALERT_STREAM_KEY);
@@ -43,6 +53,21 @@ public class AlertDialogSubscriber implements AlertReportingService {
 
     @Override
     public void onNext(AlertObject item) {
-        Platform.runLater(() -> Dialogs.showDialogForAlert(item));
+        alertQueue.add(item);
+        Platform.runLater(this::drainQueue);
+    }
+
+    private void drainQueue() {
+        if (!showing.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            AlertObject item;
+            while ((item = alertQueue.poll()) != null) {
+                Dialogs.showDialogForAlert(item);
+            }
+        } finally {
+            showing.set(false);
+        }
     }
 }

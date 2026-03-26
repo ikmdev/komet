@@ -3,8 +3,7 @@ package dev.ikm.komet.framework.observable;
 
 /**
  * Marker interface for observable chronologies (versioned entities).
- * <p>
- * Provides a generic-free type for working with observable entities without
+ * <p>Provides a generic-free type for working with observable entities without
  * exposing version type parameters. This is Layer 1 (Marker) of the MGC pattern
  * for observable entities.
  *
@@ -17,8 +16,7 @@ package dev.ikm.komet.framework.observable;
  * </ul>
  *
  * <h2>Usage</h2>
- * <p>
- * Use this marker interface for method parameters and return types when you don't
+ * <p>Use this marker interface for method parameters and return types when you don't
  * need to know the specific version type:
  *
  * <pre>{@code
@@ -38,8 +36,7 @@ package dev.ikm.komet.framework.observable;
  * }</pre>
  *
  * <h2>Thread Safety</h2>
- * <p>
- * All observable chronologies must be accessed from the JavaFX application thread.
+ * <p>All observable chronologies must be accessed from the JavaFX application thread.
  *
  * @see ObservableEntity
  * @see ObservableConcept

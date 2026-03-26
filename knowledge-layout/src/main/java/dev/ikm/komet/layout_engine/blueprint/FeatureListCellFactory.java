@@ -23,7 +23,7 @@ public class FeatureListCellFactory<LE extends Feature> implements Callback<List
     }
 
     /**
-     * Creates a custom `ListCell` for a `ListView` of `ObservableVersion<EntityVersion>`.
+     * Creates a custom {@code ListCell} for a {@code ListView} of {@code ObservableVersion<EntityVersion>}.
      * This method customizes how the individual items in the `ListView` are displayed,
      * showing preferred text for the stamp associated with each `ObservableVersion`.
      *

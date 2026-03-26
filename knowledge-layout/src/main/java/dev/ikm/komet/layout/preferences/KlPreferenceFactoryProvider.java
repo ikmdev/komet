@@ -39,8 +39,7 @@ public class KlPreferenceFactoryProvider {
      * within the context of a specified parent preferences node. This factory allows for the creation
      * of preferences associated with a specific implementation class, ensuring unique nodes
      * under the given parent preferences.
-     * <p>
-     * This implementation supports hierarchical preferences management through the parent-child
+     * <p>     * This implementation supports hierarchical preferences management through the parent-child
      * relationship of preference nodes.
      */
     public static class PreferenceFactoryWithParentPreferences implements KlPreferencesFactory {

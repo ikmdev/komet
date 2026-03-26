@@ -34,8 +34,7 @@ import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.SELECTED_PROPERT
  * Abstract base implementation of the {@link ChapterKlWindow} interface for Komet applications.
  * This class provides core functionality for windows that display content within the Journal
  * window, including state management, layout persistence, and lifecycle events.
- * <p>
- * Chapter windows represent discrete sections of the user interface that require specific
+ * <p>Chapter windows represent discrete sections of the user interface that require specific
  * {@link ViewProperties} for content rendering and {@link KometPreferences} for storing
  * user configuration. Subclasses define the specific UI components and behavior for
  * different window types.
@@ -61,8 +60,7 @@ public abstract class AbstractChapterKlWindow<T extends Pane> implements Chapter
      * Constructs a base chapter window with the specified view properties and preferences.
      * This constructor initializes the fundamental components needed for window operation
      * but does not create the actual UI components, which should be handled by subclasses.
-     * <p>
-     * The view properties provide contextual information for content rendering, while
+     * <p>     * The view properties provide contextual information for content rendering, while
      * preferences store user configuration that persists across application sessions.
      *
      * @param viewProperties The {@link ViewProperties} providing contextual information for content rendering.
@@ -229,8 +227,7 @@ public abstract class AbstractChapterKlWindow<T extends Pane> implements Chapter
      * Captures the current window state, including position, size, and any
      * subclass-specific properties. This state can be saved to preferences
      * for persistence across application sessions.
-     * <p>
-     * The base implementation captures common window attributes such as position
+     * <p>     * The base implementation captures common window attributes such as position
      * and size. Subclasses should override {@link #captureAdditionalState(EntityKlWindowState)}
      * to add type-specific state information.
      *
@@ -266,8 +263,7 @@ public abstract class AbstractChapterKlWindow<T extends Pane> implements Chapter
     /**
      * Applies a previously captured window state to this window, restoring its
      * position, size, and any subclass-specific properties.
-     * <p>
-     * The base implementation applies common attributes and delegates to
+     * <p>     * The base implementation applies common attributes and delegates to
      * {@link #applyAdditionalState(EntityKlWindowState)} for type-specific state restoration.
      *
      * @param state The {@link EntityKlWindowState} to apply to this window.
@@ -344,8 +340,7 @@ public abstract class AbstractChapterKlWindow<T extends Pane> implements Chapter
     /**
      * Extension point for subclasses to capture additional window state beyond the
      * basic position and size information captured by the base implementation.
-     * <p>
-     * Subclasses should implement this method to add any specialized state data
+     * <p>     * Subclasses should implement this method to add any specialized state data
      * to the provided state object, such as content-specific preferences or
      * view configurations.
      *
@@ -356,8 +351,7 @@ public abstract class AbstractChapterKlWindow<T extends Pane> implements Chapter
     /**
      * Extension point for subclasses to apply additional window state beyond the
      * basic position and size information applied by the base implementation.
-     * <p>
-     * Subclasses should implement this method to restore any specialized state data
+     * <p>     * Subclasses should implement this method to restore any specialized state data
      * from the provided state object, such as content-specific preferences or
      * view configurations.
      *

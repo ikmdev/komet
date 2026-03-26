@@ -36,8 +36,7 @@ public sealed abstract class AreaBlueprint<FX extends Region>
     }
     /**
      * Restores a {@code AreaBlueprint} object with the specified preferences.
-     * <p>
-     * This constructor initializes the {@code AreaBlueprint} by invoking its superclass
+     * <p>     * This constructor initializes the {@code AreaBlueprint} by invoking its superclass
      * constructor and performing necessary setup for synchronizing the widget's state
      * with the provided preferences and gadget.
      *
@@ -76,23 +75,19 @@ public sealed abstract class AreaBlueprint<FX extends Region>
      * Restores the layout and configuration settings of a widget from either the stored preferences
      * or the associated default values. This method iterates through all defined preference keys and
      * applies the corresponding settings to the widget.
-     * <p>
-     * The method dynamically adjusts various properties of the widget, such as growth priorities,
+     * <p>     * The method dynamically adjusts various properties of the widget, such as growth priorities,
      * alignment, grid positioning, and margins. For each preference key, it fetches the value from
      * persistent preferences storage or uses the default value defined in the {@link KlArea.PreferenceKeys}
      * enum. The fetched values are then applied to the widget using the appropriate configuration method.
-     * <p>
-     * The following settings are restored:
+     * <p>     * The following settings are restored:
      * <p>- Horizontal and vertical growth priorities (H_GROW, V_GROW)
      * <p>- Horizontal and vertical alignment (H_ALIGNMENT, V_ALIGNMENT)
      * <p>- Grid positioning indices (COLUMN_INDEX, ROW_INDEX)
      * <p>- Grid span for rows and columns (COLUMN_SPAN, ROW_SPAN)
      * <p>- Margin values around the widget (MARGIN)
-     * <p>
-     * This method utilizes helper methods such as {@code fromDoubleArray} and {@code toDoubleArray}
+     * <p>     * This method utilizes helper methods such as {@code fromDoubleArray} and {@code toDoubleArray}
      * for converting between custom data structures (e.g., insets and double arrays).
-     * <p>
-     * Note: Preferences are accessed through the {@link KometPreferences} instance retrieved via
+     * <p>     * Note: Preferences are accessed through the {@link KometPreferences} instance retrieved via
      * the {@code preferences()} method. Default values are specified in the {@link KlArea.PreferenceKeys} enum.
      */
     public final void restoreFromPreferencesOrDefaults() {

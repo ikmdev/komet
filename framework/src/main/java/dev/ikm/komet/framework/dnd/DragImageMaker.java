@@ -36,12 +36,10 @@ import java.util.Objects;
 /**
  * The {@code DragImageMaker} class is responsible for creating a visual representation (image)
  * of a JavaFX {@link Node} that can be used during drag-and-drop operations.
- * <p>
- * It captures a snapshot of the specified node, applies scaling based on the screen's DPI,
+ * <p>It captures a snapshot of the specified node, applies scaling based on the screen's DPI,
  * adds a rounded border to the image, and calculates the appropriate offset for the drag view.
  *
- * <p>
- * Usage Example:
+ * <p>Usage Example:
  * <pre>{@code
  * Node someNode = ...; // Initialize your node
  * DragImageMaker dragImageMaker = new DragImageMaker(someNode);
@@ -50,8 +48,7 @@ import java.util.Objects;
  * // Use dragImage and offsetX in your drag-and-drop logic
  * }</pre>
  *
- * <p>
- * Note: This class requires that the provided node is part of a scene graph and is attached
+ * <p>Note: This class requires that the provided node is part of a scene graph and is attached
  * to a {@link Scene}. If the node is not attached, an error dialog is displayed.
  *
  * @see DraggableWithImage
@@ -74,8 +71,7 @@ public class DragImageMaker implements DraggableWithImage {
 
     /**
      * Constructs a {@code DragImageMaker} for the specified JavaFX {@link Node}.
-     * <p>
-     * The constructor initializes the instance with the provided node. If the node is {@code null},
+     * <p>     * The constructor initializes the instance with the provided node. If the node is {@code null},
      * a {@link NullPointerException} is thrown.
      *
      * @param node the JavaFX node for which the drag image is to be created

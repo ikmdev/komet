@@ -22,8 +22,7 @@ public non-sealed interface KlAreaForListOfVersions<FX extends Region>
      * A record that encapsulates information about observable versions and the subset
      * of those versions currently selected. This record holds immutable lists so that
      * use of the versions and selection is side-effect-free.
-     * <p>
-     * This record is designed to be used in contexts where version management is crucial,
+     * <p>     * This record is designed to be used in contexts where version management is crucial,
      * such as selecting or displaying multiple versions of entities in a user interface.
      *
      * @param versions          the complete list of {@code ObservableVersion} instances,
@@ -70,8 +69,7 @@ public non-sealed interface KlAreaForListOfVersions<FX extends Region>
      * Represents a specialized factory interface within the Knowledge Layout (KL) framework
      * for creating and managing instances of list areas that handle observable version-specific
      * elements and their associated JavaFX regions.
-     * <p>
-     * This factory extends the `KlListArea.Factory` interface by specifying the concrete types
+     * <p>     * This factory extends the `KlListArea.Factory` interface by specifying the concrete types
      * for its generic parameters. Specifically, it binds the element type to an `ObservableVersion`,
      * the JavaFX region type to a type extending `Region`, and the associated list area type
      * to a `KlListOfVersionArea`.

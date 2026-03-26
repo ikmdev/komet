@@ -22,8 +22,7 @@ import java.util.UUID;
 
 /**
  * An event that represents a request to delete a journal.
- * <p>
- * This class extends the base {@link Evt} class and provides specific functionality
+ * <p>This class extends the base {@link Evt} class and provides specific functionality
  * for handling journal deletion events within the application. The event carries
  * information about which journal topic should be deleted.
  *

@@ -14,7 +14,7 @@
  *   <li><b>Concrete</b>: Implementation classes in the {@code layout_engine} package</li>
  * </ol>
  *
- * <h3>Example: Field Area Hierarchy</h3>
+ * <p><b>Example: Field Area Hierarchy</b></p>
  * <pre>
  * ┌─────────────────────────────────────────────────────────────────┐
  * │ MARKER LAYER (Sealed)                                           │
@@ -44,14 +44,14 @@
  * <h2>Adding a New Field Type</h2>
  * To add support for a new data type (e.g., {@code Integer}, {@code ConceptSet}), follow these steps:
  *
- * <h3>Step 1: Add to the Sealed Hierarchy</h3>
+ * <p><b>Step 1: Add to the Sealed Hierarchy</b></p>
  * Update {@link KlAreaForFeature} to permit your new interface:
  * <pre>{@code
  * public sealed interface KlAreaForFeature<DT, F extends Feature<DT>, FX extends Region>
  *     permits KlAreaForBoolean, KlAreaForString, KlAreaForInteger, ... // Add here
  * }</pre>
  *
- * <h3>Step 2: Create the Generic Interface</h3>
+ * <p><b>Step 2: Create the Generic Interface</b></p>
  * Create a new interface in this package (e.g., {@code KlAreaForInteger.java}):
  * <pre>{@code
  * @FullyQualifiedName("Knowledge layout integer field area")
@@ -66,7 +66,7 @@
  * }
  * }</pre>
  *
- * <h3>Step 3: Create the Concrete Implementation</h3>
+ * <p><b>Step 3: Create the Concrete Implementation</b></p>
  * Create a new class in {@code layout_engine.component.area}:
  * <pre>{@code
  * public final class IntegerFieldArea extends EditableFieldAreaBlueprint<Integer, StackPane>
@@ -84,7 +84,7 @@
  * }
  * }</pre>
  *
- * <h3>Step 4: Create the UI Control (if needed)</h3>
+ * <p><b>Step 4: Create the UI Control (if needed)</b></p>
  * If no suitable JavaFX control exists, create one in {@code layout_engine.controls}:
  * <pre>{@code
  * public class KlIntegerControl extends Control {

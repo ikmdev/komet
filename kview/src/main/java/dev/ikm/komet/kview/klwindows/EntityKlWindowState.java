@@ -31,13 +31,11 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.DEFAULT_WINDOW_WIDTH;
 
 /**
  * Encapsulates the state of a window associated with a specific entity in the Komet workspace.
- * <p>
- * This class manages both the UI-related properties (position, size) and entity-related
+ * <p>This class manages both the UI-related properties (position, size) and entity-related
  * metadata for windows within the application. It provides serialization and deserialization
  * capabilities to persist window states between application sessions using the
  * {@link KometPreferences} framework.
- * <p>
- * The class includes:
+ * <p>The class includes:
  * <ul>
  *   <li>Core window properties (position, size, identifier)</li>
  *   <li>Entity reference properties (UUID, NID, type information)</li>
@@ -45,8 +43,7 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.DEFAULT_WINDOW_WIDTH;
  *   <li>Builder pattern for convenient instance creation</li>
  *   <li>Preference persistence and restoration facilities</li>
  * </ul>
- * <p>
- * Example usage:
+ * <p>Example usage:
  * <pre>{@code
  * // Create a window state
  * EntityKlWindowState state = EntityKlWindowState.builder()
@@ -146,8 +143,7 @@ public class EntityKlWindowState {
 
     /**
      * Returns the unique identifier for this window.
-     * <p>
-     * This UUID distinguishes this window instance from all others in the workspace
+     * <p>     * This UUID distinguishes this window instance from all others in the workspace
      * and is used as the primary key when persisting window state.
      *
      * @return the window's unique identifier
@@ -167,8 +163,7 @@ public class EntityKlWindowState {
 
     /**
      * Returns the type classification of this window.
-     * <p>
-     * The window type determines the functional category of the window
+     * <p>     * The window type determines the functional category of the window
      * and affects how it behaves and what content it can display.
      *
      * @return the window's type classification
@@ -190,8 +185,7 @@ public class EntityKlWindowState {
 
     /**
      * Returns the X-coordinate position of this window.
-     * <p>
-     * This coordinate represents the horizontal position of the window's
+     * <p>     * This coordinate represents the horizontal position of the window's
      * top-left corner within the application workspace.
      *
      * @return the X-coordinate position
@@ -211,8 +205,7 @@ public class EntityKlWindowState {
 
     /**
      * Returns the Y-coordinate position of this window.
-     * <p>
-     * This coordinate represents the vertical position of the window's
+     * <p>     * This coordinate represents the vertical position of the window's
      * top-left corner within the application workspace.
      *
      * @return the Y-coordinate position
@@ -268,8 +261,7 @@ public class EntityKlWindowState {
 
     /**
      * Returns the UUID of the entity associated with this window.
-     * <p>
-     * This UUID identifies the primary data entity (such as a concept or pattern)
+     * <p>     * This UUID identifies the primary data entity (such as a concept or pattern)
      * that the window is displaying or editing.
      *
      * @return the associated entity's UUID, or null if no entity is associated
@@ -289,8 +281,7 @@ public class EntityKlWindowState {
 
     /**
      * Returns the NID (Node Identifier) of the entity associated with this window.
-     * <p>
-     * The NID is an internal identifier used to reference entities within the
+     * <p>     * The NID is an internal identifier used to reference entities within the
      * knowledge model system.
      *
      * @return the associated entity's NID, or 0 if no entity is associated
@@ -310,11 +301,9 @@ public class EntityKlWindowState {
 
     /**
      * Returns the type classification of the associated entity's NID.
-     * <p>
-     * This provides additional metadata about the kind of entity
+     * <p>     * This provides additional metadata about the kind of entity
      * referenced by the NID.
-     * <p>
-     * If the entityNidType field is null, this method attempts to retrieve
+     * <p>     * If the entityNidType field is null, this method attempts to retrieve
      * the value from the additional properties map.
      *
      * @return the entity NID type, or null if not set
@@ -330,8 +319,7 @@ public class EntityKlWindowState {
 
     /**
      * Sets the type classification of the associated entity's NID.
-     * <p>
-     * This method also adds the value to the additional properties map for
+     * <p>     * This method also adds the value to the additional properties map for
      * redundancy and backward compatibility.
      *
      * @param nidType the entity NID type to set
@@ -345,8 +333,7 @@ public class EntityKlWindowState {
 
     /**
      * Sets both X and Y position coordinates in one call.
-     * <p>
-     * This is a convenience method for setting the window position.
+     * <p>     * This is a convenience method for setting the window position.
      *
      * @param x the X-coordinate position
      * @param y the Y-coordinate position
@@ -358,8 +345,7 @@ public class EntityKlWindowState {
 
     /**
      * Sets both width and height in one call.
-     * <p>
-     * This is a convenience method for setting the window size.
+     * <p>     * This is a convenience method for setting the window size.
      *
      * @param width  the window width
      * @param height the window height
@@ -371,12 +357,10 @@ public class EntityKlWindowState {
 
     /**
      * Adds a custom property to the window state.
-     * <p>
-     * This method allows storing arbitrary additional data associated with
+     * <p>     * This method allows storing arbitrary additional data associated with
      * the window beyond the predefined fields. These properties are persisted
      * alongside the standard properties when saving to preferences.
-     * <p>
-     * Supported property value types include String, Integer, Double, Boolean,
+     * <p>     * Supported property value types include String, Integer, Double, Boolean,
      * and UUID. Other types will be stored using their string representation.
      *
      * @param key   the property key (cannot be null or empty)
@@ -393,8 +377,7 @@ public class EntityKlWindowState {
 
     /**
      * Retrieves a custom property value by key.
-     * <p>
-     * This method returns the raw Object value stored for the given key.
+     * <p>     * This method returns the raw Object value stored for the given key.
      * For type-safe access, use the typed getter methods instead.
      *
      * @param key the property key to look up
@@ -410,8 +393,7 @@ public class EntityKlWindowState {
 
     /**
      * Retrieves a custom property value wrapped in an Optional.
-     * <p>
-     * This method provides a null-safe way to access property values.
+     * <p>     * This method provides a null-safe way to access property values.
      *
      * @param key the property key to look up
      * @return an Optional containing the property value, or empty if the key doesn't exist
@@ -422,8 +404,7 @@ public class EntityKlWindowState {
 
     /**
      * Retrieves a string property with a default value fallback.
-     * <p>
-     * This method attempts to retrieve a property value as a String.
+     * <p>     * This method attempts to retrieve a property value as a String.
      * If the key doesn't exist or the value is not a String, the default value is returned.
      *
      * @param key          the property key to look up
@@ -437,8 +418,7 @@ public class EntityKlWindowState {
 
     /**
      * Retrieves an integer property with a default value fallback.
-     * <p>
-     * This method attempts to retrieve a property value as an Integer.
+     * <p>     * This method attempts to retrieve a property value as an Integer.
      * If the key doesn't exist or the value is not an Integer, the default value is returned.
      *
      * @param key          the property key to look up
@@ -452,8 +432,7 @@ public class EntityKlWindowState {
 
     /**
      * Retrieves a double property with a default value fallback.
-     * <p>
-     * This method attempts to retrieve a property value as a Double.
+     * <p>     * This method attempts to retrieve a property value as a Double.
      * If the key doesn't exist or the value is not a Double, the default value is returned.
      *
      * @param key          the property key to look up
@@ -467,8 +446,7 @@ public class EntityKlWindowState {
 
     /**
      * Retrieves a boolean property with a default value fallback.
-     * <p>
-     * This method attempts to retrieve a property value as a Boolean.
+     * <p>     * This method attempts to retrieve a property value as a Boolean.
      * If the key doesn't exist or the value is not a Boolean, the default value is returned.
      *
      * @param key          the property key to look up
@@ -482,8 +460,7 @@ public class EntityKlWindowState {
 
     /**
      * Creates a new builder for constructing instances of this class.
-     * <p>
-     * The builder pattern provides a fluent API for creating window state instances
+     * <p>     * The builder pattern provides a fluent API for creating window state instances
      * with a readable, chained syntax.
      *
      * @return a new builder instance
@@ -495,11 +472,9 @@ public class EntityKlWindowState {
 
     /**
      * Builder for creating {@link EntityKlWindowState} instances.
-     * <p>
-     * This class provides a fluent API for constructing window state objects
+     * <p>     * This class provides a fluent API for constructing window state objects
      * with various combinations of properties in a readable, chained syntax.
-     * <p>
-     * Example usage:
+     * <p>     * Example usage:
      * <pre>{@code
      * EntityKlWindowState state = EntityKlWindowState.builder()
      *     .windowId(UUID.randomUUID())
@@ -615,13 +590,11 @@ public class EntityKlWindowState {
 
     /**
      * Saves the window state to the specified preferences node.
-     * <p>
-     * This method serializes all window properties, including core properties,
+     * <p>     * This method serializes all window properties, including core properties,
      * entity properties, and any additional custom properties, to the given
      * preferences node. The properties are stored using standardized key names
      * defined by the class constants.
-     * <p>
-     * Additional properties are automatically prefixed with "PROP_" when stored
+     * <p>     * Additional properties are automatically prefixed with "PROP_" when stored
      * to distinguish them from core properties.
      *
      * @param preferences the preferences node to save to
@@ -668,8 +641,7 @@ public class EntityKlWindowState {
 
     /**
      * Helper method to save additional custom properties to preferences.
-     * <p>
-     * This method iterates through all entries in the additionalProperties map
+     * <p>     * This method iterates through all entries in the additionalProperties map
      * and stores them in the preferences node with an explicit type prefix in the key.
      * Format: PROP_{TYPE}_{KEY}
      *
@@ -727,12 +699,10 @@ public class EntityKlWindowState {
 
     /**
      * Restores and creates a window state instance from the specified preferences node.
-     * <p>
-     * This method deserializes all window properties from the given preferences node,
+     * <p>     * This method deserializes all window properties from the given preferences node,
      * recreating a complete window state object. It loads core properties, entity
      * properties, and any additional custom properties that were previously stored.
-     * <p>
-     * Required core properties (window ID and type) must be present in the preferences;
+     * <p>     * Required core properties (window ID and type) must be present in the preferences;
      * an exception is thrown if they are missing. Other properties will use defaults
      * if not found.
      *
@@ -772,8 +742,7 @@ public class EntityKlWindowState {
 
     /**
      * Helper method to load entity properties from preferences.
-     * <p>
-     * This method extracts entity-related properties (UUID, NID, and NID type)
+     * <p>     * This method extracts entity-related properties (UUID, NID, and NID type)
      * from the given preferences node and populates the window state object.
      *
      * @param preferences the preferences node to load from
@@ -794,8 +763,7 @@ public class EntityKlWindowState {
 
     /**
      * Helper method to load additional custom properties from preferences.
-     * <p>
-     * This method looks for properties with keys prefixed with "PROP_{TYPE}_"
+     * <p>     * This method looks for properties with keys prefixed with "PROP_{TYPE}_"
      * and loads them with the correct type-specific parser.
      *
      * @param preferences the preferences node to load from
@@ -841,8 +809,7 @@ public class EntityKlWindowState {
 
     /**
      * Attempts to load a boolean value from preferences for the given key.
-     * <p>
-     * This method tries to retrieve a boolean value from the preferences node.
+     * <p>     * This method tries to retrieve a boolean value from the preferences node.
      * If the retrieval fails (e.g., the value is not a boolean), an empty Optional is returned.
      *
      * @param preferences the preferences node to load from
@@ -859,8 +826,7 @@ public class EntityKlWindowState {
 
     /**
      * Attempts to load an integer value from preferences for the given key.
-     * <p>
-     * This method tries to retrieve an integer value from the preferences node.
+     * <p>     * This method tries to retrieve an integer value from the preferences node.
      * If the retrieval fails (e.g., the value is not an integer), an empty Optional is returned.
      *
      * @param preferences the preferences node to load from
@@ -877,8 +843,7 @@ public class EntityKlWindowState {
 
     /**
      * Attempts to load a long value from preferences for the given key.
-     * <p>
-     * This method tries to retrieve a long value from the preferences node.
+     * <p>     * This method tries to retrieve a long value from the preferences node.
      * If the retrieval fails (e.g., the value is not a long), an empty Optional is returned.
      *
      * @param preferences the preferences node to load from
@@ -895,8 +860,7 @@ public class EntityKlWindowState {
 
     /**
      * Attempts to load a double value from preferences for the given key.
-     * <p>
-     * This method tries to retrieve a double value from the preferences node.
+     * <p>     * This method tries to retrieve a double value from the preferences node.
      * If the retrieval fails (e.g., the value is not a double), an empty Optional is returned.
      *
      * @param preferences the preferences node to load from
@@ -913,8 +877,7 @@ public class EntityKlWindowState {
 
     /**
      * Attempts to load a string value from preferences for the given key.
-     * <p>
-     * This method tries to retrieve a string value from the preferences node.
+     * <p>     * This method tries to retrieve a string value from the preferences node.
      * It also checks if the string represents a UUID and validates it.
      * If the retrieval fails, an empty Optional is returned.
      *
@@ -940,8 +903,7 @@ public class EntityKlWindowState {
 
     /**
      * Returns a string representation of this window state.
-     * <p>
-     * The string includes key information about the window, including its
+     * <p>     * The string includes key information about the window, including its
      * identifier, type, position, size, associated entity details, and
      * the number of additional properties.
      *

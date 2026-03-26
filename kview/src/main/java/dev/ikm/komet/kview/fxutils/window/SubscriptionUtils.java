@@ -31,8 +31,7 @@ import java.util.function.Consumer;
 
 /**
  * Utility class providing methods for creating JavaFX subscriptions.
- * <p>
- * This class encapsulates common patterns for working with JavaFX event handlers,
+ * <p>This class encapsulates common patterns for working with JavaFX event handlers,
  * property listeners, and other observable sources using the Subscription pattern
  * for resource management.
  */

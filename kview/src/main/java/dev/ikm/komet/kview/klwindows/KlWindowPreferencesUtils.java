@@ -79,8 +79,7 @@ public interface KlWindowPreferencesUtils {
 
     /**
      * Retrieves view properties for a specific journal instance.
-     * <p>
-     * This utility method creates view properties by loading saved journal settings
+     * <p>     * This utility method creates view properties by loading saved journal settings
      * from application preferences. The method:
      * <ol>
      *   <li>Constructs the preference path for the journal using its UUID</li>
@@ -88,8 +87,7 @@ public interface KlWindowPreferencesUtils {
      *   <li>Creates window settings from these preferences</li>
      *   <li>Extracts and returns overridable view properties</li>
      * </ol>
-     * <p>
-     * This default implementation is provided for all factory implementations to ensure
+     * <p>     * This default implementation is provided for all factory implementations to ensure
      * consistent view property retrieval across different window types. It enables
      * windows to maintain visual and behavioral consistency with their parent journal.
      *
@@ -136,8 +134,7 @@ public interface KlWindowPreferencesUtils {
 
     /**
      * Retrieves the preferences node for a window within a journal, automatically generating a new window ID.
-     * <p>
-     * This convenience method creates a new UUID for the window and delegates to the three-parameter
+     * <p>     * This convenience method creates a new UUID for the window and delegates to the three-parameter
      * version of {@code getWindowPreferences}. It's useful when creating a new window instance
      * that doesn't yet have an assigned ID.
      *
@@ -152,8 +149,7 @@ public interface KlWindowPreferencesUtils {
 
     /**
      * Retrieves the preferences node for a specific window within a journal.
-     * <p>
-     * This method constructs the appropriate preference path using shortened UUIDs
+     * <p>     * This method constructs the appropriate preference path using shortened UUIDs
      * for both the journal and window topics to ensure path length compatibility
      * across all platforms.
      *

@@ -96,8 +96,7 @@ public class ObservableIntList extends ModifiableObservableListBase<Integer> {
     
     /**
      * Creates an ObservableIntList with the specified initial capacity.
-     * <p>
-     * <b>Important:</b> This creates an <i>empty</i> list with pre-allocated storage capacity.
+     * <p>     * <b>Important:</b> This creates an <i>empty</i> list with pre-allocated storage capacity.
      * To create a list with a single value, use {@code new ObservableIntList(new int[]{value})}
      * or {@code new ObservableIntList(value1, value2, ...)} for multiple values.
      * 
@@ -120,16 +119,14 @@ public class ObservableIntList extends ModifiableObservableListBase<Integer> {
     
     /**
      * Creates an ObservableIntList containing the specified values.
-     * <p>
-     * <b>Examples:</b>
+     * <p>     * <b>Examples:</b>
      * <ul>
      *   <li>{@code new ObservableIntList()} - empty list</li>
      *   <li>{@code new ObservableIntList(42)} - <b>CREATES EMPTY LIST WITH CAPACITY 42</b></li>
      *   <li>{@code new ObservableIntList(new int[]{42})} - list with single value 42</li>
      *   <li>{@code new ObservableIntList(1, 2, 3)} - list with values [1, 2, 3]</li>
      * </ul>
-     * <p>
-     * <b>⚠️ Important:</b> Due to Java's overload resolution rules, passing a single
+     * <p>     * <b>⚠️ Important:</b> Due to Java's overload resolution rules, passing a single
      * int value calls the capacity constructor, not this varargs constructor. To create
      * a list with a single value, wrap it in an array: {@code new ObservableIntList(new int[]{value})}
      * 
@@ -166,8 +163,7 @@ public class ObservableIntList extends ModifiableObservableListBase<Integer> {
     
     /**
      * Adds a primitive int value at the specified index without boxing.
-     * <p>
-     * This is the unboxed version of {@link #doAdd(int, Integer)}, avoiding the creation
+     * <p>     * This is the unboxed version of {@link #doAdd(int, Integer)}, avoiding the creation
      * of temporary Integer wrapper objects. Use this method when working with primitive values
      * for maximum performance.
      * 
@@ -180,8 +176,7 @@ public class ObservableIntList extends ModifiableObservableListBase<Integer> {
     
     /**
      * Sets the primitive int value at the specified index without boxing, returning the old value.
-     * <p>
-     * This is the unboxed version of {@link #doSet(int, Integer)}, avoiding the creation
+     * <p>     * This is the unboxed version of {@link #doSet(int, Integer)}, avoiding the creation
      * of temporary Integer wrapper objects. Use this method when working with primitive values
      * for maximum performance.
      * 
@@ -197,8 +192,7 @@ public class ObservableIntList extends ModifiableObservableListBase<Integer> {
     
     /**
      * Removes and returns the primitive int value at the specified index without boxing.
-     * <p>
-     * This is the unboxed version of {@link #doRemove(int)}, avoiding the creation
+     * <p>     * This is the unboxed version of {@link #doRemove(int)}, avoiding the creation
      * of temporary Integer wrapper objects. Use this method when working with primitive values
      * for maximum performance.
      * 
@@ -256,8 +250,7 @@ public class ObservableIntList extends ModifiableObservableListBase<Integer> {
     
     /**
      * Removes the first occurrence of the specified primitive int value from this list, if present.
-     * <p>
-     * This method operates directly on primitive values without boxing, providing better performance
+     * <p>     * This method operates directly on primitive values without boxing, providing better performance
      * and eliminating garbage collection pressure compared to {@code remove(Integer.valueOf(value))}.
      * 
      * <p><b>Performance Benefits</b>
@@ -281,8 +274,7 @@ public class ObservableIntList extends ModifiableObservableListBase<Integer> {
 
     /**
      * Replaces the entire contents of this list with the specified primitive int array.
-     * <p>
-     * This is a high-performance bulk operation that:
+     * <p>     * This is a high-performance bulk operation that:
      * <ul>
      *   <li>Clears the existing list</li>
      *   <li>Adds all new values in one operation</li>
@@ -325,8 +317,7 @@ public class ObservableIntList extends ModifiableObservableListBase<Integer> {
 
     /**
      * Replaces the entire contents of this list with values from a MutableIntList.
-     * <p>
-     * This variant is useful when you have an Eclipse Collections int list that you want
+     * <p>     * This variant is useful when you have an Eclipse Collections int list that you want
      * to use to replace the observable list's contents.
      *
      * @param values the MutableIntList containing the new values

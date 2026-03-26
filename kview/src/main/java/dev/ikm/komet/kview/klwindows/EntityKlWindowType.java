@@ -20,16 +20,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Interface representing a category of window within the Komet workspace.
- * <p>
- * {@code EntityKlWindowType} implementations allow the workspace to organize, persist, and restore
+ * <p>{@code EntityKlWindowType} implementations allow the workspace to organize, persist, and restore
  * windows consistently across sessions. Each type provides a unique prefix
  * for generating identifiers and associating window instances with their type.
- * <p>
- * Both enum and non-enum implementations are supported, with different registration
+ * <p>Both enum and non-enum implementations are supported, with different registration
  * methods for each case. Enum implementations are registered as a class, while non-enum
  * implementations are registered as individual instances.
- * <p>
- * Example usage:
+ * <p>Example usage:
  * <pre>{@code
  * // Using built-in enum type
  * EntityKlWindowType windowType = EntityKlWindowTypes.CONCEPT;
@@ -63,8 +60,7 @@ public interface EntityKlWindowType {
     /**
      * Converts a string representation to a {@code EntityKlWindowType} instance.
      * This method is maintained for backward compatibility with older code.
-     * <p>
-     * The lookup is performed by the {@link Registry#fromString(String)} method,
+     * <p>     * The lookup is performed by the {@link Registry#fromString(String)} method,
      * matching against prefix, enum name (if applicable), or custom string
      * representation (case-insensitive).
      *
@@ -79,12 +75,10 @@ public interface EntityKlWindowType {
 
     /**
      * Central registry for {@link EntityKlWindowType} implementations.
-     * <p>
-     * Provides methods to register classes and instances and perform lookups by string value,
+     * <p>     * Provides methods to register classes and instances and perform lookups by string value,
      * matching on prefix, enum name (if applicable), or custom {@code toString()}
      * value (case-insensitive).
-     * <p>
-     * The registry is thread-safe, using {@link CopyOnWriteArrayList} for concurrent access.
+     * <p>     * The registry is thread-safe, using {@link CopyOnWriteArrayList} for concurrent access.
      */
     class Registry {
 
@@ -124,8 +118,7 @@ public interface EntityKlWindowType {
         /**
          * Registers a single {@link EntityKlWindowType} instance for lookup.
          * This method is used for non-enum {@code EntityKlWindowType} implementations.
-         * <p>
-         * The registered instance will be available for lookup through
+         * <p>         * The registered instance will be available for lookup through
          * the {@link #fromString(String)} method.
          *
          * @param instance the {@code EntityKlWindowType} instance to register

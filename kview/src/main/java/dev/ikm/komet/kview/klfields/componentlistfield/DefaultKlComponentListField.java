@@ -23,13 +23,10 @@ import java.util.function.Consumer;
 
 /**
  * Component list field implementation supporting both read-only and editable patterns.
- * <p>
- * <b>Editable Pattern (Recommended):</b> Use with {@link ObservableField.Editable} for
+ * <p><b>Editable Pattern (Recommended):</b> Use with {@link ObservableField.Editable} for
  * transaction management, dirty tracking, and save/commit/rollback capabilities.
- * <p>
- * <b>Legacy Pattern:</b> Use with {@link ObservableField} for immediate write-through.
- * <p>
- * When using the editable pattern, changes are cached in the {@link ObservableField.Editable}
+ * <p><b>Legacy Pattern:</b> Use with {@link ObservableField} for immediate write-through.
+ * <p>When using the editable pattern, changes are cached in the {@link ObservableField.Editable}
  * and do not persist to the database until the parent {@link dev.ikm.komet.framework.observable.ObservableSemanticVersion.Editable}
  * is saved and committed via {@link dev.ikm.komet.framework.observable.ObservableComposer}.
  */
@@ -39,8 +36,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
 
     /**
      * Constructor using the editable pattern (recommended).
-     * <p>
-     * Provides transaction management, dirty tracking, and cached editing.
+     * <p>     * Provides transaction management, dirty tracking, and cached editing.
      * Changes do not persist until the editable version is saved and committed.
      *
      * @param editableField the editable field from an ObservableSemanticVersion.Editable
@@ -77,8 +73,7 @@ public class DefaultKlComponentListField extends BaseDefaultKlField<IntIdList> i
 
     /**
      * Constructor using the legacy pattern (for backward compatibility).
-     * <p>
-     * Changes write through immediately to the ObservableField.
+     * <p>     * Changes write through immediately to the ObservableField.
      * Use the editable constructor for better transaction management.
      *
      * @param observableComponentListField list of the intIdList

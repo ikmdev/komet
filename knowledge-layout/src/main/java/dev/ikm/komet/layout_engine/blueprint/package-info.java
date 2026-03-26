@@ -32,7 +32,7 @@
  * {@link EditableFieldAreaBlueprint} is the primary base class for creating editable field areas.
  * It handles all the "plumbing" so subclasses can focus purely on the UI control.
  *
- * <h3>What EditableFieldAreaBlueprint Provides</h3>
+ * <p><b>What EditableFieldAreaBlueprint Provides</b></p>
  * <ul>
  *   <li>Management of {@link dev.ikm.komet.framework.observable.ObservableField.Editable} reference</li>
  *   <li>{@link EditableFieldAreaBlueprint#rebind} mechanism for swapping editables</li>
@@ -41,7 +41,7 @@
  *   <li>Title derivation from field metadata</li>
  * </ul>
  *
- * <h3>What Subclasses Must Implement</h3>
+ * <p><b>What Subclasses Must Implement</b></p>
  * <table border="1">
  *   <caption>Abstract Methods in EditableFieldAreaBlueprint</caption>
  *   <tr><th>Method</th><th>Purpose</th></tr>
@@ -52,7 +52,7 @@
  *   <tr><td>{@code updateControlTitle(title)}</td><td>Set the control's title/label</td></tr>
  * </table>
  *
- * <h3>Minimal Implementation Example</h3>
+ * <p><b>Minimal Implementation Example</b></p>
  * <pre>{@code
  * public final class IntegerFieldArea extends EditableFieldAreaBlueprint<Integer, StackPane>
  *         implements KlAreaForInteger<StackPane> {
@@ -128,7 +128,7 @@
  * <pre>
  * ┌───────────────────────────────────────────────────────────────┐
  * │ CONSTRUCTION                                                  │
- * │   1. Super constructor initializes preferences & context      │
+ * │   1. Super constructor initializes preferences &amp; context      │
  * │   2. createControl() called → subclass creates UI control     │
  * └───────────────────────────────────────────────────────────────┘
  *                              │

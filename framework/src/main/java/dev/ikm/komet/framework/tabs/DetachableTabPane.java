@@ -672,8 +672,7 @@ class DetachableTabPane extends TabPane {
     /**
      * Set factory to generate the Scene. Default SceneFactory is provided and it
      * will generate a scene with TabPane as root node. Call this method if you
-     * need to have a custom scene
-     * <p>
+     * need to have a custom scene.
      *
      * @param sceneFactory
      */
@@ -695,7 +694,6 @@ class DetachableTabPane extends TabPane {
      * example, detaching a Tab will open a new Stage. The new stage owner is the
      * stage of the TabPane. Detaching a tab from the new stage will open another
      * stage. Their owner are the same which is the stage of the first TabPane.
-     * <p>
      *
      * @param stageOwnerFactory
      */

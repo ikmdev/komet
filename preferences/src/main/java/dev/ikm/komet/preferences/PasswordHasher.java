@@ -32,11 +32,9 @@ import java.util.Random;
 
 /**
  * {@link PasswordHasher}
- * <p>
- * A safe, modern way to 1-way hash user passwords.
+ * <p>A safe, modern way to 1-way hash user passwords.
  * Adapted and enhanced from http://stackoverflow.com/a/11038230/2163960
- * <p>
- * Later, added the ability to encrypt and decrypt arbitrary data - using many of the same
+ * <p>Later, added the ability to encrypt and decrypt arbitrary data - using many of the same
  * techniques.
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
@@ -138,8 +136,7 @@ public class PasswordHasher {
      * Encrypt the provided byte array of data, using the provided password, with a random salt.
      * Calling this method twice with the same data and password will result in different hashes
      * due to the random salt.
-     * <p>
-     * See {@link #decrypt(char[], String)} for a mechanism to decrypt the randomly salted data.
+     * <p>     * See {@link #decrypt(char[], String)} for a mechanism to decrypt the randomly salted data.
      *
      * @param password the password to encrypt with
      * @param data     the data to be encrypted
@@ -183,10 +180,8 @@ public class PasswordHasher {
 
     /**
      * This method is the same as {@link #encrypt(char[], byte[])} except that it allows the user to specify the salt
-     * <p>
-     * This allows for consistent generation of encrypted data, if the user desires.
-     * <p>
-     * See {@link #decrypt(char[], byte[], String)} for a mechanism to decrypt the initial data.
+     * <p>     * This allows for consistent generation of encrypted data, if the user desires.
+     * <p>     * See {@link #decrypt(char[], byte[], String)} for a mechanism to decrypt the initial data.
      *
      * @param password The password to encrypt with.
      * @param salt     The salt to encrypt with
@@ -213,19 +208,14 @@ public class PasswordHasher {
     /**
      * If the value appears to have been encrypted by one of our encrypt methods, decrypt the value using a password read from
      * one of these locations - in this order:
-     * <p>
-     * The system property DECRYPTION_FILE - if this variable exists, it is assumed to contain the full path to a file. That
+     * <p>     * The system property DECRYPTION_FILE - if this variable exists, it is assumed to contain the full path to a file. That
      * file is expected to contain a single line, which is the decryption password.
-     * <p>
-     * The environment variable DECRYPTION_FILE - if this variable exists, it is assumed to contain the full path to a file. That
+     * <p>     * The environment variable DECRYPTION_FILE - if this variable exists, it is assumed to contain the full path to a file. That
      * file is expected to contain a single line, which is the decryption password.
-     * <p>
-     * If the variable is not set, then will check for the existence of a file named "decryption.password" in the JVM start location.
+     * <p>     * If the variable is not set, then will check for the existence of a file named "decryption.password" in the JVM start location.
      * If that file exists, it will be expected to contain a single line, which is the decryption password.
-     * <p>
-     * If no decryption password can be found, and the value appears to be encrypted, an exception will be thrown.
-     * <p>
-     * If the value does NOT appear to have been encrypted by one of our encrypt methods, it will be returned, unchanged, without
+     * <p>     * If no decryption password can be found, and the value appears to be encrypted, an exception will be thrown.
+     * <p>     * If the value does NOT appear to have been encrypted by one of our encrypt methods, it will be returned, unchanged, without
      * attempting to find a decryption password. This allows clear-text passwords to be specified in config files for debugging.
      *
      * @param value The value to decrypt
@@ -257,11 +247,9 @@ public class PasswordHasher {
     /**
      * Reads the master password from a file specified by the system property DECRYPTION_FILE - if this variable exists, it is assumed to contain the full
      * path to a file. That file is expected to contain a single line, which is the decryption password.
-     * <p>
-     * If not yet found, read the master password from a file specified by the environment variable DECRYPTION_FILE - if this variable exists, it is assumed
+     * <p>     * If not yet found, read the master password from a file specified by the environment variable DECRYPTION_FILE - if this variable exists, it is assumed
      * to contain the full path to a file. That file is expected to contain a single line, which is the decryption password.
-     * <p>
-     * If the variable is not set, then will check for the existence of a file named "decryption.password" in the JVM start location.
+     * <p>     * If the variable is not set, then will check for the existence of a file named "decryption.password" in the JVM start location.
      * If that file exists, it will be expected to contain a single line, which is the decryption password.
      * If no file can be found, returns an empty char[]
      *
@@ -443,10 +431,8 @@ public class PasswordHasher {
      * Computes a salted PBKDF2 hash of given plaintext password suitable for storing in a database.
      * Empty passwords are not supported.  Internally, uses a random salt as input for each hash,
      * so calling this method twice in a row with the same input will result in different hashes.
-     * <p>
-     * See {@link #check(char[], String)} for a mechanism to validate a hash generated in this way.
-     * <p>
-     * The returned hash will be URL safe per RFC 3986
+     * <p>     * See {@link #check(char[], String)} for a mechanism to validate a hash generated in this way.
+     * <p>     * The returned hash will be URL safe per RFC 3986
      *
      * @param password
      * @return the hashed data

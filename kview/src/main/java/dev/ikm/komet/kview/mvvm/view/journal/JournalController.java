@@ -773,8 +773,7 @@ public class JournalController {
     /**
      * Subscribes to progress events (on {@code PROGRESS_TOPIC}) and displays a
      * {@link NotificationPopup} to show progress information.
-     * <p>
-     * When a new {@link ProgressEvent} with the event type {@code SUMMON} is received,
+     * <p>     * When a new {@link ProgressEvent} with the event type {@code SUMMON} is received,
      * this method:
      * <ul>
      *   <li>Creates and configures the {@link NotificationPopup} that displays the
@@ -872,8 +871,7 @@ public class JournalController {
      * ({@link #progressNotificationPopup}) should be anchored, ensuring it appears to
      * the right of the {@code progressToggleButton} and near the lower edge of
      * the workspace.
-     * <p>
-     * The resulting anchor point is used by {@link NotificationPopup#show(javafx.scene.Node, Supplier)}
+     * <p>     * The resulting anchor point is used by {@link NotificationPopup#show(javafx.scene.Node, Supplier)}
      * or similar popup methods to place the popup on the screen.
      *
      * @return a {@code Point2D} representing the (X, Y) coordinates where the progress
@@ -1120,8 +1118,7 @@ public class JournalController {
 
     /**
      * Creates and displays a concept window for the given concept using default settings.
-     * <p>
-     * This method is a convenience overload that delegates to
+     * <p>     * This method is a convenience overload that delegates to
      * {@link #createConceptWindow(ConceptFacade, NidTextEnum, KometPreferences)}
      * with the default {@link NidTextEnum} value of {@code NID_TEXT} and no custom preferences.
      *
@@ -1134,8 +1131,7 @@ public class JournalController {
 
     /**
      * Creates and displays a concept window for the given concept with specific settings.
-     * <p>
-     * This method creates a window to display or edit a concept, configures it with the
+     * <p>     * This method creates a window to display or edit a concept, configures it with the
      * specified settings, and adds it to the workspace. An on-close handler is attached
      * to ensure proper cleanup when the window is closed.
      *
@@ -1177,8 +1173,7 @@ public class JournalController {
 
     /**
      * Creates and displays a pattern window for the given pattern using default settings.
-     * <p>
-     * This method is a convenience overload that delegates to
+     * <p>     * This method is a convenience overload that delegates to
      * {@link #createPatternWindow(EntityFacade, ViewProperties, KometPreferences)}
      * with no custom preferences.
      *
@@ -1192,8 +1187,7 @@ public class JournalController {
 
     /**
      * Creates and displays a pattern window for the given pattern with specific settings.
-     * <p>
-     * This method creates a window to display or edit a pattern, configures it with the
+     * <p>     * This method creates a window to display or edit a pattern, configures it with the
      * specified settings, and adds it to the workspace. An on-close handler is attached
      * to ensure proper cleanup when the window is closed.
      *
@@ -1210,8 +1204,7 @@ public class JournalController {
 
     /**
      * Creates and displays a general editing window for the given entity with default settings.
-     * <p>
-     * This method is a convenience overload that delegates to
+     * <p>     * This method is a convenience overload that delegates to
      * {@link #createGenEditWindow(EntityFacade, ViewProperties, KometPreferences, boolean)}
      * with no custom preferences.
      *
@@ -1227,8 +1220,7 @@ public class JournalController {
 
     /**
      * Creates and displays a general editing window for the given entity with specific settings.
-     * <p>
-     * This method creates a window for general-purpose semantic editing, configures it with the
+     * <p>     * This method creates a window for general-purpose semantic editing, configures it with the
      * specified settings, and adds it to the workspace. An on-close handler is attached
      * to ensure proper cleanup when the window is closed. If requested, the properties panel
      * is automatically opened when the window is created.
@@ -1256,8 +1248,7 @@ public class JournalController {
 
     /**
      * Creates and displays a new LIDR window for editing or creating a LIDR record.
-     * <p>
-     * This method delegates to {@link #createLidrWindow(ObservableViewNoOverride, ConceptFacade, KometPreferences)}
+     * <p>     * This method delegates to {@link #createLidrWindow(ObservableViewNoOverride, ConceptFacade, KometPreferences)}
      * with a null device concept to indicate that a new LIDR record should be created rather than
      * an existing one edited.
      *
@@ -1270,8 +1261,7 @@ public class JournalController {
 
     /**
      * Creates and displays a LIDR window for the specified device concept.
-     * <p>
-     * This method creates a window for viewing or editing a LIDR (Local Identifier for Devices Registry)
+     * <p>     * This method creates a window for viewing or editing a LIDR (Local Identifier for Devices Registry)
      * record, configures it with the specified settings, and adds it to the workspace. An on-close
      * handler is attached to ensure proper cleanup when the window is closed.
      *
@@ -1290,8 +1280,7 @@ public class JournalController {
 
     /**
      * Configures a window and adds it to the workspace with proper event handling.
-     * <p>
-     * This method performs common setup operations for all window types in the workspace:
+     * <p>     * This method performs common setup operations for all window types in the workspace:
      * <ul>
      *   <li>Configures the window's close handler to perform proper cleanup</li>
      *   <li>Adds the window to the workspace's collection of managed windows</li>
@@ -1299,8 +1288,7 @@ public class JournalController {
      *   <li>For concept windows specifically, registers activity streams and configures
      *       the reasoner slideout tray integration</li>
      * </ul>
-     * <p>
-     * Window lifecycle is managed through this central method to ensure consistent
+     * <p>     * Window lifecycle is managed through this central method to ensure consistent
      * behavior across different window types (Concept, Pattern, General Editing, LIDR).
      *
      * @param chapterKlWindow the window to be configured and added to the workspace
@@ -1522,8 +1510,7 @@ public class JournalController {
 
     /**
      * Saves the current state of all windows in the journal workspace to the specified preferences.
-     * <p>
-     * This method iterates through all open windows in the workspace, saves their individual
+     * <p>     * This method iterates through all open windows in the workspace, saves their individual
      * states (including size, position, and content), and stores the list of window IDs
      * in the provided preferences node. Only windows with a valid topic UUID are saved.
      *
@@ -1565,8 +1552,7 @@ public class JournalController {
 
     /**
      * Restores previously saved windows for this journal from the provided settings.
-     * <p>
-     * This method retrieves the list of saved window IDs from the journal preferences,
+     * <p>     * This method retrieves the list of saved window IDs from the journal preferences,
      * then attempts to recreate each window with its saved state and content.
      * Window restoration statistics are logged for diagnostic purposes.
      *
@@ -1608,8 +1594,7 @@ public class JournalController {
 
     /**
      * Asynchronously saves the current state of all windows in the journal workspace.
-     * <p>
-     * This method provides a non-blocking alternative to {@link #saveWindows(KometPreferences)}
+     * <p>     * This method provides a non-blocking alternative to {@link #saveWindows(KometPreferences)}
      * by executing the save operation on a background thread pool. It delegates to the synchronous
      * version after scheduling the task.
      *
@@ -1659,8 +1644,7 @@ public class JournalController {
 
     /**
      * Creates a new concept window when triggered from the menu.
-     * <p>
-     * This method creates a new concept window with default NID_TEXT display type
+     * <p>     * This method creates a new concept window with default NID_TEXT display type
      * and no predefined concept. The user can then create or select a concept to work with.
      *
      * @param actionEvent The event triggered by selecting the menu item
@@ -1681,8 +1665,7 @@ public class JournalController {
 
     /**
      * Creates a new LIDR window when triggered from the menu.
-     * <p>
-     * This method initializes a new LIDR window in creation mode with the current
+     * <p>     * This method initializes a new LIDR window in creation mode with the current
      * window view context but no predefined device concept.
      *
      * @param actionEvent The event triggered by selecting the menu item
@@ -1694,8 +1677,7 @@ public class JournalController {
 
     /**
      * Creates a new pattern window when triggered from the menu.
-     * <p>
-     * This method initializes a new pattern window with the current window view
+     * <p>     * This method initializes a new pattern window with the current window view
      * properties but no predefined pattern, allowing the user to create or select
      * a pattern to work with.
      *
