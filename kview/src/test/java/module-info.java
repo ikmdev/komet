@@ -19,7 +19,6 @@ module dev.ikm.komet.kview.test {
     requires org.testfx.junit5;
     requires org.testfx.monocle;
     requires org.junit.jupiter;
-    requires org.mockito;
     requires dev.ikm.komet.framework;
     requires dev.ikm.komet.kview;
     requires org.carlfx.axonic;

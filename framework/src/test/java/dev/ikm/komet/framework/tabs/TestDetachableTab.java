@@ -16,72 +16,64 @@
 package dev.ikm.komet.framework.tabs;
 
 import dev.ikm.komet.framework.KometNode;
+import dev.ikm.komet.framework.activity.ActivityStream;
+import dev.ikm.komet.framework.activity.ActivityStreamOption;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.id.PublicIdStringKey;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.Node;
+import javafx.scene.control.Tooltip;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestDetachableTab {
     DetachableTab detachableTab;
-    ReadOnlyProperty<String> titleProperty =
-            Mockito.mock(ReadOnlyStringProperty.class);
+    SimpleStringProperty titleProperty = new SimpleStringProperty();
 
     @BeforeEach
     public void setUp() {
-    	;
-        when(titleProperty.getValue()).thenReturn(
-                "NRCeO8Bi5ZSSqYM0Y3XiTWBosbrMjfiWVLDqqby8htPDleBW1njm8KS");
+        titleProperty.set("NRCeO8Bi5ZSSqYM0Y3XiTWBosbrMjfiWVLDqqby8htPDleBW1njm8KS");
 
-        KometNode kometNode = Mockito.mock(KometNode.class);
-        when(kometNode.getTitle()).thenReturn(titleProperty);
+        KometNode kometNode = new StubKometNode(titleProperty);
         detachableTab = new DetachableTab(kometNode);
         detachableTab.textProperty().unbind();
     }
 
     @Test
     public void testDetachableTabForLongText() {
-        // Given a detachable node
-        // When we create KometNode that has a title longer than 50 characters (actual 55)
-        // Then the style for that kometnode should contain style : 'long-text'
         assert detachableTab.getStyleClass().contains("long-text");
     }
 
     @Test
     public void testDetachableTabForShortText() {
-        // Given a detachable node,
-        // When kometnode has a title shorter than 50 characters (actual 25)
-        // Then the style for that KometNode should remove style : 'long-text'
-    	;
-        when(titleProperty.getValue()).thenReturn("Dummy dummy dummy dummy");
+        titleProperty.set("Dummy dummy dummy dummy");
         detachableTab.textProperty().setValue("Dummy dummy dummy dummy");
         assert !detachableTab.getStyleClass().contains("long-text");
     }
 
     @Test
     public void testForRenderingShortText() {
-        // Given a detachable node,
-        // When kometnode has a title shorter than 50 characters (actual 25)
-    	;
-        when(titleProperty.getValue()).thenReturn("Dummy dummy dummy dummy");
+        titleProperty.set("Dummy dummy dummy dummy");
         detachableTab.textProperty().setValue("Dummy dummy dummy dummy");
         assert !detachableTab.getStyleClass().contains("long-text");
     }
 
     @Test
     public void testForRenderingLongText() {
-        // Given a detachable node,
-        // When kometnode has a title shorter than 50 characters (actual 25)
-    	;
-        when(titleProperty.getValue()).thenReturn(
+        titleProperty.set(
                 "Dummy dummy dummy dummy dummy dummy dummy  dummy dummy dummy dummy dummy dummy dummy");
         detachableTab.textProperty().setValue(
                 "Dummy dummy dummy dummy dummy dummy dummy  dummy dummy dummy dummy dummy dummy dummy");
@@ -123,5 +115,38 @@ public class TestDetachableTab {
     @Test
     public void testGetNode() {
         assertNull(detachableTab.getNode());
+    }
+
+    /**
+     * Minimal stub providing only what DetachableTab's constructor needs.
+     */
+    private static class StubKometNode implements KometNode {
+        private final SimpleStringProperty title;
+
+        StubKometNode(SimpleStringProperty title) {
+            this.title = title;
+        }
+
+        @Override public ReadOnlyProperty<String> getTitle() { return title; }
+        @Override public Node getTitleNode() { return null; }
+        @Override public ReadOnlyProperty<String> toolTipTextProperty() { return new SimpleStringProperty(); }
+        @Override public Tooltip makeToolTip() { return null; }
+        @Override public ViewProperties getViewProperties() { return null; }
+        @Override public ActivityStream getActivityStream() { return null; }
+        @Override public SimpleObjectProperty<PublicIdStringKey<ActivityStreamOption>> optionForActivityStreamKeyProperty() { return null; }
+        @Override public SimpleObjectProperty<PublicIdStringKey<ActivityStream>> activityStreamKeyProperty() { return null; }
+        @Override public Node getNode() { return null; }
+        @Override public ObjectProperty<Node> getMenuIconProperty() { return null; }
+        @Override public void close() { }
+        @Override public void setNodeSelectionMethod(Runnable nodeSelectionMethod) { }
+        @Override public void savePreferences() { }
+        @Override public void revertPreferences() { }
+        @Override public Node getMenuIconGraphic() { return null; }
+        @Override public KometPreferences getNodePreferences() { return null; }
+        @Override public ObservableViewNoOverride windowView() { return null; }
+        @Override public KometPreferences nodePreferences() { return null; }
+        @Override public ImmutableList children() { return null; }
+        @Override public void saveConfiguration() { }
+        @Override public Class factoryClass() { return null; }
     }
 }

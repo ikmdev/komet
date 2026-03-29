@@ -133,11 +133,6 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- Integration test dependencies -->
         <dependency>
             <groupId>dev.ikm.tinkar</groupId>
