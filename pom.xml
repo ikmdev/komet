@@ -91,6 +91,20 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Block bnd.annotation inherited from ike-parent:39 — causes OSGi split-package errors.
+                 Remove after upgrading to ike-parent:40+ which drops this dependency. -->
+            <dependency>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>biz.aQute.bnd.annotation</artifactId>
+                <version>7.1.0</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <!-- Cross project dependencies -->
