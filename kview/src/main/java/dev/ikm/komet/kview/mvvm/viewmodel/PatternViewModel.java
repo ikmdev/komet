@@ -360,7 +360,7 @@ public class PatternViewModel extends FormViewModel {
                         .pattern(pattern)
                         .meaning(conceptEntityMeaning)
                         .purpose(conceptEntityPurpose)
-                        .attach((FullyQualifiedName fqn) -> fqn
+                        .attach(FullyQualifiedName.class, fqn -> fqn
                             .semantic(fqnProp.get())
                             .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
                             .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
@@ -394,7 +394,7 @@ public class PatternViewModel extends FormViewModel {
                             - module
                      */
                     if (generateFqnHash() != changeHash) {
-                        patternAssembler.attach((FullyQualifiedName fqn) -> fqn
+                        patternAssembler.attach(FullyQualifiedName.class, fqn -> fqn
                                         .semantic(fqnProp.get())
                                         .language(((EntityFacade) getPropertyValue(FQN_LANGUAGE)).toProxy())
                                         .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))

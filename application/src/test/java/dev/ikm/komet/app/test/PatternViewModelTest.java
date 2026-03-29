@@ -208,7 +208,7 @@ public class PatternViewModelTest {
                 .meaning(patternMeaning)
                 .purpose(patternPurpose)
                 .fieldDefinition(patternPurpose.toProxy(), patternMeaning.toProxy(), TinkarTerm.LONG, 0)
-                .attach((FullyQualifiedName fqn) -> fqn
+                .attach(FullyQualifiedName.class, fqn -> fqn
                         .language(ENGLISH_LANGUAGE)
                         .text("FQN for Pattern")
                         .caseSignificance(DESCRIPTION_NOT_CASE_SENSITIVE))
@@ -223,7 +223,7 @@ public class PatternViewModelTest {
                         .with("Pattern Other Name")
                         .with(DESCRIPTION_NOT_CASE_SENSITIVE)
                         .with(REGULAR_NAME_DESCRIPTION_TYPE))
-                .attach((USDialect dialect) -> dialect
+                .attach(USDialect.class, dialect -> dialect
                         .acceptability(PREFERRED)));
 
         // versions should be only 1
