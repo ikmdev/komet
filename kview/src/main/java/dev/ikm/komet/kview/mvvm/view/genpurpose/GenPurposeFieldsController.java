@@ -29,6 +29,7 @@ import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.Toast;
+import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
@@ -78,9 +79,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import static dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent.PUBLISH;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createEditableKlField;
@@ -152,6 +153,8 @@ public class GenPurposeFieldsController {
     private boolean reloadPatternNavigator;
 
     private EditorSectionModel editorSectionModel;
+
+    private SemanticEntity<SemanticEntityVersion> currentEditingSemantic;
 
 //    private void enableDisableButtons() {
 //        boolean emptyFields = checkForEmptyFields();
@@ -295,10 +298,6 @@ public class GenPurposeFieldsController {
         Subscriber<KLPropertyPanelEvent> propertyEventSubscriber = evt -> {
             if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
                 setupEditSemanticDetails(evt.getSemantic());
-            } else if (evt.getEventType() == KLPropertyPanelEvent.SHOW_ADD_SEMANTIC) {
-                genPurposeViewModel.setPropertyValue(MODE, CREATE);
-                SemanticEntity<SemanticEntityVersion> newSemantic = createUncommitedSemantic(evt.getReferenceComponent(), evt.getPatternFacade());
-                setupEditSemanticDetails(newSemantic);
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
@@ -322,34 +321,6 @@ public class GenPurposeFieldsController {
         });
     }
 
-    /**
-     * Creates a transaction and uncommited Semantic.
-     *
-     * @param referenceComponent the Reference Component of the Semantic that is going to be created
-     * @param pattern the Pattern of the Semantic that is going to be created
-     * @return The uncommited Semantic
-     */
-    private SemanticEntity<SemanticEntityVersion> createUncommitedSemantic(EntityFacade referenceComponent, PatternFacade pattern) {
-        ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referenceComponent.nid()).expectEntity();
-        ObservablePattern observablePattern = ObservableEntityHandle.get(pattern.nid()).expectPattern();
-
-        initializeComposer();
-        semanticEditor = getObservableComposer().composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
-
-        editableVersion = semanticEditor.getEditableVersion();
-
-        semanticEditor.save(); // Save to create an uncommitted version
-
-        AtomicReference<SemanticEntity<SemanticEntityVersion>> newSemantic = new AtomicReference<>();
-        EntityHandle.get(semanticEditor.getEntity().nid()).asSemantic().ifPresentOrElse(semanticEntity -> {
-            newSemantic.set(semanticEntity);
-        },
-        () -> {
-            throw new RuntimeException("Error creating new uncommited Semantic");
-        });
-
-        return newSemantic.get();
-    }
 
     private void setupEditSemanticDetails(SemanticEntity<SemanticEntityVersion> semanticEntity) {
         // Clear previous controls that might be there from previously editing another Semantic
@@ -357,6 +328,8 @@ public class GenPurposeFieldsController {
         klFields.clear();
 
         observableEntityHandle = ObservableEntityHandle.get(semanticEntity.nid());
+
+        currentEditingSemantic = semanticEntity;
 
         this.observableEntityHandle.ifSemantic(observableSemantic -> {
             observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
@@ -694,10 +667,10 @@ public class GenPurposeFieldsController {
 //                enableDisableButtons();
 
                 // Publish event to refresh details area
-//                EvtBusFactory.getDefaultEvtBus().publish(
-//                        genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-//                        new GenEditingEvent(actionEvent.getSource(), PUBLISH, fieldValues, semantic.nid())
-//                );
+                EvtBusFactory.getDefaultEvtBus().publish(
+                        genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new GenPurposeEvent(actionEvent.getSource(), PUBLISH, fieldValues, currentEditingSemantic)
+                );
 
                 // Show success message
                 String submitMessage = "Semantic Details %s Successfully!"

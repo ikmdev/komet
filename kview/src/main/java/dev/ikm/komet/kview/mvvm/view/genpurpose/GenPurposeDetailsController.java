@@ -19,7 +19,6 @@ import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTE
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_ADD_SEMANTIC;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
@@ -30,7 +29,9 @@ import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 
@@ -38,9 +39,12 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
+import dev.ikm.komet.framework.observable.ObservablePattern;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
@@ -51,6 +55,7 @@ import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
@@ -63,6 +68,7 @@ import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
@@ -81,8 +87,10 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -189,6 +197,8 @@ public class GenPurposeDetailsController {
 
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
+    private ObservableComposer composer;
+
     @FXML
     private void initialize() {
 
@@ -214,6 +224,79 @@ public class GenPurposeDetailsController {
 
         // Assign the tooltip to the StackPane (container of Publish button)
         setupTooltipForDisabledButton(savePatternButton);
+
+        Subscriber<GenPurposeEvent> refreshSubscriber = evt -> {
+            //Set up the Listener to refresh the details area (After user hits submit button on the right side)
+//            ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
+//            if (semanticProperty.isNull().get()) {
+//                // If the window is in creation mode ignore the refresh event
+//                return;
+//            }
+//            if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
+//                observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
+//                // populate the semantic and its observable fields once saved
+//                semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
+//            }
+            // TODO update identicon and identifier fields.
+
+            SemanticEntity<SemanticEntityVersion> semantic = evt.getSemantic();
+
+            if (evt.getEventType() == GenPurposeEvent.PUBLISH) {
+//                if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
+//                    // get the latest value for the semantic created.
+//                    observableSemantic = ObservableEntityHandle.getSemanticOrThrow(finalSemantic);
+//                    // populate the semantic and its observable fields once saved
+//                    semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
+//                    // clear out the temporary placeholders
+//                    semanticDetailsVBox.getChildren().clear();
+//                    nodes.clear();
+//                    // set up the real observables now that the semantic has been created
+//                    populateSemanticDetails();
+//                    // change the mode from CREATE to EDIT
+//                    genEditingViewModel.setPropertyValue(MODE, EDIT);
+//                    // Update STAMP control and STAMP form
+//                    StampFormViewModelBase stampFormViewModelBase = propertiesController.getStampFormViewModel();
+//                    stampFormViewModelBase.update(semanticEntityVersionLatest.get().entity(),
+//                            genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+//                    updateUIStamp(stampFormViewModelBase);
+//                }
+
+                // Initialize composer if not already done
+                initializeComposer();
+
+                ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(semantic.publicId(), semantic.referencedComponent(), semantic.pattern());
+
+                // Get editable version with cached editing capabilities
+                ObservableSemanticVersion.Editable editableVersion = semanticEditor.getEditableVersion();
+                ObservableList<ObservableField.Editable<?>> editableFields = editableVersion.getEditableFields();
+
+                // Update editable field values using ObservableField.Editables
+                for (int i = 0; i < evt.getList().size(); i++) {
+                    ObservableField.Editable<?> editableField = editableFields.get(i);
+                    Object updatedField = evt.getList().get(i);
+                    if (updatedField != null && editableField != null) {
+                        // Update via editable field's cached property
+                        @SuppressWarnings("unchecked")
+                        ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
+                        Runnable setValue = () -> uncheckedField.getObservableFeature().editableValueProperty().setValue(updatedField);
+                        if (!Platform.isFxApplicationThread()) {
+                            Platform.runLater(setValue);
+                        } else {
+                            setValue.run();
+                        }
+                    }
+                }
+            }
+
+//            semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
+//            //Set and Update STAMP values
+//            semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
+//                updateUIStamp(semanticEntityVersion.stamp().lastVersion());
+//            });
+        };
+//        subscriberList.add(refreshSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+                GenPurposeEvent.class, refreshSubscriber);
 
         // Setup window support with explicit draggable nodes
         addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
@@ -361,6 +444,34 @@ public class GenPurposeDetailsController {
      */
     public void setupFilterCoordinatesMenu() {
 //        this.viewMenuModel = new ViewMenuModel(patternViewModel.getViewProperties(), coordinatesMenuButton, "PatternDetailsController");
+    }
+
+    /**
+     * Creates a transaction and uncommited Semantic.
+     *
+     * @param referenceComponent the Reference Component of the Semantic that is going to be created
+     * @param pattern the Pattern of the Semantic that is going to be created
+     * @return The uncommited Semantic
+     */
+    private SemanticEntity<SemanticEntityVersion> createUncommitedSemantic(EntityFacade referenceComponent, PatternFacade pattern) {
+        ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referenceComponent.nid()).expectEntity();
+        ObservablePattern observablePattern = ObservableEntityHandle.get(pattern.nid()).expectPattern();
+
+        initializeComposer();
+
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
+
+        semanticEditor.save(); // Save to create an uncommitted version
+
+        AtomicReference<SemanticEntity<SemanticEntityVersion>> newSemantic = new AtomicReference<>();
+        EntityHandle.get(semanticEditor.getEntity().nid()).asSemantic().ifPresentOrElse(semanticEntity -> {
+                    newSemantic.set(semanticEntity);
+                },
+                () -> {
+                    throw new RuntimeException("Error creating new uncommited Semantic");
+                });
+
+        return newSemantic.get();
     }
 
     private void setupProperties() {
@@ -654,8 +765,20 @@ public class GenPurposeDetailsController {
                 });
 
         popup.setOnCreateSemanticAction(() -> {
+            genPurposeViewModel.setPropertyValue(MODE, CREATE);
             PatternFacade patternFacade = PatternFacade.make(sectionModel.getPatterns().getFirst().getNid());
-            showCreateSemanticPanel(actionEvent, refComponent, patternFacade);
+
+            SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade);
+
+            // Clear content of Section
+            GridPane gridPane = sectionModelToTitledPaneGridPane.get(sectionModel);
+            gridPane.getChildren().clear();
+
+            // Re-add content to Section
+            addPatternViews(sectionModel, sectionModel.getPatterns());
+
+            // Show Edit Panel to the right
+            showEditSemanticFieldsPanel(actionEvent, uncommitedSemantic);
         });
 
         // show Popup
@@ -664,16 +787,6 @@ public class GenPurposeDetailsController {
         Point2D popupPosition = sectionTitledPane.getLocalToSceneTransform().transform(sectionTitledPane.getLayoutX() + sectionTitledPane.getWidth(),
                 sectionTitledPane.getBoundsInLocal().getMinY());
         popup.show(sectionTitledPane, popupPosition.getX(), popupPosition.getY());
-    }
-
-    private void showCreateSemanticPanel(ActionEvent event, EntityFacade refComponent, PatternFacade patternFacade) {
-        // Notify to open right side with edit fields in Semantic Creation mode
-        EvtBusFactory.getDefaultEvtBus()
-                .publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new KLPropertyPanelEvent(event.getSource(),
-                                SHOW_ADD_SEMANTIC, refComponent, patternFacade));
-        // Notify to open properties bump out.
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(event.getSource(), OPEN_PANEL));
     }
 
     private void showEditSemanticFieldsPanel(Event event, SemanticEntity<SemanticEntityVersion> semanticEntity) {
@@ -772,7 +885,7 @@ public class GenPurposeDetailsController {
         patternEntity = handle.asPattern().get();
 
         // Composer
-        ObservableComposer composer = createComposer();
+        initializeComposer();
 
         // Start adding Semantics
         AtomicInteger index = new AtomicInteger(0);
@@ -788,13 +901,21 @@ public class GenPurposeDetailsController {
 
                     semanticEntityToSemanticView.put(semantic, semanticViewControl);
 
-                    ObservableEntitySnapshot<?, ?> snap = composer.snapshot(semantic.nid()).get();
-                    if (snap instanceof ObservableSemanticSnapshot semanticSnapshot) {
-                        for (ObservableField<?> observableField : semanticSnapshot.getLatestFields().get()) {
-                            for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
-                                if (observableField.field().indexInPattern() == editorFieldModel.getIndex()) {
-                                    createFieldView(observableField, editorFieldModel, controlItems, semanticViewControl);
-                                }
+                    ObservableEntity referencedComponent = ObservableEntityHandle.get(refComponents.getFirst().nid()).expectEntity();
+                    ObservablePattern pattern = ObservableEntityHandle.get(patternEntity.nid()).expectPattern();
+                    ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(semantic.publicId(), referencedComponent, pattern);
+
+                    // Get editable version with cached editing capabilities
+                    ObservableSemanticVersion.Editable editableVersion = semanticEditor.getEditableVersion();
+
+                    ObservableList<ObservableField.Editable<?>> editableFields = editableVersion.getEditableFields();
+
+                    for (int i = 0; i < editableFields.size(); ++i) {
+                        ObservableField.Editable observableField = editableFields.get(i);
+
+                        for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
+                            if (observableField.getFieldIndex() == editorFieldModel.getIndex()) {
+                                createFieldView(observableField.getObservableFeature(), editorFieldModel, controlItems, semanticViewControl);
                             }
                         }
                     }
@@ -807,12 +928,16 @@ public class GenPurposeDetailsController {
                 });
     }
 
-    private ObservableComposer createComposer() {
+    private void initializeComposer() {
+        if (composer != null) {
+            return;
+        }
+
         ConceptFacade author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
         ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
         ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
 
-        ObservableComposer composer = ObservableComposer.create(
+        composer = ObservableComposer.create(
                 getViewProperties().calculator(),
                 State.ACTIVE,
                 author,
@@ -820,7 +945,6 @@ public class GenPurposeDetailsController {
                 path,
                 "Edit Semantic Details"
         );
-        return composer;
     }
 
     private List<EntityFacade> getReferenceComponentsToUse(EditorPatternModel sectionReferenceComponent) {
