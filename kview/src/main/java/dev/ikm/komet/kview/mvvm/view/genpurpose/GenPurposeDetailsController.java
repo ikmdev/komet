@@ -132,6 +132,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -198,6 +199,7 @@ public class GenPurposeDetailsController {
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
     private ObservableComposer composer;
+    private final Map<EditorPatternModel, SectionTitledPane<EntityFacade>> patternReferenceComponentToSectionTitledPane = new HashMap<>();
 
     @FXML
     private void initialize() {
@@ -695,8 +697,11 @@ public class GenPurposeDetailsController {
         // Section Semantics ComboBox
         List<EntityFacade> semanticsOfPattern = null;
         if (sectionModel.getReferenceComponent() != null) {
-            semanticsOfPattern = getSemanticsOfPattern(sectionModel.getReferenceComponent());
+            EditorPatternModel patternReferenceComponent = sectionModel.getReferenceComponent();
+            semanticsOfPattern = getSemanticsOfPattern(patternReferenceComponent);
             titledPane.getReferenceComponents().addAll(semanticsOfPattern);
+
+            patternReferenceComponentToSectionTitledPane.put(patternReferenceComponent, titledPane);
         }
         titledPane.setReferenceComponentCellFactory(_ -> createSectionSemanticsComboBoxCell(viewProperties));
         titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(viewProperties));
@@ -705,8 +710,9 @@ public class GenPurposeDetailsController {
         titledPane.setContent(titledPaneGridPane);
 
         titledPane.setOnEditAction(actionEvent -> onEditAction(actionEvent, sectionModel));
-        titledPane.setEditEnabled(sectionModel.getReferenceComponent() == null
-                || (semanticsOfPattern != null && !semanticsOfPattern.isEmpty()));
+
+        titledPane.editEnabledProperty().bind(sectionModel.referenceComponentProperty().isNull()
+                .or(Bindings.isNotEmpty(titledPane.getReferenceComponents())));
 
         sectionModelToTitledPaneGridPane.put(sectionModel, titledPaneGridPane);
 
@@ -764,22 +770,7 @@ public class GenPurposeDetailsController {
                     lastSemantic.set(semantic);
                 });
 
-        popup.setOnCreateSemanticAction(() -> {
-            genPurposeViewModel.setPropertyValue(MODE, CREATE);
-            PatternFacade patternFacade = PatternFacade.make(sectionModel.getPatterns().getFirst().getNid());
-
-            SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade);
-
-            // Clear content of Section
-            GridPane gridPane = sectionModelToTitledPaneGridPane.get(sectionModel);
-            gridPane.getChildren().clear();
-
-            // Re-add content to Section
-            addPatternViews(sectionModel, sectionModel.getPatterns());
-
-            // Show Edit Panel to the right
-            showEditSemanticFieldsPanel(actionEvent, uncommitedSemantic);
-        });
+        popup.setOnCreateSemanticAction(() -> onCreateSemantic(actionEvent, sectionModel, refComponent));
 
         // show Popup
         SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
@@ -787,6 +778,36 @@ public class GenPurposeDetailsController {
         Point2D popupPosition = sectionTitledPane.getLocalToSceneTransform().transform(sectionTitledPane.getLayoutX() + sectionTitledPane.getWidth(),
                 sectionTitledPane.getBoundsInLocal().getMinY());
         popup.show(sectionTitledPane, popupPosition.getX(), popupPosition.getY());
+    }
+
+    private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern, EntityFacade refComponent) {
+        genPurposeViewModel.setPropertyValue(MODE, CREATE);
+
+        EditorPatternModel editorPatternModel = sectionModelOfPattern.getPatterns().getFirst();
+        PatternFacade patternFacade = PatternFacade.make(editorPatternModel.getNid());
+
+        // Create uncommited Semantic
+        SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade);
+
+        // Clear content of Section
+        GridPane gridPane = sectionModelToTitledPaneGridPane.get(sectionModelOfPattern);
+        gridPane.getChildren().clear();
+
+        // Re-add content to Section
+        addPatternViews(sectionModelOfPattern, sectionModelOfPattern.getPatterns());
+
+        // If there are Section TitledPanes that have this Pattern as a Reference Component update them
+        SectionTitledPane<EntityFacade> sectionTitledPane = patternReferenceComponentToSectionTitledPane.get(editorPatternModel);
+        if (sectionTitledPane != null) {
+            sectionTitledPane.getReferenceComponents().add(uncommitedSemantic);
+            // If this is going to be the first Semantic, have it selected
+            if (sectionTitledPane.getReferenceComponents().size() == 1) {
+                sectionTitledPane.setSelectedReferenceComponent(uncommitedSemantic);
+            }
+        }
+
+        // Show Edit Panel to the right
+        showEditSemanticFieldsPanel(actionEvent, uncommitedSemantic);
     }
 
     private void showEditSemanticFieldsPanel(Event event, SemanticEntity<SemanticEntityVersion> semanticEntity) {
