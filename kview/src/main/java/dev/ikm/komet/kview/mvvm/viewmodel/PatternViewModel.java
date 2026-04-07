@@ -20,11 +20,19 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import static dev.ikm.tinkar.common.service.PrimitiveData.SCOPED_PATTERN_PUBLICID_FOR_NID;
 import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
 import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import dev.ikm.komet.framework.observable.ObservableComposer;
+import dev.ikm.komet.framework.observable.ObservableComposer.EntityComposer;
+import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservablePattern;
+import dev.ikm.komet.framework.observable.ObservablePatternVersion;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
@@ -32,14 +40,7 @@ import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.composer.Composer;
-import dev.ikm.tinkar.composer.Session;
-import dev.ikm.tinkar.composer.assembler.PatternAssembler;
-import dev.ikm.tinkar.composer.assembler.PatternAssemblerConsumer;
-import dev.ikm.tinkar.composer.template.FullyQualifiedName;
-import dev.ikm.tinkar.composer.template.Synonym;
-import dev.ikm.tinkar.composer.template.USDialect;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.ConceptRecord;
@@ -280,8 +281,13 @@ public class PatternViewModel extends FormViewModel {
          * A contradiction implies a discrepancy. IN other parts of the code where we needed to sort thing based on time,
          * there are position records that can be sorted via a HashTree Collection object.
          * */
-        SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().languageCalculator()
-                .getFullyQualifiedDescription(patternFacade).getWithContradictions().getFirstOptional().get();
+        Latest<SemanticEntityVersion> latestFqn = getViewProperties().calculator().languageCalculator()
+                .getFullyQualifiedDescription(patternFacade);
+        if (!latestFqn.isPresent()) {
+            LOG.warn("No FQN description found for pattern: {} (nid={})", patternFacade, patternFacade.nid());
+            return;
+        }
+        SemanticEntityVersion fqnSemanticEntityVersion = latestFqn.get();
 
         EntityFacade fqnLanguage = (EntityFacade) fqnSemanticEntityVersion.fieldValues().get(0);
         String fqnString = (String) fqnSemanticEntityVersion.fieldValues().get(1);
@@ -303,7 +309,9 @@ public class PatternViewModel extends FormViewModel {
         ViewCalculator viewCalculator = viewProperties.calculator();
         Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
         Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
-        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
+        return optionalStringRegularName
+                .or(() -> optionalStringFQN)
+                .orElse("No description available");
     }
 
     public boolean createPattern() {
@@ -314,149 +322,141 @@ public class PatternViewModel extends FormViewModel {
             }
             return false;
         }
-        PublicId patternPublicId =  getPropertyValue(PATTERN) == null ? PublicIds.newRandom():  ((PatternFacade) getPropertyValue(PATTERN)).publicId();
-        Pattern pattern = Pattern.make(null, patternPublicId);
 
-        // Generate the nid now, since tinkar composer is not handling the ScopedValue...
-        ScopedValue
-                .where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Pattern.pattern())
-                .call(() -> Entity.nid(patternPublicId));
+        PublicId patternPublicId = getPropertyValue(PATTERN) == null
+                ? PublicIds.newRandom()
+                : ((PatternFacade) getPropertyValue(PATTERN)).publicId();
+        boolean isEdit = getPropertyValue(PATTERN) != null;
 
-        Composer composer = new Composer("Save Pattern Definition");
-
-        // get the STAMP values from the nested stampViewModel
+        // Extract STAMP values from the nested stampViewModel
         StampFormViewModelBase stampFormViewModel = getPropertyValue(STAMP_VIEW_MODEL);
         State state = stampFormViewModel.getPropertyValue(STATUS);
 
         Object authorObject = stampFormViewModel.getPropertyValue(AUTHOR);
         EntityProxy.Concept authorConcept = null;
-        if (authorObject instanceof EntityProxy.Concept) {
-            authorConcept = (EntityProxy.Concept) authorObject;
+        if (authorObject instanceof EntityProxy.Concept concept) {
+            authorConcept = concept;
         } else if (authorObject instanceof ConceptRecord authorConceptRecord) {
             authorConcept = EntityProxy.Concept.make(authorConceptRecord.nid());
         }
 
         ConceptEntity module = stampFormViewModel.getPropertyValue(MODULE);
         ConceptEntity path = stampFormViewModel.getPropertyValue(PATH);
-        Session session = composer.open(state, authorConcept, module.toProxy(), path.toProxy());
-        EntityProxy.Concept conceptEntityMeaning = EntityProxy.Concept.make(((EntityFacade)getPropertyValue(MEANING_ENTITY)).nid());
-        EntityProxy.Concept conceptEntityPurpose = EntityProxy.Concept.make(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).nid());
 
-        // set up pattern with the fully qualified name
+        // Create ObservableComposer — handles scoped values internally
+        ObservableComposer composer = ObservableComposer.create(
+                getViewProperties().calculator(), state, authorConcept, module, path,
+                "Save Pattern Definition");
+
+        // --- Compose the pattern entity ---
+        EntityComposer<ObservablePatternVersion.Editable, ObservablePattern> patternComposer =
+                composer.composePattern(patternPublicId);
+        ObservablePatternVersion.Editable patternEditable = patternComposer.getEditableVersion();
+
+        EntityFacade meaningEntity = (EntityFacade) getPropertyValue(MEANING_ENTITY);
+        EntityFacade purposeEntity = (EntityFacade) getPropertyValue(PURPOSE_ENTITY);
+        patternEditable.getMeaningProperty().set(meaningEntity);
+        patternEditable.getPurposeProperty().set(purposeEntity);
+
+        // Build field definitions from the UI collection
         ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
+        int patternNid = PrimitiveData.nid(patternPublicId);
+        int stampNid = patternEditable.getEditStamp().nid();
+        org.eclipse.collections.api.list.MutableList<FieldDefinitionRecord> fieldDefs =
+                org.eclipse.collections.api.factory.Lists.mutable.ofInitialCapacity(fieldsProperty.size());
+        for (int i = 0; i < fieldsProperty.size(); i++) {
+            PatternField pf = fieldsProperty.get(i);
+            fieldDefs.add(new FieldDefinitionRecord(
+                    pf.dataType().nid(), pf.purpose().nid(), pf.meaning().nid(),
+                    stampNid, patternNid, i));
+        }
+        patternEditable.setFieldDefinitions(fieldDefs.toImmutable());
+        patternComposer.save();
 
-        // get the fqn semantic version
+        ObservablePattern observablePattern = patternComposer.getEntity();
+
+        // --- Compose FQN description semantic ---
+        // Only compose if creating new, or FQN has changed in edit mode
         ObjectProperty<EntityProxy.Semantic> fqnProp = getObjectProperty(FQN_PROXY);
-        if (fqnProp.isNull().get()) {
-            // if the FQN is empty, create a new one
-            EntityProxy.Semantic fqnProxy = EntityProxy.Semantic.make(null, PublicIds.newRandom());
-            fqnProp.set(fqnProxy);
+        if (!isEdit || generateFqnHash() != changeHash) {
+            PublicId fqnPublicId = (fqnProp.get() != null)
+                    ? fqnProp.get().publicId()
+                    : PublicIds.newRandom();
+
+            EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> fqnComposer =
+                    composer.composeSemantic(fqnPublicId, observablePattern, TinkarTerm.DESCRIPTION_PATTERN);
+            ObservableSemanticVersion.Editable fqnEditable = fqnComposer.getEditableVersion();
+
+            // DESCRIPTION_PATTERN fields: [0]=language, [1]=text, [2]=caseSignificance, [3]=descriptionType
+            fqnEditable.getEditableField(0).setObjectValue(getPropertyValue(FQN_LANGUAGE));
+            fqnEditable.getEditableField(1).setObjectValue(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT));
+            fqnEditable.getEditableField(2).setObjectValue(getPropertyValue(FQN_CASE_SIGNIFICANCE));
+            fqnEditable.getEditableField(3).setObjectValue(FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+            fqnComposer.save();
+
+            // Update the FQN proxy property
+            fqnProp.set(EntityProxy.Semantic.make(fqnPublicId));
+
+            // Compose US Dialect for the FQN
+            PublicId dialectPublicId = PublicIds.newRandom();
+            EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> dialectComposer =
+                    composer.composeSemantic(dialectPublicId, fqnComposer.getEntity(), TinkarTerm.US_DIALECT_PATTERN);
+            ObservableSemanticVersion.Editable dialectEditable = dialectComposer.getEditableVersion();
+            // US_DIALECT_PATTERN fields: [0]=acceptability
+            dialectEditable.getEditableField(0).setObjectValue(ACCEPTABLE);
+            dialectComposer.save();
         }
 
-        if (getPropertyValue(PATTERN) == null) {
-            // create pattern compose statement
-            session.compose((PatternAssembler patternAssembler) -> {
-                patternAssembler
-                        .pattern(pattern)
-                        .meaning(conceptEntityMeaning)
-                        .purpose(conceptEntityPurpose)
-                        .attach(FullyQualifiedName.class, fqn -> fqn
-                            .semantic(fqnProp.get())
-                            .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
-                            .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
-                            .caseSignificance(((EntityFacade)getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy())
-                            .attach(new USDialect().acceptability(ACCEPTABLE))
-                );
-
-                // add the field definitions
-                for (int i = 0; i < fieldsProperty.size(); i++) {
-                    PatternField patternField = fieldsProperty.get(i);
-                    EntityProxy.Concept conceptEntityFieldMeaning = EntityProxy.Concept.make(patternField.meaning().nid());
-                    EntityProxy.Concept conceptEntityFieldPurpose = EntityProxy.Concept.make(patternField.purpose().nid());
-                    EntityProxy.Concept conceptEntityFieldDatatype = EntityProxy.Concept.make(patternField.dataType().nid());
-                    patternAssembler.fieldDefinition(conceptEntityFieldMeaning, conceptEntityFieldPurpose, conceptEntityFieldDatatype, i);
-                }
-            });
-        } else {
-            // only write when there is change in Semantic meaning or Semantic purpose
-            session.compose((PatternAssemblerConsumer) patternAssembler -> {
-                patternAssembler
-                        .pattern(pattern)
-                        .meaning(conceptEntityMeaning)
-                        .purpose(conceptEntityPurpose);
-                     /*
-                        only write a fqn version IF there is a change to
-                            - FQN language,
-                            - FQN case significance,
-                            - FQN text (description),
-                            - FQN status
-                            - path
-                            - module
-                     */
-                    if (generateFqnHash() != changeHash) {
-                        patternAssembler.attach(FullyQualifiedName.class, fqn -> fqn
-                                        .semantic(fqnProp.get())
-                                        .language(((EntityFacade) getPropertyValue(FQN_LANGUAGE)).toProxy())
-                                        .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
-                                        .caseSignificance(((EntityFacade) getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy())
-                                .attach(new USDialect().acceptability(ACCEPTABLE))
-                        );
-                    }
-                    // add the field definitions
-                    for (int i = 0; i < fieldsProperty.size(); i++) {
-                        PatternField patternField = fieldsProperty.get(i);
-                        EntityProxy.Concept conceptEntityFieldMeaning = EntityProxy.Concept.make(patternField.meaning().nid());
-                        EntityProxy.Concept conceptEntityFieldPurpose = EntityProxy.Concept.make(patternField.purpose().nid());
-                        EntityProxy.Concept conceptEntityFieldDatatype = EntityProxy.Concept.make(patternField.dataType().nid());
-                        patternAssembler.fieldDefinition(conceptEntityFieldMeaning, conceptEntityFieldPurpose, conceptEntityFieldDatatype, i);
-                    }
-            });
-        }
-
-
-        // add the other name description semantics if they exist
+        // --- Compose other name (synonym) description semantics ---
         ObservableList<DescrName> otherNamesProperty = getObservableList(OTHER_NAMES);
-        boolean isEdit = getPropertyValue(MODE).equals("EDIT");
         Map<String, Integer> currentOtherNameMap = Map.of();
         if (isEdit) {
             currentOtherNameMap = generateOtherNameHash();
         }
         final Map<String, Integer> finalCurrentOtherNameMap = currentOtherNameMap;
-        otherNamesProperty.forEach(otherName -> {
-            Synonym synonym = new Synonym()
-                    .language(otherName.getLanguage().toProxy())
-                    .text(otherName.getNameText())
-                    .caseSignificance(otherName.getCaseSignificance().toProxy());
+
+        for (DescrName otherName : otherNamesProperty) {
+            boolean shouldCompose;
+            PublicId otherNamePublicId;
+
             if (isEdit) {
-                String otKey = otherName.getSemanticPublicId() != null ? otherName.getSemanticPublicId().idString() : "-not-found-";
-                // if there is a CHANGE to the other name, then we allow the update
-                if (!baselineOtherNameHashMap.containsKey(otKey) || !baselineOtherNameHashMap.get(otKey).equals(finalCurrentOtherNameMap.get(otKey))) {
-                    HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
-                    if (regularNamesMap != null && regularNamesMap.get(otherName) != null) {
-                        SemanticEntityVersion semanticEntityVersion = regularNamesMap.get(otherName); // get the right other name to edit
-                        SemanticEntity<SemanticEntityVersion> semanticEntity = semanticEntityVersion.chronology();
-                        synonym.semantic(semanticEntity.toProxy());
-                        session.compose(synonym, pattern);
-                    } else {
-                        session.compose(synonym, pattern)
-                                .attach(new USDialect().acceptability(ACCEPTABLE));
-                    }
-                }
+                String otKey = otherName.getSemanticPublicId() != null
+                        ? otherName.getSemanticPublicId().idString() : "-not-found-";
+                shouldCompose = !baselineOtherNameHashMap.containsKey(otKey)
+                        || !baselineOtherNameHashMap.get(otKey).equals(finalCurrentOtherNameMap.get(otKey));
+                otherNamePublicId = otherName.getSemanticPublicId() != null
+                        ? otherName.getSemanticPublicId() : PublicIds.newRandom();
             } else {
-                session.compose(synonym, pattern)
-                        .attach(new USDialect().acceptability(ACCEPTABLE));
+                shouldCompose = true;
+                otherNamePublicId = PublicIds.newRandom();
             }
 
-        });
-        boolean isSuccess = composer.commitSession(session);
+            if (shouldCompose) {
+                EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> synComposer =
+                        composer.composeSemantic(otherNamePublicId, observablePattern, TinkarTerm.DESCRIPTION_PATTERN);
+                ObservableSemanticVersion.Editable synEditable = synComposer.getEditableVersion();
+                synEditable.getEditableField(0).setObjectValue(otherName.getLanguage());
+                synEditable.getEditableField(1).setObjectValue(otherName.getNameText());
+                synEditable.getEditableField(2).setObjectValue(otherName.getCaseSignificance());
+                synEditable.getEditableField(3).setObjectValue(REGULAR_NAME_DESCRIPTION_TYPE);
+                synComposer.save();
 
-        // change hash code
-        //TODO create the hash of the pattern and its values
-        //changeHash = generateFqnHash();
+                // Compose US Dialect for the synonym (only for new synonyms)
+                if (!isEdit || otherName.getSemanticPublicId() == null) {
+                    PublicId synDialectPublicId = PublicIds.newRandom();
+                    EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> synDialectComposer =
+                            composer.composeSemantic(synDialectPublicId, synComposer.getEntity(), TinkarTerm.US_DIALECT_PATTERN);
+                    synDialectComposer.getEditableVersion().getEditableField(0).setObjectValue(ACCEPTABLE);
+                    synDialectComposer.save();
+                }
+            }
+        }
 
+        // Commit all composed entities
+        composer.commit();
 
-        setPropertyValue(PATTERN, pattern);
-        return isSuccess;
+        setPropertyValue(PATTERN, Pattern.make(null, patternPublicId));
+        return true;
     }
 
 

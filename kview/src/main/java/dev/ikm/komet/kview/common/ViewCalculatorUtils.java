@@ -134,7 +134,9 @@ public class ViewCalculatorUtils {
         ViewCalculator viewCalculator = viewProperties.calculator();
         Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
         Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
-        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
+        return optionalStringRegularName
+                .or(() -> optionalStringFQN)
+                .orElse("No description available");
     }
 
     public static Function<Integer, String> getFetchSemanticDescriptionFunction(ViewProperties viewProperties) {
