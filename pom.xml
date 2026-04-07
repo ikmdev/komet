@@ -87,7 +87,7 @@
             <dependency>
                 <groupId>dev.ikm.ike</groupId>
                 <artifactId>ike-bom</artifactId>
-                <version>3.0.7-feature-test-v66-SNAPSHOT</version>
+                <version>3.0.7-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
