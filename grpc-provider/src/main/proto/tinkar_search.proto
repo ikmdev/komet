@@ -1,0 +1,305 @@
+// DEPRECATED: This service is maintained for backward compatibility only.
+// New clients should use:
+//   - ike_graph_rag.proto (Tier 1: IkeGraphRAG service)
+//   - ike_knowledge_graph.proto (Tier 2: IkeKnowledgeGraph service)
+
+syntax = "proto3";
+
+package dev.ikm.tinkar.service;
+
+import "Tinkar.proto";
+
+option java_multiple_files = true;
+option java_package = "dev.ikm.tinkar.service.proto";
+option java_outer_classname = "TinkarSearchProto";
+
+// Search query request
+message TinkarSearchQueryRequest {
+  string query = 1;
+}
+
+// Concept search request
+message TinkarConceptSearchRequest {
+  string query = 1;
+  /*
+   * Maximum number of results to return. If not specified or <= 0, uses server default (100).
+   */
+  int32 max_results = 2;
+}
+
+// Concept ID request for single ID lookups
+message TinkarConceptIdRequest {
+  /*
+   * The public ID of the concept (supports multiple UUIDs).
+   */
+  dev.ikm.tinkar.schema.PublicId public_id = 1;
+}
+
+// Tinkar search result representing a concept with its descriptions and STAMP info
+message TinkarSearchResult {
+  /*
+   * The public ID of the concept (supports multiple UUIDs).
+   */
+  dev.ikm.tinkar.schema.PublicId public_id = 1;
+
+  /*
+   * The descriptions associated with this concept.
+   */
+  TinkarConceptDescriptions descriptions = 2;
+
+  /*
+   * The STAMP version info for this concept (status, author, module, path, time).
+   */
+  dev.ikm.tinkar.schema.StampVersion stamp = 3;
+}
+
+// Descriptions associated with a concept
+message TinkarConceptDescriptions {
+  /*
+   * The fully qualified name of the concept.
+   */
+  string fully_qualified_name = 1;
+  /*
+   * The regular/preferred description text of the concept.
+   */
+  string regular_name = 2;
+  /*
+   * Additional definition or description text.
+   */
+  string definition = 3;
+}
+
+// Search query response
+message TinkarSearchQueryResponse {
+  string query = 1;
+  int64 total_count = 2;
+  repeated TinkarSearchResult results = 3;
+  bool success = 4;
+  string error_message = 5;
+}
+
+// Rebuild index response
+message TinkarRebuildIndexResponse {
+  string message = 1;
+  bool success = 2;
+}
+
+// Empty request for rebuild index
+message TinkarRebuildIndexRequest {
+}
+
+// Sort options for search results
+enum SearchSortOption {
+  TOP_COMPONENT = 0;       // Group by top component, sorted by relevance score (highest first)
+  TOP_COMPONENT_ALPHA = 1; // Group by top component, sorted alphabetically
+  SEMANTIC = 2;            // Individual semantic matches, sorted by relevance score (highest first)
+  SEMANTIC_ALPHA = 3;      // Individual semantic matches, sorted alphabetically
+}
+
+// Concept search with sort request
+message TinkarConceptSearchWithSortRequest {
+  string query = 1;
+  /*
+   * Maximum number of results to return. If not specified or <= 0, uses server default (100).
+   */
+  int32 max_results = 2;
+  /*
+   * Sort option for results. If not specified, uses TOP_COMPONENT.
+   */
+  SearchSortOption sort_by = 3;
+}
+
+// Individual semantic search result with score
+message TinkarSemanticSearchResult {
+  /*
+   * Public ID (list of UUIDs) of the concept.
+   */
+  repeated string public_id = 1;
+  /*
+   * Fully qualified name of the concept.
+   */
+  string fully_qualified_name = 2;
+  /*
+   * Regular/preferred description.
+   */
+  string regular_name = 3;
+  /*
+   * The matched text with highlighting (HTML bold tags).
+   */
+  string highlighted_text = 4;
+  /*
+   * The relevance score of this match.
+   */
+  float score = 5;
+  /*
+   * Whether the concept is active.
+   */
+  bool active = 6;
+}
+
+// A matching semantic within a grouped result
+message TinkarMatchingSemantic {
+  /*
+   * The matched text with highlighting (HTML bold tags).
+   */
+  string highlighted_text = 1;
+  /*
+   * The plain text without highlighting.
+   */
+  string plain_text = 2;
+  /*
+   * The relevance score of this match.
+   */
+  float score = 3;
+}
+
+// Grouped search result by top-level component
+message TinkarGroupedSearchResult {
+  /*
+   * Public ID (list of UUIDs) of the top-level concept.
+   */
+  repeated string public_id = 1;
+  /*
+   * Fully qualified name of the top-level concept.
+   */
+  string fully_qualified_name = 2;
+  /*
+   * Whether the concept is active.
+   */
+  bool active = 3;
+  /*
+   * The highest relevance score among matching semantics.
+   */
+  float top_score = 4;
+  /*
+   * List of matching semantics for this concept.
+   */
+  repeated TinkarMatchingSemantic matching_semantics = 5;
+}
+
+// Response for concept search with sort
+message TinkarConceptSearchWithSortResponse {
+  /*
+   * The original search query.
+   */
+  string query = 1;
+  /*
+   * Total number of matching results.
+   */
+  int64 total_count = 2;
+  /*
+   * The sort option used.
+   */
+  SearchSortOption sort_by = 3;
+  /*
+   * List of search results (flat structure for SEMANTIC modes).
+   */
+  repeated TinkarSemanticSearchResult results = 4;
+  /*
+   * List of grouped results (for TOP_COMPONENT modes).
+   */
+  repeated TinkarGroupedSearchResult grouped_results = 5;
+  /*
+   * Whether the search was successful.
+   */
+  bool success = 6;
+  /*
+   * Error message if search failed.
+   */
+  string error_message = 7;
+}
+
+// Human-readable STAMP information for display purposes
+message TinkarStampInfo {
+  /*
+   * Status (e.g., Active, Inactive).
+   */
+  string status = 1;
+  /*
+   * Author name.
+   */
+  string author = 2;
+  /*
+   * Module name.
+   */
+  string module = 3;
+  /*
+   * Path name.
+   */
+  string path = 4;
+  /*
+   * Timestamp in epoch milliseconds.
+   */
+  int64 time = 5;
+  /*
+   * Human-readable timestamp.
+   */
+  string formatted_time = 6;
+}
+
+// Information about a single semantic attached to a concept
+message TinkarConceptSemanticInfo {
+  /*
+   * Semantic public ID.
+   */
+  dev.ikm.tinkar.schema.PublicId semantic_public_id = 1;
+  /*
+   * Pattern public ID.
+   */
+  dev.ikm.tinkar.schema.PublicId pattern_public_id = 2;
+  /*
+   * Pattern name (human-readable, e.g., Comment Pattern, Description Pattern).
+   */
+  string pattern_name = 3;
+  /*
+   * Field values of the semantic (using Tinkar Field type).
+   */
+  repeated dev.ikm.tinkar.schema.Field fields = 4;
+  /*
+   * Human-readable STAMP information.
+   */
+  TinkarStampInfo stamp = 5;
+}
+
+// Response for concept semantics
+message TinkarConceptSemanticsResponse {
+  /*
+   * The concept public ID.
+   */
+  dev.ikm.tinkar.schema.PublicId concept_public_id = 1;
+  /*
+   * The concept description (human-readable).
+   */
+  string concept_description = 2;
+  /*
+   * Total number of semantics found.
+   */
+  int32 total_count = 3;
+  /*
+   * List of semantics attached to this concept.
+   */
+  repeated TinkarConceptSemanticInfo semantics = 4;
+  /*
+   * Whether the query was successful.
+   */
+  bool success = 5;
+  /*
+   * Error message if query failed.
+   */
+  string error_message = 6;
+}
+
+// gRPC service definition
+service TinkarSearchService {
+  rpc Search(TinkarSearchQueryRequest) returns (TinkarSearchQueryResponse);
+  rpc ConceptSearch(TinkarConceptSearchRequest) returns (TinkarSearchQueryResponse);
+  rpc ConceptSearchWithSort(TinkarConceptSearchWithSortRequest) returns (TinkarConceptSearchWithSortResponse);
+  rpc GetEntity(TinkarConceptIdRequest) returns (TinkarSearchQueryResponse);
+  rpc GetChildConcepts(TinkarConceptIdRequest) returns (TinkarSearchQueryResponse);
+  rpc GetDescendantConcepts(TinkarConceptIdRequest) returns (TinkarSearchQueryResponse);
+  rpc GetLIDRRecordConceptsFromTestKit(TinkarConceptIdRequest) returns (TinkarSearchQueryResponse);
+  rpc GetResultConformanceConceptsFromLIDRRecord(TinkarConceptIdRequest) returns (TinkarSearchQueryResponse);
+  rpc GetAllowedResultConceptsFromResultConformance(TinkarConceptIdRequest) returns (TinkarSearchQueryResponse);
+  rpc RebuildSearchIndex(TinkarRebuildIndexRequest) returns (TinkarRebuildIndexResponse);
+  rpc GetConceptSemantics(TinkarConceptIdRequest) returns (TinkarConceptSemanticsResponse);
+}

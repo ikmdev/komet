@@ -22,6 +22,9 @@ import static dev.ikm.komet.app.AppState.SELECT_DATA_SOURCE;
 import static dev.ikm.komet.app.AppState.SHUTDOWN;
 import static dev.ikm.komet.app.AppState.STARTING;
 import static dev.ikm.komet.app.LoginFeatureFlag.ENABLED_WEB_ONLY;
+import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.grpc.GrpcSearchClient;
+import dev.ikm.tinkar.service.proto.SearchSortOption;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
@@ -179,9 +182,12 @@ public class App extends Application  {
             LOG.info("Starting shutdown hook");
 
             try {
-                // Save and stop primitive data services gracefully
-                PrimitiveData.save();
-                PrimitiveData.stop();
+                if (!GrpcSearchClient.isAvailable()) {
+                    PrimitiveData.save();
+                    PrimitiveData.stop();
+                } else {
+                    GrpcSearchClient.get().close();
+                }
             } catch (Exception e) {
                 LOG.error("Error during shutdown hook execution", e);
             }
@@ -318,11 +324,21 @@ public class App extends Application  {
 
     /**
      * Handles the login feature based on the provided {@link LoginFeatureFlag} and platform.
+     * <p>
+     * When the system property {@code komet.grpc.port} is set, the application starts in
+     * <em>gRPC mode</em>: datasource selection and author login are skipped, and concept
+     * searches are routed to the running tinkar-core service instead of a local provider.
+     * Use {@code komet.grpc.host} to override the hostname (default: {@code localhost}).
      *
      * @param loginFeatureFlag the current state of the login feature
      * @param stage            the current application stage
      */
     public void handleLoginFeature(LoginFeatureFlag loginFeatureFlag, Stage stage) {
+        String grpcPortProp = System.getProperty("komet.grpc.port");
+        if (grpcPortProp != null && !grpcPortProp.isBlank()) {
+            startGrpcMode(stage, grpcPortProp);
+            return;
+        }
         switch (loginFeatureFlag) {
             case ENABLED_WEB_ONLY -> {
                 if (IS_BROWSER) {
@@ -341,6 +357,68 @@ public class App extends Application  {
             case ENABLED -> startLogin(stage);
             case DISABLED -> startSelectDataSource(stage);
         }
+    }
+
+    /**
+     * Initialises the gRPC client and moves the application directly to {@link AppState#RUNNING},
+     * bypassing datasource selection and author login.
+     *
+     * @param stage       the primary stage
+     * @param grpcPortProp value of the {@code komet.grpc.port} system property
+     */
+    private void startGrpcMode(Stage stage, String grpcPortProp) {
+        String host = System.getProperty("komet.grpc.host", "localhost");
+        int port;
+        try {
+            port = Integer.parseInt(grpcPortProp.strip());
+        } catch (NumberFormatException e) {
+            LOG.error("Invalid komet.grpc.port value '{}', falling back to datasource selection", grpcPortProp);
+            startSelectDataSource(stage);
+            return;
+        }
+
+        GrpcSearchClient.initialize(host, port);
+
+        // Start an ephemeral (in-memory) data store so that framework components
+        // that call PrimitiveData.get() (e.g. WindowSettings, Coordinates) work
+        // without a local dataset.  Actual concept search is routed through gRPC.
+        // getControllerOptions() triggers ServiceLifecycleManager.discoverServices().
+        try {
+            var controllers = PrimitiveData.getControllerOptions();
+            var ephemeralOpt = controllers.stream()
+                    .filter(c -> c.controllerName().toLowerCase().contains("ephemeral"))
+                    .findFirst();
+            if (ephemeralOpt.isPresent()) {
+                PrimitiveData.selectControllerByName(ephemeralOpt.get().controllerName());
+                PrimitiveData.start();
+                LOG.info("Ephemeral PrimitiveData started for gRPC mode (controller: {})",
+                        ephemeralOpt.get().controllerName());
+            } else {
+                LOG.warn("No ephemeral data provider found; available: {}",
+                        controllers.stream().map(c -> c.controllerName()).toList());
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to start ephemeral data provider", e);
+        }
+
+        SearchPanelController.setGrpcSearchProvider((query, maxResults) -> {
+            var response = GrpcSearchClient.get().conceptSearchWithSort(
+                    query, maxResults, SearchSortOption.TOP_COMPONENT);
+            return response.getGroupedResultsList().stream()
+                    .map(g -> new SearchPanelController.GrpcGroupedResult(
+                            g.getFullyQualifiedName(),
+                            g.getActive(),
+                            g.getTopScore(),
+                            g.getMatchingSemanticsList().stream()
+                                    .map(m -> new SearchPanelController.GrpcMatchingResult(
+                                            m.getHighlightedText(), m.getScore()))
+                                    .toList()))
+                    .toList();
+        });
+
+        LOG.info("gRPC mode active → {}:{}", host, port);
+        state.addListener(this::appStateChangeListener);
+        state.set(RUNNING);
     }
 
     /**
@@ -507,8 +585,13 @@ public class App extends Application  {
         saveJournalWindowsToPreferences();
         LOG.info(">>> Saved journal windows to preferences");
 
-        PrimitiveData.stop();
-        LOG.info(">>> PrimitiveData stopped");
+        if (GrpcSearchClient.isAvailable()) {
+            GrpcSearchClient.get().close();
+            LOG.info(">>> gRPC client closed");
+        } else {
+            PrimitiveData.stop();
+            LOG.info(">>> PrimitiveData stopped");
+        }
 
         Preferences.stop();
         LOG.info(">>> Preferences stopped");

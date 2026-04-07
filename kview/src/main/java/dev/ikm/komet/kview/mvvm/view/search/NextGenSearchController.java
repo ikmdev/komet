@@ -284,6 +284,25 @@ public class NextGenSearchController {
                 UuidUtil.getUUID(queryText).ifPresent(uuid -> {
                     addComponentFromNid(PrimitiveData.nid(PublicIds.of(uuid)));
                 });
+            } else if (SearchPanelController.getGrpcSearchProvider() != null) {
+                final String grpcQuery = queryText;
+                SearchPanelController.GrpcSearchProvider grpcProvider = SearchPanelController.getGrpcSearchProvider();
+                List<SearchPanelController.GrpcGroupedResult> grpcResults = grpcProvider.search(grpcQuery, MAX_RESULT_SIZE);
+                LOG.info("{} gRPC search results returned for query: {}", grpcResults.size(), grpcQuery);
+                searchResultsListView.setCellFactory(lv -> new ListCell<>() {
+                    @Override
+                    protected void updateItem(Object item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || item == null) {
+                            setText(null);
+                        } else if (item instanceof SearchPanelController.GrpcGroupedResult grpcGroup) {
+                            setText(grpcGroup.fullyQualifiedName());
+                        } else {
+                            setText(item.toString());
+                        }
+                    }
+                });
+                searchResultsListView.getItems().setAll(grpcResults);
             } else {
                 List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
                 LOG.info("{} search results returned for query: {}", results.size(), queryText);

@@ -189,6 +189,45 @@
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>events</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>grpc-provider</artifactId>
+        </dependency>
+        <!--
+            gRPC stubs and protobuf bridge needed at runtime by grpc-provider.
+            grpc-api arrives transitively via grpc-netty-shaded. grpc-stub and
+            grpc-protobuf are only 'provided' in grpc-provider so must be
+            declared here explicitly. All three end up on the classpath (unnamed
+            module) and are accessed via add-reads ALL-UNNAMED in javafx options.
+        -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>1.78.0</version>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion><groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId></exclusion>
+                <exclusion><groupId>com.google.code.findbugs</groupId><artifactId>jsr305</artifactId></exclusion>
+                <exclusion><groupId>javax.annotation</groupId><artifactId>javax.annotation-api</artifactId></exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>1.78.0</version>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion><groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId></exclusion>
+                <exclusion><groupId>com.google.code.findbugs</groupId><artifactId>jsr305</artifactId></exclusion>
+                <exclusion><groupId>javax.annotation</groupId><artifactId>javax.annotation-api</artifactId></exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.perfmark</groupId>
+            <artifactId>perfmark-api</artifactId>
+            <version>0.27.0</version>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
     <build>
         <resources>
@@ -213,6 +252,15 @@
                         <ignoreSigningInformation>true</ignoreSigningInformation>
                         <options>
                             <option>-Xmx10g</option>
+                            <!-- Required: tinkar-core uses preview features -->
+                            <option>--enable-preview</option>
+                            <option>--add-opens</option>
+                            <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
+                            <option>--add-exports</option>
+                            <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
+                            <option>--add-exports</option>
+                            <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
+                            <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
                         </options>
                     </configuration>
                 </plugin>
@@ -226,6 +274,28 @@
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
+                <!--
+                    Top-level configuration applies to CLI-invoked goals (javafx:run).
+                    Execution-level configurations apply to lifecycle-bound goals (jlink).
+                -->
+                <configuration>
+                    <mainClass>dev.ikm.komet.application/dev.ikm.komet.app.App</mainClass>
+                    <options>
+                        <!-- tinkar-core uses preview features; must be enabled at runtime -->
+                        <option>--enable-preview</option>
+                        <option>-Xmx8g</option>
+                        <option>--add-opens</option>
+                        <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
+                        <option>--add-exports</option>
+                        <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
+                        <option>--add-exports</option>
+                        <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
+                        <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
+                        <!-- Forward gRPC connection properties from Maven -D flags to the app JVM -->
+                        <option>-Dkomet.grpc.port=${komet.grpc.port}</option>
+                        <option>-Dkomet.grpc.host=${komet.grpc.host}</option>
+                    </options>
+                </configuration>
                 <executions>
                     <execution>
                         <!-- Default configuration for running -->
@@ -241,6 +311,8 @@
                             <jlinkVerbose>true</jlinkVerbose>
                             <jlinkZipName>kometJlink</jlinkZipName>
                             <options>
+                                <!-- tinkar-core uses preview features; must be enabled at runtime -->
+                                <option>--enable-preview</option>
                                 <option>-Xmx8g</option>
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
@@ -249,6 +321,16 @@
                                 <option>--add-exports</option>
                                 <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
                                 <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
+                                <!-- Forward gRPC connection properties from Maven -D flags to the app JVM -->
+                                <option>-Dkomet.grpc.port=${komet.grpc.port}</option>
+                                <option>-Dkomet.grpc.host=${komet.grpc.host}</option>
+                                <!--
+                                    Allow grpc-provider (named module) to access grpc-api classes
+                                    from the unnamed module (classpath). grpc-netty-shaded transitively
+                                    pulls grpc-api onto the classpath; add-reads grants access.
+                                -->
+                                <option>--add-reads</option>
+                                <option>dev.ikm.komet.grpc.provider=ALL-UNNAMED</option>
                             </options>
                         </configuration>
                     </execution>

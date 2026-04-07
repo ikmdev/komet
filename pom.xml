@@ -59,11 +59,15 @@
         <subproject>kview</subproject>
         <subproject>sync</subproject>
         <subproject>knowledge-layout-editor</subproject>
+        <subproject>grpc-provider</subproject>
         <subproject>application</subproject>
     </subprojects>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jpackage.version>1.7.3</jpackage.version>
+        <!-- gRPC mode: overridable via -Dkomet.grpc.port=9090 and -Dkomet.grpc.host=myhost -->
+        <komet.grpc.port></komet.grpc.port>
+        <komet.grpc.host>localhost</komet.grpc.host>
         <maven.github-flow.version>1.21.1-r11</maven.github-flow.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <tinkar-starter-data.version>1.1.2</tinkar-starter-data.version>
@@ -90,6 +94,11 @@
                 <version>3.0.7-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>dev.ikm.komet</groupId>
+                <artifactId>grpc-provider</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -141,6 +150,15 @@
             <snapshots><enabled>true</enabled></snapshots>
         </repository>
     </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>tinkar-nexus-plugins</id>
+            <url>https://nexus.tinkar.org/repository/ike-public/</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
         <pluginManagement>

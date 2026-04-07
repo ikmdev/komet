@@ -75,6 +75,7 @@ module dev.ikm.komet.application {
     requires jdk.management;
     requires dev.ikm.tinkar.reasoner.service;
     requires org.eclipse.jgit;
+    requires dev.ikm.komet.grpc.provider;
 
     // Logging related modules
     requires org.apache.logging.log4j.core;

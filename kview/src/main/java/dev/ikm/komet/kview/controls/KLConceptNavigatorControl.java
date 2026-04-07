@@ -250,7 +250,11 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
         @Override
         protected void invalidated() {
             if (get() != null) {
-                ConceptNavigatorTreeItem first = getConceptNavigatorRoot().getFirst();
+                List<ConceptNavigatorTreeItem> roots = getConceptNavigatorRoot();
+                if (roots.isEmpty()) {
+                    return;
+                }
+                ConceptNavigatorTreeItem first = roots.getFirst();
                 setRoot(first);
                 // debug
 //                new Thread(() -> ConceptNavigatorUtils.getConceptNavigatorDepth(first.getValue().nid(), get())).start();
@@ -363,11 +367,11 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      */
     private List<ConceptNavigatorTreeItem> getConceptNavigatorRoot() {
         return Arrays.stream(getNavigator().getRootNids())
-                .mapToObj(rootNid -> {
-                    ConceptNavigatorTreeItem treeItem = getConceptNavigatorTreeItem(rootNid, -1);
+                .mapToObj(rootNid -> getConceptNavigatorTreeItem(rootNid, -1))
+                .filter(treeItem -> treeItem != null)
+                .peek(treeItem -> {
                     fetchChildren(treeItem);
                     treeItem.setExpanded(true);
-                    return treeItem;
                 })
                 .toList();
     }
@@ -382,6 +386,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     private List<ConceptNavigatorTreeItem> getChildren(int nid) {
         return getNavigator().getChildEdges(nid).stream()
                 .map(edge -> getConceptNavigatorTreeItem(edge.destinationNid(), nid))
+                .filter(item -> item != null)
                 .toList();
     }
 
@@ -395,6 +400,9 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      */
     private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid, int parentNid) {
         ConceptNavigatorTreeItem conceptNavigatorTreeItem = createSingleConceptNavigatorTreeItem(nid, parentNid);
+        if (conceptNavigatorTreeItem == null) {
+            return null;
+        }
         conceptNavigatorTreeItem.expandedProperty().subscribe((_, expanded) -> {
             if (expanded && conceptNavigatorTreeItem.getChildren().isEmpty()) {
                 // when a new branch is expanded, prune the collapsed branches of the treeView,
@@ -473,6 +481,9 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      */
     private ConceptNavigatorTreeItem createSingleConceptNavigatorTreeItem(int nid, int parentNid) {
         ConceptFacade facade = Entity.getFast(nid);
+        if (facade == null) {
+            return null;
+        }
         ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(getNavigator(), facade, parentNid);
         conceptNavigatorTreeItem.setDefined(ConceptNavigatorUtils.isDefined(getNavigator().getViewCalculator(), facade));
         conceptNavigatorTreeItem.setMultiParent(ConceptNavigatorUtils.getParentNids(getNavigator(), nid).length > 1);

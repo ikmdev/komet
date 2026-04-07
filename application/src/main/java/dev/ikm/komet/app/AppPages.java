@@ -226,8 +226,13 @@ public class AppPages {
             String username = windowSettings.getView().calculator().getPreferredDescriptionTextWithFallbackOrNid(loggedInUser.nid());
             app.landingPageController = landingPageLoader.getController();
 
-            // Set the logged-in user as author on the controller's single edit coordinate
-            app.landingPageController.editCoordinate().authorForChangesProperty().setValue(loggedInUser);
+            // Set the logged-in user as author on the controller's single edit coordinate.
+            // In gRPC mode the ephemeral store has no entities, so nid resolution may fail; suppress.
+            try {
+                app.landingPageController.editCoordinate().authorForChangesProperty().setValue(loggedInUser);
+            } catch (Exception e) {
+                LOG.warn("Could not set author concept (expected in gRPC mode with empty data store): {}", e.getMessage());
+            }
             app.landingPageController.getWelcomeTitleLabel().setText("Welcome " + username);
             app.landingPageController.setSelectedDatasetTitle(PrimitiveData.get().name());
             app.landingPageController.getGithubStatusHyperlink().setOnAction(_ -> app.appGithub.connectToGithub());
@@ -330,13 +335,25 @@ public class AppPages {
             KometNodeFactory navigatorNodeFactory = new GraphNavigatorNodeFactory();
             KometNodeFactory searchNodeFactory = new SearchNodeFactory();
 
-            journalController.launchKometFactoryNodes(
-                    journalWindowSettings.getValue(JOURNAL_TITLE),
-                    navigatorNodeFactory,
-                    searchNodeFactory);
-            // load additional panels
-            journalController.loadNextGenReasonerPanel();
-            journalController.loadNextGenSearchPanel();
+            try {
+                journalController.launchKometFactoryNodes(
+                        journalWindowSettings.getValue(JOURNAL_TITLE),
+                        navigatorNodeFactory,
+                        searchNodeFactory);
+            } catch (Exception e) {
+                LOG.error("Failed to launch navigator/search factory nodes (non-fatal in gRPC mode)", e);
+            }
+            // load additional panels — run independently so a nav failure doesn't block search
+            try {
+                journalController.loadNextGenReasonerPanel();
+            } catch (Exception e) {
+                LOG.error("Failed to load NextGen Reasoner panel", e);
+            }
+            try {
+                journalController.loadNextGenSearchPanel();
+            } catch (Exception e) {
+                LOG.error("Failed to load NextGen Search panel", e);
+            }
         });
         // disable the delete menu option for a Journal Card.
         journalWindowSettings.setValue(CAN_DELETE, false);

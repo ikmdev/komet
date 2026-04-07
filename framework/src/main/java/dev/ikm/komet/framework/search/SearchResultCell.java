@@ -128,6 +128,11 @@ public class SearchResultCell extends TreeCell<Object> {
                     pseudoClassStateChanged(INACTIVE_PSEUDO_CLASS, !semanticEntityVersion.active());
                 });
 
+            } else if (item instanceof SearchPanelController.GrpcGroupedResult grpcGroup) {
+                setTextFlow(grpcGroup.fullyQualifiedName(), SEARCH_TOP_COMPONENT);
+                pseudoClassStateChanged(INACTIVE_PSEUDO_CLASS, !grpcGroup.active());
+            } else if (item instanceof SearchPanelController.GrpcMatchingResult grpcMatch) {
+                renderHighlightedText(grpcMatch.highlightedText());
             } else if (item instanceof String itemString) {
                 setTextFlow(itemString);
             } else if (item instanceof SearchPanelController.NidTextRecord nidTextRecord) {
@@ -170,5 +175,47 @@ public class SearchResultCell extends TreeCell<Object> {
         textFlow.getChildren().add(t);
         HBox hBox = new HBox(textFlow);
         setGraphic(hBox);
+    }
+
+    /**
+     * Renders a gRPC highlighted-text string that uses {@code <B>…</B>} markup,
+     * reusing the same logic already present in the {@link LatestVersionSearchResult} branch.
+     */
+    void renderHighlightedText(String matchedText) {
+        if (matchedText == null || matchedText.isBlank()) {
+            setTextFlow("");
+            return;
+        }
+        TextFlow textFlow = newTextFlow();
+        String startToken = "<B>";
+        String endToken = "</B>";
+        int startIdx = matchedText.indexOf(startToken);
+        while (startIdx != -1) {
+            if (startIdx != 0) {
+                Text t = new Text(matchedText.substring(0, startIdx));
+                t.getStyleClass().add(SEARCH_NOT_MATCHED.toString());
+                textFlow.getChildren().add(t);
+            }
+            int endIdx = matchedText.indexOf(endToken);
+            if (endIdx == -1) {
+                Text t = new Text(matchedText.substring(startIdx + startToken.length()));
+                t.getStyleClass().add(SEARCH_MATCH.toString());
+                textFlow.getChildren().add(t);
+                matchedText = "";
+                startIdx = -1;
+            } else {
+                Text t = new Text(matchedText.substring(startIdx + startToken.length(), endIdx));
+                t.getStyleClass().add(SEARCH_MATCH.toString());
+                textFlow.getChildren().add(t);
+                matchedText = matchedText.substring(endIdx + endToken.length());
+                startIdx = matchedText.indexOf(startToken);
+            }
+        }
+        if (!matchedText.isBlank()) {
+            Text t = new Text(matchedText);
+            t.getStyleClass().add(SEARCH_NOT_MATCHED.toString());
+            textFlow.getChildren().add(t);
+        }
+        setGraphic(new HBox(textFlow));
     }
 }
