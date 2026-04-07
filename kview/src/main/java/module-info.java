@@ -26,6 +26,7 @@ module dev.ikm.komet.kview {
     requires dev.ikm.komet.progress;
     requires org.carlfx.cognitive;
     requires org.carlfx.axonic;
+    requires dev.ikm.tinkar.composer;
 
     // JPro related modules
     requires jpro.webapi;

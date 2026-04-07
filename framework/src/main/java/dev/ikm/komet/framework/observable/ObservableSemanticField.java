@@ -259,20 +259,6 @@ public sealed class ObservableSemanticField<DT> implements Feature<DT>, Field<DT
         }
 
         /**
-         * Sets the cached value from an untyped source.
-         * <p>         * This method accepts any Object and performs an unchecked cast internally,
-         * avoiding the need for callers to suppress generic type warnings when working
-         * with {@code ObservableField.Editable<?>} references obtained from
-         * {@link ObservableSemanticVersion.Editable#getEditableField(int)}.
-         *
-         * @param value the value to set
-         */
-        @SuppressWarnings("unchecked")
-        public void setObjectValue(Object value) {
-            editableValueProperty.set((DT) value);
-        }
-
-        /**
          * Returns the field definition for this feature.
          */
         public FieldDefinition fieldDefinition(StampCalculator calculator) {

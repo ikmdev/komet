@@ -24,6 +24,11 @@ module dev.ikm.komet.kview.test {
     requires org.carlfx.axonic;
     requires org.carlfx.cognitive;
 
+    /**
+     * tinkar dependencies
+     */
+    requires dev.ikm.tinkar.composer;
+
     exports dev.ikm.komet.kview.mvvm.login;
     opens dev.ikm.komet.kview.mvvm.login;
 

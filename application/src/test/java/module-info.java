@@ -67,6 +67,7 @@ module dev.ikm.komet.application.test {
     requires jdk.jdwp.agent;
     requires transitive dev.ikm.komet.rules;
     requires org.junit.jupiter.api;
+    requires dev.ikm.tinkar.composer;
 
     requires dev.ikm.komet.application;
     requires org.testfx.core;

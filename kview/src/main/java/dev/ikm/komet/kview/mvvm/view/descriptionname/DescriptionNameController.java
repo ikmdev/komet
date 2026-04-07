@@ -44,9 +44,9 @@ import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
-import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -284,11 +284,10 @@ public class DescriptionNameController {
         }
         LOG.info("Ready to update to the concept view model: " + descrNameViewModel);
 
-        ConceptEntity nameType = EntityHandle.get((EntityFacade) descrNameViewModel.getPropertyValue(NAME_TYPE)).expectConcept("NAME_TYPE must be a concept");
-        if (nameType.nid() == FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()) {
+        if (PublicId.equals(((Concept) descrNameViewModel.getPropertyValue(NAME_TYPE)).publicId(), FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.publicId())) {
             EvtBusFactory.getDefaultEvtBus().publish(getPatternTopic(), new PatternDescriptionEvent(submitButton,
                     PATTERN_ADD_FQN, descrNameViewModel.create()));
-        } else if (nameType.nid() == REGULAR_NAME_DESCRIPTION_TYPE.nid()) {
+        } else if (PublicId.equals(((Concept) descrNameViewModel.getPropertyValue(NAME_TYPE)).publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
             DescrName descrName = descrNameViewModel.getPropertyValue(PREVIOUS_DESCRIPTION_DATA);
             EvtType eventType = PATTERN_EDIT_OTHER_NAME;
             if (descrName == null) {// In Edit Other name mode the PREVIOUS_DESCRIPTION_DATA value is null, hence we create the new instance

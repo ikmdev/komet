@@ -1498,7 +1498,7 @@ public final class ObservableComposer {
         private void makeEmptyVersion(PatternRecord patternRecord, ObservableStamp stampEntity, RecordListBuilder versions) {
             PatternVersionRecord patternVersionRecord = new PatternVersionRecord(patternRecord, stampEntity.nid(),
             TinkarTerm.PURPOSE.nid(), TinkarTerm.MEANING.nid(),
-                    Lists.immutable.empty());
+                    versions);
             versions.add(patternVersionRecord);
         }
 
