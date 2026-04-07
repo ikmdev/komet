@@ -285,8 +285,17 @@ public final class ObservablePatternVersion
         public SimpleObjectProperty<EntityFacade> getMeaningProperty() {
             return editableMeaningProperty;
         }
-        
-        // ... rest of existing implementation ...
+
+        /**
+         * Sets the field definitions for this pattern version.
+         * <p>         * Each {@link FieldDefinitionRecord} defines a field's meaning, purpose, data type,
+         * and position within the pattern. This method replaces all existing field definitions.
+         *
+         * @param fieldDefinitions the immutable list of field definitions
+         */
+        public void setFieldDefinitions(ImmutableList<FieldDefinitionRecord> fieldDefinitions) {
+            workingVersion = workingVersion.withFieldDefinitions(fieldDefinitions);
+        }
 
         @Override
         protected PatternVersionRecord createVersionWithStamp(PatternVersionRecord version, int stampNid) {

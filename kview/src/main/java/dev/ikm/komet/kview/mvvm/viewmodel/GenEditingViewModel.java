@@ -16,8 +16,6 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.composer.Composer;
-import dev.ikm.tinkar.composer.Session;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.carlfx.cognitive.viewmodel.ViewModel;
@@ -46,10 +44,6 @@ public class GenEditingViewModel extends FormViewModel {
     // for single semantic editing
     public static String FIELD = "field";
 
-    // share the composer
-    public static String COMPOSER = "composer";
-    public static String SESSION = "session";
-
     // store the hash of the default values
     public static String DEFAULT_FIELDS_HASH = "defaultFieldsHash";
 
@@ -64,8 +58,6 @@ public class GenEditingViewModel extends FormViewModel {
                 .addProperty(SEMANTIC, (EntityFacade) null)
                 .addProperty(PATTERN, (EntityFacade) null)
                 .addProperty(FIELD_INDEX, Integer.valueOf(-1))
-                .addProperty(COMPOSER, (Composer) null)
-                .addProperty(SESSION, (Session) null)
                 .addProperty(DEFAULT_FIELDS_HASH, (Integer) null)
         ;
     }
