@@ -3,9 +3,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
     <modelVersion>4.1.0</modelVersion>
     <parent>
-        <groupId>network.ike</groupId>
+        <groupId>network.ike.pipeline</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>47</version>
+        <version>69</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
