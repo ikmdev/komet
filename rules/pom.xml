@@ -27,5 +27,9 @@
             <groupId>org.evrete</groupId>
             <artifactId>evrete-dsl-java</artifactId>
         </dependency>
+        <dependency>
+            <groupId>dev.ikm.elk</groupId>
+            <artifactId>elk-snomed</artifactId>
+        </dependency>
     </dependencies>
 </project>
