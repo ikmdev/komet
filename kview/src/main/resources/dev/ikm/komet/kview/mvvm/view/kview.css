@@ -6529,8 +6529,6 @@ Styling a context menu for kview ui/ux controls
     -fx-alignment: center_left;
 
     -fx-opacity: 0.9;
-
-    -fx-min-width: 200px;
 }
 
 .edit-semantic-popup .label {

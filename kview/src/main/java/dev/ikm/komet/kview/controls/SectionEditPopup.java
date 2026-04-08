@@ -1,7 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -82,19 +81,9 @@ public class SectionEditPopup extends PopupControl {
             control.items.addListener(this::onItemsChanged);
             control.items.forEach(this::addPopupEntryStyleClass);
 
-            bindVisibilityToList(separator, control.getItems());
-            bindVisibilityToList(editSemanticTitleLabel, control.getItems());
-            bindVisibilityToList(popupContent, control.getItems());
-
             // CSS
             editSemanticTitleLabel.getStyleClass().add("title-label");
             mainContainer.getStyleClass().add("edit-semantic-popup");
-        }
-
-        private void bindVisibilityToList(Node node, ObservableList<?> list) {
-            BooleanBinding hasItems = Bindings.isNotEmpty(list);
-            node.visibleProperty().bind(hasItems);
-            node.managedProperty().bind(hasItems);
         }
 
         private EventHandler<MouseEvent> onCreateSemanticAction(SectionEditPopup control) {
