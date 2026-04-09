@@ -85,8 +85,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>dev.ikm.ike</groupId>
-                <artifactId>ike-bom</artifactId>
+                <groupId>dev.ikm.komet</groupId>
+                <artifactId>komet-bom</artifactId>
                 <version>3.0.7-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
