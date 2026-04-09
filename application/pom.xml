@@ -374,8 +374,8 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <jpackage.app.name>Komet ${project.version}</jpackage.app.name>
-                <jpackage.app.version>${project.version}</jpackage.app.version>
+                <jpackage.app.name>Komet 1.59.0-checkpoint.20260408.24a51ffa</jpackage.app.name>
+                <jpackage.app.version>1.59.0-checkpoint.20260408.24a51ffa</jpackage.app.version>
                 <jpackage.app.dest>target/dist/installer</jpackage.app.dest>
             </properties>
             <build>
