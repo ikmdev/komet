@@ -40,5 +40,10 @@ module dev.ikm.komet.grpc.provider {
     // javax.annotation — JPMS-wrapped jsr305 (module: dev.ikm.jpms.javax.annotation)
     requires dev.ikm.jpms.javax.annotation;
 
+    // SearchService contract from tinkar-core search-provider
+    requires dev.ikm.tinkar.provider.search;
+    // PrimitiveDataSearchResult lives in tinkar-core common
+    requires dev.ikm.tinkar.common;
+
     requires org.slf4j;
 }

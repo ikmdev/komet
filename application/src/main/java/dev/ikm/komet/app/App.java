@@ -22,9 +22,8 @@ import static dev.ikm.komet.app.AppState.SELECT_DATA_SOURCE;
 import static dev.ikm.komet.app.AppState.SHUTDOWN;
 import static dev.ikm.komet.app.AppState.STARTING;
 import static dev.ikm.komet.app.LoginFeatureFlag.ENABLED_WEB_ONLY;
-import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.grpc.GrpcSearchClient;
-import dev.ikm.tinkar.service.proto.SearchSortOption;
+import dev.ikm.komet.grpc.GrpcSearchService;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
@@ -377,7 +376,7 @@ public class App extends Application  {
             return;
         }
 
-        GrpcSearchClient.initialize(host, port);
+        GrpcSearchService.initialize(host, port);
 
         // Start an ephemeral (in-memory) data store so that framework components
         // that call PrimitiveData.get() (e.g. WindowSettings, Coordinates) work
@@ -400,21 +399,6 @@ public class App extends Application  {
         } catch (Exception e) {
             LOG.error("Failed to start ephemeral data provider", e);
         }
-
-        SearchPanelController.setGrpcSearchProvider((query, maxResults) -> {
-            var response = GrpcSearchClient.get().conceptSearchWithSort(
-                    query, maxResults, SearchSortOption.TOP_COMPONENT);
-            return response.getGroupedResultsList().stream()
-                    .map(g -> new SearchPanelController.GrpcGroupedResult(
-                            g.getFullyQualifiedName(),
-                            g.getActive(),
-                            g.getTopScore(),
-                            g.getMatchingSemanticsList().stream()
-                                    .map(m -> new SearchPanelController.GrpcMatchingResult(
-                                            m.getHighlightedText(), m.getScore()))
-                                    .toList()))
-                    .toList();
-        });
 
         LOG.info("gRPC mode active → {}:{}", host, port);
         state.addListener(this::appStateChangeListener);

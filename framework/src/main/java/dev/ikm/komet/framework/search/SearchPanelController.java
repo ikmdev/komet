@@ -65,50 +65,6 @@ import static javafx.scene.layout.Region.USE_COMPUTED_SIZE;
 public class SearchPanelController implements ListChangeListener<TreeItem<Object>> {
     private static final Logger LOG = LoggerFactory.getLogger(SearchPanelController.class);
 
-    /**
-     * Plug-in point for gRPC-backed search. When set (from the application layer),
-     * text searches are delegated to the remote service instead of the local
-     * {@code ViewCalculator}. The provider receives the query and max-results count
-     * and returns a flat list of {@link GrpcGroupedResult} each carrying its child
-     * {@link GrpcMatchingResult} list.
-     */
-    @FunctionalInterface
-    public interface GrpcSearchProvider {
-        List<GrpcGroupedResult> search(String query, int maxResults);
-    }
-
-    private static volatile GrpcSearchProvider grpcSearchProvider;
-
-    /** Called once at startup by {@code App} when running in gRPC mode. */
-    public static void setGrpcSearchProvider(GrpcSearchProvider provider) {
-        grpcSearchProvider = provider;
-    }
-
-    public static GrpcSearchProvider getGrpcSearchProvider() {
-        return grpcSearchProvider;
-    }
-
-    /**
-     * A top-level (grouped) search result returned by the gRPC service.
-     *
-     * @param fullyQualifiedName FQN of the matching concept
-     * @param active             whether the concept is currently active
-     * @param topScore           highest relevance score among child matches
-     * @param matchingResults    child semantic matches
-     */
-    public record GrpcGroupedResult(
-            String fullyQualifiedName,
-            boolean active,
-            float topScore,
-            List<GrpcMatchingResult> matchingResults) {}
-
-    /**
-     * A single semantic match within a {@link GrpcGroupedResult}.
-     *
-     * @param highlightedText matched text with {@code <B>…</B>} markup
-     * @param score           relevance score
-     */
-    public record GrpcMatchingResult(String highlightedText, float score) {}
     protected ReadOnlyObjectProperty<PublicIdStringKey<ActivityStream>> activityStreamKeyProperty = new SimpleObjectProperty<>();
     @FXML
     private ResourceBundle resources;
@@ -178,27 +134,6 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
         } else if (queryText.length() == 36 && UuidUtil.isUUID(queryText)) {
             UuidUtil.getUUID(queryText).ifPresent(uuid -> {
                 addComponentFromNid(PrimitiveData.nid(PublicIds.of(uuid)));
-            });
-        } else if (grpcSearchProvider != null) {
-            String queryText2 = queryString.getText().strip();
-            TinkExecutor.threadPool().execute(() -> {
-                try {
-                    List<GrpcGroupedResult> groups = grpcSearchProvider.search(queryText2, 1000);
-                    LOG.info("Finished gRPC search. Groups: {}", groups.size());
-                    TreeItem<Object> tempRoot = new TreeItem<>("Temp root");
-                    for (GrpcGroupedResult group : groups) {
-                        TreeItem<Object> groupItem = new TreeItem<>(group);
-                        for (GrpcMatchingResult match : group.matchingResults()) {
-                            groupItem.getChildren().add(new TreeItem<>(match));
-                        }
-                        groupItem.setExpanded(true);
-                        tempRoot.getChildren().add(groupItem);
-                    }
-                    Platform.runLater(() -> resultsRoot.getChildren().setAll(tempRoot.getChildren()));
-                } catch (Throwable e) {
-                    AlertStreams.getRoot().dispatch(AlertObject.makeError(
-                            e.getClass().getSimpleName() + " during gRPC search", queryText2, e));
-                }
             });
         } else {
             TinkExecutor.threadPool().execute(() -> {

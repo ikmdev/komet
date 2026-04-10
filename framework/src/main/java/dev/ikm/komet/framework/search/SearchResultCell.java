@@ -128,11 +128,6 @@ public class SearchResultCell extends TreeCell<Object> {
                     pseudoClassStateChanged(INACTIVE_PSEUDO_CLASS, !semanticEntityVersion.active());
                 });
 
-            } else if (item instanceof SearchPanelController.GrpcGroupedResult grpcGroup) {
-                setTextFlow(grpcGroup.fullyQualifiedName(), SEARCH_TOP_COMPONENT);
-                pseudoClassStateChanged(INACTIVE_PSEUDO_CLASS, !grpcGroup.active());
-            } else if (item instanceof SearchPanelController.GrpcMatchingResult grpcMatch) {
-                renderHighlightedText(grpcMatch.highlightedText());
             } else if (item instanceof String itemString) {
                 setTextFlow(itemString);
             } else if (item instanceof SearchPanelController.NidTextRecord nidTextRecord) {

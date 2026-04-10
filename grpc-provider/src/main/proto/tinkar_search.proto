@@ -151,6 +151,14 @@ message TinkarMatchingSemantic {
    * The relevance score of this match.
    */
   float score = 3;
+  /*
+   * The index of the matched field within the semantic.
+   */
+  int32 field_index = 4;
+  /*
+   * The NID of the matching semantic entity.
+   */
+  int32 semantic_nid = 5;
 }
 
 // Grouped search result by top-level component
@@ -175,6 +183,10 @@ message TinkarGroupedSearchResult {
    * List of matching semantics for this concept.
    */
   repeated TinkarMatchingSemantic matching_semantics = 5;
+  /*
+   * The NID of the top-level concept entity.
+   */
+  int32 concept_nid = 6;
 }
 
 // Response for concept search with sort

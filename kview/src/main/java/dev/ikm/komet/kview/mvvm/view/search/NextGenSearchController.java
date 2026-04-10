@@ -29,6 +29,7 @@ import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.komet.grpc.GrpcSearchService;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
@@ -284,25 +285,29 @@ public class NextGenSearchController {
                 UuidUtil.getUUID(queryText).ifPresent(uuid -> {
                     addComponentFromNid(PrimitiveData.nid(PublicIds.of(uuid)));
                 });
-            } else if (SearchPanelController.getGrpcSearchProvider() != null) {
+            } else if (GrpcSearchService.isActive()) {
                 final String grpcQuery = queryText;
-                SearchPanelController.GrpcSearchProvider grpcProvider = SearchPanelController.getGrpcSearchProvider();
-                List<SearchPanelController.GrpcGroupedResult> grpcResults = grpcProvider.search(grpcQuery, MAX_RESULT_SIZE);
-                LOG.info("{} gRPC search results returned for query: {}", grpcResults.size(), grpcQuery);
-                searchResultsListView.setCellFactory(lv -> new ListCell<>() {
-                    @Override
-                    protected void updateItem(Object item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty || item == null) {
-                            setText(null);
-                        } else if (item instanceof SearchPanelController.GrpcGroupedResult grpcGroup) {
-                            setText(grpcGroup.fullyQualifiedName());
-                        } else {
-                            setText(item.toString());
-                        }
-                    }
-                });
-                searchResultsListView.getItems().setAll(grpcResults);
+                GrpcSearchService.SortOption sortOption = switch (sortByButton.getText()) {
+                    case BUTTON_TEXT_TOP_COMPONENT_ALPHA -> GrpcSearchService.SortOption.TOP_COMPONENT_ALPHA;
+                    case BUTTON_TEXT_DESCRIPTION_SEMANTIC -> GrpcSearchService.SortOption.SEMANTIC;
+                    case BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA -> GrpcSearchService.SortOption.SEMANTIC_ALPHA;
+                    default -> GrpcSearchService.SortOption.TOP_COMPONENT;
+                };
+                boolean isSemanticMode = sortOption == GrpcSearchService.SortOption.SEMANTIC
+                        || sortOption == GrpcSearchService.SortOption.SEMANTIC_ALPHA;
+                if (isSemanticMode) {
+                    List<GrpcSearchService.SemanticResult> results =
+                            GrpcSearchService.get().searchFlat(grpcQuery, MAX_RESULT_SIZE, sortOption);
+                    LOG.info("{} gRPC flat results returned for query: {} sortBy: {}", results.size(), grpcQuery, sortOption);
+                    searchResultsListView.setCellFactory(lv -> new SearchCellGrpcSemanticResult());
+                    searchResultsListView.getItems().setAll(results);
+                } else {
+                    List<GrpcSearchService.GroupedResult> results =
+                            GrpcSearchService.get().searchGrouped(grpcQuery, MAX_RESULT_SIZE, sortOption);
+                    LOG.info("{} gRPC grouped results returned for query: {} sortBy: {}", results.size(), grpcQuery, sortOption);
+                    searchResultsListView.setCellFactory(lv -> new SearchCellGrpcTopComponent());
+                    searchResultsListView.getItems().setAll(results);
+                }
             } else {
                 List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
                 LOG.info("{} search results returned for query: {}", results.size(), queryText);
