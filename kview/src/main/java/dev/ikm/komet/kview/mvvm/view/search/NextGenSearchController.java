@@ -50,6 +50,7 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -296,17 +297,38 @@ public class NextGenSearchController {
                 boolean isSemanticMode = sortOption == GrpcSearchService.SortOption.SEMANTIC
                         || sortOption == GrpcSearchService.SortOption.SEMANTIC_ALPHA;
                 if (isSemanticMode) {
+                    setCurrentSearchResultType(SearchResultType.DESCRIPTION_SEMANTICS);
                     List<GrpcSearchService.SemanticResult> results =
                             GrpcSearchService.get().searchFlat(grpcQuery, MAX_RESULT_SIZE, sortOption);
                     LOG.info("{} gRPC flat results returned for query: {} sortBy: {}", results.size(), grpcQuery, sortOption);
-                    searchResultsListView.setCellFactory(lv -> new SearchCellGrpcSemanticResult());
-                    searchResultsListView.getItems().setAll(results);
+                    List<LatestVersionSearchResult> converted = results.stream()
+                            .map(r -> new LatestVersionSearchResult(
+                                    new Latest<>(SemanticEntityVersion.class),
+                                    0,
+                                    r.score(),
+                                    r.highlightedText()))
+                            .toList();
+                    searchResultsListView.getItems().setAll(converted);
                 } else {
+                    setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
                     List<GrpcSearchService.GroupedResult> results =
                             GrpcSearchService.get().searchGrouped(grpcQuery, MAX_RESULT_SIZE, sortOption);
                     LOG.info("{} gRPC grouped results returned for query: {} sortBy: {}", results.size(), grpcQuery, sortOption);
-                    searchResultsListView.setCellFactory(lv -> new SearchCellGrpcTopComponent());
-                    searchResultsListView.getItems().setAll(results);
+                    List<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>> entries =
+                            results.stream().map(g -> {
+                                List<UUID> uuids = g.publicId().stream().map(UUID::fromString).toList();
+                                SearchPanelController.NidTextRecord key =
+                                        new SearchPanelController.NidTextRecord(0, g.fullyQualifiedName(), g.active(), uuids);
+                                List<LatestVersionSearchResult> semantics = g.matchingSemantics().stream()
+                                        .map(m -> new LatestVersionSearchResult(
+                                                new Latest<>(SemanticEntityVersion.class),
+                                                0,
+                                                m.score(),
+                                                m.highlightedText()))
+                                        .toList();
+                                return Map.entry(key, semantics);
+                            }).toList();
+                    searchResultsListView.getItems().setAll(entries);
                 }
             } else {
                 List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();

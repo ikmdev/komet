@@ -4,6 +4,7 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
@@ -81,8 +82,9 @@ public class SearchCellTopComponent extends SearchCellBase {
         } else {
             if (item instanceof Map.Entry) {
                 Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> mapEntry = (Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>) item;
+                SearchPanelController.NidTextRecord nidTextRecord = mapEntry.getKey();
 
-                int topNid = mapEntry.getKey().nid();
+                int topNid = nidTextRecord.nid();
                 String topText = viewProperties.nodeView().calculator().getDescriptionTextOrNid(topNid);
                 Latest<EntityVersion> latestTopVersion = viewProperties.nodeView().calculator().latest(topNid);
                 if (latestTopVersion.isPresent()) {
@@ -107,6 +109,21 @@ public class SearchCellTopComponent extends SearchCellBase {
 
                     setUpDraggable(parentPane, entity, CONCEPT);
 
+                    setGraphic(parentPane);
+                } else if (!nidTextRecord.publicIds().isEmpty()) {
+                    // gRPC mode: no local entity, render using data carried in NidTextRecord
+                    UUID[] uuids = nidTextRecord.publicIds().toArray(new UUID[0]);
+                    controller.setIdenticon(Identicon.generateIdenticonImage(PublicIds.of(uuids)));
+                    controller.setWindowView(observableViewNoOverride);
+                    controller.setData(null);
+                    controller.setComponentText(nidTextRecord.text());
+                    controller.getDescriptionListViewItems().setAll(mapEntry.getValue());
+                    if (nidTextRecord.active()) {
+                        controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
+                    } else if (!controller.getRetiredHBox().getChildren().contains(controller.getRetiredLabel())) {
+                        controller.getRetiredHBox().getChildren().add(1, controller.getRetiredLabel());
+                    }
+                    controller.setRetired(!nidTextRecord.active());
                     setGraphic(parentPane);
                 } else {
                     setGraphic(null);

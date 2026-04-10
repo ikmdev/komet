@@ -72,23 +72,33 @@ public class SearchCellDescriptionSemantic extends SearchCellBase {
             setGraphic(null);
         } else {
             if (item instanceof LatestVersionSearchResult latestVersionSearchResult) {
-                SemanticEntityVersion semantic = latestVersionSearchResult.latestVersion().get();
+                if (latestVersionSearchResult.latestVersion().isPresent()) {
+                    SemanticEntityVersion semantic = latestVersionSearchResult.latestVersion().get();
 
-                controller.setIdenticon(Identicon.generateIdenticonImage(semantic.publicId()));
-                controller.setSemanticText(formatHighlightedString(latestVersionSearchResult.highlightedString()));
-                controller.setWindowView(observableViewNoOverride);
-                Entity entity = Entity.getConceptForSemantic(semantic.nid()).get();
-                controller.setData(entity);
-                if (semantic.active()) {
+                    controller.setIdenticon(Identicon.generateIdenticonImage(semantic.publicId()));
+                    controller.setSemanticText(formatHighlightedString(latestVersionSearchResult.highlightedString()));
+                    controller.setWindowView(observableViewNoOverride);
+                    Entity entity = Entity.getConceptForSemantic(semantic.nid()).get();
+                    controller.setData(entity);
+                    if (semantic.active()) {
+                        controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
+                        controller.increaseTextFlowWidth();
+                    }
+
+                    VBox.setMargin(content, new Insets(2, 0, 2, 0));
+
+                    setUpDraggable(content, entity, getDragAndDropType(entity));
+
+                    setGraphic(content);
+                } else {
+                    // gRPC mode: no local entity, render text only
+                    controller.setSemanticText(formatHighlightedString(latestVersionSearchResult.highlightedString()));
+                    controller.setWindowView(observableViewNoOverride);
                     controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
                     controller.increaseTextFlowWidth();
+                    VBox.setMargin(content, new Insets(2, 0, 2, 0));
+                    setGraphic(content);
                 }
-
-                VBox.setMargin(content, new Insets(2, 0, 2, 0));
-
-                setUpDraggable(content, entity, getDragAndDropType(entity));
-
-                setGraphic(content);
             }
         }
     }

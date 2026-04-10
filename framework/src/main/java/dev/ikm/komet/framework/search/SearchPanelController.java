@@ -57,6 +57,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.ResourceBundle;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -373,6 +374,9 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
         }
     }
 
-    public record NidTextRecord(int nid, String text, boolean active) {
+    public record NidTextRecord(int nid, String text, boolean active, List<UUID> publicIds) {
+        public NidTextRecord(int nid, String text, boolean active) {
+            this(nid, text, active, List.of());
+        }
     }
 }
