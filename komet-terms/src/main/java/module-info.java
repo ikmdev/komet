@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** Komet terminology bindings — static concept proxies for Komet-specific entities. */
 module dev.ikm.komet.terms {
     exports dev.ikm.komet.terms;
     requires dev.ikm.tinkar.terms;

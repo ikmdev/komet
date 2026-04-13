@@ -19,7 +19,13 @@ import dev.ikm.tinkar.terms.EntityProxy;
 
 import java.util.UUID;
 
+/**
+ * Static concept proxies for Komet-specific terminology entities.
+ */
 public class KometTerm {
+
+    /** Creates this instance. */
+    public KometTerm() {}
 
     /**
      * Java binding for the concept described as <strong><em>Blank Concept</em></strong>;
