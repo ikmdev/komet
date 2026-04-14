@@ -35,6 +35,8 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
 
     public static final String UNTITLED_SECTION_NAME = "Untitled";
 
+    private boolean hasBeenAutonamedFromPatternAdded = false;
+
     public EditorSectionModel() {
         patterns.addListener(this::patternsChanged);
     }
@@ -116,9 +118,41 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
     private void patternsChanged(ListChangeListener.Change<? extends EditorPatternModel> change) {
         while(change.next()) {
             if (change.wasAdded()) {
+                if (!hasBeenAutonamedFromPatternAdded) {
+                    autoNameSection(change.getAddedSubList());
+                }
                 change.getAddedSubList().forEach(pattern -> pattern.setParentSection(this));
             }
         }
+    }
+
+    /**
+     * Auto names this Section if it's still untitled.
+     * This implementation names the Section based of the first Pattern in the list that is passed
+     * into this method. It uses the Patterns name with the  "Pattern" part stripped of the name of the Pattern
+     * if it's there.
+     *
+     * @param addedPatterns the Patterns that were added
+     */
+    private void autoNameSection(List<? extends EditorPatternModel> addedPatterns) {
+        if (isUntitledSection()){
+            String patternTitle = addedPatterns.getFirst().getTitle();
+            String newName = patternTitle.endsWith("Pattern")
+                    ? patternTitle.substring(0, patternTitle.length() - "Pattern".length()).trim()
+                    : patternTitle.stripTrailing();
+            name.set(newName);
+        }
+
+        hasBeenAutonamedFromPatternAdded = true;
+    }
+
+    /**
+     * Checks if the Section is Unitlted (Section's are initially named "Untitled" + a number).
+     *
+     * @return returns true if this Section is untitled
+     */
+    private boolean isUntitledSection() {
+        return name.get().matches("^Untitled\\s*\\d*$");
     }
 
     private void saveSectionDetails(KometPreferences editorWindowPreferences) {
