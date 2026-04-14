@@ -5,7 +5,7 @@
     <parent>
         <groupId>network.ike.pipeline</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>93</version>
+        <version>94</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
