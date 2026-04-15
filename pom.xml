@@ -100,6 +100,11 @@
                 <artifactId>grpc-provider</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>dev.ikm.tinkar</groupId>
+                <artifactId>grpc-search-provider</artifactId>
+                <version>1.127.2-SNAPSHOT</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <!-- Cross project dependencies -->

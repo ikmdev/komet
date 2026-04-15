@@ -193,13 +193,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>grpc-provider</artifactId>
         </dependency>
-        <!--
-            gRPC stubs and protobuf bridge needed at runtime by grpc-provider.
-            grpc-api arrives transitively via grpc-netty-shaded. grpc-stub and
-            grpc-protobuf are only 'provided' in grpc-provider so must be
-            declared here explicitly. All three end up on the classpath (unnamed
-            module) and are accessed via add-reads ALL-UNNAMED in javafx options.
-        -->
+        <!-- Runtime gRPC transport deps needed by dev.ikm.tinkar.provider.grpc (add-reads pattern) -->
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
@@ -330,7 +324,7 @@
                                     pulls grpc-api onto the classpath; add-reads grants access.
                                 -->
                                 <option>--add-reads</option>
-                                <option>dev.ikm.komet.grpc.provider=ALL-UNNAMED</option>
+                                <option>dev.ikm.tinkar.provider.grpc=ALL-UNNAMED</option>
                             </options>
                         </configuration>
                     </execution>

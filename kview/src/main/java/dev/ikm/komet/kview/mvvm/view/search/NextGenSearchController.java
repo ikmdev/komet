@@ -29,7 +29,7 @@ import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.search.SearchPanelController;
-import dev.ikm.komet.grpc.GrpcSearchService;
+import dev.ikm.tinkar.provider.grpc.GrpcSearchService;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
