@@ -141,6 +141,11 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
     private void languageConceptChanged(ObservableValue<? extends ConceptFacade> observable,
                                         ConceptFacade oldLanguageConcept,
                                         ConceptFacade newLanguageConcept) {
+        if (newLanguageConcept == null) {
+            // Can occur when Entity.getFast() returns null in gRPC/ephemeral-store mode
+            // (language entity not yet loaded). Retain the existing coordinate value.
+            return;
+        }
         this.setValue(LanguageCoordinateRecord.make(newLanguageConcept.nid(),
                 descriptionPatternPreferenceNidList(),
                 descriptionTypePreferenceNidList(),

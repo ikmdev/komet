@@ -892,12 +892,17 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             protected void invalidated() {
                 EntityFacade entityFacade = get();
                 if (entityFacade != null) {
-                    InvertedTree newInvertedTree = ConceptNavigatorUtils.buildInvertedTree(entityFacade.nid(), treeView.getNavigator());
-                    newInvertedTree.compareTo(oldInvertedTree).ifPresent(item -> {
-                        expandConcept(item, false);
-                        setValue(null);
-                    });
-                    oldInvertedTree = newInvertedTree;
+                    try {
+                        InvertedTree newInvertedTree = ConceptNavigatorUtils.buildInvertedTree(entityFacade.nid(), treeView.getNavigator());
+                        newInvertedTree.compareTo(oldInvertedTree).ifPresent(item -> {
+                            expandConcept(item, false);
+                            setValue(null);
+                        });
+                        oldInvertedTree = newInvertedTree;
+                    } catch (Exception e) {
+                        LOG.warn("Could not build inverted tree for nid {} — ancestor entity may be absent (gRPC mode): {}",
+                                entityFacade.nid(), e.getMessage());
+                    }
                 } else {
                     oldInvertedTree = null;
                 }

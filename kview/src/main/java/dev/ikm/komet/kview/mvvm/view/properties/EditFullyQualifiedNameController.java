@@ -183,8 +183,16 @@ public class EditFullyQualifiedNameController implements BasicController {
 
     private void populateDialectComboBoxes() {
         // Get acceptable and preferred concepts
-        ConceptEntity acceptable = EntityHandle.getConceptOrThrow(TinkarTerm.ACCEPTABLE.nid());
-        ConceptEntity preferred = EntityHandle.getConceptOrThrow(TinkarTerm.PREFERRED.nid());
+        // In gRPC read-only mode the ephemeral entity store may not contain vocabulary meta-concepts;
+        // skip dialect population rather than throwing.
+        ConceptEntity acceptable;
+        ConceptEntity preferred;
+        try {
+            acceptable = EntityHandle.getConceptOrThrow(TinkarTerm.ACCEPTABLE.nid());
+            preferred = EntityHandle.getConceptOrThrow(TinkarTerm.PREFERRED.nid());
+        } catch (Exception e) {
+            return;
+        }
 
         // each combo box has a separate list instance
         setupComboBox(dialectComboBox1, Arrays.asList(acceptable, preferred));

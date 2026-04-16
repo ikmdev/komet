@@ -118,6 +118,11 @@ public abstract class ObservableStampCoordinateBase
     private void pathConceptChanged(ObservableValue<? extends ConceptFacade> observablePathConcept,
                                     ConceptFacade oldPathConcept,
                                     ConceptFacade newPathConcept) {
+        if (newPathConcept == null) {
+            // Can occur when Entity.getFast() returns null in gRPC/ephemeral-store mode
+            // (path entity not yet loaded). Retain the existing coordinate value.
+            return;
+        }
         this.setValue(StampCoordinateRecord.make(allowedStates(),
                 StampPositionRecord.make(timeProperty.longValue(), newPathConcept.nid()),
                 moduleNids(),

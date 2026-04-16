@@ -159,7 +159,10 @@ public class FilterOptionsUtils {
                         mainCoordinates.getPath().selectedOptions().clear();
                         mainCoordinates.getPath().selectedOptions().addAll(path);
                     }
-                    observableViewForFilterProperty.stampCoordinate().pathConceptProperty().set(path);
+                    // Guard against null: Entity.getFast() returns null in gRPC/ephemeral-store mode.
+                    if (path != null) {
+                        observableViewForFilterProperty.stampCoordinate().pathConceptProperty().set(path);
+                    }
                     fromView = false;
                 }));
 
@@ -187,7 +190,12 @@ public class FilterOptionsUtils {
                     } else {
                         observableViewForFilterProperty.languageCoordinates().getFirst().dialectPatternPreferenceListProperty().clear();
                     }
-                    observableViewForFilterProperty.languageCoordinates().getFirst().languageConceptProperty().set(lang);
+                    // Guard against null: Entity.getFast() returns null in gRPC/ephemeral-store mode
+                    // when the language entity hasn't been loaded yet. Passing null to set() triggers
+                    // a NPE in ObservableLanguageCoordinateBase.languageConceptChanged.
+                    if (lang != null) {
+                        observableViewForFilterProperty.languageCoordinates().getFirst().languageConceptProperty().set(lang);
+                    }
                     fromView = false;
                 }));
 
