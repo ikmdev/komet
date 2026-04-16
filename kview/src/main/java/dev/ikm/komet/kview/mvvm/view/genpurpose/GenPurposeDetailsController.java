@@ -141,12 +141,29 @@ public class GenPurposeDetailsController {
 
     private static final Logger LOG = LoggerFactory.getLogger(GenPurposeDetailsController.class);
 
+    /**
+     * Given a Pattern what is the Section that has it as its Reference Component.
+     */
+    private final Map<EditorPatternModel, SectionTitledPane<EntityFacade>> patternReferenceComponentToSectionTitledPane = new HashMap<>();
+
+    /**
+     * Given a SectionModel what's its associated GridPane (The GridPane is the container used in the SectionTitledPane).
+     */
     private final HashMap<EditorSectionModel, GridPane> sectionModelToTitledPaneGridPane = new HashMap<>();
+
+    /**
+     * Given a SectionModel what's its associated SectionTitledPane.
+     */
     private final HashMap<EditorSectionModel, SectionTitledPane<EntityFacade>> sectionModelToTitledPane = new HashMap<>();
+
+    /**
+     * Given a SemanticEntity what's its associated SemanticView.
+     */
     private final HashMap<SemanticEntity<SemanticEntityVersion>, SemanticViewControl> semanticEntityToSemanticView = new HashMap<>();
 
+    private final HashMap<EditorPatternModel, VBox> editorPatternModelToVBox = new HashMap<>();
+
     private final Tooltip publishTooltip = new Tooltip();
-    private final List<KLReadOnlyBaseControl> controls = new ArrayList<>();
 
     private SemanticViewControl previousSemanticViewInEditMode;
 
@@ -199,7 +216,6 @@ public class GenPurposeDetailsController {
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
 
     private ObservableComposer composer;
-    private final Map<EditorPatternModel, SectionTitledPane<EntityFacade>> patternReferenceComponentToSectionTitledPane = new HashMap<>();
 
     @FXML
     private void initialize() {
@@ -789,12 +805,15 @@ public class GenPurposeDetailsController {
         // Create uncommited Semantic
         SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade);
 
-        // Clear content of Section
-        GridPane gridPane = sectionModelToTitledPaneGridPane.get(sectionModelOfPattern);
-        gridPane.getChildren().clear();
 
-        // Re-add content to Section
-        addPatternViews(sectionModelOfPattern, sectionModelOfPattern.getPatterns());
+        // Add content to Pattern inside Section
+        VBox patternSemanticsContainer = editorPatternModelToVBox.get(editorPatternModel);
+        if (patternSemanticsContainer == null) { // First time adding a Semantic for the given Pattern
+            addPatternViews(sectionModelOfPattern, sectionModelOfPattern.getPatterns());
+        } else {
+            // Not the first time adding a Semantic for this Pattern so we just add the new one below the existing ones
+            addSingleSemanticView(editorPatternModel, patternSemanticsContainer, refComponent, uncommitedSemantic);
+        }
 
         // If there are Section TitledPanes that have this Pattern as a Reference Component update them
         SectionTitledPane<EntityFacade> sectionTitledPane = patternReferenceComponentToSectionTitledPane.get(editorPatternModel);
@@ -831,13 +850,12 @@ public class GenPurposeDetailsController {
     private void addPatternViews(EditorSectionModel sectionModel, List<? extends EditorPatternModel> patternModels) {
         GridPane content = sectionModelToTitledPaneGridPane.get(sectionModel);
         for (EditorPatternModel editorPatternModel : patternModels) {
-            addPatternView(editorPatternModel, content, sectionModel);
+            addSinglePatternView(editorPatternModel, content, sectionModel);
         }
     }
 
-    private void addPatternView(EditorPatternModel editorPatternModel, GridPane content, EditorSectionModel parentSection) {
-        VBox patternMainContainer = new VBox();
-        patternMainContainer.getStyleClass().add("pattern-container");
+    private void addSinglePatternView(EditorPatternModel editorPatternModel, GridPane content, EditorSectionModel parentSection) {
+        VBox patternMainContainer = createPatternSemanticsContainer(editorPatternModel);
 
         // Pattern title
         Label patternTitle = new Label(editorPatternModel.getTitle());
@@ -851,7 +869,7 @@ public class GenPurposeDetailsController {
         semanticsContainer.getStyleClass().add("semantics-container");
 
         // Pattern fields
-        createSemanticViews(editorPatternModel, semanticsContainer, parentSection);
+        addSemanticViews(editorPatternModel, semanticsContainer, parentSection);
 
         editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
             GridPane.setRowIndex(patternMainContainer, newRowIndex.intValue());
@@ -869,33 +887,31 @@ public class GenPurposeDetailsController {
         content.getChildren().add(patternMainContainer);
     }
 
-    private List<KLReadOnlyBaseControl> createSemanticViews(EditorPatternModel editorPatternModel, VBox semanticsContainer,
-                                                            EditorSectionModel parentSection) {
-//        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternEntity).get();
+    private VBox createPatternSemanticsContainer(EditorPatternModel editorPatternModel) {
+        VBox patternMainContainer = new VBox();
+        patternMainContainer.getStyleClass().add("pattern-container");
+        editorPatternModelToVBox.put(editorPatternModel, patternMainContainer);
+        return patternMainContainer;
+    }
 
+    private void addSemanticViews(EditorPatternModel editorPatternModel, VBox semanticsContainer,
+                                  EditorSectionModel parentSection) {
         List<EntityFacade> refComponents = getReferenceComponentsToUse(parentSection.getReferenceComponent());
-
-        List<KLReadOnlyBaseControl> controlItems = new ArrayList<>();
 
         SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(parentSection);
 
         if (!refComponents.isEmpty()) {
-            doCreateSemanticViews(editorPatternModel, semanticsContainer, refComponents, controlItems);
+            doAddSemanticViews(editorPatternModel, semanticsContainer, refComponents.getFirst());
             titledPane.setSelectedReferenceComponent(refComponents.getFirst());
         }
 
         titledPane.selectedReferenceComponentProperty().subscribe(() -> {
             semanticsContainer.getChildren().clear();
-            doCreateSemanticViews(editorPatternModel, semanticsContainer, List.of(titledPane.getSelectedReferenceComponent()), controlItems);
+            doAddSemanticViews(editorPatternModel, semanticsContainer, titledPane.getSelectedReferenceComponent());
         });
-
-        controls.addAll(controlItems);
-        return controlItems;
     }
 
-    private void doCreateSemanticViews(EditorPatternModel editorPatternModel, VBox semanticsContainer,
-                                       List<EntityFacade> refComponents, List<KLReadOnlyBaseControl> controlItems) {
-
+    private void doAddSemanticViews(EditorPatternModel editorPatternModel, VBox semanticsContainer, EntityFacade referenceComponent) {
         // Pattern Entity
         int patternNid = editorPatternModel.getNid();
         EntityHandle handle = EntityHandle.get(patternNid);
@@ -910,7 +926,7 @@ public class GenPurposeDetailsController {
 
         // Start adding Semantics
         AtomicInteger index = new AtomicInteger(0);
-        EntityService.get().forEachSemanticForComponentOfPattern(refComponents.getFirst().nid(), patternEntity.nid(),
+        EntityService.get().forEachSemanticForComponentOfPattern(referenceComponent.nid(), patternEntity.nid(),
                 (semantic) -> {
                     // add Separator
                     if (index.get() > 0) {
@@ -918,35 +934,40 @@ public class GenPurposeDetailsController {
                         semanticsContainer.getChildren().add(separator);
                     }
 
-                    SemanticViewControl semanticViewControl = new SemanticViewControl();
-
-                    semanticEntityToSemanticView.put(semantic, semanticViewControl);
-
-                    ObservableEntity referencedComponent = ObservableEntityHandle.get(refComponents.getFirst().nid()).expectEntity();
-                    ObservablePattern pattern = ObservableEntityHandle.get(patternEntity.nid()).expectPattern();
-                    ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(semantic.publicId(), referencedComponent, pattern);
-
-                    // Get editable version with cached editing capabilities
-                    ObservableSemanticVersion.Editable editableVersion = semanticEditor.getEditableVersion();
-
-                    ObservableList<ObservableField.Editable<?>> editableFields = editableVersion.getEditableFields();
-
-                    for (int i = 0; i < editableFields.size(); ++i) {
-                        ObservableField.Editable observableField = editableFields.get(i);
-
-                        for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
-                            if (observableField.getFieldIndex() == editorFieldModel.getIndex()) {
-                                createFieldView(observableField.getObservableFeature(), editorFieldModel, controlItems, semanticViewControl);
-                            }
-                        }
-                    }
-
-                    semanticViewControl.numberColumnsProperty().bind(editorPatternModel.numberColumnsProperty());
-
-                    semanticsContainer.getChildren().add(semanticViewControl);
+                    addSingleSemanticView(editorPatternModel, semanticsContainer, referenceComponent, semantic);
 
                     index.incrementAndGet();
                 });
+    }
+
+    private void addSingleSemanticView(EditorPatternModel editorPatternModel, VBox semanticsContainer, EntityFacade referenceComponent,
+                                       SemanticEntity<SemanticEntityVersion> semantic) {
+        SemanticViewControl semanticViewControl = new SemanticViewControl();
+
+        semanticEntityToSemanticView.put(semantic, semanticViewControl);
+
+        ObservableEntity referencedComponent = ObservableEntityHandle.get(referenceComponent.nid()).expectEntity();
+        ObservablePattern pattern = ObservableEntityHandle.get(semantic.pattern().nid()).expectPattern();
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(semantic.publicId(), referencedComponent, pattern);
+
+        // Get editable version with cached editing capabilities
+        ObservableSemanticVersion.Editable editableVersion = semanticEditor.getEditableVersion();
+
+        ObservableList<ObservableField.Editable<?>> editableFields = editableVersion.getEditableFields();
+
+        for (int i = 0; i < editableFields.size(); ++i) {
+            ObservableField.Editable observableField = editableFields.get(i);
+
+            for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
+                if (observableField.getFieldIndex() == editorFieldModel.getIndex()) {
+                    addFieldView(observableField.getObservableFeature(), editorFieldModel, semanticViewControl);
+                }
+            }
+        }
+
+        semanticViewControl.numberColumnsProperty().bind(editorPatternModel.numberColumnsProperty());
+
+        semanticsContainer.getChildren().add(semanticViewControl);
     }
 
     private void initializeComposer() {
@@ -1000,8 +1021,7 @@ public class GenPurposeDetailsController {
         return refComponents;
     }
 
-    private void createFieldView(ObservableField<?> observableField, EditorFieldModel fieldModel,
-                                 List<KLReadOnlyBaseControl> controlItems, SemanticViewControl semanticViewControl) {
+    private void addFieldView(ObservableField<?> observableField, EditorFieldModel fieldModel, SemanticViewControl semanticViewControl) {
         Field<?> field = observableField.field();
 
         // Generate node using the underlying ObservableField (read-only view)
@@ -1013,13 +1033,6 @@ public class GenPurposeDetailsController {
                 null,
                 genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC)
         );
-
-        // Eliminated unsafe cast here...
-        if (baseControl instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
-//                                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
-//                                semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
-            controlItems.add(klReadOnlyBaseControl);
-        }
 
         fieldModel.rowIndexProperty().subscribe(newRowIndex -> {
             GridPane.setRowIndex(baseControl, newRowIndex.intValue());
