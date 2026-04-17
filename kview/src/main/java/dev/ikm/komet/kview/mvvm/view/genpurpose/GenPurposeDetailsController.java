@@ -650,15 +650,15 @@ public class GenPurposeDetailsController {
 
         // Main TitledPane
         TitledPane mainTitledPane = createTitledPane(mainSection);
-        addPatternViews(mainSection, mainSection.getPatterns());
+        addPatternViewsOfSection(mainSection.getPatterns());
         mainContent.getChildren().add(mainTitledPane);
 
-        mainSection.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) change -> onSectionPatternsChanged(mainSection, change));
+        mainSection.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
 
         // Additional Sections
         editorWindowModel.getAdditionalSections().forEach(section -> {
             TitledPane titledPane = createTitledPane(section);
-            addPatternViews(section, section.getPatterns());
+            addPatternViewsOfSection(section.getPatterns());
             mainContent.getChildren().add(titledPane);
         });
 
@@ -809,10 +809,10 @@ public class GenPurposeDetailsController {
         // Add content to Pattern inside Section
         VBox patternSemanticsContainer = editorPatternModelToVBox.get(editorPatternModel);
         if (patternSemanticsContainer == null) { // First time adding a Semantic for the given Pattern
-            addPatternViews(sectionModelOfPattern, sectionModelOfPattern.getPatterns());
+            addPatternViewsOfSection(sectionModelOfPattern.getPatterns());
         } else {
             // Not the first time adding a Semantic for this Pattern so we just add the new one below the existing ones
-            addSingleSemanticView(editorPatternModel, patternSemanticsContainer, refComponent, uncommitedSemantic);
+            addSingleSemanticView(editorPatternModel, patternSemanticsContainer, uncommitedSemantic);
         }
 
         // If there are Section TitledPanes that have this Pattern as a Reference Component update them
@@ -847,15 +847,21 @@ public class GenPurposeDetailsController {
         previousSemanticViewInEditMode = semanticViewControl;
     }
 
-    private void addPatternViews(EditorSectionModel sectionModel, List<? extends EditorPatternModel> patternModels) {
-        GridPane content = sectionModelToTitledPaneGridPane.get(sectionModel);
+    private void addPatternViewsOfSection(List<? extends EditorPatternModel> patternModels) {
+        if (patternModels == null || patternModels.isEmpty()) {
+            throw new RuntimeException("Patterns list passed in is null or empty and shouldn't be");
+        }
+
         for (EditorPatternModel editorPatternModel : patternModels) {
-            addSinglePatternView(editorPatternModel, content, sectionModel);
+            addSinglePatternView(editorPatternModel);
         }
     }
 
-    private void addSinglePatternView(EditorPatternModel editorPatternModel, GridPane content, EditorSectionModel parentSection) {
-        VBox patternMainContainer = createPatternSemanticsContainer(editorPatternModel);
+    private void addSinglePatternView(EditorPatternModel editorPatternModel) {
+        EditorSectionModel parentSection = editorPatternModel.getParentSection();
+        GridPane sectionGridPane = sectionModelToTitledPaneGridPane.get(parentSection);
+
+        VBox patternMainContainer = createPatternContainer(editorPatternModel);
 
         // Pattern title
         Label patternTitle = new Label(editorPatternModel.getTitle());
@@ -869,7 +875,7 @@ public class GenPurposeDetailsController {
         semanticsContainer.getStyleClass().add("semantics-container");
 
         // Pattern fields
-        addSemanticViews(editorPatternModel, semanticsContainer, parentSection);
+        addSemanticViews(editorPatternModel, semanticsContainer);
 
         editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
             GridPane.setRowIndex(patternMainContainer, newRowIndex.intValue());
@@ -884,18 +890,19 @@ public class GenPurposeDetailsController {
         });
 
         patternMainContainer.getChildren().add(semanticsContainer);
-        content.getChildren().add(patternMainContainer);
+        sectionGridPane.getChildren().add(patternMainContainer);
     }
 
-    private VBox createPatternSemanticsContainer(EditorPatternModel editorPatternModel) {
+    private VBox createPatternContainer(EditorPatternModel editorPatternModel) {
         VBox patternMainContainer = new VBox();
         patternMainContainer.getStyleClass().add("pattern-container");
         editorPatternModelToVBox.put(editorPatternModel, patternMainContainer);
         return patternMainContainer;
     }
 
-    private void addSemanticViews(EditorPatternModel editorPatternModel, VBox semanticsContainer,
-                                  EditorSectionModel parentSection) {
+    private void addSemanticViews(EditorPatternModel editorPatternModel, VBox semanticsContainer) {
+        EditorSectionModel parentSection = editorPatternModel.getParentSection();
+
         List<EntityFacade> refComponents = getReferenceComponentsToUse(parentSection.getReferenceComponent());
 
         SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(parentSection);
@@ -934,19 +941,18 @@ public class GenPurposeDetailsController {
                         semanticsContainer.getChildren().add(separator);
                     }
 
-                    addSingleSemanticView(editorPatternModel, semanticsContainer, referenceComponent, semantic);
+                    addSingleSemanticView(editorPatternModel, semanticsContainer, semantic);
 
                     index.incrementAndGet();
                 });
     }
 
-    private void addSingleSemanticView(EditorPatternModel editorPatternModel, VBox semanticsContainer, EntityFacade referenceComponent,
-                                       SemanticEntity<SemanticEntityVersion> semantic) {
+    private void addSingleSemanticView(EditorPatternModel editorPatternModel, VBox semanticsContainer, SemanticEntity<SemanticEntityVersion> semantic) {
         SemanticViewControl semanticViewControl = new SemanticViewControl();
 
         semanticEntityToSemanticView.put(semantic, semanticViewControl);
 
-        ObservableEntity referencedComponent = ObservableEntityHandle.get(referenceComponent.nid()).expectEntity();
+        ObservableEntity referencedComponent = ObservableEntityHandle.get(semantic.referencedComponent().nid()).expectEntity();
         ObservablePattern pattern = ObservableEntityHandle.get(semantic.pattern().nid()).expectPattern();
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(semantic.publicId(), referencedComponent, pattern);
 
@@ -1050,10 +1056,10 @@ public class GenPurposeDetailsController {
     }
 
 
-    private void onSectionPatternsChanged(EditorSectionModel editorSectionModel, ListChangeListener.Change<? extends EditorPatternModel> change) {
+    private void onSectionPatternsChanged(ListChangeListener.Change<? extends EditorPatternModel> change) {
         while (change.next()) {
             if (change.wasAdded()) {
-                addPatternViews(editorSectionModel, change.getAddedSubList());
+                addPatternViewsOfSection(change.getAddedSubList());
             }
         }
     }
@@ -1063,9 +1069,8 @@ public class GenPurposeDetailsController {
             if (change.wasAdded()) {
                 for (EditorSectionModel additionalSectionModel : change.getAddedSubList()) {
                     TitledPane titledPane = createTitledPane(additionalSectionModel);
-                    addPatternViews(additionalSectionModel, additionalSectionModel.getPatterns());
-                    additionalSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>)
-                            patternsChange -> onSectionPatternsChanged(additionalSectionModel, patternsChange));
+                    addPatternViewsOfSection(additionalSectionModel.getPatterns());
+                    additionalSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
 
                     mainContent.getChildren().add(titledPane);
                 }
