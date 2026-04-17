@@ -14,12 +14,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 
 public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
     private static final int SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON = 4;
+    private static final int SPACE_BETWEEN_TITLE_AND_SEMANTIC_CB = 4;
 
     private EditButton editButton;
     private StackPane titleRegion;
+    private Text titleRegionText;
 
     private GridPane contentContainer;
 
@@ -43,6 +46,7 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
         createReferenceComponentCB(control);
 
         titleRegion = (StackPane) control.lookup(".title");
+        titleRegionText = (Text) titleRegion.lookup(".text");
 
         getChildren().addAll(
                 editButton,
@@ -70,22 +74,23 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
     protected void layoutChildren(double x, double y, double width, double height) {
         super.layoutChildren(x, y, width, height);
 
-        final double titleRegionX = titleRegion.getLayoutX();
-        final double titleRegionWidth = titleRegion.getWidth();
-        final double titleRegionRightInset = titleRegion.snappedRightInset();
         final double titleRegionHeight = titleRegion.getHeight();
+
+        final double titleRegionTextX = titleRegionText.getLayoutX();
+        final double titleRegionTextWidth = titleRegionText.getLayoutBounds().getWidth();
 
         // Edit Button
         final double editButtonWidth = editButton.prefWidth(titleRegionHeight);
+        final double editButtonX = titleRegion.getLayoutX() + titleRegion.getWidth() - titleRegion.snappedRightInset() - editButtonWidth;
         editButton.resize(editButtonWidth, titleRegionHeight);
-        editButton.setLayoutX(titleRegion.getLayoutX() + titleRegion.getWidth() - titleRegion.snappedRightInset() - editButtonWidth);
+        editButton.setLayoutX(editButtonX);
         editButton.setLayoutY(titleRegion.getLayoutY());
 
         // Reference Component Semantics Combobox
-        double cbWidth = referenceComponentSemanticsCB.prefWidth(-1);
+
+        double cbX = titleRegionTextX + titleRegionTextWidth + SPACE_BETWEEN_TITLE_AND_SEMANTIC_CB;
+        double cbWidth = editButtonX - cbX - SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON;
         double cbHeight = referenceComponentSemanticsCB.prefHeight(cbWidth);
-        double cbX = titleRegionX + titleRegionWidth - titleRegionRightInset
-                - editButtonWidth - cbWidth - SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON;
         double cbY = titleRegionHeight / 2d - cbHeight / 2d;
         referenceComponentSemanticsCB.resize(cbWidth, cbHeight);
         referenceComponentSemanticsCB.relocate(cbX, cbY);
