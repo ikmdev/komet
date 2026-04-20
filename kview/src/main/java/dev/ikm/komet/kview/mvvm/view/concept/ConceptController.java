@@ -1444,9 +1444,16 @@ public class ConceptController {
         semanticVersion.ifPresent(semanticEntityVersion -> {
             Latest<PatternEntityVersion> statedPatternVersion = conceptViewModel.getViewProperties().calculator().latestPatternEntityVersion(semanticEntityVersion.pattern());
             ImmutableList<ObservableField> fields = fields(semanticEntityVersion, statedPatternVersion.get(), conceptViewModel.getViewProperties().calculator());
-            fields.forEach(field ->
+            fields.forEach(field -> {
+                try {
                     // create a row as a label: editor. For Axioms we hide the left labels.
-                    propertySheet.getItems().add(SheetItem.make(field, semanticEntityVersion, conceptViewModel.getViewProperties())));
+                    propertySheet.getItems().add(SheetItem.make(field, semanticEntityVersion, conceptViewModel.getViewProperties()));
+                } catch (Exception e) {
+                    // In gRPC/read-only mode, field-definition data-type entities (e.g. concept, string)
+                    // may not be in the ephemeral store yet. Skip rather than crashing with a dialog.
+                    LOG.warn("Could not create axiom sheet item — field data-type entity may be absent (gRPC mode): {}", e.getMessage());
+                }
+            });
         });
 
     }

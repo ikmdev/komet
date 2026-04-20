@@ -79,7 +79,10 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                 propertyEditor = ed.get();
             } else {
                 propertyEditor = null;
-                AlertStreams.getRoot().dispatch(AlertObject.makeWarning("No editor for item " + item.getName(), item.toString()));
+                // createCustomEditor already dispatched an error alert for unexpected failures.
+                // Only log here — a second UI dialog for "No editor" would be redundant and
+                // confusing, especially in gRPC mode where missing entities are expected.
+                LOG.warn("No editor for item '{}': {}", item.getName(), item);
             }
         } else {
             return null;
@@ -184,17 +187,25 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                 }
                 if (editorClass == AxiomView.class) {
                     //TODO add stated/inferred to root property?
-                    DiTree<EntityVertex> axiomTree = (DiTree<EntityVertex>) property.getValue();
-                    PremiseType premiseType = PremiseType.STATED;
-                    if (property.getObservableField().definition(viewProperties.calculator()).meaningNid() == TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
-                        premiseType = PremiseType.INFERRED;
-                    }
-                    int semanticNid = property.observableField.field().nid();
-                    ObservableSemantic axiomSemantic = ObservableSemantic.get(semanticNid);
-                    ObservableSemanticVersion axiomSemanticVersion = axiomSemantic.getVersionFast(property.observableField.field().versionStampNid());
+                    try {
+                        DiTree<EntityVertex> axiomTree = (DiTree<EntityVertex>) property.getValue();
+                        PremiseType premiseType = PremiseType.STATED;
+                        if (property.getObservableField().definition(viewProperties.calculator()).meaningNid() == TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
+                            premiseType = PremiseType.INFERRED;
+                        }
+                        int semanticNid = property.observableField.field().nid();
+                        ObservableSemantic axiomSemantic = ObservableSemantic.get(semanticNid);
+                        ObservableSemanticVersion axiomSemanticVersion = axiomSemantic.getVersionFast(property.observableField.field().versionStampNid());
 
-                    AxiomView axiomView = AxiomView.create(axiomSemanticVersion, premiseType, viewProperties);
-                    return Optional.of(axiomView);
+                        AxiomView axiomView = AxiomView.create(axiomSemanticVersion, premiseType, viewProperties);
+                        return Optional.of(axiomView);
+                    } catch (IllegalStateException e) {
+                        // In gRPC/ephemeral-store mode the pattern entity backing axiom field
+                        // definitions may not be loaded yet. Return empty without showing an error
+                        // dialog — the axiom view will be silently unavailable.
+                        LOG.warn("Axiom editor not available — pattern entity absent (gRPC mode): {}", e.getMessage());
+                        return Optional.empty();
+                    }
                 }
             }
             return property.getPropertyEditorClass().map(cls -> {
