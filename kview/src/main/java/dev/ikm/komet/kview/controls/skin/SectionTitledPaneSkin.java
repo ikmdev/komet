@@ -74,6 +74,9 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
     protected void layoutChildren(double x, double y, double width, double height) {
         super.layoutChildren(x, y, width, height);
 
+        final double titleRegionX = titleRegion.getLayoutX();
+        final double titleRegionWidth = titleRegion.getWidth();
+        final double titleRegionRightInset = titleRegion.snappedRightInset();
         final double titleRegionHeight = titleRegion.getHeight();
 
         final double titleRegionTextX = titleRegionText.getLayoutX();
@@ -87,9 +90,14 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
         editButton.setLayoutY(titleRegion.getLayoutY());
 
         // Reference Component Semantics Combobox
+        double cbPrefWidth = referenceComponentSemanticsCB.prefWidth(-1);
+        double cbMaxWidth =  editButtonX - SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON
+                - (titleRegionTextX + titleRegionTextWidth + SPACE_BETWEEN_TITLE_AND_SEMANTIC_CB);
+        double cbWidth = Math.min(cbPrefWidth, cbMaxWidth);
 
-        double cbX = titleRegionTextX + titleRegionTextWidth + SPACE_BETWEEN_TITLE_AND_SEMANTIC_CB;
-        double cbWidth = editButtonX - cbX - SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON;
+        double cbX = titleRegionX + titleRegionWidth - titleRegionRightInset
+                - editButtonWidth - cbWidth - SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON;
+
         double cbHeight = referenceComponentSemanticsCB.prefHeight(cbWidth);
         double cbY = titleRegionHeight / 2d - cbHeight / 2d;
         referenceComponentSemanticsCB.resize(cbWidth, cbHeight);
