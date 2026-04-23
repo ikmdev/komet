@@ -36,5 +36,9 @@
         <groupId>org.eclipse.collections</groupId>
         <artifactId>eclipse-collections-api</artifactId>
     </dependency>
+    <dependency>
+        <groupId>dev.ikm.tinkar</groupId>
+        <artifactId>entity</artifactId>
+    </dependency>
 </dependencies>
 </project>
