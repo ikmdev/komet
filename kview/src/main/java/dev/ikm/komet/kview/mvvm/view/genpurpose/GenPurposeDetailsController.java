@@ -34,6 +34,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_W
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel.COMPOSER;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
@@ -279,7 +280,10 @@ public class GenPurposeDetailsController {
 //                    updateUIStamp(stampFormViewModelBase);
 //                }
 
-                // Initialize composer if not already done
+                // Commit transation, finalizing all impending changes
+                composer.commit();
+
+                composer = null;
                 initializeComposer();
 
                 ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(semantic.publicId(), semantic.referencedComponent(), semantic.pattern());
@@ -304,6 +308,9 @@ public class GenPurposeDetailsController {
                         }
                     }
                 }
+
+                // reset composer
+                composer = null;
             }
 
 //            semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
@@ -772,6 +779,7 @@ public class GenPurposeDetailsController {
                     semanticLabel.setShowTooltip(true);
 
                     semanticLabel.setOnMouseClicked(_ -> {
+                        initializeComposer();
                         showEditSemanticFieldsPanel(actionEvent, semantic);
                         popup.hide();
                     });
@@ -786,7 +794,10 @@ public class GenPurposeDetailsController {
                     lastSemantic.set(semantic);
                 });
 
-        popup.setOnCreateSemanticAction(() -> onCreateSemantic(actionEvent, sectionModel, refComponent));
+        popup.setOnCreateSemanticAction(() -> {
+            initializeComposer();
+            onCreateSemantic(actionEvent, sectionModel, refComponent);
+        });
 
         // Show Popup
         SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
@@ -990,6 +1001,8 @@ public class GenPurposeDetailsController {
                 path,
                 "Edit Semantic Details"
         );
+
+        genPurposeViewModel.setPropertyValue(COMPOSER, composer);
     }
 
     private List<EntityFacade> getReferenceComponentsToUse(EditorPatternModel sectionReferenceComponent) {
