@@ -788,12 +788,13 @@ public class GenPurposeDetailsController {
 
         popup.setOnCreateSemanticAction(() -> onCreateSemantic(actionEvent, sectionModel, refComponent));
 
-        // show Popup
+        // Show Popup
         SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
-
-        Point2D popupPosition = sectionTitledPane.getLocalToSceneTransform().transform(sectionTitledPane.getLayoutX() + sectionTitledPane.getWidth(),
-                sectionTitledPane.getBoundsInLocal().getMinY());
-        popup.show(sectionTitledPane, popupPosition.getX(), popupPosition.getY());
+        Point2D screenPoint = sectionTitledPane.localToScreen(
+                sectionTitledPane.getWidth(),
+                0
+        );
+        popup.show(sectionTitledPane, screenPoint.getX(), screenPoint.getY());
     }
 
     private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern, EntityFacade refComponent) {
