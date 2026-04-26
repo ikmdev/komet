@@ -933,22 +933,18 @@ public class GenPurposeDetailsController {
         initializeComposer();
 
         // Start adding Semantics
-        AtomicInteger index = new AtomicInteger(0);
         EntityService.get().forEachSemanticForComponentOfPattern(referenceComponent.nid(), patternEntity.nid(),
                 (semantic) -> {
-                    // add Separator
-                    if (index.get() > 0) {
-                        Separator separator = new Separator();
-                        semanticsContainer.getChildren().add(separator);
-                    }
-
                     addSingleSemanticView(editorPatternModel, semanticsContainer, semantic);
-
-                    index.incrementAndGet();
                 });
     }
 
     private void addSingleSemanticView(EditorPatternModel editorPatternModel, VBox semanticsContainer, SemanticEntity<SemanticEntityVersion> semantic) {
+        if (!semanticsContainer.getChildren().isEmpty()) {
+            Separator separator = new Separator();
+            semanticsContainer.getChildren().add(separator);
+        }
+
         SemanticViewControl semanticViewControl = new SemanticViewControl();
 
         semanticEntityToSemanticView.put(semantic, semanticViewControl);
