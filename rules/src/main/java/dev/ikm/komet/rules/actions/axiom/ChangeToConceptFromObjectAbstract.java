@@ -27,7 +27,7 @@ import javafx.event.ActionEvent;
 
 public abstract class ChangeToConceptFromObjectAbstract extends AbstractAxiomAction {
 
-    final ConceptFacade conceptFacade;
+    ConceptFacade conceptFacade;
 
     @SuppressWarnings("removal")
     public ChangeToConceptFromObjectAbstract(String text, Object object, AxiomSubjectRecord axiomSubjectRecord, ViewCalculator viewCalculator, EditCoordinate editCoordinate) {
@@ -44,6 +44,20 @@ public abstract class ChangeToConceptFromObjectAbstract extends AbstractAxiomAct
                 this.conceptFacade = (ConceptFacade) semantic.topEnclosingComponent();
             }
             case SearchPanelController.NidTextRecord nidTextRecord -> {
+
+                EntityHandle.get(nidTextRecord.nid()).ifPresent((Entity<?> entity) -> {
+                    switch (entity) {
+                        case ConceptEntity<?> c -> this.conceptFacade = c;
+                        case SemanticEntity<?> s when EntityHandle.get(s.referencedComponentNid()).isConcept() ->
+                            this.conceptFacade = EntityHandle.get(s.referencedComponentNid()).expectConcept();
+                        case SemanticEntity<?> s -> throw new IllegalStateException("Expecting semantic pointing to a concept. Found: " + entity);
+                        default ->  throw new IllegalStateException("Expecting a concept. Found: " + entity);
+                     }
+                });
+
+                EntityHandle entityHandle = EntityHandle.get(nidTextRecord.nid());
+                if (entityHandle.isConcept())
+
                 switch (Entity.getFast(nidTextRecord.nid())) {
                     case ConceptEntity conceptEntity -> this.conceptFacade = conceptEntity;
                     case SemanticEntity semanticFacade -> this.conceptFacade = (ConceptFacade) semanticFacade.topEnclosingComponent();
