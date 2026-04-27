@@ -91,11 +91,9 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel.COMPOSER;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
@@ -130,7 +128,6 @@ public class GenPurposeFieldsController {
     private GenPurposeViewModel genPurposeViewModel;
 
     // ObservableComposer integration for proper transaction management
-    private ObservableComposer composer;
     private ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor;
     private ObservableSemanticVersion.Editable editableVersion;
     private ObservableStamp currentEditStamp;
@@ -171,54 +168,8 @@ public class GenPurposeFieldsController {
         return stampCalculator;
     }
 
-    /**
-     * Initialize ObservableComposer with STAMP coordinates from ViewProperties.
-     */
-    private void initializeComposer() {
-        if (composer != null) {
-            return; // Already initialized
-        }
-        ConceptFacade author = getViewProperties().parentView().editCoordinate().getAuthorForChanges();
-        ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
-        ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
-        if (genPurposeViewModel.getPropertyValue(MODE).equals(CREATE)) {
-//            StampFormViewModelBase stampFormViewModel = genPurposeViewModel.getPropertyValue(STAMP_VIEW_MODEL);
-//            module = stampFormViewModel.getPropertyValue(MODULE);
-//            path = stampFormViewModel.getPropertyValue(PATH);
-        } else {
-            // Edit MODE
-            // get latest module and path from edit coordinate
-            if (observableEntityHandle.isSemantic()) {
-                Optional<ObservableSemantic> s = observableEntityHandle.asSemantic();
-                if (s.isPresent()) {
-                    Latest<EntityVersion> semanticVersion = getViewProperties().calculator().latest(s.get().nid());
-                    if (semanticVersion.isPresent()) {
-                        module = semanticVersion.get().module();
-                        path = semanticVersion.get().path();
-                    }
-                }
-            }
-        }
-
-        composer = ObservableComposer.create(getViewProperties().calculator(),
-                State.ACTIVE,
-                author,
-                module,
-                path,
-                "Edit Semantic Fields"
-        );
-//        // EDIT MODE: Start a transaction for editing (Adding new semantic version).
-//        if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
-//            composer.getOrCreateTransaction();
-//        }
-        LOG.info("ObservableComposer initialized for semantic fields editing");
-    }
-
-    /**
-     * Getter for ObservableComposer. Lambdas used to have final access to the variable composer.
-     */
-    private ObservableComposer getObservableComposer() {
-        return composer;
+    private ObservableComposer getComposer() {
+        return genPurposeViewModel.getPropertyValue(COMPOSER);
     }
 
     /**
@@ -407,14 +358,11 @@ public class GenPurposeFieldsController {
 
         // Get the observable semantic from the handle
         observableEntityHandle.ifSemantic(observableSemantic -> {
-            // Initialize composer if not already done
-            initializeComposer();
-
             // Create semantic editor using composer unified API
             // Get referenced component and pattern from the semantic
             ObservableEntity referencedComponent = ObservableEntityHandle.get(observableSemantic.referencedComponentNid()).expectEntity();
             ObservablePattern pattern = ObservableEntityHandle.get(observableSemantic.patternNid()).expectPattern();
-            semanticEditor = getObservableComposer().composeSemantic(observableSemantic.publicId(), referencedComponent, pattern);
+            semanticEditor = getComposer().composeSemantic(observableSemantic.publicId(), referencedComponent, pattern);
 
             // Get editable version with cached editing capabilities
             editableVersion = semanticEditor.getEditableVersion();
@@ -481,14 +429,12 @@ public class GenPurposeFieldsController {
 
                     this.observableEntityHandle.ifSemantic(observableSemantic -> {
                         observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-                        // Initialize composer if not already done
-                        initializeComposer();
 
                         // Create semantic editor using composer unified API
                         // Get referenced component and pattern from the semantic
                         ObservableEntity referencedComponent = ObservableEntityHandle.get(observableSemantic.referencedComponentNid()).expectEntity();
                         ObservablePattern pattern = ObservableEntityHandle.get(observableSemantic.patternNid()).expectPattern();
-                        semanticEditor = getObservableComposer().composeSemantic(observableSemantic.publicId(), referencedComponent, pattern);
+                        semanticEditor = getComposer().composeSemantic(observableSemantic.publicId(), referencedComponent, pattern);
 
                         // Get editable version with cached editing capabilities
                         editableVersion = semanticEditor.getEditableVersion();
@@ -643,16 +589,7 @@ public class GenPurposeFieldsController {
                     .map(ObservableField.Editable::getValue)
                     .toList();
 
-            // Get the semantic for event publishing
-//            EntityFacade semantic = genPurposeViewModel.getPropertyValue(SEMANTIC);
-
-            // Save editable version (creates uncommitted version)
-            semanticEditor.save();
-            LOG.info("Saved editable semantic version ");
-
             try {
-
-                getObservableComposer().commit();
                 LOG.info("Committed semantic changes successfully ");
                 // Refresh observable handles and snapshots
 //                observableEntityHandle = ObservableEntityHandle.get(semantic.nid());
@@ -680,8 +617,6 @@ public class GenPurposeFieldsController {
 
                 // Cleanup and reset
                 genPurposeViewModel.setPropertyValue(MODE, EDIT);
-                composer = null;
-                initializeComposer();
                 readyToEditVersion.set(false); // reset change flag when user types older listener will trigger rebind.
             } catch (Exception e) {
                 LOG.error("Error committing semantic changes", e);

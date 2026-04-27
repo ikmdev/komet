@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
+import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -30,6 +31,8 @@ public class GenPurposeViewModel extends FormViewModel {
     // store the hash of the default values
     public static String DEFAULT_FIELDS_HASH = "defaultFieldsHash";
 
+    public static String COMPOSER = "composer";
+
     public GenPurposeViewModel() {
         super();
         addProperty(VIEW_PROPERTIES, (ViewProperties) null)
@@ -42,6 +45,7 @@ public class GenPurposeViewModel extends FormViewModel {
                 .addProperty(PATTERN, (EntityFacade) null)
                 .addProperty(FIELD_INDEX, Integer.valueOf(-1))
                 .addProperty(DEFAULT_FIELDS_HASH, (Integer) null)
+                .addProperty(COMPOSER, (ObservableComposer) null)
         ;
     }
 

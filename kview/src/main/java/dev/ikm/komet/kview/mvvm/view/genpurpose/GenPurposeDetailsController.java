@@ -34,6 +34,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_W
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel.COMPOSER;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
@@ -277,7 +278,10 @@ public class GenPurposeDetailsController {
 //                    updateUIStamp(stampFormViewModelBase);
 //                }
 
-                // Initialize composer if not already done
+                // Commit transation, finalizing all impending changes
+                composer.commit();
+
+                composer = null;
                 initializeComposer();
 
                 ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor
@@ -303,6 +307,9 @@ public class GenPurposeDetailsController {
                         }
                     }
                 }
+
+                // reset composer
+                composer = null;
             }
 
 //            semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
@@ -773,6 +780,7 @@ public class GenPurposeDetailsController {
                     semanticLabel.setShowTooltip(true);
 
                     semanticLabel.setOnMouseClicked(_ -> {
+                        initializeComposer();
                         showEditSemanticFieldsPanel(actionEvent, semantic);
                         popup.hide();
                     });
@@ -789,14 +797,18 @@ public class GenPurposeDetailsController {
                     popup.getItems().add(semanticLabel);
                 });
 
-        popup.setOnCreateSemanticAction(() -> onCreateSemantic(actionEvent, sectionModel, refComponent));
+        popup.setOnCreateSemanticAction(() -> {
+            initializeComposer();
+            onCreateSemantic(actionEvent, sectionModel, refComponent);
+        });
 
-        // show Popup
+        // Show Popup
         SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
-
-        Point2D popupPosition = sectionTitledPane.getLocalToSceneTransform().transform(sectionTitledPane.getLayoutX() + sectionTitledPane.getWidth(),
-                sectionTitledPane.getBoundsInLocal().getMinY());
-        popup.show(sectionTitledPane, popupPosition.getX(), popupPosition.getY());
+        Point2D screenPoint = sectionTitledPane.localToScreen(
+                sectionTitledPane.getWidth(),
+                0
+        );
+        popup.show(sectionTitledPane, screenPoint.getX(), screenPoint.getY());
     }
 
     private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern, EntityFacade refComponent) {
@@ -958,6 +970,8 @@ public class GenPurposeDetailsController {
                 path,
                 "Edit Semantic Details"
         );
+
+        genPurposeViewModel.setPropertyValue(COMPOSER, composer);
     }
 
     private List<EntityFacade> getReferenceComponentsToUse(EditorPatternModel sectionReferenceComponent) {
