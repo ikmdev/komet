@@ -87,7 +87,7 @@
             <dependency>
                 <groupId>dev.ikm.komet</groupId>
                 <artifactId>komet-bom</artifactId>
-                <version>3.0.7-SNAPSHOT</version>
+                <version>3.0.7-reasoner-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
