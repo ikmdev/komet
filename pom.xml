@@ -5,7 +5,7 @@
  <parent>
         <groupId>network.ike.platform</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>12</version>
+        <version>13</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
