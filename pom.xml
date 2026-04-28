@@ -2,10 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
     <modelVersion>4.1.0</modelVersion>
-    <parent>
-        <groupId>network.ike.pipeline</groupId>
+ <parent>
+        <groupId>network.ike.platform</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>111</version>
+        <version>8</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
