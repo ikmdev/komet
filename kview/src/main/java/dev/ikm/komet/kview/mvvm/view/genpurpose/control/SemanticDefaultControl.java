@@ -13,15 +13,15 @@ import javafx.scene.control.Skin;
 /**
  * A control that shows 1 Semantic.
  */
-public class SemanticViewControl extends Control {
+public class SemanticDefaultControl extends Control {
 
-    public SemanticViewControl() {
+    public SemanticDefaultControl() {
         getStyleClass().add("semantic-view");
     }
 
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new SemanticViewControlSkin(this);
+        return new SemanticDefaultControlSkin(this);
     }
 
     // -- read only fields

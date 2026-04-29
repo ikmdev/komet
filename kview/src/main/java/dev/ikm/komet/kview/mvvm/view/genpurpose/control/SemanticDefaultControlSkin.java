@@ -10,7 +10,7 @@ import javafx.scene.layout.Priority;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SemanticViewControlSkin extends SkinBase<SemanticViewControl> {
+public class SemanticDefaultControlSkin extends SkinBase<SemanticDefaultControl> {
 
     private final GridPane fieldsContainer = new GridPane();
 
@@ -19,7 +19,7 @@ public class SemanticViewControlSkin extends SkinBase<SemanticViewControl> {
      *
      * @param control The control for which this Skin should attach to.
      */
-    public SemanticViewControlSkin(SemanticViewControl control) {
+    public SemanticDefaultControlSkin(SemanticDefaultControl control) {
         super(control);
 
         getChildren().add(fieldsContainer);

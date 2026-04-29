@@ -57,8 +57,9 @@ import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PatternSemanticsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SemanticDefaultControl;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsDefaultFactory;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
@@ -97,7 +98,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
-import javafx.scene.control.Separator;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -129,7 +129,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -153,18 +152,23 @@ public class GenPurposeDetailsController {
     private final Map<EditorSectionModel, SectionTitledPane<EntityFacade>> sectionModelToTitledPane = new HashMap<>();
 
     /**
-     * Given a Pattern what is the Section that has it as its Reference Component.
+     * Given an Editor Pattern Model what is the associated Pattern Presenter.
      */
-    private final Map<EditorPatternModel, PatternSemanticsControl> editorPatternModelToPatternControl = new HashMap<>();
+    private final Map<EditorPatternModel, PatternSemanticsPresenter> editorPatternModelToPatternPresenter = new HashMap<>();
 
     /**
      * Given a Semantic what is the associated Pattern Control that has it.
      */
-    private final Map<SemanticEntity<SemanticEntityVersion>, PatternSemanticsControl> semanticEntityToPatternControl = new HashMap<>();
+    private final Map<SemanticEntity<SemanticEntityVersion>, PatternSemanticsPresenter> semanticEntityToPatternSemanticsPresenter = new HashMap<>();
+
+    /**
+     * Given a SemanticEntity what's its associated Semantic Control.
+     */
+    private final Map<SemanticEntity<SemanticEntityVersion>, SemanticDefaultControl> semanticEntityToSemanticView = new HashMap<>();
 
     private final Tooltip publishTooltip = new Tooltip();
 
-    private PatternSemanticsControl previousPatternSemanticsControlInEditMode;
+    private PatternSemanticsPresenter previousPatternSemanticsInEditMode;
 
     @FXML
     StampViewControl stampViewControl;
@@ -747,13 +751,13 @@ public class GenPurposeDetailsController {
         SectionSemanticsComboBoxCell sectionSemanticsComboBoxCell = new SectionSemanticsComboBoxCell(viewProperties);
         sectionSemanticsComboBoxCell.hoverProperty().subscribe(() -> {
             SemanticEntity<SemanticEntityVersion> semanticEntity = (SemanticEntity<SemanticEntityVersion>) sectionSemanticsComboBoxCell.getItem();
-            PatternSemanticsControl patternSemanticsControl = semanticEntityToPatternControl.get(semanticEntity);
+            PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semanticEntity);
 
-            if (patternSemanticsControl != null) {
+            if (patternSemanticsPresenter != null) {
                 if (sectionSemanticsComboBoxCell.isHover()) {
-                    patternSemanticsControl.setPreviewingSemantic(semanticEntity);
+                    patternSemanticsPresenter.setPreviewingSemantic(semanticEntity);
                 } else {
-                    patternSemanticsControl.setPreviewingSemantic(null);
+                    patternSemanticsPresenter.setPreviewingSemantic(null);
                 }
             }
         });
@@ -786,11 +790,12 @@ public class GenPurposeDetailsController {
                     });
 
                     semanticLabel.hoverProperty().subscribe(() -> {
-                        PatternSemanticsControl patternSemanticsControl = semanticEntityToPatternControl.get(semantic);
+                        PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
+
                         if (semanticLabel.isHover()) {
-                            patternSemanticsControl.setPreviewingSemantic(semantic);
+                            patternSemanticsPresenter.setPreviewingSemantic(semantic);
                         } else {
-                            patternSemanticsControl.setPreviewingSemantic(null);
+                            patternSemanticsPresenter.setPreviewingSemantic(null);
                         }
                     });
 
@@ -820,14 +825,15 @@ public class GenPurposeDetailsController {
         // Create uncommited Semantic
         SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade);
 
-        PatternSemanticsControl patternSemanticsControl = editorPatternModelToPatternControl.get(editorPatternModel);
+        PatternSemanticsPresenter patternSemanticsPresenter = editorPatternModelToPatternPresenter.get(editorPatternModel);
+
         // Add content to Pattern inside Section
-        if (patternSemanticsControl == null || patternSemanticsControl.getSemantics().isEmpty()) {
+        if (patternSemanticsPresenter == null) {
             // First time adding a Semantic for the given Pattern
             addPatternViewsOfSection(sectionModelOfPattern.getPatterns());
         } else {
             // Not the first time adding a Semantic for this Pattern so we just add the new one below the existing ones
-            patternSemanticsControl.getSemantics().add(uncommitedSemantic);
+            patternSemanticsPresenter.createSemantic(uncommitedSemantic);
         }
 
         // If there are Section TitledPanes that have this Pattern as a Reference Component update them
@@ -854,14 +860,14 @@ public class GenPurposeDetailsController {
         EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(event.getSource(), OPEN_PANEL));
 
         // Turn on Edit mode on the left side for the Semantic being edited
-        if (previousPatternSemanticsControlInEditMode != null) {
-            previousPatternSemanticsControlInEditMode.setEditingSemantic(null);
+        if (previousPatternSemanticsInEditMode != null) {
+            previousPatternSemanticsInEditMode.setEditingSemantic(null);
         }
-        PatternSemanticsControl patternSemanticsControl = semanticEntityToPatternControl.get(semanticEntity);
-        if (patternSemanticsControl != null) {
-            patternSemanticsControl.setEditingSemantic(semanticEntity);
+        PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semanticEntity);
+        if (patternSemanticsPresenter != null) {
+            patternSemanticsPresenter.setEditingSemantic(semanticEntity);
         }
-        previousPatternSemanticsControlInEditMode = patternSemanticsControl;
+        previousPatternSemanticsInEditMode = patternSemanticsPresenter;
     }
 
     private void addPatternViewsOfSection(List<? extends EditorPatternModel> patternModels) {
@@ -888,26 +894,28 @@ public class GenPurposeDetailsController {
 //        patternMainContainer.getChildren().add(patternTitle);
 
         // Pattern fields
-        PatternSemanticsControl patternSemanticsControl = addSemanticViews(editorPatternModel);
+        PatternSemanticsPresenter patternSemanticsPresenter = addSemanticViews(editorPatternModel);
 
-        editorPatternModelToPatternControl.put(editorPatternModel, patternSemanticsControl);
+        editorPatternModelToPatternPresenter.put(editorPatternModel, patternSemanticsPresenter);
+
+        Node view = patternSemanticsPresenter.getView();
 
         editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
-            GridPane.setRowIndex(patternSemanticsControl, newRowIndex.intValue());
+            GridPane.setRowIndex(view, newRowIndex.intValue());
         });
 
         editorPatternModel.columnIndexProperty().subscribe(newColumnIndex -> {
-            GridPane.setColumnIndex(patternSemanticsControl, newColumnIndex.intValue());
+            GridPane.setColumnIndex(view, newColumnIndex.intValue());
         });
 
         editorPatternModel.columnSpanProperty().subscribe(newColumnSpan -> {
-            GridPane.setColumnSpan(patternSemanticsControl, newColumnSpan.intValue());
+            GridPane.setColumnSpan(view, newColumnSpan.intValue());
         });
 
-        sectionGridPane.getChildren().add(patternSemanticsControl);
+        sectionGridPane.getChildren().add(view);
     }
 
-    private PatternSemanticsControl addSemanticViews(EditorPatternModel editorPatternModel) {
+    private PatternSemanticsPresenter addSemanticViews(EditorPatternModel editorPatternModel) {
         EditorSectionModel parentSection = editorPatternModel.getParentSection();
 
         List<EntityFacade> refComponents = getReferenceComponentsToUse(parentSection.getReferenceComponent());
@@ -916,23 +924,24 @@ public class GenPurposeDetailsController {
 
         initializeComposer();
 
-        PatternSemanticsControl patternSemanticsControl = PatternSemanticsControl.create(editorPatternModel,
-                refComponents.getFirst(), viewProperties, composer, genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
+        KlPatternSemanticsDefaultFactory klPatternSemanticsDefaultFactory = new KlPatternSemanticsDefaultFactory();
+        PatternSemanticsPresenter patternSemanticsPresenter = klPatternSemanticsDefaultFactory.create(editorPatternModel,
+                viewProperties, composer, genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
 
         if (!refComponents.isEmpty()) {
-            doAddSemanticViews(editorPatternModel, patternSemanticsControl, refComponents.getFirst());
+            doAddSemanticViews(editorPatternModel, patternSemanticsPresenter, refComponents.getFirst());
             titledPane.setSelectedReferenceComponent(refComponents.getFirst());
         }
 
         titledPane.selectedReferenceComponentProperty().subscribe(() -> {
-            patternSemanticsControl.getSemantics().clear();
-            doAddSemanticViews(editorPatternModel, patternSemanticsControl, titledPane.getSelectedReferenceComponent());
+            patternSemanticsPresenter.clearSemantics();
+            doAddSemanticViews(editorPatternModel, patternSemanticsPresenter, titledPane.getSelectedReferenceComponent());
         });
 
-        return patternSemanticsControl;
+        return patternSemanticsPresenter;
     }
 
-    private void doAddSemanticViews(EditorPatternModel editorPatternModel, PatternSemanticsControl patternSemanticsControl, EntityFacade referenceComponent) {
+    private void doAddSemanticViews(EditorPatternModel editorPatternModel, PatternSemanticsPresenter patternSemanticsPresenter, EntityFacade referenceComponent) {
         // Pattern Entity
         int patternNid = editorPatternModel.getNid();
         EntityHandle handle = EntityHandle.get(patternNid);
@@ -948,8 +957,8 @@ public class GenPurposeDetailsController {
         // Start adding Semantics
         EntityService.get().forEachSemanticForComponentOfPattern(referenceComponent.nid(), patternEntity.nid(),
                 (semantic) -> {
-                    patternSemanticsControl.getSemantics().add(semantic);
-                    semanticEntityToPatternControl.put(semantic, patternSemanticsControl);
+                    patternSemanticsPresenter.createSemantic(semantic);
+                    semanticEntityToPatternSemanticsPresenter.put(semantic, patternSemanticsPresenter);
                 });
     }
 
