@@ -22,6 +22,7 @@ import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import javafx.event.ActionEvent;
 
@@ -33,6 +34,7 @@ public abstract class ChangeToConceptFromObjectAbstract extends AbstractAxiomAct
     public ChangeToConceptFromObjectAbstract(String text, Object object, AxiomSubjectRecord axiomSubjectRecord, ViewCalculator viewCalculator, EditCoordinate editCoordinate) {
         super(text, axiomSubjectRecord, viewCalculator, editCoordinate);
         switch (object) {
+            case EntityFacade entityFacade -> this.conceptFacade = EntityService.get().getEntityFast(entityFacade);
             case ConceptFacade conceptFacade -> this.conceptFacade = conceptFacade;
             case ConceptEntityVersion conceptEntityVersion -> this.conceptFacade = EntityService.get().getEntityFast(conceptEntityVersion.nid());
             case SemanticFacade semanticFacade -> {
