@@ -34,16 +34,20 @@ public abstract class ChangeToConceptFromObjectAbstract extends AbstractAxiomAct
     public ChangeToConceptFromObjectAbstract(String text, Object object, AxiomSubjectRecord axiomSubjectRecord, ViewCalculator viewCalculator, EditCoordinate editCoordinate) {
         super(text, axiomSubjectRecord, viewCalculator, editCoordinate);
         switch (object) {
-            case EntityFacade entityFacade -> this.conceptFacade = EntityService.get().getEntityFast(entityFacade);
-            case ConceptFacade conceptFacade -> this.conceptFacade = conceptFacade;
-            case ConceptEntityVersion conceptEntityVersion -> this.conceptFacade = EntityService.get().getEntityFast(conceptEntityVersion.nid());
-            case SemanticFacade semanticFacade -> {
-                SemanticEntity semantic = EntityService.get().getEntityFast(semanticFacade);
-                this.conceptFacade = (ConceptFacade) semantic.topEnclosingComponent();
+            case EntityFacade entityFacade -> {
+                if (EntityHandle.get(entityFacade).isConcept()) {
+                    this.conceptFacade = EntityHandle.get(entityFacade).expectConcept();
+                } else {
+                    this.conceptFacade = EntityHandle.get(EntityHandle.get(entityFacade).expectSemantic().nid()).expectConcept();
+                }
             }
-            case SemanticEntityVersion semanticVersion -> {
-                SemanticEntity semantic = EntityService.get().getEntityFast(semanticVersion.nid());
-                this.conceptFacade = (ConceptFacade) semantic.topEnclosingComponent();
+
+            case EntityVersion entityVersion -> {
+                if (EntityHandle.get(entityVersion.nid()).isConcept()) {
+                    this.conceptFacade = EntityHandle.get(entityVersion.nid()).expectConcept();
+                } else {
+                    this.conceptFacade = EntityHandle.get(EntityHandle.get(entityVersion.nid()).expectSemantic().nid()).expectConcept();
+                }
             }
             case SearchPanelController.NidTextRecord nidTextRecord -> {
 
@@ -56,16 +60,6 @@ public abstract class ChangeToConceptFromObjectAbstract extends AbstractAxiomAct
                         default ->  throw new IllegalStateException("Expecting a concept. Found: " + entity);
                      }
                 });
-
-                EntityHandle entityHandle = EntityHandle.get(nidTextRecord.nid());
-                if (entityHandle.isConcept())
-
-                switch (Entity.getFast(nidTextRecord.nid())) {
-                    case ConceptEntity conceptEntity -> this.conceptFacade = conceptEntity;
-                    case SemanticEntity semanticFacade -> this.conceptFacade = (ConceptFacade) semanticFacade.topEnclosingComponent();
-                    case null -> throw new IllegalStateException("Null object provided");
-                    default -> throw new IllegalStateException("Entity is not a concept: " + object);
-                }
             }
             case null -> throw new IllegalStateException("Null object provided");
             default -> throw new IllegalStateException("Entity is not a concept: " + object);
