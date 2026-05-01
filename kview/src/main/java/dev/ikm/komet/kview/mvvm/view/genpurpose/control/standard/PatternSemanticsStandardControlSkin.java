@@ -1,22 +1,22 @@
-package dev.ikm.komet.kview.mvvm.view.genpurpose.control;
+package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SkinBase;
 import javafx.scene.layout.VBox;
 
-public class PatternSemanticsDefaultControlSkin extends SkinBase<PatternSemanticsDefaultControl> {
+public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanticsStandardControl> {
     private final VBox semanticsContainer = new VBox();
 
-    private SemanticDefaultControl previousSemanticControlInEditMode;
-    private SemanticDefaultControl previousSemanticControlInPreviewMode;
+    private SemanticStandardControl previousSemanticControlInEditMode;
+    private SemanticStandardControl previousSemanticControlInPreviewMode;
 
     /**
      * Constructor for all PatternSemanticsDefaultControlSkin instances.
      *
      * @param control The control for which this Skin should attach to.
      */
-    public PatternSemanticsDefaultControlSkin(PatternSemanticsDefaultControl control) {
+    public PatternSemanticsStandardControlSkin(PatternSemanticsStandardControl control) {
         super(control);
 
         getChildren().add(semanticsContainer);
@@ -33,7 +33,7 @@ public class PatternSemanticsDefaultControlSkin extends SkinBase<PatternSemantic
         control.getStyleClass().add("pattern-container");
     }
 
-    private void onPreviewingSemanticChanged(SemanticDefaultControl semanticViewControl) {
+    private void onPreviewingSemanticChanged(SemanticStandardControl semanticViewControl) {
         if (previousSemanticControlInPreviewMode != null) {
             previousSemanticControlInPreviewMode.setPreviewMode(false);
         }
@@ -44,7 +44,7 @@ public class PatternSemanticsDefaultControlSkin extends SkinBase<PatternSemantic
         previousSemanticControlInPreviewMode = semanticViewControl;
     }
 
-    private void onEditingSemanticChanged(SemanticDefaultControl semanticViewControl) {
+    private void onEditingSemanticChanged(SemanticStandardControl semanticViewControl) {
         if (previousSemanticControlInEditMode != null) {
             previousSemanticControlInEditMode.setEditMode(false);
         }
@@ -55,7 +55,7 @@ public class PatternSemanticsDefaultControlSkin extends SkinBase<PatternSemantic
         previousSemanticControlInEditMode = semanticViewControl;
     }
 
-    private void onSemanticsChanged(ListChangeListener.Change<? extends SemanticDefaultControl> change) {
+    private void onSemanticsChanged(ListChangeListener.Change<? extends SemanticStandardControl> change) {
         while (change.next()) {
             if (change.wasAdded()) {
                 change.getAddedSubList().forEach(this::addSemantic);
@@ -68,7 +68,7 @@ public class PatternSemanticsDefaultControlSkin extends SkinBase<PatternSemantic
         }
     }
 
-    private void addSemantic(SemanticDefaultControl semanticViewControl) {
+    private void addSemantic(SemanticStandardControl semanticViewControl) {
         if(getSkinnable().getSemantics().indexOf(semanticViewControl) > 0) {
             Separator separator = new Separator();
             semanticsContainer.getChildren().add(separator);

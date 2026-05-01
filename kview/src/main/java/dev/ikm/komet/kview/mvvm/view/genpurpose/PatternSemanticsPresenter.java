@@ -5,7 +5,7 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import javafx.scene.Node;
 
 public interface PatternSemanticsPresenter {
-    void createSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity);
+    void addNewSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity);
     void clearSemantics();
 
     void setPreviewingSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity);

@@ -58,8 +58,10 @@ import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SemanticDefaultControl;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsDefaultFactory;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandardControl;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsFactory;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsStandardFactory;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsTableFactory;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
@@ -164,7 +166,7 @@ public class GenPurposeDetailsController {
     /**
      * Given a SemanticEntity what's its associated Semantic Control.
      */
-    private final Map<SemanticEntity<SemanticEntityVersion>, SemanticDefaultControl> semanticEntityToSemanticView = new HashMap<>();
+    private final Map<SemanticEntity<SemanticEntityVersion>, SemanticStandardControl> semanticEntityToSemanticView = new HashMap<>();
 
     private final Tooltip publishTooltip = new Tooltip();
 
@@ -833,7 +835,7 @@ public class GenPurposeDetailsController {
             addPatternViewsOfSection(sectionModelOfPattern.getPatterns());
         } else {
             // Not the first time adding a Semantic for this Pattern so we just add the new one below the existing ones
-            patternSemanticsPresenter.createSemantic(uncommitedSemantic);
+            patternSemanticsPresenter.addNewSemantic(uncommitedSemantic);
         }
 
         // If there are Section TitledPanes that have this Pattern as a Reference Component update them
@@ -924,8 +926,8 @@ public class GenPurposeDetailsController {
 
         initializeComposer();
 
-        KlPatternSemanticsDefaultFactory klPatternSemanticsDefaultFactory = new KlPatternSemanticsDefaultFactory();
-        PatternSemanticsPresenter patternSemanticsPresenter = klPatternSemanticsDefaultFactory.create(editorPatternModel,
+        KlPatternSemanticsFactory klPatternSemanticsFactory = new KlPatternSemanticsTableFactory();
+        PatternSemanticsPresenter patternSemanticsPresenter = klPatternSemanticsFactory.create(editorPatternModel,
                 viewProperties, composer, genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
 
         if (!refComponents.isEmpty()) {
@@ -957,7 +959,7 @@ public class GenPurposeDetailsController {
         // Start adding Semantics
         EntityService.get().forEachSemanticForComponentOfPattern(referenceComponent.nid(), patternEntity.nid(),
                 (semantic) -> {
-                    patternSemanticsPresenter.createSemantic(semantic);
+                    patternSemanticsPresenter.addNewSemantic(semantic);
                     semanticEntityToPatternSemanticsPresenter.put(semantic, patternSemanticsPresenter);
                 });
     }

@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.view.genpurpose;
+package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableEntity;
@@ -10,8 +10,7 @@ import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PatternSemanticsDefaultControl;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SemanticDefaultControl;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.tinkar.entity.Field;
@@ -26,32 +25,32 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class PatternSemanticsDefaultPresenter implements PatternSemanticsPresenter {
+public class PatternSemanticsStandardPresenter implements PatternSemanticsPresenter {
 
     /**
      * Given a SemanticEntity what's its associated Semantic Control.
      */
-    private final Map<SemanticEntity<SemanticEntityVersion>, SemanticDefaultControl> semanticEntityToSemanticView = new HashMap<>();
+    private final Map<SemanticEntity<SemanticEntityVersion>, SemanticStandardControl> semanticEntityToSemanticView = new HashMap<>();
 
-    private final PatternSemanticsDefaultControl patternSemanticsControl;
+    private final PatternSemanticsStandardControl patternSemanticsControl;
 
     private final ObservableComposer composer;
     private final ViewProperties viewProperties;
     private final UUID journalTopic;
     private final EditorPatternModel editorPatternModel;
 
-    public PatternSemanticsDefaultPresenter(EditorPatternModel editorPatternModel, ViewProperties viewProperties, ObservableComposer composer, UUID journalTopic) {
+    public PatternSemanticsStandardPresenter(EditorPatternModel editorPatternModel, ViewProperties viewProperties, ObservableComposer composer, UUID journalTopic) {
         this.composer = composer;
         this.viewProperties = viewProperties;
         this.journalTopic = journalTopic;
         this.editorPatternModel = editorPatternModel;
 
-        patternSemanticsControl = PatternSemanticsDefaultControl.create();
+        patternSemanticsControl = PatternSemanticsStandardControl.create();
     }
 
     @Override
-    public void createSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity) {
-        SemanticDefaultControl semanticViewControl = createSemanticControl(editorPatternModel, semanticEntity);
+    public void addNewSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity) {
+        SemanticStandardControl semanticViewControl = createSemanticControl(editorPatternModel, semanticEntity);
 
         patternSemanticsControl.getSemantics().add(semanticViewControl);
         semanticEntityToSemanticView.put(semanticEntity, semanticViewControl);
@@ -64,14 +63,14 @@ public class PatternSemanticsDefaultPresenter implements PatternSemanticsPresent
 
     @Override
     public void setPreviewingSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity) {
-        SemanticDefaultControl semanticDefaultControl = semanticEntityToSemanticView.get(semanticEntity);
-        patternSemanticsControl.setPreviewingSemantic(semanticDefaultControl);
+        SemanticStandardControl semanticStandardControl = semanticEntityToSemanticView.get(semanticEntity);
+        patternSemanticsControl.setPreviewingSemantic(semanticStandardControl);
     }
 
     @Override
     public void setEditingSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity) {
-        SemanticDefaultControl semanticDefaultControl = semanticEntityToSemanticView.get(semanticEntity);
-        patternSemanticsControl.setEditingSemantic(semanticDefaultControl);
+        SemanticStandardControl semanticStandardControl = semanticEntityToSemanticView.get(semanticEntity);
+        patternSemanticsControl.setEditingSemantic(semanticStandardControl);
     }
 
     @Override
@@ -79,8 +78,8 @@ public class PatternSemanticsDefaultPresenter implements PatternSemanticsPresent
         return patternSemanticsControl;
     }
 
-    private SemanticDefaultControl createSemanticControl(EditorPatternModel editorPatternModel, SemanticEntity<SemanticEntityVersion> semanticEntity) {
-        SemanticDefaultControl semanticViewControl = new SemanticDefaultControl();
+    private SemanticStandardControl createSemanticControl(EditorPatternModel editorPatternModel, SemanticEntity<SemanticEntityVersion> semanticEntity) {
+        SemanticStandardControl semanticViewControl = new SemanticStandardControl();
 
         semanticEntityToSemanticView.put(semanticEntity, semanticViewControl);
 
@@ -109,7 +108,7 @@ public class PatternSemanticsDefaultPresenter implements PatternSemanticsPresent
         return semanticViewControl;
     }
 
-    private void addFieldView(ObservableField<?> observableField, EditorFieldModel fieldModel, SemanticDefaultControl semanticViewControl) {
+    private void addFieldView(ObservableField<?> observableField, EditorFieldModel fieldModel, SemanticStandardControl semanticViewControl) {
         Field<?> field = observableField.field();
 
         // Generate node using the underlying ObservableField (read-only view)
