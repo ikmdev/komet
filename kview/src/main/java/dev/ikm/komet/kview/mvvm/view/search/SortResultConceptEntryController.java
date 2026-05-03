@@ -20,6 +20,7 @@ import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.setUp
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.search.HighlightedSegments;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
@@ -271,23 +272,16 @@ public class SortResultConceptEntryController extends AbstractBasicController {
 
         private void updateTextFlow(TextFlow textFlow, String highlightedString) {
             textFlow.getChildren().clear();
-            String[] words = highlightedString.split(" ");
-            for (String word : words) {
+            for (String word : highlightedString.split(" ")) {
                 Text text = new Text();
                 StackPane textContainer = new StackPane(text);
-
-                if (word.contains("<B>")) {
-                    text.setText(word.replaceAll("<B>", "")
-                            .replaceAll("</B>", "")
-                            .replaceAll("\\s+", " "));
-
+                if (HighlightedSegments.containsMarkup(word)) {
+                    text.setText(HighlightedSegments.stripMarkup(word).replaceAll("\\s+", " "));
                     textContainer.getStyleClass().add("highlight");
                 } else {
                     text.setText(word);
                 }
-
                 textContainer.getStyleClass().add("word-container");
-
                 textFlow.getChildren().add(textContainer);
             }
         }

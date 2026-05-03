@@ -75,7 +75,7 @@ public class SearchResultCell extends TreeCell<Object> {
             if (item instanceof LatestVersionSearchResult latestVersionSearchResult) {
                 TextFlow textFlow = newTextFlow();
 
-                String matchedText = "";
+                String matchedText;
                 if (latestVersionSearchResult.highlightedString() != null) {
                     matchedText = latestVersionSearchResult.highlightedString();
                 } else if (latestVersionSearchResult.latestVersion().isPresent()) {
@@ -88,38 +88,11 @@ public class SearchResultCell extends TreeCell<Object> {
                     // however, we ideally shouldn't reach this code
                     matchedText = latestVersionSearchResult.toString();
                 }
-                String startTokenToMatch = "<B>";
-                String endTokenToMatch = "</B>";
-
-                int startMatchIndex = matchedText.indexOf(startTokenToMatch);
-                while (startMatchIndex != -1) {
-                    if (startMatchIndex != 0) {
-                        String noHighlightText = matchedText.substring(0, startMatchIndex);
-                        Text t = new Text(noHighlightText);
-                        t.getStyleClass().add(SEARCH_NOT_MATCHED.toString());
-                        textFlow.getChildren().add(t);
-                    }
-                    int endMatchIndex = matchedText.indexOf(endTokenToMatch);
-                    if (endMatchIndex == -1) {
-                        // Malformed. Highlight to the end...
-                        String highlightText = matchedText.substring(startMatchIndex + startTokenToMatch.length());
-                        Text t = new Text(highlightText);
-                        t.getStyleClass().add(SEARCH_MATCH.toString());
-                        textFlow.getChildren().add(t);
-                        matchedText = "";
-                        startMatchIndex = -1;
-                    } else {
-                        String highlightText = matchedText.substring(startMatchIndex + startTokenToMatch.length(), endMatchIndex);
-                        Text t = new Text(highlightText);
-                        t.getStyleClass().add(SEARCH_MATCH.toString());
-                        textFlow.getChildren().add(t);
-                        matchedText = matchedText.substring(endMatchIndex + endTokenToMatch.length());
-                        startMatchIndex = matchedText.indexOf(startTokenToMatch);
-                    }
-                }
-                if (!matchedText.isBlank()) {
-                    Text t = new Text(matchedText);
-                    t.getStyleClass().add(SEARCH_NOT_MATCHED.toString());
+                for (HighlightedSegments.Segment segment : HighlightedSegments.parse(matchedText)) {
+                    Text t = new Text(segment.text());
+                    t.getStyleClass().add(segment.matched()
+                            ? SEARCH_MATCH.toString()
+                            : SEARCH_NOT_MATCHED.toString());
                     textFlow.getChildren().add(t);
                 }
                 HBox hBox = new HBox(textFlow);

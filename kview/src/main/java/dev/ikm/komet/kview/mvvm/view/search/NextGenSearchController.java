@@ -28,6 +28,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
 import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.search.HighlightedSegments;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
@@ -460,10 +461,7 @@ public class NextGenSearchController {
     }
 
     private String formatHighlightedString(String highlightedString) {
-        String string = (highlightedString == null) ? "" : highlightedString;
-        return string.replaceAll("<B>", "")
-                .replaceAll("</B>", "")
-                .replaceAll("\\s+", " ");
+        return HighlightedSegments.stripMarkup(highlightedString).replaceAll("\\s+", " ");
     }
 
 

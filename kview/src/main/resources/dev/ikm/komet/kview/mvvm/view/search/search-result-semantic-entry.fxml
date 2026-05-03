@@ -34,7 +34,7 @@
                 </Label>
                 <TextFlow fx:id="textFlow" styleClass="semantic-text-container" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="164.0">
                     <children>
-                        <Text fx:id="semanticText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="search-semantic-entry-text" text="Tetralogy of Fallot  (disorder)" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="search-semantic-entry-text" text="Tetralogy of Fallot  (disorder)" />
                     </children>
                     <HBox.margin>
                         <Insets bottom="8.0" left="2.0" right="36.0" top="8.0" />

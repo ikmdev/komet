@@ -75,7 +75,7 @@ public class SearchCellDescriptionSemantic extends SearchCellBase {
                 SemanticEntityVersion semantic = latestVersionSearchResult.latestVersion().get();
 
                 controller.setIdenticon(Identicon.generateIdenticonImage(semantic.publicId()));
-                controller.setSemanticText(formatHighlightedString(latestVersionSearchResult.highlightedString()));
+                controller.setSemanticText(latestVersionSearchResult.highlightedString());
                 controller.setWindowView(observableViewNoOverride);
                 Entity entity = Entity.getConceptForSemantic(semantic.nid()).get();
                 controller.setData(entity);
@@ -93,10 +93,4 @@ public class SearchCellDescriptionSemantic extends SearchCellBase {
         }
     }
 
-    private String formatHighlightedString(String highlightedString) {
-        String string = (highlightedString == null) ? "" : highlightedString;
-        return string.replaceAll("<B>", "")
-                .replaceAll("</B>", "")
-                .replaceAll("\\s+", " ");
-    }
 }
