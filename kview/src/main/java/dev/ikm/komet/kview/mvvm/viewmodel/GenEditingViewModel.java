@@ -38,8 +38,8 @@ public class GenEditingViewModel extends FormViewModel {
     public static String FIELDS_COLLECTION = "fieldsCollection";
     public static String SEMANTIC = "semantic";
     public static String REF_COMPONENT = "referenceComponent";
-    public static String FIELD_INDEX = "fieldIndex";
     public static String PATTERN = "pattern";
+    // FIELD_INDEX inherited from FormViewModel
 
     // for single semantic editing
     public static String FIELD = "field";

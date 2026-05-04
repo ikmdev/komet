@@ -60,7 +60,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.Confi
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.SEMANTIC;
-import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FIELD_INDEX;
 
 public class GenPurposePropertiesController {
 

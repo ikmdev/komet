@@ -96,7 +96,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel.REF_COMPONE
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel.WINDOW_TOPIC;
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
-import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
+import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FIELD_INDEX;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 

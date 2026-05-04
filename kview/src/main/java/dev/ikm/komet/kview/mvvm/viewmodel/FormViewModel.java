@@ -26,6 +26,15 @@ public class FormViewModel extends ValidationViewModel {
     public static String VIEW_PROPERTIES = "viewProperties";
     public static String MODE = "mode";
 
+    /**
+     * MVVM property key for "which field index in the current entity is being
+     * edited." {@code -1} means no specific field — the user is acting on the
+     * whole semantic. Distinct from {@code IndexerSchema.INDEXED_FIELD_ORDINAL}
+     * (a Lucene field name in {@code search-provider}); the two share the
+     * literal string {@code "fieldIndex"} by coincidence, not by design.
+     */
+    public static String FIELD_INDEX = "fieldIndex";
+
     // Create, Edit, View
     public static String CREATE = "CREATE";
     public static String EDIT = "EDIT";
