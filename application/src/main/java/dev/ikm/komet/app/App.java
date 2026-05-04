@@ -378,26 +378,25 @@ public class App extends Application  {
 
         GrpcSearchService.initialize(host, port);
 
-        // Start an ephemeral (in-memory) data store so that framework components
-        // that call PrimitiveData.get() (e.g. WindowSettings, Coordinates) work
-        // without a local dataset.  Actual concept search is routed through gRPC.
+        // Start GrpcPrimitiveDataService so that all PrimitiveData.get().* call sites
+        // (entity bytes, NID resolution, iteration) work without a local dataset.
         // getControllerOptions() triggers ServiceLifecycleManager.discoverServices().
         try {
             var controllers = PrimitiveData.getControllerOptions();
-            var ephemeralOpt = controllers.stream()
-                    .filter(c -> c.controllerName().toLowerCase().contains("ephemeral"))
+            var providerOpt = controllers.stream()
+                    .filter(c -> c.controllerName().toLowerCase().contains("grpc"))
                     .findFirst();
-            if (ephemeralOpt.isPresent()) {
-                PrimitiveData.selectControllerByName(ephemeralOpt.get().controllerName());
+            if (providerOpt.isPresent()) {
+                PrimitiveData.selectControllerByName(providerOpt.get().controllerName());
                 PrimitiveData.start();
-                LOG.info("Ephemeral PrimitiveData started for gRPC mode (controller: {})",
-                        ephemeralOpt.get().controllerName());
+                LOG.info("PrimitiveData started for gRPC mode (controller: {})",
+                        providerOpt.get().controllerName());
             } else {
-                LOG.warn("No ephemeral data provider found; available: {}",
+                LOG.warn("No gRPC data provider found; available: {}",
                         controllers.stream().map(c -> c.controllerName()).toList());
             }
         } catch (Exception e) {
-            LOG.error("Failed to start ephemeral data provider", e);
+            LOG.error("Failed to start data provider for gRPC mode", e);
         }
 
         LOG.info("gRPC mode active → {}:{}", host, port);
@@ -546,7 +545,12 @@ public class App extends Application  {
                     TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
                 }
                 case SELECT_USER -> {
-                    appPages.launchLoginAuthor(primaryStage);
+                    // gRPC mode has no local user store — skip author login and go straight to RUNNING
+                    if (GrpcSearchService.isActive()) {
+                        Platform.runLater(() -> state.set(RUNNING));
+                    } else {
+                        appPages.launchLoginAuthor(primaryStage);
+                    }
                 }
                 case RUNNING -> {
                     if (userProperty.get() == null) {
