@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.findDescrNameText;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CONCEPT_TOPIC;
 
 public class SpecimenDetailsController extends AbstractBasicController {
 

@@ -13,39 +13,21 @@ import java.util.UUID;
 public class GenPurposeViewModel extends FormViewModel {
     private static final Logger LOG = LoggerFactory.getLogger(GenEditingViewModel.class);
 
-
-    // --------------------------------------------
-    // Known properties
-    // --------------------------------------------
-//    public static String STAMP_VIEW_MODEL = "stampViewModel";
-    public static String WINDOW_TOPIC = "windowTopic";
-    public static String FIELDS_COLLECTION = "fieldsCollection";
-    public static String SEMANTIC = "semantic";
-    public static String REF_COMPONENT = "referenceComponent";
-    public static String PATTERN = "pattern";
-    // FIELD_INDEX inherited from FormViewModel
-
-    // for single semantic editing
-    public static String FIELD = "field";
-
-    // store the hash of the default values
-    public static String DEFAULT_FIELDS_HASH = "defaultFieldsHash";
-
-    public static String COMPOSER = "composer";
+    // Property keys live on ViewModelKey; this class owns no key constants.
 
     public GenPurposeViewModel() {
         super();
-        addProperty(VIEW_PROPERTIES, (ViewProperties) null)
-                .addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, (UUID) null)
-                .addProperty(WINDOW_TOPIC, (UUID) null)
-//                .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
-                .addProperty(FIELDS_COLLECTION, new ArrayList<FieldRecord<Object>>()) // Ordered collection of Fields
-                .addProperty(REF_COMPONENT, (EntityFacade) null)
-                .addProperty(SEMANTIC, (EntityFacade) null)
-                .addProperty(PATTERN, (EntityFacade) null)
-                .addProperty(FIELD_INDEX, Integer.valueOf(-1))
-                .addProperty(DEFAULT_FIELDS_HASH, (Integer) null)
-                .addProperty(COMPOSER, (ObservableComposer) null)
+        addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null)
+                .addProperty(ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC, (UUID) null)
+                .addProperty(ViewModelKey.WINDOW_TOPIC, (UUID) null)
+//                .addProperty(ViewModelKey.STAMP_VIEW_MODEL, (ViewModel) null)
+                .addProperty(ViewModelKey.FIELDS_COLLECTION, new ArrayList<FieldRecord<Object>>()) // Ordered collection of Fields
+                .addProperty(ViewModelKey.REF_COMPONENT, (EntityFacade) null)
+                .addProperty(ViewModelKey.SEMANTIC, (EntityFacade) null)
+                .addProperty(ViewModelKey.PATTERN, (EntityFacade) null)
+                .addProperty(ViewModelKey.FIELD_INDEX, Integer.valueOf(-1))
+                .addProperty(ViewModelKey.DEFAULT_FIELDS_HASH, (Integer) null)
+                .addProperty(ViewModelKey.COMPOSER, (ObservableComposer) null)
         ;
     }
 
@@ -57,7 +39,7 @@ public class GenPurposeViewModel extends FormViewModel {
     }
 
     public ViewProperties getViewProperties() {
-        return getPropertyValue(VIEW_PROPERTIES);
+        return getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
     }
 
 //    public void updateStamp() {

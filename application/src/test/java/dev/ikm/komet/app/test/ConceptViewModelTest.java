@@ -29,7 +29,7 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;

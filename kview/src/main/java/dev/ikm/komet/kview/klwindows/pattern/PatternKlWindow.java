@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 
 /**

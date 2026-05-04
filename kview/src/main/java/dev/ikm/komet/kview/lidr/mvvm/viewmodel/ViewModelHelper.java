@@ -55,7 +55,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
 
 
 public class ViewModelHelper {
-    public static final String VIEW_PROPERTIES = "viewProperties";
+    // VIEW_PROPERTIES moved to dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.
 
     private static final Logger LOG = LoggerFactory.getLogger(ViewModelHelper.class);
     // TODO: Access LIDR PublicIds in a more maintainable way

@@ -32,7 +32,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.PREVIOUS_DES
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.SEMANTIC_PUBLIC_ID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
@@ -71,6 +71,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class DescriptionNameController {
 
@@ -220,7 +221,7 @@ public class DescriptionNameController {
     }
 
     private ViewProperties getViewProperties() {
-        return descrNameViewModel.getPropertyValue(VIEW_PROPERTIES);
+        return descrNameViewModel.getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
     }
     private UUID getPatternTopic() {
         return descrNameViewModel.getPropertyValue(PATTERN_TOPIC);

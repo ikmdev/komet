@@ -61,8 +61,8 @@ import static dev.ikm.komet.kview.lidr.events.AddResultEvent.ADD_RESULT_TO_ANALY
 import static dev.ikm.komet.kview.lidr.events.ShowPanelEvent.SHOW_ADD_ANALYTE_GROUP;
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.*;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ResultsViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CONCEPT_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 
 /**
  * Manual Entry for Results Conformance Panel.

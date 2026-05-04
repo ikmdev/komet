@@ -43,7 +43,7 @@ import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 
 import java.util.UUID;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 
 public class SortResultSemanticEntryController  {
 

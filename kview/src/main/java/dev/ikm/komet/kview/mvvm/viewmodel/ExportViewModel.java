@@ -41,7 +41,7 @@ public class ExportViewModel extends FormViewModel {
      */
     public ExportViewModel() {
         super();
-        addProperty(VIEW_PROPERTIES, (ViewProperties) null);
+        addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null);
     }
 
     /**

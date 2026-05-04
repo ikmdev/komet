@@ -44,8 +44,8 @@ import static dev.ikm.komet.kview.lidr.mvvm.view.details.ResultConformanceDetail
 import static dev.ikm.komet.kview.lidr.mvvm.view.details.ResultConformanceDetailsController.RESULT_CONFORMANCE_RECORD;
 import static dev.ikm.komet.kview.lidr.mvvm.view.details.SpecimenDetailsController.SPECIMEN_DETAIL_FXML;
 import static dev.ikm.komet.kview.lidr.mvvm.view.details.SpecimenDetailsController.SPECIMEN_RECORD;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CONCEPT_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 
 public class LidrRecordDetailsController extends AbstractBasicController {
 

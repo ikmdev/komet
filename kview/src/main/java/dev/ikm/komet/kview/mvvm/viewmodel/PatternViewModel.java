@@ -80,7 +80,7 @@ public class PatternViewModel extends FormViewModel {
     // --------------------------------------------
     // Known properties
     // --------------------------------------------
-    public static String STAMP_VIEW_MODEL = "stampViewModel";
+    // STAMP_VIEW_MODEL, FIELDS_COLLECTION, PATTERN inherited from ViewModelKey.
 
     public static String STATE_MACHINE = "stateMachine";
 
@@ -110,10 +110,6 @@ public class PatternViewModel extends FormViewModel {
 
     public static String FQN_DESCRIPTION_NAME_TEXT = "fqnDescrNameText";
 
-    public static String FIELDS_COLLECTION = "fieldsCollection";
-
-    public static String PATTERN = "pattern";
-
     public static String FQN_PROXY = "fqnProxy";
 
     public static String HAS_CHANGED = "hasChanged";
@@ -134,11 +130,11 @@ public class PatternViewModel extends FormViewModel {
 
     public PatternViewModel() {
         super();
-            addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+            addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null)
                     .addProperty(PATTERN_TITLE_TEXT, "")
                     .addProperty(PATTERN_TOPIC, (UUID) null)
                     .addProperty(STATE_MACHINE, (StateMachine) null)
-                    .addProperty(STAMP_VIEW_MODEL, (StampFormViewModelBase) null)
+                    .addProperty(ViewModelKey.STAMP_VIEW_MODEL, (StampFormViewModelBase) null)
                     .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
                     .addProperty(OTHER_NAMES, new ArrayList<DescrName>())
                     .addProperty(OTHER_NAME_SEMANTIC_VERSION_MAP, new HashMap<DescrName, SemanticEntityVersion>())
@@ -151,17 +147,17 @@ public class PatternViewModel extends FormViewModel {
                     // PATTERN>DESCRIPTION FQN and Other Name
                     .addProperty(FQN_DESCRIPTION_NAME_TEXT, "")
                     // Ordered collection of Fields
-                    .addProperty(FIELDS_COLLECTION, new ArrayList<PatternField>())
+                    .addProperty(ViewModelKey.FIELDS_COLLECTION, new ArrayList<PatternField>())
                     .addProperty(SELECTED_PATTERN_FIELD, (PatternField) null)
                     .addProperty(IS_INVALID, true)
-                    .addProperty(PATTERN, (EntityFacade) null) // once saved, this is the pattern facade
+                    .addProperty(ViewModelKey.PATTERN, (EntityFacade) null) // once saved, this is the pattern facade
                     .addProperty(FQN_PROXY, (EntityProxy.Semantic) null)
                     .addProperty(HAS_CHANGED, false)
                     .addValidator(IS_INVALID, "Is Invalid", (ValidationResult vr, ViewModel viewModel) -> {
                         ObjectProperty<EntityFacade> purposeEntity = viewModel.getProperty(PURPOSE_ENTITY);
                         ObjectProperty<EntityFacade> meaningEntity = viewModel.getProperty(MEANING_ENTITY);
                         ObjectProperty<DescrName> fqnProperty = viewModel.getProperty(FQN_DESCRIPTION_NAME);
-                        StampFormViewModelBase stampFormViewModel = viewModel.getPropertyValue(STAMP_VIEW_MODEL);
+                        StampFormViewModelBase stampFormViewModel = viewModel.getPropertyValue(ViewModelKey.STAMP_VIEW_MODEL);
                         ObjectProperty<?> stampModule = stampFormViewModel.getProperty(MODULE);
                         ObjectProperty<?> stampPath = stampFormViewModel.getProperty(PATH);
                         ObjectProperty<?> stampStatus = stampFormViewModel.getProperty(STATUS);
@@ -200,7 +196,7 @@ public class PatternViewModel extends FormViewModel {
     }
 
     public void reLoadPatternValues(){
-        ObservableList<PatternField> patternFieldObsList = getObservableList(FIELDS_COLLECTION);
+        ObservableList<PatternField> patternFieldObsList = getObservableList(ViewModelKey.FIELDS_COLLECTION);
         patternFieldObsList.clear();
         ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
         otherNamesList.clear();
@@ -209,14 +205,14 @@ public class PatternViewModel extends FormViewModel {
 
     @SuppressWarnings("removal")
     public void loadPatternValues(){
-        ObjectProperty<EntityFacade> patternProperty = getProperty(PATTERN);
+        ObjectProperty<EntityFacade> patternProperty = getProperty(ViewModelKey.PATTERN);
         EntityFacade patternFacade = patternProperty.getValue();
-        if (patternFacade != null && getPropertyValue(MODE).equals(EDIT)) {
+        if (patternFacade != null && getPropertyValue(ViewModelKey.MODE).equals(EDIT)) {
             Entity entity = EntityService.get().getEntityFast(patternFacade);
             ViewCalculator viewCalculator = getViewProperties().calculator();
 
             // Load Fields data.
-            ObservableList<PatternField> patternFieldObsList = getObservableList(FIELDS_COLLECTION);
+            ObservableList<PatternField> patternFieldObsList = getObservableList(ViewModelKey.FIELDS_COLLECTION);
             PatternVersionRecord patternVersionRecord = (PatternVersionRecord) viewCalculator.latest(entity).get();
             ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = patternVersionRecord.fieldDefinitions();
 
@@ -269,7 +265,7 @@ public class PatternViewModel extends FormViewModel {
         }
 
         // Reload STAMP Form View Model
-        StampFormViewModelBase stampFormViewModel = getPropertyValue(STAMP_VIEW_MODEL);
+        StampFormViewModelBase stampFormViewModel = getPropertyValue(ViewModelKey.STAMP_VIEW_MODEL);
         stampFormViewModel.update(patternFacade, getPropertyValue(PATTERN_TOPIC), getViewProperties());
     }
 
@@ -305,7 +301,7 @@ public class PatternViewModel extends FormViewModel {
     }
 
     private String retrieveDisplayName(PatternFacade patternFacade) {
-        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
+        ViewProperties viewProperties = getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
         ViewCalculator viewCalculator = viewProperties.calculator();
         Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
         Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
@@ -323,13 +319,13 @@ public class PatternViewModel extends FormViewModel {
             return false;
         }
 
-        PublicId patternPublicId = getPropertyValue(PATTERN) == null
+        PublicId patternPublicId = getPropertyValue(ViewModelKey.PATTERN) == null
                 ? PublicIds.newRandom()
-                : ((PatternFacade) getPropertyValue(PATTERN)).publicId();
-        boolean isEdit = getPropertyValue(PATTERN) != null;
+                : ((PatternFacade) getPropertyValue(ViewModelKey.PATTERN)).publicId();
+        boolean isEdit = getPropertyValue(ViewModelKey.PATTERN) != null;
 
         // Extract STAMP values from the nested stampViewModel
-        StampFormViewModelBase stampFormViewModel = getPropertyValue(STAMP_VIEW_MODEL);
+        StampFormViewModelBase stampFormViewModel = getPropertyValue(ViewModelKey.STAMP_VIEW_MODEL);
         State state = stampFormViewModel.getPropertyValue(STATUS);
 
         Object authorObject = stampFormViewModel.getPropertyValue(AUTHOR);
@@ -359,7 +355,7 @@ public class PatternViewModel extends FormViewModel {
         patternEditable.getPurposeProperty().set(purposeEntity);
 
         // Build field definitions from the UI collection
-        ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
+        ObservableList<PatternField> fieldsProperty = getObservableList(ViewModelKey.FIELDS_COLLECTION);
         int patternNid = PrimitiveData.nid(patternPublicId);
         int stampNid = patternEditable.getEditStamp().nid();
         org.eclipse.collections.api.list.MutableList<FieldDefinitionRecord> fieldDefs =
@@ -455,7 +451,7 @@ public class PatternViewModel extends FormViewModel {
         // Commit all composed entities
         composer.commit();
 
-        setPropertyValue(PATTERN, Pattern.make(null, patternPublicId));
+        setPropertyValue(ViewModelKey.PATTERN, Pattern.make(null, patternPublicId));
         return true;
     }
 
@@ -488,6 +484,6 @@ public class PatternViewModel extends FormViewModel {
     }
 
     public ViewProperties getViewProperties() {
-        return getPropertyValue(VIEW_PROPERTIES);
+        return getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
     }
 }

@@ -10,6 +10,7 @@ import org.carlfx.cognitive.viewmodel.ViewModel;
 import java.util.Collections;
 
 import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.LoginProperties.*;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class LoginAuthorViewModel extends FormViewModel {
 
@@ -57,7 +58,7 @@ public class LoginAuthorViewModel extends FormViewModel {
      * @return boolean
      */
     public boolean authenticateUser() {
-        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
+        ViewProperties viewProperties = getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
         ConceptEntity user = getPropertyValue(SELECTED_AUTHOR);
         String username = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(user.nid());
         String password = getPropertyValue(PASSWORD);

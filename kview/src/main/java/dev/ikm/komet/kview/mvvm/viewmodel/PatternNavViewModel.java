@@ -36,7 +36,7 @@ public class PatternNavViewModel extends FormViewModel {
 
     public PatternNavViewModel() {
         super();
-        this.addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+        this.addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null)
         .addProperty(MAX_CHILDREN_COUNT, 150)
         .addProperty(PATTERN_COLLECTION, new ArrayList<EntityFacade>(), true);
     }
@@ -45,7 +45,7 @@ public class PatternNavViewModel extends FormViewModel {
 
     public void reload() {
         TinkExecutor.threadPool().execute(() -> {
-            ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
+            ViewProperties viewProperties = getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
             if (viewProperties == null) {
                 LOG.warn("PatternNavViewModel's ViewProperties is null. Unable to reload.");
                 return;
