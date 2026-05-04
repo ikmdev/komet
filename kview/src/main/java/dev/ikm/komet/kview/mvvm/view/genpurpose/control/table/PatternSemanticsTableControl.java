@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
 
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -12,18 +13,24 @@ import javafx.scene.control.Skin;
 public class PatternSemanticsTableControl extends Control {
     public static final String DEFAULT_STYLE_CLASS = "pattern-semantics-table";
 
-    private PatternSemanticsTableControl() {
+    private final ViewCalculator viewCalculator;
+
+    private PatternSemanticsTableControl(ViewCalculator viewCalculator) {
         getStyleClass().add(DEFAULT_STYLE_CLASS);
+        this.viewCalculator = viewCalculator;
     }
 
-    public static PatternSemanticsTableControl create() {
-        return new PatternSemanticsTableControl();
+    public static PatternSemanticsTableControl create(ViewCalculator viewCalculator) {
+        return new PatternSemanticsTableControl(viewCalculator);
     }
 
     @Override
     protected Skin<?> createDefaultSkin() {
         return new PatternSemanticsTableControlSkin(this);
     }
+
+    // -- view calculator
+    public ViewCalculator getViewCalculator() { return viewCalculator; }
 
     // -- title
     private final StringProperty title = new SimpleStringProperty();

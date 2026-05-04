@@ -181,6 +181,8 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.genpurpose.control.table to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
     opens dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell;
+    opens dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell to javafx.fxml, org.carlfx.cognitive;
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.concept.ConceptNodeFactory;
 

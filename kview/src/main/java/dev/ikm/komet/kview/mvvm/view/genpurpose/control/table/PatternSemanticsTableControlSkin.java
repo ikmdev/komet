@@ -1,13 +1,15 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
 
-import javafx.beans.Observable;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticComponentCollectionCell;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticStandardCell;
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.SkinBase;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import java.util.List;
+
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
 
 public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsTableControl> {
 
@@ -29,7 +31,9 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
 
         control.getSemantics().addListener(this::onSemanticsChanged);
         if (!tableViewInitialized) {
-            initializeTableView(control.getSemantics().getFirst());
+            if (!control.getSemantics().isEmpty()) {
+                initializeTableView(control.getSemantics().getFirst());
+            }
         }
     }
 
@@ -53,33 +57,18 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
 
             tableColumn.setCellValueFactory(cellData ->
                     cellData.getValue().getFields().get(row.getFields().indexOf(field)).observableFieldProperty());
-            tableColumn.setCellFactory(tColumn -> new SemanticTableCell(field));
+
+            tableColumn.setCellFactory(tColumn -> {
+                if (field.getDataType() == COMPONENT_ID_SET_FIELD.nid()) {
+                    return new SemanticComponentCollectionCell(getSkinnable().getViewCalculator());
+                } else {
+                    return new SemanticStandardCell();
+                }
+            });
 
             tableView.getColumns().add(tableColumn);
         }
 
         tableViewInitialized = true;
-    }
-
-    private static class SemanticTableCell extends TableCell<SemanticRow, Object> {
-        private final SemanticField field;
-
-        public SemanticTableCell(SemanticField field) {
-            this.field = field;
-        }
-
-        @Override
-        protected void updateItem(Object item, boolean empty) {
-            super.updateItem(item, empty);
-
-            if (empty || item == null) {
-                setText(null);
-                setGraphic(null);
-                return;
-            }
-
-            setText(item.toString());
-            setGraphic(null);
-        }
     }
 }

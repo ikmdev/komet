@@ -6602,7 +6602,7 @@ Styling a context menu for kview ui/ux controls
     -fx-font-size: 1em;  /* 12 */
     -fx-alignment: center-left;
 
-    -fx-padding: 7px 4px 7px 4px;
+    -fx-padding: 7px 10px 7px 10px;
 
     -fx-background-color: transparent;
 }
@@ -6616,11 +6616,26 @@ Styling a context menu for kview ui/ux controls
     -fx-alignment: center-left;
 
     -fx-border-width: 0;
-    -fx-padding: 10px 6px 7px 6px;
+    -fx-padding: 14px 10px 8px 10px;
 }
 
 .gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell {
     -fx-border-color: transparent table_view_border_color transparent transparent;
     -fx-border-width: 1px;
     -fx-border-insets: 0px 0px 0px 0px;
+}
+
+/* Data type COMPONENT_ID_SET_FIELD */
+.gen-purpose-window .table-view .table-cell .component-container {
+    -fx-spacing: 5px;
+}
+
+.gen-purpose-window .table-view .table-cell .component-container .component-item .container {
+    -fx-spacing: 5px;
+    -fx-alignment: center;
+}
+
+.gen-purpose-window .table-view .table-cell .component-container .component-item .container .image-view {
+    -fx-fit-width: 12px;
+    -fx-fit-height: 12px;
 }

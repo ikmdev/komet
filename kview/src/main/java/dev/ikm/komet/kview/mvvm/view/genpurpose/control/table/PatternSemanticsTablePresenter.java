@@ -11,7 +11,6 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
-import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -39,7 +38,7 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
         this.journalTopic = journalTopic;
         this.editorPatternModel = editorPatternModel;
 
-        patternSemanticsControl = PatternSemanticsTableControl.create();
+        patternSemanticsControl = PatternSemanticsTableControl.create(viewProperties.calculator());
     }
 
     @Override
