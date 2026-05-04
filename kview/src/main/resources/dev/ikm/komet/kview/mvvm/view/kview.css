@@ -6571,3 +6571,56 @@ Styling a context menu for kview ui/ux controls
 .edit-semantic-popup .popup-entry.label:hover {
     -fx-background-color: rgba(200, 200, 200, 0.3);
 }
+
+/*******************************************************************************
+ * Pattern Semantics Table                                                     *
+ ******************************************************************************/
+
+.gen-purpose-window .table-view {
+    table_view_border_color: #ddd;
+
+    -fx-cell-focus-inner-border: transparent;
+
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: table_view_border_color;
+}
+
+/********************************  Header  **********************************/
+
+.gen-purpose-window .table-view .column-header,
+.gen-purpose-window .table-view .filler {
+    -fx-background-color: #DCE3F1;
+    -fx-background-insets: 0;
+
+    -fx-border-color: table_view_border_color;
+    -fx-border-width: 0 1px 2px 0;
+}
+
+.gen-purpose-window .table-view .column-header .label {
+    -fx-text-fill: text_color;
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 1em;  /* 12 */
+    -fx-alignment: center-left;
+
+    -fx-padding: 7px 4px 7px 4px;
+
+    -fx-background-color: transparent;
+}
+
+/********************************  Body  **********************************/
+
+.gen-purpose-window .table-view .table-cell {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 500;
+    -fx-font-size: 1em;  /* 12 */
+    -fx-alignment: center-left;
+
+    -fx-border-width: 0;
+    -fx-padding: 10px 6px 7px 6px;
+}
+
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell {
+    -fx-border-color: transparent table_view_border_color transparent transparent;
+    -fx-border-width: 1px;
+    -fx-border-insets: 0px 0px 0px 0px;
+}

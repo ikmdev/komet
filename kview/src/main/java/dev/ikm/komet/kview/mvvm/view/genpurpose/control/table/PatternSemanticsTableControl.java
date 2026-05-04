@@ -10,8 +10,10 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
 public class PatternSemanticsTableControl extends Control {
+    public static final String DEFAULT_STYLE_CLASS = "pattern-semantics-table";
 
     private PatternSemanticsTableControl() {
+        getStyleClass().add(DEFAULT_STYLE_CLASS);
     }
 
     public static PatternSemanticsTableControl create() {
