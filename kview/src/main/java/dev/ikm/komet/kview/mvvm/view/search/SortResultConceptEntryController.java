@@ -52,8 +52,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
@@ -72,7 +70,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     private ImageView identicon;
 
     @FXML
-    private Text componentText;
+    private TextFlow componentTextFlow;
 
     @FXML
     private HBox retiredHBox;
@@ -164,8 +162,19 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         this.identicon.setImage(identiconImage);
     }
 
-    public void setComponentText(String topText) {
-        this.componentText.setText(topText);
+    /**
+     * Render the concept's title into the cell header. The input may be a
+     * Lucene-formatted highlighted snippet from
+     * {@link dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator#highlight(String, String)}
+     * — words wrapped in {@code <B>...</B>} get the {@code highlight} CSS class
+     * on their containing {@code StackPane}, matching the per-word visual
+     * treatment of the description-semantic rows below the header.
+     *
+     * @param highlightedTopText the marked-up title (or plain text if no terms
+     *                           matched, or null/empty)
+     */
+    public void setComponentText(String highlightedTopText) {
+        HighlightedSegments.renderHighlightedInto(componentTextFlow, highlightedTopText);
     }
 
     public ObservableList<LatestVersionSearchResult> getDescriptionListViewItems() { return descriptionsListView.getItems(); }
@@ -263,26 +272,8 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                     currentNid = semanticEntityVersion.nid();
                     setUpDraggable(cellContainer, semanticEntityVersion.entity(), getDragAndDropType(semanticEntityVersion.entity()));
                 });
-                if (item.highlightedString() != null) {
-                    updateTextFlow(textFlow, item.highlightedString());
-                }
+                HighlightedSegments.renderHighlightedInto(textFlow, item.highlightedString());
                 setGraphic(cellContainer);
-            }
-        }
-
-        private void updateTextFlow(TextFlow textFlow, String highlightedString) {
-            textFlow.getChildren().clear();
-            for (String word : highlightedString.split(" ")) {
-                Text text = new Text();
-                StackPane textContainer = new StackPane(text);
-                if (HighlightedSegments.containsMarkup(word)) {
-                    text.setText(HighlightedSegments.stripMarkup(word).replaceAll("\\s+", " "));
-                    textContainer.getStyleClass().add("highlight");
-                } else {
-                    text.setText(word);
-                }
-                textContainer.getStyleClass().add("word-container");
-                textFlow.getChildren().add(textContainer);
             }
         }
     }

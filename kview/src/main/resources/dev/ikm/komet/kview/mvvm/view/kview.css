@@ -3119,13 +3119,21 @@ Timeline Year line segment (will overlay change circles)
     -fx-padding: 1 0 0 6px;
 }
 
-.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container .text-container .word-container {
+/* Per-word renderer styling. Scope is intentionally broad: the
+   .word-container / .word-container.highlight pair is the contract emitted by
+   HighlightedSegments.renderHighlightedInto(), and any next-gen search cell
+   that calls that helper expects the same visual treatment — the inter-word
+   2px padding, and the green background on matched terms. The earlier
+   .descriptions-list-view-scoped rule meant the concept-title TextFlow
+   rendered word-containers with zero padding (words visually fused) and no
+   highlight background, even though the renderer was emitting the right
+   structure. */
+.word-container {
     -fx-padding: 2px;
 }
 
-.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container .text-container .word-container.highlight {
+.word-container.highlight {
     -fx-background-color: rgba(192, 245, 160, 0.6);
-
     -fx-background-insets: 0 1 0 1;
     -fx-background-radius: 4;
 }

@@ -136,6 +136,16 @@ public class NextGenSearchController {
 
     private SearchResultType currentSearchResultType;
 
+    /**
+     * The text of the most recent text query, captured by {@link #doSearch} so
+     * that cells reused by the {@link ListView}'s virtual flow can highlight
+     * the concept title against the still-current query — set
+     * {@code TOP_COMPONENT} cells receive a {@code Supplier<String>} of this
+     * field, not a one-shot copy. Empty when no text query is active (e.g.
+     * after an NID/UUID lookup).
+     */
+    private volatile String currentQueryText = "";
+
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
 
@@ -230,7 +240,7 @@ public class NextGenSearchController {
         switch (newSearchResultType) {
             case TOP_COMPONENT ->
                 searchResultsListView.setCellFactory((Callback<ListView<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>, ListCell<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>>) param ->
-                        new SearchCellTopComponent(getViewProperties(), getJournalTopic(), getViewProperties().parentView())
+                        new SearchCellTopComponent(getViewProperties(), getJournalTopic(), getViewProperties().parentView(), () -> currentQueryText)
                 );
             case DESCRIPTION_SEMANTICS ->
                 searchResultsListView.setCellFactory((Callback<ListView<LatestVersionSearchResult>, ListCell<LatestVersionSearchResult>>) param ->
@@ -272,6 +282,7 @@ public class NextGenSearchController {
     private void doSearch(ActionEvent actionEvent) {
         clearView();
         String queryText = searchField.getText().strip();
+        currentQueryText = queryText;
         try {
             if (queryText.startsWith("-") && parseInt(queryText).isPresent()) {
                 addComponentFromNid(queryText);

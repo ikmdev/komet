@@ -35,8 +35,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
@@ -163,23 +161,7 @@ public class SortResultSemanticEntryController  {
      *                          highlights apply; may be {@code null} or empty
      */
     public void setSemanticText(String highlightedString) {
-        textFlow.getChildren().clear();
-        if (highlightedString == null || highlightedString.isEmpty()) {
-            return;
-        }
-        for (String word : highlightedString.split(" ")) {
-            Text text = new Text();
-            text.getStyleClass().add("search-semantic-entry-text");
-            StackPane container = new StackPane(text);
-            container.getStyleClass().add("word-container");
-            if (HighlightedSegments.containsMarkup(word)) {
-                text.setText(HighlightedSegments.stripMarkup(word));
-                container.getStyleClass().add("highlight");
-            } else {
-                text.setText(word);
-            }
-            textFlow.getChildren().add(container);
-        }
+        HighlightedSegments.renderHighlightedInto(textFlow, highlightedString, "search-semantic-entry-text");
     }
 
     public void increaseTextFlowWidth() {

@@ -16,10 +16,13 @@ import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.setUpDraggable;
@@ -32,13 +35,25 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 // to updateItem. We need to check its type to make sure the current ListView item being passed in still applies
 // to the cell
 public class SearchCellTopComponent extends SearchCellBase {
+    private static final Logger LOG = LoggerFactory.getLogger(SearchCellTopComponent.class);
     public static final String SORT_CONCEPT_RESULT_CONCEPT_FXML = "search-result-concept-entry.fxml";
 
     private final SortResultConceptEntryController controller;
     private final Pane parentPane;
+    /**
+     * Supplies the current text query so the concept title can be highlighted
+     * against the still-current query each time {@link #updateItem} runs. Read
+     * via supplier (not captured at construction) because the cell instance
+     * outlives a single search — the {@link javafx.scene.control.ListView}
+     * virtual flow reuses cells across repeated searches.
+     */
+    private final Supplier<String> currentQueryTextSupplier;
 
-    public SearchCellTopComponent(ViewProperties viewProperties, UUID journalTopic, ObservableViewNoOverride observableViewNoOverride) {
+    public SearchCellTopComponent(ViewProperties viewProperties, UUID journalTopic,
+                                  ObservableViewNoOverride observableViewNoOverride,
+                                  Supplier<String> currentQueryTextSupplier) {
         super(viewProperties, journalTopic, observableViewNoOverride);
+        this.currentQueryTextSupplier = currentQueryTextSupplier;
 
         Config config = new Config(SortResultConceptEntryController.class.getResource(SORT_CONCEPT_RESULT_CONCEPT_FXML));
         config.updateViewModel("searchEntryViewModel", (searchEntryViewModel) ->
@@ -92,7 +107,7 @@ public class SearchCellTopComponent extends SearchCellBase {
                     controller.setWindowView(observableViewNoOverride);
                     Entity entity = Entity.get(entityVersion.nid()).get();
                     controller.setData(entity);
-                    controller.setComponentText(topText);
+                    controller.setComponentText(highlightedTitle(topText));
 
                     controller.getDescriptionListViewItems().setAll(mapEntry.getValue());
 
@@ -112,6 +127,26 @@ public class SearchCellTopComponent extends SearchCellBase {
                     setGraphic(null);
                 }
             }
+        }
+    }
+
+    /**
+     * Mark up the concept title with the same {@code <B>...</B>} convention
+     * Lucene's highlighter uses for description-semantic snippets, so the
+     * shared per-word renderer can paint matched terms with the same green
+     * background. Bare-text fallbacks (no current query, or a parser error)
+     * leave the title unmarked — the renderer treats that as plain text.
+     */
+    private String highlightedTitle(String topText) {
+        String query = currentQueryTextSupplier == null ? "" : currentQueryTextSupplier.get();
+        if (query == null || query.isEmpty() || topText == null || topText.isEmpty()) {
+            return topText;
+        }
+        try {
+            return viewProperties.nodeView().calculator().highlight(query, topText);
+        } catch (Exception e) {
+            LOG.debug("Title highlight failed for query='{}', falling back to plain text", query, e);
+            return topText;
         }
     }
 }

@@ -15,6 +15,10 @@
  */
 package dev.ikm.komet.framework.search;
 
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,6 +126,56 @@ public final class HighlightedSegments {
     private static void addIfNonEmpty(List<Segment> out, String text, boolean matched) {
         if (!text.isEmpty()) {
             out.add(new Segment(text, matched));
+        }
+    }
+
+    /**
+     * Render a marked-up snippet into the given {@link TextFlow} using the
+     * segment-level structure that {@link #parse(String)} produces. Unmatched
+     * runs are emitted as plain {@link Text} nodes — preserving their original
+     * whitespace, punctuation, and inter-word spacing. Matched runs are
+     * wrapped in a {@link StackPane} with the {@code word-container} and
+     * {@code highlight} CSS classes so the active stylesheet's green-background
+     * rule applies.
+     *
+     * <p>This is a deliberate departure from a per-space splitting approach.
+     * Splitting on space throws away the literal space character (forcing CSS
+     * padding to fake inter-word gaps back in) and mishandles phrase-level
+     * markup like {@code "<B>Olive Topping</B>"} where the open and close
+     * markers land in different space-delimited words. Segment-level rendering
+     * sidesteps both: spaces stay inside unmatched segments as data, and a
+     * multi-word matched span becomes a single highlighted box.
+     *
+     * <p>The {@code TextFlow} is cleared first; passing a {@code null} or
+     * empty snippet just leaves it empty. Plain text with no {@code <B>}
+     * markup renders as a single {@link Text} node — the same shape callers
+     * would get from {@code text.setText(s)} directly.
+     *
+     * @param textFlow              the destination {@link TextFlow}; cleared before rendering
+     * @param highlightedString     the marked-up snippet (or plain text, or null/empty)
+     * @param extraTextStyleClasses optional CSS classes added to every inner
+     *                              {@link Text} node (matched and unmatched alike)
+     *                              for cell-specific font/color styling
+     */
+    public static void renderHighlightedInto(TextFlow textFlow,
+                                             String highlightedString,
+                                             String... extraTextStyleClasses) {
+        textFlow.getChildren().clear();
+        if (highlightedString == null || highlightedString.isEmpty()) {
+            return;
+        }
+        for (Segment segment : parse(highlightedString)) {
+            Text text = new Text(segment.text());
+            for (String styleClass : extraTextStyleClasses) {
+                text.getStyleClass().add(styleClass);
+            }
+            if (segment.matched()) {
+                StackPane container = new StackPane(text);
+                container.getStyleClass().addAll("word-container", "highlight");
+                textFlow.getChildren().add(container);
+            } else {
+                textFlow.getChildren().add(text);
+            }
         }
     }
 }

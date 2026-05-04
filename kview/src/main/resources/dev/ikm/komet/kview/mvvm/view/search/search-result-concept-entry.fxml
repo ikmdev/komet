@@ -17,7 +17,6 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 <VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="searchEntryContainer" prefWidth="332.0"
       styleClass="search-entry-container"
@@ -46,11 +45,7 @@
                                 <Insets bottom="6.0" left="3.0" right="3.0" top="6.0"/>
                             </padding>
                         </Label>
-                        <TextFlow styleClass="search-entry-text-container" prefWidth="253.0">
-                            <children>
-                                <Text fx:id="componentText" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="search-entry-text" text="Chronic nonspecific lung disease (disorder)" />
-                            </children>
-                        </TextFlow>
+                        <TextFlow fx:id="componentTextFlow" styleClass="search-entry-text-container" prefWidth="253.0"/>
                     </children>
                 </HBox>
             </center>
