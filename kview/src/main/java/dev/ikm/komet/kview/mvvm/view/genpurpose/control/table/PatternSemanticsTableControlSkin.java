@@ -27,6 +27,8 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
 
         getChildren().add(tableView);
 
+        tableView.setTableMenuButtonVisible(true);
+
         tableView.setItems(control.getSemantics());
 
         control.getSemantics().addListener(this::onSemanticsChanged);

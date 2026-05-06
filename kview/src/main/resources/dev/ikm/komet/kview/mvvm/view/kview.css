@@ -6577,7 +6577,9 @@ Styling a context menu for kview ui/ux controls
  ******************************************************************************/
 
 .gen-purpose-window .table-view {
+    header_background_color: #DCE3F1;
     table_view_border_color: #ddd;
+    table_view_body_border_color: #e9e9e9;
 
     -fx-cell-focus-inner-border: transparent;
 
@@ -6585,11 +6587,22 @@ Styling a context menu for kview ui/ux controls
     -fx-focus-color: table_view_border_color;
 }
 
+/* Scroll Bar inside Table View */
+.gen-purpose-window .table-view .scroll-bar {
+    -fx-background-color: white;
+}
+
+.gen-purpose-window .table-view .scroll-bar .track,
+.gen-purpose-window .table-view .scroll-bar .track-background {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
 /********************************  Header  **********************************/
 
 .gen-purpose-window .table-view .column-header,
 .gen-purpose-window .table-view .filler {
-    -fx-background-color: #DCE3F1;
+    -fx-background-color: header_background_color;
     -fx-background-insets: 0;
 
     -fx-border-color: table_view_border_color;
@@ -6607,6 +6620,10 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: transparent;
 }
 
+.table-view .show-hide-columns-button {
+    -fx-background-color: header_background_color;
+}
+
 /********************************  Body  **********************************/
 
 .gen-purpose-window .table-view .table-cell {
@@ -6620,7 +6637,7 @@ Styling a context menu for kview ui/ux controls
 }
 
 .gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell {
-    -fx-border-color: transparent table_view_border_color transparent transparent;
+    -fx-border-color: transparent table_view_body_border_color transparent transparent;
     -fx-border-width: 1px;
     -fx-border-insets: 0px 0px 0px 0px;
 }
