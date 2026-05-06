@@ -78,7 +78,7 @@ public class ImportViewModel extends FormViewModel {
      */
     public ImportViewModel() {
         super();
-        addProperty(VIEW_PROPERTIES, (ViewProperties) null);
+        addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null);
 
         addProperty(SELECTED_FILE, (File) null)
                 .addValidator(SELECTED_FILE, SELECTED_FILE.name, (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel vm) -> {

@@ -16,11 +16,10 @@
  */
 package dev.ikm.komet.reasoner.ui;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-import dev.ikm.tinkar.common.service.TinkExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,14 +67,12 @@ public class RunReasonerIncrementalTask extends RunReasonerTaskBase {
 	private final boolean logParents = false;
 
 	protected void loadData(int workDone) throws Exception {
-		updateMessage("Step " + workDone + ": Loading data into reasoner");
-		LoadDataTask task = new LoadDataTask(reasonerService);
-		Future<ReasonerService> future = TinkExecutor.threadPool().submit(task);
-		future.get();
+		updateMessage("Step " + workDone + ": Applying incremental edits to reasoner");
+		List<SemanticEntityVersion> updates = new ArrayList<>(EditedConceptTracker.getEdits());
+		reasonerService.processIncremental(List.of(), updates, this);
 		updateProgress(workDone);
-		
-		// After full reasoning completes, reset the tracker for incremental updates
-		LOG.info("Full reasoning complete - resetting EditedConceptTracker");
+
+		LOG.info("Incremental update applied for {} edits - resetting EditedConceptTracker", updates.size());
 		EditedConceptTracker.removeEdits();
 		EditedConceptTracker.ensureSubscribed();
 	}

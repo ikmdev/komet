@@ -62,8 +62,8 @@ import static dev.ikm.komet.kview.lidr.events.AddResultEvent.ADD_RESULT_TO_ANALY
 import static dev.ikm.komet.kview.lidr.events.LidrPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.lidr.events.ShowPanelEvent.SHOW_MANUAL_ADD_RESULTS;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.AnalyteGroupViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CONCEPT_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 
 public class AnalyteGroupController implements BasicController {
 

@@ -35,7 +35,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.QUALITATIVE_CONCEPT;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.findDescrNameText;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CONCEPT_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CONCEPT_TOPIC;
 
 public class ResultConformanceDetailsController extends AbstractBasicController {
 

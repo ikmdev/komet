@@ -57,10 +57,10 @@ import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneControl
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CLOSE_CONFIRMATION_PANEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.SEMANTIC;
-import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELD_INDEX;
 
 public class GenPurposePropertiesController {
 
@@ -145,7 +145,7 @@ public class GenPurposePropertiesController {
 //        addStampSubscriber = evt -> {
 //            if (evt.getEventType() == ADD_STAMP) {
 //                stampJFXNode.controller().init(stampAddSubmitFormViewModel);
-//                this.stampAddSubmitFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
+//                this.stampAddSubmitFormViewModel.update(genEditingViewModel.getPropertyValue(ViewModelKey.SEMANTIC),
 //                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
 //
 //                contentBorderPane.setCenter(stampJFXNode.node());
@@ -159,7 +159,7 @@ public class GenPurposePropertiesController {
 //        createStampSubscriber = evt -> {
 //            if (evt.getEventType() == CREATE_STAMP) {
 //                stampJFXNode.controller().init(stampCreateFormViewModel);
-//                this.stampCreateFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
+//                this.stampCreateFormViewModel.update(genEditingViewModel.getPropertyValue(ViewModelKey.SEMANTIC),
 //                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
 //
 //                contentBorderPane.setCenter(stampJFXNode.node());

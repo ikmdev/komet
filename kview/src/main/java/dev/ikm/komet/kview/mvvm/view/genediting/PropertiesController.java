@@ -51,10 +51,11 @@ import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PAN
 import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_PANE_FXML_URL;
 import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.SEMANTIC;
-import static dev.ikm.tinkar.provider.search.Indexer.FIELD_INDEX;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELD_INDEX;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class PropertiesController {
 
@@ -140,22 +141,22 @@ public class PropertiesController {
         addStampSubscriber = evt -> {
             if (evt.getEventType() == ADD_STAMP) {
                 stampJFXNode.controller().init(stampAddSubmitFormViewModel);
-                this.stampAddSubmitFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
-                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+                this.stampAddSubmitFormViewModel.update(genEditingViewModel.getPropertyValue(ViewModelKey.SEMANTIC),
+                        genEditingViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), genEditingViewModel.getViewProperties());
 
                 contentBorderPane.setCenter(stampJFXNode.node());
 
                 addEditButton.setSelected(true);
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, addStampSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), StampEvent.class, addStampSubscriber);
 
         // -- create stamp
         createStampSubscriber = evt -> {
             if (evt.getEventType() == CREATE_STAMP) {
                 // update() must be called first — it sets viewProperties needed by populateDefaults()
-                this.stampCreateFormViewModel.update(genEditingViewModel.getPropertyValue(GenEditingViewModel.SEMANTIC),
-                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+                this.stampCreateFormViewModel.update(genEditingViewModel.getPropertyValue(ViewModelKey.SEMANTIC),
+                        genEditingViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), genEditingViewModel.getViewProperties());
                 stampCreateFormViewModel.populateDefaults();
                 stampJFXNode.controller().init(stampCreateFormViewModel);
 
@@ -163,7 +164,7 @@ public class PropertiesController {
                 addEditButton.setSelected(true);
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, createStampSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), StampEvent.class, createStampSubscriber);
     }
 
     //Refers to Add Reference Component
@@ -188,7 +189,7 @@ public class PropertiesController {
         BooleanProperty closeConfPanelProp = confirmationPaneViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
         closeConfPanelProp.subscribe(closeIt -> {
             if (closeIt) {
-                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                         new PropertyPanelEvent(closePropsPane, CLOSE_PANEL));
 
                 confirmationPaneViewModel.reset();
@@ -206,7 +207,7 @@ public class PropertiesController {
 
             contentBorderPane.setCenter(closePropsPane);
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, genEditingEventSubscriber);
 
         showPanelSubscriber = evt -> {
@@ -214,17 +215,17 @@ public class PropertiesController {
             propertyToggleButtonGroup.selectToggle(addEditButton);
 
             if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
-                genEditingViewModel.setPropertyValue(FIELD_INDEX, -1);
+                genEditingViewModel.setPropertyValue(ViewModelKey.FIELD_INDEX, -1);
                 contentBorderPane.setCenter(editFieldsJfxNode.node());
             } else if (evt.getEventType() == PropertyPanelEvent.SHOW_EDIT_SINGLE_SEMANTIC_FIELD) {
-                genEditingViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
+                genEditingViewModel.setPropertyValue(ViewModelKey.FIELD_INDEX, evt.getObservableFieldIndex());
                 contentBorderPane.setCenter(editFieldsJfxNode.node());
             } else if (evt.getEventType() == PropertyPanelEvent.SHOW_ADD_REFERENCE_SEMANTIC_FIELD) {
-                genEditingViewModel.setPropertyValue(FIELD_INDEX, evt.getObservableFieldIndex());
+                genEditingViewModel.setPropertyValue(ViewModelKey.FIELD_INDEX, evt.getObservableFieldIndex());
                 contentBorderPane.setCenter(referenceComponentJfxNode.node());
             } else if (evt.getEventType() == PropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
                 // change the heading on the top of the panel
-                genEditingViewModel.setPropertyValue(FIELD_INDEX, -1);
+                genEditingViewModel.setPropertyValue(ViewModelKey.FIELD_INDEX, -1);
 
                 confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, "No Selection Made");
                 confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, "Make a selection in the view to edit the Semantic.");
@@ -232,7 +233,7 @@ public class PropertiesController {
                 contentBorderPane.setCenter(closePropsPane);
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                 PropertyPanelEvent.class, showPanelSubscriber);
 
 
@@ -323,7 +324,7 @@ public class PropertiesController {
         } else if (newSemantic == null && stampCreateFormViewModel != null) {
             setStampFormViewModel(stampCreateFormViewModel);
         }
-        stampFormViewModel.get().update(newSemantic, genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
+        stampFormViewModel.get().update(newSemantic, genEditingViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), genEditingViewModel.getViewProperties());
     }
 
     /***************************************************************************

@@ -37,6 +37,6 @@ public class PatternPropertiesViewModel extends FormViewModel {
     }
 
     public ViewProperties getViewProperties() {
-        return getPropertyValue(VIEW_PROPERTIES);
+        return getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
     }
 }

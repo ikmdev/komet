@@ -55,7 +55,7 @@ public class PatternFieldsViewModel extends FormViewModel {
     public PatternFieldsViewModel() {
         super();
         addProperty(ADD_EDIT_LABEL, "") // Used to update the heading for the properties page.
-                .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+                .addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(FIELD_ORDER, (Integer) 1) // This has to cast to Integer since the default is Number
                 .addProperty(DISPLAY_NAME, "")
                 .addProperty(DATA_TYPE, (EntityFacade) null)
@@ -85,6 +85,6 @@ public class PatternFieldsViewModel extends FormViewModel {
     }
 
     public ViewProperties getViewProperties() {
-        return getPropertyValue(VIEW_PROPERTIES);
+        return getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
     }
 }

@@ -135,6 +135,9 @@ public class TableNode extends ExplorationNodeAbstract {
                     PrimitiveData.get().forEachSemanticNidOfPattern(patternEntity.nid(), semanticNid -> {
                         if (count.getAndIncrement() < 5000) {
                             SemanticEntity semanticEntity = Entity.getFast(semanticNid);
+                            if (semanticEntity == null) {
+                                return;
+                            }
                             TreeItem semanticParent = new TreeItem(Entity.getFast(semanticEntity.referencedComponentNid()));
                             semanticParent.setExpanded(true);
                             Platform.runLater(() -> this.root.getChildren().add(semanticParent));

@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.UUID;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class AnalyteGroupViewModel extends FormViewModel {
     private static final Logger LOG = LoggerFactory.getLogger(AnalyteGroupViewModel.class);
@@ -53,8 +54,8 @@ public class AnalyteGroupViewModel extends FormViewModel {
 
     public AnalyteGroupViewModel() {
         super();
-        addProperty(CONCEPT_TOPIC, (UUID) null)
-                .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+        addProperty(ViewModelKey.CONCEPT_TOPIC, (UUID) null)
+                .addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(ANALYTE_ENTITY, (EntityFacade) null)   // this is an analyte as a concept
                 .addProperty(TARGET_ENTITIES, new ArrayList<>())    // analytes have targets
                 .addProperty(RESULT_ENTITIES, new ArrayList<>())    // this represents the results as a concept

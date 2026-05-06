@@ -64,14 +64,16 @@ import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneControl
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.PATTERN;
 import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class PropertiesController {
 
@@ -241,7 +243,7 @@ public class PropertiesController {
         descrConfig
                 .addNamedViewModel(new NamedVm("patternPropertiesViewModel", patternPropertiesViewModel))
                 .updateViewModel("descrNameViewModel", (descrNameViewModel) ->
-                        descrNameViewModel.setPropertyValue(VIEW_PROPERTIES, getViewProperties())
+                        descrNameViewModel.setPropertyValue(ViewModelKey.VIEW_PROPERTIES, getViewProperties())
                         .setPropertyValue(PATTERN_TOPIC, getPatternTopic())
                 );
         JFXNode<Pane, DescriptionNameController> descriptionNameControllerJFXNode = FXMLMvvmLoader.make(descrConfig);
@@ -255,7 +257,7 @@ public class PropertiesController {
                 .updateViewModel("patternFieldsViewModel", (patternFieldsViewModel) ->
                         patternFieldsViewModel
                                 .setPropertyValue(PATTERN_TOPIC, patternPropertiesViewModel.getPropertyValue(PATTERN_TOPIC))
-                                .setPropertyValue(VIEW_PROPERTIES, getViewProperties()));
+                                .setPropertyValue(ViewModelKey.VIEW_PROPERTIES, getViewProperties()));
 
         JFXNode<Pane, PatternFieldsController> patternFieldsJFXNode = FXMLMvvmLoader.make(fieldsConfig);
 
@@ -427,18 +429,18 @@ public class PropertiesController {
         }
         DescrName descrName = event.getDescrName();
         descrNameViewModel
-            .setPropertyValue(VIEW_PROPERTIES, getViewProperties())
+            .setPropertyValue(ViewModelKey.VIEW_PROPERTIES, getViewProperties())
             .setPropertyValue(PATTERN_TOPIC, getPatternTopic())
             .setPropertyValue(PREVIOUS_DESCRIPTION_DATA, descrName);
 
         if (eventType == SHOW_ADD_FQN) {
-            descrNameViewModel.setPropertyValue(MODE, CREATE)
+            descrNameViewModel.setPropertyValue(ViewModelKey.MODE, CREATE)
                 .setPropertyValue(NAME_TYPE, FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(TITLE_TEXT, ADD_FQN_TITLE_TEXT)
                 .setPropertyValue(DESCRIPTION_NAME_TYPE, "Fully Qualified Name")
             ;
         } else if (eventType == SHOW_EDIT_FQN) {
-            descrNameViewModel.setPropertyValue(MODE, CREATE) // still creating, pattern not created yet
+            descrNameViewModel.setPropertyValue(ViewModelKey.MODE, CREATE) // still creating, pattern not created yet
                 .setPropertyValue(NAME_TYPE, FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(TITLE_TEXT, EDIT_FQN_TITLE_TEXT)
                 .setPropertyValue(DESCRIPTION_NAME_TYPE, "Fully Qualified Name")
@@ -450,13 +452,13 @@ public class PropertiesController {
                 .setPropertyValue(LANGUAGE, descrName.getLanguage())
             ;
         } else if (eventType == SHOW_ADD_OTHER_NAME) {
-            descrNameViewModel.setPropertyValue(MODE, CREATE)
+            descrNameViewModel.setPropertyValue(ViewModelKey.MODE, CREATE)
                 .setPropertyValue(NAME_TYPE, REGULAR_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(TITLE_TEXT, ADD_OTHER_NAME_TITLE_TEXT)
                 .setPropertyValue(DESCRIPTION_NAME_TYPE, "Other Name")
             ;
         } else if (eventType == SHOW_EDIT_OTHER_NAME) {
-            descrNameViewModel.setPropertyValue(MODE, CREATE) // still creating, pattern not created yet
+            descrNameViewModel.setPropertyValue(ViewModelKey.MODE, CREATE) // still creating, pattern not created yet
                 .setPropertyValue(NAME_TYPE, REGULAR_NAME_DESCRIPTION_TYPE)
                 .setPropertyValue(TITLE_TEXT, EDIT_OTHER_NAME_TITLE_TEXT)
                 .setPropertyValue(DESCRIPTION_NAME_TYPE, "Other Name")
@@ -505,7 +507,7 @@ public class PropertiesController {
     }
 
     public ViewProperties getViewProperties() {
-        return patternPropertiesViewModel.getPropertyValue(VIEW_PROPERTIES);
+        return patternPropertiesViewModel.getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
     }
     public void clearView() {
     }

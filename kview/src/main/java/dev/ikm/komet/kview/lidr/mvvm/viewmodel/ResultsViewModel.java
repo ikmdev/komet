@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.QUALITATIVE_CONCEPT;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class ResultsViewModel extends FormViewModel {
 
@@ -68,8 +69,8 @@ public class ResultsViewModel extends FormViewModel {
 
     public ResultsViewModel() {
         super();
-        addProperty(CONCEPT_TOPIC, (UUID) null)
-                .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+        addProperty(ViewModelKey.CONCEPT_TOPIC, (UUID) null)
+                .addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(ADD_BUTTON_STATE, true)        // disable property (true) by default
                 .addProperty(RESULTS_NAME, (String) null)
                 .addProperty(ALLOWABLE_RESULTS, new ArrayList<EntityFacade>())

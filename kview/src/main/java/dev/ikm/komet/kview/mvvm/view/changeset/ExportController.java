@@ -75,7 +75,7 @@ import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.*;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 
 public class ExportController {
 

@@ -23,11 +23,12 @@ import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.STAMP;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.search.HighlightedSegments;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
@@ -135,6 +136,16 @@ public class NextGenSearchController {
 
     private SearchResultType currentSearchResultType;
 
+    /**
+     * The text of the most recent text query, captured by {@link #doSearch} so
+     * that cells reused by the {@link ListView}'s virtual flow can highlight
+     * the concept title against the still-current query — set
+     * {@code TOP_COMPONENT} cells receive a {@code Supplier<String>} of this
+     * field, not a one-shot copy. Empty when no text query is active (e.g.
+     * after an NID/UUID lookup).
+     */
+    private volatile String currentQueryText = "";
+
     @InjectViewModel
     private NextGenSearchViewModel nextGenSearchViewModel;
 
@@ -229,7 +240,7 @@ public class NextGenSearchController {
         switch (newSearchResultType) {
             case TOP_COMPONENT ->
                 searchResultsListView.setCellFactory((Callback<ListView<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>, ListCell<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>>>) param ->
-                        new SearchCellTopComponent(getViewProperties(), getJournalTopic(), getViewProperties().parentView())
+                        new SearchCellTopComponent(getViewProperties(), getJournalTopic(), getViewProperties().parentView(), () -> currentQueryText)
                 );
             case DESCRIPTION_SEMANTICS ->
                 searchResultsListView.setCellFactory((Callback<ListView<LatestVersionSearchResult>, ListCell<LatestVersionSearchResult>>) param ->
@@ -271,6 +282,7 @@ public class NextGenSearchController {
     private void doSearch(ActionEvent actionEvent) {
         clearView();
         String queryText = searchField.getText().strip();
+        currentQueryText = queryText;
         try {
             if (queryText.startsWith("-") && parseInt(queryText).isPresent()) {
                 addComponentFromNid(queryText);
@@ -460,10 +472,7 @@ public class NextGenSearchController {
     }
 
     private String formatHighlightedString(String highlightedString) {
-        String string = (highlightedString == null) ? "" : highlightedString;
-        return string.replaceAll("<B>", "")
-                .replaceAll("</B>", "")
-                .replaceAll("\\s+", " ");
+        return HighlightedSegments.stripMarkup(highlightedString).replaceAll("\\s+", " ");
     }
 
 

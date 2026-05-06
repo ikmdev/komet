@@ -17,6 +17,7 @@ package dev.ikm.komet.kview.lidr.mvvm.viewmodel;
 
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -34,19 +35,19 @@ public class LidrViewModel extends FormViewModel {
     // --------------------------------------------
     // Known properties
     // --------------------------------------------
+    // Class-specific keys remain Strings; shared keys live on ViewModelKey.
     public static String DEVICE_ENTITY = "deviceEntity";
     public static String MANUFACTURER_ENTITY = "mfgEntity";
-    public static String STAMP_VIEW_MODEL = "stampViewModel";
     public static String RESULT_INTERPRETATIONS = "resultInterpretations"; // Analyte groups added.
 
 
     public LidrViewModel() {
         super(); // addProperty(MODE, VIEW); By default
-        addProperty(CONCEPT_TOPIC, (UUID) null)
-                .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+        addProperty(ViewModelKey.CONCEPT_TOPIC, (UUID) null)
+                .addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(DEVICE_ENTITY, (EntityFacade) null)
                 .addProperty(MANUFACTURER_ENTITY, (EntityFacade) null)
-                .addProperty(STAMP_VIEW_MODEL, (ViewModel) null)
+                .addProperty(ViewModelKey.STAMP_VIEW_MODEL, (ViewModel) null)
                 .addProperty(RESULT_INTERPRETATIONS, (List<SemanticEntity>) null);
     }
 
@@ -66,7 +67,7 @@ public class LidrViewModel extends FormViewModel {
         }
 
         // stamp exists and is populated?
-        StampViewModel stampViewModel = getValue(STAMP_VIEW_MODEL);
+        StampViewModel stampViewModel = getValue(ViewModelKey.STAMP_VIEW_MODEL);
         if (stampViewModel != null) {
             stampViewModel.save(); // View Model xfer values
             if (hasErrorMsgs()) {

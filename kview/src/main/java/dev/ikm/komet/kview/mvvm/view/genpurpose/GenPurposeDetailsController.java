@@ -30,11 +30,11 @@ import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggabl
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel.COMPOSER;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.REF_COMPONENT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.COMPOSER;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
@@ -133,6 +133,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class GenPurposeDetailsController {
 
@@ -325,7 +326,7 @@ public class GenPurposeDetailsController {
 //            });
         };
 //        subscriberList.add(refreshSubscriber);
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                 GenPurposeEvent.class, refreshSubscriber);
 
         // Setup window support with explicit draggable nodes
@@ -334,7 +335,7 @@ public class GenPurposeDetailsController {
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
         closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
     }
 
     private void openPropertiesPanel() {
@@ -364,7 +365,7 @@ public class GenPurposeDetailsController {
 //        stampViewControl.setSelected(propertyToggle.isSelected());
 //        isUpdatingStampSelection = false;
 
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(propertyToggle, eventEvtType));
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
@@ -536,7 +537,7 @@ public class GenPurposeDetailsController {
             }
         };
 //        subscriberList.add(propertiesEventSubscriber);
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), KLPropertyPanelEvent.class, propertiesEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), KLPropertyPanelEvent.class, propertiesEventSubscriber);
     }
 
     private void onStampConfirmedOrSubmitted(boolean isSubmittedOrConfirmed) {
@@ -686,14 +687,14 @@ public class GenPurposeDetailsController {
      */
     private void updateView() {
         LOG.info("Update view called - implement coordinate changes here.");
-        EntityFacade refConcept = (EntityFacade) genPurposeViewModel.getProperty(REF_COMPONENT).getValue();
+        EntityFacade refConcept = (EntityFacade) genPurposeViewModel.getProperty(ViewModelKey.REF_COMPONENT).getValue();
         if (refConcept != null) {
             updateDisplayIdentifier(refConcept);
             updateIdenticon(refConcept);
             updateWindowTitle(refConcept);
             updateStampControl(refConcept);
         } else {
-            LOG.warn("REF_COMPONENT is null, cannot update view.");
+            LOG.warn("ViewModelKey.REF_COMPONENT is null, cannot update view.");
             // TODO: Handle null refConcept case appropriately. Display no data found in UI.
         }
     }
@@ -773,7 +774,7 @@ public class GenPurposeDetailsController {
         EntityFacade refComponent;
 
         if (sectionModel.getReferenceComponent() == null) {
-            refComponent = genPurposeViewModel.getPropertyValue(GenPurposeViewModel.REF_COMPONENT);
+            refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
         } else {
             SectionTitledPane<EntityFacade> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
             refComponent = sectionTitledPane.getSelectedReferenceComponent();
@@ -819,7 +820,7 @@ public class GenPurposeDetailsController {
     }
 
     private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern, EntityFacade refComponent) {
-        genPurposeViewModel.setPropertyValue(MODE, CREATE);
+        genPurposeViewModel.setPropertyValue(ViewModelKey.MODE, CREATE);
 
         EditorPatternModel editorPatternModel = sectionModelOfPattern.getPatterns().getFirst();
         PatternFacade patternFacade = PatternFacade.make(editorPatternModel.getNid());
@@ -855,11 +856,11 @@ public class GenPurposeDetailsController {
     private void showEditSemanticFieldsPanel(Event event, SemanticEntity<SemanticEntityVersion> semanticEntity) {
         // Notify bump out (right side) to display edit fields in Semantic Editing mode
         EvtBusFactory.getDefaultEvtBus()
-                .publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+                .publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                         new KLPropertyPanelEvent(event.getSource(),
                                 SHOW_EDIT_SEMANTIC_FIELDS, semanticEntity));
         // Notify to open properties bump out.
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(event.getSource(), OPEN_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(event.getSource(), OPEN_PANEL));
 
         // Turn on Edit mode on the left side for the Semantic being edited
         if (previousPatternSemanticsInEditMode != null) {
@@ -986,13 +987,13 @@ public class GenPurposeDetailsController {
                 "Edit Semantic Details"
         );
 
-        genPurposeViewModel.setPropertyValue(COMPOSER, composer);
+        genPurposeViewModel.setPropertyValue(ViewModelKey.COMPOSER, composer);
     }
 
     private List<EntityFacade> getReferenceComponentsToUse(EditorPatternModel sectionReferenceComponent) {
         List<EntityFacade> refComponents = new ArrayList<>();
 
-        EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
+        EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
 
         if (sectionReferenceComponent != null) {
             EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), sectionReferenceComponent.getNid(),
@@ -1008,7 +1009,7 @@ public class GenPurposeDetailsController {
     }
 
     private List<EntityFacade> getSemanticsOfPattern(EditorPatternModel editorPatternModel) {
-        EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
+        EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
 
         List<EntityFacade> refComponents = new ArrayList<>();
 

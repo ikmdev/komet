@@ -39,7 +39,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.InvalidationListener;
@@ -354,9 +354,11 @@ public class EditDescriptionFormController implements BasicController {
             PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
             PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();
             int indexCaseSig = patternEntityVersion.indexForMeaning(DESCRIPTION_CASE_SIGNIFICANCE);
-            EntityFacade caseSigConceptFacade = (EntityFacade) latestEntityVersion.get().fieldValues().get(indexCaseSig);
-            findByNid(caseSignificanceComboBox.getItems(), caseSigConceptFacade.nid())
-                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, concept));
+            if (latestEntityVersion.get().fieldValues().get(indexCaseSig) instanceof EntityFacade caseSigFacade) {
+                EntityHandle.get(caseSigFacade).ifConcept(caseSigConcept ->
+                        findByNid(caseSignificanceComboBox.getItems(), caseSigConcept.nid())
+                                .ifPresent(concept -> otherNameViewModel.setPropertyValue(CASE_SIGNIFICANCE, concept)));
+            }
 
             // get all available languages
             IntIdSet languageDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
@@ -367,9 +369,11 @@ public class EditDescriptionFormController implements BasicController {
 
             // get the language (e.g. 'English language')
             int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
-            ConceptFacade langConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexLang);
-            findByNid(languageComboBox.getItems(), langConceptFacade.nid())
-                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(LANGUAGE, concept));
+            if (latestEntityVersion.get().fieldValues().get(indexLang) instanceof EntityFacade langFacade) {
+                EntityHandle.get(langFacade).ifConcept(langConcept ->
+                        findByNid(languageComboBox.getItems(), langConcept.nid())
+                                .ifPresent(concept -> otherNameViewModel.setPropertyValue(LANGUAGE, concept)));
+            }
 
             // get all descendant types
             IntIdSet descriptionTypeDecendants = viewProperties.parentView().calculator().descendentsOf(DESCRIPTION_TYPE.nid());
@@ -380,9 +384,11 @@ public class EditDescriptionFormController implements BasicController {
             setupComboBox(typeDisplayComboBox, allDescritionTypes);
             //Set selected value for DESCRIPTION TYPE
             int indexType = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE);
-            ConceptFacade typeConceptFacade = (ConceptFacade) latestEntityVersion.get().fieldValues().get(indexType);
-            findByNid(typeDisplayComboBox.getItems(), typeConceptFacade.nid())
-                    .ifPresent(concept -> otherNameViewModel.setPropertyValue(NAME_TYPE, concept));
+            if (latestEntityVersion.get().fieldValues().get(indexType) instanceof EntityFacade typeFacade) {
+                EntityHandle.get(typeFacade).ifConcept(typeConcept ->
+                        findByNid(typeDisplayComboBox.getItems(), typeConcept.nid())
+                                .ifPresent(concept -> otherNameViewModel.setPropertyValue(NAME_TYPE, concept)));
+            }
 
             //initial state of edit screen, the submit button should be disabled
             submitButton.setDisable(true);

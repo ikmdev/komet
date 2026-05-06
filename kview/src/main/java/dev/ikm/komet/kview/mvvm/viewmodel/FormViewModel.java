@@ -21,15 +21,13 @@ import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import java.util.UUID;
 
 public class FormViewModel extends ValidationViewModel {
-    public static String CURRENT_JOURNAL_WINDOW_TOPIC = "CURRENT_JOURNAL_WINDOW_TOPIC";
-    public static String CONCEPT_TOPIC = "conceptTopic";
-    public static String VIEW_PROPERTIES = "viewProperties";
-    public static String MODE = "mode";
-
-    // Create, Edit, View
-    public static String CREATE = "CREATE";
-    public static String EDIT = "EDIT";
-    public static String VIEW = "VIEW";
+    // Property KEYS migrated to ViewModelKey (the cognitive Enum overloads
+    // delegate via Enum.name(), so the enum is the canonical key). Property
+    // VALUES for MODE remain Strings for now — they're values, not keys, so
+    // they're a separate (smaller) cleanup. See FormMode for the typed shape.
+    public static final String CREATE = "CREATE";
+    public static final String EDIT = "EDIT";
+    public static final String VIEW = "VIEW";
 
     public enum FormMode {
         CREATE,
@@ -38,13 +36,13 @@ public class FormViewModel extends ValidationViewModel {
     }
     public FormViewModel() {
         // Default Form View
-        addProperty(MODE, EDIT);
+        addProperty(ViewModelKey.MODE, EDIT);
 
-        addProperty(CURRENT_JOURNAL_WINDOW_TOPIC, (UUID) null); // events within the current journal window's scope
-        addProperty(CONCEPT_TOPIC, (UUID) null);                // events within the concept window's scope
-        addProperty(VIEW_PROPERTIES, (ViewProperties) null);
+        addProperty(ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC, (UUID) null); // events within the current journal window's scope
+        addProperty(ViewModelKey.CONCEPT_TOPIC, (UUID) null);                // events within the concept window's scope
+        addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null);
     }
     public FormMode getMode() {
-        return FormMode.valueOf(getPropertyValue(MODE));
+        return FormMode.valueOf(getPropertyValue(ViewModelKey.MODE));
     }
 }

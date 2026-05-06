@@ -43,7 +43,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
 
 /**
  * A specialized Komet window for creating or editing concept entities.

@@ -14,7 +14,7 @@ import org.carlfx.cognitive.loader.InjectViewModel;
 import java.text.NumberFormat;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.PATTERN;
 
 public class InstancesController {
 

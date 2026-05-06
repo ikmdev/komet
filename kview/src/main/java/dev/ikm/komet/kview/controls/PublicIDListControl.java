@@ -6,13 +6,9 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.beans.property.SimpleListProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,9 +18,6 @@ import java.util.stream.Collectors;
 public class PublicIDListControl extends Control {
 
     public static final String KOMET_ID_IDENTIFIER_PREFIX = "Komet ID: ";
-
-    /// A list of public IDs (UUID)
-    private SimpleListProperty<String> publicIdList = new SimpleListProperty<>(this, "publicIdList");
 
     public PublicIDListControl() {
         getStyleClass().add("public-id-list");
@@ -39,21 +32,6 @@ public class PublicIDListControl extends Control {
                 sceneProperty().removeListener(this);
             }
         });
-    }
-
-    public SimpleListProperty<String> publicIdListProperty() {
-        return publicIdList;
-    }
-
-    public List<String> getPublicIdList() {
-        return publicIdListProperty().get();
-    }
-
-    /// Sets the publicIdList property.  If the publicIdList provided is null an empty observable list will be created.
-    public void setPublicIdList(List<String> publicIdList) {
-        ObservableList<String> obsList = publicIdList != null ? FXCollections.observableList(publicIdList) : FXCollections.observableList(new ArrayList<>());
-
-        publicIdListProperty().set(obsList);
     }
 
     /// Creates a Public ID List from the provided viewCalculator and EntityFacade.
@@ -92,4 +70,15 @@ public class PublicIDListControl extends Control {
         return PublicIDListControl.class.getResource("public-id-list-control.css").toExternalForm();
     }
 
+    /***************************************************************************
+     *                                                                         *
+     * Properties                                                              *
+     *                                                                         *
+     **************************************************************************/
+
+    // -- public id list
+    private SimpleObjectProperty<List<String>> publicIdList = new SimpleObjectProperty<>();
+    public SimpleObjectProperty<List<String>> publicIdListProperty() { return publicIdList; }
+    public List<String> getPublicIdList() { return publicIdList.get(); }
+    public void setPublicIdList(List<String> publicIdList) { this.publicIdList.set(publicIdList); }
 }

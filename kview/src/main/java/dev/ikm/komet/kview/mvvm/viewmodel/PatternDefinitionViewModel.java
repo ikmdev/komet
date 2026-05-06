@@ -36,7 +36,7 @@ public class PatternDefinitionViewModel extends FormViewModel {
 
     public PatternDefinitionViewModel() {
         super();
-            addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+            addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(PURPOSE_ENTITY, (EntityFacade) null) // this is/will be the 'purpose' concept entity
                 .addValidator(PURPOSE_ENTITY, "Purpose Entity", (ReadOnlyObjectProperty prop, ValidationResult validationResult, ViewModel viewModel) -> {
                     if (prop.isNull().get()) {
