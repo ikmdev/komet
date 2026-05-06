@@ -61,5 +61,6 @@ public class KLEditorPreferences {
 
     public class PatternKey {
         public static String PATTERN_TITLE_VISIBLE = "pattern-title-visible";
+        public static String PATTERN_SEMANTICS_FACTORY = "pattern-semantics-factory";
     }
 }

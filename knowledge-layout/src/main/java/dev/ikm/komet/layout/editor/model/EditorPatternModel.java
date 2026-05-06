@@ -27,6 +27,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRID_NUMBER_COLUMNS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
+import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTICS_FACTORY;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_TITLE_VISIBLE;
 
 /**
@@ -152,11 +154,37 @@ public class EditorPatternModel extends EditorGridNodeModel implements ParentGri
     private void loadPatternDetails(KometPreferences patternPreferences, ViewCalculator viewCalculator) {
         patternPreferences.getInt(KL_GRID_NUMBER_COLUMNS).ifPresent(this::setNumberColumns);
         patternPreferences.getBoolean(PATTERN_TITLE_VISIBLE).ifPresent(this::setTitleVisible);
+
+        loadFactory(patternPreferences);
+
         loadGridNodeDetails(patternPreferences);
 
         for (EditorFieldModel fieldModel : getFields()) {
             fieldModel.load(patternPreferences, viewCalculator);
         }
+    }
+
+    private void loadFactory(KometPreferences patternPreferences) {
+        Optional<String> factoryClassName = patternPreferences.get(PATTERN_SEMANTICS_FACTORY);
+        factoryClassName.ifPresent(className -> {
+            if (className.equals("")) {
+                return;
+            }
+
+            try {
+                Class<?> rawClass = Class.forName(className);
+                KlPatternSemanticsFactory instance = (KlPatternSemanticsFactory) rawClass.getDeclaredConstructor().newInstance();
+                setFactory(instance);
+            } catch (ClassNotFoundException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     /**
@@ -189,6 +217,11 @@ public class EditorPatternModel extends EditorGridNodeModel implements ParentGri
 
         // title visible
         patternPreferences.putBoolean(PATTERN_TITLE_VISIBLE, isTitleVisible());
+
+        // factory
+        KlPatternSemanticsFactory klPatternSemanticsFactory = getFactory();
+        String className = klPatternSemanticsFactory == null ? "" : klPatternSemanticsFactory.getClass().getName();
+        patternPreferences.put(PATTERN_SEMANTICS_FACTORY, className);
 
         saveGridNodeDetails(patternPreferences);
 
