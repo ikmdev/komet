@@ -59,11 +59,11 @@ import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandardControl;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsFactory;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsStandardFactory;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsTableFactory;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
+import dev.ikm.komet.layout.KlPatternSemanticsFactory;
+import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
@@ -926,7 +926,11 @@ public class GenPurposeDetailsController {
 
         initializeComposer();
 
-        KlPatternSemanticsFactory klPatternSemanticsFactory = new KlPatternSemanticsTableFactory();
+        KlPatternSemanticsFactory klPatternSemanticsFactory = editorPatternModel.getFactory();
+        if (klPatternSemanticsFactory == null) {
+            klPatternSemanticsFactory = new KlPatternSemanticsStandardFactory();
+        }
+
         PatternSemanticsPresenter patternSemanticsPresenter = klPatternSemanticsFactory.create(editorPatternModel,
                 viewProperties, composer, genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
 

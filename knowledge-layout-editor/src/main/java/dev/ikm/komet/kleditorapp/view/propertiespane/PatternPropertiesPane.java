@@ -1,12 +1,15 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kview.controls.ToggleSwitch;
+import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
@@ -16,6 +19,7 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
+import java.util.ServiceLoader;
 
 public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternModel> {
     public static final String DEFAULT_STYLE_CLASS = "pattern-properties";
@@ -29,6 +33,8 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     private final ComboBox<Integer> columnsComboBox = new ComboBox<>();
 
     private ObjectProperty<Integer> previousControlColumnsObjProperty;
+
+    private final ComboBox<KlPatternSemanticsFactory> displayComboBox;
 
     public PatternPropertiesPane() {
         super(true);
@@ -105,7 +111,43 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
 
         // Separator
         Separator separator2 = new Separator();
-        separator.setPrefWidth(200);
+        separator2.setPrefWidth(200);
+
+        // "INTERACTION" label
+        Label interactionTitleLabel = new Label("INTERACTION");
+        interactionTitleLabel.getStyleClass().add("group-title");
+
+        // Display GridPane
+        GridPane displayGridPane = new GridPane();
+        displayGridPane.setHgap(8);
+        displayGridPane.setVgap(8);
+
+        // - Column constraints
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setMinWidth(10);
+        col1.setPrefWidth(100);
+
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setMinWidth(10);
+        col2.setHgrow(Priority.ALWAYS);
+
+        displayGridPane.getColumnConstraints().addAll(col1, col2);
+
+        // - "Display" label in grid
+        Label displayLabel = new Label("Display");
+        GridPane.setHalignment(displayLabel, HPos.RIGHT);
+        displayGridPane.add(displayLabel, 0, 0);
+
+        // - "Display" ComboBox in grid
+        displayComboBox = new ComboBox<>();
+        displayComboBox.setCellFactory(_ -> createDisplayCell());
+        displayComboBox.setButtonCell(createDisplayCell());
+        displayComboBox.setMaxWidth(Double.MAX_VALUE);
+        displayGridPane.add(displayComboBox, 1, 0);
+
+        // Separator
+        Separator separator3 = new Separator();
+        separator3.setPrefWidth(200);
 
         patternMainContainer.getChildren().addAll(
                 titleContainer,
@@ -114,7 +156,10 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
                 gridLayoutGridPane,
                 separator2,
                 positioningLabel,
-                positioningGridPane
+                positioningGridPane,
+                separator3,
+                interactionTitleLabel,
+                displayGridPane
         );
 
         mainContainer.setCenter(patternMainContainer);
@@ -124,13 +169,35 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         patternMainContainer.getStyleClass().add("pattern-main-container");
     }
 
+    private static ListCell<KlPatternSemanticsFactory> createDisplayCell() {
+        return new ListCell<>() {
+            {
+                setContentDisplay(ContentDisplay.TEXT_ONLY);
+            }
+
+            @Override
+            protected void updateItem(KlPatternSemanticsFactory item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.displayName());
+                }
+            }
+        };
+    }
+
     @Override
     protected void doInit() {
         super.doInit();
 
+        populateDisplayComboBox();
+
         if (previouslyShownModel != null) {
             columnsComboBox.valueProperty().unbindBidirectional(previousControlColumnsObjProperty);
             titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.titleVisibleProperty());
+            displayComboBox.valueProperty().unbindBidirectional(previouslyShownModel.factoryProperty());
         }
 
         titleTextField.setText(currentlyShownModel.getTitle());
@@ -142,5 +209,19 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
 
         // Identifier
         identifierTextField.textProperty().bindBidirectional(currentlyShownModel.identifierProperty());
+
+        // Display
+        displayComboBox.valueProperty().bindBidirectional(currentlyShownModel.factoryProperty());
+    }
+
+    private void populateDisplayComboBox() {
+        displayComboBox.getItems().clear();
+
+        ServiceLoader<KlPatternSemanticsFactory> loader = ServiceLoader.load(KlPatternSemanticsFactory.class);
+        if (loader != null) {
+            for (KlPatternSemanticsFactory factory : loader) {
+                displayComboBox.getItems().add(factory);
+            }
+        }
     }
 }

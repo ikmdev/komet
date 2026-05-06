@@ -249,4 +249,8 @@ module dev.ikm.komet.kview {
     provides dev.ikm.komet.layout.area.KlAreaForString.Factory with
             dev.ikm.komet.kview.klauthoring.readonly.stringfield.ReadOnlyStringFieldArea.Factory,
             dev.ikm.komet.kview.klauthoring.editable.stringfield.EditableStringFieldArea.Factory;
+
+    provides dev.ikm.komet.layout.KlPatternSemanticsFactory with
+            dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsStandardFactory,
+            dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsTableFactory;
 }

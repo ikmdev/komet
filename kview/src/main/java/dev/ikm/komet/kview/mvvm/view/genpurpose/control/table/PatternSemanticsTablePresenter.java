@@ -8,7 +8,7 @@ import dev.ikm.komet.framework.observable.ObservablePattern;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.PatternSemanticsPresenter;
+import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.tinkar.entity.Field;

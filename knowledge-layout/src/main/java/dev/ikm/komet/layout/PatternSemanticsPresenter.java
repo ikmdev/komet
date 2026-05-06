@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.view.genpurpose;
+package dev.ikm.komet.layout;
 
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;

@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout.editor.model;
 
+import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -11,10 +12,12 @@ import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -259,4 +262,10 @@ public class EditorPatternModel extends EditorGridNodeModel implements ParentGri
     public String getIdentifier() { return identifier.get(); }
     public StringProperty identifierProperty() { return identifier; }
     public void setIdentifier(String identifier) { this.identifier.set(identifier); }
+
+    // -- factory
+    private ObjectProperty<KlPatternSemanticsFactory> factory = new SimpleObjectProperty<>();
+    public KlPatternSemanticsFactory getFactory() { return factory.get(); }
+    public void setFactory(KlPatternSemanticsFactory factory) { this.factory.set(factory); }
+    public ObjectProperty<KlPatternSemanticsFactory> factoryProperty() { return factory; }
 }
