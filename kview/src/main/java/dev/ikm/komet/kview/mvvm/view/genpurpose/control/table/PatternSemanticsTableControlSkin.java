@@ -11,6 +11,7 @@ import javafx.scene.control.TableView;
 import java.util.List;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
 
 public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsTableControl> {
@@ -63,7 +64,7 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
                     cellData.getValue().getFields().get(row.getFields().indexOf(field)).observableFieldProperty());
 
             tableColumn.setCellFactory(tColumn -> {
-                if (field.getDataType() == COMPONENT_ID_SET_FIELD.nid()) {
+                if (field.getDataType() == COMPONENT_ID_SET_FIELD.nid() || field.getDataType() == COMPONENT_ID_LIST_FIELD.nid()) {
                     return new SemanticComponentCollectionCell(getSkinnable().getViewCalculator());
                 } else if (field.getDataType() == COMPONENT_FIELD.nid()) {
                     return new SemanticComponentCell(getSkinnable().getViewCalculator());

@@ -2,9 +2,8 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.kview.controls.skin.ComponentItemNode;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.SemanticField;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.SemanticRow;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.scene.control.ContentDisplay;
@@ -37,8 +36,8 @@ public class SemanticComponentCollectionCell extends TableCell<SemanticRow, Obje
 
         componentContainer.getChildren().clear();
 
-        IntIdSet intIdSet = (IntIdSet) item;
-        intIdSet.forEach(nid -> {
+        IntIdCollection intIdCollection = (IntIdCollection) item;
+        intIdCollection.forEach(nid -> {
             EntityProxy entityProxy = EntityProxy.make(nid);
             Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
 
