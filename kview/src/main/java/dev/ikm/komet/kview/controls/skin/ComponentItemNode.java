@@ -3,7 +3,9 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyMultiComponentControl;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -26,13 +28,7 @@ public class ComponentItemNode extends Region {
 
     private ContextMenu contextMenu;
 
-    public ComponentItemNode(String text, Image icon) {
-        this(new ComponentItem(text, icon));
-    }
-
-    public ComponentItemNode(ComponentItem componentItem) {
-        // Image View
-        iconImageView.imageProperty().bind(componentItem.iconProperty());
+    public ComponentItemNode() {
         iconImageView.setFitHeight(16);
         iconImageView.setFitWidth(16);
 
@@ -42,8 +38,6 @@ public class ComponentItemNode extends Region {
         circleClip.setCenterY(8);
 
         // Label (Text)
-        textLabel.textProperty().bind(componentItem.textProperty());
-
         container.getChildren().addAll(iconImageView, textLabel);
         getChildren().add(container);
 
@@ -52,26 +46,31 @@ public class ComponentItemNode extends Region {
 
         setOnContextMenuRequested(this::onContextMenuRequested);
 
+        setupComponentItemUIBinding();
+
         // CSS
         getStyleClass().add("component-item");
         container.getStyleClass().add("container");
     }
 
-    // -- circular
-    BooleanProperty circular = new SimpleBooleanProperty(false) {
-        @Override
-        protected void invalidated() {
-            if (get()) {
-                iconImageView.setClip(circleClip);
-            } else {
-                iconImageView.setClip(null);
-            }
-        }
-    };
-    public boolean isCircular() { return circular.get(); }
-    public BooleanProperty circularProperty() { return circular; }
-    public void setCircular(boolean circular) { this.circular.set(circular); }
+    public ComponentItemNode(String text, Image icon) {
+        this();
+        componentItem.get().setText(text);
+        componentItem.get().setIcon(icon);
+    }
 
+    public ComponentItemNode(ComponentItem componentItem) {
+        this();
+        setComponentItem(componentItem);
+    }
+
+    private void setupComponentItemUIBinding() {
+        iconImageView.imageProperty().unbind();
+        textLabel.textProperty().unbind();
+
+        iconImageView.imageProperty().bind(componentItem.get().iconProperty());
+        textLabel.textProperty().bind(componentItem.get().textProperty());
+    }
 
     void setContextMenu(ContextMenu contextMenu) {
         this.contextMenu = contextMenu;
@@ -103,4 +102,30 @@ public class ComponentItemNode extends Region {
         container.resizeRelocate(leftInsets, topInsets,
                 width - leftInsets - rightInsets, height - topInsets - bottomInsets);
     }
+
+    // -- circular
+    private final BooleanProperty circular = new SimpleBooleanProperty(false) {
+        @Override
+        protected void invalidated() {
+            if (get()) {
+                iconImageView.setClip(circleClip);
+            } else {
+                iconImageView.setClip(null);
+            }
+        }
+    };
+    public boolean isCircular() { return circular.get(); }
+    public BooleanProperty circularProperty() { return circular; }
+    public void setCircular(boolean circular) { this.circular.set(circular); }
+
+    // -- component item
+    private final ObjectProperty<ComponentItem> componentItem = new SimpleObjectProperty<>(new ComponentItem()) {
+        @Override
+        protected void invalidated() {
+            setupComponentItemUIBinding();
+        }
+    };
+    public ComponentItem getComponentItem() { return componentItem.get(); }
+    public ObjectProperty<ComponentItem> componentItemProperty() { return componentItem; }
+    public void setComponentItem(ComponentItem componentItem) { this.componentItem.set(componentItem); }
 }

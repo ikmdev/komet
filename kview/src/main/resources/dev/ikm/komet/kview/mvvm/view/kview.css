@@ -6650,17 +6650,17 @@ Styling a context menu for kview ui/ux controls
     -fx-border-insets: 0px 0px 0px 0px;
 }
 
-/* Data type COMPONENT_ID_SET_FIELD */
+/* Data type COMPONENT_ID_SET_FIELD (Component Set), COMPONENT_FIELD (Component) */
 .gen-purpose-window .table-view .table-cell .component-container {
     -fx-spacing: 5px;
 }
 
-.gen-purpose-window .table-view .table-cell .component-container .component-item .container {
+.gen-purpose-window .table-view .table-cell .component-item .container {
     -fx-spacing: 5px;
     -fx-alignment: center;
 }
 
-.gen-purpose-window .table-view .table-cell .component-container .component-item .container .image-view {
+.gen-purpose-window .table-view .table-cell .component-item .container .image-view {
     -fx-fit-width: 12px;
     -fx-fit-height: 12px;
 }

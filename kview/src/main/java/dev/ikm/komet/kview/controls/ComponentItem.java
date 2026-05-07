@@ -8,6 +8,10 @@ import javafx.scene.image.Image;
 
 public class ComponentItem {
 
+    public ComponentItem() {
+        this(null, null, null);
+    }
+
     public ComponentItem(String text, Image icon) {
         this(text, icon, null);
     }

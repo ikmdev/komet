@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
 
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticComponentCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticComponentCollectionCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticStandardCell;
 import javafx.collections.ListChangeListener;
@@ -9,6 +10,7 @@ import javafx.scene.control.TableView;
 
 import java.util.List;
 
+import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
 
 public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsTableControl> {
@@ -63,6 +65,8 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
             tableColumn.setCellFactory(tColumn -> {
                 if (field.getDataType() == COMPONENT_ID_SET_FIELD.nid()) {
                     return new SemanticComponentCollectionCell(getSkinnable().getViewCalculator());
+                } else if (field.getDataType() == COMPONENT_FIELD.nid()) {
+                    return new SemanticComponentCell(getSkinnable().getViewCalculator());
                 } else {
                     return new SemanticStandardCell();
                 }
