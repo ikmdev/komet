@@ -4,9 +4,13 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticCompo
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticComponentCollectionCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticStandardCell;
 import javafx.collections.ListChangeListener;
+import javafx.css.PseudoClass;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.util.Callback;
+import javafx.util.Subscription;
 
 import java.util.List;
 
@@ -15,6 +19,8 @@ import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
 
 public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsTableControl> {
+    public static final PseudoClass EDIT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("edit-mode");
+    public static final PseudoClass PREVIEW_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("preview-mode");
 
     private final TableView<SemanticRow> tableView = new TableView<>();
 
@@ -25,12 +31,14 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
      *
      * @param control The control for which this Skin should attach to.
      */
-    protected PatternSemanticsTableControlSkin(PatternSemanticsTableControl control) {
+    public PatternSemanticsTableControlSkin(PatternSemanticsTableControl control) {
         super(control);
 
         getChildren().add(tableView);
 
         tableView.setTableMenuButtonVisible(true);
+
+        tableView.setRowFactory(createRowFactory());
 
         tableView.setItems(control.getSemantics());
 
@@ -40,6 +48,41 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
                 initializeTableView(control.getSemantics().getFirst());
             }
         }
+    }
+
+    private static Callback<TableView<SemanticRow>, TableRow<SemanticRow>> createRowFactory() {
+        return new Callback<>() {
+            private Subscription lastSubscription;
+
+            @Override
+            public TableRow<SemanticRow> call(TableView<SemanticRow> semanticRowTableView) {
+                TableRow<SemanticRow> row = new TableRow<>();
+
+                row.itemProperty().subscribe((oldItem, newItem) -> {
+                    if (oldItem != null) {
+                        if (lastSubscription != null) {
+                            lastSubscription.unsubscribe();
+                        }
+                    }
+
+                    if (newItem != null) {
+                        lastSubscription = newItem.editModeProperty().subscribe(isEditMode -> {
+                            row.pseudoClassStateChanged(EDIT_MODE_PSEUDO_CLASS, isEditMode);
+                        });
+                        lastSubscription = Subscription.combine(lastSubscription,
+                                newItem.previewModeProperty().subscribe(isPreviewMode -> {
+                                    row.pseudoClassStateChanged(PREVIEW_MODE_PSEUDO_CLASS, isPreviewMode);
+                                })
+                        );
+                    } else {
+                        row.pseudoClassStateChanged(EDIT_MODE_PSEUDO_CLASS, false);
+                        row.pseudoClassStateChanged(PREVIEW_MODE_PSEUDO_CLASS, false);
+                    }
+                });
+
+                return row;
+            }
+        };
     }
 
     private void onSemanticsChanged(ListChangeListener.Change<? extends SemanticRow> change) {

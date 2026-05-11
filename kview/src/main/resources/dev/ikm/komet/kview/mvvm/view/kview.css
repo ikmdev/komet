@@ -6589,6 +6589,12 @@ Styling a context menu for kview ui/ux controls
     table_view_border_color: #ddd;
     table_view_body_border_color: #e9e9e9;
 
+    edit_mode_background_color: #f4fbf0;
+    edit_mode_border_color: #66bb38;
+
+    preview_mode_background_color: #f4f4f4;
+    preview_mode_border_color: #dfdfdf;
+
     -fx-cell-focus-inner-border: transparent;
 
     -fx-faint-focus-color: transparent;
@@ -6644,10 +6650,25 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 14px 10px 8px 10px;
 }
 
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell {
+    -fx-border-width: 1px;
+    -fx-border-color: transparent;
+}
+
 .gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell {
     -fx-border-color: transparent table_view_body_border_color transparent transparent;
     -fx-border-width: 1px;
     -fx-border-insets: 0px 0px 0px 0px;
+}
+
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:edit-mode {
+    -fx-background-color: edit_mode_background_color;
+    -fx-border-color: edit_mode_border_color;
+}
+
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:preview-mode {
+    -fx-background-color: preview_mode_background_color;
+    -fx-border-color: preview_mode_border_color;
 }
 
 /* Data type COMPONENT_ID_SET_FIELD (Component Set), COMPONENT_FIELD (Component) */

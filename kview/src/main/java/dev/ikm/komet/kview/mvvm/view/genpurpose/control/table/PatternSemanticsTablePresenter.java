@@ -19,7 +19,9 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter {
@@ -30,6 +32,11 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
     private final EditorPatternModel editorPatternModel;
 
     private final PatternSemanticsTableControl patternSemanticsControl;
+
+    private final Map<SemanticEntity<SemanticEntityVersion>, SemanticRow> semanticEntityToSemanticRow = new HashMap<>();
+
+    private SemanticRow previousSemanticRowPreviewMode;
+    private SemanticRow previousSemanticRowEditMode;
 
     public PatternSemanticsTablePresenter(EditorPatternModel editorPatternModel, ViewProperties viewProperties,
                                           ObservableComposer composer, UUID journalTopic) {
@@ -66,6 +73,8 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
         }
         SemanticRow semanticRow = new SemanticRow(fields);
 
+        semanticEntityToSemanticRow.put(semanticEntity, semanticRow);
+
         patternSemanticsControl.getSemantics().add(semanticRow);
     }
 
@@ -76,12 +85,30 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
 
     @Override
     public void setPreviewingSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity) {
+        if (previousSemanticRowPreviewMode != null) {
+            previousSemanticRowPreviewMode.setPreviewMode(false);
+        }
 
+        SemanticRow semanticRow = semanticEntityToSemanticRow.get(semanticEntity);
+        if (semanticRow != null) {
+            semanticRow.setPreviewMode(true);
+        }
+
+        previousSemanticRowPreviewMode = semanticRow;
     }
 
     @Override
     public void setEditingSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity) {
+        if (previousSemanticRowEditMode != null) {
+            previousSemanticRowEditMode.setEditMode(false);
+        }
 
+        SemanticRow semanticRow = semanticEntityToSemanticRow.get(semanticEntity);
+        if (semanticRow != null) {
+            semanticRow.setEditMode(true);
+        }
+
+        previousSemanticRowEditMode = semanticRow;
     }
 
     @Override
