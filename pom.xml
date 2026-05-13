@@ -5,7 +5,7 @@
  <parent>
         <groupId>network.ike.platform</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>16</version>
+        <version>55</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -22,6 +22,16 @@
             <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
+    <distributionManagement>
+        <!-- Explicit <site> URL — see ike-parent/CLAUDE.md
+             ("Inheriting projects MUST declare their own
+             <distributionManagement><site>") and ike-issues#380/#383.
+             Artifact id is `komet-parent`; site lives at the repo path. -->
+        <site>
+            <id>ike-site</id>
+            <url>https://ike.network/komet/</url>
+        </site>
+    </distributionManagement>
     <scm>
         <url>http://www.github.com/ikmdev/komet</url>
     </scm>
