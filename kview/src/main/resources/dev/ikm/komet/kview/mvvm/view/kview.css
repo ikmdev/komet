@@ -6671,7 +6671,21 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: preview_mode_border_color;
 }
 
-/* Data type COMPONENT_ID_SET_FIELD (Component Set), COMPONENT_FIELD (Component) */
+/************ Semantic Identicon *********/
+.gen-purpose-window .table-view .table-cell .semantic-identicon {
+    -fx-fit-width: 16px;
+    -fx-fit-height: 16px;
+}
+
+.gen-purpose-window .table-view .table-cell.semantic-identicon-cell {
+    -fx-alignment: center;
+}
+
+.gen-purpose-window .table-view .column-header.identicon-column .label {
+    -fx-alignment: center;
+}
+
+/************ Data type: COMPONENT_ID_SET_FIELD (Component Set), COMPONENT_FIELD (Component) ********/
 .gen-purpose-window .table-view .table-cell .component-container {
     -fx-spacing: 5px;
 }

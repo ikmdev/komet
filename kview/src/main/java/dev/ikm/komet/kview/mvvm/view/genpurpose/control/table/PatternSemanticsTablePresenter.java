@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
 
+import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntityHandle;
@@ -17,6 +18,7 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.image.Image;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,6 +74,9 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
             }
         }
         SemanticRow semanticRow = new SemanticRow(fields);
+
+        Image semanticIdenticon = Identicon.generateIdenticonImage(semanticEntity.publicId());
+        semanticRow.setIdenticon(semanticIdenticon);
 
         semanticEntityToSemanticRow.put(semanticEntity, semanticRow);
 

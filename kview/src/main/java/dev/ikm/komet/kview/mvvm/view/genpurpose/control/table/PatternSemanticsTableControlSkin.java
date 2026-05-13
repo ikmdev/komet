@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
 
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticComponentCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticComponentCollectionCell;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticIdenticonCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticStandardCell;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
@@ -9,6 +10,7 @@ import javafx.scene.control.SkinBase;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.image.Image;
 import javafx.util.Callback;
 import javafx.util.Subscription;
 
@@ -100,6 +102,21 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
     }
 
     private void initializeTableView(SemanticRow row) {
+        // Identicon
+        TableColumn<SemanticRow, Image> identiconColumn = new TableColumn<>();
+        identiconColumn.setCellValueFactory(cellData ->
+                cellData.getValue().identiconProperty());
+        identiconColumn.setCellFactory(_ -> new SemanticIdenticonCell());
+
+        final int identiconColumnWidth = 40;
+        identiconColumn.setPrefWidth(identiconColumnWidth);
+        identiconColumn.setMinWidth(identiconColumnWidth);
+        identiconColumn.setMaxWidth(identiconColumnWidth);
+        identiconColumn.getStyleClass().add("identicon-column");
+
+        tableView.getColumns().add(identiconColumn);
+
+        // Fields
         for (SemanticField field : row.getFields()) {
             TableColumn<SemanticRow, Object> tableColumn = new TableColumn<>(field.getFieldTitle());
 
