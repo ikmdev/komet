@@ -6644,10 +6644,10 @@ Styling a context menu for kview ui/ux controls
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 500;
     -fx-font-size: 1em;  /* 12 */
-    -fx-alignment: center-left;
+    -fx-alignment: top-left;
 
     -fx-border-width: 0;
-    -fx-padding: 14px 10px 8px 10px;
+    -fx-padding: 12px 12px 18px 12px;
 }
 
 .gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell {
@@ -6678,11 +6678,11 @@ Styling a context menu for kview ui/ux controls
 }
 
 .gen-purpose-window .table-view .table-cell.semantic-identicon-cell {
-    -fx-alignment: center;
+    -fx-alignment: top-center;
 }
 
 .gen-purpose-window .table-view .column-header.identicon-column .label {
-    -fx-alignment: center;
+    -fx-alignment: top-center;
 }
 
 /************ Data type: COMPONENT_ID_SET_FIELD (Component Set), COMPONENT_FIELD (Component) ********/
@@ -6690,12 +6690,12 @@ Styling a context menu for kview ui/ux controls
     -fx-spacing: 5px;
 }
 
-.gen-purpose-window .table-view .table-cell .component-item .container {
+.gen-purpose-window .table-view .table-cell .component-item {
     -fx-spacing: 5px;
     -fx-alignment: center;
 }
 
-.gen-purpose-window .table-view .table-cell .component-item .container .image-view {
+.gen-purpose-window .table-view .table-cell .component-item .image-view {
     -fx-fit-width: 12px;
     -fx-fit-height: 12px;
 }

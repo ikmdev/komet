@@ -20,7 +20,6 @@ import javafx.scene.shape.Circle;
  * A Node used to render a Component (icon + text)
  */
 public class ComponentItemNode extends Region {
-    private final HBox container = new HBox();
     private final ImageView iconImageView = new ImageView();
     private final Label textLabel = new Label();
 
@@ -38,11 +37,12 @@ public class ComponentItemNode extends Region {
         circleClip.setCenterY(8);
 
         // Label (Text)
-        container.getChildren().addAll(iconImageView, textLabel);
-        getChildren().add(container);
+        textLabel.setGraphic(iconImageView);
 
         textLabel.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(textLabel, Priority.ALWAYS);
+
+        getChildren().add(textLabel);
 
         setOnContextMenuRequested(this::onContextMenuRequested);
 
@@ -50,7 +50,6 @@ public class ComponentItemNode extends Region {
 
         // CSS
         getStyleClass().add("component-item");
-        container.getStyleClass().add("container");
     }
 
     public ComponentItemNode(String text, Image icon) {
@@ -88,19 +87,6 @@ public class ComponentItemNode extends Region {
     protected double computeMinHeight(double width) {
         // Make the min height be the same as the pref height
         return super.computePrefHeight(width);
-    }
-
-    @Override
-    protected void layoutChildren() {
-        double leftInsets = snappedLeftInset();
-        double rightInsets = snappedRightInset();
-        double topInsets = snappedTopInset();
-        double bottomInsets = snappedBottomInset();
-        double width = getWidth();
-        double height = getHeight();
-
-        container.resizeRelocate(leftInsets, topInsets,
-                width - leftInsets - rightInsets, height - topInsets - bottomInsets);
     }
 
     // -- circular
