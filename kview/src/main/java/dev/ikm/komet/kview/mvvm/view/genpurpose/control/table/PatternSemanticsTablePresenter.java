@@ -8,14 +8,18 @@ import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservablePattern;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
+import dev.ikm.tinkar.component.FeatureDefinition;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Field;
-import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
@@ -24,13 +28,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter {
 
     private final ObservableComposer composer;
     private final ViewProperties viewProperties;
-    private final UUID journalTopic;
     private final EditorPatternModel editorPatternModel;
 
     private final PatternSemanticsTableControl patternSemanticsControl;
@@ -41,13 +43,38 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
     private SemanticRow previousSemanticRowEditMode;
 
     public PatternSemanticsTablePresenter(EditorPatternModel editorPatternModel, ViewProperties viewProperties,
-                                          ObservableComposer composer, UUID journalTopic) {
+                                          ObservableComposer composer) {
         this.composer = composer;
         this.viewProperties = viewProperties;
-        this.journalTopic = journalTopic;
         this.editorPatternModel = editorPatternModel;
 
+        patternSemanticsControl = createTableControl(viewProperties);
+    }
+
+    private PatternSemanticsTableControl createTableControl(ViewProperties viewProperties) {
+        final PatternSemanticsTableControl patternSemanticsControl;
         patternSemanticsControl = PatternSemanticsTableControl.create(viewProperties.calculator());
+
+        ViewCalculator viewCalculator = viewProperties.calculator();
+
+        patternSemanticsControl.setEntityProxyToComponentItem(entityProxy -> {
+            String description = viewCalculator.languageCalculator()
+                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+            Image identicon = Identicon.generateIdenticonImage(entityProxy.publicId());
+            ComponentItem componentItem = new ComponentItem(description, identicon);
+            return componentItem;
+        });
+        patternSemanticsControl.setNidToComponentItem(nid -> {
+            EntityProxy entityProxy = EntityProxy.make(nid);
+            Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
+
+            String description = viewCalculator.languageCalculator()
+                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+
+            return new ComponentItem(description, icon);
+        });
+
+        return patternSemanticsControl;
     }
 
     @Override
@@ -123,6 +150,13 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
 
     private SemanticField<?> createField(ObservableField<?> observableField, EditorFieldModel fieldModel) {
         Field<?> field = observableField.field();
-        return new SemanticField((FieldRecord<?>) field, observableField, viewProperties.nodeView());
+        ObservableView observableView = viewProperties.nodeView();
+
+        final FeatureDefinition featureDef = field.fieldDefinition(observableView.calculator());
+
+        int dataType = featureDef.dataTypeNid();
+        String fieldTitle = observableView.getDescriptionTextOrNid(featureDef.meaningNid());
+        String fieldPurpose = observableView.getDescriptionTextOrNid(featureDef.purposeNid());
+        return new SemanticField(observableField, dataType, fieldTitle, fieldPurpose);
     }
 }

@@ -14,7 +14,7 @@ public class KlPatternSemanticsTableFactory implements KlPatternSemanticsFactory
     @Override
     public PatternSemanticsPresenter create(EditorPatternModel editorPatternModel, ViewProperties viewProperties,
                                             ObservableComposer composer, UUID journalTopic) {
-        return new PatternSemanticsTablePresenter(editorPatternModel, viewProperties, composer, journalTopic);
+        return new PatternSemanticsTablePresenter(editorPatternModel, viewProperties, composer);
     }
 
     @Override

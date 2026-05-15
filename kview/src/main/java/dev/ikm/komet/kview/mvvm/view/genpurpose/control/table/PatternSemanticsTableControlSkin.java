@@ -118,16 +118,16 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
 
         // Fields
         for (SemanticField field : row.getFields()) {
-            TableColumn<SemanticRow, Object> tableColumn = new TableColumn<>(field.getFieldTitle());
+            TableColumn<SemanticRow, Object> tableColumn = new TableColumn<>(field.fieldTitle());
 
             tableColumn.setCellValueFactory(cellData ->
                     cellData.getValue().getFields().get(row.getFields().indexOf(field)).observableFieldProperty());
 
-            tableColumn.setCellFactory(tColumn -> {
-                if (field.getDataType() == COMPONENT_ID_SET_FIELD.nid() || field.getDataType() == COMPONENT_ID_LIST_FIELD.nid()) {
-                    return new SemanticComponentCollectionCell(getSkinnable().getViewCalculator());
-                } else if (field.getDataType() == COMPONENT_FIELD.nid()) {
-                    return new SemanticComponentCell(getSkinnable().getViewCalculator());
+            tableColumn.setCellFactory(_ -> {
+                if (field.dataType() == COMPONENT_ID_SET_FIELD.nid() || field.dataType() == COMPONENT_ID_LIST_FIELD.nid()) {
+                    return new SemanticComponentCollectionCell(getSkinnable().getNidToComponentItem());
+                } else if (field.dataType() == COMPONENT_FIELD.nid()) {
+                    return new SemanticComponentCell(getSkinnable().getEntityProxyToComponentItem());
                 } else {
                     return new SemanticStandardCell();
                 }

@@ -1,23 +1,21 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell;
 
-import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.skin.ComponentItemNode;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.SemanticRow;
 import dev.ikm.tinkar.common.id.IntIdCollection;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.TableCell;
-import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 
-public class SemanticComponentCollectionCell extends TableCell<SemanticRow, Object> {
-    private final ViewCalculator viewCalculator;
+import java.util.function.Function;
 
+public class SemanticComponentCollectionCell extends TableCell<SemanticRow, Object> {
+    private final Function<Integer, ComponentItem> nidToComponentItem;
     private final VBox componentContainer = new VBox();
 
-    public SemanticComponentCollectionCell(ViewCalculator viewCalculator) {
-        this.viewCalculator = viewCalculator;
+    public SemanticComponentCollectionCell(Function<Integer, ComponentItem> nidToComponentItem) {
+        this.nidToComponentItem = nidToComponentItem;
 
         componentContainer.getStyleClass().add("component-container");
 
@@ -38,13 +36,8 @@ public class SemanticComponentCollectionCell extends TableCell<SemanticRow, Obje
 
         IntIdCollection intIdCollection = (IntIdCollection) item;
         intIdCollection.forEach(nid -> {
-            EntityProxy entityProxy = EntityProxy.make(nid);
-            Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
-
-            String description = viewCalculator.languageCalculator()
-                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
-
-            ComponentItemNode componentItemNode = new ComponentItemNode(description, icon);
+            ComponentItem componentItem = nidToComponentItem.apply(nid);
+            ComponentItemNode componentItemNode = new ComponentItemNode(componentItem);
             componentContainer.getChildren().add(componentItemNode);
         });
 

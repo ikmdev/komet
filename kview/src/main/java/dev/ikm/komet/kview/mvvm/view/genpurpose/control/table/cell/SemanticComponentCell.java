@@ -1,25 +1,24 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell;
 
-import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.skin.ComponentItemNode;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.SemanticRow;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.TableCell;
-import javafx.scene.image.Image;
+
+import java.util.function.Function;
 
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 
 public class SemanticComponentCell extends TableCell<SemanticRow, Object> {
-    private final ViewCalculator viewCalculator;
+    private final Function<EntityProxy, ComponentItem> entityProxyToComponentItem;
 
     private final ComponentItemNode componentItemNode;
     private final ComponentItem componentItem = new ComponentItem();
 
-    public SemanticComponentCell(ViewCalculator viewCalculator) {
-        this.viewCalculator = viewCalculator;
+    public SemanticComponentCell(Function<EntityProxy, ComponentItem> entityProxyToComponentItem) {
+        this.entityProxyToComponentItem = entityProxyToComponentItem;
 
         componentItemNode = new ComponentItemNode(componentItem);
 
@@ -42,11 +41,8 @@ public class SemanticComponentCell extends TableCell<SemanticRow, Object> {
             return;
         }
 
-        String description = viewCalculator.languageCalculator()
-                .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
-        Image identicon = Identicon.generateIdenticonImage(entityProxy.publicId());
-        componentItem.setText(description);
-        componentItem.setIcon(identicon);
+        ComponentItem componentItem = entityProxyToComponentItem.apply(entityProxy);
+        componentItemNode.setComponentItem(componentItem);
 
         setGraphic(componentItemNode);
     }
