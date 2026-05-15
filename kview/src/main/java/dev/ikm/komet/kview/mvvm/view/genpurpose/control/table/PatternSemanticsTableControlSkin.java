@@ -4,6 +4,9 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticCompo
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticComponentCollectionCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticIdenticonCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticStandardCell;
+import dev.ikm.tinkar.common.id.IntIdCollection;
+import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
@@ -105,6 +108,20 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
 
     private void initializeTableView(SemanticRow row) {
         // Identicon
+        TableColumn<SemanticRow, Image> identiconColumn = createSemanticIdenticonColumn();
+
+        tableView.getColumns().add(identiconColumn);
+
+        // Fields
+        for (SemanticField field : row.getFields()) {
+            final TableColumn<SemanticRow, ?> tableColumn = createSemanticFieldColumn(row, field);
+            tableView.getColumns().add(tableColumn);
+        }
+
+        tableViewInitialized = true;
+    }
+
+    private static TableColumn<SemanticRow, Image> createSemanticIdenticonColumn() {
         TableColumn<SemanticRow, Image> identiconColumn = new TableColumn<>();
         identiconColumn.setCellValueFactory(cellData ->
                 cellData.getValue().identiconProperty());
@@ -115,32 +132,37 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
         identiconColumn.setMinWidth(identiconColumnWidth);
         identiconColumn.setMaxWidth(identiconColumnWidth);
         identiconColumn.getStyleClass().add("identicon-column");
+        return identiconColumn;
+    }
 
-        tableView.getColumns().add(identiconColumn);
+    private TableColumn<SemanticRow, ?> createSemanticFieldColumn(SemanticRow row, SemanticField field) {
+        final TableColumn<SemanticRow, ?> tableColumn;
 
-        // Fields
-        for (SemanticField field : row.getFields()) {
-            TableColumn<SemanticRow, Object> tableColumn = new TableColumn<>();
-            Label headerLabel = new Label(field.fieldTitle());
-            headerLabel.setTooltip(new Tooltip(field.fieldPurpose()));
-            tableColumn.setGraphic(headerLabel);
-
-            tableColumn.setCellValueFactory(cellData ->
+        if (field.dataType() == COMPONENT_ID_SET_FIELD.nid() || field.dataType() == COMPONENT_ID_LIST_FIELD.nid()) {
+            TableColumn<SemanticRow, IntIdCollection> col = new TableColumn<>();
+            col.setCellValueFactory(cellData ->
+                    (ObservableValue<IntIdCollection>) cellData.getValue().getFields().get(row.getFields().indexOf(field)).observableFieldProperty());
+            col.setCellFactory(_ -> new SemanticComponentCollectionCell(getSkinnable().getNidToComponentItem()));
+            tableColumn = col;
+        } else if (field.dataType() == COMPONENT_FIELD.nid()) {
+            TableColumn<SemanticRow, EntityProxy> col = new TableColumn<>();
+            col.setCellValueFactory(cellData ->
+                    (ObservableValue<EntityProxy>) cellData.getValue().getFields().get(row.getFields().indexOf(field)).observableFieldProperty());
+            col.setCellFactory(_ -> new SemanticComponentCell(getSkinnable().getEntityProxyToComponentItem()));
+            tableColumn = col;
+        } else {
+            TableColumn<SemanticRow, Object> col = new TableColumn<>();
+            col.setCellValueFactory(cellData ->
                     cellData.getValue().getFields().get(row.getFields().indexOf(field)).observableFieldProperty());
-
-            tableColumn.setCellFactory(_ -> {
-                if (field.dataType() == COMPONENT_ID_SET_FIELD.nid() || field.dataType() == COMPONENT_ID_LIST_FIELD.nid()) {
-                    return new SemanticComponentCollectionCell(getSkinnable().getNidToComponentItem());
-                } else if (field.dataType() == COMPONENT_FIELD.nid()) {
-                    return new SemanticComponentCell(getSkinnable().getEntityProxyToComponentItem());
-                } else {
-                    return new SemanticStandardCell();
-                }
-            });
-
-            tableView.getColumns().add(tableColumn);
+            col.setCellFactory(_ -> new SemanticStandardCell());
+            tableColumn = col;
         }
 
-        tableViewInitialized = true;
+        // Column header
+        Label headerLabel = new Label(field.fieldTitle());
+        headerLabel.setTooltip(new Tooltip(field.fieldPurpose()));
+        tableColumn.setGraphic(headerLabel);
+
+        return tableColumn;
     }
 }

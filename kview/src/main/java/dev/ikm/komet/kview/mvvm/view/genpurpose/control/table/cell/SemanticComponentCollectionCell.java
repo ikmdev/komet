@@ -10,7 +10,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.function.Function;
 
-public class SemanticComponentCollectionCell extends TableCell<SemanticRow, Object> {
+public class SemanticComponentCollectionCell extends TableCell<SemanticRow, IntIdCollection> {
     private final Function<Integer, ComponentItem> nidToComponentItem;
     private final VBox componentContainer = new VBox();
 
@@ -24,19 +24,19 @@ public class SemanticComponentCollectionCell extends TableCell<SemanticRow, Obje
     }
 
     @Override
-    protected void updateItem(Object item, boolean empty) {
-        super.updateItem(item, empty);
+    protected void updateItem(IntIdCollection intIdCollection, boolean empty) {
+        super.updateItem(intIdCollection, empty);
 
-        if (empty || item == null) {
+        if (empty || intIdCollection == null) {
             setGraphic(null);
             return;
         }
 
         componentContainer.getChildren().clear();
 
-        IntIdCollection intIdCollection = (IntIdCollection) item;
         intIdCollection.forEach(nid -> {
             ComponentItem componentItem = nidToComponentItem.apply(nid);
+
             ComponentItemNode componentItemNode = new ComponentItemNode(componentItem);
             componentContainer.getChildren().add(componentItemNode);
         });

@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 
-public class SemanticComponentCell extends TableCell<SemanticRow, Object> {
+public class SemanticComponentCell extends TableCell<SemanticRow, EntityProxy> {
     private final Function<EntityProxy, ComponentItem> entityProxyToComponentItem;
 
     private final ComponentItemNode componentItemNode;
@@ -27,15 +27,14 @@ public class SemanticComponentCell extends TableCell<SemanticRow, Object> {
     }
 
     @Override
-    protected void updateItem(Object item, boolean empty) {
-        super.updateItem(item, empty);
+    protected void updateItem(EntityProxy entityProxy, boolean empty) {
+        super.updateItem(entityProxy, empty);
 
-        if (empty || item == null) {
+        if (empty || entityProxy == null) {
             setGraphic(null);
             return;
         }
 
-        EntityProxy entityProxy = (EntityProxy) item;
         if (entityProxy.nid() == BLANK_CONCEPT.nid()) {
             setGraphic(null);
             return;
