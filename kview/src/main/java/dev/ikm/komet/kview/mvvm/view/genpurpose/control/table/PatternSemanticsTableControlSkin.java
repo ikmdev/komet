@@ -6,10 +6,12 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticIdent
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticStandardCell;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
+import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.util.Callback;
 import javafx.util.Subscription;
@@ -118,7 +120,10 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
 
         // Fields
         for (SemanticField field : row.getFields()) {
-            TableColumn<SemanticRow, Object> tableColumn = new TableColumn<>(field.fieldTitle());
+            TableColumn<SemanticRow, Object> tableColumn = new TableColumn<>();
+            Label headerLabel = new Label(field.fieldTitle());
+            headerLabel.setTooltip(new Tooltip(field.fieldPurpose()));
+            tableColumn.setGraphic(headerLabel);
 
             tableColumn.setCellValueFactory(cellData ->
                     cellData.getValue().getFields().get(row.getFields().indexOf(field)).observableFieldProperty());
