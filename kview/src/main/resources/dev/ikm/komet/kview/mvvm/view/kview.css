@@ -6629,7 +6629,7 @@ Styling a context menu for kview ui/ux controls
     -fx-font-size: 1em;  /* 12 */
     -fx-alignment: center-left;
 
-    -fx-padding: 7px 10px 7px 10px;
+    -fx-padding: 3px 7px 3px 7px;
 
     -fx-background-color: transparent;
 }
@@ -6647,7 +6647,7 @@ Styling a context menu for kview ui/ux controls
     -fx-alignment: top-left;
 
     -fx-border-width: 0;
-    -fx-padding: 12px 12px 18px 12px;
+    -fx-padding: 10px 13px 13px 13px;
 }
 
 .gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell {
