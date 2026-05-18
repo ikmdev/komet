@@ -6393,13 +6393,52 @@ Styling a context menu for kview ui/ux controls
  *                                                                             *
  ******************************************************************************/
 
+/* SplitPane that contains the Sections */
+.gen-purpose-window .split-pane {
+    -fx-background-color: -fx-control-inner-background;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.gen-purpose-window .split-pane > .split-pane-divider {
+    -fx-padding: 0 0.25em 0 0.25em; /* 0 3 0 3 */
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+/* Sections */
+.gen-purpose-window .section-titled-pane .section-titled-pane-container {
+    -fx-padding: 10px 8px 4 8px;
+}
+
 .gen-purpose-window .gen-purpose-pattern-title {
     -fx-font-family: "Noto Sans Bold";
     -fx-font-size: 16px;
     -fx-padding: 0 0 3px 0;
 }
 
-/* Section semantics combobox */
+/* Pattern container */
+.gen-purpose-window .pattern-container {
+    -fx-padding: 0 0 10px 0;
+}
+
+.gen-purpose-window .pattern-container:last-child {
+    -fx-padding: 0 0 5px 0;
+}
+
+.gen-purpose-window .pattern-container .semantics-container {
+    -fx-spacing: 10px;
+}
+
+.gen-purpose-window .pattern-container .semantics-container > .separator  > .line {
+    -fx-border-width: 0, 0 0 1px 0;
+    -fx-border-style: solid, solid;
+    -fx-border-insets: 0, 0 3px 0 3px;
+    -fx-border-color: transparent, transparent transparent #ddd transparent;
+}
+
+/*******************  Section Semantics ComboBox  **************************/
+
 .gen-purpose-window .titled-pane .section-combo-box {
     -fx-text-fill: -Grey-11;
     -fx-background-color: -Grey-1;
@@ -6432,28 +6471,6 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .titled-pane .section-combo-box > .arrow-button > .arrow {
     -fx-shape: "M1.40988 0.295017L-0.000122333 1.70502L5.99988 7.70502L11.9999 1.70502L10.5899 0.295017L5.99988 4.87502L1.40988 0.295017Z";
 }
-
-/* Pattern container */
-.gen-purpose-window .pattern-container {
-    -fx-padding: 0 0 10px 0;
-}
-
-.gen-purpose-window .pattern-container:last-child {
-    -fx-padding: 0 0 5px 0;
-}
-
-.gen-purpose-window .pattern-container .semantics-container {
-    -fx-spacing: 10px;
-}
-
-.gen-purpose-window .pattern-container .semantics-container > .separator  > .line {
-    -fx-border-width: 0, 0 0 1px 0;
-    -fx-border-style: solid, solid;
-    -fx-border-insets: 0, 0 3px 0 3px;
-    -fx-border-color: transparent, transparent transparent #ddd transparent;
-}
-
-/*******************  Section Semantics ComboBox  **************************/
 
 .gen-purpose-window .section-titled-pane > .section-combo-box {
     -fx-min-width: -1;

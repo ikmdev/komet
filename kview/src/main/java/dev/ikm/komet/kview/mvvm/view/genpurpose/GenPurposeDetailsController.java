@@ -100,6 +100,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -176,7 +177,7 @@ public class GenPurposeDetailsController {
     @FXML
     StampViewControl stampViewControl;
     @FXML
-    private VBox mainContent;
+    private SplitPane mainContent;
     @FXML
     private BorderPane detailsOuterBorderPane;
     @FXML
@@ -664,7 +665,7 @@ public class GenPurposeDetailsController {
         // Main TitledPane
         TitledPane mainTitledPane = createTitledPane(mainSection);
         addPatternViewsOfSection(mainSection.getPatterns());
-        mainContent.getChildren().add(mainTitledPane);
+        mainContent.getItems().add(mainTitledPane);
 
         mainSection.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
 
@@ -672,7 +673,7 @@ public class GenPurposeDetailsController {
         editorWindowModel.getAdditionalSections().forEach(section -> {
             TitledPane titledPane = createTitledPane(section);
             addPatternViewsOfSection(section.getPatterns());
-            mainContent.getChildren().add(titledPane);
+            mainContent.getItems().add(titledPane);
         });
 
         // TODO: will sections need to be refreshed on coordinate changes?
@@ -711,6 +712,7 @@ public class GenPurposeDetailsController {
         titledPane.getStyleClass().add("pattern-titled-pane");
 
         GridPane titledPaneGridPane = new GridPane();
+        titledPaneGridPane.getStyleClass().add("section-titled-pane-container");
 
         sectionModel.numberColumnsProperty().subscribe(newNumberColumns -> {
             List<ColumnConstraints> columns = new ArrayList<>();
@@ -1038,7 +1040,7 @@ public class GenPurposeDetailsController {
                     addPatternViewsOfSection(additionalSectionModel.getPatterns());
                     additionalSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
 
-                    mainContent.getChildren().add(titledPane);
+                    mainContent.getItems().add(titledPane);
                 }
             }
         }
