@@ -242,3 +242,6 @@ htmlReport
 # the *-draft goal and consumed by the matching *-publish goal)
 versions-upgrade-plan.yaml
 # END ike-managed
+
+# ike:* goal reports
+ike꞉*.md
