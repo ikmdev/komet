@@ -1,0 +1,62 @@
+# IKE workspace version-upgrade ruleset.
+#
+# Read by `ws:versions-upgrade-draft` (workspace scope) and
+# `ike:versions-upgrade-draft` (single-module scope) to decide which
+# coordinates may be upgraded, which are pinned, and which are
+# explicitly blocked. The corresponding `-publish` goals consume the
+# generated plan; this file controls only the planning step.
+#
+# Shipped as a tracked scaffold template by `ike-build-standards`.
+# Edit freely — the next `ike:scaffold-publish` records the on-disk
+# hash in `.ike/scaffold.lock`, detects user edits on subsequent
+# runs, and leaves them in place. Divergence from the shipped
+# template is surfaced as a unified diff in `ike:scaffold-draft`
+# output so you can merge upstream changes when ready.
+#
+# Schema reference: see `VersionUpgradeRulesReader` in
+# `network.ike.workspace`.
+
+schema-version: "1.0"
+
+# Coordinates with no matching rule fall through to default-action.
+# `block` is the safe default — unknown coordinates are never
+# silently upgraded just because a newer release happens to exist.
+default-action: block
+
+# Rules are evaluated in declaration order; the first match wins.
+# `match` syntax: "groupIdPattern:artifactIdPattern", with `*` as
+# a wildcard. A bare pattern with no `:` matches the groupId only,
+# with `*` for artifactId — so `network.ike.*` is shorthand for
+# `network.ike.*:*`.
+rules:
+
+  # ── IKE-owned coordinates ────────────────────────────────────────
+  # Track the latest released version of every IKE artifact —
+  # ike-tooling, ike-docs, ike-platform, ike-lab, etc. The
+  # candidate resolver only proposes non-SNAPSHOT releases.
+  - match: "network.ike.*"
+    action: allow
+
+  # ── Common test dependencies ─────────────────────────────────────
+  - match: "org.junit.jupiter:*"
+    action: allow
+  - match: "org.assertj:assertj-core"
+    action: allow
+
+  # ── Examples (uncomment and adapt as needed) ─────────────────────
+  #
+  # Pin a coordinate at a known-good version regardless of what
+  # the resolver discovers. Useful for libraries with breaking
+  # changes you have not yet adopted.
+  #
+  # - match: "com.example:frozen-lib"
+  #   action: pin
+  #   version: "1.2.3"
+  #
+  # Explicitly block with a reason. The reason surfaces in the
+  # generated plan so future readers understand why the
+  # coordinate is held back.
+  #
+  # - match: "com.example:broken-lib"
+  #   action: block
+  #   reason: "Known to fail integration tests on Java 25"
