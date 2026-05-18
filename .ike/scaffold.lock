@@ -1,12 +1,12 @@
 schema: 1
-standards-version: '175'
-applied: '2026-05-18T04:10:26.962735Z'
+standards-version: '186'
+applied: '2026-05-18T05:51:15.268251Z'
 files:
   .gitignore:
     tier: tracked-block
-    template-sha: sha256:7492c8da4e0c180719203e280fdee3b22dae90ed3aece52b3fbd583690e41c02
-    applied-sha: sha256:7492c8da4e0c180719203e280fdee3b22dae90ed3aece52b3fbd583690e41c02
-  versions-upgrade-rules.yaml:
-    tier: tracked
-    template-sha: sha256:8abeed57639896a50c0c3cb75bf2478658b149a9ee41193065eb4dab6543fc2d
-    applied-sha: sha256:8abeed57639896a50c0c3cb75bf2478658b149a9ee41193065eb4dab6543fc2d
+    template-sha: sha256:cb6eae8aac140a128fcc5bdc2949919776c7c84249b91eb085a3b7e62b9efaac
+    applied-sha: sha256:cb6eae8aac140a128fcc5bdc2949919776c7c84249b91eb085a3b7e62b9efaac
+  README.md:
+    tier: tracked-block
+    template-sha: sha256:f35d94f35bcaf8ccad88be7b48866bf54a44b9fc2f40eaeab0b466b67b1a0ff7
+    applied-sha: sha256:f35d94f35bcaf8ccad88be7b48866bf54a44b9fc2f40eaeab0b466b67b1a0ff7
