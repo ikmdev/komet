@@ -61,7 +61,7 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
             String description = viewCalculator.languageCalculator()
                     .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
             Image identicon = Identicon.generateIdenticonImage(entityProxy.publicId());
-            ComponentItem componentItem = new ComponentItem(description, identicon);
+            ComponentItem componentItem = new ComponentItem(description, identicon, entityProxy.publicId());
             return componentItem;
         });
         patternSemanticsControl.setNidToComponentItem(nid -> {
@@ -71,7 +71,7 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
             String description = viewCalculator.languageCalculator()
                     .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
 
-            return new ComponentItem(description, icon);
+            return new ComponentItem(description, icon, entityProxy.publicId());
         });
 
         return patternSemanticsControl;

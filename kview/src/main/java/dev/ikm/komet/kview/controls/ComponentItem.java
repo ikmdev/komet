@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.tinkar.common.id.PublicId;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -9,17 +10,23 @@ import javafx.scene.image.Image;
 public class ComponentItem {
 
     public ComponentItem() {
-        this(null, null, null);
+        this(null, null, (Integer) null);
     }
 
     public ComponentItem(String text, Image icon) {
-        this(text, icon, null);
+        this(text, icon, (Integer) null);
     }
 
     public ComponentItem(String text, Image icon, Integer nid) {
         this.text.set(text);
         this.icon.set(icon);
         this.nid = nid;
+    }
+
+    public ComponentItem(String text, Image icon, PublicId publicId) {
+        this.text.set(text);
+        this.icon.set(icon);
+        this.publicId = publicId;
     }
 
     // -- text
@@ -38,4 +45,9 @@ public class ComponentItem {
     private Integer nid;
     public Integer getNid() { return nid;}
     public void setNid(Integer nid) { this.nid = nid; }
+
+    // -- public id
+    private PublicId publicId;
+    public void setPublicId(PublicId publicId) { this.publicId = publicId; }
+    public PublicId getPublicId() { return publicId; }
 }

@@ -2,19 +2,28 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLReadOnlyMultiComponentControl;
+import dev.ikm.tinkar.common.id.PublicId;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.shape.Circle;
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * A Node used to render a Component (icon + text)
@@ -48,8 +57,40 @@ public class ComponentItemNode extends Region {
 
         setupComponentItemUIBinding();
 
+        setupDragAndDrop();
+
         // CSS
         getStyleClass().add("component-item");
+    }
+
+    private void setupDragAndDrop() {
+        setOnDragDetected(event -> {
+            Dragboard dragboard = startDragAndDrop(TransferMode.COPY);
+
+            PublicId publicId = componentItem.get().getPublicId();
+
+            // Clipboard content
+            ClipboardContent content = new ClipboardContent();
+            String encoded = Arrays.stream(publicId.asUuidArray())
+                    .map(UUID::toString)
+                    .collect(Collectors.joining(","));
+            content.put(KLComponentControlSkin.COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT, encoded);
+            dragboard.setContent(content);
+
+            // Drag Image
+            // — temporarily force text color for visibility
+            String previousStyle = textLabel.getStyle();
+            textLabel.setStyle("-fx-text-fill: #111111;");
+
+            SnapshotParameters p = new SnapshotParameters();
+            WritableImage snapshot = snapshot(p, null);
+            dragboard.setDragView(snapshot);
+
+            // - Restore original style
+            textLabel.setStyle(previousStyle);
+
+            event.consume();
+        });
     }
 
     public ComponentItemNode(String text, Image icon) {

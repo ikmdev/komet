@@ -8,8 +8,11 @@ import dev.ikm.komet.kview.controls.ConceptTile;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentCollectionControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -53,11 +56,24 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
     private static final Logger LOG = LoggerFactory.getLogger(KLComponentControl.class);
     private static final String SEARCH_TEXT_VALUE = "search.text.value";
+
+    /**
+     * Drag format for component drag and drop operations coming from outside of KLComponentControl.
+     */
+    public static final DataFormat COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT;
+    static {
+        DataFormat dataFormat = DataFormat.lookupMimeType("application/x-komet-outside-component-control-format");
+        COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT = dataFormat == null ? new DataFormat("application/x-komet-outside-component-control-format") : dataFormat;
+    }
+
+    /**
+     * Drag format for component control drag and drop operations from KLComponentControl to KLComponentControl.
+     */
     public static final DataFormat COMPONENT_CONTROL_DRAG_FORMAT;
 
     static {
-        DataFormat dataFormat = DataFormat.lookupMimeType("text/concept-control-format");
-        COMPONENT_CONTROL_DRAG_FORMAT = dataFormat == null ? new DataFormat("text/concept-control-format") : dataFormat;
+        DataFormat dataFormat = DataFormat.lookupMimeType("application/x-komet-component-control-format");
+        COMPONENT_CONTROL_DRAG_FORMAT = dataFormat == null ? new DataFormat("application/x-komet-component-control-format") : dataFormat;
     }
 
     private final Label titleLabel;
@@ -162,6 +178,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         control.setOnDragOver(event -> {
             if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
                 event.acceptTransferModes(TransferMode.MOVE);
+            } else if(event.getDragboard().hasContent(COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT)) {
+                event.acceptTransferModes(TransferMode.COPY);
             } else if (event.getGestureSource() != control && event.getDragboard().hasString()) {
                 if (isFilterAllowedWhileDragAndDropping(event)) {
                     event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
@@ -176,7 +194,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
 
         control.setOnDragEntered(event -> {
-            if (event.getGestureSource() != control && event.getDragboard().hasString()) {
+            if (event.getGestureSource() != control &&
+                    (event.getDragboard().hasString() || event.getDragboard().hasContent(COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT))) {
                 conceptContainer.setOpacity(.90);
                 if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
                     if (hasAllowedDND(control)) {
@@ -205,7 +224,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             if (hasAllowedDND(control)) {
                 Dragboard dragboard = control.startDragAndDrop(TransferMode.MOVE);
                 ClipboardContent clipboardContent = new ClipboardContent();
-                clipboardContent.put(COMPONENT_CONTROL_DRAG_FORMAT, "concept-control");
+                clipboardContent.put(COMPONENT_CONTROL_DRAG_FORMAT, "component-control");
                 control.setUserData(control.getEntity().publicId());
                 clipboardContent.putString(control.getEntity().toString());
                 dragboard.setContent(clipboardContent);
@@ -229,6 +248,20 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                     event.consume();
                     return;
                 }
+            }
+
+            if (event.getDragboard().hasContent(COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT)) {
+                String encoded = (String) event.getDragboard().getContent(COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT);
+                PublicId publicId = PublicIds.of(encoded.split(","));
+
+                EntityHandle.get(publicId).ifPresent(entity -> {
+                    control.setEntity(entity.toProxy());
+                    addConceptNode(entity.toProxy(), control.getComponentNameRenderer());
+
+                    event.setDropCompleted(true);
+                    event.consume();
+                    return;
+                });
             }
 
             if (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT) ) {
@@ -270,6 +303,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
      * @return Returns true if the user is allowed to drag and drop an item (source) to this control (destination).
      */
     private boolean isFilterAllowedWhileDragAndDropping(DragEvent dragEvent) {
+        boolean isFromOutsideControl = dragEvent.getDragboard().hasContent(COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT);
+
         // Detect classic concept navigator to drag and drop concepts
         boolean classicConceptNavigatorDnD = isFromClassicConceptNav(dragEvent); // and the allowed filter returns true
 
@@ -282,7 +317,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         // Existing checks for next gen search navigator items to drag.
         boolean nextGenSearchDnD =  isADragAndDropInfo(dragEvent);
 
-        return classicConceptNavigatorDnD || classicSearchDnD || nextGenConceptNavigatorDnD || nextGenSearchDnD;
+        return classicConceptNavigatorDnD || classicSearchDnD || nextGenConceptNavigatorDnD || nextGenSearchDnD || isFromOutsideControl;
     }
 
     /**
