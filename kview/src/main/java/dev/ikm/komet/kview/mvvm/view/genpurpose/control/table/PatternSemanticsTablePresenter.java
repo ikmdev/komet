@@ -102,8 +102,7 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
         }
         SemanticRow semanticRow = new SemanticRow(fields);
 
-        Image semanticIdenticon = Identicon.generateIdenticonImage(semanticEntity.publicId());
-        semanticRow.setIdenticon(semanticIdenticon);
+        semanticRow.setSemanticNid(semanticEntity.nid());
 
         semanticEntityToSemanticRow.put(semanticEntity, semanticRow);
 

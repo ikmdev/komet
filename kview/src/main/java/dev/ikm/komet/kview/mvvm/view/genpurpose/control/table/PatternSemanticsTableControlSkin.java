@@ -45,6 +45,8 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
 
         tableView.setTableMenuButtonVisible(true);
 
+        tableView.setSelectionModel(null);
+
         tableView.setRowFactory(createRowFactory());
 
         tableView.setItems(control.getSemantics());
@@ -108,7 +110,7 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
 
     private void initializeTableView(SemanticRow row) {
         // Identicon
-        TableColumn<SemanticRow, Image> identiconColumn = createSemanticIdenticonColumn();
+        var identiconColumn = createSemanticIdenticonColumn();
 
         tableView.getColumns().add(identiconColumn);
 
@@ -121,11 +123,11 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
         tableViewInitialized = true;
     }
 
-    private static TableColumn<SemanticRow, Image> createSemanticIdenticonColumn() {
-        TableColumn<SemanticRow, Image> identiconColumn = new TableColumn<>();
+    private TableColumn<SemanticRow, Integer> createSemanticIdenticonColumn() {
+        TableColumn<SemanticRow, Integer> identiconColumn = new TableColumn<>();
         identiconColumn.setCellValueFactory(cellData ->
-                cellData.getValue().identiconProperty());
-        identiconColumn.setCellFactory(_ -> new SemanticIdenticonCell());
+                cellData.getValue().semanticNidProperty());
+        identiconColumn.setCellFactory(_ -> new SemanticIdenticonCell(getSkinnable().getNidToComponentItem()));
 
         final int identiconColumnWidth = 40;
         identiconColumn.setPrefWidth(identiconColumnWidth);

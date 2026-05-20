@@ -4,7 +4,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.image.Image;
 
 import java.util.List;
 
@@ -17,11 +16,11 @@ public class SemanticRow {
 
     public List<SemanticField> getFields() { return fields; }
 
-    // -- identicon
-    private final ObjectProperty<Image> identicon = new SimpleObjectProperty<>();
-    public ObjectProperty<Image> identiconProperty() { return identicon; }
-    public ObjectProperty<Image> getIdenticon() { return identicon; }
-    public void setIdenticon(Image identicon) { this.identicon.set(identicon); }
+    // -- semantic nid
+    private final ObjectProperty<Integer> semanticNid = new SimpleObjectProperty<>();
+    public ObjectProperty<Integer> semanticNidProperty() { return semanticNid; }
+    public Integer getSemanticNid() { return semanticNid.get(); }
+    public void setSemanticNid(Integer publicId) { this.semanticNid.set(publicId); }
 
     // -- edit mode
     private final BooleanProperty editMode = new SimpleBooleanProperty();

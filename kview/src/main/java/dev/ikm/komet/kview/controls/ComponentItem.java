@@ -29,6 +29,13 @@ public class ComponentItem {
         this.publicId = publicId;
     }
 
+    public ComponentItem(ComponentItem other) {
+        this.text.set(other.text.get());
+        this.icon.set(other.icon.get());
+        this.nid = other.nid;
+        this.publicId = other.publicId;
+    }
+
     // -- text
     private StringProperty text = new SimpleStringProperty();
     public String getText() { return text.get(); }

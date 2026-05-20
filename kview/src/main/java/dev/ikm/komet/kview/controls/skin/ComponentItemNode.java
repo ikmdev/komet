@@ -23,6 +23,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.shape.Circle;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -82,9 +83,13 @@ public class ComponentItemNode extends Region {
             String previousStyle = textLabel.getStyle();
             textLabel.setStyle("-fx-text-fill: #111111;");
 
-            SnapshotParameters p = new SnapshotParameters();
-            WritableImage snapshot = snapshot(p, null);
-            dragboard.setDragView(snapshot);
+            if (dragImageSupplier.get() != null) {
+                dragboard.setDragView(dragImageSupplier.get().get());
+            } else {
+                SnapshotParameters p = new SnapshotParameters();
+                WritableImage snapshot = snapshot(p, null);
+                dragboard.setDragView(snapshot);
+            }
 
             // - Restore original style
             textLabel.setStyle(previousStyle);
@@ -155,4 +160,10 @@ public class ComponentItemNode extends Region {
     public ComponentItem getComponentItem() { return componentItem.get(); }
     public ObjectProperty<ComponentItem> componentItemProperty() { return componentItem; }
     public void setComponentItem(ComponentItem componentItem) { this.componentItem.set(componentItem); }
+
+    // -- drag image supplier
+    private final ObjectProperty<Supplier<Image>> dragImageSupplier = new SimpleObjectProperty<>();
+    public Supplier<Image> getDragImageSupplier() { return dragImageSupplier.get(); }
+    public ObjectProperty<Supplier<Image>> dragImageSupplierProperty() { return dragImageSupplier; }
+    public void setDragImageSupplier(Supplier<Image> dragImageSupplier) { this.dragImageSupplier.set(dragImageSupplier); }
 }
