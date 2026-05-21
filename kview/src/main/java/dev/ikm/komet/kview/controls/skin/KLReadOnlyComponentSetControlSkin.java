@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
+import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import javafx.collections.ListChangeListener;
 

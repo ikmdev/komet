@@ -6393,6 +6393,19 @@ Styling a context menu for kview ui/ux controls
  *                                                                             *
  ******************************************************************************/
 
+ .window-main-title .label {
+     -fx-font-family: "Noto Sans";
+     -fx-font-size: 18px;
+
+     -fx-graphic-text-gap: 8px;
+ }
+
+ .window-main-title .label > .image-view {
+    size: 24;
+    -fx-fit-width: size;
+    -fx-fit-height: size;
+ }
+
 /* SplitPane that contains the Sections */
 .gen-purpose-window .split-pane {
     -fx-background-color: -fx-control-inner-background;

@@ -31,10 +31,6 @@ import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatest
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.COMPOSER;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
@@ -48,12 +44,14 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
+import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KometLabel;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
+import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
@@ -98,7 +96,6 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TitledPane;
@@ -115,7 +112,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -196,9 +192,9 @@ public class GenPurposeDetailsController {
     @FXML
     private ImageView identiconImageView;
     @FXML
-    private Label conceptTitleText;
+    private ComponentItemNode windowConceptTitle;
     @FXML
-    private Tooltip conceptNameTooltip;
+    private Tooltip windowConceptTitleTooltip;
     @FXML
     private PublicIDListControl identifierControl;
     @FXML
@@ -415,11 +411,6 @@ public class GenPurposeDetailsController {
         identifierControl.updatePublicIdList(viewCalculator, refComponent);
     }
 
-    private void updateIdenticon(EntityFacade refComponent) {
-        Image identicon = Identicon.generateIdenticonImage(refComponent.publicId());
-        identiconImageView.setImage(identicon);
-    }
-
     private void updateStampControl(EntityFacade refConcept) {
         ObservableEntity observableEntity = ObservableEntity.get(refConcept.nid());
         ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
@@ -465,8 +456,12 @@ public class GenPurposeDetailsController {
 
     private void updateWindowTitle(EntityFacade refConcept) {
         String conceptNameStr = getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(refConcept.nid());
-        conceptTitleText.setText(conceptNameStr);
-        conceptNameTooltip.setText(conceptNameStr);
+        Image identicon = Identicon.generateIdenticonImage(refConcept.publicId());
+
+        ComponentItem componentItem = new ComponentItem(conceptNameStr, identicon, refConcept.publicId());
+        windowConceptTitle.setComponentItem(componentItem);
+
+        windowConceptTitleTooltip.setText(conceptNameStr);
     }
 
     /**
@@ -565,7 +560,7 @@ public class GenPurposeDetailsController {
 
     @FXML
     void closeConceptWindow(ActionEvent event) {
-        LOG.info("Cleanup occurring: Closing Window with pattern: " + conceptTitleText.getText());
+        LOG.info("Cleanup occurring: Closing Window: " + windowConceptTitle.getComponentItem());
 
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
@@ -691,7 +686,6 @@ public class GenPurposeDetailsController {
         EntityFacade refConcept = (EntityFacade) genPurposeViewModel.getProperty(ViewModelKey.REF_COMPONENT).getValue();
         if (refConcept != null) {
             updateDisplayIdentifier(refConcept);
-            updateIdenticon(refConcept);
             updateWindowTitle(refConcept);
             updateStampControl(refConcept);
         } else {

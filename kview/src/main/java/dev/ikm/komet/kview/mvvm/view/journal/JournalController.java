@@ -81,6 +81,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.KometIcon;
@@ -618,7 +619,7 @@ public class JournalController {
                                 .map(db -> handleUuidArrayDrag(db, MULTI_PARENT_GRAPH_DRAG_FORMAT)))
                         .or(() -> dragboardOpt
                                 .filter(db -> db.hasContent(COMPONENT_DRAG_FORMAT))
-                                .map(db -> handleComponentItemNodeDrag(db)))
+                                .map(db -> handleComponentDrag(db)))
                         .or(() -> dragboardOpt
                                 .filter(Dragboard::hasString)
                                 .map(db -> handleEntityDrag(event.getGestureSource())))
@@ -632,13 +633,13 @@ public class JournalController {
     }
 
     /**
-     * Handles a drop from a {@link dev.ikm.komet.kview.controls.skin.ComponentItemNode},
+     * Handles a drop when the Data Format is COMPONENT_DRAG_FORMAT,
      * which encodes a PublicId as a comma-separated list of UUID strings.
      *
      * @param dragboard the dragboard containing the encoded UUID string
      * @return true if a window was successfully created
      */
-    private boolean handleComponentItemNodeDrag(Dragboard dragboard) {
+    private boolean handleComponentDrag(Dragboard dragboard) {
         String encoded = (String) dragboard.getContent(COMPONENT_DRAG_FORMAT);
         if (encoded == null || encoded.isBlank()) {
             return false;

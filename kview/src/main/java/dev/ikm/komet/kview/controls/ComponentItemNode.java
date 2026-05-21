@@ -1,7 +1,5 @@
-package dev.ikm.komet.kview.controls.skin;
+package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.kview.controls.ComponentItem;
-import dev.ikm.komet.kview.controls.KLReadOnlyMultiComponentControl;
 import dev.ikm.tinkar.common.id.PublicId;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -10,6 +8,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -21,6 +20,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.shape.Circle;
+
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -53,6 +53,9 @@ public class ComponentItemNode extends Region {
 
         textLabel.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(textLabel, Priority.ALWAYS);
+
+        textLabel.tooltipProperty().bind(tooltipProperty());
+        textLabel.wrapTextProperty().bind(wrapTextProperty());
 
         getChildren().add(textLabel);
 
@@ -119,11 +122,6 @@ public class ComponentItemNode extends Region {
         textLabel.textProperty().bind(componentItem.get().textProperty());
     }
 
-    void setContextMenu(ContextMenu contextMenu) {
-        this.contextMenu = contextMenu;
-
-    }
-
     private void onContextMenuRequested(ContextMenuEvent contextMenuEvent) {
         pseudoClassStateChanged(KLReadOnlyMultiComponentControl.EDIT_MODE_PSEUDO_CLASS, true);
 
@@ -135,6 +133,11 @@ public class ComponentItemNode extends Region {
     protected double computeMinHeight(double width) {
         // Make the min height be the same as the pref height
         return super.computePrefHeight(width);
+    }
+
+    // -- context menu
+    public void setContextMenu(ContextMenu contextMenu) {
+        this.contextMenu = contextMenu;
     }
 
     // -- circular
@@ -168,4 +171,16 @@ public class ComponentItemNode extends Region {
     public Supplier<Image> getDragImageSupplier() { return dragImageSupplier.get(); }
     public ObjectProperty<Supplier<Image>> dragImageSupplierProperty() { return dragImageSupplier; }
     public void setDragImageSupplier(Supplier<Image> dragImageSupplier) { this.dragImageSupplier.set(dragImageSupplier); }
+
+    // -- tooltip
+    private final ObjectProperty<Tooltip> tooltip = new SimpleObjectProperty<>();
+    public Tooltip getTooltip() { return tooltip.get(); }
+    public ObjectProperty<Tooltip> tooltipProperty() { return tooltip; }
+    public void setTooltip(Tooltip tooltip) { this.tooltip.set(tooltip); }
+
+    // -- wrap text
+    private final BooleanProperty wrapText = new SimpleBooleanProperty(false);
+    public boolean isWrapText() { return wrapText.get(); }
+    public BooleanProperty wrapTextProperty() { return wrapText; }
+    public void setWrapText(boolean wrapText) { this.wrapText.set(wrapText); }
 }

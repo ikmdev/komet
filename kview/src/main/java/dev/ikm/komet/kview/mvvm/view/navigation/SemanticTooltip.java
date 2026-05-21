@@ -2,7 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.navigation;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.controls.skin.ComponentItemNode;
+import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.klfields.KlFieldType;
 import dev.ikm.tinkar.common.id.IntIdCollection;

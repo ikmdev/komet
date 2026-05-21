@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
-import dev.ikm.komet.kview.controls.skin.ComponentItemNode;
+import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.SemanticRow;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.scene.control.ContentDisplay;
