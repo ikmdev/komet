@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
+import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
 import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
 import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.JOURNAL_VIEW;
@@ -616,6 +617,9 @@ public class JournalController {
                                 .filter(db -> db.hasContent(MULTI_PARENT_GRAPH_DRAG_FORMAT))
                                 .map(db -> handleUuidArrayDrag(db, MULTI_PARENT_GRAPH_DRAG_FORMAT)))
                         .or(() -> dragboardOpt
+                                .filter(db -> db.hasContent(COMPONENT_DRAG_FORMAT))
+                                .map(db -> handleComponentItemNodeDrag(db)))
+                        .or(() -> dragboardOpt
                                 .filter(Dragboard::hasString)
                                 .map(db -> handleEntityDrag(event.getGestureSource())))
                         .orElse(false);
@@ -625,6 +629,30 @@ public class JournalController {
             event.setDropCompleted(success);
             event.consume();
         });
+    }
+
+    /**
+     * Handles a drop from a {@link dev.ikm.komet.kview.controls.skin.ComponentItemNode},
+     * which encodes a PublicId as a comma-separated list of UUID strings.
+     *
+     * @param dragboard the dragboard containing the encoded UUID string
+     * @return true if a window was successfully created
+     */
+    private boolean handleComponentItemNodeDrag(Dragboard dragboard) {
+        String encoded = (String) dragboard.getContent(COMPONENT_DRAG_FORMAT);
+        if (encoded == null || encoded.isBlank()) {
+            return false;
+        }
+        try {
+            UUID[] uuids = Arrays.stream(encoded.split(","))
+                    .map(UUID::fromString)
+                    .toArray(UUID[]::new);
+            createWindowFromUuids(uuids);
+            return true;
+        } catch (IllegalArgumentException e) {
+            LOG.error("Failed to parse UUIDs from ComponentItemNode drag: {}", encoded, e);
+            return false;
+        }
     }
 
     /**

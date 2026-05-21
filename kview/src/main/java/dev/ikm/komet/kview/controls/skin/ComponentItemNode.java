@@ -26,6 +26,8 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
+
 /**
  * A Node used to render a Component (icon + text)
  */
@@ -75,7 +77,7 @@ public class ComponentItemNode extends Region {
             String encoded = Arrays.stream(publicId.asUuidArray())
                     .map(UUID::toString)
                     .collect(Collectors.joining(","));
-            content.put(KLComponentControlSkin.COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT, encoded);
+            content.put(COMPONENT_DRAG_FORMAT, encoded);
             dragboard.setContent(content);
 
             // Drag Image

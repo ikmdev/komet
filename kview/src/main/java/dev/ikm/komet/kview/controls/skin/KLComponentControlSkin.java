@@ -47,6 +47,7 @@ import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.function.Function;
 
+import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 
 /**
@@ -56,15 +57,6 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
     private static final Logger LOG = LoggerFactory.getLogger(KLComponentControl.class);
     private static final String SEARCH_TEXT_VALUE = "search.text.value";
-
-    /**
-     * Drag format for component drag and drop operations coming from outside of KLComponentControl.
-     */
-    public static final DataFormat COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT;
-    static {
-        DataFormat dataFormat = DataFormat.lookupMimeType("application/x-komet-outside-component-control-format");
-        COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT = dataFormat == null ? new DataFormat("application/x-komet-outside-component-control-format") : dataFormat;
-    }
 
     /**
      * Drag format for component control drag and drop operations from KLComponentControl to KLComponentControl.
@@ -178,7 +170,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         control.setOnDragOver(event -> {
             if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
                 event.acceptTransferModes(TransferMode.MOVE);
-            } else if(event.getDragboard().hasContent(COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT)) {
+            } else if(event.getDragboard().hasContent(COMPONENT_DRAG_FORMAT)) {
                 event.acceptTransferModes(TransferMode.COPY);
             } else if (event.getGestureSource() != control && event.getDragboard().hasString()) {
                 if (isFilterAllowedWhileDragAndDropping(event)) {
@@ -195,7 +187,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         control.setOnDragEntered(event -> {
             if (event.getGestureSource() != control &&
-                    (event.getDragboard().hasString() || event.getDragboard().hasContent(COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT))) {
+                    (event.getDragboard().hasString() || event.getDragboard().hasContent(COMPONENT_DRAG_FORMAT))) {
                 conceptContainer.setOpacity(.90);
                 if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
                     if (hasAllowedDND(control)) {
@@ -250,8 +242,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 }
             }
 
-            if (event.getDragboard().hasContent(COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT)) {
-                String encoded = (String) event.getDragboard().getContent(COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT);
+            if (event.getDragboard().hasContent(COMPONENT_DRAG_FORMAT)) {
+                String encoded = (String) event.getDragboard().getContent(COMPONENT_DRAG_FORMAT);
                 PublicId publicId = PublicIds.of(encoded.split(","));
 
                 EntityHandle.get(publicId).ifPresent(entity -> {
@@ -303,7 +295,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
      * @return Returns true if the user is allowed to drag and drop an item (source) to this control (destination).
      */
     private boolean isFilterAllowedWhileDragAndDropping(DragEvent dragEvent) {
-        boolean isFromOutsideControl = dragEvent.getDragboard().hasContent(COMPONENT_OUTSIDE_COMPONENT_CONTROL_DRAG_FORMAT);
+        boolean isFromOutsideControl = dragEvent.getDragboard().hasContent(COMPONENT_DRAG_FORMAT);
 
         // Detect classic concept navigator to drag and drop concepts
         boolean classicConceptNavigatorDnD = isFromClassicConceptNav(dragEvent); // and the allowed filter returns true

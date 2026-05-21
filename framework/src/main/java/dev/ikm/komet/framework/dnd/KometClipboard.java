@@ -45,6 +45,12 @@ public class KometClipboard
     public static final DataFormat KOMET_PATTERN_VERSION_PROXY = new DataFormat("application/komet-pattern-version-proxy");
     public static final DataFormat KOMET_SEMANTIC_VERSION_PROXY = new DataFormat("application/komet-semantic-version-proxy");
 
+    /**
+     * Drag format used when dragging a Component. Can be used anywhere a Component is in the clipboard and a Public Id is stored
+     * in there.
+     * */
+    public static final DataFormat COMPONENT_DRAG_FORMAT = new DataFormat("application/x-komet-component-drag-format");
+
     public static final Set<DataFormat> CONCEPT_TYPES = new HashSet<>(Arrays.asList(KOMET_CONCEPT_VERSION_PROXY, KOMET_CONCEPT_PROXY));
     public static final Set<DataFormat> PATTERN_TYPES = new HashSet<>(Arrays.asList(KOMET_PATTERN_VERSION_PROXY, KOMET_PATTERN_PROXY));
     public static final Set<DataFormat> SEMANTIC_TYPES = new HashSet<>(Arrays.asList(KOMET_SEMANTIC_VERSION_PROXY, KOMET_SEMANTIC_PROXY));
