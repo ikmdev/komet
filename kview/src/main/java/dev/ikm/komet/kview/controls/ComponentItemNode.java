@@ -20,8 +20,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.shape.Circle;
+import javafx.embed.swing.SwingFXUtils;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -38,6 +43,12 @@ public class ComponentItemNode extends Region {
     private Circle circleClip;
 
     private ContextMenu contextMenu;
+
+    /*=========================================================================*
+     *                                                                         *
+     * Constructors                                                            *
+     *                                                                         *
+     *=========================================================================*/
 
     public ComponentItemNode() {
         iconImageView.setFitHeight(16);
@@ -69,39 +80,6 @@ public class ComponentItemNode extends Region {
         getStyleClass().add("component-item");
     }
 
-    private void setupDragAndDrop() {
-        setOnDragDetected(event -> {
-            Dragboard dragboard = startDragAndDrop(TransferMode.COPY);
-
-            PublicId publicId = componentItem.get().getPublicId();
-
-            // Clipboard content
-            ClipboardContent content = new ClipboardContent();
-            String encoded = Arrays.stream(publicId.asUuidArray())
-                    .map(UUID::toString)
-                    .collect(Collectors.joining(","));
-            content.put(COMPONENT_DRAG_FORMAT, encoded);
-            dragboard.setContent(content);
-
-            // Drag Image
-            // — temporarily force text color for visibility
-            String previousStyle = textLabel.getStyle();
-            textLabel.setStyle("-fx-text-fill: #111111;");
-
-            if (dragImageSupplier.get() != null) {
-                dragboard.setDragView(dragImageSupplier.get().get());
-            } else {
-                SnapshotParameters p = new SnapshotParameters();
-                WritableImage snapshot = snapshot(p, null);
-                dragboard.setDragView(snapshot);
-            }
-
-            // - Restore original style
-            textLabel.setStyle(previousStyle);
-
-            event.consume();
-        });
-    }
 
     public ComponentItemNode(String text, Image icon) {
         this();
@@ -129,11 +107,118 @@ public class ComponentItemNode extends Region {
         contextMenu.show(this, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
     }
 
+    private void setupDragAndDrop() {
+        setOnDragDetected(event -> {
+            Dragboard dragboard = startDragAndDrop(TransferMode.COPY);
+
+            PublicId publicId = componentItem.get().getPublicId();
+
+            // Clipboard content
+            ClipboardContent content = new ClipboardContent();
+            String encoded = Arrays.stream(publicId.asUuidArray())
+                    .map(UUID::toString)
+                    .collect(Collectors.joining(","));
+            content.put(COMPONENT_DRAG_FORMAT, encoded);
+
+            String title = componentItem.get().getText();
+            Image identiconImage = componentItem.get().getIcon();
+
+            // Plain text fallback for simple text targets
+            if (title != null && !title.isBlank()) {
+                content.putString(title);
+            }
+
+            // HTML: identicon + title together, for rich targets (email, Word, browsers)
+            String html = buildHtmlPayload(identiconImage, title);
+            if (html != null) {
+                content.putHtml(html);
+            }
+
+            dragboard.setContent(content);
+
+            // Drag Image
+            String previousStyle = textLabel.getStyle();
+            textLabel.setStyle("-fx-text-fill: #111111;");
+
+            if (dragImageSupplier.get() != null) {
+                dragboard.setDragView(dragImageSupplier.get().get());
+            } else {
+                SnapshotParameters p = new SnapshotParameters();
+                WritableImage snapshot = snapshot(p, null);
+                dragboard.setDragView(snapshot);
+            }
+
+            textLabel.setStyle(previousStyle);
+            event.consume();
+        });
+    }
+
+    /**
+     * Builds an HTML fragment containing the identicon as a base64-encoded PNG
+     * and the entity title side by side. Returns null if both inputs are absent.
+     */
+    private String buildHtmlPayload(Image identiconImage, String title) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<span style=\"display:inline-flex;align-items:center;gap:6px;font-family:sans-serif;\">");
+
+        if (identiconImage != null) {
+            String base64 = toBase64Png(identiconImage);
+            if (base64 != null) {
+                sb.append("<img src=\"data:image/png;base64,")
+                        .append(base64)
+                        .append("\" width=\"24\" height=\"24\" style=\"vertical-align:middle;\"/>");
+            }
+        }
+
+        if (title != null && !title.isBlank()) {
+            sb.append("<span>").append(escapeHtml(title)).append("</span>");
+        }
+
+        sb.append("</span>");
+
+        // Return null if nothing meaningful was added
+        boolean hasImage = identiconImage != null;
+        boolean hasTitle = title != null && !title.isBlank();
+        return (hasImage || hasTitle) ? sb.toString() : null;
+    }
+
+    /**
+     * Converts a JavaFX Image to a base64-encoded PNG string.
+     * Returns null if conversion fails.
+     */
+    private String toBase64Png(Image image) {
+        try {
+            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(bufferedImage, "png", baos);
+            return Base64.getEncoder().encodeToString(baos.toByteArray());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Minimal HTML escaping to prevent title text from breaking the markup.
+     **/
+    private String escapeHtml(String text) {
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+
     @Override
     protected double computeMinHeight(double width) {
         // Make the min height be the same as the pref height
         return super.computePrefHeight(width);
     }
+
+    /*=========================================================================*
+     *                                                                         *
+     * Properties                                                              *
+     *                                                                         *
+     *=========================================================================*/
 
     // -- context menu
     public void setContextMenu(ContextMenu contextMenu) {
