@@ -25,13 +25,11 @@ import javafx.embed.swing.SwingFXUtils;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
+import static dev.ikm.komet.framework.dnd.KometClipboard.encodePublicId;
 
 /**
  * A Node used to render a Component (icon + text)
@@ -115,21 +113,18 @@ public class ComponentItemNode extends Region {
 
             // Clipboard content
             ClipboardContent content = new ClipboardContent();
-            String encoded = Arrays.stream(publicId.asUuidArray())
-                    .map(UUID::toString)
-                    .collect(Collectors.joining(","));
-            content.put(COMPONENT_DRAG_FORMAT, encoded);
 
+            // -- IKE specific data format
+            content.put(COMPONENT_DRAG_FORMAT, encodePublicId(publicId));
+
+            // -- Plain text fallback for simple text targets
             String title = componentItem.get().getText();
-            Image identiconImage = componentItem.get().getIcon();
-
-            // Plain text fallback for simple text targets
             if (title != null && !title.isBlank()) {
                 content.putString(title);
             }
 
-            // HTML: identicon + title together, for rich targets (email, Word, browsers)
-            String html = buildHtmlPayload(identiconImage, title);
+            // -- HTML: identicon + title together, for rich targets (email, Word, browsers)
+            String html = buildHtmlPayload(componentItem.get().getIcon(), title);
             if (html != null) {
                 content.putHtml(html);
             }
@@ -149,6 +144,7 @@ public class ComponentItemNode extends Region {
             }
 
             textLabel.setStyle(previousStyle);
+
             event.consume();
         });
     }

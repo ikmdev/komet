@@ -48,6 +48,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
+import static dev.ikm.komet.framework.dnd.KometClipboard.decodePublicId;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 
 /**
@@ -244,7 +245,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
             if (event.getDragboard().hasContent(COMPONENT_DRAG_FORMAT)) {
                 String encoded = (String) event.getDragboard().getContent(COMPONENT_DRAG_FORMAT);
-                PublicId publicId = PublicIds.of(encoded.split(","));
+                PublicId publicId = decodePublicId(encoded);
 
                 EntityHandle.get(publicId).ifPresent(entity -> {
                     control.setEntity(entity.toProxy());

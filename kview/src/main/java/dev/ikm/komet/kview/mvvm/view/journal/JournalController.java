@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.journal;
 
 import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
+import static dev.ikm.komet.framework.dnd.KometClipboard.decodeUuids;
 import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
 import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.JOURNAL_VIEW;
@@ -645,10 +646,7 @@ public class JournalController {
             return false;
         }
         try {
-            UUID[] uuids = Arrays.stream(encoded.split(","))
-                    .map(UUID::fromString)
-                    .toArray(UUID[]::new);
-            createWindowFromUuids(uuids);
+            createWindowFromUuids(decodeUuids(encoded));
             return true;
         } catch (IllegalArgumentException e) {
             LOG.error("Failed to parse UUIDs from ComponentItemNode drag: {}", encoded, e);

@@ -17,6 +17,8 @@ package dev.ikm.komet.framework.dnd;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import dev.ikm.tinkar.component.Component;
@@ -27,15 +29,14 @@ import dev.ikm.tinkar.terms.EntityProxy;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 //~--- classes ----------------------------------------------------------------
 
 /**
  * 
  */
-public class KometClipboard
-        extends ClipboardContent {
-
+public class KometClipboard extends ClipboardContent {
     public static final DataFormat MULTI_PARENT_GRAPH_DRAG_FORMAT = new DataFormat("application/multi-parent-graph-format");
     public static final DataFormat KOMET_PROXY_LIST = new DataFormat("application/komet-proxy-list");
     public static final DataFormat KOMET_CONCEPT_PROXY = new DataFormat("application/komet-concept-proxy");
@@ -48,7 +49,7 @@ public class KometClipboard
     /**
      * Drag format used when dragging a Component. Can be used anywhere a Component is in the clipboard and a Public Id is stored
      * in there.
-     * */
+     */
     public static final DataFormat COMPONENT_DRAG_FORMAT = new DataFormat("application/x-komet-component-drag-format");
 
     public static final Set<DataFormat> CONCEPT_TYPES = new HashSet<>(Arrays.asList(KOMET_CONCEPT_VERSION_PROXY, KOMET_CONCEPT_PROXY));
@@ -56,6 +57,45 @@ public class KometClipboard
     public static final Set<DataFormat> SEMANTIC_TYPES = new HashSet<>(Arrays.asList(KOMET_SEMANTIC_VERSION_PROXY, KOMET_SEMANTIC_PROXY));
     private static final HashMap<DataFormat, Function<? super Component, ? extends Object>> GENERATOR_MAP
             = new HashMap<>();
+
+    /**
+     * Encodes a {@link PublicId} as a comma-separated string of UUID values,
+     * for example, suitable for use as {@link #COMPONENT_DRAG_FORMAT} clipboard content.
+     *
+     * @param publicId the PublicId to encode
+     * @return a comma-separated UUID string
+     */
+    public static String encodePublicId(PublicId publicId) {
+        return Arrays.stream(publicId.asUuidArray())
+                .map(UUID::toString)
+                .collect(Collectors.joining(","));
+    }
+
+    /**
+     * Decodes a comma-separated UUID string (as produced by {@link #encodePublicId})
+     * back into a {@link PublicId}.
+     *
+     * @param encoded the comma-separated UUID string
+     * @return the decoded PublicId
+     * @throws IllegalArgumentException if any token is not a valid UUID
+     */
+    public static PublicId decodePublicId(String encoded) {
+        return PublicIds.of(encoded.split(","));
+    }
+
+    /**
+     * Decodes a comma-separated UUID string (as produced by {@link #encodePublicId})
+     * into a {@code UUID[]}.
+     *
+     * @param encoded the comma-separated UUID string
+     * @return array of UUIDs
+     * @throws IllegalArgumentException if any token is not a valid UUID
+     */
+    public static UUID[] decodeUuids(String encoded) {
+        return Arrays.stream(encoded.split(","))
+                .map(UUID::fromString)
+                .toArray(UUID[]::new);
+    }
 
     //~--- static initializers -------------------------------------------------
     static {
