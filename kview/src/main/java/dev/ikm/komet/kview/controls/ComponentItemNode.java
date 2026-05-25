@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import dev.ikm.tinkar.common.id.PublicId;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -8,10 +9,12 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
@@ -19,8 +22,11 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.shape.FillRule;
+import javafx.scene.shape.SVGPath;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -99,37 +105,70 @@ public class ComponentItemNode extends Region {
     }
 
     private void onContextMenuRequested(ContextMenuEvent contextMenuEvent) {
+        if (contextMenu == null) {
+            contextMenu = buildDefaultContextMenu();
+        }
+
         pseudoClassStateChanged(KLReadOnlyMultiComponentControl.EDIT_MODE_PSEUDO_CLASS, true);
 
         contextMenu.setOnHidden(event -> pseudoClassStateChanged(KLReadOnlyMultiComponentControl.EDIT_MODE_PSEUDO_CLASS, false));
         contextMenu.show(this, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
     }
 
+    private ContextMenu buildDefaultContextMenu() {
+        ContextMenu menu = new ContextMenu();
+        menu.getStyleClass().add("klcontext-menu");
+
+        // the SVG graphic for the copy to clipboard icon
+        var svgPath = new SVGPath();
+        svgPath.setContent(SVGConstants.COPY_TO_CLIPBOARD_SVG_PATH);
+        svgPath.setFillRule(FillRule.EVEN_ODD);
+        svgPath.getStyleClass().addAll(
+                "copy-to-clipboard-svg",
+                "icon-klcontext-menu"
+        );
+
+        StackPane svgIcon = new StackPane(svgPath);
+        svgIcon.getStyleClass().addAll("copy-to-clipboard-icon", "icon");
+
+        MenuItem copyItem = new MenuItem("Copy to clipboard", svgIcon);
+        copyItem.setOnAction(e -> copyToClipboard());
+
+        menu.getItems().add(copyItem);
+        return menu;
+    }
+
+    private void copyToClipboard() {
+        ClipboardContent content = buildClipboardContent();
+        if (!content.isEmpty()) {
+            Clipboard.getSystemClipboard().setContent(content);
+        }
+    }
+
+    private ClipboardContent buildClipboardContent() {
+        ClipboardContent content = new ClipboardContent();
+
+        PublicId publicId = componentItem.get().getPublicId();
+        content.put(COMPONENT_DRAG_FORMAT, encodePublicId(publicId));
+
+        String title = componentItem.get().getText();
+        if (title != null && !title.isBlank()) {
+            content.putString(title);
+        }
+
+        String html = buildHtmlPayload(componentItem.get().getIcon(), title);
+        if (html != null) {
+            content.putHtml(html);
+        }
+
+        return content;
+    }
+
     private void setupDragAndDrop() {
         setOnDragDetected(event -> {
             Dragboard dragboard = startDragAndDrop(TransferMode.COPY);
 
-            PublicId publicId = componentItem.get().getPublicId();
-
-            // Clipboard content
-            ClipboardContent content = new ClipboardContent();
-
-            // -- IKE specific data format
-            content.put(COMPONENT_DRAG_FORMAT, encodePublicId(publicId));
-
-            // -- Plain text fallback for simple text targets
-            String title = componentItem.get().getText();
-            if (title != null && !title.isBlank()) {
-                content.putString(title);
-            }
-
-            // -- HTML: identicon + title together, for rich targets (email, Word, browsers)
-            String html = buildHtmlPayload(componentItem.get().getIcon(), title);
-            if (html != null) {
-                content.putHtml(html);
-            }
-
-            dragboard.setContent(content);
+            dragboard.setContent(buildClipboardContent());
 
             // Drag Image
             String previousStyle = textLabel.getStyle();
