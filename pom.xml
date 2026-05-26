@@ -5,7 +5,7 @@
  <parent>
         <groupId>network.ike.platform</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>90</version>
+        <version>91</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -158,15 +158,11 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.2.8</version>
+                    <!-- version inherited from ike-base-parent; bc signer is required for
+                         parallel-safe signing (do not switch to native gpg) -->
                     <configuration>
                         <signer>bc</signer>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.1.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -184,11 +180,6 @@
                             </goals>
                         </execution>
                     </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>${maven.assembly-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.openjfx</groupId>
