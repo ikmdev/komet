@@ -222,7 +222,7 @@ public class App extends Application  {
                     .ifPresentOrElse(journalController -> {
                                 if (IS_BROWSER) {
                                     // Similar to the desktop version, bring the existing tab to the front
-                                    Stage journalStage = (Stage) journalController.getJournalBorderPane().getScene().getWindow();
+                                    Stage journalStage = (Stage) journalController.getJournalRootPane().getScene().getWindow();
                                     webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
                                 } else {
                                     // Bring the existing window to the front

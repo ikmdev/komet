@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.kview.mvvm.view.NavigationPanelHelper;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import dev.ikm.tinkar.common.id.PublicId;
 import javafx.beans.property.BooleanProperty;
@@ -36,6 +37,7 @@ import java.util.function.Supplier;
 
 import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
 import static dev.ikm.komet.framework.dnd.KometClipboard.encodePublicId;
+import static dev.ikm.komet.kview.controls.KometIcon.IconValue.POPULATE;
 
 /**
  * A Node used to render a Component (icon + text)
@@ -118,6 +120,19 @@ public class ComponentItemNode extends Region {
     private ContextMenu buildDefaultContextMenu() {
         ContextMenu menu = new ContextMenu();
         menu.getStyleClass().add("klcontext-menu");
+
+        if (componentItem.get().isConcept() && componentItem.get().getPublicId() != null) {
+            MenuItem openInConceptNavigatorItem = new MenuItem("Open in Concept Navigator", KometIcon.create(POPULATE, "icon-klcontext-menu"));
+            openInConceptNavigatorItem.setOnAction(_ ->
+                    NavigationPanelHelper.openConceptInNavigatorForContainingJournal(
+                            this,
+                            this,
+                            componentItem.get().getPublicId()
+                    )
+            );
+
+            menu.getItems().add(openInConceptNavigatorItem);
+        }
 
         // the SVG graphic for the copy to clipboard icon
         var svgPath = new SVGPath();
@@ -280,6 +295,7 @@ public class ComponentItemNode extends Region {
         @Override
         protected void invalidated() {
             setupComponentItemUIBinding();
+            ComponentItemNode.this.contextMenu = null;
         }
     };
     public ComponentItem getComponentItem() { return componentItem.get(); }

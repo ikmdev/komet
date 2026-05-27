@@ -458,7 +458,9 @@ public class GenPurposeDetailsController {
         String conceptNameStr = getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(refConcept.nid());
         Image identicon = Identicon.generateIdenticonImage(refConcept.publicId());
 
-        ComponentItem componentItem = new ComponentItem(conceptNameStr, identicon, refConcept.publicId());
+        boolean isConcept = EntityHandle.get(refConcept).isConcept();
+        ComponentItem componentItem = new ComponentItem(conceptNameStr, identicon, refConcept.publicId(), isConcept);
+
         windowConceptTitle.setComponentItem(componentItem);
 
         windowConceptTitleTooltip.setText(conceptNameStr);

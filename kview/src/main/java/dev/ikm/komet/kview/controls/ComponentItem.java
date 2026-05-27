@@ -21,12 +21,18 @@ public class ComponentItem {
         this.text.set(text);
         this.icon.set(icon);
         this.nid = nid;
+        this.isConcept = false;
     }
 
     public ComponentItem(String text, Image icon, PublicId publicId) {
+        this(text, icon, publicId, false);
+    }
+
+    public ComponentItem(String text, Image icon, PublicId publicId, boolean isConcept) {
         this.text.set(text);
         this.icon.set(icon);
         this.publicId = publicId;
+        this.isConcept = isConcept;
     }
 
     public ComponentItem(ComponentItem other) {
@@ -34,6 +40,7 @@ public class ComponentItem {
         this.icon.set(other.icon.get());
         this.nid = other.nid;
         this.publicId = other.publicId;
+        this.isConcept = other.isConcept;
     }
 
     // -- text
@@ -57,4 +64,9 @@ public class ComponentItem {
     private PublicId publicId;
     public void setPublicId(PublicId publicId) { this.publicId = publicId; }
     public PublicId getPublicId() { return publicId; }
+
+    // -- is concept
+    private boolean isConcept;
+    public boolean isConcept() { return isConcept; }
+    public void setConcept(boolean concept) { isConcept = concept; }
 }

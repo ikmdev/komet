@@ -16,6 +16,7 @@ import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -61,8 +62,10 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
             String description = viewCalculator.languageCalculator()
                     .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
             Image identicon = Identicon.generateIdenticonImage(entityProxy.publicId());
-            ComponentItem componentItem = new ComponentItem(description, identicon, entityProxy.publicId());
-            return componentItem;
+
+            boolean isConcept = EntityHandle.get(entityProxy.publicId()).isConcept();
+
+            return new ComponentItem(description, identicon, entityProxy.publicId(), isConcept);
         });
         patternSemanticsControl.setNidToComponentItem(nid -> {
             EntityProxy entityProxy = EntityProxy.make(nid);
@@ -71,7 +74,9 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
             String description = viewCalculator.languageCalculator()
                     .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
 
-            return new ComponentItem(description, icon, entityProxy.publicId());
+            boolean isConcept = EntityHandle.get(entityProxy.publicId()).isConcept();
+
+            return new ComponentItem(description, icon, entityProxy.publicId(), isConcept);
         });
 
         return patternSemanticsControl;

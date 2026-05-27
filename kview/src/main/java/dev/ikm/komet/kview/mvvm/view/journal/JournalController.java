@@ -82,7 +82,6 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
-import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.KometIcon;
@@ -218,7 +217,7 @@ public class JournalController {
      * Top level journal root pane for Scene.
      */
     @FXML
-    private BorderPane journalBorderPane;
+    private BorderPane journalRootPane;
 
     @FXML
     private KLWorkspace workspace;
@@ -375,6 +374,8 @@ public class JournalController {
     public void initialize() {
         // Initialize journal topic (UUID) value
         journalTopic = journalViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
+
+        journalRootPane.getProperties().put(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
 
         // Initialize the journal window view, which is provided in the WindowSettings
         windowView = journalViewModel.getPropertyValue(JournalViewModel.PARENT_VIEW_COORDINATES);
@@ -936,8 +937,8 @@ public class JournalController {
         return settingsToggleButton;
     }
 
-    public BorderPane getJournalBorderPane() {
-        return journalBorderPane;
+    public BorderPane getJournalRootPane() {
+        return journalRootPane;
     }
 
     private void slideOut(Toggle toggleButton) {
@@ -1506,12 +1507,12 @@ public class JournalController {
     }
 
     public String getTitle() {
-        Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        Stage stage = (Stage) journalRootPane.getScene().getWindow();
         return stage.getTitle();
     }
 
     public void close() {
-        Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        Stage stage = (Stage) journalRootPane.getScene().getWindow();
         stage.close();
     }
 
@@ -1555,7 +1556,7 @@ public class JournalController {
                 }));
 
         // Put journal metadata in our preferences.
-        final Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        final Stage stage = (Stage) journalRootPane.getScene().getWindow();
         journalWindowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
         journalWindowPreferences.put(JOURNAL_TITLE, stage.getTitle());
         journalWindowPreferences.put(JOURNAL_DIR_NAME, getJournalDirName());
@@ -1645,8 +1646,8 @@ public class JournalController {
      * Bring window to the front of all windows.
      */
     public void windowToFront() {
-        if (journalBorderPane != null && journalBorderPane.getScene() != null && journalBorderPane.getScene().getWindow() != null) {
-            ((Stage) journalBorderPane.getScene().getWindow()).toFront();
+        if (journalRootPane != null && journalRootPane.getScene() != null && journalRootPane.getScene().getWindow() != null) {
+            ((Stage) journalRootPane.getScene().getWindow()).toFront();
         }
     }
 
