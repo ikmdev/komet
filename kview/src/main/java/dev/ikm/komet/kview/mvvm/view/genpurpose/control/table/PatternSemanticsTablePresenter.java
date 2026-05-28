@@ -2,10 +2,8 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.observable.ObservableComposer;
-import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservablePattern;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ObservableView;
@@ -21,7 +19,6 @@ import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 
@@ -84,23 +81,20 @@ public class PatternSemanticsTablePresenter implements PatternSemanticsPresenter
 
     @Override
     public void addNewSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity) {
-        ObservableEntity referencedComponent = ObservableEntityHandle.get(semanticEntity.referencedComponent().nid()).expectEntity();
-        ObservablePattern pattern = ObservableEntityHandle.get(semanticEntity.pattern().nid()).expectPattern();
-        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor
-                = composer.composeSemantic(semanticEntity.publicId(), referencedComponent, pattern);
-
-        // Get editable version with cached editing capabilities
-        ObservableSemanticVersion.Editable editableVersion = semanticEditor.getEditableVersion();
-
-        ObservableList<ObservableField.Editable<?>> editableFields = editableVersion.getEditableFields();
+        // Read fields directly from the observable semantic without creating an editable version.
+        // Creating an editable version via composeSemantic()/getEditableVersion() would track this
+        // semantic in the shared composer's transaction, causing a spurious new version to be
+        // written for every displayed semantic when any single semantic is committed.
+        ObservableSemantic observableSemantic = ObservableEntityHandle.get(semanticEntity.publicId())
+                .asSemantic().orElseThrow(() -> new IllegalArgumentException(
+                        "Entity is not a semantic: " + semanticEntity.publicId()));
+        ObservableSemanticVersion latestVersion = observableSemantic.versions().getLast();
 
         List<SemanticField> fields = new ArrayList<>();
-        for (int i = 0; i < editableFields.size(); ++i) {
-            ObservableField.Editable observableField = editableFields.get(i);
-
+        for (ObservableField<?> observableField : latestVersion.fields()) {
             for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
-                if (observableField.getFieldIndex() == editorFieldModel.getIndex()) {
-                    SemanticField field = createField(observableField.getObservableFeature(), editorFieldModel);
+                if (observableField.indexInPattern() == editorFieldModel.getIndex()) {
+                    SemanticField field = createField(observableField, editorFieldModel);
                     fields.add(field);
                 }
             }
