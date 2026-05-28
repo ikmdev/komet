@@ -282,38 +282,13 @@ public class GenPurposeDetailsController {
 //                    updateUIStamp(stampFormViewModelBase);
 //                }
 
-                // Commit transation, finalizing all impending changes
+                // Commit transaction, finalizing all impending changes
                 composer.commit();
 
                 composer = null;
                 initializeComposer();
 
-                ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor
-                        = composer.composeSemantic(semantic.publicId(), semantic.referencedComponent(), semantic.pattern());
-
-                // Get editable version with cached editing capabilities
-                ObservableSemanticVersion.Editable editableVersion = semanticEditor.getEditableVersion();
-                ObservableList<ObservableField.Editable<?>> editableFields = editableVersion.getEditableFields();
-
-                // Update editable field values using ObservableField.Editables
-                for (int i = 0; i < evt.getList().size(); i++) {
-                    ObservableField.Editable<?> editableField = editableFields.get(i);
-                    Object updatedField = evt.getList().get(i);
-                    if (updatedField != null && editableField != null) {
-                        // Update via editable field's cached property
-                        @SuppressWarnings("unchecked")
-                        ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
-                        Runnable setValue = () -> uncheckedField.getObservableFeature().editableValueProperty().setValue(updatedField);
-                        if (!Platform.isFxApplicationThread()) {
-                            Platform.runLater(setValue);
-                        } else {
-                            setValue.run();
-                        }
-                    }
-                }
-
-                // reset composer
-                composer = null;
+                reloadSemanticViews(semantic);
             }
 
 //            semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
@@ -944,6 +919,15 @@ public class GenPurposeDetailsController {
         });
 
         return patternSemanticsPresenter;
+    }
+
+    private void reloadSemanticViews(SemanticEntity<SemanticEntityVersion> semantic) {
+        editorPatternModelToPatternPresenter.forEach((patternModel, presenter) -> {
+            if (patternModel.getNid() == semantic.patternNid()) {
+                presenter.clearSemantics();
+                doAddSemanticViews(patternModel, presenter, semantic.referencedComponent());
+            }
+        });
     }
 
     private void doAddSemanticViews(EditorPatternModel editorPatternModel, PatternSemanticsPresenter patternSemanticsPresenter, EntityFacade referenceComponent) {
