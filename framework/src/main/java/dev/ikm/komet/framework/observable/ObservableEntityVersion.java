@@ -358,6 +358,13 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
             // Save to database - this will trigger update back to observable entity
             V oldVersion = (V) observableVersion.getVersionRecord();
             try {
+                // Diagnostic for ikmdev/komet-desktop#12: decode the entity's nid so the (patternSeq, elementSeq) is obvious in the log.
+                int analogueNid = analogue.nid();
+                LOG.info("save(): entity nid={} -> patternSeq={}, elementSeq={} (entityClass={})",
+                        analogueNid,
+                        dev.ikm.tinkar.common.id.impl.NidCodec6.decodePatternSequence(analogueNid),
+                        dev.ikm.tinkar.common.id.impl.NidCodec6.decodeElementSequence(analogueNid),
+                        analogue.getClass().getSimpleName());
                 LOG.info("save(): Saving uncommitted version to database: entity: \n{}" +
                         "\n\n new version: {}, \n\n old version: {}", analogue, newVersion, oldVersion);
                 observableEntity.saveToDB(analogue, newVersion, oldVersion);
