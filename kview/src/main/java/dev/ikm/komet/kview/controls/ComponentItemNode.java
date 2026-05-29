@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.kview.mvvm.view.NavigationPanelHelper;
+import dev.ikm.komet.kview.mvvm.view.JournalNavigationUtils;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import dev.ikm.tinkar.common.id.PublicId;
 import javafx.beans.property.BooleanProperty;
@@ -121,17 +121,30 @@ public class ComponentItemNode extends Region {
         ContextMenu menu = new ContextMenu();
         menu.getStyleClass().add("klcontext-menu");
 
-        if (componentItem.get().isConcept() && componentItem.get().getPublicId() != null) {
-            MenuItem openInConceptNavigatorItem = new MenuItem("Open in Concept Navigator", KometIcon.create(POPULATE, "icon-klcontext-menu"));
-            openInConceptNavigatorItem.setOnAction(_ ->
-                    NavigationPanelHelper.openConceptInNavigatorForContainingJournal(
+        if (componentItem.get().getPublicId() != null) {
+            if (componentItem.get().isConcept()) {
+                MenuItem openInConceptNavigatorItem = new MenuItem("Open in Concept Navigator", KometIcon.create(POPULATE, "icon-klcontext-menu"));
+                openInConceptNavigatorItem.setOnAction(_ ->
+                        JournalNavigationUtils.openConceptInNavigatorForContainingJournal(
+                                this,
+                                this,
+                                componentItem.get().getPublicId()
+                        )
+                );
+
+                menu.getItems().add(openInConceptNavigatorItem);
+            }
+
+            MenuItem openInJournalItem = new MenuItem("Open in Journal", KometIcon.create(POPULATE, "icon-klcontext-menu"));
+            openInJournalItem.setOnAction(_ ->
+                    JournalNavigationUtils.openEntityInJournalForContainingJournal(
                             this,
                             this,
                             componentItem.get().getPublicId()
                     )
             );
 
-            menu.getItems().add(openInConceptNavigatorItem);
+            menu.getItems().add(openInJournalItem);
         }
 
         // the SVG graphic for the copy to clipboard icon
