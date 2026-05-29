@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
+import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
+import static dev.ikm.komet.framework.dnd.KometClipboard.decodeUuids;
 import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
 import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.JOURNAL_VIEW;
@@ -215,7 +217,7 @@ public class JournalController {
      * Top level journal root pane for Scene.
      */
     @FXML
-    private BorderPane journalBorderPane;
+    private BorderPane journalRootPane;
 
     @FXML
     private KLWorkspace workspace;
@@ -372,6 +374,8 @@ public class JournalController {
     public void initialize() {
         // Initialize journal topic (UUID) value
         journalTopic = journalViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
+
+        journalRootPane.getProperties().put(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
 
         // Initialize the journal window view, which is provided in the WindowSettings
         windowView = journalViewModel.getPropertyValue(JournalViewModel.PARENT_VIEW_COORDINATES);
@@ -616,6 +620,9 @@ public class JournalController {
                                 .filter(db -> db.hasContent(MULTI_PARENT_GRAPH_DRAG_FORMAT))
                                 .map(db -> handleUuidArrayDrag(db, MULTI_PARENT_GRAPH_DRAG_FORMAT)))
                         .or(() -> dragboardOpt
+                                .filter(db -> db.hasContent(COMPONENT_DRAG_FORMAT))
+                                .map(db -> handleComponentDrag(db)))
+                        .or(() -> dragboardOpt
                                 .filter(Dragboard::hasString)
                                 .map(db -> handleEntityDrag(event.getGestureSource())))
                         .orElse(false);
@@ -625,6 +632,27 @@ public class JournalController {
             event.setDropCompleted(success);
             event.consume();
         });
+    }
+
+    /**
+     * Handles a drop when the Data Format is COMPONENT_DRAG_FORMAT,
+     * which encodes a PublicId as a comma-separated list of UUID strings.
+     *
+     * @param dragboard the dragboard containing the encoded UUID string
+     * @return true if a window was successfully created
+     */
+    private boolean handleComponentDrag(Dragboard dragboard) {
+        String encoded = (String) dragboard.getContent(COMPONENT_DRAG_FORMAT);
+        if (encoded == null || encoded.isBlank()) {
+            return false;
+        }
+        try {
+            createWindowFromUuids(decodeUuids(encoded));
+            return true;
+        } catch (IllegalArgumentException e) {
+            LOG.error("Failed to parse UUIDs from ComponentItemNode drag: {}", encoded, e);
+            return false;
+        }
     }
 
     /**
@@ -909,8 +937,8 @@ public class JournalController {
         return settingsToggleButton;
     }
 
-    public BorderPane getJournalBorderPane() {
-        return journalBorderPane;
+    public BorderPane getJournalRootPane() {
+        return journalRootPane;
     }
 
     private void slideOut(Toggle toggleButton) {
@@ -1479,12 +1507,12 @@ public class JournalController {
     }
 
     public String getTitle() {
-        Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        Stage stage = (Stage) journalRootPane.getScene().getWindow();
         return stage.getTitle();
     }
 
     public void close() {
-        Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        Stage stage = (Stage) journalRootPane.getScene().getWindow();
         stage.close();
     }
 
@@ -1528,7 +1556,7 @@ public class JournalController {
                 }));
 
         // Put journal metadata in our preferences.
-        final Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        final Stage stage = (Stage) journalRootPane.getScene().getWindow();
         journalWindowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
         journalWindowPreferences.put(JOURNAL_TITLE, stage.getTitle());
         journalWindowPreferences.put(JOURNAL_DIR_NAME, getJournalDirName());
@@ -1618,8 +1646,8 @@ public class JournalController {
      * Bring window to the front of all windows.
      */
     public void windowToFront() {
-        if (journalBorderPane != null && journalBorderPane.getScene() != null && journalBorderPane.getScene().getWindow() != null) {
-            ((Stage) journalBorderPane.getScene().getWindow()).toFront();
+        if (journalRootPane != null && journalRootPane.getScene() != null && journalRootPane.getScene().getWindow() != null) {
+            ((Stage) journalRootPane.getScene().getWindow()).toFront();
         }
     }
 

@@ -5,7 +5,7 @@
  <parent>
         <groupId>network.ike.platform</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>16</version>
+        <version>98</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -22,6 +22,16 @@
             <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
+    <distributionManagement>
+        <!-- Explicit <site> URL — see ike-parent/CLAUDE.md
+             ("Inheriting projects MUST declare their own
+             <distributionManagement><site>") and ike-issues#380/#383.
+             Artifact id is `komet-parent`; site lives at the repo path. -->
+        <site>
+            <id>ike-site</id>
+            <url>https://ike.network/komet/</url>
+        </site>
+    </distributionManagement>
     <scm>
         <url>http://www.github.com/ikmdev/komet</url>
     </scm>
@@ -148,15 +158,11 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.2.8</version>
+                    <!-- version inherited from ike-base-parent; bc signer is required for
+                         parallel-safe signing (do not switch to native gpg) -->
                     <configuration>
                         <signer>bc</signer>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.1.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -174,11 +180,6 @@
                             </goals>
                         </execution>
                     </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>${maven.assembly-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.openjfx</groupId>

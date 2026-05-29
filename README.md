@@ -350,3 +350,12 @@ Of course if the JavaFX Application was displayed the Label's text would be set.
 Technical and non-technical issues can be reported to the [Issue Tracker](https://github.com/ikmdev/komet/issues).
 
 Contributions can be submitted via pull requests. Please check the [contribution guide](doc/how-to-contribute.md) for more details.
+<!-- BEGIN ike-managed: developer-setup -->
+
+## Developer Setup
+
+New to IKE development? The
+[Developer Environment guide](https://ike.network/ike-tooling/ike-build-standards/developer-environment.html)
+covers IDE configuration, JDK 25 setup, and the tooling conventions
+every IKE workspace expects — start there before your first build.
+<!-- END ike-managed: developer-setup -->

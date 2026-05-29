@@ -33,6 +33,8 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
+<?import javafx.scene.control.SplitPane?>
+<?import dev.ikm.komet.kview.controls.ComponentItemNode?>
 <BorderPane fx:id="detailsOuterBorderPane" maxHeight="Infinity" maxWidth="Infinity" prefWidth="727.0"
             stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="dev.ikm.komet.kview.mvvm.view.genpurpose.GenPurposeDetailsController">
@@ -202,7 +204,7 @@
                         <VBox focusTraversable="true" maxHeight="1.7976931348623157E308" prefWidth="762.0">
                             <children>
                                 <HBox layoutX="14.0" layoutY="135.0" prefWidth="711.0" VBox.vgrow="ALWAYS">
-                                        <VBox fx:id="mainContent" HBox.hgrow="ALWAYS"/>
+                                        <SplitPane fx:id="mainContent" orientation="VERTICAL" HBox.hgrow="ALWAYS"/>
 <!--                                        <Pane>-->
 <!--                                            <children>-->
 <!--                                                <HBox layoutX="-32.0">-->
@@ -250,7 +252,7 @@
                                         <ColumnConstraints/>
                                     </columnConstraints>
                                     <rowConstraints>
-                                        <RowConstraints maxHeight="51.0" minHeight="47.0" prefHeight="47.0"
+                                        <RowConstraints maxHeight="51.0" prefHeight="30.0"
                                                         vgrow="ALWAYS"/>
                                         <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="66.0"
                                                         vgrow="SOMETIMES"/>
@@ -261,21 +263,14 @@
                                                              GridPane.columnIndex="0" GridPane.columnSpan="3"
                                                              GridPane.halignment="LEFT" GridPane.rowIndex="1"
                                                              GridPane.valignment="TOP"/>
-                                        <Label fx:id="conceptTitleText" alignment="TOP_LEFT"
-                                               maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0"
-                                               styleClass="pattern-main-title" text="New Concept" textFill="#212430"
-                                               wrapText="true" GridPane.columnIndex="1">
+                                        <ComponentItemNode fx:id="windowConceptTitle"
+                                                           maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0"
+                                                           styleClass="window-main-title"
+                                                           wrapText="true" GridPane.columnIndex="0">
                                             <tooltip>
-                                                <Tooltip fx:id="conceptNameTooltip" text="Empty Tooltip"/>
+                                                <Tooltip fx:id="windowConceptTitleTooltip" text="Empty Tooltip"/>
                                             </tooltip>
-                                        </Label>
-                                        <ImageView fx:id="identiconImageView" fitHeight="36.0" fitWidth="36.0"
-                                                   pickOnBounds="true" preserveRatio="true"
-                                                   style="-fx-background-color: #F1F3F8;" GridPane.valignment="TOP">
-                                            <image>
-                                                <Image url="@../images/identicon-placeholder.png"/>
-                                            </image>
-                                        </ImageView>
+                                        </ComponentItemNode>
                                     </children>
                                     <padding>
                                         <Insets bottom="8.0" left="12.0" right="8.0" top="8.0"/>

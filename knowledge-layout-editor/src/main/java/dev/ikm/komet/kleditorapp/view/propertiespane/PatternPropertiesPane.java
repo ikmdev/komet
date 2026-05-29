@@ -145,6 +145,8 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         displayComboBox.setMaxWidth(Double.MAX_VALUE);
         displayGridPane.add(displayComboBox, 1, 0);
 
+        populateDisplayComboBox();
+
         // Separator
         Separator separator3 = new Separator();
         separator3.setPrefWidth(200);
@@ -192,8 +194,6 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     protected void doInit() {
         super.doInit();
 
-        populateDisplayComboBox();
-
         if (previouslyShownModel != null) {
             columnsComboBox.valueProperty().unbindBidirectional(previousControlColumnsObjProperty);
             titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.titleVisibleProperty());
@@ -215,13 +215,9 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     }
 
     private void populateDisplayComboBox() {
-        displayComboBox.getItems().clear();
-
         ServiceLoader<KlPatternSemanticsFactory> loader = ServiceLoader.load(KlPatternSemanticsFactory.class);
-        if (loader != null) {
-            for (KlPatternSemanticsFactory factory : loader) {
-                displayComboBox.getItems().add(factory);
-            }
+        for (KlPatternSemanticsFactory factory : loader) {
+            displayComboBox.getItems().add(factory);
         }
     }
 }

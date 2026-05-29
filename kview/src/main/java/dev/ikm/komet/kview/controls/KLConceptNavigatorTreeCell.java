@@ -19,7 +19,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Path;
 
 import java.util.BitSet;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.PS_STATE;
