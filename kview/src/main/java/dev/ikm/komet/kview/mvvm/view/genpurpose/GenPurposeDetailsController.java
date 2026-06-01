@@ -888,6 +888,9 @@ public class GenPurposeDetailsController {
             GridPane.setColumnSpan(view, newColumnSpan.intValue());
         });
 
+        // Always expand to fill height of the GridPane
+        GridPane.setVgrow(view, Priority.ALWAYS);
+
         sectionGridPane.getChildren().add(view);
     }
 
