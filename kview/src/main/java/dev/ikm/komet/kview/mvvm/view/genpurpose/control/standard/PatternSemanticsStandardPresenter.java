@@ -1,13 +1,12 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import dev.ikm.komet.framework.observable.ObservableComposer;
-import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.AbstractPatternSemanticsPresenter;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
@@ -22,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class PatternSemanticsStandardPresenter implements PatternSemanticsPresenter {
+public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsPresenter implements PatternSemanticsPresenter {
 
     /**
      * Given a SemanticEntity what's its associated Semantic Control.
@@ -84,10 +83,7 @@ public class PatternSemanticsStandardPresenter implements PatternSemanticsPresen
         // Creating an editable version via composeSemantic()/getEditableVersion() would track this
         // semantic in the shared composer's transaction, causing a spurious new version to be
         // written for every displayed semantic when any single semantic is committed.
-        ObservableSemantic observableSemantic = ObservableEntityHandle.get(semanticEntity.publicId())
-                .asSemantic().orElseThrow(() -> new IllegalArgumentException(
-                        "Entity is not a semantic: " + semanticEntity.publicId()));
-        ObservableSemanticVersion latestVersion = observableSemantic.versions().getLast();
+        ObservableSemanticVersion latestVersion = getObservableSemanticFromSemanticEntity(semanticEntity);
 
         for (ObservableField<?> observableField : latestVersion.fields()) {
             for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
