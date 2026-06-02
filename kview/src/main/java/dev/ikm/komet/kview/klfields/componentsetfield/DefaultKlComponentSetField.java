@@ -70,8 +70,8 @@ public class DefaultKlComponentSetField extends BaseDefaultKlField<IntIdSet> imp
 
             String description = viewCalculator.languageCalculator()
                     .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
-
-            ComponentItem componentItem = new ComponentItem(description, icon, nid);
+            boolean isConcept = EntityHandle.get(nid).isConcept();
+            ComponentItem componentItem = new ComponentItem(description, icon, entityProxy.publicId(), isConcept);
             klReadOnlyComponentSetControl.getItems().add(componentItem);
         });
     }

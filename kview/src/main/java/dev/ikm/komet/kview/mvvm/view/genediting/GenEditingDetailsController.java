@@ -564,22 +564,6 @@ public class GenEditingDetailsController {
         // Get editable fields from the editable version
         editableFields.addAll(editableVersion.getEditableFields());
 
-        // Create edit action for field controls
-        BiFunction<KLReadOnlyBaseControl, Integer, Runnable> editAction = (readOnlyBaseControl, fieldIndex) ->
-            () -> {
-                // Clear edit mode for all other controls
-                for (Node node : nodes) {
-                    if (node != readOnlyBaseControl) {
-                        KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
-                        klReadOnlyBaseControl.setEditMode(false);
-                    }
-                }
-                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new PropertyPanelEvent(readOnlyBaseControl, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
-                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new PropertyPanelEvent(readOnlyBaseControl, OPEN_PANEL));
-            };
-
         // Generate UI nodes from editable fields
         int index = 0;
         for(ObservableField.Editable<?> editableField : editableFields){
@@ -599,7 +583,6 @@ public class GenEditingDetailsController {
 
             // Eliminated unsafe cast here...
             if (baseControl instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
-                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
                 semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
             }
         }
@@ -707,8 +690,9 @@ public class GenEditingDetailsController {
                 }
             };
 
+            boolean isConcept = EntityHandle.get(refComponent2.nid()).isConcept();
             ComponentItem componentItem = new ComponentItem(description,
-                    Identicon.generateIdenticonImage(refComponent2.publicId()), refComponent2.nid());
+                    Identicon.generateIdenticonImage(refComponent2.publicId()), refComponent2.publicId(), isConcept);
 
             referenceComponent.setTitle(refType);
             referenceComponent.setValue(componentItem);

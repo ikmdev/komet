@@ -9,6 +9,7 @@ import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.tinkar.component.FeatureDefinition;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.scene.image.Image;
 
@@ -38,7 +39,8 @@ public class KlReadOnlyComponentField extends BaseDefaultKlField<EntityProxy> {
             String description = observableView.calculator().languageCalculator()
                     .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
             Image identicon = Identicon.generateIdenticonImage(observableField.valueProperty().get().publicId());
-            componentItem = new ComponentItem(description, identicon, entityProxy.nid());
+            boolean isConcept = EntityHandle.get(entityProxy.nid()).isConcept();
+            componentItem = new ComponentItem(description, identicon, entityProxy.publicId(), isConcept);
         }
 
         klReadOnlyComponentControl.setValue(componentItem);

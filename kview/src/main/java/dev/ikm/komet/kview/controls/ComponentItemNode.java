@@ -283,11 +283,6 @@ public class ComponentItemNode extends Region {
      *                                                                         *
      *=========================================================================*/
 
-    // -- context menu
-    public void setContextMenu(ContextMenu contextMenu) {
-        this.contextMenu = contextMenu;
-    }
-
     // -- circular
     private final BooleanProperty circular = new SimpleBooleanProperty(false) {
         @Override

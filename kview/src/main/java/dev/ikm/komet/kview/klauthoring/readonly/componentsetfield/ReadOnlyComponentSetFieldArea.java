@@ -77,8 +77,8 @@ public final class ReadOnlyComponentSetFieldArea extends FeatureAreaBlueprint<In
 
                 String description = calculatorForContext().languageCalculator()
                         .getFullyQualifiedDescriptionTextWithFallbackOrNid(entity.nid());
-
-                ComponentItem componentItem = new ComponentItem(description, icon, nid);
+                boolean isConcept = EntityHandle.get(nid).isConcept();
+                ComponentItem componentItem = new ComponentItem(description, icon, entity.publicId(), isConcept);
                 getFxPeer().getItems().add(componentItem);
             });
         });

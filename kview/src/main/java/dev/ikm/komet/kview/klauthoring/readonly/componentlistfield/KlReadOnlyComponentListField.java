@@ -69,7 +69,8 @@ public class KlReadOnlyComponentListField extends BaseDefaultKlField<IntIdList> 
                     String description = observableView.calculator().languageCalculator()
                             .getFullyQualifiedDescriptionTextWithFallbackOrNid(entity.nid());
 
-                    ComponentItem componentItem = new ComponentItem(description, icon, nid);
+                    boolean isConcept = EntityHandle.get(nid).isConcept();
+                    ComponentItem componentItem = new ComponentItem(description, icon, entity.publicId(), isConcept);
                     control.getItems().add(componentItem);
                 });
             });

@@ -49,9 +49,6 @@ public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponent
         // Component (Icon + Text)
         ComponentItemNode componentUIItem = new ComponentItemNode(componentItem);
 
-        // Context Menu
-        componentUIItem.setContextMenu(createContextMenu(componentItem));
-
         componentRow.getChildren().addAll(
             numberLabel,
             componentUIItem
@@ -65,10 +62,5 @@ public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponent
         componentUIItems.put(componentItem, componentRow);
 
         updatePromptTextOrComponentsVisibility();
-    }
-
-    @Override
-    protected String getEditMenuItemLabel() {
-        return EDIT_MENU_ITEM_LABEL;
     }
 }

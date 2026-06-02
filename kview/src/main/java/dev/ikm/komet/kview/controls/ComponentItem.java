@@ -10,22 +10,11 @@ import javafx.scene.image.Image;
 public class ComponentItem {
 
     public ComponentItem() {
-        this(null, null, (Integer) null);
+        this(null, null, null, false);
     }
 
     public ComponentItem(String text, Image icon) {
-        this(text, icon, (Integer) null);
-    }
-
-    public ComponentItem(String text, Image icon, Integer nid) {
-        this.text.set(text);
-        this.icon.set(icon);
-        this.nid = nid;
-        this.isConcept = false;
-    }
-
-    public ComponentItem(String text, Image icon, PublicId publicId) {
-        this(text, icon, publicId, false);
+        this(text, icon, null, false);
     }
 
     public ComponentItem(String text, Image icon, PublicId publicId, boolean isConcept) {
@@ -38,7 +27,6 @@ public class ComponentItem {
     public ComponentItem(ComponentItem other) {
         this.text.set(other.text.get());
         this.icon.set(other.icon.get());
-        this.nid = other.nid;
         this.publicId = other.publicId;
         this.isConcept = other.isConcept;
     }
@@ -54,11 +42,6 @@ public class ComponentItem {
     public Image getIcon() { return icon.get(); }
     public ObjectProperty<Image> iconProperty() { return icon; }
     public void setIcon(Image icon) { this.icon.set(icon); }
-
-    // -- nid
-    private Integer nid;
-    public Integer getNid() { return nid;}
-    public void setNid(Integer nid) { this.nid = nid; }
 
     // -- public id
     private PublicId publicId;
