@@ -196,6 +196,7 @@ module dev.ikm.komet.kview {
 
     uses dev.ikm.tinkar.events.EvtBus;
     uses EntityKlWindowFactory;
+    uses dev.ikm.komet.layout.area.KlToolArea.Factory;
 
     // Primary service interface for discovering ALL area factories (built-in and plugins)
     provides dev.ikm.komet.layout.KlArea.Factory with

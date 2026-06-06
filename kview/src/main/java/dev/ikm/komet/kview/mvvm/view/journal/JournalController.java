@@ -82,6 +82,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.layout.area.KlToolArea;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.KometIcon;
@@ -99,6 +100,7 @@ import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.ToolAreaChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
@@ -129,6 +131,7 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
@@ -514,6 +517,36 @@ public class JournalController {
 
             windowTitleToMenuItem.put(windowTitle, windowMenuItem);
         }
+
+        // Discover summonable tool areas (e.g. the Claude Assistant) contributed via
+        // ServiceLoader as KlToolArea.Factory, and add a "+"-menu entry that opens each as
+        // a tool window in the workspace. This is the next-gen replacement for legacy
+        // KometNodeFactory panels, which are not reachable from the Journal workspace.
+        boolean anyToolArea = false;
+        for (var toolAreaFactory : PluggableService.load(KlToolArea.Factory.class)) {
+            anyToolArea = true;
+            MenuItem toolMenuItem = new MenuItem(toolAreaFactory.toolName());
+            toolMenuItem.setOnAction(actionEvent -> createToolAreaWindow(toolAreaFactory));
+            addContextMenu.getItems().add(toolMenuItem);
+        }
+        if (anyToolArea) {
+            addContextMenuSeparator.setVisible(true);
+        }
+    }
+
+    /**
+     * Creates a tool-area window (e.g. the Claude Assistant) and adds it to the workspace.
+     * The area is hosted in a non-entity {@link ToolAreaChapterKlWindow} and is handed the
+     * journal view so its in-process tools query the coordinate the user currently sees.
+     *
+     * @param toolAreaFactory the discovered tool-area factory selected from the "+" menu
+     */
+    private void createToolAreaWindow(KlToolArea.Factory toolAreaFactory) {
+        ViewProperties viewProperties =
+                windowView.makeOverridableViewProperties("JournalController.createToolAreaWindow");
+        ToolAreaChapterKlWindow toolWindow = new ToolAreaChapterKlWindow(
+                java.util.UUID.randomUUID(), toolAreaFactory, viewProperties, null);
+        setupWorkspaceWindow(toolWindow);
     }
 
     private String formatPromptText(String title) {
