@@ -100,6 +100,7 @@ import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.AbstractChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.ToolAreaChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
@@ -544,8 +545,11 @@ public class JournalController {
     private void createToolAreaWindow(KlToolArea.Factory toolAreaFactory) {
         ViewProperties viewProperties =
                 windowView.makeOverridableViewProperties("JournalController.createToolAreaWindow");
+        final java.util.UUID windowTopic = java.util.UUID.randomUUID();
+        final KometPreferences windowPreferences = KlWindowPreferencesUtils.getWindowPreferences(
+                journalTopic, windowTopic, ToolAreaChapterKlWindow.TOOL_WINDOW_TYPE);
         ToolAreaChapterKlWindow toolWindow = new ToolAreaChapterKlWindow(
-                java.util.UUID.randomUUID(), toolAreaFactory, viewProperties, null);
+                windowTopic, toolAreaFactory, viewProperties, windowPreferences);
         setupWorkspaceWindow(toolWindow);
     }
 
@@ -1581,6 +1585,18 @@ public class JournalController {
     public void saveWindows(KometPreferences journalWindowPreferences) {
         Objects.requireNonNull(journalWindowPreferences, "journalWindowPreferences cannot be null");
 
+        // Persist each window's current state before recording the list, so restoration
+        // brings them back where they were (tool windows have no reactive save trigger).
+        workspace.getWindows().forEach(window -> {
+            if (window instanceof AbstractChapterKlWindow<?> chapterWindow) {
+                try {
+                    chapterWindow.save();
+                } catch (Exception e) {
+                    LOG.error("Error saving window state for {}", window.getWindowTopic(), e);
+                }
+            }
+        });
+
         final ImmutableList<String> windowNames = Lists.immutable.fromStream(workspace.getWindows()
                 .stream().map(window -> {
                     final UUID windowTopic = window.getWindowTopic();
@@ -1643,7 +1659,13 @@ public class JournalController {
                 final KometPreferences windowPreferences = journalPreferences.node(windowId);
                 windowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
                 try {
-                    setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences));
+                    if (windowId.startsWith(ToolAreaChapterKlWindow.TOOL_WINDOW_TYPE.getPrefix())) {
+                        // Non-entity tool window: restore via the Kl framework (PluggableService),
+                        // not the entity-centric EntityKlWindowFactory path.
+                        setupWorkspaceWindow(ToolAreaChapterKlWindow.restore(windowSettings, windowPreferences));
+                    } else {
+                        setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences));
+                    }
                 } catch (Exception e) {
                     LOG.error("Error restoring window: {}", windowId, e);
                 }
