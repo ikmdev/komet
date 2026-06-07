@@ -90,7 +90,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -181,9 +180,6 @@ public class LandingPageController implements BasicController {
     BorderPane landingPageBorderPane;
 
     @FXML
-    ComboBox<String> notificationTypeFilterComboBox;
-
-    @FXML
     private Label knowledgeLayoutButtonLabel;
 
     public static final String DEMO_AUTHOR = "David";
@@ -205,9 +201,6 @@ public class LandingPageController implements BasicController {
         clearView();
 
         knowledgeLayoutButtonLabel.setText("Knowledge\nLayout Editor");
-
-        notificationTypeFilterComboBox.getItems().addAll("All types");
-        notificationTypeFilterComboBox.getSelectionModel().selectFirst();
 
         progressPopupPane.getStyleClass().add("progress-popup-pane");
 
