@@ -107,6 +107,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -637,6 +638,7 @@ public class GenPurposeDetailsController {
         // Main TitledPane
         TitledPane mainTitledPane = createTitledPane(mainSection);
         addPatternViewsOfSection(mainSection.getPatterns());
+        addSupplementalAreaViewsOfSection(mainSection);
         mainContent.getItems().add(mainTitledPane);
 
         mainSection.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
@@ -645,6 +647,7 @@ public class GenPurposeDetailsController {
         editorWindowModel.getAdditionalSections().forEach(section -> {
             TitledPane titledPane = createTitledPane(section);
             addPatternViewsOfSection(section.getPatterns());
+            addSupplementalAreaViewsOfSection(section);
             mainContent.getItems().add(titledPane);
         });
 
@@ -753,6 +756,11 @@ public class GenPurposeDetailsController {
             refComponent = sectionTitledPane.getSelectedReferenceComponent();
         }
 
+        if (refComponent == null) {
+            // No reference concept to edit against — nothing to populate.
+            return;
+        }
+
         // Populate the Popup
         EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
                 sectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
@@ -848,12 +856,26 @@ public class GenPurposeDetailsController {
 
     private void addPatternViewsOfSection(List<? extends EditorPatternModel> patternModels) {
         if (patternModels == null || patternModels.isEmpty()) {
-            throw new RuntimeException("Patterns list passed in is null or empty and shouldn't be");
+            // A section may legitimately contain no patterns — e.g. one that holds only
+            // supplemental areas (a Claude/Evrete check or chat). Nothing to render here.
+            return;
         }
 
         for (EditorPatternModel editorPatternModel : patternModels) {
             addSinglePatternView(editorPatternModel);
         }
+    }
+
+    /**
+     * Renders the section's placed supplemental areas (Claude/Evrete checks, chat, …). The whole
+     * capability lives in knowledge-layout's {@link SupplementalAreaRenderer}, which materializes
+     * each area generically from its plugin factory and injects this window's view and reference
+     * concept. This window only delegates.
+     */
+    private void addSupplementalAreaViewsOfSection(EditorSectionModel section) {
+        GridPane sectionGridPane = sectionModelToTitledPaneGridPane.get(section);
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        SupplementalAreaRenderer.renderInto(section, sectionGridPane, viewProperties, refComponent);
     }
 
     private void addSinglePatternView(EditorPatternModel editorPatternModel) {
@@ -934,6 +956,11 @@ public class GenPurposeDetailsController {
     }
 
     private void doAddSemanticViews(EditorPatternModel editorPatternModel, PatternSemanticsPresenter patternSemanticsPresenter, EntityFacade referenceComponent) {
+        if (referenceComponent == null) {
+            // No reference concept selected — nothing to render for this pattern's semantics.
+            return;
+        }
+
         // Pattern Entity
         int patternNid = editorPatternModel.getNid();
         EntityHandle handle = EntityHandle.get(patternNid);
@@ -979,6 +1006,11 @@ public class GenPurposeDetailsController {
         List<EntityFacade> refComponents = new ArrayList<>();
 
         EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        if (windowRefComponent == null) {
+            // No reference concept for this window yet — nothing to resolve, and never return a
+            // list containing null (callers treat a non-empty list as having a usable component).
+            return refComponents;
+        }
 
         if (sectionReferenceComponent != null) {
             EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), sectionReferenceComponent.getNid(),
@@ -997,6 +1029,11 @@ public class GenPurposeDetailsController {
         EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
 
         List<EntityFacade> refComponents = new ArrayList<>();
+
+        if (windowRefComponent == null) {
+            // No reference concept for this window — no semantics to resolve.
+            return refComponents;
+        }
 
         EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), editorPatternModel.getNid(),
                 (SemanticEntity<SemanticEntityVersion> semantic) -> {

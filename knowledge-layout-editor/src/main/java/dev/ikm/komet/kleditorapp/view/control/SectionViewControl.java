@@ -24,8 +24,6 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -57,7 +55,6 @@ public class SectionViewControl extends EditorWindowBaseControl {
 
         patterns.addListener(this::onPatternsChanged);
         supplementalAreas.addListener(this::onSupplementalAreasChanged);
-        syncGridItems();
 
         gridPane.numberColumnsProperty().bind(numberColumns);
 
@@ -78,25 +75,29 @@ public class SectionViewControl extends EditorWindowBaseControl {
     private void onPatternsChanged(ListChangeListener.Change<? extends PatternViewControl> change) {
         while (change.next()) {
             if (change.wasAdded()) {
-                change.getAddedSubList().forEach(pattern -> pattern.setParentSection(this));
+                change.getAddedSubList().forEach(pattern -> {
+                    pattern.setParentSection(this);
+                    gridPane.getItems().add(pattern);
+                });
+            }
+            if (change.wasRemoved()) {
+                gridPane.getItems().removeAll(change.getRemoved());
             }
         }
-        syncGridItems();
     }
 
     private void onSupplementalAreasChanged(ListChangeListener.Change<? extends SupplementalAreaViewControl> change) {
         while (change.next()) {
             if (change.wasAdded()) {
-                change.getAddedSubList().forEach(area -> area.setParentSection(this));
+                change.getAddedSubList().forEach(area -> {
+                    area.setParentSection(this);
+                    gridPane.getItems().add(area);
+                });
+            }
+            if (change.wasRemoved()) {
+                gridPane.getItems().removeAll(change.getRemoved());
             }
         }
-        syncGridItems();
-    }
-
-    private void syncGridItems() {
-        List<GridBaseControl> all = new ArrayList<>(patterns);
-        all.addAll(supplementalAreas);
-        gridPane.getItems().setAll(all);
     }
 
     @Override
