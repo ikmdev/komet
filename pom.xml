@@ -66,6 +66,7 @@
         <subproject>rules</subproject>
         <subproject>search</subproject>
         <subproject>knowledge-layout</subproject>
+        <subproject>komet-markdown-richtext</subproject>
         <subproject>kview</subproject>
         <subproject>sync</subproject>
         <subproject>knowledge-layout-editor</subproject>
