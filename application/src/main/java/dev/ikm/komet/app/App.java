@@ -84,7 +84,16 @@ import java.util.concurrent.CountDownLatch;
 import java.util.prefs.BackingStoreException;
 
 /**
- * Main application class for the Komet application, extending JavaFX {@link Application}.
+ * <strong>⚠ LEGACY — SLATED FOR REMOVAL.</strong> This {@code dev.ikm.komet:application} module
+ * ({@code dev.ikm.komet.app.*}) is <em>not</em> the shipping desktop application. The Komet desktop
+ * app that is actually built, launched, and run is <strong>{@code komet-desktop}</strong>
+ * ({@code dev.ikm.ike:komet-desktop}, package {@code dev.ikm.komet.desktop.*}); the live entry point
+ * is {@code dev.ikm.komet.desktop.App}. <strong>Do not add features or fixes here</strong> — they
+ * have no effect on the running app; edit the corresponding {@code komet-desktop} class instead.
+ * This module is retained only until its remaining responsibilities are migrated, after which it
+ * will be deleted.
+ *
+ * <p>Main application class for the Komet application, extending JavaFX {@link Application}.
  * <p>The {@code WebApp} class serves as the entry point for launching the Komet application,
  * which is a JavaFX-based application supporting both desktop and web platforms via JPro.
  * It manages initialization, startup, and shutdown processes, and handles various application states

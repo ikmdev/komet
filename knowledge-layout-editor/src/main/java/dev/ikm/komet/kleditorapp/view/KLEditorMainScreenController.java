@@ -25,6 +25,7 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
+import javafx.beans.binding.BooleanExpression;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -218,6 +219,16 @@ public class KLEditorMainScreenController {
 
     @FXML
     private void onSave(ActionEvent actionEvent) {
+        saveWindow();
+    }
+
+    /**
+     * Validates the title and persists the current editor window model under the KL editor
+     * application preferences node, notifies listeners that a window was created/updated, and
+     * shows a confirmation toast. Invoked both by the in-pane Save button ({@link #onSave})
+     * and by the window's {@code File > Save Layout} menu item.
+     */
+    public void saveWindow() {
         // Do last validation on title text before actually saving
         validateTitleText();
 
@@ -227,8 +238,19 @@ public class KLEditorMainScreenController {
         EditorWindowManager.save(klEditorAppPreferences, editorWindowModel);
 
         eventBus.publish(KL_TOPIC,
-                new KLEditorWindowCreatedOrRemovedEvent(actionEvent, KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED, editorWindowModel.getTitle()));
+                new KLEditorWindowCreatedOrRemovedEvent(saveButton, KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED, editorWindowModel.getTitle()));
 
         KLToastManager.toast().show(Toast.Status.SUCCESS, "Window saved successfully");
+    }
+
+    /**
+     * A boolean expression that is {@code true} while the window title field is empty. The
+     * {@code File > Save Layout} menu item binds its disabled state to this so that, like the
+     * in-pane Save button, saving is only enabled once the layout has a title.
+     *
+     * @return a boolean expression reflecting whether the title field is empty
+     */
+    public BooleanExpression titleIsEmpty() {
+        return titleTextField.textProperty().isEmpty();
     }
 }

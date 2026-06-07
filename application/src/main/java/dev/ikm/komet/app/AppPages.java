@@ -72,6 +72,16 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * <strong>⚠ LEGACY — SLATED FOR REMOVAL.</strong> This is the page/window launching code for the
+ * legacy {@code dev.ikm.komet:application} module, <em>not</em> the shipping desktop app. The Komet
+ * desktop application that is actually built and run is <strong>{@code komet-desktop}</strong>
+ * ({@code dev.ikm.ike:komet-desktop}); its live equivalent is {@code dev.ikm.komet.desktop.AppPages}
+ * (e.g. {@code launchKLEditorViewPage}, {@code launchJournalViewPage}). <strong>Do not add or change
+ * window launching here</strong> — it has no effect on the running app; edit
+ * {@code dev.ikm.komet.desktop.AppPages} instead. Retained only until the module's remaining
+ * responsibilities are migrated to {@code komet-desktop}.
+ */
 public class AppPages {
     private static final Logger LOG = LoggerFactory.getLogger(AppPages.class);
 
