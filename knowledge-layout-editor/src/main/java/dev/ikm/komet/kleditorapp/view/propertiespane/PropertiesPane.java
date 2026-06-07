@@ -6,6 +6,7 @@ import dev.ikm.komet.kleditorapp.view.control.EditorWindowBaseControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
+import dev.ikm.komet.kleditorapp.view.control.SupplementalAreaViewControl;
 import dev.ikm.komet.kleditorapp.view.control.WindowControlFactory;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -24,6 +25,7 @@ public class PropertiesPane extends Region {
     private final SectionPropertiesPane sectionPropertiesPane = new SectionPropertiesPane();
     private final PatternPropertiesPane patternPropertiesPane = new PatternPropertiesPane();
     private final FieldPropertiesPane fieldPropertiesPane = new FieldPropertiesPane();
+    private final SupplementalAreaPropertiesPane supplementalAreaPropertiesPane = new SupplementalAreaPropertiesPane();
 
     private ControlBasePropertiesPane currentPropertiesPane;
 
@@ -41,7 +43,8 @@ public class PropertiesPane extends Region {
         controlPropertiesContainer.getChildren().addAll(
                 sectionPropertiesPane,
                 patternPropertiesPane,
-                fieldPropertiesPane
+                fieldPropertiesPane,
+                supplementalAreaPropertiesPane
         );
 
         getChildren().add(mainContainer);
@@ -70,6 +73,10 @@ public class PropertiesPane extends Region {
                 case FieldViewControl fieldView -> {
                     setTitle("Field");
                     setCurrentPropertiesPane(fieldPropertiesPane);
+                }
+                case SupplementalAreaViewControl areaView -> {
+                    setTitle("Area");
+                    setCurrentPropertiesPane(supplementalAreaPropertiesPane);
                 }
                 default -> System.out.println("TODO...");
             }

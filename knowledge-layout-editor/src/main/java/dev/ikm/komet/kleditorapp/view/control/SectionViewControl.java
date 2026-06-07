@@ -24,6 +24,8 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -52,9 +54,10 @@ public class SectionViewControl extends EditorWindowBaseControl {
         titledPane.setAnimated(false);
 
         tagTextLabel.textProperty().bind(tagText);
-        Bindings.bindContent(gridPane.getItems(), getPatterns());
 
         patterns.addListener(this::onPatternsChanged);
+        supplementalAreas.addListener(this::onSupplementalAreasChanged);
+        syncGridItems();
 
         gridPane.numberColumnsProperty().bind(numberColumns);
 
@@ -63,7 +66,8 @@ public class SectionViewControl extends EditorWindowBaseControl {
 
         gridPane.onDragDroppedIntoTileProperty().bind(onDragDroppedIntoTileProperty());
         gridPane.onDragOverIntoTileProperty().bind(onDragOverIntoTileProperty());
-        gridPane.setOnShouldDragAndDropRearrange(gridBaseControl -> gridBaseControl instanceof PatternViewControl);
+        gridPane.setOnShouldDragAndDropRearrange(gridBaseControl ->
+                gridBaseControl instanceof PatternViewControl || gridBaseControl instanceof SupplementalAreaViewControl);
 
         // CSS
         titleContainer.getStyleClass().add("title-container");
@@ -74,11 +78,25 @@ public class SectionViewControl extends EditorWindowBaseControl {
     private void onPatternsChanged(ListChangeListener.Change<? extends PatternViewControl> change) {
         while (change.next()) {
             if (change.wasAdded()) {
-                change.getAddedSubList().forEach(pattern -> {
-                    pattern.setParentSection(this);
-                });
+                change.getAddedSubList().forEach(pattern -> pattern.setParentSection(this));
             }
         }
+        syncGridItems();
+    }
+
+    private void onSupplementalAreasChanged(ListChangeListener.Change<? extends SupplementalAreaViewControl> change) {
+        while (change.next()) {
+            if (change.wasAdded()) {
+                change.getAddedSubList().forEach(area -> area.setParentSection(this));
+            }
+        }
+        syncGridItems();
+    }
+
+    private void syncGridItems() {
+        List<GridBaseControl> all = new ArrayList<>(patterns);
+        all.addAll(supplementalAreas);
+        gridPane.getItems().setAll(all);
     }
 
     @Override
@@ -132,6 +150,10 @@ public class SectionViewControl extends EditorWindowBaseControl {
     // -- items
     private final ObservableList<PatternViewControl> patterns = FXCollections.observableArrayList();
     public ObservableList<PatternViewControl> getPatterns() { return patterns; }
+
+    // -- supplemental areas
+    private final ObservableList<SupplementalAreaViewControl> supplementalAreas = FXCollections.observableArrayList();
+    public ObservableList<SupplementalAreaViewControl> getSupplementalAreas() { return supplementalAreas; }
 
     // -- parent window
     private final ReadOnlyObjectWrapper<EditorWindowControl> parentWindow = new ReadOnlyObjectWrapper<>();

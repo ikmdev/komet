@@ -5,6 +5,7 @@ import dev.ikm.komet.layout.editor.model.EditorGridNodeModel;
 import dev.ikm.komet.layout.editor.model.EditorModelBase;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
+import dev.ikm.komet.layout.editor.model.EditorSupplementalAreaModel;
 
 import java.util.HashMap;
 
@@ -52,6 +53,18 @@ public class WindowControlFactory {
         updateMaps(editorFieldModel, fieldViewControl);
 
         return fieldViewControl;
+    }
+
+    public static SupplementalAreaViewControl createSupplementalAreaView(EditorSupplementalAreaModel model) {
+        SupplementalAreaViewControl view = new SupplementalAreaViewControl();
+
+        view.titleProperty().bind(model.titleProperty());
+
+        bindGridNodeProperties(model, view);
+
+        updateMaps(model, view);
+
+        return view;
     }
 
     public static EditorModelBase getModel(EditorWindowBaseControl editorWindowBaseControl) {

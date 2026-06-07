@@ -4,11 +4,13 @@ import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
+import dev.ikm.komet.kleditorapp.view.control.SupplementalAreaViewControl;
 import dev.ikm.komet.kleditorapp.view.control.WindowControlFactory;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
+import dev.ikm.komet.layout.editor.model.EditorSupplementalAreaModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import javafx.collections.ListChangeListener;
@@ -19,6 +21,7 @@ import javafx.scene.input.TransferMode;
 
 import java.util.List;
 
+import static dev.ikm.komet.kleditorapp.view.control.ControlBrowserCell.KL_EDITOR_AREA_FACTORY;
 import static dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell.KL_EDITOR_VERSION_PROXY;
 
 public class KLEditorWindowController {
@@ -78,6 +81,7 @@ public class KLEditorWindowController {
         for (EditorSectionModel sectionModel : sectionModels) {
             addSectionView(sectionModel);
             addPatternViews(sectionModel, sectionModel.getPatterns());
+            addSupplementalAreaViews(sectionModel, sectionModel.getSupplementalAreas());
         }
     }
 
@@ -104,6 +108,34 @@ public class KLEditorWindowController {
 
         SectionViewControl sectionViewControl = (SectionViewControl) WindowControlFactory.getView(editorSectionModel);
         sectionViewControl.getPatterns().add(patternViewControl);
+    }
+
+    private void onSectionModelSupplementalAreasChanged(EditorSectionModel sectionModel, SectionViewControl sectionViewControl,
+                                                        ListChangeListener.Change<? extends EditorSupplementalAreaModel> change) {
+        while (change.next()) {
+            if (change.wasAdded()) {
+                addSupplementalAreaViews(sectionModel, change.getAddedSubList());
+            }
+            if (change.wasRemoved()) {
+                change.getRemoved().forEach(areaModel -> {
+                    SupplementalAreaViewControl areaView = (SupplementalAreaViewControl) WindowControlFactory.getView(areaModel);
+                    sectionViewControl.getSupplementalAreas().remove(areaView);
+                });
+            }
+        }
+    }
+
+    private void addSupplementalAreaViews(EditorSectionModel editorSectionModel, List<? extends EditorSupplementalAreaModel> areaModels) {
+        for (EditorSupplementalAreaModel areaModel : areaModels) {
+            addSupplementalAreaView(editorSectionModel, areaModel);
+        }
+    }
+
+    private void addSupplementalAreaView(EditorSectionModel editorSectionModel, EditorSupplementalAreaModel areaModel) {
+        SupplementalAreaViewControl areaView = WindowControlFactory.createSupplementalAreaView(areaModel);
+
+        SectionViewControl sectionViewControl = (SectionViewControl) WindowControlFactory.getView(editorSectionModel);
+        sectionViewControl.getSupplementalAreas().add(areaView);
     }
 
     private void onPatternModelFieldsChanged(EditorPatternModel patternModel, PatternViewControl patternViewControl,
@@ -138,7 +170,8 @@ public class KLEditorWindowController {
         EditorSectionModel editorSectionModel = (EditorSectionModel) WindowControlFactory.getModel(sectionViewControl);
 
         sectionViewControl.setOnDragOverIntoTile(dragEvent -> {
-            if (dragEvent.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)) {
+            if (dragEvent.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)
+                    || dragEvent.getDragboard().hasContent(KL_EDITOR_AREA_FACTORY)) {
                 dragEvent.acceptTransferModes(TransferMode.COPY);
             }
 
@@ -146,28 +179,40 @@ public class KLEditorWindowController {
         });
 
         sectionViewControl.setOnDragDroppedIntoTile((event, gridDropInfo) -> {
-            if (!event.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)) {
-                event.setDropCompleted(false);
-                event.consume();
-                return;
-            }
-
             Dragboard dragboard = event.getDragboard();
 
-            Integer patternNid = (Integer) dragboard.getContent(KL_EDITOR_VERSION_PROXY);
+            if (dragboard.hasContent(KL_EDITOR_VERSION_PROXY)) {
+                Integer patternNid = (Integer) dragboard.getContent(KL_EDITOR_VERSION_PROXY);
 
-            EditorPatternModel editorPatternModel = new EditorPatternModel(viewCalculator, patternNid);
-            editorPatternModel.setRowIndex(gridDropInfo.getRowIndex());
-            editorPatternModel.setColumnIndex(gridDropInfo.getColumnIndex());
+                EditorPatternModel editorPatternModel = new EditorPatternModel(viewCalculator, patternNid);
+                editorPatternModel.setRowIndex(gridDropInfo.getRowIndex());
+                editorPatternModel.setColumnIndex(gridDropInfo.getColumnIndex());
 
-            editorSectionModel.getPatterns().add(editorPatternModel);
+                editorSectionModel.getPatterns().add(editorPatternModel);
 
-            event.setDropCompleted(true);
+                event.setDropCompleted(true);
+            } else if (dragboard.hasContent(KL_EDITOR_AREA_FACTORY)) {
+                String factoryClassName = (String) dragboard.getContent(KL_EDITOR_AREA_FACTORY);
+
+                EditorSupplementalAreaModel areaModel = new EditorSupplementalAreaModel(factoryClassName);
+                areaModel.setRowIndex(gridDropInfo.getRowIndex());
+                areaModel.setColumnIndex(gridDropInfo.getColumnIndex());
+
+                editorSectionModel.getSupplementalAreas().add(areaModel);
+
+                event.setDropCompleted(true);
+            } else {
+                event.setDropCompleted(false);
+            }
+
             event.consume();
         });
 
         // Listen to changes on Section Patterns
         editorSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) change -> onSectionModelPatternsChanged(editorSectionModel, sectionViewControl, change));
+
+        // Listen to changes on Section supplemental areas
+        editorSectionModel.getSupplementalAreas().addListener((ListChangeListener<? super EditorSupplementalAreaModel>) change -> onSectionModelSupplementalAreasChanged(editorSectionModel, sectionViewControl, change));
     }
 
     @FXML
