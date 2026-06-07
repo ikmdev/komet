@@ -15,6 +15,7 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout;
     exports dev.ikm.komet.layout.action;
     exports dev.ikm.komet.layout.area;
+    exports dev.ikm.komet.layout.check;
     exports dev.ikm.komet.layout.component;
     exports dev.ikm.komet.layout.context;
     exports dev.ikm.komet.layout.event;
@@ -45,6 +46,7 @@ module dev.ikm.komet.layout {
                  dev.ikm.komet.layout_engine.component.area.SimpleVersionList.Factory,
                  dev.ikm.komet.layout_engine.component.area.MultiVersionArea.Factory,
                  dev.ikm.komet.layout_engine.component.area.SupplementalTestArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.EvreteCheckArea.Factory,
                  dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea.Factory;
 
     // Type-specific service interfaces for targeted discovery
@@ -73,7 +75,8 @@ module dev.ikm.komet.layout {
             with dev.ikm.komet.layout_engine.component.area.MultiVersionArea.Factory;
 
     provides dev.ikm.komet.layout.area.KlSupplementalArea.Factory
-            with dev.ikm.komet.layout_engine.component.area.SupplementalTestArea.Factory;
+            with dev.ikm.komet.layout_engine.component.area.SupplementalTestArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.EvreteCheckArea.Factory;
 
     provides dev.ikm.komet.layout.component.KlGenericChronologyArea.Factory
             with dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea.Factory;

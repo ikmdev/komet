@@ -4,14 +4,17 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kleditorapp.KLEditorSession;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
+import dev.ikm.komet.kleditorapp.view.control.ControlBrowserCell;
 import dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell;
 import dev.ikm.komet.kleditorapp.view.propertiespane.PropertiesPane;
+import dev.ikm.komet.layout.area.KlSupplementalArea;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.KLEditorWindowCreatedOrRemovedEvent;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -69,7 +72,7 @@ public class KLEditorMainScreenController {
     private ListView<PatternBrowserItem> patternBrowserListView;
 
     @FXML
-    private ListView controlsListView;
+    private ListView<ControlBrowserItem> controlsListView;
 
     private KLEditorWindowController klEditorWindowController;
 
@@ -151,8 +154,18 @@ public class KLEditorMainScreenController {
         patternBrowserListView.setItems(patternsList);
     }
 
+    @SuppressWarnings("rawtypes")
     private void initControlsList() {
-
+        ObservableList<ControlBrowserItem> controls = FXCollections.observableArrayList();
+        // Cross-layer discovery (PluggableService) so plugin-supplied areas appear alongside
+        // the built-in ones, mirroring how the journal "+" menu discovers KlToolArea factories.
+        for (KlSupplementalArea.Factory factory : PluggableService.load(KlSupplementalArea.Factory.class)) {
+            controls.add(new ControlBrowserItem(factory));
+        }
+        FXCollections.sort(controls,
+                Comparator.comparing(ControlBrowserItem::getLabel, String.CASE_INSENSITIVE_ORDER));
+        controlsListView.setCellFactory(param -> new ControlBrowserCell());
+        controlsListView.setItems(controls);
     }
 
     private void initWindow(String windowTitle) {
