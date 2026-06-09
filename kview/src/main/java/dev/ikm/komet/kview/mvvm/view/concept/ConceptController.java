@@ -401,6 +401,18 @@ public class ConceptController {
             removedMenuItems.sort(patternMenuComparator);
             membershipContextMenu.getItems().addAll(removedMenuItems);
 
+            // Rule-driven + plugin-contributed items: the Evrete engine surfaces, e.g.,
+            // the plugin's "Post state + history to Zulip" rule. Discovered uniformly via
+            // AddToContextMenu.providers() so plugins need not touch this controller.
+            javafx.beans.property.SimpleObjectProperty<EntityFacade> focusedEntity =
+                    new javafx.beans.property.SimpleObjectProperty<>(currentConceptFacade);
+            for (dev.ikm.komet.framework.context.AddToContextMenu provider
+                    : dev.ikm.komet.framework.context.AddToContextMenu.providers()) {
+                provider.addToContextMenu((javafx.scene.control.Control) null, membershipContextMenu,
+                        conceptViewModel.getViewProperties(), focusedEntity,
+                        new javafx.beans.property.SimpleIntegerProperty(), () -> { });
+            }
+
             membershipContextMenu.show(identiconImageView, contextMenuEvent.getScreenX(),
                     contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
         });

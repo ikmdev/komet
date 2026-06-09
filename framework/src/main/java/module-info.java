@@ -21,6 +21,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.alerts;
     exports dev.ikm.komet.framework.annotations;
     exports dev.ikm.komet.framework.builder;
+    exports dev.ikm.komet.framework.comment;
     exports dev.ikm.komet.framework.concurrent;
     exports dev.ikm.komet.framework.context;
     exports dev.ikm.komet.framework.controls;
@@ -92,5 +93,6 @@ open module dev.ikm.komet.framework {
     uses dev.ikm.komet.framework.KometNodeFactory;
     uses dev.ikm.tinkar.common.alert.AlertReportingService;
     uses dev.ikm.komet.framework.rulebase.RuleService;
+    uses dev.ikm.komet.framework.context.AddToContextMenu;
     uses dev.ikm.tinkar.events.EvtBus;
 }

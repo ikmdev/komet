@@ -467,6 +467,29 @@ public class PatternDetailsController {
             }
         });
 
+        // Rule-driven + plugin-contributed identicon context menu (e.g. the plugin's
+        // "Post state + history to Zulip"), uniform with the concept identicon via
+        // AddToContextMenu.providers() — so plugins need not touch this controller.
+        identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
+            EntityFacade currentPatternFacade = patternViewModel.getPropertyValue(PATTERN);
+            if (currentPatternFacade == null) {
+                return;
+            }
+            javafx.scene.control.ContextMenu identiconContextMenu = new javafx.scene.control.ContextMenu();
+            javafx.beans.property.SimpleObjectProperty<EntityFacade> focusedEntity =
+                    new javafx.beans.property.SimpleObjectProperty<>(currentPatternFacade);
+            for (dev.ikm.komet.framework.context.AddToContextMenu provider
+                    : dev.ikm.komet.framework.context.AddToContextMenu.providers()) {
+                provider.addToContextMenu((javafx.scene.control.Control) null, identiconContextMenu,
+                        getViewProperties(), focusedEntity,
+                        new javafx.beans.property.SimpleIntegerProperty(), () -> { });
+            }
+            if (!identiconContextMenu.getItems().isEmpty()) {
+                identiconContextMenu.show(identiconImageView,
+                        contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
+            }
+        });
+
         updateDisplayIdentifier();
 
         // capture pattern definition information

@@ -309,6 +309,30 @@ public class GenPurposeDetailsController {
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
         closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+
+        // Rule-driven + plugin-contributed identicon context menu (e.g. the plugin's
+        // "Post state + history to Zulip"), uniform with the concept identicon via
+        // AddToContextMenu.providers() — so plugins need not touch this controller.
+        identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
+            dev.ikm.tinkar.terms.EntityFacade currentEntity =
+                    genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+            if (currentEntity == null) {
+                return;
+            }
+            javafx.scene.control.ContextMenu identiconContextMenu = new javafx.scene.control.ContextMenu();
+            javafx.beans.property.SimpleObjectProperty<dev.ikm.tinkar.terms.EntityFacade> focusedEntity =
+                    new javafx.beans.property.SimpleObjectProperty<>(currentEntity);
+            for (dev.ikm.komet.framework.context.AddToContextMenu provider
+                    : dev.ikm.komet.framework.context.AddToContextMenu.providers()) {
+                provider.addToContextMenu((javafx.scene.control.Control) null, identiconContextMenu,
+                        getViewProperties(), focusedEntity,
+                        new javafx.beans.property.SimpleIntegerProperty(), () -> { });
+            }
+            if (!identiconContextMenu.getItems().isEmpty()) {
+                identiconContextMenu.show(identiconImageView,
+                        contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
+            }
+        });
     }
 
     private void openPropertiesPanel() {

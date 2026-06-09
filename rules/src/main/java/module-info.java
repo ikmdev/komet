@@ -27,10 +27,15 @@ open module dev.ikm.komet.rules {
 	requires javafx.controls;
 
     exports dev.ikm.komet.rules.evrete;
-    exports dev.ikm.komet.rules.annotated to dev.ikm.komet.rules.test;
+    // Exported (was test-only) so plugins can author rules against RulesBase and
+    // actions against AbstractAction* via the RuleProvider SPI.
+    exports dev.ikm.komet.rules.annotated;
+    exports dev.ikm.komet.rules.actions;
     exports dev.ikm.komet.rules.actions.axiom;
 
     provides RuleService with EvreteRulesService;
 
     uses dev.ikm.tinkar.events.EvtBus;
+    // Plugin-contributed rule classes, merged into the knowledge at construction.
+    uses dev.ikm.komet.framework.rulebase.RuleProvider;
 }
