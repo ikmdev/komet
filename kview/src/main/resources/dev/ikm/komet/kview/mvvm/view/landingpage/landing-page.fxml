@@ -157,9 +157,9 @@
             </ToggleButton>
             <HBox alignment="CENTER" opacity="0.6" styleClass="powered-by-ike">
                <children>
-                  <ImageView fitWidth="116.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fitWidth="116.0" onMouseClicked="#openIkeNetwork" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;">
                      <image>
-                        <Image url="@../images/powered-by-ike-color-on-light.png" />
+                        <Image url="@../images/powered-by-ike-color-on-dark.png" />
                      </image>
                   </ImageView>
                </children>

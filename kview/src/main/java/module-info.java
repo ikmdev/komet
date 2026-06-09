@@ -41,6 +41,7 @@ module dev.ikm.komet.kview {
     requires javafx.graphics;
     requires javafx.fxml;
     requires javafx.controls;
+    requires java.desktop;
     requires org.slf4j;
     requires javafx.base;
     requires dev.ikm.tinkar.common;
