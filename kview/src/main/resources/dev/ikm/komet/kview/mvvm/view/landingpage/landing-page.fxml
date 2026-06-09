@@ -155,6 +155,18 @@
                   </HBox>
                </graphic>
             </ToggleButton>
+            <HBox alignment="CENTER" opacity="0.6" styleClass="powered-by-ike">
+               <children>
+                  <ImageView fitWidth="116.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/powered-by-ike-color-on-light.png" />
+                     </image>
+                  </ImageView>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="12.0" left="8.0" right="8.0" top="14.0" />
+               </VBox.margin>
+            </HBox>
          </children>
          <styleClass>
             <String fx:value="side-bar" />
