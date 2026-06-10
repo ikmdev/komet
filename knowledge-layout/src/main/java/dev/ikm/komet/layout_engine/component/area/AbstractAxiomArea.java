@@ -18,7 +18,6 @@ package dev.ikm.komet.layout_engine.component.area;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
-import dev.ikm.komet.framework.panel.axiom.AxiomView;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.layout.KlArea;
@@ -33,36 +32,37 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.util.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 /**
- * The <em>classic</em> concept axiom view as a Knowledge-Layout {@link SupplementalAreaBlueprint
- * supplemental area} — the default provider behind the swappable axiom view (ike-issues#644). It
- * wraps the existing {@link AxiomView} (rather than replacing it), so the historic logical-definition
- * rendering remains available and selectable alongside the refreshed {@code KonceptAxiomTreeArea}
- * (ike-issues#639).
+ * Shared base for the swappable concept axiom-view supplemental areas (ike-issues#644/#639): it
+ * implements the {@link KlAxiomArea} injection seam and the common "resolve the concept's axiom
+ * semantic for the current premise, then render it" flow, leaving only the actual node-building to
+ * subclasses via {@link #renderAxioms}.
  *
- * <p>Following the {@code AbstractCheckArea} idiom, the host window injects the area's context: the
- * focused concept ({@link #setFocusConcept(EntityFacade)}), the {@link ViewProperties}
- * ({@link #setAxiomViewProperties(ViewProperties)}), and the {@link PremiseType}
- * ({@link #setPremiseType(PremiseType)}). When a concept and a view are available the area resolves
- * the concept's axiom semantic for the current premise (the same {@code ObservableSemantic.getAxiomSnapshot}
- * path the inline axiom popover uses) and mounts {@code AxiomView.getEditor()} in its centre.
+ * <p>The host window injects the focused concept ({@link #setFocusConcept}), the
+ * {@link ViewProperties} ({@link #setAxiomViewProperties}) and the {@link PremiseType}
+ * ({@link #setPremiseType}); the area then resolves the axiom semantic (the same
+ * {@code ObservableSemantic.getAxiomSnapshot} path the inline popover uses) and mounts whatever
+ * {@link #renderAxioms} returns. {@code ClassicAxiomArea} (wrapping the classic {@code AxiomView})
+ * and {@code KonceptAxiomTreeArea} (the refreshed KonceptBadge tree) are the two implementations.
  */
-public class ClassicAxiomArea extends SupplementalAreaBlueprint implements KlAxiomArea {
+public abstract class AbstractAxiomArea extends SupplementalAreaBlueprint implements KlAxiomArea {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClassicAxiomArea.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractAxiomArea.class);
 
     private final ObjectProperty<EntityFacade> focus = new SimpleObjectProperty<>(this, "focus");
     private ViewProperties injectedViewProperties;
     private PremiseType premiseType = PremiseType.INFERRED;
+    private Subscription coordinateSubscription;
 
     {
         focus.addListener((obs, oldFocus, newFocus) -> rebuildLater());
@@ -73,7 +73,7 @@ public class ClassicAxiomArea extends SupplementalAreaBlueprint implements KlAxi
      *
      * @param preferences the preferences node backing this area
      */
-    public ClassicAxiomArea(KometPreferences preferences) {
+    protected AbstractAxiomArea(KometPreferences preferences) {
         super(preferences);
     }
 
@@ -83,16 +83,24 @@ public class ClassicAxiomArea extends SupplementalAreaBlueprint implements KlAxi
      * @param preferencesFactory factory for this area's preferences node
      * @param areaFactory        the factory creating this area
      */
-    public ClassicAxiomArea(KlPreferencesFactory preferencesFactory, KlArea.Factory areaFactory) {
+    protected AbstractAxiomArea(KlPreferencesFactory preferencesFactory, KlArea.Factory areaFactory) {
         super(preferencesFactory, areaFactory);
     }
 
     /**
-     * Sets the concept whose axioms this area renders. The host window supplies this, typically the
-     * journal's focused concept.
+     * Renders the resolved axiom semantic into a node to mount in the area. Implemented by each
+     * renderer (classic {@code AxiomView} wrapper, refreshed KonceptBadge tree, …).
      *
-     * @param concept the concept to render, or {@code null} to clear
+     * @param axiomVersion   the concept's stated/inferred axiom semantic version
+     * @param premiseType    the premise being rendered
+     * @param viewProperties the view to render against
+     * @return the node to display
      */
+    protected abstract Node renderAxioms(ObservableSemanticVersion axiomVersion,
+                                         PremiseType premiseType,
+                                         ViewProperties viewProperties);
+
+    @Override
     public final void setFocusConcept(EntityFacade concept) {
         focus.set(concept);
     }
@@ -107,7 +115,7 @@ public class ClassicAxiomArea extends SupplementalAreaBlueprint implements KlAxi
     }
 
     /**
-     * The concept this area renders. The host may bind this to the surrounding layout's focus.
+     * The concept this area renders; a host may bind this to the surrounding layout's focus.
      *
      * @return the focus property
      */
@@ -115,33 +123,28 @@ public class ClassicAxiomArea extends SupplementalAreaBlueprint implements KlAxi
         return focus;
     }
 
-    /**
-     * Injects the view this area queries, overriding the context-derived default. A host window
-     * normally calls this before the area is shown.
-     *
-     * @param viewProperties the view to use, or {@code null} to fall back to the context view
-     */
+    @Override
     public final void setAxiomViewProperties(ViewProperties viewProperties) {
+        if (coordinateSubscription != null) {
+            coordinateSubscription.unsubscribe();
+            coordinateSubscription = null;
+        }
         this.injectedViewProperties = viewProperties;
+        if (viewProperties != null) {
+            // Subscribe to the view coordinate (an ObservableView) so the rendering stays responsive
+            // to coordinate changes — language/dialect/description-type, status, premise, etc. The
+            // calculator reflects the new coordinate, so the rebuild re-resolves names accordingly.
+            coordinateSubscription = viewProperties.nodeView().subscribe(this::rebuildLater);
+        }
         rebuildLater();
     }
 
-    /**
-     * Sets the premise (stated or inferred) whose axioms are shown.
-     *
-     * @param premiseType the premise type; {@code null} is treated as {@link PremiseType#INFERRED}
-     */
+    @Override
     public final void setPremiseType(PremiseType premiseType) {
         this.premiseType = (premiseType == null) ? PremiseType.INFERRED : premiseType;
         rebuildLater();
     }
 
-    /**
-     * Resolves the {@link ViewProperties} to render against: the injected view when one was supplied,
-     * otherwise an overridable view derived from this area's layout context.
-     *
-     * @return the view properties, or {@code null} if none could be resolved
-     */
     private ViewProperties resolveViewProperties() {
         if (injectedViewProperties != null) {
             return injectedViewProperties;
@@ -182,14 +185,12 @@ public class ClassicAxiomArea extends SupplementalAreaBlueprint implements KlAxi
                 host.add(new Label("No " + premiseType.toString().toLowerCase() + " axioms for this concept."), 0, 0);
                 return;
             }
-            AxiomView axiomView = AxiomView.create(latestAxiom.get(), premiseType, viewProperties);
-            ScrollPane scroll = new ScrollPane(axiomView.getEditor());
-            scroll.setFitToWidth(true);
-            GridPane.setHgrow(scroll, Priority.ALWAYS);
-            GridPane.setVgrow(scroll, Priority.ALWAYS);
-            host.add(scroll, 0, 0);
+            Node rendered = renderAxioms(latestAxiom.get(), premiseType, viewProperties);
+            GridPane.setHgrow(rendered, Priority.ALWAYS);
+            GridPane.setVgrow(rendered, Priority.ALWAYS);
+            host.add(rendered, 0, 0);
         } catch (RuntimeException e) {
-            LOG.error("Failed to render classic axiom view for {}", concept, e);
+            LOG.error("Failed to render axioms for {}", concept, e);
             host.add(new Label("Could not render axioms."), 0, 0);
         }
     }
@@ -219,7 +220,9 @@ public class ClassicAxiomArea extends SupplementalAreaBlueprint implements KlAxi
 
     @Override
     public void knowledgeLayoutUnbind() {
-        // Nothing to unbind; the AxiomView is rebuilt from the injected context on bind.
+        if (coordinateSubscription != null) {
+            coordinateSubscription.unsubscribe();
+            coordinateSubscription = null;
+        }
     }
-
 }

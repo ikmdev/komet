@@ -1391,13 +1391,12 @@ modena.css is the default css.
 }
 
 .koncept-label {
-    -fx-fill: #2a5a8a;
+    -fx-text-fill: #2a5a8a;
     -fx-font-size: 11px;
 }
 
 .koncept-chip:inactive .koncept-label {
-    -fx-fill: #b00020;
-    -fx-strikethrough: true;
+    -fx-text-fill: #b00020;
 }
 
 .koncept-status {
@@ -1418,6 +1417,47 @@ modena.css is the default css.
 
 .koncept-status.koncept-root {
     -fx-fill: #8a6d00;
+}
+
+/* Koncept axiom tree (ike-issues#639): clause-label + operator-glyph styling for the
+   model-driven axiom renderer; concepts render as .koncept-chip badges and clause
+   types reuse the .def-* accent bars. */
+.koncept-axiom-children {
+    -fx-padding: 1 0 1 10;
+}
+
+.koncept-axiom-clause {
+    -fx-text-fill: #5a6675;
+    -fx-font-size: 11px;
+    -fx-padding: 2 0 2 4;
+}
+
+.koncept-axiom-op {
+    -fx-text-fill: #8a97a4;
+    -fx-font-size: 13px;
+}
+
+.koncept-axiom-header {
+    -fx-alignment: center-left;
+}
+
+.koncept-axiom-toggle {
+    -fx-text-fill: #8a97a4;
+    -fx-font-size: 10px;
+    -fx-padding: 0 4 0 2;
+    -fx-cursor: hand;
+}
+
+/* Stated-clause hover affordance: a subtle row highlight + a pencil revealed on hover, signalling
+   right-click opens the Evrete rule actions (ike-issues#639 / KEC). */
+.koncept-axiom-actionable:hover {
+    -fx-background-color: #eef2f7;
+}
+
+.koncept-axiom-action-glyph {
+    -fx-text-fill: #5a6675;
+    -fx-font-size: 12px;
+    -fx-padding: 0 4 0 4;
 }
 
 .stamp-panel {

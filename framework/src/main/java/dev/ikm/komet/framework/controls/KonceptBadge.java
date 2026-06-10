@@ -33,12 +33,14 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.css.PseudoClass;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +57,8 @@ import java.util.Locale;
  * <p>Because the identicon and the name are deterministic functions of the component's
  * {@link PublicId}, an on-screen badge matches the identicon and label shown for the same
  * component in generated documents (ike-issues#563). When the component's latest version is
- * inactive (retired) in the view, the name is struck through — the {@code inactive} pseudo-class
- * drives that from CSS.
+ * inactive (retired) in the view, the name is struck through (a combining long-stroke overlay,
+ * since the ellipsizing {@code Label} cannot strike through via CSS) and shown in the retired colour.
  *
  * <p>All visual treatment lives in {@code komet.css} ({@code .koncept-chip}, {@code .koncept-label},
  * {@code .koncept-status} and the {@code .koncept-defined}/{@code -primitive}/{@code -multiparent}/{@code -root}
@@ -89,7 +91,7 @@ public class KonceptBadge extends HBox {
 
     private final HBox statusBox = new HBox();
     private final ImageView identicon;
-    private final Text label = new Text();
+    private final Label label = new Label();
 
     private String conceptName;
     private String sctid;
@@ -159,6 +161,12 @@ public class KonceptBadge extends HBox {
         this.identicon.getStyleClass().add(StyleClasses.KONCEPT_IDENTICON.toString());
 
         this.label.getStyleClass().add(StyleClasses.KONCEPT_LABEL.toString());
+        // Let the label shrink and ellipsize (with the full name on the identity tooltip) so the
+        // badge fits a fixed-width container without forcing a horizontal scrollbar.
+        this.label.setMinWidth(0);
+        this.label.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(this.label, Priority.ALWAYS);
+        setMaxWidth(Double.MAX_VALUE);
         setConceptName(explicitName != null ? explicitName : resolveName(nid, viewProperties));
 
         getChildren().addAll(statusBox, identicon, label);
@@ -252,7 +260,27 @@ public class KonceptBadge extends HBox {
     private void setConceptName(String name) {
         this.conceptName = name;
         // JavaFX CSS has no font-variant; upper-case + reduced size approximates small-caps.
-        label.setText(name == null ? "" : name.toUpperCase(Locale.ROOT));
+        String display = name == null ? "" : name.toUpperCase(Locale.ROOT);
+        // A Label can't strike through via CSS (only Text can), and the label is a Label so it can
+        // ellipsize. So for an inactive/retired concept, strike the name at the text level with a
+        // combining long-stroke overlay (U+0336) on each character — a font-level strikethrough that
+        // works in any font and survives ellipsis. The tooltip keeps the un-struck name.
+        label.setText(inactive ? strikeThrough(display) : display);
+    }
+
+    /**
+     * Returns {@code text} with a combining long-stroke overlay after each character, rendering it
+     * struck through in any font.
+     *
+     * @param text the text to strike through
+     * @return the struck-through text
+     */
+    private static String strikeThrough(String text) {
+        StringBuilder struck = new StringBuilder(text.length() * 2);
+        for (int i = 0; i < text.length(); i++) {
+            struck.append(text.charAt(i)).append('̶');
+        }
+        return struck.toString();
     }
 
     private void installTooltip() {
@@ -285,8 +313,9 @@ public class KonceptBadge extends HBox {
         if (viewProperties == null || nid == UNKNOWN_NID) {
             return Integer.toString(nid);
         }
-        return viewProperties.calculator().getFullyQualifiedNameText(nid)
-                .orElseGet(() -> viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid));
+        // Respect the view's language coordinate (which prioritises the regular/preferred name over
+        // the fully qualified name); do not force the FQN.
+        return viewProperties.calculator().getDescriptionTextOrNid(nid);
     }
 
     private static boolean computeInactive(int nid, ViewProperties viewProperties) {
