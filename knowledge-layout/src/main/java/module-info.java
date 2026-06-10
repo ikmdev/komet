@@ -48,7 +48,9 @@ module dev.ikm.komet.layout {
                  dev.ikm.komet.layout_engine.component.area.MultiVersionArea.Factory,
                  dev.ikm.komet.layout_engine.component.area.SupplementalTestArea.Factory,
                  dev.ikm.komet.layout_engine.component.area.EvreteCheckArea.Factory,
-                 dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea.Factory;
+                 dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.ClassicAxiomArea.StatedFactory,
+                 dev.ikm.komet.layout_engine.component.area.ClassicAxiomArea.InferredFactory;
 
     // Type-specific service interfaces for targeted discovery
     provides dev.ikm.komet.layout.area.KlAreaForBoolean.Factory
@@ -77,7 +79,9 @@ module dev.ikm.komet.layout {
 
     provides dev.ikm.komet.layout.area.KlSupplementalArea.Factory
             with dev.ikm.komet.layout_engine.component.area.SupplementalTestArea.Factory,
-                 dev.ikm.komet.layout_engine.component.area.EvreteCheckArea.Factory;
+                 dev.ikm.komet.layout_engine.component.area.EvreteCheckArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.ClassicAxiomArea.StatedFactory,
+                 dev.ikm.komet.layout_engine.component.area.ClassicAxiomArea.InferredFactory;
 
     provides dev.ikm.komet.layout.component.KlGenericChronologyArea.Factory
             with dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea.Factory;

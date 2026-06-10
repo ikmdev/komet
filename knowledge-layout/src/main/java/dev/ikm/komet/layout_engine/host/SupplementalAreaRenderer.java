@@ -17,6 +17,7 @@ package dev.ikm.komet.layout_engine.host;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.layout.KlArea;
+import dev.ikm.komet.layout.area.KlAxiomArea;
 import dev.ikm.komet.layout.area.KlSupplementalArea;
 import dev.ikm.komet.layout.area.KlToolArea;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
@@ -113,6 +114,10 @@ public final class SupplementalAreaRenderer {
             if (area instanceof AbstractCheckArea checkArea) {
                 checkArea.setCheckViewProperties(viewProperties);
                 checkArea.setFocus(focus);
+            }
+            if (area instanceof KlAxiomArea axiomArea) {
+                axiomArea.setAxiomViewProperties(viewProperties);
+                axiomArea.setFocusConcept(focus);
             }
             return area;
         } catch (ReflectiveOperationException e) {
