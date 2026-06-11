@@ -55,7 +55,9 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
         StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
                 .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) ->
-                        patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                        // Feed the view model the window's DERIVED coordinate (the one the ViewContext
+                        // wraps and the View menu drives), so the pattern content follows it (#660).
+                        patternViewModel.setPropertyValue(VIEW_PROPERTIES, getViewProperties())
                                 .setPropertyValue(MODE, mode)
                                 .setPropertyValue(PATTERN_TOPIC, getWindowTopic())
                                 .setPropertyValue(STATE_MACHINE, patternSM)

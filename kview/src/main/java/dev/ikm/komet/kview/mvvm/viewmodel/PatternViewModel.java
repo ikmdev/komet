@@ -219,7 +219,7 @@ public class PatternViewModel extends FormViewModel {
             fieldDefinitionRecords.stream().forEachOrdered( fieldDefinitionForEntity ->
             {
                 EntityVersion latest = (EntityVersion) viewCalculator.latest(fieldDefinitionForEntity.meaning()).get();
-                PatternField patternField = new PatternField(fieldDefinitionForEntity.meaning().description(), fieldDefinitionForEntity.dataType(),
+                PatternField patternField = new PatternField(viewCalculator.getDescriptionTextOrNid(fieldDefinitionForEntity.meaning().nid()), fieldDefinitionForEntity.dataType(),
                         fieldDefinitionForEntity.purpose(), fieldDefinitionForEntity.meaning(), "", latest.stamp());
                 patternFieldObsList.add(patternField);
             });
@@ -230,11 +230,11 @@ public class PatternViewModel extends FormViewModel {
 
             Entity purposeEntity = ((PatternVersionRecord) entityVersion).semanticPurpose();
             setPropertyValue(PURPOSE_ENTITY, purposeEntity);
-            setPropertyValue(PURPOSE_TEXT, purposeEntity.description());
+            setPropertyValue(PURPOSE_TEXT, viewCalculator.getDescriptionTextOrNid(purposeEntity.nid()));
 
             Entity meaningEntity = ((PatternVersionRecord) entityVersion).semanticMeaning();
             setPropertyValue(MEANING_ENTITY, meaningEntity);
-            setPropertyValue(MEANING_TEXT, meaningEntity.description());
+            setPropertyValue(MEANING_TEXT, viewCalculator.getDescriptionTextOrNid(meaningEntity.nid()));
 
             String patternTitleText = retrieveDisplayName((PatternFacade) patternFacade);
             setPropertyValue(PATTERN_TITLE_TEXT, patternTitleText);
@@ -302,12 +302,32 @@ public class PatternViewModel extends FormViewModel {
 
     private String retrieveDisplayName(PatternFacade patternFacade) {
         ViewProperties viewProperties = getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
-        ViewCalculator viewCalculator = viewProperties.calculator();
-        Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
-        Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
-        return optionalStringRegularName
-                .or(() -> optionalStringFQN)
-                .orElse("No description available");
+        // Follow the view coordinate's description-type preference (FQN vs regular) so the pattern
+        // title tracks the language coordinate like the concept banner and axiom badges (#660).
+        return viewProperties.calculator().getDescriptionTextOrNid(patternFacade.nid());
+    }
+
+    /**
+     * Re-resolves the coordinate-dependent display values (title, semantic purpose, semantic meaning)
+     * and updates their bound properties. Unlike {@link #loadPatternValues()} (which appends to the
+     * field/name lists) this is safe to call repeatedly, so it is wired to a view-coordinate change to
+     * keep these following the language coordinate (ike-issues#660). The field-name list is resolved at
+     * load time only; refreshing those live would require rebuilding the field list.
+     */
+    public void refreshForCoordinate() {
+        ViewCalculator viewCalculator = getViewProperties().calculator();
+        EntityFacade patternFacade = getPropertyValue(ViewModelKey.PATTERN);
+        if (patternFacade != null) {
+            setPropertyValue(PATTERN_TITLE_TEXT, retrieveDisplayName((PatternFacade) patternFacade));
+        }
+        Entity purposeEntity = getPropertyValue(PURPOSE_ENTITY);
+        if (purposeEntity != null) {
+            setPropertyValue(PURPOSE_TEXT, viewCalculator.getDescriptionTextOrNid(purposeEntity.nid()));
+        }
+        Entity meaningEntity = getPropertyValue(MEANING_ENTITY);
+        if (meaningEntity != null) {
+            setPropertyValue(MEANING_TEXT, viewCalculator.getDescriptionTextOrNid(meaningEntity.nid()));
+        }
     }
 
     public boolean createPattern() {

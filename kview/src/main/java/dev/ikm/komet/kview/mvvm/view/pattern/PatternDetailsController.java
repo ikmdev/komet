@@ -335,7 +335,7 @@ public class PatternDetailsController {
                 coordinatesMenuButton,
                 detailsOuterBorderPane,
                 patternViewModel.getViewProperties(),
-                () -> { /* noop TODO: needs a way to redraw details based on view coordinates  */ }
+                patternViewModel::refreshForCoordinate
         );
 
 

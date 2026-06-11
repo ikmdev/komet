@@ -100,7 +100,9 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
         }
         Config config = new Config(GenEditingDetailsController.class.getResource("genediting-details.fxml"))
                 .updateViewModel("genEditingViewModel", genEditingViewModel ->
-                        genEditingViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                        // Feed the view model the window's DERIVED coordinate (the one the ViewContext
+                        // wraps and the View menu drives), so the content follows it (#660).
+                        genEditingViewModel.setPropertyValue(VIEW_PROPERTIES, getViewProperties())
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                                 .setPropertyValue(WINDOW_TOPIC, getWindowTopic())
 //                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)

@@ -261,7 +261,7 @@ public class GenEditingDetailsController {
                 coordinatesMenuButton,
                 detailsOuterBorderPane,
                 getViewProperties(),
-                () -> { /* noop TODO: needs a way to redraw details based on view coordinates  */ }
+                this::updateSemanticForPatternInfo
         );
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
@@ -674,19 +674,19 @@ public class GenEditingDetailsController {
                 }
                 case ConceptEntity ignored -> {
                     refType = "Concept";
-                    description = refComponent2.description();
+                    description = getViewProperties().calculator().getDescriptionTextOrNid(refComponent2.nid());
                 }
                 case PatternEntity ignored -> {
                     refType= "Pattern";
-                    description = refComponent2.description();
+                    description = getViewProperties().calculator().getDescriptionTextOrNid(refComponent2.nid());
                 }
                 case null -> {
                     refType = "Unknown";
-                    description = refComponent2.description();
+                    description = getViewProperties().calculator().getDescriptionTextOrNid(refComponent2.nid());
                 }
                 default ->  {
                     refType = "Unknown";
-                    description = refComponent2.description();
+                    description = getViewProperties().calculator().getDescriptionTextOrNid(refComponent2.nid());
                 }
             };
 
