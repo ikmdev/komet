@@ -43,6 +43,8 @@ import dev.ikm.komet.framework.observable.ObservablePattern;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.layout.KlView;
+import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
@@ -224,14 +226,14 @@ public class GenPurposeDetailsController {
     @FXML
     private void initialize() {
 
-        // Set up the filter options popup for the coordinates menu button.
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(
-                genPurposeViewModel.getViewProperties(),
-                CHAPTER_WINDOW,
-                detailsOuterBorderPane,
-                coordinatesMenuButton,
-                this::updateView
-        );
+        // Populate the coordinates menu button from the window's KL ViewContext (ike-issues#661):
+        // editing this menu drives the context's source view directly, so KL areas re-render via
+        // contextChanged() and the derived ViewProperties follows. Replaces the kview FilterOptionsPopup.
+        coordinatesMenuButton.setOnShowing(event -> {
+            KlContext windowContext = KlView.context(detailsOuterBorderPane);
+            coordinatesMenuButton.getItems().setAll(windowContext.viewMenu());
+        });
+        coordinatesMenuButton.setOnHidden(event -> coordinatesMenuButton.getItems().clear());
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 

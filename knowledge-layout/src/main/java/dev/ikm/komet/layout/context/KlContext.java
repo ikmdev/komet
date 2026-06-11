@@ -1,11 +1,15 @@
 package dev.ikm.komet.layout.context;
 
 import dev.ikm.komet.framework.view.ObservableView;
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.layout.KlPeerable;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
+import dev.ikm.komet.layout_engine.component.menu.ViewMenuFactory;
+import dev.ikm.komet.layout_engine.component.view.ViewContext;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import javafx.scene.Node;
+import javafx.scene.control.Menu;
 
 import java.util.Optional;
 
@@ -33,6 +37,23 @@ public interface KlContext {
         public Object defaultValue() {
             return this.defaultValue;
         }
+    }
+
+    /**
+     * Creates a context that wraps a provided live source view and attaches itself as the
+     * {@code KL_CONTEXT} on the provider's node. The provider owns this one coordinate of record and
+     * derives any legacy {@code ViewProperties} from the same view, so a coordinate menu, the derived
+     * view, and KL areas all read one coordinate (ike-issues#660). This is the exported seam over the
+     * internal {@code ViewContext} implementation.
+     *
+     * @param contextProvider the gadget providing this context (e.g. an inner window)
+     * @param sourceView      the live coordinate source to expose
+     * @param contextName     a display name for the context
+     * @return the established {@code KlContext}
+     */
+    static KlContext overView(KlContextProvider contextProvider, ObservableViewNoOverride sourceView,
+                              String contextName) {
+        return ViewContext.createOverView(contextProvider, sourceView, contextName);
     }
 
     /**
@@ -74,6 +95,20 @@ public interface KlContext {
      *         for managing and observing coordinate states within the layout context.
      */
     ObservableView viewCoordinate();
+
+    /**
+     * Builds a coordinate-editing {@link Menu} bound to this context's {@link #viewCoordinate() view},
+     * so a host's menu button can let the user change language, dialect, description type, stamp, etc.
+     * Editing the menu drives this context's view directly — context-sensitive components re-render via
+     * {@code contextChanged()} and any derived {@code ViewProperties} follows. This is the exported seam
+     * over the internal {@code ViewMenuFactory}, letting a kview window present a KL coordinate menu
+     * (ike-issues#661).
+     *
+     * @return a coordinate menu over this context's view
+     */
+    default Menu viewMenu() {
+        return ViewMenuFactory.create(viewCoordinate(), viewCoordinate().calculator());
+    }
 
     /**
      * This method will signal all dependent {@code KlGadget} objects to unsubscribe from any KlContext properties.

@@ -1,6 +1,8 @@
 package dev.ikm.komet.kview.klwindows.genpurpose;
 
+import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
@@ -42,12 +44,16 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
      */
     public GenPurposeKLWindow(UUID journalTopic, EntityFacade entityFacade,
                            ViewProperties viewProperties, KometPreferences preferences) {
-        super(journalTopic, entityFacade, viewProperties, preferences);
+        // Authority-first unification (ike-issues#660): the window owns a single coordinate of record,
+        // seeded from the journal-provided coordinate. getViewProperties() now returns a ViewProperties
+        // *derived* from that source view (a legacy shim for the FXML body); the KL ViewContext
+        // established below wraps the same source view for KL areas.
+        super(journalTopic, entityFacade, deriveSourceCoordinate(viewProperties), preferences);
 
         // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
         Config patternConfig = new Config(GenPurposeDetailsController.class.getResource("genpurpose-details.fxml"))
                 .updateViewModel("genPurposeViewModel", genPurposeViewModel ->
-                        genPurposeViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                        genPurposeViewModel.setPropertyValue(VIEW_PROPERTIES, getViewProperties())
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                                 .setPropertyValue(WINDOW_TOPIC, getWindowTopic())
 //                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
@@ -63,6 +69,12 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
         // Getting the concept window pane
         paneWindow = jfxNode.node();
 
+        // Establish the window's coordinate as a KL ViewContext on the root pane, wrapping the same
+        // source view the derived ViewProperties is built over (getViewProperties().parentView()).
+        // KL areas placed in this window now resolve it via viewForContext() and re-render on
+        // contextChanged(); the FXML body keeps reading the derived ViewProperties (ike-issues#660).
+        KlContext.overView(this, getViewProperties().parentView(), "Gen-Purpose");
+
         // Calls the remove method to remove and concepts that were closed by the user.
         jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
             getOnClose().ifPresent(Runnable::run);
@@ -73,9 +85,24 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
         listenToEntityChanges();
     }
 
+    /**
+     * Seeds an independent per-window coordinate source from the journal-provided coordinate and
+     * returns a {@link ViewProperties} derived from it. The returned view is what the FXML body reads;
+     * its {@code parentView()} is the source view the window's {@link ViewContext} wraps, so menu edits,
+     * the derived view, and KL areas all read one coordinate (ike-issues#660).
+     *
+     * @param journalView the coordinate handed in by the journal when opening the window
+     * @return a {@code ViewProperties} derived from the window-owned source view
+     */
+    private static ViewProperties deriveSourceCoordinate(ViewProperties journalView) {
+        ObservableViewNoOverride sourceView =
+                new ObservableViewNoOverride(journalView.parentView().toViewCoordinateRecord(), "Gen-Purpose");
+        return sourceView.makeOverridableViewProperties("Gen-Purpose");
+    }
+
     public void initKLWindowPreferences(KometPreferences klWindowPreferences, ViewProperties viewProperties) {
-        // Initialize the controller
-        jfxNode.controller().init(klWindowPreferences, viewProperties);
+        // Initialize the controller with the window's derived coordinate (#660), not the raw arg.
+        jfxNode.controller().init(klWindowPreferences, getViewProperties());
     }
 
     /**

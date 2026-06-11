@@ -82,6 +82,27 @@ public final class ViewContext implements KlContext, KlStateCommands {
         this.klPeerable.properties().put(KlPeerable.PropertyKeys.KL_CONTEXT, this);
     }
 
+    // create wrapping a provided live source view, rather than building one from a record. The window
+    // owns this coordinate and derives its (legacy) ViewProperties from the same ObservableView, so
+    // there is one coordinate of record, not two — the basis for the authority-first inner-window
+    // unification (ike-issues#660).
+    protected ViewContext(KlContextProvider contextProvider, ObservableViewNoOverride sourceView,
+                          PublicIdStringKey publicIdStringKey) {
+        this.preferences = contextProvider.klObject().preferences();
+        this.klPeerable = contextProvider.klObject();
+        this.viewCoordinateProperty =
+                PreferencePropertyObject.objectProp(this.klPeerable, PreferenceKeys.VIEW_COORDINATE);
+        this.contextUuidStringProperty =
+                PreferencePropertyObject.stringProp(this.klPeerable, PreferenceKeys.CONTEXT_UUID);
+        this.contextNameProperty =
+                PreferencePropertyObject.stringProp(this.klPeerable, PreferenceKeys.CONTEXT_NAME);
+
+        this.observableView = sourceView;
+        this.publicIdStringKey = publicIdStringKey;
+
+        this.klPeerable.properties().put(KlPeerable.PropertyKeys.KL_CONTEXT, this);
+    }
+
     // create default
     protected ViewContext(KlContextProvider contextProvider) {
         PublicId publicId = PublicIds.of(UUID.randomUUID());
@@ -148,6 +169,23 @@ public final class ViewContext implements KlContext, KlStateCommands {
     public static ViewContext create(KlContextProvider contextProvider, ViewCoordinateRecord viewCoordinateRecord, String contextName) {
         PublicIdStringKey<KlContext> publicIdStringKey = new PublicIdStringKey<>(PublicIds.newRandom(), contextName);
         return new ViewContext(contextProvider, viewCoordinateRecord, publicIdStringKey);
+    }
+
+    /**
+     * Creates a context that wraps a provided live source view, making that view the provider's single
+     * coordinate of record. The provider derives its (legacy) {@link dev.ikm.komet.framework.view.ViewProperties}
+     * from the same {@code ObservableView}, so menu edits, the derived view, and KL areas all read one
+     * coordinate. The context attaches itself as the {@code KL_CONTEXT} on the provider's node.
+     *
+     * @param contextProvider the window providing this context
+     * @param sourceView      the live coordinate source to expose
+     * @param contextName     a display name for the context
+     * @return the created {@code ViewContext}
+     */
+    public static ViewContext createOverView(KlContextProvider contextProvider,
+                                             ObservableViewNoOverride sourceView, String contextName) {
+        PublicIdStringKey<KlContext> publicIdStringKey = new PublicIdStringKey<>(PublicIds.newRandom(), contextName);
+        return new ViewContext(contextProvider, sourceView, publicIdStringKey);
     }
 
     public static ViewContext restore(KometPreferences preferences, KlContextProvider contextProvider) {
