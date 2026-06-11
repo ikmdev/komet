@@ -41,6 +41,7 @@ module dev.ikm.komet.kview {
     requires javafx.graphics;
     requires javafx.fxml;
     requires javafx.controls;
+    requires java.desktop;
     requires org.slf4j;
     requires javafx.base;
     requires dev.ikm.tinkar.common;
@@ -196,6 +197,7 @@ module dev.ikm.komet.kview {
 
     uses dev.ikm.tinkar.events.EvtBus;
     uses EntityKlWindowFactory;
+    uses dev.ikm.komet.layout.area.KlToolArea.Factory;
 
     // Primary service interface for discovering ALL area factories (built-in and plugins)
     provides dev.ikm.komet.layout.KlArea.Factory with

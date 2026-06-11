@@ -51,6 +51,16 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask.Operation
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WINDOW;
 
+/**
+ * <strong>⚠ LEGACY — SLATED FOR REMOVAL.</strong> This is the menu code for the legacy
+ * {@code dev.ikm.komet:application} module, <em>not</em> the shipping desktop app. The Komet
+ * desktop application that is actually built and run is <strong>{@code komet-desktop}</strong>
+ * ({@code dev.ikm.ike:komet-desktop}); its live menu code is {@code dev.ikm.komet.desktop.AppMenu}.
+ * <strong>Do not add or change menus here</strong> — they have no effect on the running app; edit
+ * {@code dev.ikm.komet.desktop.AppMenu} instead. (Editing this file was the source of a
+ * "menu changes have no effect" pitfall.) Retained only until the module's remaining
+ * responsibilities are migrated to {@code komet-desktop}.
+ */
 public class AppMenu {
 
     private static final Logger LOG = LoggerFactory.getLogger(AppMenu.class);

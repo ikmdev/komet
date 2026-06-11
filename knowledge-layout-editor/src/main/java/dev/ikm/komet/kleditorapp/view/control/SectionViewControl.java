@@ -52,9 +52,9 @@ public class SectionViewControl extends EditorWindowBaseControl {
         titledPane.setAnimated(false);
 
         tagTextLabel.textProperty().bind(tagText);
-        Bindings.bindContent(gridPane.getItems(), getPatterns());
 
         patterns.addListener(this::onPatternsChanged);
+        supplementalAreas.addListener(this::onSupplementalAreasChanged);
 
         gridPane.numberColumnsProperty().bind(numberColumns);
 
@@ -63,7 +63,8 @@ public class SectionViewControl extends EditorWindowBaseControl {
 
         gridPane.onDragDroppedIntoTileProperty().bind(onDragDroppedIntoTileProperty());
         gridPane.onDragOverIntoTileProperty().bind(onDragOverIntoTileProperty());
-        gridPane.setOnShouldDragAndDropRearrange(gridBaseControl -> gridBaseControl instanceof PatternViewControl);
+        gridPane.setOnShouldDragAndDropRearrange(gridBaseControl ->
+                gridBaseControl instanceof PatternViewControl || gridBaseControl instanceof SupplementalAreaViewControl);
 
         // CSS
         titleContainer.getStyleClass().add("title-container");
@@ -76,7 +77,25 @@ public class SectionViewControl extends EditorWindowBaseControl {
             if (change.wasAdded()) {
                 change.getAddedSubList().forEach(pattern -> {
                     pattern.setParentSection(this);
+                    gridPane.getItems().add(pattern);
                 });
+            }
+            if (change.wasRemoved()) {
+                gridPane.getItems().removeAll(change.getRemoved());
+            }
+        }
+    }
+
+    private void onSupplementalAreasChanged(ListChangeListener.Change<? extends SupplementalAreaViewControl> change) {
+        while (change.next()) {
+            if (change.wasAdded()) {
+                change.getAddedSubList().forEach(area -> {
+                    area.setParentSection(this);
+                    gridPane.getItems().add(area);
+                });
+            }
+            if (change.wasRemoved()) {
+                gridPane.getItems().removeAll(change.getRemoved());
             }
         }
     }
@@ -132,6 +151,10 @@ public class SectionViewControl extends EditorWindowBaseControl {
     // -- items
     private final ObservableList<PatternViewControl> patterns = FXCollections.observableArrayList();
     public ObservableList<PatternViewControl> getPatterns() { return patterns; }
+
+    // -- supplemental areas
+    private final ObservableList<SupplementalAreaViewControl> supplementalAreas = FXCollections.observableArrayList();
+    public ObservableList<SupplementalAreaViewControl> getSupplementalAreas() { return supplementalAreas; }
 
     // -- parent window
     private final ReadOnlyObjectWrapper<EditorWindowControl> parentWindow = new ReadOnlyObjectWrapper<>();

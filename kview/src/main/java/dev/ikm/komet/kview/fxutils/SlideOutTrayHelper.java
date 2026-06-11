@@ -94,6 +94,9 @@ public interface SlideOutTrayHelper {
      */
     static void slideOut(Pane trayPane, boolean animated) {
         final Node panel = trayPane.getChildren().getFirst();
+        // Force a full CSS pass so .root looked-up colors are resolved
+        // before the animation makes clipped children visible (JDK-8093516).
+        panel.applyCss();
         final double width = panel.getBoundsInLocal().getWidth();
 
         if (animated) {
@@ -200,6 +203,9 @@ public interface SlideOutTrayHelper {
      */
     static void slideOut(Pane trayPane, Pane owningPanel, boolean animated) {
         final Node panel = trayPane.getChildren().getFirst();
+        // Force a full CSS pass so .root looked-up colors are resolved
+        // before the animation makes clipped children visible (JDK-8093516).
+        panel.applyCss();
         final double width = panel.getBoundsInLocal().getWidth();
 
         if (animated) {

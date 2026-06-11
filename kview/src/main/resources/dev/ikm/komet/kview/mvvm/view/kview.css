@@ -3822,6 +3822,7 @@ Timeline Year line segment (will overlay change circles)
 
 .welcome-container > .status-pane .status-label.dataset {
     -fx-text-fill: -Secondary-06;
+    -fx-font-size: 18px;
 }
 
 .welcome-container > .status-pane .github-status-link {
@@ -3836,9 +3837,9 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .welcome-container .selected-dataset-title-label {
-    -fx-font-family: "Noto Sans Medium";
-    -fx-font-weight: 500;
-    -fx-font-size: 14px;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 700;
+    -fx-font-size: 18px;
     -fx-text-fill: -Secondary-06;
 }
 
@@ -3867,24 +3868,6 @@ Timeline Year line segment (will overlay change circles)
 
 .notification-container {
     -fx-spacing: 8;
-}
-/* notification section hbox > region dropdown button*/
-.notification-title-icon {
-    -fx-pref-width: 20px;
-    -fx-max-width: 20;
-    -fx-pref-height: 20px;
-    -fx-max-height: 20px;
-    -fx-background-color: -Grey-Black;
-    -fx-shape: "M19 17V11.8C18.5 11.9 18 12 17.5 12H17V18H7V11C7 8.2 9.2 6 12 6C12.1 4.7 12.7 3.6 13.5 2.7C13.2 2.3 12.6 2 12 2C10.9 2 10 2.9 10 4V4.3C7 5.2 5 7.9 5 11V17L3 19V20H21V19L19 17ZM10 21C10 22.1 10.9 23 12 23C13.1 23 14 22.1 14 21H10ZM21 6.5C21 8.4 19.4 10 17.5 10C15.6 10 14 8.4 14 6.5C14 4.6 15.6 3 17.5 3C19.4 3 21 4.6 21 6.5Z";
-    /*-fx-background-insets: -1, 0;*/
-}
-.notification-title {
-    -fx-text-fill: -Grey-11;
-    -fx-font-family: Noto Sans;
-    -fx-font-size: 16px;
-    -fx-font-style: normal;
-    -fx-font-weight: 600;
-    -fx-max-width: 1728px;
 }
 
 
@@ -3957,22 +3940,6 @@ Timeline Year line segment (will overlay change circles)
 }
 
 
-.notification-card-container.scroll-pane,
-.notification-card-container.scroll-pane:focused {
-    -fx-pref-height: 196px;
-    -fx-background-color: -Grey-3;
-    -fx-background-insets: 0;
-    -fx-background-radius: 0;
-    -fx-padding: 0;
-}
-.notification-card-container.scroll-pane > .viewport,
-.notification-card-container.scroll-pane:focused > .viewport {
-    -fx-pref-height: 196px;
-    -fx-background-color: -Grey-3;
-    -fx-background-insets: 0;
-    -fx-background-radius: 0;
-    -fx-padding: 0;
-}
 .card {
     -fx-background-radius: 8px;
     -fx-background-color: -Grey-White;
@@ -4227,11 +4194,6 @@ Styling a context menu for kview ui/ux controls
     -fx-shape: "M9.00008 0.666504C4.40758 0.666504 0.666748 4.40733 0.666748 8.99984C0.666748 13.5923 4.40758 17.3332 9.00008 17.3332C13.5926 17.3332 17.3334 13.5923 17.3334 8.99984C17.3334 4.40733 13.5926 0.666504 9.00008 0.666504ZM9.00008 2.33317C12.6919 2.33317 15.6667 5.30807 15.6667 8.99984C15.6667 12.6916 12.6919 15.6665 9.00008 15.6665C5.30831 15.6665 2.33341 12.6916 2.33341 8.99984C2.33341 5.30807 5.30831 2.33317 9.00008 2.33317ZM8.16675 4.83317V8.1665H4.83342V9.83317H8.16675V13.1665H9.83342V9.83317H13.1667V8.1665H9.83342V4.83317H8.16675Z"
 }
 
-.notification-card {
-    -fx-pref-width: 280px;
-    -fx-pref-height: 178px;
-}
-
 .journal-project-card {
     -default-width: 280px;
     -default-height: 226px;
@@ -4243,21 +4205,6 @@ Styling a context menu for kview ui/ux controls
     -fx-max-height: -default-height;
 }
 
-/* region svg shape of an X to close card */
-.notification-card .close-button {
-    -fx-background-radius: 4px;
-    -fx-background-insets: 0;
-    -fx-background-color: -Grey-8;
-    -fx-padding: 4;
-
-    -width-size: 12px;
-    -height-size: 12px;
-    -fx-min-height: -height-size;
-    -fx-min-width: -width-size;
-    -fx-max-height: -height-size;
-    -fx-max-width: -width-size;
-    -fx-shape: "M15.8334 5.3415L14.6584 4.1665L10.0001 8.82484L5.34175 4.1665L4.16675 5.3415L8.82508 9.99984L4.16675 14.6582L5.34175 15.8332L10.0001 11.1748L14.6584 15.8332L15.8334 14.6582L11.1751 9.99984L15.8334 5.3415Z";
-}
 /* Contains the card's info VBox */
 .card-info-container {
     /*-fx-padding: 12px 16px;*/
@@ -4270,33 +4217,8 @@ Styling a context menu for kview ui/ux controls
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
-.card-info-container .validation-counts {
-    -fx-text-fill: -Grey-12;
-    -fx-font-family: Noto Sans;
-    -fx-font-size: 25px;
-    -fx-font-style: normal;
-    -fx-font-weight: 500;
-}
-.card-info-container .validation-message {
-    -fx-text-fill: -Grey-12;
-    -fx-font-family: Noto Sans;
-    -fx-font-size: 13px;
-    -fx-font-style: normal;
-    -fx-font-weight: 400;
-}
-.card-info-container .edit-info-container {
-    -fx-spacing: 6px;
-}
 .card-info-container .icon.avatar {
     -fx-background-color: -Secondary-05;
-}
-
-.card-info-container .last-user-edit {
-    -fx-font-family: Noto Sans;
-    -fx-font-size: 11px;
-    -fx-font-style: normal;
-    -fx-font-weight: 500;
-    -fx-text-fill: -Grey-11;
 }
 
 .card-info-container .edit-time {
@@ -4336,15 +4258,6 @@ Styling a context menu for kview ui/ux controls
     -fx-background-radius: 4;
 }
 
-/* All notification button on landing page */
-.landing-container .button.all-notification-button {
-    -fx-background-color: -Secondary-05, -Grey-2;
-}
-
-.landing-container .button.all-notification-button:hover {
-    -fx-background-color: -Secondary-04, -Grey-1;
-    -fx-text-fill: -Secondary-04;
-}
 
 .add-symbol {
     -fx-shape: "M16.6666 10.8334H10.8333V16.6667H9.16665V10.8334H3.33331V9.16671H9.16665V3.33337H10.8333V9.16671H16.6666V10.8334Z";

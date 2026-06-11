@@ -80,9 +80,11 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
         this.detailsActivityStreamKey = new PublicIdStringKey<>(PublicIds.of(uuid.toString()), uniqueDetailsTopic);
         ActivityStreams.create(detailsActivityStreamKey);
 
-        // Initialize the DetailsNode with a factory.
+        // Initialize the DetailsNode with a factory. Build it from the window's OWN source view
+        // (getViewProperties().parentView() — the view the ViewContext wraps and the View menu drives),
+        // not the raw journal view, so the classic content follows the window's coordinate (#660).
         KometNodeFactory conceptDetailsNodeFactory = new ConceptNodeFactory();
-        this.conceptNode = (ConceptNode) conceptDetailsNodeFactory.create(viewProperties.parentView(),
+        this.conceptNode = (ConceptNode) conceptDetailsNodeFactory.create(getViewProperties().parentView(),
                 detailsActivityStreamKey,
                 ActivityStreamOption.PUBLISH.keyForOption(),
                 AlertStreams.ROOT_ALERT_STREAM_KEY,
@@ -102,6 +104,9 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
 
         // Getting the concept window pane
         this.paneWindow = (Pane) conceptNode.getNode();
+
+        // Establish the window's KL ViewContext on the root pane now that paneWindow exists (#660).
+        establishViewContext();
 
         // tracks viewModel changes and save them into prefereces
         listenToEntityChanges();

@@ -1374,6 +1374,92 @@ modena.css is the default css.
 
 }
 
+/* ============================================================
+   Koncept badge (ike-issues#638) — reusable concept atom:
+   LifeHash identicon + small-caps pill label + taxonomic status
+   glyph. Mirrors the AsciiDoc k: chip (ike-docs koncept.css) so
+   on-screen and in-document concept references match (#563).
+   Shared by the refreshed axiom tree (#639) and the recursive
+   semantic viewer (#641).
+   ============================================================ */
+.koncept-chip {
+    -fx-background-color: #e9eff6;
+    -fx-background-radius: 6;
+    -fx-padding: 1 6 1 4;
+    -fx-spacing: 3;
+    -fx-alignment: center-left;
+}
+
+.koncept-label {
+    -fx-text-fill: #2a5a8a;
+    -fx-font-size: 11px;
+}
+
+.koncept-chip:inactive .koncept-label {
+    -fx-text-fill: #b00020;
+}
+
+.koncept-status {
+    -fx-font-size: 10px;
+}
+
+.koncept-status.koncept-defined {
+    -fx-fill: #3b8c2f;
+}
+
+.koncept-status.koncept-primitive {
+    -fx-fill: #6b7682;
+}
+
+.koncept-status.koncept-multiparent {
+    -fx-fill: #185fa5;
+}
+
+.koncept-status.koncept-root {
+    -fx-fill: #8a6d00;
+}
+
+/* Koncept axiom tree (ike-issues#639): clause-label + operator-glyph styling for the
+   model-driven axiom renderer; concepts render as .koncept-chip badges and clause
+   types reuse the .def-* accent bars. */
+.koncept-axiom-children {
+    -fx-padding: 1 0 1 10;
+}
+
+.koncept-axiom-clause {
+    -fx-text-fill: #5a6675;
+    -fx-font-size: 11px;
+    -fx-padding: 2 0 2 4;
+}
+
+.koncept-axiom-op {
+    -fx-text-fill: #8a97a4;
+    -fx-font-size: 13px;
+}
+
+.koncept-axiom-header {
+    -fx-alignment: center-left;
+}
+
+.koncept-axiom-toggle {
+    -fx-text-fill: #8a97a4;
+    -fx-font-size: 10px;
+    -fx-padding: 0 4 0 2;
+    -fx-cursor: hand;
+}
+
+/* Stated-clause hover affordance: a subtle row highlight + a pencil revealed on hover, signalling
+   right-click opens the Evrete rule actions (ike-issues#639 / KEC). */
+.koncept-axiom-actionable:hover {
+    -fx-background-color: #eef2f7;
+}
+
+.koncept-axiom-action-glyph {
+    -fx-text-fill: #5a6675;
+    -fx-font-size: 12px;
+    -fx-padding: 0 4 0 4;
+}
+
 .stamp-panel {
     -fx-padding: 0 0 0 5;
 }

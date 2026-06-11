@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.1.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
+    <modelVersion>4.1.0</modelVersion>
+    <parent/>
+
+    <artifactId>komet-markdown-richtext</artifactId>
+    <name>Komet Markdown RichText</name>
+    <description>
+        Shared CommonMark (GFM tables) → incubator RichTextArea renderer with an injectable
+        inline-decorator hook. Generic and tinkar-free; consumers (e.g. the Claude assistant
+        plugin) inject inline nodes such as concept chips via an InlineDecorator.
+    </description>
+
+    <dependencies>
+        <!-- The incubator RichTextArea model (RichParagraph / StyledTextModel). -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>jfx-incubator-richtext</artifactId>
+        </dependency>
+        <!-- CommonMark parser + GFM tables extension. Versions managed by komet-bom. -->
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark-ext-gfm-tables</artifactId>
+        </dependency>
+    </dependencies>
+</project>

@@ -28,7 +28,7 @@ import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 
@@ -107,6 +107,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -223,14 +224,10 @@ public class GenPurposeDetailsController {
     @FXML
     private void initialize() {
 
-        // Set up the filter options popup for the coordinates menu button.
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(
-                genPurposeViewModel.getViewProperties(),
-                CHAPTER_WINDOW,
-                detailsOuterBorderPane,
-                coordinatesMenuButton,
-                this::updateView
-        );
+        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
+        // replacing the kview FilterOptionsPopup.
+        setupViewContextMenu(coordinatesMenuButton, detailsOuterBorderPane,
+                genPurposeViewModel.getViewProperties(), this::updateView);
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
@@ -308,6 +305,34 @@ public class GenPurposeDetailsController {
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
         closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+
+        // Rule-driven + plugin-contributed identicon context menu (e.g. the plugin's
+        // "Post state + history to Zulip"), uniform with the concept identicon via
+        // AddToContextMenu.providers() — so plugins need not touch this controller.
+        // Guard: this window's FXML may not supply an identicon (its header differs from the
+        // concept/pattern windows), in which case the @FXML field is null. Skip wiring rather than fail init.
+        if (identiconImageView != null) {
+            identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
+                dev.ikm.tinkar.terms.EntityFacade currentEntity =
+                        genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+                if (currentEntity == null) {
+                    return;
+                }
+                javafx.scene.control.ContextMenu identiconContextMenu = new javafx.scene.control.ContextMenu();
+                javafx.beans.property.SimpleObjectProperty<dev.ikm.tinkar.terms.EntityFacade> focusedEntity =
+                        new javafx.beans.property.SimpleObjectProperty<>(currentEntity);
+                for (dev.ikm.komet.framework.context.AddToContextMenu provider
+                        : dev.ikm.komet.framework.context.AddToContextMenu.providers()) {
+                    provider.addToContextMenu((javafx.scene.control.Control) null, identiconContextMenu,
+                            getViewProperties(), focusedEntity,
+                            new javafx.beans.property.SimpleIntegerProperty(), () -> { });
+                }
+                if (!identiconContextMenu.getItems().isEmpty()) {
+                    identiconContextMenu.show(identiconImageView,
+                            contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
+                }
+            });
+        }
     }
 
     private void openPropertiesPanel() {
@@ -430,7 +455,9 @@ public class GenPurposeDetailsController {
     }
 
     private void updateWindowTitle(EntityFacade refConcept) {
-        String conceptNameStr = getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(refConcept.nid());
+        // Follow the view coordinate's description-type preference (FQN vs preferred), like the axiom
+        // badges, so the header tracks the coordinate too (ike-issues#660).
+        String conceptNameStr = getViewProperties().calculator().getDescriptionTextOrNid(refConcept.nid());
         Image identicon = Identicon.generateIdenticonImage(refConcept.publicId());
 
         boolean isConcept = EntityHandle.get(refConcept).isConcept();
@@ -637,6 +664,7 @@ public class GenPurposeDetailsController {
         // Main TitledPane
         TitledPane mainTitledPane = createTitledPane(mainSection);
         addPatternViewsOfSection(mainSection.getPatterns());
+        addSupplementalAreaViewsOfSection(mainSection);
         mainContent.getItems().add(mainTitledPane);
 
         mainSection.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
@@ -645,6 +673,7 @@ public class GenPurposeDetailsController {
         editorWindowModel.getAdditionalSections().forEach(section -> {
             TitledPane titledPane = createTitledPane(section);
             addPatternViewsOfSection(section.getPatterns());
+            addSupplementalAreaViewsOfSection(section);
             mainContent.getItems().add(titledPane);
         });
 
@@ -753,6 +782,11 @@ public class GenPurposeDetailsController {
             refComponent = sectionTitledPane.getSelectedReferenceComponent();
         }
 
+        if (refComponent == null) {
+            // No reference concept to edit against — nothing to populate.
+            return;
+        }
+
         // Populate the Popup
         EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
                 sectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
@@ -848,12 +882,26 @@ public class GenPurposeDetailsController {
 
     private void addPatternViewsOfSection(List<? extends EditorPatternModel> patternModels) {
         if (patternModels == null || patternModels.isEmpty()) {
-            throw new RuntimeException("Patterns list passed in is null or empty and shouldn't be");
+            // A section may legitimately contain no patterns — e.g. one that holds only
+            // supplemental areas (a Claude/Evrete check or chat). Nothing to render here.
+            return;
         }
 
         for (EditorPatternModel editorPatternModel : patternModels) {
             addSinglePatternView(editorPatternModel);
         }
+    }
+
+    /**
+     * Renders the section's placed supplemental areas (Claude/Evrete checks, chat, …). The whole
+     * capability lives in knowledge-layout's {@link SupplementalAreaRenderer}, which materializes
+     * each area generically from its plugin factory and injects this window's view and reference
+     * concept. This window only delegates.
+     */
+    private void addSupplementalAreaViewsOfSection(EditorSectionModel section) {
+        GridPane sectionGridPane = sectionModelToTitledPaneGridPane.get(section);
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        SupplementalAreaRenderer.renderInto(section, sectionGridPane, viewProperties, refComponent);
     }
 
     private void addSinglePatternView(EditorPatternModel editorPatternModel) {
@@ -934,6 +982,11 @@ public class GenPurposeDetailsController {
     }
 
     private void doAddSemanticViews(EditorPatternModel editorPatternModel, PatternSemanticsPresenter patternSemanticsPresenter, EntityFacade referenceComponent) {
+        if (referenceComponent == null) {
+            // No reference concept selected — nothing to render for this pattern's semantics.
+            return;
+        }
+
         // Pattern Entity
         int patternNid = editorPatternModel.getNid();
         EntityHandle handle = EntityHandle.get(patternNid);
@@ -979,6 +1032,11 @@ public class GenPurposeDetailsController {
         List<EntityFacade> refComponents = new ArrayList<>();
 
         EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        if (windowRefComponent == null) {
+            // No reference concept for this window yet — nothing to resolve, and never return a
+            // list containing null (callers treat a non-empty list as having a usable component).
+            return refComponents;
+        }
 
         if (sectionReferenceComponent != null) {
             EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), sectionReferenceComponent.getNid(),
@@ -997,6 +1055,11 @@ public class GenPurposeDetailsController {
         EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
 
         List<EntityFacade> refComponents = new ArrayList<>();
+
+        if (windowRefComponent == null) {
+            // No reference concept for this window — no semantics to resolve.
+            return refComponents;
+        }
 
         EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), editorPatternModel.getNid(),
                 (SemanticEntity<SemanticEntityVersion> semantic) -> {

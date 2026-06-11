@@ -64,6 +64,12 @@
                         <HBox fx:id="conceptHeaderControlToolBarHbox" prefHeight="100.0" prefWidth="762.0"
                               style="-fx-background-color: -Natural-Grey-Main;">
                             <children>
+                                <!-- Context-menu anchor for the rule-driven / plugin identicon menu
+                                     (GenPurposeDetailsController). Kept hidden: this window's header has
+                                     no identicon slot like concept/pattern/genediting, and the controller
+                                     does not populate an identicon image. Present so the @FXML field
+                                     injects (avoids an NPE in initialize). -->
+                                <ImageView fx:id="identiconImageView" fitHeight="36.0" fitWidth="36.0" managed="false" pickOnBounds="true" preserveRatio="true" visible="false" />
                                 <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY"
                                             styleClass="coordinate">
                                     <tooltip>

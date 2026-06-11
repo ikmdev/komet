@@ -2,9 +2,12 @@ package dev.ikm.komet.kview.mvvm.view.common;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.KlView;
+import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import javafx.css.PseudoClass;
+import javafx.scene.Node;
 import javafx.geometry.Bounds;
 import javafx.scene.control.MenuButton;
 import javafx.scene.input.MouseButton;
@@ -131,5 +134,32 @@ public class ChapterWindowHelper {
                 coordinatesMenuButton.pseudoClassStateChanged(FILTER_SET, !isDefault));
 
         return filterOptionsPopup;
+    }
+
+    /**
+     * Wires a chapter window's coordinates menu button to the window's KL {@link KlContext} instead of
+     * the kview {@code FilterOptionsPopup} (ike-issues#660/#661). On show, the button is populated from
+     * the context resolved at {@code contextAnchor}'s position in the scene graph; editing the menu
+     * drives the context's source view, so KL areas re-render via {@code contextChanged()}. The header
+     * (and other non-area FXML content) follows the same coordinate: the derived {@code ViewProperties}'
+     * node view tracks the context's source view, so {@code updateViewBlock} re-runs when it changes.
+     *
+     * @param coordinatesMenuButton the menu button to populate
+     * @param contextAnchor         a node within the window, used to resolve the window's context
+     * @param viewProperties        the window's (derived) view properties, watched to refresh the header
+     * @param updateViewBlock       the host's view-refresh routine, run on each coordinate change
+     */
+    public static void setupViewContextMenu(MenuButton coordinatesMenuButton, Node contextAnchor,
+                                            ViewProperties viewProperties, Runnable updateViewBlock) {
+        coordinatesMenuButton.setOnShowing(event -> {
+            KlContext context = KlView.context(contextAnchor);
+            if (context != null) {
+                coordinatesMenuButton.getItems().setAll(context.viewMenu());
+            }
+        });
+        coordinatesMenuButton.setOnHidden(event -> coordinatesMenuButton.getItems().clear());
+        if (viewProperties != null) {
+            viewProperties.nodeView().subscribe((oldView, newView) -> updateViewBlock.run());
+        }
     }
 }

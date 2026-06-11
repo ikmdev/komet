@@ -17,7 +17,9 @@ package dev.ikm.komet.rules.evrete;
 
 import dev.ikm.komet.framework.performance.Statement;
 import dev.ikm.komet.framework.rulebase.Consequence;
+import dev.ikm.komet.framework.rulebase.RuleProvider;
 import dev.ikm.komet.framework.rulebase.RuleService;
+import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.rules.annotated.AxiomFocusedRules;
 import dev.ikm.komet.rules.annotated.ComponentFocusRules;
@@ -66,16 +68,33 @@ public class EvreteRulesService implements RuleService {
 
         KnowledgeService service = new KnowledgeService(conf);
 
-        this.knowledge = service.newKnowledge()
-                .importRules(
-                        Constants.PROVIDER_JAVA_CLASS,
-                        List.of(
-                                ComponentFocusRules.class,
-                                NewConceptRules.class,
-                                AxiomFocusedRules.class,
-                                NewPatternRules.class
-                        )
-                );
+        // Built-in rule classes always load. Plugin-contributed rule classes
+        // (discovered via the RuleProvider SPI on the plugin layer) are imported
+        // each in isolation, so one bad plugin rule degrades to "its menu items are
+        // missing" instead of taking down the whole engine — and with it every
+        // rule-driven menu. importRules APPENDS, so these calls accumulate.
+        Knowledge knowledgeBase = service.newKnowledge()
+                .importRules(Constants.PROVIDER_JAVA_CLASS, List.of(
+                        ComponentFocusRules.class,
+                        NewConceptRules.class,
+                        AxiomFocusedRules.class,
+                        NewPatternRules.class
+                ));
+        int pluginRuleCount = 0;
+        for (RuleProvider provider : PluggableService.load(RuleProvider.class)) {
+            try {
+                java.util.List<Class<?>> pluginRules = provider.ruleClasses();
+                knowledgeBase = knowledgeBase.importRules(Constants.PROVIDER_JAVA_CLASS, pluginRules);
+                pluginRuleCount += pluginRules.size();
+            } catch (Exception e) {
+                LOG.error("Skipping rules from RuleProvider {} — import failed; the rule "
+                        + "engine continues without them: {}", provider.getClass().getName(), e.toString());
+            }
+        }
+        if (pluginRuleCount > 0) {
+            LOG.info("Imported {} plugin-contributed rule class(es) via RuleProvider", pluginRuleCount);
+        }
+        this.knowledge = knowledgeBase;
         Instant t1 = Instant.now();
 
         // Log the timing. With literal conditions disabled, the cold start time
