@@ -114,6 +114,7 @@ public class ObservableViewNoOverride extends ObservableViewBase {
 
         this.navigationCoordinateObservable.setValue(newValue.navigationCoordinate());
         this.logicCoordinateObservable.setValue(newValue.logicCoordinate());
+        this.editCoordinateObservable.setValue(newValue.editCoordinate());
         return newValue;
     }
 

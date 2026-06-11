@@ -30,9 +30,7 @@ public class ObservableViewWithOverride extends ObservableViewBase {
 
     public ObservableViewWithOverride(ObservableViewBase observableViewBase, String name) {
         super(observableViewBase, name);
-        if (observableViewBase instanceof ObservableViewWithOverride) {
-            throw new IllegalStateException("Cannot override an overridden Coordinate. ");
-        }
+        // Depth-independent override nesting (ike-issues#663): an override may wrap another override.
         observableViewBase.baseCoordinateProperty().addListener(this::overriddenBaseChanged);
         observableViewBase.listening.addListener((observable, oldValue, newValue) -> {
             if (newValue) {
@@ -73,6 +71,7 @@ public class ObservableViewWithOverride extends ObservableViewBase {
             setLanguageCoordinatesExceptOverrides(updatedCoordinate);
             navigationCoordinate().setExceptOverrides(updatedCoordinate.navigationCoordinate());
             logicCoordinate().setExceptOverrides(updatedCoordinate.logicCoordinate());
+            editCoordinate().setExceptOverrides(updatedCoordinate.editCoordinate());
         } else {
             this.setValue(updatedCoordinate);
         }
@@ -174,6 +173,7 @@ public class ObservableViewWithOverride extends ObservableViewBase {
         setLanguageCoordinatesExceptOverrides(newValue);
         this.logicCoordinateObservable.setExceptOverrides(newValue.logicCoordinate());
         this.navigationCoordinateObservable.setExceptOverrides(newValue.navigationCoordinate());
+        this.editCoordinateObservable.setExceptOverrides(newValue.editCoordinate());
         return ViewCoordinateRecord.make(this.stampCoordinateObservable.getValue(),
                 this.languageCoordinates.getValue(),
                 this.logicCoordinateObservable.getValue(),
