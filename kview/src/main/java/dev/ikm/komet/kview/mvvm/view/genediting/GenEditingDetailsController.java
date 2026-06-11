@@ -32,7 +32,7 @@ import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -255,12 +255,12 @@ public class GenEditingDetailsController {
 
     @FXML
     private void initialize() {
-        // Set up the filter options popup for the coordinates menu button.
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(
-                getViewProperties(),
-                CHAPTER_WINDOW,
-                detailsOuterBorderPane,
+        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
+        // replacing the kview FilterOptionsPopup.
+        setupViewContextMenu(
                 coordinatesMenuButton,
+                detailsOuterBorderPane,
+                getViewProperties(),
                 () -> { /* noop TODO: needs a way to redraw details based on view coordinates  */ }
         );
 

@@ -95,6 +95,9 @@ public class LidrKlWindow extends AbstractEntityChapterKlWindow {
         // Getting the concept window pane
         this.paneWindow = jfxNode.node();
 
+        // Establish the window's KL ViewContext on the root pane now that paneWindow exists (#660).
+        establishViewContext();
+
         // Calls the remove method to remove and concepts that were closed by the user.
         jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
             getOnClose().ifPresent(Runnable::run);

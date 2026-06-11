@@ -28,7 +28,7 @@ import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 
@@ -43,8 +43,6 @@ import dev.ikm.komet.framework.observable.ObservablePattern;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.layout.KlView;
-import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
@@ -226,14 +224,10 @@ public class GenPurposeDetailsController {
     @FXML
     private void initialize() {
 
-        // Populate the coordinates menu button from the window's KL ViewContext (ike-issues#661):
-        // editing this menu drives the context's source view directly, so KL areas re-render via
-        // contextChanged() and the derived ViewProperties follows. Replaces the kview FilterOptionsPopup.
-        coordinatesMenuButton.setOnShowing(event -> {
-            KlContext windowContext = KlView.context(detailsOuterBorderPane);
-            coordinatesMenuButton.getItems().setAll(windowContext.viewMenu());
-        });
-        coordinatesMenuButton.setOnHidden(event -> coordinatesMenuButton.getItems().clear());
+        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
+        // replacing the kview FilterOptionsPopup.
+        setupViewContextMenu(coordinatesMenuButton, detailsOuterBorderPane,
+                genPurposeViewModel.getViewProperties(), this::updateView);
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
@@ -461,7 +455,9 @@ public class GenPurposeDetailsController {
     }
 
     private void updateWindowTitle(EntityFacade refConcept) {
-        String conceptNameStr = getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(refConcept.nid());
+        // Follow the view coordinate's description-type preference (FQN vs preferred), like the axiom
+        // badges, so the header tracks the coordinate too (ike-issues#660).
+        String conceptNameStr = getViewProperties().calculator().getDescriptionTextOrNid(refConcept.nid());
         Image identicon = Identicon.generateIdenticonImage(refConcept.publicId());
 
         boolean isConcept = EntityHandle.get(refConcept).isConcept();
