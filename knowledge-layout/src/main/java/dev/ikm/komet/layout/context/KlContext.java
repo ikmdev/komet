@@ -51,9 +51,25 @@ public interface KlContext {
      * @param contextName     a display name for the context
      * @return the established {@code KlContext}
      */
-    static KlContext overView(KlContextProvider contextProvider, ObservableViewNoOverride sourceView,
+    static KlContext overView(KlContextProvider contextProvider, ObservableView sourceView,
                               String contextName) {
         return ViewContext.createOverView(contextProvider, sourceView, contextName);
+    }
+
+    /**
+     * Creates a context whose view is a live override of {@code parentContext}'s view — one link of the
+     * depth-independent coordinate cascade (ike-issues#666). The child inherits every facet it does not
+     * pin and tracks the parent for the rest; pinned facets survive parent changes (pin-wins). Exported
+     * seam over the internal {@code ViewContext} implementation.
+     *
+     * @param contextProvider the gadget providing this context (e.g. an inner window)
+     * @param parentContext   the enclosing scope's context this one overrides
+     * @param contextName     a display name for the context
+     * @return the established child {@code KlContext}
+     */
+    static KlContext childOf(KlContextProvider contextProvider, KlContext parentContext,
+                             String contextName) {
+        return ViewContext.createChildOf(contextProvider, parentContext, contextName);
     }
 
     /**

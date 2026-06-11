@@ -15,7 +15,10 @@
  */
 package dev.ikm.komet.kview.klwindows;
 
+import dev.ikm.komet.framework.view.ObservableView;
+import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -76,6 +79,19 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
     private EntityFacade entityFacade;
 
     /**
+     * The journal-level effective coordinate this window's coordinate overrides. The window's KL
+     * {@link #contextView} is a live child override of it (ike-issues#666).
+     */
+    private final ObservableView journalParentView;
+
+    /**
+     * This window's own coordinate of record: a child override of {@link #journalParentView}. It is the
+     * KL context's view — read by KL areas and edited by the View Options menu — while the derived
+     * {@link #getViewProperties()} is kept a live mirror of it for legacy FXML bodies (ike-issues#666).
+     */
+    private ObservableViewWithOverride contextView;
+
+    /**
      * Constructs a new entity-focused chapter window with references to the journal topic,
      * entity facade, view properties, and user preferences.
      * <p>     * This constructor initializes the window with its core components and either creates
@@ -98,6 +114,8 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
         // call establishViewContext() once their paneWindow exists to wrap the same source view as the
         // KL ViewContext for KL areas.
         super(deriveSourceCoordinate(viewProperties), preferences);
+        // The journal's effective view is the parent this window's coordinate overrides (#666).
+        this.journalParentView = viewProperties.nodeView();
         this.journalTopic = Objects.requireNonNull(journalTopic, "journalTopic cannot be null");
         this.entityFacade = entityFacade;
 
@@ -121,19 +139,32 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
      * @return a {@code ViewProperties} derived from the window-owned source view
      */
     protected static ViewProperties deriveSourceCoordinate(ViewProperties journalView) {
+        // Seed the legacy (FXML) shim from the journal's EFFECTIVE view; establishViewContext() then
+        // makes it a live mirror of this window's own contextView (ike-issues#666).
         ObservableViewNoOverride sourceView =
-                new ObservableViewNoOverride(journalView.parentView().toViewCoordinateRecord(), "Chapter view");
+                new ObservableViewNoOverride(journalView.nodeView().toViewCoordinateRecord(), "Chapter view");
         return sourceView.makeOverridableViewProperties("Chapter view");
     }
 
     /**
-     * Establishes the window's coordinate as a KL {@link KlContext} on its root pane, wrapping the same
-     * source view the derived {@link #getViewProperties()} is built over. KL areas placed in this window
-     * then resolve it via {@code viewForContext()} and re-render on {@code contextChanged()}. Subclasses
-     * call this once {@code paneWindow} is assigned (ike-issues#660).
+     * Establishes this window's coordinate of record as a KL {@link KlContext} on its root pane: a live
+     * child override of the journal's effective view ({@link #journalParentView}). KL areas placed in
+     * this window resolve it via {@code viewForContext()} and re-render on {@code contextChanged()}; the
+     * legacy {@link #getViewProperties()} shim is kept a live mirror of it for existing FXML bodies.
+     * Subclasses call this once {@code paneWindow} is assigned (ike-issues#666, #660).
      */
     protected void establishViewContext() {
-        KlContext.overView(this, getViewProperties().parentView(), getClass().getSimpleName());
+        // This window's coordinate of record is a live CHILD OVERRIDE of the journal's effective view
+        // (depth-independent cascade, ike-issues#666/#663): it inherits every facet it does not pin and
+        // tracks the journal for the rest, and its own pins survive journal changes (pin-wins).
+        contextView = new ObservableViewWithOverride((ObservableViewBase) journalParentView, getClass().getSimpleName());
+        KlContext.overView(this, contextView, getClass().getSimpleName());
+
+        // Keep the legacy (FXML) ViewProperties shim a live mirror of contextView so existing FXML
+        // bodies follow the same coordinate until they migrate to KL areas (#659 arc 3).
+        final ObservableViewNoOverride shimBase = getViewProperties().parentView();
+        shimBase.setValue(contextView.getValue());
+        contextView.addListener((obs, oldView, newView) -> shimBase.setValue(newView));
     }
 
     @Override
