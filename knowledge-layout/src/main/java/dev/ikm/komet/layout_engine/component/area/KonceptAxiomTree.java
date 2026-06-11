@@ -210,17 +210,24 @@ public final class KonceptAxiomTree {
      */
     private static Node roleRow(EntityVertex vertex, DiTreeEntity tree, ViewProperties viewProperties,
                                 PremiseType premiseType, ConceptFacade roleType) {
+        // Reserve fixed width for the ∃ and → operators and let the role-type and value badges share
+        // the remaining width (hgrow), each ellipsizing within its own share. Without this, a long
+        // badge ellipsizes into the arrow's space and crowds it out.
         HBox row = new HBox(4);
         row.setAlignment(Pos.CENTER_LEFT);
         row.getChildren().add(operatorGlyph("∃"));
         if (roleType != null) {
-            row.getChildren().add(conceptBadge(roleType.nid(), viewProperties, premiseType, false));
+            KonceptBadge roleBadge = conceptBadge(roleType.nid(), viewProperties, premiseType, false);
+            HBox.setHgrow(roleBadge, Priority.ALWAYS);
+            row.getChildren().add(roleBadge);
         }
         row.getChildren().add(operatorGlyph("→"));
         for (EntityVertex child : tree.successors(vertex)) {
             if (child.getMeaningNid() == TinkarTerm.CONCEPT_REFERENCE.nid()) {
                 ConceptFacade value = child.propertyFast(TinkarTerm.CONCEPT_REFERENCE);
-                row.getChildren().add(conceptBadge(value.nid(), viewProperties, premiseType, false));
+                KonceptBadge valueBadge = conceptBadge(value.nid(), viewProperties, premiseType, false);
+                HBox.setHgrow(valueBadge, Priority.ALWAYS);
+                row.getChildren().add(valueBadge);
             }
         }
         return row;
@@ -242,6 +249,9 @@ public final class KonceptAxiomTree {
     private static Label operatorGlyph(String glyph) {
         Label label = new Label(glyph);
         label.getStyleClass().add("koncept-axiom-op");
+        // Fixed: never shrink the operator below its glyph, so neighbouring badges ellipsize into
+        // their own share of the row rather than crowding out the ∃/→.
+        label.setMinWidth(Region.USE_PREF_SIZE);
         return label;
     }
 }
