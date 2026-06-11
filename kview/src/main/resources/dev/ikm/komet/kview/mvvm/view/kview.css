@@ -5944,6 +5944,7 @@ Styling a context menu for kview ui/ux controls
     -fx-font-family: "Noto Sans";
     -fx-font-size: 13px;
     -fx-text-fill: white;
+    -fx-font-weight: 500;
 }
 
 .klcontext-menu .menu-item > .graphic-container {

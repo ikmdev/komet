@@ -102,8 +102,10 @@ public class ComponentItemNode extends Region {
         iconImageView.imageProperty().unbind();
         textLabel.textProperty().unbind();
 
-        iconImageView.imageProperty().bind(componentItem.get().iconProperty());
-        textLabel.textProperty().bind(componentItem.get().textProperty());
+        if (componentItem.get() != null) {
+            iconImageView.imageProperty().bind(componentItem.get().iconProperty());
+            textLabel.textProperty().bind(componentItem.get().textProperty());
+        }
     }
 
     private void onContextMenuRequested(ContextMenuEvent contextMenuEvent) {
