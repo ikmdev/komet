@@ -177,8 +177,6 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.viewmodel.stamp to dev.ikm.komet.application, javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.genpurpose.control;
     opens dev.ikm.komet.kview.mvvm.view.genpurpose.control to javafx.fxml, org.carlfx.cognitive;
-    exports dev.ikm.komet.kview.mvvm.view.genpurpose.factory;
-    opens dev.ikm.komet.kview.mvvm.view.genpurpose.factory to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
     opens dev.ikm.komet.kview.mvvm.view.genpurpose.control.table to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
@@ -253,7 +251,4 @@ module dev.ikm.komet.kview {
             dev.ikm.komet.kview.klauthoring.readonly.stringfield.ReadOnlyStringFieldArea.Factory,
             dev.ikm.komet.kview.klauthoring.editable.stringfield.EditableStringFieldArea.Factory;
 
-    provides dev.ikm.komet.layout.KlPatternSemanticsFactory with
-            dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsStandardFactory,
-            dev.ikm.komet.kview.mvvm.view.genpurpose.factory.KlPatternSemanticsTableFactory;
 }

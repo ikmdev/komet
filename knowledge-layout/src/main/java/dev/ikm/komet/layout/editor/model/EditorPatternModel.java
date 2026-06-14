@@ -47,6 +47,14 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_T
 public class EditorPatternModel extends EditorGridNodeModel implements ParentGridModel {
     private static final Logger LOG = LoggerFactory.getLogger(EditorPatternModel.class);
 
+    /**
+     * Fully qualified name of the factory used by default when a pattern has no factory stored. Referenced
+     * by name (not type) because the factory implementations live in the downstream knowledge-layout-editor
+     * module; depending on them directly would create a cycle.
+     */
+    private static final String DEFAULT_FACTORY_CLASS_NAME =
+            "dev.ikm.komet.kleditorapp.factory.KlPatternSemanticsStandardFactory";
+
     private final ViewCalculator viewCalculator;
     private final PatternFacade patternFacade;
     private final int nid;
@@ -171,20 +179,23 @@ public class EditorPatternModel extends EditorGridNodeModel implements ParentGri
                 return;
             }
 
-            try {
-                Class<?> rawClass = Class.forName(className);
-                KlPatternSemanticsFactory instance = (KlPatternSemanticsFactory) rawClass.getDeclaredConstructor().newInstance();
-                setFactory(instance);
-            } catch (ClassNotFoundException | NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
+            setFactory(instantiateFactory(className));
         });
+    }
+
+    /**
+     * Reflectively instantiates a {@link KlPatternSemanticsFactory} from its fully qualified class name.
+     * The factory implementations live downstream (knowledge-layout-editor) and are reached by name only,
+     * keeping this base module free of a compile-time dependency on them.
+     */
+    private static KlPatternSemanticsFactory instantiateFactory(String className) {
+        try {
+            Class<?> rawClass = Class.forName(className);
+            return (KlPatternSemanticsFactory) rawClass.getDeclaredConstructor().newInstance();
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException
+                 | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -297,7 +308,7 @@ public class EditorPatternModel extends EditorGridNodeModel implements ParentGri
     public void setIdentifier(String identifier) { this.identifier.set(identifier); }
 
     // -- factory
-    private ObjectProperty<KlPatternSemanticsFactory> factory = new SimpleObjectProperty<>();
+    private ObjectProperty<KlPatternSemanticsFactory> factory = new SimpleObjectProperty<>(instantiateFactory(DEFAULT_FACTORY_CLASS_NAME));
     public KlPatternSemanticsFactory getFactory() { return factory.get(); }
     public void setFactory(KlPatternSemanticsFactory factory) { this.factory.set(factory); }
     public ObjectProperty<KlPatternSemanticsFactory> factoryProperty() { return factory; }

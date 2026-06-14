@@ -2,7 +2,7 @@ package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.kleditorapp.view.SelectionManager;
-import dev.ikm.komet.kleditorapp.view.control.EditorWindowBaseControl;
+import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;

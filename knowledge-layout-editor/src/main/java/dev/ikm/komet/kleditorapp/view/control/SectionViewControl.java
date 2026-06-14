@@ -1,9 +1,9 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
 import dev.ikm.komet.kleditorapp.view.GridDropInfo;
+import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;

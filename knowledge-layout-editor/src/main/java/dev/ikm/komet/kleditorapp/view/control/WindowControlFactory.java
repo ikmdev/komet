@@ -1,5 +1,6 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
+import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorGridNodeModel;
 import dev.ikm.komet.layout.editor.model.EditorModelBase;

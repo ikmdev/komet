@@ -4,6 +4,8 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.layout.GridPane;
 
+import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
+
 public abstract class GridBaseControl extends EditorWindowBaseControl {
 
     protected GridBaseControl() {

@@ -1,6 +1,6 @@
 package dev.ikm.komet.kleditorapp.view;
 
-import dev.ikm.komet.kleditorapp.view.control.EditorWindowBaseControl;
+import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
