@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface KlPatternSemanticsFactory {
     PatternSemanticsPresenter createJournalControl(EditorPatternModel editorPatternModel, ViewProperties viewProperties, ObservableComposer composer, UUID journalTopic);
 
-    EditorWindowBaseControl createEditorControl();
+    EditorWindowBaseControl createEditorControl(EditorPatternModel editorPatternModel);
 
     String displayName();
 }

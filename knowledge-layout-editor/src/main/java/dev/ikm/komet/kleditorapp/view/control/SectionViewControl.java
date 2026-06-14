@@ -64,7 +64,7 @@ public class SectionViewControl extends EditorWindowBaseControl {
         gridPane.onDragDroppedIntoTileProperty().bind(onDragDroppedIntoTileProperty());
         gridPane.onDragOverIntoTileProperty().bind(onDragOverIntoTileProperty());
         gridPane.setOnShouldDragAndDropRearrange(gridBaseControl ->
-                gridBaseControl instanceof PatternViewControl || gridBaseControl instanceof SupplementalAreaViewControl);
+                gridBaseControl instanceof PatternViewControlBase || gridBaseControl instanceof SupplementalAreaViewControl);
 
         // CSS
         titleContainer.getStyleClass().add("title-container");
@@ -72,7 +72,7 @@ public class SectionViewControl extends EditorWindowBaseControl {
         getStyleClass().add(DEFAULT_STYLE_CLASS);
     }
 
-    private void onPatternsChanged(ListChangeListener.Change<? extends PatternViewControl> change) {
+    private void onPatternsChanged(ListChangeListener.Change<? extends PatternViewControlBase> change) {
         while (change.next()) {
             if (change.wasAdded()) {
                 change.getAddedSubList().forEach(pattern -> {
@@ -149,8 +149,8 @@ public class SectionViewControl extends EditorWindowBaseControl {
     public void setNumberColumns(int number) { numberColumns.set(number); }
 
     // -- items
-    private final ObservableList<PatternViewControl> patterns = FXCollections.observableArrayList();
-    public ObservableList<PatternViewControl> getPatterns() { return patterns; }
+    private final ObservableList<PatternViewControlBase> patterns = FXCollections.observableArrayList();
+    public ObservableList<PatternViewControlBase> getPatterns() { return patterns; }
 
     // -- supplemental areas
     private final ObservableList<SupplementalAreaViewControl> supplementalAreas = FXCollections.observableArrayList();

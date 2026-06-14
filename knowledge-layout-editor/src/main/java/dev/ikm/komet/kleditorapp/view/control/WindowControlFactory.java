@@ -41,7 +41,31 @@ public class WindowControlFactory {
 
         updateMaps(editorPatternModel, patternViewControl);
 
+        // Populate the field tiles from the pattern's fields.
+        for (EditorFieldModel fieldModel : editorPatternModel.getFields()) {
+            patternViewControl.getFields().add(createFieldView(fieldModel));
+        }
+
         return patternViewControl;
+    }
+
+    public static PatternTableViewControl createPatternTableView(EditorPatternModel editorPatternModel) {
+        PatternTableViewControl patternTableViewControl = new PatternTableViewControl();
+
+        patternTableViewControl.titleProperty().bind(editorPatternModel.titleProperty());
+        patternTableViewControl.titleVisibleProperty().bindBidirectional(editorPatternModel.titleVisibleProperty());
+
+        // No numberColumns binding: a table's columns are its fields, not an author-set count.
+        bindGridNodeProperties(editorPatternModel, patternTableViewControl);
+
+        updateMaps(editorPatternModel, patternTableViewControl);
+
+        // A table renders each field as a column header (no FieldViewControls).
+        for (EditorFieldModel fieldModel : editorPatternModel.getFields()) {
+            patternTableViewControl.addColumn(fieldModel.titleProperty());
+        }
+
+        return patternTableViewControl;
     }
 
     public static FieldViewControl createFieldView(EditorFieldModel editorFieldModel) {

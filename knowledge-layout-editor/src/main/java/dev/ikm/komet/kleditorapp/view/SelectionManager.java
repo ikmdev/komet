@@ -3,6 +3,7 @@ package dev.ikm.komet.kleditorapp.view;
 import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
+import dev.ikm.komet.kleditorapp.view.control.PatternViewControlBase;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -33,23 +34,25 @@ public class SelectionManager {
     }
 
     private void setupSectionView(SectionViewControl sectionViewControl) {
-        sectionViewControl.getPatterns().forEach(pattern -> {
-            setupListenersForSelection(pattern);
-            pattern.getFields().forEach(this::setupListenersForSelection);
-        });
-        sectionViewControl.getPatterns().addListener((ListChangeListener<? super PatternViewControl>) sectionChange -> onPatternViewsChanged(sectionChange));
+        sectionViewControl.getPatterns().forEach(this::setupPatternForSelection);
+        sectionViewControl.getPatterns().addListener((ListChangeListener<? super PatternViewControlBase>) sectionChange -> onPatternViewsChanged(sectionChange));
 
         setupListenersForSelection(sectionViewControl);
     }
 
-    private void onPatternViewsChanged(ListChangeListener.Change<? extends PatternViewControl> change) {
+    private void onPatternViewsChanged(ListChangeListener.Change<? extends PatternViewControlBase> change) {
         while (change.next()) {
             if (change.wasAdded()) {
-                change.getAddedSubList().forEach(pattern -> {
-                    setupListenersForSelection(pattern);
-                    pattern.getFields().forEach(this::setupListenersForSelection);
-                });
+                change.getAddedSubList().forEach(this::setupPatternForSelection);
             }
+        }
+    }
+
+    private void setupPatternForSelection(PatternViewControlBase pattern) {
+        setupListenersForSelection(pattern);
+        // Only the standard pattern view has selectable field tiles; the table renders fields as columns.
+        if (pattern instanceof PatternViewControl patternViewControl) {
+            patternViewControl.getFields().forEach(this::setupListenersForSelection);
         }
     }
 

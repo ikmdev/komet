@@ -3,6 +3,7 @@ package dev.ikm.komet.kleditorapp.view;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
+import dev.ikm.komet.kleditorapp.view.control.PatternViewControlBase;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SupplementalAreaViewControl;
 import dev.ikm.komet.kleditorapp.view.control.WindowControlFactory;
@@ -70,7 +71,7 @@ public class KLEditorWindowController {
             }
             if (change.wasRemoved()) {
                 change.getRemoved().forEach(patternModel -> {
-                    PatternViewControl patternViewControl = (PatternViewControl) WindowControlFactory.getView(patternModel);
+                    PatternViewControlBase patternViewControl = (PatternViewControlBase) WindowControlFactory.getView(patternModel);
                     sectionViewControl.getPatterns().remove(patternViewControl);
                 });
             }
@@ -100,14 +101,49 @@ public class KLEditorWindowController {
     }
 
     private void addPatternView(EditorSectionModel editorSectionModel, EditorPatternModel patternModel) {
-        PatternViewControl patternViewControl = WindowControlFactory.createPatternView(patternModel);
-
-        addFieldViews(patternModel, patternModel.getFields());
-        patternModel.getFields().addListener(
-                (ListChangeListener<? super EditorFieldModel>) change -> onPatternModelFieldsChanged(patternModel, patternViewControl, change));
-
         SectionViewControl sectionViewControl = (SectionViewControl) WindowControlFactory.getView(editorSectionModel);
-        sectionViewControl.getPatterns().add(patternViewControl);
+        sectionViewControl.getPatterns().add(createPatternEditorControl(patternModel));
+
+        // Re-render the pattern with the newly selected factory's editor control when the display type changes.
+        patternModel.factoryProperty().addListener((obs, oldFactory, newFactory) -> swapPatternView(editorSectionModel, patternModel));
+
+        // Keep the displayed control's field views in sync as the model's fields change.
+        patternModel.getFields().addListener(
+                (ListChangeListener<? super EditorFieldModel>) change -> onPatternModelFieldsChanged(patternModel, change));
+    }
+
+    /**
+     * Builds the editor-side control for a pattern from its currently selected factory. The factory both
+     * creates and populates the control (its field views included), so no separate field-population pass
+     * is needed here.
+     */
+    private PatternViewControlBase createPatternEditorControl(EditorPatternModel patternModel) {
+        return (PatternViewControlBase) patternModel.getFactory().createEditorControl(patternModel);
+    }
+
+    /**
+     * Replaces the displayed pattern control with the one produced by the now-selected factory, keeping its
+     * place in the section and preserving selection.
+     */
+    private void swapPatternView(EditorSectionModel editorSectionModel, EditorPatternModel patternModel) {
+        SectionViewControl sectionViewControl = (SectionViewControl) WindowControlFactory.getView(editorSectionModel);
+        PatternViewControlBase oldView = (PatternViewControlBase) WindowControlFactory.getView(patternModel);
+
+        boolean wasSelected = SelectionManager.instance().getSelectedControl() == oldView;
+
+        // createEditorControl re-registers the model -> view mapping, so build the replacement first.
+        PatternViewControlBase newView = createPatternEditorControl(patternModel);
+
+        int index = sectionViewControl.getPatterns().indexOf(oldView);
+        if (index >= 0) {
+            sectionViewControl.getPatterns().set(index, newView);
+        } else {
+            sectionViewControl.getPatterns().add(newView);
+        }
+
+        if (wasSelected) {
+            SelectionManager.instance().setSelectedControl(newView);
+        }
     }
 
     private void onSectionModelSupplementalAreasChanged(EditorSectionModel sectionModel, SectionViewControl sectionViewControl,
@@ -138,11 +174,19 @@ public class KLEditorWindowController {
         sectionViewControl.getSupplementalAreas().add(areaView);
     }
 
-    private void onPatternModelFieldsChanged(EditorPatternModel patternModel, PatternViewControl patternViewControl,
+    private void onPatternModelFieldsChanged(EditorPatternModel patternModel,
                                              ListChangeListener.Change<? extends EditorFieldModel> change) {
+        // Field tiles only exist in the standard pattern view; other representations (e.g. the table) build
+        // their own columns from the model when (re)rendered. Resolve the current view on each change so this
+        // keeps working after the pattern is re-rendered with a different factory's editor control.
+        if (!(WindowControlFactory.getView(patternModel) instanceof PatternViewControl patternViewControl)) {
+            return;
+        }
         while(change.next()) {
             if (change.wasAdded()) {
-                addFieldViews(patternModel, change.getAddedSubList());
+                for (EditorFieldModel fieldModel : change.getAddedSubList()) {
+                    patternViewControl.getFields().add(WindowControlFactory.createFieldView(fieldModel));
+                }
             }
             if (change.wasRemoved()) {
                 change.getRemoved().forEach(fieldModel -> {
@@ -151,19 +195,6 @@ public class KLEditorWindowController {
                 });
             }
         }
-    }
-
-    private void addFieldViews(EditorPatternModel patternModel, List<? extends EditorFieldModel> fieldModels) {
-        for (EditorFieldModel fieldModel : fieldModels) {
-            addFieldView(patternModel, fieldModel);
-        }
-    }
-
-    private void addFieldView(EditorPatternModel patternModel, EditorFieldModel fieldModel) {
-        FieldViewControl fieldViewControl = WindowControlFactory.createFieldView(fieldModel);
-
-        PatternViewControl patternViewControl = (PatternViewControl) WindowControlFactory.getView(patternModel);
-        patternViewControl.getFields().add(fieldViewControl);
     }
 
     private void setupDragAndDrop(SectionViewControl sectionViewControl) {
