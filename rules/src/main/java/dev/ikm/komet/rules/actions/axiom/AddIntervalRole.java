@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.rules.actions.axiom;
 
+import java.math.BigDecimal;
+
 import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalAxiom;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
@@ -39,8 +41,8 @@ public class AddIntervalRole extends AbstractAxiomAction {
 	@Override
 	public void doAction(ActionEvent t, AxiomSubjectRecord axiomSubjectRecord, EditCoordinateRecord editCoordinate) {
 		LogicalExpressionBuilder leb = new LogicalExpressionBuilder(axiomSubjectRecord.axiomTree());
-		LogicalAxiom.Atom.TypedAtom.IntervalRole role = leb.IntervalRole(TinkarTerm.UNMODELED_ROLE_CONCEPT, 0, true, 10,
-				true, TinkarTerm.UNMODELED_ROLE_CONCEPT);
+		LogicalAxiom.Atom.TypedAtom.IntervalRole role = leb.IntervalRole(TinkarTerm.UNMODELED_ROLE_CONCEPT,
+				BigDecimal.valueOf(0), true, BigDecimal.valueOf(10), true, TinkarTerm.UNMODELED_ROLE_CONCEPT);
 		leb.addToFirstAnd(axiomSubjectRecord.axiomIndex(), role);
 		putUpdatedLogicalExpression(editCoordinate, leb.build());
 	}

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.rules.actions.axiom;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import dev.ikm.elk.snomed.interval.Interval;
@@ -56,14 +57,14 @@ public class ChangeIntervalBound extends AbstractAxiomAction {
 		if (!result.isPresent())
 			return;
 		try {
-			int value = Integer.parseInt(result.get());
+			BigDecimal value = new BigDecimal(result.get());
 			if (lower) {
 				interval.setLowerBound(value);
 			} else {
 				interval.setUpperBound(value);
 			}
 		} catch (NumberFormatException ex) {
-			new Alert(AlertType.ERROR, "Enter an integer").showAndWait();
+			new Alert(AlertType.ERROR, "Enter a number").showAndWait();
 			return;
 		}
 		LogicalExpressionBuilder leb = new LogicalExpressionBuilder(axiomSubjectRecord.axiomTree());
