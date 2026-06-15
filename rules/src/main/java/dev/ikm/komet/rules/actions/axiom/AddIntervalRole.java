@@ -23,6 +23,9 @@ import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
+
+import java.math.BigDecimal;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +42,8 @@ public class AddIntervalRole extends AbstractAxiomAction {
 	@Override
 	public void doAction(ActionEvent t, AxiomSubjectRecord axiomSubjectRecord, EditCoordinateRecord editCoordinate) {
 		LogicalExpressionBuilder leb = new LogicalExpressionBuilder(axiomSubjectRecord.axiomTree());
-		LogicalAxiom.Atom.TypedAtom.IntervalRole role = leb.IntervalRole(TinkarTerm.UNMODELED_ROLE_CONCEPT, 0, true, 10,
-				true, TinkarTerm.UNMODELED_ROLE_CONCEPT);
+		LogicalAxiom.Atom.TypedAtom.IntervalRole role = leb.IntervalRole(TinkarTerm.UNMODELED_ROLE_CONCEPT,
+				new BigDecimal(0), true, new BigDecimal(10), true, TinkarTerm.UNMODELED_ROLE_CONCEPT);
 		leb.addToFirstAnd(axiomSubjectRecord.axiomIndex(), role);
 		putUpdatedLogicalExpression(editCoordinate, leb.build());
 	}
