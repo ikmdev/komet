@@ -4,6 +4,7 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ObservableViewWithOverride;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.layout.*;
 import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.layout.context.KlContextProvider;
@@ -65,6 +66,9 @@ public final class ViewContext implements KlContext, KlStateCommands {
     // Widened from ObservableViewNoOverride to ObservableView so a context's view may itself be an
     // override of its parent context's view — the depth-independent cascade (ike-issues#666, #663).
     final ObservableView observableView;
+    // The popup-ready ViewProperties (parentView = NoOverride inherited baseline, nodeView = this context's
+    // WithOverride), present only for contexts created as a child override (#666); null otherwise.
+    private ViewProperties viewProperties;
     final PublicIdStringKey publicIdStringKey;
     final KlPeerable klPeerable;
 
@@ -165,6 +169,11 @@ public final class ViewContext implements KlContext, KlStateCommands {
         return observableView;
     }
 
+    @Override
+    public ViewProperties viewProperties() {
+        return viewProperties;
+    }
+
     public static ViewContext create(KlContextProvider contextProvider, ViewCoordinateRecord viewCoordinateRecord, UUID contextId, String contextName) {
         PublicIdStringKey<KlContext> publicIdStringKey = new PublicIdStringKey<>(PublicIds.of(contextId), contextName);
         return new ViewContext(contextProvider, viewCoordinateRecord, publicIdStringKey);
@@ -205,10 +214,18 @@ public final class ViewContext implements KlContext, KlStateCommands {
      */
     public static ViewContext createChildOf(KlContextProvider contextProvider,
                                             KlContext parentContext, String contextName) {
+        ObservableView parentView = parentContext.viewCoordinate();
         ObservableViewWithOverride childView =
-                new ObservableViewWithOverride((ObservableViewBase) parentContext.viewCoordinate(), contextName);
+                new ObservableViewWithOverride((ObservableViewBase) parentView, contextName);
+        // The popup's inherited baseline: a NoOverride snapshot of the parent's effective view, kept live so
+        // an ancestor coordinate change flows down to this context's un-pinned facets (#666 resolve-through).
+        ObservableViewNoOverride inheritedBaseline =
+                new ObservableViewNoOverride(parentView.toViewCoordinateRecord(), contextName + " inherited");
+        parentView.addListener((obs, oldValue, newValue) -> inheritedBaseline.setValue(newValue));
         PublicIdStringKey<KlContext> publicIdStringKey = new PublicIdStringKey<>(PublicIds.newRandom(), contextName);
-        return new ViewContext(contextProvider, childView, publicIdStringKey);
+        ViewContext viewContext = new ViewContext(contextProvider, childView, publicIdStringKey);
+        viewContext.viewProperties = new ViewProperties(childView, inheritedBaseline);
+        return viewContext;
     }
 
     public static ViewContext restore(KometPreferences preferences, KlContextProvider contextProvider) {

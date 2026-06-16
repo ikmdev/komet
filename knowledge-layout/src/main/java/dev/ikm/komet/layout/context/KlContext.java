@@ -2,6 +2,7 @@ package dev.ikm.komet.layout.context;
 
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.layout.KlPeerable;
 import dev.ikm.komet.layout.preferences.PropertyWithDefault;
 import dev.ikm.komet.layout_engine.component.menu.ViewMenuFactory;
@@ -111,6 +112,19 @@ public interface KlContext {
      *         for managing and observing coordinate states within the layout context.
      */
     ObservableView viewCoordinate();
+
+    /**
+     * Returns the popup-ready {@link ViewProperties} for this context — {@code parentView()} is the
+     * inherited (NoOverride) baseline and {@code nodeView()} is this context's overridable view — for
+     * contexts created as a child override of their enclosing context (ike-issues#666). Returns
+     * {@code null} for contexts that have no overridable view (e.g. the KnowledgeBaseContext terminus),
+     * so callers must null-check.
+     *
+     * @return this context's overridable {@link ViewProperties}, or {@code null} if it has none
+     */
+    default ViewProperties viewProperties() {
+        return null;
+    }
 
     /**
      * Builds a coordinate-editing {@link Menu} bound to this context's {@link #viewCoordinate() view},
