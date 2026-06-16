@@ -29,7 +29,8 @@ import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPatt
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.AXIOM;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
@@ -171,6 +172,8 @@ public class ConceptController {
 
     @FXML
     private MenuButton coordinatesMenuButton;
+
+    private FilterOptionsPopup filterOptionsPopup;
 
     /**
      * model required for the filter coordinates menu, used with coordinatesMenuButton
@@ -344,10 +347,11 @@ public class ConceptController {
     @FXML
     public void initialize() {
 
-        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
-        // replacing the kview FilterOptionsPopup.
-        setupViewContextMenu(coordinatesMenuButton, detailsOuterBorderPane,
-                conceptViewModel.getViewProperties(), this::updateView);
+        // Drive the coordinates menu from the relocated FilterOptionsPopup (ike-issues#661); the popup
+        // writes the window's nodeView override, which the window's KL context + areas resolve through.
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(conceptViewModel.getViewProperties(),
+                FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, detailsOuterBorderPane,
+                coordinatesMenuButton, this::updateView);
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 

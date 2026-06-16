@@ -44,7 +44,7 @@ import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.view.common.SVGConstants.DUPLICATE_SVG_PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
@@ -329,12 +329,13 @@ public class PatternDetailsController {
 
     @FXML
     private void initialize() {
-        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
-        // replacing the kview FilterOptionsPopup.
-        setupViewContextMenu(
-                coordinatesMenuButton,
-                detailsOuterBorderPane,
+        // Drive the coordinates menu from the relocated FilterOptionsPopup (ike-issues#661); the popup
+        // writes the window's nodeView override, which the window's KL context + areas resolve through.
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(
                 patternViewModel.getViewProperties(),
+                FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW,
+                detailsOuterBorderPane,
+                coordinatesMenuButton,
                 patternViewModel::refreshForCoordinate
         );
 
