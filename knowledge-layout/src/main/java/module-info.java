@@ -35,6 +35,10 @@ module dev.ikm.komet.layout {
     opens dev.ikm.komet.layout to javafx.fxml;
     opens dev.ikm.layout.app to javafx.fxml;
 
+    // Pattern semantics factories are provided downstream (knowledge-layout-editor) but discovered
+    // and shared here via KlPatternSemanticsFactories, so the lookup lives in one place.
+    uses dev.ikm.komet.layout.KlPatternSemanticsFactory;
+
     // Primary service interface for discovering ALL area factories (built-in and plugins)
     provides dev.ikm.komet.layout.KlArea.Factory
             with dev.ikm.komet.layout_engine.component.area.BooleanFieldArea.Factory,

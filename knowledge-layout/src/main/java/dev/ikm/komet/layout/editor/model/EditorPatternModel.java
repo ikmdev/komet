@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout.editor.model;
 
+import dev.ikm.komet.layout.KlPatternSemanticsFactories;
 import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.editor.property.KlPropertySet;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -26,7 +27,6 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -191,23 +191,10 @@ public class EditorPatternModel extends EditorGridNodeModel {
                 return;
             }
 
-            setFactory(instantiateFactory(className));
+            KlPatternSemanticsFactories.byClassName(className).ifPresentOrElse(
+                    this::setFactory,
+                    () -> LOG.warn("Unknown pattern semantics factory '{}'; keeping default", className));
         });
-    }
-
-    /**
-     * Reflectively instantiates a {@link KlPatternSemanticsFactory} from its fully qualified class name.
-     * The factory implementations live downstream (knowledge-layout-editor) and are reached by name only,
-     * keeping this base module free of a compile-time dependency on them.
-     */
-    private static KlPatternSemanticsFactory instantiateFactory(String className) {
-        try {
-            Class<?> rawClass = Class.forName(className);
-            return (KlPatternSemanticsFactory) rawClass.getDeclaredConstructor().newInstance();
-        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException
-                 | InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -315,7 +302,10 @@ public class EditorPatternModel extends EditorGridNodeModel {
     public void setIdentifier(String identifier) { this.identifier.set(identifier); }
 
     // -- factory
-    private ObjectProperty<KlPatternSemanticsFactory> factory = new SimpleObjectProperty<>(instantiateFactory(DEFAULT_FACTORY_CLASS_NAME));
+    private ObjectProperty<KlPatternSemanticsFactory> factory = new SimpleObjectProperty<>(
+            KlPatternSemanticsFactories.byClassName(DEFAULT_FACTORY_CLASS_NAME)
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Default pattern semantics factory not registered: " + DEFAULT_FACTORY_CLASS_NAME)));
     public KlPatternSemanticsFactory getFactory() { return factory.get(); }
     public void setFactory(KlPatternSemanticsFactory factory) { this.factory.set(factory); }
     public ObjectProperty<KlPatternSemanticsFactory> factoryProperty() { return factory; }

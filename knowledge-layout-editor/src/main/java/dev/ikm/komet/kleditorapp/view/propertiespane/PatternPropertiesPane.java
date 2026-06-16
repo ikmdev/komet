@@ -1,6 +1,7 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kview.controls.ToggleSwitch;
+import dev.ikm.komet.layout.KlPatternSemanticsFactories;
 import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.property.KlPropertySet;
@@ -16,8 +17,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
-
-import java.util.ServiceLoader;
 
 public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternModel> {
     public static final String DEFAULT_STYLE_CLASS = "pattern-properties";
@@ -199,9 +198,8 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     }
 
     private void populateDisplayComboBox() {
-        ServiceLoader<KlPatternSemanticsFactory> loader = ServiceLoader.load(KlPatternSemanticsFactory.class);
-        for (KlPatternSemanticsFactory factory : loader) {
-            displayComboBox.getItems().add(factory);
-        }
+        // Use the shared factory instances so the combo's selected value (set by the model from the
+        // same registry) matches a list item and renders its display name rather than the class name.
+        displayComboBox.getItems().setAll(KlPatternSemanticsFactories.all());
     }
 }

@@ -9,6 +9,12 @@ import dev.ikm.komet.layout.editor.property.KlPropertySet;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * A stateless singleton factory for a pattern's semantics. The canonical instances are discovered
+ * once via {@link java.util.ServiceLoader} and shared through {@link KlPatternSemanticsFactories};
+ * resolve factories from there (including by stored class name) rather than instantiating them, so
+ * that every reference to a given factory is the same object.
+ */
 public interface KlPatternSemanticsFactory {
     PatternSemanticsPresenter createJournalControl(EditorPatternModel editorPatternModel, ViewProperties viewProperties, ObservableComposer composer, UUID journalTopic);
 

@@ -59,8 +59,6 @@ open module dev.ikm.komet.kleditorapp {
 
     uses dev.ikm.komet.layout.area.KlSupplementalArea.Factory;
 
-    uses dev.ikm.komet.layout.KlPatternSemanticsFactory;
-
     provides dev.ikm.komet.layout.KlPatternSemanticsFactory with
             dev.ikm.komet.kleditorapp.factory.KlPatternSemanticsStandardFactory,
             dev.ikm.komet.kleditorapp.factory.KlPatternSemanticsTableFactory;
