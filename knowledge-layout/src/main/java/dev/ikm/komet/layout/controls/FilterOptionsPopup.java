@@ -1,8 +1,7 @@
-package dev.ikm.komet.kview.controls;
+package dev.ikm.komet.layout.controls;
 
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
-import dev.ikm.komet.kview.controls.skin.FilterOptionsPopupSkin;
-import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.komet.layout.controls.skin.FilterOptionsPopupSkin;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -76,14 +75,14 @@ public class FilterOptionsPopup extends PopupControl {
     }
 
     // navigatorProperty
-    private final ObjectProperty<Navigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator");
-    public final ObjectProperty<Navigator> navigatorProperty() {
+    private final ObjectProperty<FilterOptionsNavigator> navigatorProperty = new SimpleObjectProperty<>(this, "navigator");
+    public final ObjectProperty<FilterOptionsNavigator> navigatorProperty() {
        return navigatorProperty;
     }
-    public final Navigator getNavigator() {
+    public final FilterOptionsNavigator getNavigator() {
        return navigatorProperty.get();
     }
-    public final void setNavigator(Navigator value) {
+    public final void setNavigator(FilterOptionsNavigator value) {
         navigatorProperty.set(value);
     }
 

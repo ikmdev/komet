@@ -1,6 +1,6 @@
-package dev.ikm.komet.kview.controls;
+package dev.ikm.komet.layout.controls;
 
-import dev.ikm.komet.kview.controls.skin.RangeCalendarSkin;
+import dev.ikm.komet.layout.controls.skin.RangeCalendarSkin;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;

@@ -1,6 +1,6 @@
-package dev.ikm.komet.kview.controls;
+package dev.ikm.komet.layout.controls;
 
-import dev.ikm.komet.kview.controls.skin.DateFilterTitledPaneSkin;
+import dev.ikm.komet.layout.controls.skin.DateFilterTitledPaneSkin;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Skin;

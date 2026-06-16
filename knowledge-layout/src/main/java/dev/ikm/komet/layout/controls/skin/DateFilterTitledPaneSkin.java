@@ -1,14 +1,14 @@
-package dev.ikm.komet.kview.controls.skin;
+package dev.ikm.komet.layout.controls.skin;
 
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
+import static dev.ikm.komet.layout.controls.RangeCalendarControl.DATE_FORMATTER;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import dev.ikm.komet.kview.controls.DateFilterTitledPane;
-import dev.ikm.komet.kview.controls.DateRange;
-import dev.ikm.komet.kview.controls.FilterOptions;
-import dev.ikm.komet.kview.controls.FilterOptionsUtils;
-import dev.ikm.komet.kview.controls.IconRegion;
-import dev.ikm.komet.kview.controls.RangeCalendarControl;
-import dev.ikm.komet.kview.controls.TruncatedTextFlow;
+import dev.ikm.komet.layout.controls.DateFilterTitledPane;
+import dev.ikm.komet.layout.controls.DateRange;
+import dev.ikm.komet.layout.controls.FilterOptions;
+import dev.ikm.komet.layout.controls.FilterOptionsUtils;
+import dev.ikm.komet.layout.controls.IconRegion;
+import dev.ikm.komet.layout.controls.RangeCalendarControl;
+import dev.ikm.komet.layout.controls.TruncatedTextFlow;
 import javafx.collections.FXCollections;
 import javafx.css.PseudoClass;
 import javafx.scene.Parent;
@@ -35,7 +35,7 @@ import java.util.stream.*;
 
 public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
-    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
+    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.layout.controls.filter-options");
     private static final PseudoClass MODIFIED_TITLED_PANE = PseudoClass.getPseudoClass("modified");
     private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private static final PseudoClass TALLER_TITLE_AREA = PseudoClass.getPseudoClass("taller");

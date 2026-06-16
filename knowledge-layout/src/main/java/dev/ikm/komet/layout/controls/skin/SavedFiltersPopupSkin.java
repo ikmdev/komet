@@ -1,8 +1,8 @@
-package dev.ikm.komet.kview.controls.skin;
+package dev.ikm.komet.layout.controls.skin;
 
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
-import dev.ikm.komet.kview.controls.IconRegion;
-import dev.ikm.komet.kview.controls.SavedFiltersPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.IconRegion;
+import dev.ikm.komet.layout.controls.SavedFiltersPopup;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 
 public class SavedFiltersPopupSkin implements Skin<SavedFiltersPopup> {
 
-    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
+    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.layout.controls.filter-options");
     private static final String STYLE_SHEETS = FilterOptionsPopup.class.getResource("filter-options-popup.css").toExternalForm();
 
     private final SavedFiltersPopup control;

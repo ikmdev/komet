@@ -1,6 +1,6 @@
-package dev.ikm.komet.kview.controls;
+package dev.ikm.komet.layout.controls;
 
-import dev.ikm.komet.kview.controls.skin.LangFilterTitledPaneSkin;
+import dev.ikm.komet.layout.controls.skin.LangFilterTitledPaneSkin;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;

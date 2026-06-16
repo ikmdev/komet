@@ -17,7 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.landingpage;
 
 import static dev.ikm.komet.framework.controls.TimeUtils.calculateTimeAgoWithPeriodAndDuration;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE;
+import static dev.ikm.komet.layout.controls.FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE;
 import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.CREATE_JOURNAL_TILE;
@@ -58,7 +58,8 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.EditCoordinateOptionsPopup;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
 import dev.ikm.komet.kview.controls.NotificationPopup;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.DeleteJournalEvent;
@@ -730,7 +731,7 @@ public class LandingPageController implements BasicController {
         filterOptionsPopup.setStyle("-popup-pref-height: " + prefHeight);
         // Bind the popup's filter options to the view model's filter options. Update details if options change.
         viewProperties.parentView().subscribe((_, nv) -> {
-            filterOptionsPopup.setNavigator(new ViewNavigator(nv));
+            filterOptionsPopup.setNavigator(new GraphFilterOptionsNavigator(new ViewNavigator(nv)));
             if (updateViewBlock != null) {
                 updateViewBlock.run();
             }
@@ -755,7 +756,7 @@ public class LandingPageController implements BasicController {
         coordinatesButton.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (filterOptionsPopup.getNavigator() == null) {
                 Navigator navigator = new ViewNavigator(viewProperties.nodeView());
-                filterOptionsPopup.setNavigator(navigator);
+                filterOptionsPopup.setNavigator(new GraphFilterOptionsNavigator(navigator));
             }
             if (e.getButton() == MouseButton.PRIMARY) {
                 if (filterOptionsPopup.isShowing()) {

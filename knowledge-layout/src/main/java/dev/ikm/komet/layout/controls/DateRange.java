@@ -1,11 +1,11 @@
-package dev.ikm.komet.kview.controls;
+package dev.ikm.komet.layout.controls;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
+import static dev.ikm.komet.layout.controls.RangeCalendarControl.DATE_FORMATTER;
+import static dev.ikm.komet.layout.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
 
 public record DateRange(int index, LocalDate startDate, LocalDate endDate, boolean exclude) {
 

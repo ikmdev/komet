@@ -1,7 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.common;
 
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
 import dev.ikm.komet.layout.KlView;
 import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.navigator.graph.Navigator;
@@ -47,7 +48,7 @@ public class ChapterWindowHelper {
 
         // Bind the popup's filter options to the view model's filter options. Update details if options change.
         viewProperties.nodeView().subscribe((_, nv) -> {
-            filterOptionsPopup.setNavigator(new ViewNavigator(nv));
+            filterOptionsPopup.setNavigator(new GraphFilterOptionsNavigator(new ViewNavigator(nv)));
             updateViewBlock.run();
         });
 
@@ -70,7 +71,7 @@ public class ChapterWindowHelper {
         coordinatesMenuButton.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (filterOptionsPopup.getNavigator() == null) {
                 Navigator navigator = new ViewNavigator(viewProperties.nodeView());
-                filterOptionsPopup.setNavigator(navigator);
+                filterOptionsPopup.setNavigator(new GraphFilterOptionsNavigator(navigator));
             }
             if (e.getButton() == MouseButton.PRIMARY) {
                 if (filterOptionsPopup.isShowing()) {

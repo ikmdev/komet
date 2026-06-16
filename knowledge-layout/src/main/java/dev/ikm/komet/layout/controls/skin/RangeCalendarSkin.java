@@ -1,11 +1,11 @@
-package dev.ikm.komet.kview.controls.skin;
+package dev.ikm.komet.layout.controls.skin;
 
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DATE_FORMATTER;
-import static dev.ikm.komet.kview.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
-import dev.ikm.komet.kview.controls.DateRange;
-import dev.ikm.komet.kview.controls.IconRegion;
-import dev.ikm.komet.kview.controls.RangeCalendarControl;
-import dev.ikm.komet.kview.controls.TwelveHourTimeSpinner;
+import static dev.ikm.komet.layout.controls.RangeCalendarControl.DATE_FORMATTER;
+import static dev.ikm.komet.layout.controls.RangeCalendarControl.DEFAULT_DATE_PATTERN;
+import dev.ikm.komet.layout.controls.DateRange;
+import dev.ikm.komet.layout.controls.IconRegion;
+import dev.ikm.komet.layout.controls.RangeCalendarControl;
+import dev.ikm.komet.layout.controls.TwelveHourTimeSpinner;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -60,7 +60,7 @@ import java.util.function.*;
 public class RangeCalendarSkin implements Skin<RangeCalendarControl> {
     private static final Logger LOG = LoggerFactory.getLogger(RangeCalendarSkin.class);
 
-    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.range-calendar");
+    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.layout.controls.range-calendar");
 
     private static final List<String> DATE_PATTERN_LIST = List.of(DEFAULT_DATE_PATTERN, "M/d/yyyy", "MMddyyyy",
             "MM.dd.yyyy", "M.d.yyyy", "MM-dd-yyyy", "M-d-yyyy");

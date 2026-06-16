@@ -1,7 +1,8 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
-import dev.ikm.komet.kview.controls.IconRegion;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
+import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.navigator.graph.Navigator;
@@ -146,7 +147,8 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
         filterOptionsPopup = new FilterOptionsPopup(FilterOptionsPopup.FILTER_TYPE.NAVIGATOR, control.getViewProperties().parentView());
 
-        filterOptionsPopup.navigatorProperty().bind(control.navigatorProperty());
+        subscription = subscription.and(control.navigatorProperty().subscribe(nav ->
+                filterOptionsPopup.setNavigator(nav == null ? null : new GraphFilterOptionsNavigator(nav))));
         filterOptionsPopup.containerProperty().bind(control.containerProperty());
         filterOptionsPopup.containerProperty().subscribe(container -> {
             if (container == null) {
@@ -261,7 +263,6 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         textField.onActionProperty().unbind();
         closePane.visibleProperty().unbind();
         closePane.managedProperty().unbind();
-        filterOptionsPopup.navigatorProperty().unbind();
         filterOptionsPopup.containerProperty().unbind();
         filterOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
         super.dispose();

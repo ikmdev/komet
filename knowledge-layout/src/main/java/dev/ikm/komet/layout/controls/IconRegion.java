@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.controls;
+package dev.ikm.komet.layout.controls;
 
 import javafx.scene.layout.Region;
 

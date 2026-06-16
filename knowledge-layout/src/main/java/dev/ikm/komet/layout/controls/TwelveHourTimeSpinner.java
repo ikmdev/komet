@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.controls;
+package dev.ikm.komet.layout.controls;
 
 // Source - https://stackoverflow.com/a/32617768
 // https://stackoverflow.com/a/79881551/2430677

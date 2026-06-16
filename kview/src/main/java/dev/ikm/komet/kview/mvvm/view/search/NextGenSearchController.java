@@ -32,7 +32,8 @@ import dev.ikm.komet.framework.search.HighlightedSegments;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
 import dev.ikm.komet.kview.events.SearchSortOptionEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
@@ -183,7 +184,7 @@ public class NextGenSearchController {
         // listen to changes to the current overrideable view, after changes coming from the parentView
         // or the FilterOptionsPopup, updating the Navigator, and triggering the search
         getViewProperties().nodeView().subscribe((_, nv) -> {
-            filterOptionsPopup.setNavigator(new ViewNavigator(nv));
+            filterOptionsPopup.setNavigator(new GraphFilterOptionsNavigator(new ViewNavigator(nv)));
             doSearch(new ActionEvent(null, null));
         });
 
@@ -206,7 +207,7 @@ public class NextGenSearchController {
         filterPane.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (filterOptionsPopup.getNavigator() == null) {
                 Navigator navigator = new ViewNavigator(getViewProperties().nodeView());
-                filterOptionsPopup.setNavigator(navigator);
+                filterOptionsPopup.setNavigator(new GraphFilterOptionsNavigator(navigator));
             }
             if (e.getButton() == MouseButton.PRIMARY) {
                 if (filterOptionsPopup.isShowing()) {

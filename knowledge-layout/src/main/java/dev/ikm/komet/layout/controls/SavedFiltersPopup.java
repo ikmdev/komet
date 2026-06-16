@@ -1,6 +1,6 @@
-package dev.ikm.komet.kview.controls;
+package dev.ikm.komet.layout.controls;
 
-import dev.ikm.komet.kview.controls.skin.SavedFiltersPopupSkin;
+import dev.ikm.komet.layout.controls.skin.SavedFiltersPopupSkin;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.PopupControl;

@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
+import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ObjectProperty;

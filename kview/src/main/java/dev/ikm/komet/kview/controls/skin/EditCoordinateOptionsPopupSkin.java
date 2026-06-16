@@ -2,7 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.kview.controls.EditCoordinateOptionsPopup;
-import dev.ikm.komet.kview.controls.IconRegion;
+import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;

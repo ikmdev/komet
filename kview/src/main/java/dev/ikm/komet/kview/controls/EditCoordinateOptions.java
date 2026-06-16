@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
+import dev.ikm.komet.layout.controls.FilterOptions;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.collections.FXCollections;

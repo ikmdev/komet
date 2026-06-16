@@ -1,10 +1,10 @@
-package dev.ikm.komet.kview.controls.skin;
+package dev.ikm.komet.layout.controls.skin;
 
-import dev.ikm.komet.kview.controls.FilterOptions;
-import dev.ikm.komet.kview.controls.FilterOptionsUtils;
-import dev.ikm.komet.kview.controls.FilterTitledPane;
-import dev.ikm.komet.kview.controls.IconRegion;
-import dev.ikm.komet.kview.controls.TruncatedTextFlow;
+import dev.ikm.komet.layout.controls.FilterOptions;
+import dev.ikm.komet.layout.controls.FilterOptionsUtils;
+import dev.ikm.komet.layout.controls.FilterTitledPane;
+import dev.ikm.komet.layout.controls.IconRegion;
+import dev.ikm.komet.layout.controls.TruncatedTextFlow;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 
 public class FilterTitledPaneSkin extends TitledPaneSkin {
 
-    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
+    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.layout.controls.filter-options");
     private static final PseudoClass MODIFIED_TITLED_PANE = PseudoClass.getPseudoClass("modified");
     private static final PseudoClass EXCLUDING_BUTTON_TITLED_PANE = PseudoClass.getPseudoClass("excluding");
     private static final PseudoClass ANY_BUTTON_TITLED_PANE = PseudoClass.getPseudoClass("any");

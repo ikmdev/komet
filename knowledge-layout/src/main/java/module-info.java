@@ -30,9 +30,12 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout.editor;
     exports dev.ikm.komet.layout_engine.blueprint;
     exports dev.ikm.komet.layout_engine.host;
+    exports dev.ikm.komet.layout.controls;
 
     opens dev.ikm.komet.layout to javafx.fxml;
     opens dev.ikm.layout.app to javafx.fxml;
+    opens dev.ikm.komet.layout.controls;
+    opens dev.ikm.komet.layout.controls.skin to javafx.controls;
 
     // Primary service interface for discovering ALL area factories (built-in and plugins)
     provides dev.ikm.komet.layout.KlArea.Factory

@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.controls;
+package dev.ikm.komet.layout.controls;
 
 import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ObservableView;
@@ -24,7 +24,7 @@ public class FilterOptions implements Serializable {
     @Serial
     private final static long serialVersionUID = 1L;
 
-    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
+    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.layout.controls.filter-options");
 
     public enum OPTION_ITEM {
         // Main Coordinates

@@ -1,10 +1,10 @@
-package dev.ikm.komet.kview.controls.skin;
+package dev.ikm.komet.layout.controls.skin;
 
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
-import dev.ikm.komet.kview.controls.FilterOptionsUtils;
-import dev.ikm.komet.kview.controls.LangFilterTitledPane;
-import dev.ikm.komet.kview.controls.FilterOptions;
-import dev.ikm.komet.kview.controls.IconRegion;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsUtils;
+import dev.ikm.komet.layout.controls.LangFilterTitledPane;
+import dev.ikm.komet.layout.controls.FilterOptions;
+import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.BooleanProperty;
@@ -55,7 +55,7 @@ import java.util.function.Consumer;
 
 public class LangFilterTitledPaneSkin extends TitledPaneSkin {
 
-    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
+    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.layout.controls.filter-options");
     private static final String STYLE_SHEETS = FilterOptionsPopup.class.getResource("filter-options-popup.css").toExternalForm();
     private static final PseudoClass MODIFIED_TITLED_PANE = PseudoClass.getPseudoClass("modified");
 

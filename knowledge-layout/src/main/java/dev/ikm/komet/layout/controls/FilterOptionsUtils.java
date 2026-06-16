@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.controls;
+package dev.ikm.komet.layout.controls;
 
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import dev.ikm.komet.framework.view.ListPropertyWithOverride;
@@ -10,7 +10,6 @@ import dev.ikm.komet.framework.view.ObservableNavigationCoordinate;
 import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.SetPropertyWithOverride;
-import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
@@ -615,7 +614,7 @@ public class FilterOptionsUtils {
         return sortedSet.stream().toList();
     }
 
-    private static int findNidForDescription(Navigator navigator, int nid, String description) {
+    private static int findNidForDescription(FilterOptionsNavigator navigator, int nid, String description) {
         return navigator.getChildEdges(nid).stream()
                 .filter(edge -> Entity.getFast(edge.destinationNid()).description().equals(description))
                 .findFirst()
@@ -623,7 +622,7 @@ public class FilterOptionsUtils {
                 .orElseThrow();
     }
 
-    public static List<EntityFacade> getDescendentsList(Navigator navigator, int parentNid, String description) {
+    public static List<EntityFacade> getDescendentsList(FilterOptionsNavigator navigator, int parentNid, String description) {
         int nid = parentNid;
         for (String s : description.split(", ")) {
             nid = findNidForDescription(navigator, nid, s);

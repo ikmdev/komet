@@ -1,15 +1,15 @@
-package dev.ikm.komet.kview.controls.skin;
+package dev.ikm.komet.layout.controls.skin;
 
 import dev.ikm.komet.framework.temp.FxGet;
-import dev.ikm.komet.kview.controls.DateFilterTitledPane;
-import dev.ikm.komet.kview.controls.FilterOptions;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
-import dev.ikm.komet.kview.controls.FilterOptionsUtils;
-import dev.ikm.komet.kview.controls.FilterTitledPane;
-import dev.ikm.komet.kview.controls.IconRegion;
-import dev.ikm.komet.kview.controls.LangFilterTitledPane;
-import dev.ikm.komet.kview.controls.SavedFiltersPopup;
-import dev.ikm.komet.navigator.graph.Navigator;
+import dev.ikm.komet.layout.controls.DateFilterTitledPane;
+import dev.ikm.komet.layout.controls.FilterOptions;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsUtils;
+import dev.ikm.komet.layout.controls.FilterTitledPane;
+import dev.ikm.komet.layout.controls.IconRegion;
+import dev.ikm.komet.layout.controls.LangFilterTitledPane;
+import dev.ikm.komet.layout.controls.FilterOptionsNavigator;
+import dev.ikm.komet.layout.controls.SavedFiltersPopup;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -55,7 +55,7 @@ import java.util.function.Consumer;
 
 public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
 
-    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.filter-options");
+    private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.layout.controls.filter-options");
     private static final String FILTER_OPTIONS_KEY = "filter-options";
     private static final String SAVED_FILTERS_KEY = "saved-filters";
     private static final String DEFAULT_OPTIONS_KEY = "default-options";
@@ -374,7 +374,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         accordionBox.getLangAccordion().getPanes().add(langFilterTitledPane);
     }
 
-    private void setupDefaultFilterOptions(Navigator navigator) {
+    private void setupDefaultFilterOptions(FilterOptionsNavigator navigator) {
         if (defaultFilterOptions == null) {
             // create default filter options
             defaultFilterOptions = new FilterOptions(getSkinnable().getParentViewCoordinate());
@@ -403,7 +403,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 setInheritedOptions(sourceOption, defaultFilterOptions.getLangOptionForItem(0, sourceOption.item())));
     }
 
-    private void setAvailableOptionsFromNavigator(FilterOptions options, Navigator navigator) {
+    private void setAvailableOptionsFromNavigator(FilterOptions options, FilterOptionsNavigator navigator) {
         if (navigator == null || navigator.getRootNids() == null || navigator.getRootNids().length == 0) {
             return;
         }
