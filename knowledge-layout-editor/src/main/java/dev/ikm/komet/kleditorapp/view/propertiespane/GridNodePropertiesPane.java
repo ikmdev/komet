@@ -2,6 +2,7 @@ package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.layout.editor.model.EditorGridNodeModel;
+import dev.ikm.komet.layout.editor.model.ParentGridModel;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
@@ -110,8 +111,10 @@ public class GridNodePropertiesPane<D extends EditorGridNodeModel> extends Contr
             rowSpanCB.valueProperty().unbindBidirectional(previousControlRowSpanProperty);
         }
 
-        // Available column indexes list
-        int maxColumnPosition = currentlyShownModel.getParentGrid().getNumberColumns();
+        // Available column indexes list. A node whose parent grid has no author-set column count
+        // (e.g. a field of a Table pattern) is treated as a single column.
+        ParentGridModel parentGrid = currentlyShownModel.getParentGrid();
+        int maxColumnPosition = parentGrid != null ? parentGrid.getNumberColumns() : 1;
         List<Integer> columnValuesList = new ArrayList<>();
         for (int i = 1; i <= maxColumnPosition; i++) {
             columnValuesList.add(i);

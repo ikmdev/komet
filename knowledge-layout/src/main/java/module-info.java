@@ -28,6 +28,7 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout.window;
     exports dev.ikm.komet.layout.editor.model;
     exports dev.ikm.komet.layout.editor;
+    exports dev.ikm.komet.layout.editor.property;
     exports dev.ikm.komet.layout_engine.blueprint;
     exports dev.ikm.komet.layout_engine.host;
 

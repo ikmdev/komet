@@ -11,6 +11,8 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.AbstractPatternSemantics
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
+import dev.ikm.komet.layout.editor.property.KlPropertySet;
+import dev.ikm.komet.layout.editor.property.TablePatternProperties;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
@@ -46,6 +48,20 @@ public class PatternSemanticsTablePresenter extends AbstractPatternSemanticsPres
         this.editorPatternModel = editorPatternModel;
 
         patternSemanticsControl = createTableControl(viewProperties);
+
+        bindFactoryProperties();
+    }
+
+    /**
+     * Binds the table control to the Table factory's configurable properties held on the model, so
+     * the journal renders according to the values the user set in the editor's properties pane.
+     */
+    private void bindFactoryProperties() {
+        KlPropertySet factoryProperties = editorPatternModel.getFactoryProperties();
+        if (factoryProperties instanceof TablePatternProperties tableProperties) {
+            patternSemanticsControl.headerVisibleProperty().bind(tableProperties.headerVisibleProperty());
+            patternSemanticsControl.gridLinesVisibleProperty().bind(tableProperties.gridLinesVisibleProperty());
+        }
     }
 
     private PatternSemanticsTableControl createTableControl(ViewProperties viewProperties) {

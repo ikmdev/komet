@@ -3,7 +3,9 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -43,6 +45,18 @@ public class PatternSemanticsTableControl extends Control {
     public SemanticRow getPreviewingSemantic() { return previewingSemantic.get(); }
     public ObjectProperty<SemanticRow> previewingSemanticProperty() { return previewingSemantic; }
     public void setPreviewingSemantic(SemanticRow semanticEntity) { previewingSemantic.set(semanticEntity); }
+
+    // -- header visible
+    private final BooleanProperty headerVisible = new SimpleBooleanProperty(true);
+    public boolean isHeaderVisible() { return headerVisible.get(); }
+    public BooleanProperty headerVisibleProperty() { return headerVisible; }
+    public void setHeaderVisible(boolean headerVisible) { this.headerVisible.set(headerVisible); }
+
+    // -- grid lines visible
+    private final BooleanProperty gridLinesVisible = new SimpleBooleanProperty(false);
+    public boolean isGridLinesVisible() { return gridLinesVisible.get(); }
+    public BooleanProperty gridLinesVisibleProperty() { return gridLinesVisible; }
+    public void setGridLinesVisible(boolean gridLinesVisible) { this.gridLinesVisible.set(gridLinesVisible); }
 
     // -- entity proxy to component item
     private final ObjectProperty<Function<EntityProxy, ComponentItem>> entityProxyToComponentItem = new SimpleObjectProperty<>();

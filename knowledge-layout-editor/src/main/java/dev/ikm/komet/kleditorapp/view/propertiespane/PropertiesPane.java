@@ -4,7 +4,7 @@ import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.kleditorapp.view.SelectionManager;
 import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
-import dev.ikm.komet.kleditorapp.view.control.PatternViewControlBase;
+import dev.ikm.komet.kleditorapp.view.control.PatternEditorControlBase;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SupplementalAreaViewControl;
 import dev.ikm.komet.kleditorapp.view.control.WindowControlFactory;
@@ -66,7 +66,7 @@ public class PropertiesPane extends Region {
                     setTitle(sectionView.getTagText());
                     setCurrentPropertiesPane(sectionPropertiesPane);
                 }
-                case PatternViewControlBase patternView -> {
+                case PatternEditorControlBase patternView -> {
                     setTitle("Pattern");
                     setCurrentPropertiesPane(patternPropertiesPane);
                 }

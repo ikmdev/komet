@@ -3,6 +3,7 @@ package dev.ikm.komet.layout.editor.model;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -35,8 +36,6 @@ public class EditorFieldModel extends EditorGridNodeModel {
         title.set(fieldDefinitionRecord.meaning().description());
         index.set(fieldDefinitionRecord.indexInPattern());
         dataTypeNid.set(fieldDefinitionRecord.dataTypeNid());
-
-        parentGridProperty().bind(parentPatternProperty());
     }
 
     /**
@@ -96,5 +95,18 @@ public class EditorFieldModel extends EditorGridNodeModel {
     private ReadOnlyObjectWrapper<EditorPatternModel> parentPattern = new ReadOnlyObjectWrapper<>();
     public EditorPatternModel getParentPattern() { return parentPattern.get(); }
     public ReadOnlyObjectProperty<EditorPatternModel> parentPatternProperty() { return parentPattern.getReadOnlyProperty(); }
-    void setParentPattern(EditorPatternModel parentPattern) { this.parentPattern.set(parentPattern); }
+
+    /**
+     * Sets the pattern this field belongs to and wires the field's {@code parentGrid} to the grid the
+     * field is positioned within. That grid is the pattern's factory-specific property set when it is
+     * a {@link ParentGridModel} (the Standard factory's set), and {@code null} otherwise (e.g. a Table
+     * pattern, whose fields are its columns rather than cells in an author-sized grid). The binding
+     * tracks the pattern's factory, so switching factories updates the field's parent grid.
+     */
+    void setParentPattern(EditorPatternModel parentPattern) {
+        this.parentPattern.set(parentPattern);
+        parentGridProperty().bind(Bindings.createObjectBinding(
+                () -> parentPattern.getFactoryProperties() instanceof ParentGridModel parentGrid ? parentGrid : null,
+                parentPattern.factoryPropertiesProperty()));
+    }
 }

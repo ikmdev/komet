@@ -15,7 +15,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
+import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import javafx.util.Subscription;
 
@@ -28,6 +28,9 @@ import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
 public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsTableControl> {
     public static final PseudoClass EDIT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("edit-mode");
     public static final PseudoClass PREVIEW_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("preview-mode");
+
+    private static final String TABLE_HEADER_ROW = "TableHeaderRow";
+    private static final String SHOW_GRID_LINES_STYLE_CLASS = "show-grid-lines";
 
     private final TableView<SemanticRow> tableView = new TableView<>();
 
@@ -56,6 +59,37 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
             if (!control.getSemantics().isEmpty()) {
                 initializeTableView(control.getSemantics().getFirst());
             }
+        }
+
+        // Honor the factory-configured properties.
+        control.headerVisibleProperty().subscribe(this::updateHeaderVisibility);
+        control.gridLinesVisibleProperty().subscribe(this::updateGridLinesVisibility);
+    }
+
+    private void updateHeaderVisibility(boolean visible) {
+        // The header row only exists once the TableView's own skin has been built, so re-apply both
+        // when the property changes and when the header node first appears.
+        Region header = (Region) tableView.lookup(TABLE_HEADER_ROW);
+        if (header == null) {
+            tableView.skinProperty().subscribe(skin -> {
+                if (skin != null) {
+                    updateHeaderVisibility(getSkinnable().isHeaderVisible());
+                }
+            });
+            return;
+        }
+        header.setVisible(visible);
+        header.setManaged(visible);
+        double height = visible ? Region.USE_COMPUTED_SIZE : 0;
+        header.setMinHeight(height);
+        header.setPrefHeight(height);
+        header.setMaxHeight(height);
+    }
+
+    private void updateGridLinesVisibility(boolean visible) {
+        tableView.getStyleClass().remove(SHOW_GRID_LINES_STYLE_CLASS);
+        if (visible) {
+            tableView.getStyleClass().add(SHOW_GRID_LINES_STYLE_CLASS);
         }
     }
 

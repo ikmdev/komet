@@ -2,8 +2,8 @@ package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
-import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
-import dev.ikm.komet.kleditorapp.view.control.PatternViewControlBase;
+import dev.ikm.komet.kleditorapp.view.control.PatternStandardEditorControl;
+import dev.ikm.komet.kleditorapp.view.control.PatternEditorControlBase;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SupplementalAreaViewControl;
 import dev.ikm.komet.kleditorapp.view.control.WindowControlFactory;
@@ -71,7 +71,7 @@ public class KLEditorWindowController {
             }
             if (change.wasRemoved()) {
                 change.getRemoved().forEach(patternModel -> {
-                    PatternViewControlBase patternViewControl = (PatternViewControlBase) WindowControlFactory.getView(patternModel);
+                    PatternEditorControlBase patternViewControl = (PatternEditorControlBase) WindowControlFactory.getView(patternModel);
                     sectionViewControl.getPatterns().remove(patternViewControl);
                 });
             }
@@ -117,8 +117,8 @@ public class KLEditorWindowController {
      * creates and populates the control (its field views included), so no separate field-population pass
      * is needed here.
      */
-    private PatternViewControlBase createPatternEditorControl(EditorPatternModel patternModel) {
-        return (PatternViewControlBase) patternModel.getFactory().createEditorControl(patternModel);
+    private PatternEditorControlBase createPatternEditorControl(EditorPatternModel patternModel) {
+        return (PatternEditorControlBase) patternModel.getFactory().createEditorControl(patternModel);
     }
 
     /**
@@ -127,12 +127,12 @@ public class KLEditorWindowController {
      */
     private void swapPatternView(EditorSectionModel editorSectionModel, EditorPatternModel patternModel) {
         SectionViewControl sectionViewControl = (SectionViewControl) WindowControlFactory.getView(editorSectionModel);
-        PatternViewControlBase oldView = (PatternViewControlBase) WindowControlFactory.getView(patternModel);
+        PatternEditorControlBase oldView = (PatternEditorControlBase) WindowControlFactory.getView(patternModel);
 
         boolean wasSelected = SelectionManager.instance().getSelectedControl() == oldView;
 
         // createEditorControl re-registers the model -> view mapping, so build the replacement first.
-        PatternViewControlBase newView = createPatternEditorControl(patternModel);
+        PatternEditorControlBase newView = createPatternEditorControl(patternModel);
 
         int index = sectionViewControl.getPatterns().indexOf(oldView);
         if (index >= 0) {
@@ -179,19 +179,19 @@ public class KLEditorWindowController {
         // Field tiles only exist in the standard pattern view; other representations (e.g. the table) build
         // their own columns from the model when (re)rendered. Resolve the current view on each change so this
         // keeps working after the pattern is re-rendered with a different factory's editor control.
-        if (!(WindowControlFactory.getView(patternModel) instanceof PatternViewControl patternViewControl)) {
+        if (!(WindowControlFactory.getView(patternModel) instanceof PatternStandardEditorControl patternStandardEditorControl)) {
             return;
         }
         while(change.next()) {
             if (change.wasAdded()) {
                 for (EditorFieldModel fieldModel : change.getAddedSubList()) {
-                    patternViewControl.getFields().add(WindowControlFactory.createFieldView(fieldModel));
+                    patternStandardEditorControl.getFields().add(WindowControlFactory.createFieldView(fieldModel));
                 }
             }
             if (change.wasRemoved()) {
                 change.getRemoved().forEach(fieldModel -> {
                     FieldViewControl fieldViewControl = (FieldViewControl) WindowControlFactory.getView(fieldModel);
-                    patternViewControl.getFields().remove(fieldViewControl);
+                    patternStandardEditorControl.getFields().remove(fieldViewControl);
                 });
             }
         }
