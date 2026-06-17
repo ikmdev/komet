@@ -380,7 +380,9 @@
  ******************************************************************************/
 
 .right-properties-pane {
-    -fx-pref-width: 400px;
+    separator-color: #c0c0c0;
+
+    -fx-pref-width: 410px;
 
     -fx-background-color: #f1f3f8;
 
@@ -394,7 +396,7 @@
 .right-properties-pane .title {
     -fx-font-size: 18px;
 
-    -fx-padding: 0 0 10px 10;
+    -fx-padding: 0 0 10px 14;
 
     -fx-font-family: "Noto Sans SemiBold";
 }
@@ -434,7 +436,7 @@
 }
 
 .right-properties-pane .section-properties .separator:horizontal .line {
-    -fx-border-color: #aaa transparent transparent transparent,
+    -fx-border-color: separator-color transparent transparent transparent,
     transparent transparent transparent transparent;
     -fx-border-insets: 0 0 0 0, 1 0 0 0;
 }
@@ -469,6 +471,10 @@
     -fx-spacing: 8;
 }
 
+.right-properties-pane .pattern-properties .sub-section {
+    -fx-padding: 0 4 30 4;
+}
+
 .right-properties-pane .pattern-properties .pattern-name-container {
     -fx-spacing: 3px;
     -fx-font-size: 13px;
@@ -483,7 +489,7 @@
 }
 
 .right-properties-pane .pattern-properties .separator:horizontal .line {
-    -fx-border-color: #aaa transparent transparent transparent,
+    -fx-border-color: separator-color transparent transparent transparent,
     transparent transparent transparent transparent;
     -fx-border-insets: 0 0 0 0, 1 0 0 0;
 }
@@ -514,7 +520,7 @@
 }
 
 .right-properties-pane .field-properties .separator:horizontal .line {
-    -fx-border-color: #aaa transparent transparent transparent,
+    -fx-border-color: separator-color transparent transparent transparent,
     transparent transparent transparent transparent;
     -fx-border-insets: 0 0 0 0, 1 0 0 0;
 }

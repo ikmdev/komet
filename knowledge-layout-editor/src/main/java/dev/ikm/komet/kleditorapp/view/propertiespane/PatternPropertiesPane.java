@@ -40,7 +40,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
 
         // Section name container
         VBox titleContainer = new VBox();
-        titleContainer.getStyleClass().add("title-container");
+        titleContainer.getStyleClass().addAll("sub-section", "title-container");
         titleContainer.setSpacing(4);
 
         Label titleLabel = new Label("Pattern Title:");
@@ -68,6 +68,20 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         // Separator
         Separator separator = new Separator();
         separator.setPrefWidth(200);
+
+        // Positioning container
+        VBox positioningContainer = new VBox();
+        positioningContainer.getStyleClass().addAll("sub-section", "positioning-container");
+        positioningContainer.setSpacing(4);
+        positioningContainer.getChildren().addAll(
+                positioningLabel,
+                positioningGridPane
+        );
+
+        // Interaction container
+        VBox interactionContainer = new VBox();
+        interactionContainer.getStyleClass().addAll("sub-section", "interaction-container");
+        interactionContainer.setSpacing(4);
 
         // "INTERACTION" label
         Label interactionTitleLabel = new Label("INTERACTION");
@@ -103,9 +117,19 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
 
         populateDisplayComboBox();
 
+        interactionContainer.getChildren().addAll(
+                interactionTitleLabel,
+                displayGridPane
+        );
+
         // Separator
         Separator separator3 = new Separator();
         separator3.setPrefWidth(200);
+
+        // Properties container
+        VBox propertiesContainer = new VBox();
+        propertiesContainer.getStyleClass().addAll("sub-section", "properties-container");
+        propertiesContainer.setSpacing(4);
 
         // Factory-specific properties section
         factoryPropertiesSeparator.setPrefWidth(200);
@@ -113,17 +137,19 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         factoryPropertiesSection.getStyleClass().add("factory-properties-section");
         factoryPropertiesSection.setSpacing(8);
 
+        propertiesContainer.getChildren().addAll(
+                factoryPropertiesTitleLabel,
+                factoryPropertiesSection
+        );
+
         patternMainContainer.getChildren().addAll(
                 titleContainer,
                 separator,
-                positioningLabel,
-                positioningGridPane,
+                positioningContainer,
                 separator3,
-                interactionTitleLabel,
-                displayGridPane,
+                interactionContainer,
                 factoryPropertiesSeparator,
-                factoryPropertiesTitleLabel,
-                factoryPropertiesSection
+                propertiesContainer
         );
 
         mainContainer.setCenter(patternMainContainer);
