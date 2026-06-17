@@ -409,7 +409,18 @@ public class GenPurposeDetailsController {
 
     private void updateStampControl(EntityFacade refConcept) {
         ObservableEntity observableEntity = ObservableEntity.get(refConcept.nid());
-        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+        ObservableEntitySnapshot observableEntitySnapshot;
+        try {
+            observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+        } catch (IllegalStateException e) {
+            // No version of the concept passes the current view coordinate (e.g. a status/path filter that
+            // excludes every version); leave the stamp control as-is rather than throwing out of the
+            // coordinate-change listener chain — which would also abort the supplemental areas' re-render
+            // (ike-issues#666).
+            LOG.debug("No latest version for nid {} under the current view coordinate; skipping stamp update",
+                    refConcept.nid());
+            return;
+        }
         Latest<EntityVersion> latestEntityVersion = retrieveCommittedLatestVersion(observableEntitySnapshot);
         latestEntityVersion.ifPresent(latestVersion -> {
             StampEntity stampEntity = latestEntityVersion.get().stamp();

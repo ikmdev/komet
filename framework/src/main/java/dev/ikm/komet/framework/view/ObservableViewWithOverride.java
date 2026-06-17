@@ -18,11 +18,28 @@ package dev.ikm.komet.framework.view;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import javafx.beans.property.ListProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class ObservableViewWithOverride extends ObservableViewBase {
+
+    /**
+     * The parent view this override observes. Retained — together with the two listeners below as {@code final}
+     * fields — so they can be removed in {@link #dispose()}. The parent outlives this override (e.g. inner/journal
+     * windows and popups that churn), so without teardown each discarded override leaks via the parent's listener
+     * list (ike-issues#693).
+     */
+    private final ObservableViewBase parentView;
+    private final ChangeListener<ViewCoordinateRecord> overriddenBaseChangedListener = this::overriddenBaseChanged;
+    private final ChangeListener<Boolean> parentListeningListener = (observable, oldValue, newValue) -> {
+        if (newValue) {
+            this.addListeners();
+        } else {
+            this.removeListeners();
+        }
+    };
 
     public ObservableViewWithOverride(ObservableViewBase observableViewBase) {
         this(observableViewBase, null);
@@ -31,14 +48,20 @@ public class ObservableViewWithOverride extends ObservableViewBase {
     public ObservableViewWithOverride(ObservableViewBase observableViewBase, String name) {
         super(observableViewBase, name);
         // Depth-independent override nesting (ike-issues#663): an override may wrap another override.
-        observableViewBase.baseCoordinateProperty().addListener(this::overriddenBaseChanged);
-        observableViewBase.listening.addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                this.addListeners();
-            } else {
-                this.removeListeners();
-            }
-        });
+        this.parentView = observableViewBase;
+        observableViewBase.baseCoordinateProperty().addListener(overriddenBaseChangedListener);
+        observableViewBase.listening.addListener(parentListeningListener);
+    }
+
+    /**
+     * Detaches the two listeners this override registered on its parent view, releasing the reference the parent
+     * otherwise holds to this child for the child's whole lifetime. Call when the override (e.g. a closed inner or
+     * journal window's coordinate, or a dismissed View Options popup's working view) is discarded; otherwise the
+     * parent's listener list accumulates one entry per discarded override over a session (ike-issues#693).
+     */
+    public void dispose() {
+        parentView.baseCoordinateProperty().removeListener(overriddenBaseChangedListener);
+        parentView.listening.removeListener(parentListeningListener);
     }
 
     // TODO when the story is worked to compare the view coordinate change within the child

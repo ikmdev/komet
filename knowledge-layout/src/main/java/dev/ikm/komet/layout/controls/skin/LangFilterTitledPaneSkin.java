@@ -68,6 +68,9 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
     private Subscription subscription;
     private ScrollPane scrollPane;
     private FilterOptions.LanguageFilterCoordinates currentLangCoordinates;
+    // Guards the commit-on-collapse self-push from re-entering setupTitledPane and unsubscribing its own
+    // in-flight subscription chain — the re-entrancy that silently dropped the propagation (ike-issues#666).
+    private boolean settingUp;
 
     public LangFilterTitledPaneSkin(LangFilterTitledPane control) {
         super(control);
@@ -158,12 +161,25 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
         subscription = subscription.and(control.expandedProperty().subscribe((_, expanded) -> {
             if (!expanded) {
                 currentLangCoordinates = contentBox.getLangCoordinates().copy();
-                control.setLangCoordinates(currentLangCoordinates.copy());
+                // Flag inOverride BEFORE pushing, so the committed copy carries it and the coordinate
+                // write-back takes the SET branch rather than remove-override (ike-issues#666).
                 updateModifiedState(currentLangCoordinates);
+                settingUp = true;
+                try {
+                    control.setLangCoordinates(currentLangCoordinates.copy());
+                } finally {
+                    settingUp = false;
+                }
             }
         }));
 
-        subscription = subscription.and(control.langCoordinatesProperty().subscribe((_, _) -> setupTitledPane()));
+        subscription = subscription.and(control.langCoordinatesProperty().subscribe((_, _) -> {
+            // Ignore the commit-on-collapse self-push above; re-running setup mid-commit would unsubscribe
+            // this very chain and drop the propagation (ike-issues#666).
+            if (!settingUp) {
+                setupTitledPane();
+            }
+        }));
         subscription = subscription.and(control.navigatorProperty().subscribe((_, _) -> setupTitledPane()));
         updateModifiedState(currentLangCoordinates);
     }
@@ -198,6 +214,10 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
         arrow.translateXProperty().unbind();
         arrow.translateYProperty().unbind();
         titleVBox.translateXProperty().unbind();
+        // Detach the editor/summary list listeners — their invalidated handlers release them on a null set —
+        // so the skin does not leak through the FilterOptions model lists (ike-issues#666).
+        selectedOptionPane.setLangOption(null);
+        contentBox.setLangOption(null);
         if (subscription != null) {
             subscription.unsubscribe();
         }
@@ -313,36 +333,53 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
 
         }
 
+        private Subscription summarySub;
+
         // langOptionProperty
         private final ObjectProperty<FilterOptions.LanguageFilterCoordinates> langOptionProperty = new SimpleObjectProperty<>(this, "langOption") {
             @Override
             protected void invalidated() {
+                if (summarySub != null) {
+                    summarySub.unsubscribe();
+                    summarySub = null;
+                }
                 FilterOptions.LanguageFilterCoordinates languageOptions = get();
+                renderSummary(languageOptions);
                 if (languageOptions != null) {
-                    List<EntityFacade> langOptions = languageOptions.getLanguage().selectedOptions();
-                    langOption.setText(langOptions.isEmpty() || langOptions.getFirst() == null ?
-                        resources.getString("language.option.empty") : getDescription(langOptions.getFirst()));
-                    ObservableList<EntityFacade> dialectOptions = languageOptions.getDialect().selectedOptions();
-                    // TODO: Dynamically load valid dialects for the selected language
-                    dialectOption.setText(dialectOptions.isEmpty() || dialectOptions.getFirst() == null ||
-                            (!langOptions.isEmpty() && !TinkarTerm.ENGLISH_LANGUAGE.equals(langOptions.getFirst())) ?
-                            resources.getString("dialect.option.empty") : String.join(", ", dialectOptions.stream().map(LangFilterTitledPaneSkin.this::getDescription).toList()));
-                    ObservableList<EntityFacade> patternOptions = languageOptions.getPattern().selectedOptions();
-                    patternOption.setText(patternOptions.isEmpty() || patternOptions.getFirst() == null ?
-                            resources.getString("pattern.option.empty") : patternOptions.isEmpty() ? "" : getDescription(patternOptions.getFirst()));
-                    ObservableList<EntityFacade> descriptionOptions = languageOptions.getDescriptionType().selectedOptions();
-                    descriptionOption.setText(descriptionOptions.isEmpty() || descriptionOptions.getFirst() == null ?
-                            resources.getString("description.option.empty") : String.join(", ", descriptionOptions.stream().map(LangFilterTitledPaneSkin.this::getDescription).toList()));
-                    initialized.set(!(langOptions.isEmpty() || langOptions.getFirst() == null));
-                } else {
-                    initialized.set(false);
-                    langOption.setText(null);
-                    dialectOption.setText(null);
-                    patternOption.setText(null);
-                    descriptionOption.setText(null);
+                    // Observe the SAME description-type / dialect / language lists the editor mutates, so the
+                    // collapsed summary refreshes live on a reorder instead of being computed once (#666).
+                    summarySub = languageOptions.getDescriptionType().selectedOptions().subscribe(() -> renderSummary(get()));
+                    summarySub = summarySub.and(languageOptions.getDialect().selectedOptions().subscribe(() -> renderSummary(get())));
+                    summarySub = summarySub.and(languageOptions.getLanguage().selectedOptions().subscribe(() -> renderSummary(get())));
                 }
             }
         };
+
+        private void renderSummary(FilterOptions.LanguageFilterCoordinates languageOptions) {
+            if (languageOptions != null) {
+                List<EntityFacade> langOptions = languageOptions.getLanguage().selectedOptions();
+                langOption.setText(langOptions.isEmpty() || langOptions.getFirst() == null ?
+                    resources.getString("language.option.empty") : getDescription(langOptions.getFirst()));
+                ObservableList<EntityFacade> dialectOptions = languageOptions.getDialect().selectedOptions();
+                // TODO: Dynamically load valid dialects for the selected language
+                dialectOption.setText(dialectOptions.isEmpty() || dialectOptions.getFirst() == null ||
+                        (!langOptions.isEmpty() && !TinkarTerm.ENGLISH_LANGUAGE.equals(langOptions.getFirst())) ?
+                        resources.getString("dialect.option.empty") : String.join(", ", dialectOptions.stream().map(LangFilterTitledPaneSkin.this::getDescription).toList()));
+                ObservableList<EntityFacade> patternOptions = languageOptions.getPattern().selectedOptions();
+                patternOption.setText(patternOptions.isEmpty() || patternOptions.getFirst() == null ?
+                        resources.getString("pattern.option.empty") : patternOptions.isEmpty() ? "" : getDescription(patternOptions.getFirst()));
+                ObservableList<EntityFacade> descriptionOptions = languageOptions.getDescriptionType().selectedOptions();
+                descriptionOption.setText(descriptionOptions.isEmpty() || descriptionOptions.getFirst() == null ?
+                        resources.getString("description.option.empty") : String.join(", ", descriptionOptions.stream().map(LangFilterTitledPaneSkin.this::getDescription).toList()));
+                initialized.set(!(langOptions.isEmpty() || langOptions.getFirst() == null));
+            } else {
+                initialized.set(false);
+                langOption.setText(null);
+                dialectOption.setText(null);
+                patternOption.setText(null);
+                descriptionOption.setText(null);
+            }
+        }
         public final ObjectProperty<FilterOptions.LanguageFilterCoordinates> langOptionProperty() {
             return langOptionProperty;
         }
@@ -553,6 +590,12 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
     private class SortedBox extends VBox {
 
         private boolean lock;
+        // Re-render in place whenever the option's selectedOptions list changes (a reorder, add or remove),
+        // so this editor observes the SAME ObservableList it mutates rather than detaching to a copy. The
+        // collapsed summary observes the same list, so the two stay in sync automatically (ike-issues#666).
+        // The handler ignores the change details, so this is the InvalidationListener case — use the JavaFX 21
+        // ObservableList.subscribe(Runnable) form and retain the Subscription for teardown (see IKE-JAVAFX.md).
+        private Subscription selectionSub;
 
         public SortedBox() {
         }
@@ -561,7 +604,19 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
         private final ObjectProperty<FilterOptions.Option<EntityFacade>> optionProperty = new SimpleObjectProperty<>(this, "option") {
             @Override
             protected void invalidated() {
-                setupBox(get());
+                if (selectionSub != null) {
+                    selectionSub.unsubscribe();
+                    selectionSub = null;
+                }
+                FilterOptions.Option<EntityFacade> option = get();
+                setupBox(option);
+                if (option != null) {
+                    selectionSub = option.selectedOptions().subscribe(() -> {
+                        if (!lock) {
+                            setupBox(option);
+                        }
+                    });
+                }
             }
         };
         public final ObjectProperty<FilterOptions.Option<EntityFacade>> optionProperty() {
@@ -603,15 +658,18 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
                                 int index = counter.getAndIncrement();
                                 OrderedToggleBox orderedToggleBox = new OrderedToggleBox(index, name,
                                         d -> {
-                                            option.selectedOptions().remove(d);
-                                            option.selectedOptions().add(index, d);
-                                            setOption(option.copy());
+                                            // Reorder the SAME list in a single atomic change; the
+                                            // selectionListener re-renders this box and the summary observes
+                                            // it — no copy, no detach (ike-issues#666).
+                                            List<EntityFacade> newOrder = new ArrayList<>(option.selectedOptions());
+                                            newOrder.remove(d);
+                                            newOrder.add(index, d);
+                                            option.selectedOptions().setAll(newOrder);
                                         });
                                 orderedToggleBox.setSelected(true);
                                 orderedToggleBox.selectedProperty().subscribe((_, s) -> {
                                    if (!s) {
                                        option.selectedOptions().remove(name);
-                                       setOption(option.copy());
                                    }
                                 });
                                 return orderedToggleBox;
@@ -635,7 +693,6 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
                                     orderedToggleBox.selectedProperty().subscribe((_, s) -> {
                                         if (s) {
                                             option.selectedOptions().add(name);
-                                            setOption(option.copy());
                                         }
                                     });
                                     return orderedToggleBox;

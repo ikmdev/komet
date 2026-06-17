@@ -147,7 +147,19 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         revertButton = new Button(resources.getString("button.revert"));
         revertButton.setOnAction(_ -> revertFilterOptions());
 
-        VBox bottomBox = new VBox(saveButton, revertButton);
+        Button applyButton = new Button(resources.getString("button.apply"));
+        applyButton.getStyleClass().add("apply-button");
+        applyButton.setOnAction(_ -> {
+            // Collapse the language pane so it commits its (possibly reordered) description-type / dialect order
+            // into the panes, rebuild the authoritative current filter options from the panes, then commit the
+            // whole coordinate onto the window's nodeView — one whole-value setValue per facet, no live mesh and
+            // no //Dummy pokes (ike-issues#681/#666).
+            accordionBox.getLangAccordion().setExpandedPane(null);
+            updateCurrentFilterOptions();
+            control.getFilterOptionsUtils().commitToView(currentFilterOptionsProperty.get());
+        });
+
+        VBox bottomBox = new VBox(applyButton, revertButton);
         bottomBox.getStyleClass().add("bottom-box");
 
         root = new VBox(headerBox, scrollPane, spacer, bottomBox);
