@@ -6,7 +6,7 @@ import dev.ikm.komet.kleditorapp.view.control.PatternStandardEditorControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternEditorControlBase;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SupplementalAreaViewControl;
-import dev.ikm.komet.kleditorapp.view.control.WindowControlFactory;
+import dev.ikm.komet.kleditorapp.view.control.KlEditorWindowControlFactory;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
@@ -57,7 +57,7 @@ public class KLEditorWindowController {
             }
             if (change.wasRemoved()) {
                 change.getRemoved().forEach(sectionModel -> {
-                    editorWindowControl.getSectionViews().remove((SectionViewControl) WindowControlFactory.getView(sectionModel));
+                    editorWindowControl.getSectionViews().remove((SectionViewControl) KlEditorWindowControlFactory.getView(sectionModel));
                 });
             }
         }
@@ -71,7 +71,7 @@ public class KLEditorWindowController {
             }
             if (change.wasRemoved()) {
                 change.getRemoved().forEach(patternModel -> {
-                    PatternEditorControlBase patternViewControl = (PatternEditorControlBase) WindowControlFactory.getView(patternModel);
+                    PatternEditorControlBase patternViewControl = (PatternEditorControlBase) KlEditorWindowControlFactory.getView(patternModel);
                     sectionViewControl.getPatterns().remove(patternViewControl);
                 });
             }
@@ -87,7 +87,7 @@ public class KLEditorWindowController {
     }
 
     private void addSectionView(EditorSectionModel editorSectionModel) {
-        SectionViewControl sectionViewControl = WindowControlFactory.createSectionView(editorSectionModel);
+        SectionViewControl sectionViewControl = KlEditorWindowControlFactory.createSectionView(editorSectionModel);
 
         setupDragAndDrop(sectionViewControl);
 
@@ -101,7 +101,7 @@ public class KLEditorWindowController {
     }
 
     private void addPatternView(EditorSectionModel editorSectionModel, EditorPatternModel patternModel) {
-        SectionViewControl sectionViewControl = (SectionViewControl) WindowControlFactory.getView(editorSectionModel);
+        SectionViewControl sectionViewControl = (SectionViewControl) KlEditorWindowControlFactory.getView(editorSectionModel);
         sectionViewControl.getPatterns().add(createPatternEditorControl(patternModel));
 
         // Re-render the pattern with the newly selected factory's editor control when the display type changes.
@@ -126,8 +126,8 @@ public class KLEditorWindowController {
      * place in the section and preserving selection.
      */
     private void swapPatternView(EditorSectionModel editorSectionModel, EditorPatternModel patternModel) {
-        SectionViewControl sectionViewControl = (SectionViewControl) WindowControlFactory.getView(editorSectionModel);
-        PatternEditorControlBase oldView = (PatternEditorControlBase) WindowControlFactory.getView(patternModel);
+        SectionViewControl sectionViewControl = (SectionViewControl) KlEditorWindowControlFactory.getView(editorSectionModel);
+        PatternEditorControlBase oldView = (PatternEditorControlBase) KlEditorWindowControlFactory.getView(patternModel);
 
         boolean wasSelected = SelectionManager.instance().getSelectedControl() == oldView;
 
@@ -154,7 +154,7 @@ public class KLEditorWindowController {
             }
             if (change.wasRemoved()) {
                 change.getRemoved().forEach(areaModel -> {
-                    SupplementalAreaViewControl areaView = (SupplementalAreaViewControl) WindowControlFactory.getView(areaModel);
+                    SupplementalAreaViewControl areaView = (SupplementalAreaViewControl) KlEditorWindowControlFactory.getView(areaModel);
                     sectionViewControl.getSupplementalAreas().remove(areaView);
                 });
             }
@@ -168,9 +168,9 @@ public class KLEditorWindowController {
     }
 
     private void addSupplementalAreaView(EditorSectionModel editorSectionModel, EditorSupplementalAreaModel areaModel) {
-        SupplementalAreaViewControl areaView = WindowControlFactory.createSupplementalAreaView(areaModel);
+        SupplementalAreaViewControl areaView = KlEditorWindowControlFactory.createSupplementalAreaView(areaModel);
 
-        SectionViewControl sectionViewControl = (SectionViewControl) WindowControlFactory.getView(editorSectionModel);
+        SectionViewControl sectionViewControl = (SectionViewControl) KlEditorWindowControlFactory.getView(editorSectionModel);
         sectionViewControl.getSupplementalAreas().add(areaView);
     }
 
@@ -179,18 +179,18 @@ public class KLEditorWindowController {
         // Field tiles only exist in the standard pattern view; other representations (e.g. the table) build
         // their own columns from the model when (re)rendered. Resolve the current view on each change so this
         // keeps working after the pattern is re-rendered with a different factory's editor control.
-        if (!(WindowControlFactory.getView(patternModel) instanceof PatternStandardEditorControl patternStandardEditorControl)) {
+        if (!(KlEditorWindowControlFactory.getView(patternModel) instanceof PatternStandardEditorControl patternStandardEditorControl)) {
             return;
         }
         while(change.next()) {
             if (change.wasAdded()) {
                 for (EditorFieldModel fieldModel : change.getAddedSubList()) {
-                    patternStandardEditorControl.getFields().add(WindowControlFactory.createFieldView(fieldModel));
+                    patternStandardEditorControl.getFields().add(KlEditorWindowControlFactory.createFieldView(fieldModel));
                 }
             }
             if (change.wasRemoved()) {
                 change.getRemoved().forEach(fieldModel -> {
-                    FieldViewControl fieldViewControl = (FieldViewControl) WindowControlFactory.getView(fieldModel);
+                    FieldViewControl fieldViewControl = (FieldViewControl) KlEditorWindowControlFactory.getView(fieldModel);
                     patternStandardEditorControl.getFields().remove(fieldViewControl);
                 });
             }
@@ -198,7 +198,7 @@ public class KLEditorWindowController {
     }
 
     private void setupDragAndDrop(SectionViewControl sectionViewControl) {
-        EditorSectionModel editorSectionModel = (EditorSectionModel) WindowControlFactory.getModel(sectionViewControl);
+        EditorSectionModel editorSectionModel = (EditorSectionModel) KlEditorWindowControlFactory.getModel(sectionViewControl);
 
         sectionViewControl.setOnDragOverIntoTile(dragEvent -> {
             if (dragEvent.getDragboard().hasContent(KL_EDITOR_VERSION_PROXY)
@@ -257,7 +257,7 @@ public class KLEditorWindowController {
      */
     public void start() {
         // Select main section initially
-        SelectionManager.instance().setSelectedControl(WindowControlFactory.getView(editorWindowModel.getMainSection()));
+        SelectionManager.instance().setSelectedControl(KlEditorWindowControlFactory.getView(editorWindowModel.getMainSection()));
     }
 
     public void shutdown() {

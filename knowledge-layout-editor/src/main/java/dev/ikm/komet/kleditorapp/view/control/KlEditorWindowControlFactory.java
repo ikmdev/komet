@@ -11,7 +11,7 @@ import dev.ikm.komet.layout.editor.property.StandardPatternProperties;
 
 import java.util.HashMap;
 
-public class WindowControlFactory {
+public class KlEditorWindowControlFactory {
     private static final HashMap<EditorWindowBaseControl, EditorModelBase> windowControlToModel = new HashMap<>();
     private static final HashMap<EditorModelBase, EditorWindowBaseControl> modelToWindowControl = new HashMap<>();
 
@@ -30,7 +30,7 @@ public class WindowControlFactory {
         return sectionViewControl;
     }
 
-    public static PatternStandardEditorControl createPatternView(EditorPatternModel editorPatternModel) {
+    public static PatternStandardEditorControl createStandardPatternView(EditorPatternModel editorPatternModel) {
         PatternStandardEditorControl patternStandardEditorControl = new PatternStandardEditorControl();
 
         patternStandardEditorControl.titleProperty().bind(editorPatternModel.titleProperty());
@@ -53,7 +53,7 @@ public class WindowControlFactory {
         return patternStandardEditorControl;
     }
 
-    public static PatternTableEditorControl createPatternTableView(EditorPatternModel editorPatternModel) {
+    public static PatternTableEditorControl createTablePatternView(EditorPatternModel editorPatternModel) {
         PatternTableEditorControl patternTableViewControl = new PatternTableEditorControl();
 
         patternTableViewControl.titleProperty().bind(editorPatternModel.titleProperty());

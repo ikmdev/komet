@@ -3,7 +3,7 @@ package dev.ikm.komet.kleditorapp.factory;
 import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kleditorapp.view.control.PatternStandardEditorControl;
-import dev.ikm.komet.kleditorapp.view.control.WindowControlFactory;
+import dev.ikm.komet.kleditorapp.view.control.KlEditorWindowControlFactory;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.PatternSemanticsStandardPresenter;
 import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
@@ -24,7 +24,7 @@ public class KlPatternSemanticsStandardFactory implements KlPatternSemanticsFact
 
     @Override
     public PatternStandardEditorControl createEditorControl(EditorPatternModel editorPatternModel) {
-        return WindowControlFactory.createPatternView(editorPatternModel);
+        return KlEditorWindowControlFactory.createStandardPatternView(editorPatternModel);
     }
 
     @Override
