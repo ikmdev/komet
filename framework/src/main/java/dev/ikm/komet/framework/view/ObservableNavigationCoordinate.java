@@ -16,21 +16,22 @@
 package dev.ikm.komet.framework.view;
 
 
-import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
-import javafx.beans.property.SetProperty;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateDelegate;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.set.ImmutableSet;
 
 public interface ObservableNavigationCoordinate
         extends ObservableCoordinate<NavigationCoordinateRecord>, NavigationCoordinateDelegate {
 
-    SetProperty<PatternFacade> navigationPatternsProperty();
+    ObjectProperty<ImmutableSet<PatternFacade>> navigationPatternsProperty();
 
     /**
      *
@@ -40,7 +41,7 @@ public interface ObservableNavigationCoordinate
 
     ObjectProperty<Boolean> sortVerticesProperty();
 
-    ListProperty<PatternFacade> verticesSortPatternListProperty();
+    ObjectProperty<ImmutableList<PatternFacade>> verticesSortPatternListProperty();
 
 
     default Property<?>[] getBaseProperties() {
@@ -59,12 +60,10 @@ public interface ObservableNavigationCoordinate
     default void setPremiseType(PremiseType premiseType) {
         switch (premiseType) {
             case STATED:
-                navigationPatternsProperty().clear();
-                navigationPatternsProperty().add(TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN);
+                navigationPatternsProperty().setValue(Sets.immutable.<PatternFacade>of(TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN));
                 break;
             case INFERRED:
-                navigationPatternsProperty().clear();
-                navigationPatternsProperty().add(TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
+                navigationPatternsProperty().setValue(Sets.immutable.<PatternFacade>of(TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN));
                 break;
         }
     }

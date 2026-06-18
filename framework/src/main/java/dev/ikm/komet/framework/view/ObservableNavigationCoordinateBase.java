@@ -15,27 +15,27 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
-import javafx.collections.SetChangeListener;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinate;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateDelegate;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.set.ImmutableSet;
 
 public abstract class ObservableNavigationCoordinateBase
         extends ObservableCoordinateAbstract<NavigationCoordinateRecord>
         implements NavigationCoordinateDelegate, ObservableNavigationCoordinate {
 
-    private final SimpleEqualityBasedSetProperty<PatternFacade> navigatorIdentifierConceptsProperty;
+    private final SimpleEqualityBasedObjectProperty<ImmutableSet<PatternFacade>> navigatorIdentifierConceptsProperty;
     private final ObjectProperty<StateSet> vertexStatesProperty;
     private final ObjectProperty<Boolean> sortVerticesProperty;
-    private final ListProperty<PatternFacade> verticesSortPatternListProperty;
+    private final SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> verticesSortPatternListProperty;
 
     /**
      * Note that if you don't declare a listener as final in this way, and just use method references, or
@@ -43,10 +43,10 @@ public abstract class ObservableNavigationCoordinateBase
      * a new object, and they won't compare equal using object identity.
      * https://stackoverflow.com/questions/42146360/how-do-i-remove-lambda-expressions-method-handles-that-are-used-as-listeners
      */
-    private final SetChangeListener<PatternFacade> navigatorIdentifierConceptSetListener = this::navigationSetChanged;
+    private final ChangeListener<ImmutableSet<PatternFacade>> navigatorIdentifierConceptSetListener = this::navigationSetChanged;
     private final ChangeListener<StateSet> vertexStatesSetListener = this::vertexStateSetChanged;
     private final ChangeListener<Boolean> sortVerticesListener = this::sortVerticesListener;
-    private final ListChangeListener<PatternFacade> verticesSortPatternListener = this::verticesSortPatternListener;
+    private final ChangeListener<ImmutableList<PatternFacade>> verticesSortPatternListener = this::verticesSortPatternListener;
 
     public ObservableNavigationCoordinateBase(NavigationCoordinate navigationCoordinate, String coordinateName) {
         super(navigationCoordinate.toNavigationCoordinateRecord(), coordinateName);
@@ -57,10 +57,10 @@ public abstract class ObservableNavigationCoordinateBase
         addListeners();
     }
 
-    protected abstract SimpleEqualityBasedSetProperty<PatternFacade> makeNavigationPatternsProperty(NavigationCoordinate navigationCoordinate);
+    protected abstract SimpleEqualityBasedObjectProperty<ImmutableSet<PatternFacade>> makeNavigationPatternsProperty(NavigationCoordinate navigationCoordinate);
     protected abstract ObjectProperty<StateSet> makeVertexStatesProperty(NavigationCoordinate navigationCoordinate);
     protected abstract ObjectProperty<Boolean> makeSortVerticesProperty(NavigationCoordinate navigationCoordinate);
-    protected abstract ListProperty<PatternFacade> makeVerticesSortPatternListProperty(NavigationCoordinate navigationCoordinate);
+    protected abstract SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeVerticesSortPatternListProperty(NavigationCoordinate navigationCoordinate);
 
 
     @Override
@@ -79,9 +79,11 @@ public abstract class ObservableNavigationCoordinateBase
         this.verticesSortPatternListProperty.removeListener(this.verticesSortPatternListener);
     }
 
-    private void navigationSetChanged(SetChangeListener.Change<? extends PatternFacade> c) {
+    private void navigationSetChanged(ObservableValue<? extends ImmutableSet<PatternFacade>> observable,
+                                      ImmutableSet<PatternFacade> oldSet,
+                                      ImmutableSet<PatternFacade> newSet) {
         this.setValue(getValue().withNavigationPatternNids(
-                IntIds.set.of(c.getSet().stream().mapToInt(patternFacade -> patternFacade.nid()).toArray())));
+                IntIds.set.of(newSet.castToSet(), EntityFacade::toNid)));
     }
 
     private void vertexStateSetChanged(ObservableValue<? extends StateSet> observableValue, StateSet oldValue, StateSet newValue) {
@@ -93,9 +95,11 @@ public abstract class ObservableNavigationCoordinateBase
     }
 
 
-    private void verticesSortPatternListener(ListChangeListener.Change<? extends PatternFacade> c) {
-        this.setValue(getValue().withVerticesSortPatternNidList(IntIds.list.of(
-                c.getList().stream().mapToInt(patternFacade -> patternFacade.nid()).toArray())));
+    private void verticesSortPatternListener(ObservableValue<? extends ImmutableList<PatternFacade>> observable,
+                                             ImmutableList<PatternFacade> oldList,
+                                             ImmutableList<PatternFacade> newList) {
+        this.setValue(getValue().withVerticesSortPatternNidList(
+                IntIds.list.of(newList.castToList(), EntityFacade::toNid)));
     }
 
     @Override
@@ -104,7 +108,7 @@ public abstract class ObservableNavigationCoordinateBase
     }
 
     @Override
-    public SimpleEqualityBasedSetProperty<PatternFacade> navigationPatternsProperty() {
+    public ObjectProperty<ImmutableSet<PatternFacade>> navigationPatternsProperty() {
         return navigatorIdentifierConceptsProperty;
     }
 
@@ -119,7 +123,7 @@ public abstract class ObservableNavigationCoordinateBase
     }
 
     @Override
-    public ListProperty<PatternFacade> verticesSortPatternListProperty() {
+    public ObjectProperty<ImmutableList<PatternFacade>> verticesSortPatternListProperty() {
         return this.verticesSortPatternListProperty;
     }
 }

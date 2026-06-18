@@ -499,8 +499,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             if (!item.isSelected()) {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
-                        ObservableSet<PatternFacade> newSet = FXCollections.observableSet(navOption.toArray(new PatternFacade[navOption.size()]));
-                        observableCoordinate.navigationPatternsProperty().setValue(newSet);
+                        observableCoordinate.navigationPatternsProperty().setValue(Sets.immutable.ofAll(navOption));
                     });
                     event.consume();
                 });

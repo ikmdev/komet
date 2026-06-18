@@ -74,7 +74,7 @@ public class FilterOptionsUtils {
                     fromView = true;
                     mainCoordinates.getNavigator().selectedOptions().clear();
                     if (nav != null) {
-                        mainCoordinates.getNavigator().selectedOptions().addAll(nav);
+                        mainCoordinates.getNavigator().selectedOptions().addAll(nav.castToSet());
                     }
                     observableViewForFilterProperty.navigationCoordinate().navigationPatternsProperty().set(nav);
                     fromView = false;
@@ -288,7 +288,7 @@ public class FilterOptionsUtils {
             ObservableList<PatternFacade> navOptions = main.getNavigator().selectedOptions();
             if (!navOptions.isEmpty()) {
                 committedNodeView.navigationCoordinate().navigationPatternsProperty()
-                        .setValue(FXCollections.observableSet(navOptions.toArray(new PatternFacade[0])));
+                        .setValue(Sets.immutable.ofAll(navOptions));
             }
 
             // LANGUAGE (first coordinate)
@@ -353,8 +353,8 @@ public class FilterOptionsUtils {
         main.getPath().selectedOptions().setAll(path == null ? List.of() : List.of(path));
 
         // NAVIGATION
-        Set<PatternFacade> navPatterns = view.navigationCoordinate().navigationPatternsProperty().get();
-        main.getNavigator().selectedOptions().setAll(navPatterns == null ? List.of() : navPatterns.stream().toList());
+        ImmutableSet<PatternFacade> navPatterns = view.navigationCoordinate().navigationPatternsProperty().get();
+        main.getNavigator().selectedOptions().setAll(navPatterns == null ? List.of() : navPatterns.toList());
 
         // LANGUAGE (first coordinate)
         FilterOptions.LanguageFilterCoordinates langFilter = filterOptions.getLanguageCoordinatesList().getFirst();
