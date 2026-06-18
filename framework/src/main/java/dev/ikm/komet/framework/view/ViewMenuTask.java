@@ -44,6 +44,7 @@ import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.primitive.ImmutableLongList;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
@@ -658,7 +659,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             CheckMenuItem typeOrderItem = new CheckMenuItem(viewCalculator.toEntityString(typePreferenceList.castToList(),
                     entityFacade -> toEntityStringOrPublicIdAndNid(viewCalculator, entityFacade)));
             changeDescriptionPreferenceMenu.getItems().add(typeOrderItem);
-            typeOrderItem.setSelected(languageCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList.castToList()));
+            typeOrderItem.setSelected(languageCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList));
             typeOrderItem.setDisable(typeOrderItem.isSelected());
             typeOrderItem.setOnAction(event -> {
 
@@ -666,9 +667,8 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
                     LOG.debug("JournalController menu");
                 }
 
-                ObservableList<ConceptFacade> prefList = FXCollections.observableArrayList(typePreferenceList.toArray(new ConceptFacade[0]));
                 Platform.runLater(() ->
-                        languageCoordinate.descriptionTypePreferenceListProperty().setValue(prefList)
+                        languageCoordinate.descriptionTypePreferenceListProperty().setValue(Lists.immutable.ofAll(typePreferenceList))
                 );
                 event.consume();
             });

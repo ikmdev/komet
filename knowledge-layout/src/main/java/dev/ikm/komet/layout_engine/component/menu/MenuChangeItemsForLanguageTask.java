@@ -12,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.concurrent.Callable;
@@ -47,12 +48,11 @@ public class MenuChangeItemsForLanguageTask implements Callable<MenuItem>, Scope
         for (ImmutableList<? extends ConceptFacade> typePreferenceList : FxGet.allowedDescriptionTypeOrder()) {
             CheckMenuItem typeOrderItem = new CheckMenuItem(viewCalculator.toEntityString(typePreferenceList.castToList(), viewCalculator::toEntityStringOrPublicIdAndNid));
             changeTypeOrder.getItems().add(typeOrderItem);
-            typeOrderItem.setSelected(observableCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList.castToList()));
+            typeOrderItem.setSelected(observableCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList));
             typeOrderItem.setDisable(typeOrderItem.isSelected());
             typeOrderItem.setOnAction(event -> {
-                ObservableList<ConceptFacade> prefList = FXCollections.observableArrayList(typePreferenceList.toArray(new ConceptFacade[0]));
                 Platform.runLater(() ->
-                        observableCoordinate.descriptionTypePreferenceListProperty().setValue(prefList)
+                        observableCoordinate.descriptionTypePreferenceListProperty().setValue(Lists.immutable.ofAll(typePreferenceList))
                 );
                 event.consume();
             });

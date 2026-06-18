@@ -17,8 +17,8 @@ package dev.ikm.komet.framework.view;
 
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import javafx.beans.property.ListProperty;
-import javafx.collections.FXCollections;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -31,7 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Hermetic check that a description-preference <em>reorder</em> is committed as a single whole value through the
  * coordinate-override layer — the mechanism the View Options popup's {@code commitToView} relies on after the
- * mesh-collapse (ike-issues#666, #692).
+ * mesh-collapse (ike-issues#666, #692), now that the description-type dimension is held as one whole immutable
+ * value in an {@link OverrideOf} rather than a {@code ListPropertyWithOverride} (ike-issues#697).
  * <p>
  * A reorder of the same elements (only the order — the language calculator's preference order — differs) must:
  * <ul>
@@ -42,10 +43,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *       a reorder must propagate without it, and</li>
  *   <li>revert the override when edited back to the parent order, again with no dummy.</li>
  * </ul>
- * Datastore-free (no {@code FxGet}/{@code StampService}, no datastore): it drives {@link ListPropertyWithOverride}
- * directly, exactly as {@code commitToView} does via {@code setValue} on the language coordinate's
- * {@code descriptionTypePreferenceList}. This is also the first direct test of {@code ListPropertyWithOverride},
- * which #692 notes was untested.
+ * Datastore-free (no {@code FxGet}/{@code StampService}, no datastore): it drives an {@code OverrideOf} over an
+ * {@link ImmutableList} directly, exactly as {@code commitToView} does via {@code setValue} on the language
+ * coordinate's {@code descriptionTypePreferenceList}. The generic firing/inheritance contract of {@code OverrideOf}
+ * itself is proved by {@code OverrideOfTest}; this test pins the description-type intent to that mechanism.
  */
 class DescriptionPreferenceReorderTest {
 
@@ -55,30 +56,30 @@ class DescriptionPreferenceReorderTest {
 
     @Test
     void reorderCommitsAsWholeValue_neverADummySentinel_andRevertsToParent() {
-        ListProperty<ConceptFacade> parent = new SimpleEqualityBasedListProperty<>(
-                this, "descriptionTypePreferenceList", FXCollections.observableArrayList(FQN, REGULAR));
-        ListPropertyWithOverride<ConceptFacade> override = new ListPropertyWithOverride<>(parent, this);
+        SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> parent =
+                new SimpleEqualityBasedObjectProperty<>(this, "descriptionTypePreferenceList", Lists.immutable.of(FQN, REGULAR));
+        OverrideOf<ImmutableList<ConceptFacade>> override = new OverrideOf<>(parent, this);
 
         // (a) a fresh override is a pure pass-through to the parent's order.
-        assertEquals(List.of(FQN, REGULAR), new ArrayList<>(override.get()), "fresh override inherits the parent order");
+        assertEquals(Lists.immutable.of(FQN, REGULAR), override.get(), "fresh override inherits the parent order");
         assertFalse(override.isOverridden(), "fresh override is not pinned");
 
         // Spy: record every value the override publishes, so we can assert no dummy sentinel and a single write.
-        List<List<ConceptFacade>> published = new ArrayList<>();
-        override.addListener((obs, old, val) -> published.add(val == null ? null : new ArrayList<>(val)));
+        List<ImmutableList<ConceptFacade>> published = new ArrayList<>();
+        override.addListener((obs, old, val) -> published.add(val));
 
         // (b) commit a reorder as a whole value — exactly what commitToView does for description-type.
-        override.setValue(FXCollections.observableArrayList(REGULAR, FQN));
-        assertEquals(List.of(REGULAR, FQN), new ArrayList<>(override.get()), "the reordered order wins");
+        override.setValue(Lists.immutable.of(REGULAR, FQN));
+        assertEquals(Lists.immutable.of(REGULAR, FQN), override.get(), "the reordered order wins");
         assertTrue(override.isOverridden(), "a reorder pins the override");
         assertEquals(1, published.size(), "exactly one whole-value change event — no dummy pre-write");
         assertFalse(published.stream().anyMatch(v -> v != null && v.isEmpty()),
                 "no empty-list dummy sentinel is ever published");
 
-        // (c) editing back to the parent order reverts the override (no dummy, whole-value rebind to parent).
-        override.setValue(FXCollections.observableArrayList(FQN, REGULAR));
+        // (c) editing back to the parent order reverts the override (no dummy, whole-value revert to parent).
+        override.setValue(Lists.immutable.of(FQN, REGULAR));
         assertFalse(override.isOverridden(), "editing back to the parent order clears the override");
-        assertEquals(List.of(FQN, REGULAR), new ArrayList<>(override.get()), "the reverted override tracks the parent");
+        assertEquals(Lists.immutable.of(FQN, REGULAR), override.get(), "the reverted override tracks the parent");
         assertFalse(published.stream().anyMatch(v -> v != null && v.isEmpty()),
                 "still no empty-list dummy sentinel after revert");
     }

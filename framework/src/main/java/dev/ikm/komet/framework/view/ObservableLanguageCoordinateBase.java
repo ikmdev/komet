@@ -24,7 +24,9 @@ import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinate;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
+import org.eclipse.collections.api.list.ImmutableList;
 
 public abstract class ObservableLanguageCoordinateBase extends ObservableCoordinateAbstract<LanguageCoordinateRecord>
         implements ObservableLanguageCoordinate {
@@ -37,7 +39,7 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
      */
     private final ChangeListener<ConceptFacade> languageConceptChangedListener = this::languageConceptChanged;
     private final ListChangeListener<PatternFacade> descriptionPatternPreferenceListListener = this::descriptionPatternPreferenceListChanged;
-    private final ListChangeListener<ConceptFacade> descriptionTypePreferenceListListener = this::descriptionTypePreferenceListChanged;
+    private final ChangeListener<ImmutableList<ConceptFacade>> descriptionTypePreferenceListListener = this::descriptionTypePreferenceListChanged;
     private final ListChangeListener<PatternFacade> dialectPatternPreferenceListChangedListener = this::dialectPatternPreferenceListChanged;
     private final ListChangeListener<ConceptFacade> modulePreferenceListChangedListener = this::modulePreferenceListChanged;
 
@@ -53,9 +55,9 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
     private final SimpleEqualityBasedListProperty<PatternFacade> dialectPatternPreferenceListProperty;
 
     /**
-     * The description type preference list property.
+     * The description type preference list dimension — held as one whole immutable value (ike-issues#697).
      */
-    private final SimpleEqualityBasedListProperty<ConceptFacade> descriptionTypePreferenceListProperty;
+    private final SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> descriptionTypePreferenceListProperty;
 
     private final SimpleEqualityBasedListProperty<PatternFacade> descriptionPatternPreferenceListProperty;
 
@@ -83,9 +85,9 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
     protected abstract SimpleEqualityBasedListProperty<PatternFacade> makeDescriptionPatternPreferenceListProperty(LanguageCoordinate languageCoordinate);
 
     /**
-     * The description type preference list property.
+     * The description type preference list dimension — held as one whole immutable value (ike-issues#697).
      */
-    protected abstract SimpleEqualityBasedListProperty<ConceptFacade> makeDescriptionTypePreferenceListProperty(LanguageCoordinate languageCoordinate);
+    protected abstract SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeDescriptionTypePreferenceListProperty(LanguageCoordinate languageCoordinate);
 
     protected abstract SimpleEqualityBasedListProperty<ConceptFacade> makeModulePreferenceListProperty(LanguageCoordinate languageCoordinate);
 
@@ -121,13 +123,14 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
                 dialectPatternPreferenceNidList(),
                 modulePreferenceNidListForLanguage()));
     }
-    private void descriptionTypePreferenceListChanged(ListChangeListener.Change<? extends ConceptFacade> c) {
+    private void descriptionTypePreferenceListChanged(ObservableValue<? extends ImmutableList<ConceptFacade>> observable,
+                                                      ImmutableList<ConceptFacade> oldList,
+                                                      ImmutableList<ConceptFacade> newList) {
         this.setValue(LanguageCoordinateRecord.make(languageConceptNid(),
                 descriptionPatternPreferenceNidList(),
-                IntIds.list.of(c.getList().stream().mapToInt(value -> value.nid()).toArray()),
+                IntIds.list.of(newList.castToList(), EntityFacade::toNid),
                 dialectPatternPreferenceNidList(),
                 modulePreferenceNidListForLanguage()));
-        LOG.info("\n\nLanguage coordinate after: " + this.getValue());
     }
 
     private void dialectPatternPreferenceListChanged(ListChangeListener.Change<? extends PatternFacade> c) {
@@ -159,7 +162,7 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
     }
 
     @Override
-    public ListProperty<ConceptFacade> descriptionTypePreferenceListProperty() {
+    public ObjectProperty<ImmutableList<ConceptFacade>> descriptionTypePreferenceListProperty() {
         return this.descriptionTypePreferenceListProperty;
     }
 

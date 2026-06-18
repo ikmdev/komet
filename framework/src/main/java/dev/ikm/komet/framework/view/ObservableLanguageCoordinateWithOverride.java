@@ -23,6 +23,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.value.ObservableValue;
+import org.eclipse.collections.api.list.ImmutableList;
 
 public class ObservableLanguageCoordinateWithOverride extends ObservableLanguageCoordinateBase {
 
@@ -81,8 +82,8 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     }
 
     @Override
-    public ListPropertyWithOverride<ConceptFacade> descriptionTypePreferenceListProperty() {
-        return (ListPropertyWithOverride<ConceptFacade>) super.descriptionTypePreferenceListProperty();
+    public OverrideOf<ImmutableList<ConceptFacade>> descriptionTypePreferenceListProperty() {
+        return (OverrideOf<ImmutableList<ConceptFacade>>) super.descriptionTypePreferenceListProperty();
     }
 
     @Override
@@ -119,9 +120,9 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<ConceptFacade> makeDescriptionTypePreferenceListProperty(LanguageCoordinate languageCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeDescriptionTypePreferenceListProperty(LanguageCoordinate languageCoordinate) {
         ObservableLanguageCoordinate overriddenCoordinate = (ObservableLanguageCoordinate) languageCoordinate;
-        return new ListPropertyWithOverride<>(overriddenCoordinate.descriptionTypePreferenceListProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.descriptionTypePreferenceListProperty(), this);
     }
 
     @Override
@@ -134,7 +135,7 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     public LanguageCoordinateRecord getOriginalValue() {
         return LanguageCoordinateRecord.make(languageConceptProperty().getOriginalValue().nid(),
                 IntIds.list.of(descriptionPatternPreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
-                IntIds.list.of(descriptionTypePreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
+                IntIds.list.of(descriptionTypePreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
                 IntIds.list.of(dialectPatternPreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
                 IntIds.list.of(modulePreferenceListForLanguageProperty().getOriginalValue(), EntityFacade::toNid));
     }
@@ -156,7 +157,7 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
         }
 
         if (!this.descriptionTypePreferenceListProperty().isOverridden()) {
-            this.descriptionTypePreferenceListProperty().setAll(newValue.descriptionTypePreferenceNidList().mapToList(ConceptFacade::make));
+            this.descriptionTypePreferenceListProperty().setValue(newValue.descriptionTypePreferenceList());
         }
 
         if (!this.modulePreferenceListForLanguageProperty().isOverridden()) {

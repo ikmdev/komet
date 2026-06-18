@@ -13,6 +13,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import org.eclipse.collections.api.factory.Lists;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
@@ -212,7 +213,7 @@ public class FilterOptionsUtils {
                     fromView = true;
                     languageFilterCoordinates.getDescriptionType().selectedOptions().clear();
                     if (list != null) {
-                        languageFilterCoordinates.getDescriptionType().selectedOptions().addAll(list);
+                        languageFilterCoordinates.getDescriptionType().selectedOptions().addAll(list.castToList());
                     }
                     observableViewForFilterProperty.languageCoordinates().getFirst().descriptionTypePreferenceListProperty().set(list);
                     fromView = false;
@@ -302,8 +303,8 @@ public class FilterOptionsUtils {
             // The description-type ORDER is the meaning (the language calculator's preference order), so a reorder
             // commits as a whole-value setValue and propagates (ike-issues#666).
             nodeLang.descriptionTypePreferenceListProperty().setValue(
-                    lang.getDescriptionType().selectedOptions().stream().map(e -> (ConceptFacade) e)
-                            .collect(Collectors.toCollection(FXCollections::observableArrayList)));
+                    Lists.immutable.fromStream(
+                            lang.getDescriptionType().selectedOptions().stream().map(e -> (ConceptFacade) e)));
         } finally {
             fromFilter = false;
         }
@@ -362,7 +363,7 @@ public class FilterOptionsUtils {
         langFilter.getDialect().selectedOptions().setAll(
                 viewLang.dialectPatternPreferenceListProperty().get().stream().map(p -> (EntityFacade) p).toList());
         langFilter.getDescriptionType().selectedOptions().setAll(
-                viewLang.descriptionTypePreferenceListProperty().get().stream().map(c -> (EntityFacade) c).toList());
+                viewLang.descriptionTypePreferenceListProperty().get().castToList().stream().map(c -> (EntityFacade) c).toList());
     }
 
     /// True when the window's nodeView currently carries any override (vs its inherited parent) — drives the

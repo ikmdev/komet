@@ -25,6 +25,7 @@ import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateDelegate;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
+import org.eclipse.collections.api.list.ImmutableList;
 
 //~--- interfaces -------------------------------------------------------------
 
@@ -69,7 +70,7 @@ public interface ObservableLanguageCoordinate
     *
     * @return the object property
     */
-    ListProperty<ConceptFacade> descriptionTypePreferenceListProperty();
+    ObjectProperty<ImmutableList<ConceptFacade>> descriptionTypePreferenceListProperty();
 
    /**
     * Dialect assemblage preference list property.
