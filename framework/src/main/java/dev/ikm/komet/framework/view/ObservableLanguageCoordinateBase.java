@@ -15,11 +15,9 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinate;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
@@ -38,10 +36,10 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
      * https://stackoverflow.com/questions/42146360/how-do-i-remove-lambda-expressions-method-handles-that-are-used-as-listeners
      */
     private final ChangeListener<ConceptFacade> languageConceptChangedListener = this::languageConceptChanged;
-    private final ListChangeListener<PatternFacade> descriptionPatternPreferenceListListener = this::descriptionPatternPreferenceListChanged;
+    private final ChangeListener<ImmutableList<PatternFacade>> descriptionPatternPreferenceListListener = this::descriptionPatternPreferenceListChanged;
     private final ChangeListener<ImmutableList<ConceptFacade>> descriptionTypePreferenceListListener = this::descriptionTypePreferenceListChanged;
-    private final ListChangeListener<PatternFacade> dialectPatternPreferenceListChangedListener = this::dialectPatternPreferenceListChanged;
-    private final ListChangeListener<ConceptFacade> modulePreferenceListChangedListener = this::modulePreferenceListChanged;
+    private final ChangeListener<ImmutableList<PatternFacade>> dialectPatternPreferenceListChangedListener = this::dialectPatternPreferenceListChanged;
+    private final ChangeListener<ImmutableList<ConceptFacade>> modulePreferenceListChangedListener = this::modulePreferenceListChanged;
 
 
     /**
@@ -50,18 +48,18 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
     private final SimpleEqualityBasedObjectProperty<ConceptFacade> languageProperty;
 
     /**
-     * The dialect assemblage preference list property.
+     * The dialect pattern preference list dimension — held as one whole immutable value (ike-issues#697).
      */
-    private final SimpleEqualityBasedListProperty<PatternFacade> dialectPatternPreferenceListProperty;
+    private final SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> dialectPatternPreferenceListProperty;
 
     /**
      * The description type preference list dimension — held as one whole immutable value (ike-issues#697).
      */
     private final SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> descriptionTypePreferenceListProperty;
 
-    private final SimpleEqualityBasedListProperty<PatternFacade> descriptionPatternPreferenceListProperty;
+    private final SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> descriptionPatternPreferenceListProperty;
 
-    private final SimpleEqualityBasedListProperty<ConceptFacade> modulePreferenceListProperty;
+    private final SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> modulePreferenceListProperty;
 
 
     protected ObservableLanguageCoordinateBase(LanguageCoordinate languageCoordinate, String coordinateName) {
@@ -81,15 +79,15 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
     /**
      * The dialect assemblage preference list property.
      */
-    protected abstract SimpleEqualityBasedListProperty<PatternFacade> makeDialectPatternPreferenceListProperty(LanguageCoordinate languageCoordinate);
-    protected abstract SimpleEqualityBasedListProperty<PatternFacade> makeDescriptionPatternPreferenceListProperty(LanguageCoordinate languageCoordinate);
+    protected abstract SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeDialectPatternPreferenceListProperty(LanguageCoordinate languageCoordinate);
+    protected abstract SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeDescriptionPatternPreferenceListProperty(LanguageCoordinate languageCoordinate);
 
     /**
      * The description type preference list dimension — held as one whole immutable value (ike-issues#697).
      */
     protected abstract SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeDescriptionTypePreferenceListProperty(LanguageCoordinate languageCoordinate);
 
-    protected abstract SimpleEqualityBasedListProperty<ConceptFacade> makeModulePreferenceListProperty(LanguageCoordinate languageCoordinate);
+    protected abstract SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeModulePreferenceListProperty(LanguageCoordinate languageCoordinate);
 
     @Override
     protected void addListeners() {
@@ -109,16 +107,20 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
         this.modulePreferenceListForLanguageProperty().removeListener(this.modulePreferenceListChangedListener);
      }
 
-    private void modulePreferenceListChanged(ListChangeListener.Change<? extends ConceptFacade> c) {
+    private void modulePreferenceListChanged(ObservableValue<? extends ImmutableList<ConceptFacade>> observable,
+                                             ImmutableList<ConceptFacade> oldList,
+                                             ImmutableList<ConceptFacade> newList) {
         this.setValue(LanguageCoordinateRecord.make(languageConceptNid(),
                 descriptionPatternPreferenceNidList(),
                 descriptionTypePreferenceNidList(),
                 dialectPatternPreferenceNidList(),
-                IntIds.list.of(c.getList().stream().mapToInt(value -> value.nid()).toArray())));
+                IntIds.list.of(newList.castToList(), EntityFacade::toNid)));
     }
-    private void descriptionPatternPreferenceListChanged(ListChangeListener.Change<? extends PatternFacade> c) {
+    private void descriptionPatternPreferenceListChanged(ObservableValue<? extends ImmutableList<PatternFacade>> observable,
+                                                         ImmutableList<PatternFacade> oldList,
+                                                         ImmutableList<PatternFacade> newList) {
         this.setValue(LanguageCoordinateRecord.make(languageConceptNid(),
-                IntIds.list.of(c.getList().stream().mapToInt(value -> value.nid()).toArray()),
+                IntIds.list.of(newList.castToList(), EntityFacade::toNid),
                 descriptionTypePreferenceNidList(),
                 dialectPatternPreferenceNidList(),
                 modulePreferenceNidListForLanguage()));
@@ -133,11 +135,13 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
                 modulePreferenceNidListForLanguage()));
     }
 
-    private void dialectPatternPreferenceListChanged(ListChangeListener.Change<? extends PatternFacade> c) {
+    private void dialectPatternPreferenceListChanged(ObservableValue<? extends ImmutableList<PatternFacade>> observable,
+                                                     ImmutableList<PatternFacade> oldList,
+                                                     ImmutableList<PatternFacade> newList) {
         this.setValue(LanguageCoordinateRecord.make(languageConceptNid(),
                 descriptionPatternPreferenceNidList(),
                 descriptionTypePreferenceNidList(),
-                IntIds.list.of(c.getList().stream().mapToInt(value -> value.nid()).toArray()),
+                IntIds.list.of(newList.castToList(), EntityFacade::toNid),
                 modulePreferenceNidListForLanguage()));
     }
 
@@ -152,7 +156,7 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
     }
 
     @Override
-    public ListProperty<ConceptFacade> modulePreferenceListForLanguageProperty() {
+    public ObjectProperty<ImmutableList<ConceptFacade>> modulePreferenceListForLanguageProperty() {
         return this.modulePreferenceListProperty;
     }
 
@@ -167,12 +171,12 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
     }
 
     @Override
-    public ListProperty<PatternFacade> dialectPatternPreferenceListProperty() {
+    public ObjectProperty<ImmutableList<PatternFacade>> dialectPatternPreferenceListProperty() {
         return this.dialectPatternPreferenceListProperty;
     }
 
     @Override
-    public ListProperty<PatternFacade> descriptionPatternPreferenceListProperty() {
+    public ObjectProperty<ImmutableList<PatternFacade>> descriptionPatternPreferenceListProperty() {
         return this.descriptionPatternPreferenceListProperty;
     }
 

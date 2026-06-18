@@ -14,6 +14,7 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
@@ -179,11 +180,11 @@ public class FilterOptionsUtils {
                     // update dialect
                     languageFilterCoordinates.getDialect().selectedOptions().clear();
                     if (TinkarTerm.ENGLISH_LANGUAGE.equals(lang)) {
-                        ObservableList<PatternFacade> list = observableLanguageCoordinate.dialectPatternPreferenceListProperty().get();
-                        languageFilterCoordinates.getDialect().selectedOptions().addAll(list);
+                        ImmutableList<PatternFacade> list = observableLanguageCoordinate.dialectPatternPreferenceListProperty().get();
+                        languageFilterCoordinates.getDialect().selectedOptions().addAll(list.castToList());
                         observableViewForFilterProperty.languageCoordinates().getFirst().dialectPatternPreferenceListProperty().set(list);
                     } else {
-                        observableViewForFilterProperty.languageCoordinates().getFirst().dialectPatternPreferenceListProperty().clear();
+                        observableViewForFilterProperty.languageCoordinates().getFirst().dialectPatternPreferenceListProperty().setValue(Lists.immutable.<PatternFacade>empty());
                     }
                     observableViewForFilterProperty.languageCoordinates().getFirst().languageConceptProperty().set(lang);
                     fromView = false;
@@ -200,7 +201,7 @@ public class FilterOptionsUtils {
                     fromView = true;
                     languageFilterCoordinates.getDialect().selectedOptions().clear();
                     if (list != null) {
-                        languageFilterCoordinates.getDialect().selectedOptions().addAll(list);
+                        languageFilterCoordinates.getDialect().selectedOptions().addAll(list.castToList());
                     }
                     observableViewForFilterProperty.languageCoordinates().getFirst().dialectPatternPreferenceListProperty().set(list);
                     fromView = false;
@@ -298,8 +299,8 @@ public class FilterOptionsUtils {
                 nodeLang.languageConceptProperty().setValue((ConceptFacade) langOptions.getFirst());
             }
             nodeLang.dialectPatternPreferenceListProperty().setValue(
-                    lang.getDialect().selectedOptions().stream().map(e -> (PatternFacade) e)
-                            .collect(Collectors.toCollection(FXCollections::observableArrayList)));
+                    Lists.immutable.fromStream(
+                            lang.getDialect().selectedOptions().stream().map(e -> (PatternFacade) e)));
             // The description-type ORDER is the meaning (the language calculator's preference order), so a reorder
             // commits as a whole-value setValue and propagates (ike-issues#666).
             nodeLang.descriptionTypePreferenceListProperty().setValue(
@@ -361,7 +362,7 @@ public class FilterOptionsUtils {
         ConceptFacade langConcept = viewLang.languageConceptProperty().get();
         langFilter.getLanguage().selectedOptions().setAll(langConcept == null ? List.of() : List.of((EntityFacade) langConcept));
         langFilter.getDialect().selectedOptions().setAll(
-                viewLang.dialectPatternPreferenceListProperty().get().stream().map(p -> (EntityFacade) p).toList());
+                viewLang.dialectPatternPreferenceListProperty().get().castToList().stream().map(p -> (EntityFacade) p).toList());
         langFilter.getDescriptionType().selectedOptions().setAll(
                 viewLang.descriptionTypePreferenceListProperty().get().castToList().stream().map(c -> (EntityFacade) c).toList());
     }

@@ -547,10 +547,9 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             CheckMenuItem dialectOrderItem = new CheckMenuItem(viewCalculator.toEntityString(dialectPreferenceList.castToList(),
                     entityFacade -> toEntityStringOrPublicIdAndNid(viewCalculator, entityFacade)));
             changeDialectOrder.getItems().add(dialectOrderItem);
-            dialectOrderItem.setSelected(observableCoordinate.dialectPatternPreferenceListProperty().getValue().equals(dialectPreferenceList.castToList()));
+            dialectOrderItem.setSelected(observableCoordinate.dialectPatternPreferenceListProperty().getValue().equals(dialectPreferenceList));
             dialectOrderItem.setOnAction(event -> {
-                ObservableList<PatternFacade> prefList = FXCollections.observableArrayList(dialectPreferenceList.toArray(new PatternFacade[0]));
-                Platform.runLater(() -> observableCoordinate.dialectPatternPreferenceListProperty().setValue(prefList));
+                Platform.runLater(() -> observableCoordinate.dialectPatternPreferenceListProperty().setValue(Lists.immutable.ofAll(dialectPreferenceList)));
                 event.consume();
             });
         }

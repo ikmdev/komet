@@ -77,8 +77,8 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     }
 
     @Override
-    public ListPropertyWithOverride<ConceptFacade> modulePreferenceListForLanguageProperty() {
-        return (ListPropertyWithOverride<ConceptFacade>) super.modulePreferenceListForLanguageProperty();
+    public OverrideOf<ImmutableList<ConceptFacade>> modulePreferenceListForLanguageProperty() {
+        return (OverrideOf<ImmutableList<ConceptFacade>>) super.modulePreferenceListForLanguageProperty();
     }
 
     @Override
@@ -87,13 +87,13 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     }
 
     @Override
-    public ListPropertyWithOverride<PatternFacade> dialectPatternPreferenceListProperty() {
-        return (ListPropertyWithOverride<PatternFacade>) super.dialectPatternPreferenceListProperty();
+    public OverrideOf<ImmutableList<PatternFacade>> dialectPatternPreferenceListProperty() {
+        return (OverrideOf<ImmutableList<PatternFacade>>) super.dialectPatternPreferenceListProperty();
     }
 
     @Override
-    public ListPropertyWithOverride<PatternFacade> descriptionPatternPreferenceListProperty() {
-        return (ListPropertyWithOverride<PatternFacade>) super.descriptionPatternPreferenceListProperty();
+    public OverrideOf<ImmutableList<PatternFacade>> descriptionPatternPreferenceListProperty() {
+        return (OverrideOf<ImmutableList<PatternFacade>>) super.descriptionPatternPreferenceListProperty();
     }
 
     @Override
@@ -102,9 +102,9 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<PatternFacade> makeDescriptionPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeDescriptionPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
         ObservableLanguageCoordinate overriddenCoordinate = (ObservableLanguageCoordinate) languageCoordinate;
-        return new ListPropertyWithOverride<>(overriddenCoordinate.descriptionPatternPreferenceListProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.descriptionPatternPreferenceListProperty(), this);
     }
 
     @Override
@@ -114,9 +114,9 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<PatternFacade> makeDialectPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeDialectPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
         ObservableLanguageCoordinate overriddenCoordinate = (ObservableLanguageCoordinate) languageCoordinate;
-        return new ListPropertyWithOverride<>(overriddenCoordinate.dialectPatternPreferenceListProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.dialectPatternPreferenceListProperty(), this);
     }
 
     @Override
@@ -126,18 +126,18 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<ConceptFacade> makeModulePreferenceListProperty(LanguageCoordinate languageCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeModulePreferenceListProperty(LanguageCoordinate languageCoordinate) {
         ObservableLanguageCoordinate overriddenCoordinate = (ObservableLanguageCoordinate) languageCoordinate;
-        return new ListPropertyWithOverride<>(overriddenCoordinate.modulePreferenceListForLanguageProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.modulePreferenceListForLanguageProperty(), this);
     }
 
     @Override
     public LanguageCoordinateRecord getOriginalValue() {
         return LanguageCoordinateRecord.make(languageConceptProperty().getOriginalValue().nid(),
-                IntIds.list.of(descriptionPatternPreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
+                IntIds.list.of(descriptionPatternPreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
                 IntIds.list.of(descriptionTypePreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
-                IntIds.list.of(dialectPatternPreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
-                IntIds.list.of(modulePreferenceListForLanguageProperty().getOriginalValue(), EntityFacade::toNid));
+                IntIds.list.of(dialectPatternPreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
+                IntIds.list.of(modulePreferenceListForLanguageProperty().getOriginalValue().castToList(), EntityFacade::toNid));
     }
 
     @Override
@@ -149,11 +149,11 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
         }
 
         if (!this.descriptionPatternPreferenceListProperty().isOverridden()) {
-            this.descriptionPatternPreferenceListProperty().setAll(newValue.descriptionPatternPreferenceNidList().mapToList(PatternFacade::make));
+            this.descriptionPatternPreferenceListProperty().setValue(newValue.descriptionPatternPreferenceNidList().map(PatternFacade::make));
         }
 
         if (!this.dialectPatternPreferenceListProperty().isOverridden()) {
-            this.dialectPatternPreferenceListProperty().setAll(newValue.dialectPatternPreferenceNidList().mapToList(PatternFacade::make));
+            this.dialectPatternPreferenceListProperty().setValue(newValue.dialectPatternPreferenceList());
         }
 
         if (!this.descriptionTypePreferenceListProperty().isOverridden()) {
@@ -161,7 +161,7 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
         }
 
         if (!this.modulePreferenceListForLanguageProperty().isOverridden()) {
-            this.modulePreferenceListForLanguageProperty().setAll(newValue.modulePreferenceNidListForLanguage().mapToList(ConceptFacade::make));
+            this.modulePreferenceListForLanguageProperty().setValue(newValue.modulePreferenceListForLanguage());
         }
 
         return newValue;

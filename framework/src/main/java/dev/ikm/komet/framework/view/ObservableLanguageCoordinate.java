@@ -18,7 +18,6 @@ package dev.ikm.komet.framework.view;
 //~--- non-JDK imports --------------------------------------------------------
 
 
-import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
@@ -50,7 +49,7 @@ public interface ObservableLanguageCoordinate
     default ObservableCoordinate<?>[] getCompositeCoordinates() {
         return new ObservableCoordinate<?>[]{};
     }
-    ListProperty<PatternFacade> descriptionPatternPreferenceListProperty();
+    ObjectProperty<ImmutableList<PatternFacade>> descriptionPatternPreferenceListProperty();
 
     /**
      * 
@@ -77,8 +76,8 @@ public interface ObservableLanguageCoordinate
     *
     * @return the object property
     */
-   ListProperty<PatternFacade> dialectPatternPreferenceListProperty();
+   ObjectProperty<ImmutableList<PatternFacade>> dialectPatternPreferenceListProperty();
 
-   ListProperty<ConceptFacade> modulePreferenceListForLanguageProperty();
+   ObjectProperty<ImmutableList<ConceptFacade>> modulePreferenceListForLanguageProperty();
 }
 
