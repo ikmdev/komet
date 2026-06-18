@@ -27,7 +27,7 @@
     -fx-font-weight: 500;
     -fx-font-size: 13;
     -fx-alignment: center;
-    -fx-pref-width: 198;
+    -fx-pref-width: 176;
 }
 
 .filter-options-popup > .header-box > .region,
@@ -68,6 +68,40 @@
     -fx-background-color: black;
 }
 
+.filter-options-popup > .header-box > .revert-all-group {
+    -fx-alignment: center;
+    -fx-spacing: 3;
+}
+
+.filter-options-popup > .header-box > .revert-all-group > .header-override-dot {
+    -fx-min-width: 5;
+    -fx-pref-width: 5;
+    -fx-max-width: 5;
+    -fx-min-height: 5;
+    -fx-pref-height: 5;
+    -fx-max-height: 5;
+    -fx-background-radius: 5;
+    -fx-background-color: #F3BE00;
+}
+
+.filter-options-popup > .header-box > .revert-all-group > .revert-all-pane {
+    -fx-min-width: 28;
+    -fx-pref-width: 28;
+    -fx-max-width: 28;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+    -fx-max-height: 28;
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+}
+
+.filter-options-popup > .header-box > .revert-all-group > .revert-all-pane > .icon.revert {
+    -fx-shape: "M5.39048 15.4168V13.7502H11.32C12.195 13.7502 12.9553 13.4724 13.6008 12.9168C14.2469 12.3613 14.57 11.6668 14.57 10.8335C14.57 10.0002 14.2469 9.30572 13.6008 8.75016C12.9553 8.19461 12.195 7.91683 11.32 7.91683H6.90334L8.48667 9.50016C8.63945 9.65294 8.71584 9.84738 8.71584 10.0835C8.71584 10.3196 8.63945 10.5141 8.48667 10.6668C8.33389 10.8196 8.13945 10.896 7.90334 10.896C7.66722 10.896 7.47278 10.8196 7.32 10.6668L3.7627 7.07694L7.32 3.50016C7.47278 3.34738 7.66722 3.271 7.90334 3.271C8.13945 3.271 8.33389 3.34738 8.48667 3.50016C8.63945 3.65294 8.71584 3.84738 8.71584 4.0835C8.71584 4.31961 8.63945 4.51405 8.48667 4.66683L6.90334 6.25016H11.32C12.6672 6.25016 13.8236 6.68766 14.7892 7.56266C15.7542 8.43766 16.2367 9.52794 16.2367 10.8335C16.2367 12.1391 15.7542 13.2293 14.7892 14.1043C13.8236 14.9793 12.6672 15.4168 11.32 15.4168H5.39048Z";
+    -fx-background-color: #5896F6;
+    -fx-scale-shape: false;
+}
+
 /*
  Filter Options Popup - Bottom
 */
@@ -77,9 +111,16 @@
     -fx-spacing: 8;
 }
 
+.filter-options-popup > .bottom-box > .pending-summary {
+    -fx-text-fill: #8B96A6;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 11;
+    -fx-padding: 0 0 2 4;
+}
+
 .filter-options-popup > .bottom-box > .button {
     -fx-font-family: "Noto Sans";
-    -fx-font-weight: 600;
+    -fx-font-weight: 700;
     -fx-font-size: 12;
     -fx-alignment: center;
     -fx-text-fill: #5896F6;
@@ -106,7 +147,7 @@
 }
 
 .filter-options-popup > .bottom-box > .button:disabled {
-    -fx-text-fill: #6E7989;
+    -fx-text-fill: #8B96A6;
     -fx-background-color: #6E7989, #2E3240;
 }
 
@@ -331,23 +372,28 @@
     -fx-pref-height: 20;
 }
 
-.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane > .title > .title-box > .title-label {
+.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane > .title > .title-box > .title-hbox {
+    -fx-alignment: center-left;
+    -fx-padding: 0 26 0 0;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane > .title > .title-box > .title-hbox > .title-label {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 13px;
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-text-fill: #5896F6;
-    -fx-pref-width: 266;
+    -fx-pref-width: 220;
     -fx-pref-height: 20;
     -fx-content-display: right;
     -fx-alignment: center-left;
 }
 
-.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane:expanded > .title > .title-box > .title-label {
+.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane:expanded > .title > .title-box > .title-hbox > .title-label {
     -fx-text-fill: #E1E8F1;
 }
 
-.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane > .title > .title-box > .title-label > .circle {
+.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane > .title > .title-box > .title-hbox > .title-label > .circle {
     -fx-pref-width: 4;
     -fx-pref-height: 4;
     -fx-background-radius: 4;
@@ -355,8 +401,28 @@
     -fx-translate-y: -6;
 }
 
-.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane:modified > .title > .title-box > .title-label > .circle {
+.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane:modified > .title > .title-box > .title-hbox > .title-label > .circle {
     -fx-background-color: #F3BE00;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane > .title > .title-box > .title-hbox > .revert-pane {
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+    visibility: hidden;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane:modified > .title > .title-box > .title-hbox > .revert-pane {
+    visibility: visible;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane > .title > .title-box > .title-hbox > .revert-pane > .icon.revert {
+    -fx-shape: "M5.39048 15.4168V13.7502H11.32C12.195 13.7502 12.9553 13.4724 13.6008 12.9168C14.2469 12.3613 14.57 11.6668 14.57 10.8335C14.57 10.0002 14.2469 9.30572 13.6008 8.75016C12.9553 8.19461 12.195 7.91683 11.32 7.91683H6.90334L8.48667 9.50016C8.63945 9.65294 8.71584 9.84738 8.71584 10.0835C8.71584 10.3196 8.63945 10.5141 8.48667 10.6668C8.33389 10.8196 8.13945 10.896 7.90334 10.896C7.66722 10.896 7.47278 10.8196 7.32 10.6668L3.7627 7.07694L7.32 3.50016C7.47278 3.34738 7.66722 3.271 7.90334 3.271C8.13945 3.271 8.33389 3.34738 8.48667 3.50016C8.63945 3.65294 8.71584 3.84738 8.71584 4.0835C8.71584 4.31961 8.63945 4.51405 8.48667 4.66683L6.90334 6.25016H11.32C12.6672 6.25016 13.8236 6.68766 14.7892 7.56266C15.7542 8.43766 16.2367 9.52794 16.2367 10.8335C16.2367 12.1391 15.7542 13.2293 14.7892 14.1043C13.8236 14.9793 12.6672 15.4168 11.32 15.4168H5.39048Z";
+    -fx-background-color: #8B96A6;
+    -fx-scale-shape: false;
+}
+
+.filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane:modified > .title > .title-box > .title-hbox > .revert-pane > .icon.revert {
+    -fx-background-color: #4A7AD2;
 }
 
 .filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane > .title > .title-box > .option.truncated-text-flow {
@@ -920,13 +986,13 @@
     visibility: hidden;
 }
 
-.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .accordion > .lang-filter-titled-pane:expanded > .title > .title-box > .title-hbox > .revert-pane {
+.filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .accordion > .lang-filter-titled-pane:modified > .title > .title-box > .title-hbox > .revert-pane {
     visibility: visible;
 }
 
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .accordion > .lang-filter-titled-pane > .title > .title-box > .title-hbox > .revert-pane > .icon.revert {
     -fx-shape: "M5.39048 15.4168V13.7502H11.32C12.195 13.7502 12.9553 13.4724 13.6008 12.9168C14.2469 12.3613 14.57 11.6668 14.57 10.8335C14.57 10.0002 14.2469 9.30572 13.6008 8.75016C12.9553 8.19461 12.195 7.91683 11.32 7.91683H6.90334L8.48667 9.50016C8.63945 9.65294 8.71584 9.84738 8.71584 10.0835C8.71584 10.3196 8.63945 10.5141 8.48667 10.6668C8.33389 10.8196 8.13945 10.896 7.90334 10.896C7.66722 10.896 7.47278 10.8196 7.32 10.6668L3.7627 7.07694L7.32 3.50016C7.47278 3.34738 7.66722 3.271 7.90334 3.271C8.13945 3.271 8.33389 3.34738 8.48667 3.50016C8.63945 3.65294 8.71584 3.84738 8.71584 4.0835C8.71584 4.31961 8.63945 4.51405 8.48667 4.66683L6.90334 6.25016H11.32C12.6672 6.25016 13.8236 6.68766 14.7892 7.56266C15.7542 8.43766 16.2367 9.52794 16.2367 10.8335C16.2367 12.1391 15.7542 13.2293 14.7892 14.1043C13.8236 14.9793 12.6672 15.4168 11.32 15.4168H5.39048Z";
-    -fx-background-color: #545D72;
+    -fx-background-color: #8B96A6;
     -fx-scale-shape: false;
 }
 

@@ -314,6 +314,75 @@ public class FilterOptionsUtils {
         }
     }
 
+    /// Projects the window's nodeView (its resolved coordinate — inherited values plus applied overrides) into the
+    /// popup's option model: each facet's {@code selectedOptions} is read fresh from the nodeView, in order. The
+    /// available options come from the navigator separately. This is the faithful, stateless read the popup
+    /// rebuilds on each show — the nodeView is the single source of truth, so the display cannot drift from it
+    /// (ike-issues#681). Inverse of {@link #commitToView}.
+    public void projectFromView(FilterOptions filterOptions) {
+        projectFromView(filterOptions, committedNodeView);
+    }
+
+    /// Projects the given {@code view}'s resolved coordinate into the option model. Called with the window's
+    /// nodeView for the displayed values, and with the inherited parent ({@code getParentViewCoordinate()}) for
+    /// each pane's baseline — so a pane's override dot appears exactly when its nodeView value differs from the
+    /// value it inherits (ike-issues#681).
+    public void projectFromView(FilterOptions filterOptions, ObservableView view) {
+        if (filterOptions == null || view == null) {
+            return;
+        }
+        FilterOptions.MainFilterCoordinates main = filterOptions.getMainCoordinates();
+        ObservableStampCoordinate stamp = view.stampCoordinate();
+
+        // STATUS
+        main.getStatus().selectedOptions().setAll(stamp.allowedStatesProperty().get().toEnumSet().stream().toList());
+
+        // TIME
+        main.getTime().selectedOptions().setAll(List.of(String.valueOf(stamp.timeProperty().get())));
+
+        // MODULE (empty set == "all modules" wildcard) and EXCLUDED MODULE. "Any module" is the EMPTY wildcard —
+        // an empty selection with any=true — NOT every module enumerated. Both the display (nodeView) and the
+        // baseline (parent) project through here, so empty == empty and no spurious override dot appears
+        // (ike-issues#681).
+        Set<ConceptFacade> modules = stamp.moduleSpecificationsProperty().get();
+        boolean anyModule = modules == null || modules.isEmpty();
+        main.getModule().setAny(anyModule);
+        main.getModule().selectedOptions().setAll(anyModule ? List.of() : modules.stream().toList());
+        Set<ConceptFacade> excluded = stamp.excludedModuleSpecificationsProperty().get();
+        main.getModule().excludedOptions().setAll(excluded == null ? List.of() : excluded.stream().toList());
+
+        // PATH
+        ConceptFacade path = stamp.pathConceptProperty().get();
+        main.getPath().selectedOptions().setAll(path == null ? List.of() : List.of(path));
+
+        // NAVIGATION
+        Set<PatternFacade> navPatterns = view.navigationCoordinate().navigationPatternsProperty().get();
+        main.getNavigator().selectedOptions().setAll(navPatterns == null ? List.of() : navPatterns.stream().toList());
+
+        // LANGUAGE (first coordinate)
+        FilterOptions.LanguageFilterCoordinates langFilter = filterOptions.getLanguageCoordinatesList().getFirst();
+        ObservableLanguageCoordinate viewLang = view.languageCoordinates().getFirst();
+        ConceptFacade langConcept = viewLang.languageConceptProperty().get();
+        langFilter.getLanguage().selectedOptions().setAll(langConcept == null ? List.of() : List.of((EntityFacade) langConcept));
+        langFilter.getDialect().selectedOptions().setAll(
+                viewLang.dialectPatternPreferenceListProperty().get().stream().map(p -> (EntityFacade) p).toList());
+        langFilter.getDescriptionType().selectedOptions().setAll(
+                viewLang.descriptionTypePreferenceListProperty().get().stream().map(c -> (EntityFacade) c).toList());
+    }
+
+    /// True when the window's nodeView currently carries any override (vs its inherited parent) — drives the
+    /// Revert button, which removes those overrides.
+    public boolean viewHasOverrides() {
+        return committedNodeView != null && committedNodeView.hasOverrides();
+    }
+
+    /// Removes every override on the window's nodeView so it resolves back to its inherited parent (Revert).
+    public void revertViewToInherited() {
+        if (committedNodeView != null) {
+            committedNodeView.removeOverrides();
+        }
+    }
+
     public void unsubscribeNodeFilterOptions() {
         if (nodeSubscription != null) {
             nodeSubscription.unsubscribe();

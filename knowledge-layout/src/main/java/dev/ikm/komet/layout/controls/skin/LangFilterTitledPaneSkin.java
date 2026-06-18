@@ -151,6 +151,15 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
 
         subscription = Subscription.EMPTY;
 
+        // Surface live edits (e.g. a description-type reorder) while the pane is open: push the working coordinate
+        // on each change of an editable option, guarded so it does not re-enter setup. This lets the popup's
+        // Apply/Revert enablement reflect language edits immediately, not only when the pane collapses (#681).
+        if (currentLangCoordinates != null) {
+            for (FilterOptions.Option<EntityFacade> option : currentLangCoordinates.getOptions()) {
+                subscription = subscription.and(option.selectedOptions().subscribe(this::commitWorkingCoordinates));
+            }
+        }
+
         subscription = subscription.and(control.heightProperty().subscribe(_ -> {
             if (control.isExpanded()) {
                 scrollPane.setVvalue(scrollPane.getVmax()); // TODO: make sure this titlePane is visible
@@ -182,6 +191,21 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
         }));
         subscription = subscription.and(control.navigatorProperty().subscribe((_, _) -> setupTitledPane()));
         updateModifiedState(currentLangCoordinates);
+    }
+
+    /// Pushes the working (in-editor) language coordinate to the control on each live edit, so the popup sees the
+    /// change immediately. Guarded by {@code settingUp} (so the control's own langCoordinates subscription does
+    /// not re-run setup mid-edit) and limited to the expanded pane (the one being edited).
+    private void commitWorkingCoordinates() {
+        if (settingUp || !control.isExpanded()) {
+            return;
+        }
+        settingUp = true;
+        try {
+            control.setLangCoordinates(contentBox.getLangCoordinates().copy());
+        } finally {
+            settingUp = false;
+        }
     }
 
     private void updateModifiedState(FilterOptions.LanguageFilterCoordinates currentLangCoordinates) {

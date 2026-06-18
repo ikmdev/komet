@@ -21,6 +21,8 @@ import javafx.scene.control.skin.TitledPaneSkin;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
 
@@ -44,6 +46,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
     private final Region arrow;
     private final VBox titleBox;
+    private final StackPane revertButton;
     private final TruncatedTextFlow selectedOption;
     private final ComboBox<DateFilterTitledPane.MODE> comboBox;
     private final VBox contentBox;
@@ -52,6 +55,8 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
     private ScrollPane scrollPane;
     private RangeCalendarControl calendarControl;
     private FilterOptions.Option<String> currentOption;
+    /// Guards the live edit→commit path against re-entry from the resulting optionProperty change (ike-issues#681).
+    private boolean committing;
 
     public DateFilterTitledPaneSkin(DateFilterTitledPane control) {
         super(control);
@@ -60,6 +65,22 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         Label titleLabel = new Label(control.getText(), new IconRegion("circle"));
         titleLabel.textProperty().bind(control.titleProperty());
         titleLabel.getStyleClass().add("title-label");
+
+        // Per-pane "remove override" affordance (matches the language pane): resets THIS facet to its inherited
+        // default; enabled only while the facet is overridden (ike-issues#681).
+        revertButton = new StackPane(new IconRegion("icon", "revert"));
+        revertButton.setDisable(true);
+        revertButton.getStyleClass().add("revert-pane");
+        revertButton.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+            if (!revertButton.isDisable()) {
+                control.setOption(control.getDefaultOption().copy());
+                e.consume();
+            }
+        });
+        Region titleSpacer = new Region();
+        HBox.setHgrow(titleSpacer, Priority.ALWAYS);
+        HBox titleHBox = new HBox(titleLabel, titleSpacer, revertButton);
+        titleHBox.getStyleClass().add("title-hbox");
 
         selectedOption = new TruncatedTextFlow();
         selectedOption.setMaxContentHeight(44); // 2 lines
@@ -90,7 +111,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         });
         comboBox.getStyleClass().add("date-combo-box");
 
-        titleBox = new VBox(titleLabel, selectedOption, comboBox);
+        titleBox = new VBox(titleHBox, selectedOption, comboBox);
         titleBox.getStyleClass().add("title-box");
         control.setGraphic(titleBox);
 
@@ -200,7 +221,11 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
             }
         }));
 
-        subscription = subscription.and(control.optionProperty().subscribe((_, _) -> setupTitledPane()));
+        subscription = subscription.and(control.optionProperty().subscribe((_, _) -> {
+            if (!committing) {
+                setupTitledPane();
+            }
+        }));
 
         List<String> selectedOptions = control.getOption().selectedOptions();
         List<String> excludedOptions = control.getOption().excludedOptions();
@@ -228,6 +253,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         if (modified && !currentOption.isInOverride()) {
             currentOption.setInOverride(true);
         }
+        revertButton.setDisable(!(currentOption.isInOverride() || modified));
     }
 
     private void updateOption() {
@@ -253,6 +279,23 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         }
         updateModifiedState(currentOption);
         control.setOption(currentOption.copy());
+    }
+
+    /// Commits the current date/time selection to the control LIVE (on each calendar change while the pane is
+    /// open), so Apply/Revert react immediately — the same live-commit the other panes perform. Guarded so the
+    /// resulting optionProperty change does not re-enter setupTitledPane; on collapse the existing handler also
+    /// commits (ike-issues#681).
+    private void commitLive() {
+        if (committing || !control.isExpanded()) {
+            return;
+        }
+        committing = true;
+        try {
+            updateOption();
+            selectedOption.setText(getOptionText(currentOption));
+        } finally {
+            committing = false;
+        }
     }
 
     @Override
@@ -294,6 +337,9 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
             }
         }
         control.setMode(DateFilterTitledPane.MODE.SINGLE_DATE);
+        // Commit live as the user picks a date/time, so Apply/Revert react without waiting for collapse (#681).
+        subscription = subscription.and(calendarControl.timestampProperty().subscribe(() -> commitLive()));
+        subscription = subscription.and(calendarControl.dateProperty().subscribe(() -> commitLive()));
     }
 
     private void createDateRangePane(FilterOptions.Option<String> option) {
@@ -302,6 +348,8 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         calendarControl = new RangeCalendarControl();
         calendarControl.setMode(RangeCalendarControl.MODE.RANGE);
+        // Commit live as the user edits date ranges, so Apply/Revert react without waiting for collapse (#681).
+        subscription = subscription.and(calendarControl.dateRangeList().subscribe(() -> commitLive()));
         Button additionButton = new Button(resources.getString("time.range.additional.button"));
         additionButton.getStyleClass().add("additional");
         additionButton.setOnAction(_ -> calendarControl.addRange(false));

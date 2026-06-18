@@ -18,13 +18,16 @@ package dev.ikm.komet.layout.controls;
 import dev.ikm.komet.framework.view.ViewProperties;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
-import javafx.scene.control.MenuButton;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Screen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Wires a window's coordinates menu button to the relocated {@link FilterOptionsPopup} for editing the
@@ -48,32 +51,36 @@ public final class ViewOptionsPopupHelper {
     }
 
     /**
-     * Sets up the View Options {@link FilterOptionsPopup} for a window's coordinates menu button.
+     * Sets up the View Options {@link FilterOptionsPopup} for a window's coordinates menu button — the single
+     * shared implementation used by every host (chapter windows, the journal, KL-engine windows). The popup
+     * reads its inherited baseline from {@code viewProperties.parentView()} (a NoOverride) and commits edits to
+     * {@code viewProperties.nodeView()} (a WithOverride) only on Apply. Hosts vary only in the navigator they
+     * build and where the popup is positioned, supplied as {@code navigatorFactory} and {@code showStrategy}.
      *
-     * <p>The popup reads its inherited baseline from {@code viewProperties.parentView()} (a NoOverride)
-     * and writes edits to {@code viewProperties.nodeView()} (a WithOverride); the menu button press
-     * toggles the popup, flanking the owning pane on whichever side has room.
-     *
-     * @param viewProperties            the window's view properties (parentView = inherited baseline,
-     *                                  nodeView = the editable override the popup writes)
-     * @param filterType                the popup filter type
-     * @param owningChapWindowBorderPane the pane the popup is positioned against
-     * @param coordinatesMenuButton     the menu button that toggles the popup
-     * @param updateViewBlock           the host's view-refresh routine, run on each coordinate change
+     * @param viewProperties   the window's view properties (parentView = inherited baseline, nodeView = the
+     *                         editable override the popup writes)
+     * @param filterType       the popup filter type
+     * @param coordinatesMenuButton the menu button that toggles the popup
+     * @param navigatorFactory builds the navigator for the popup from the view properties
+     * @param showStrategy     positions and shows the popup (e.g. {@link #flankWindowShowStrategy})
+     * @param updateViewBlock  the host's view-refresh routine, run on each coordinate change (may be null)
      * @return the configured {@link FilterOptionsPopup}
      */
     public static FilterOptionsPopup setupViewCoordinateOptionsPopup(ViewProperties viewProperties,
                                                                      FilterOptionsPopup.FILTER_TYPE filterType,
-                                                                     Pane owningChapWindowBorderPane,
-                                                                     MenuButton coordinatesMenuButton,
+                                                                     ButtonBase coordinatesMenuButton,
+                                                                     Function<ViewProperties, FilterOptionsNavigator> navigatorFactory,
+                                                                     Consumer<FilterOptionsPopup> showStrategy,
                                                                      Runnable updateViewBlock) {
         // Filter Options Popup for the coordinates menu button.
         FilterOptionsPopup filterOptionsPopup = new FilterOptionsPopup(filterType, viewProperties.parentView());
 
         // Bind the popup's filter options to the view model's filter options. Update details if options change.
         viewProperties.nodeView().subscribe((_, _) -> {
-            filterOptionsPopup.setNavigator(new CalculatorFilterOptionsNavigator(viewProperties.nodeView().calculator()));
-            updateViewBlock.run();
+            filterOptionsPopup.setNavigator(navigatorFactory.apply(viewProperties));
+            if (updateViewBlock != null) {
+                updateViewBlock.run();
+            }
         });
 
         // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
@@ -91,37 +98,20 @@ public final class ViewOptionsPopupHelper {
             }
         });
 
-        owningChapWindowBorderPane.heightProperty().subscribe(h -> filterOptionsPopup.setStyle("-popup-pref-height: " + h));
+        // Default popup height; the show strategy may override it before showing (e.g. grow with the owning
+        // window). A STABLE pref, never a live content binding, to avoid a JavaFX/macOS Metal render-target
+        // crash on popup resize (ike-issues#681).
+        filterOptionsPopup.setStyle("-popup-pref-height: " + 760);
         coordinatesMenuButton.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (filterOptionsPopup.getNavigator() == null) {
-                filterOptionsPopup.setNavigator(new CalculatorFilterOptionsNavigator(viewProperties.nodeView().calculator()));
+                filterOptionsPopup.setNavigator(navigatorFactory.apply(viewProperties));
             }
             if (e.getButton() == MouseButton.PRIMARY) {
                 if (filterOptionsPopup.isShowing()) {
                     e.consume();
                     filterOptionsPopup.hide();
                 } else {
-                    // Flank the popup on whichever side of the owning window has room on its screen.
-                    Bounds chapterWindowBounds = owningChapWindowBorderPane.localToScreen(owningChapWindowBorderPane.getLayoutBounds());
-                    Screen screenChapWindowIsIn = Screen.getScreens().stream().filter(screen -> {
-                        double screenMinX = screen.getBounds().getMinX();
-                        double screenMaxX = screen.getBounds().getMaxX();
-                        double conceptWindowX = chapterWindowBounds.getMinX();
-                        return conceptWindowX >= screenMinX && conceptWindowX <= screenMaxX;
-                    }).findFirst().orElse(Screen.getPrimary());
-                    if (screenChapWindowIsIn != null) {
-                        LOG.debug(" Chapter window is on screen with bounds: {}", screenChapWindowIsIn.getBounds());
-                        final double popupWidth = filterOptionsPopup.getWidth() == 0.0d ? 326.0 : filterOptionsPopup.getWidth();
-                        double distanceFromWindowLeftToScreenLeft = chapterWindowBounds.getMinX() - screenChapWindowIsIn.getBounds().getMinX();
-                        filterOptionsPopup.setAutoFix(false);
-                        if (distanceFromWindowLeftToScreenLeft < popupWidth) {
-                            LOG.debug(" No room on left to display popup. Show on right.");
-                            filterOptionsPopup.show(owningChapWindowBorderPane.getScene().getWindow(), chapterWindowBounds.getMaxX(), chapterWindowBounds.getMinY());
-                        } else {
-                            LOG.debug(" Room on left to display popup. Show on left.");
-                            filterOptionsPopup.show(owningChapWindowBorderPane.getScene().getWindow(), chapterWindowBounds.getMinX() - popupWidth, chapterWindowBounds.getMinY());
-                        }
-                    }
+                    showStrategy.accept(filterOptionsPopup);
                 }
             }
         });
@@ -132,5 +122,49 @@ public final class ViewOptionsPopupHelper {
                 coordinatesMenuButton.pseudoClassStateChanged(FILTER_SET, !isDefault));
 
         return filterOptionsPopup;
+    }
+
+    /**
+     * Backward-compatible setup for the common case: a Calculator navigator and the popup flanking the owning
+     * window. Used by chapter windows and KL-engine windows; the journal supplies its own navigator + positioning.
+     */
+    public static FilterOptionsPopup setupViewCoordinateOptionsPopup(ViewProperties viewProperties,
+                                                                     FilterOptionsPopup.FILTER_TYPE filterType,
+                                                                     Pane owningChapWindowBorderPane,
+                                                                     ButtonBase coordinatesMenuButton,
+                                                                     Runnable updateViewBlock) {
+        return setupViewCoordinateOptionsPopup(viewProperties, filterType, coordinatesMenuButton,
+                calculatorNavigator(), flankWindowShowStrategy(owningChapWindowBorderPane), updateViewBlock);
+    }
+
+    /** The default navigator factory: a {@link CalculatorFilterOptionsNavigator} over the view's calculator. */
+    public static Function<ViewProperties, FilterOptionsNavigator> calculatorNavigator() {
+        return vp -> new CalculatorFilterOptionsNavigator(vp.nodeView().calculator());
+    }
+
+    /**
+     * A show strategy that flanks the popup on whichever side of the owning pane has room on its screen, sizing it
+     * at least tall enough for the collapsed panes and growing with the owning window. Set as a stable pref before
+     * showing — never a live binding — to avoid a JavaFX/macOS Metal render-target crash on popup resize (#681).
+     */
+    public static Consumer<FilterOptionsPopup> flankWindowShowStrategy(Pane owningPane) {
+        return filterOptionsPopup -> {
+            filterOptionsPopup.setStyle("-popup-pref-height: " + Math.max(owningPane.getHeight(), 760));
+            Bounds windowBounds = owningPane.localToScreen(owningPane.getLayoutBounds());
+            Screen screen = Screen.getScreens().stream().filter(s -> {
+                double minX = s.getBounds().getMinX();
+                double maxX = s.getBounds().getMaxX();
+                double windowX = windowBounds.getMinX();
+                return windowX >= minX && windowX <= maxX;
+            }).findFirst().orElse(Screen.getPrimary());
+            double popupWidth = filterOptionsPopup.getWidth() == 0.0d ? 326.0 : filterOptionsPopup.getWidth();
+            double distanceToScreenLeft = windowBounds.getMinX() - screen.getBounds().getMinX();
+            filterOptionsPopup.setAutoFix(false);
+            if (distanceToScreenLeft < popupWidth) {
+                filterOptionsPopup.show(owningPane.getScene().getWindow(), windowBounds.getMaxX(), windowBounds.getMinY());
+            } else {
+                filterOptionsPopup.show(owningPane.getScene().getWindow(), windowBounds.getMinX() - popupWidth, windowBounds.getMinY());
+            }
+        };
     }
 }

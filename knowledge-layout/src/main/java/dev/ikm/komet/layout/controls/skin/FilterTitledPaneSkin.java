@@ -21,6 +21,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
 
@@ -43,6 +44,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
     private final Region titleRegion;
     private final Region arrow;
     private final VBox titleBox;
+    private final StackPane revertButton;
     private final TruncatedTextFlow selectedOption;
     private final ToggleGroup toggleGroup = new ToggleGroup();
     private final ToggleButton allToggle;
@@ -52,6 +54,8 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
     private final HBox togglesBox;
     private final VBox contentBox;
     private final FilterTitledPane control;
+    /// Guards the live edit→commit path against re-entry from the resulting optionProperty change (ike-issues#681).
+    private boolean committing;
     private boolean allSelection = false, singleSelection = false;
     private ScrollPane scrollPane;
     private Subscription subscription;
@@ -63,6 +67,22 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         Label titleLabel = new Label(control.getText(), new IconRegion("circle"));
         titleLabel.textProperty().bind(control.titleProperty());
         titleLabel.getStyleClass().add("title-label");
+
+        // Per-pane "remove override" affordance (matches the language pane): resets THIS facet to its inherited
+        // default; enabled only while the facet is overridden (ike-issues#681).
+        revertButton = new StackPane(new IconRegion("icon", "revert"));
+        revertButton.setDisable(true);
+        revertButton.getStyleClass().add("revert-pane");
+        revertButton.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
+            if (!revertButton.isDisable()) {
+                control.setOption(control.getDefaultOption().copy());
+                e.consume();
+            }
+        });
+        Region titleSpacer = new Region();
+        HBox.setHgrow(titleSpacer, Priority.ALWAYS);
+        HBox titleHBox = new HBox(titleLabel, titleSpacer, revertButton);
+        titleHBox.getStyleClass().add("title-hbox");
 
         selectedOption = new TruncatedTextFlow();
         selectedOption.setMaxContentHeight(44); // 2 lines
@@ -86,7 +106,7 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         togglesBox = new HBox(allToggle, anyToggle, spacer, excludingToggle);
         togglesBox.getStyleClass().add("toggles-box");
 
-        titleBox = new VBox(titleLabel, selectedOption, togglesBox);
+        titleBox = new VBox(titleHBox, selectedOption, togglesBox);
         titleBox.getStyleClass().add("title-box");
         control.setGraphic(titleBox);
 
@@ -139,6 +159,13 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
                     contentBox.getChildren().add(new OptionToggle<>(o)));
         }
         setupToggleBox(currentOption);
+
+        // Commit edits to the control LIVE (not only on collapse) so Apply/Revert react immediately to a toggle
+        // change — same behavior the language pane already has (ike-issues#681).
+        subscription = subscription.and(currentOption.selectedOptions().subscribe(() -> commitOption(currentOption)));
+        if (currentOption.excludedOptions() != null) {
+            subscription = subscription.and(currentOption.excludedOptions().subscribe(() -> commitOption(currentOption)));
+        }
 
         subscription = subscription.and(selectedOption.boundsInParentProperty().subscribe(b ->
                 pseudoClassStateChanged(TALLER_TITLE_AREA, b.getHeight() > 30)));
@@ -309,7 +336,11 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         });
 
         // confirm changes, and set again titledPane
-        subscription = subscription.and(control.optionProperty().subscribe((_, _) -> setupTitledPane()));
+        subscription = subscription.and(control.optionProperty().subscribe((_, _) -> {
+            if (!committing) {
+                setupTitledPane();
+            }
+        }));
         subscription = subscription.and(control.expandedProperty().subscribe((_, expanded) -> {
             if (!expanded) {
                 updateModifiedState(currentOption);
@@ -325,6 +356,25 @@ public class FilterTitledPaneSkin extends TitledPaneSkin {
         pseudoClassStateChanged(MODIFIED_TITLED_PANE, currentOption.isInOverride() || modified);
         if (modified && !currentOption.isInOverride()) {
             currentOption.setInOverride(true);
+        }
+        revertButton.setDisable(!(currentOption.isInOverride() || modified));
+    }
+
+    /// Commits the working option to the control on each live edit (while the pane is open), so Apply/Revert and
+    /// the summary react immediately — the same live-commit the language pane performs. Guarded so the resulting
+    /// optionProperty change does not re-enter setupTitledPane (ike-issues#681). On collapse the existing handler
+    /// commits as well.
+    private void commitOption(FilterOptions.Option currentOption) {
+        if (committing || !control.isExpanded()) {
+            return;
+        }
+        committing = true;
+        try {
+            updateModifiedState(currentOption);
+            control.setOption(currentOption.copy());
+            selectedOption.setText(getOptionText(currentOption));
+        } finally {
+            committing = false;
         }
     }
 

@@ -84,6 +84,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.layout.area.KlToolArea;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.ViewOptionsPopupHelper;
 import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.KometIcon;
@@ -387,10 +388,19 @@ public class JournalController {
         journalViewProperties = windowView.makeOverridableViewProperties("JournalController.filterOptionsPopup");
         journalViewCoordAsParent = new ObservableViewNoOverride(journalViewProperties.nodeView());
 
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(journalViewProperties,
-                coordinatesMenuButton, () -> {
-                    System.out.println("JournalController.filterOptionsPopup: updating view due to filter options change");
-                });
+        // One shared View Options control everywhere: the journal differs only in its navigator (graph) and where
+        // the popup is anchored (beneath the toolbar button); commit-on-Apply and the rest come from the shared
+        // ViewOptionsPopupHelper (ike-issues#681).
+        filterOptionsPopup = ViewOptionsPopupHelper.setupViewCoordinateOptionsPopup(
+                journalViewProperties,
+                FilterOptionsPopup.FILTER_TYPE.JOURNAL_VIEW,
+                coordinatesMenuButton,
+                vp -> new GraphFilterOptionsNavigator(new ViewNavigator(vp.nodeView())),
+                popup -> {
+                    Bounds buttonBounds = coordinatesMenuButton.localToScreen(coordinatesMenuButton.getLayoutBounds());
+                    popup.show(coordinatesMenuButton, buttonBounds.getMinX(), buttonBounds.getMaxY() + 2);
+                },
+                () -> { /* journal windows re-render reactively on the nodeView change */ });
         // FIXME remove the menu option for parent view coordinate
         coordinatesMenuButton.getItems().remove(windowCoordinates);
 
@@ -1773,69 +1783,5 @@ public class JournalController {
     }
 
     public static Toast toast() { return toast; }
-
-    private FilterOptionsPopup setupViewCoordinateOptionsPopup(ViewProperties viewProperties,
-                                                               MenuButton coordinatesMenuButton,
-                                                               Runnable updateViewBlock) {
-        //ObservableViewNoOverride parentView2 = new ObservableViewNoOverride(windowSettings.getView());
-        // Filter Options Popup for the coordinates menu button.
-        FilterOptionsPopup filterOptionsPopup = new FilterOptionsPopup(JOURNAL_VIEW, viewProperties.parentView());
-        filterOptionsPopup.setStyle("-popup-pref-height: " + 600);
-        // Bind the popup's filter options to the view model's filter options. Update details if options change.
-        viewProperties.parentView().subscribe((_, nv) -> {
-            filterOptionsPopup.setNavigator(new GraphFilterOptionsNavigator(new ViewNavigator(nv)));
-            if (updateViewBlock != null) {
-                updateViewBlock.run();
-            }
-        });
-
-
-        // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
-        // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
-        filterOptionsPopup.getFilterOptionsUtils().subscribeFilterOptionsToView(
-            filterOptionsPopup.getInheritedFilterOptions(), viewProperties.nodeView());
-
-        // Subscribe nodeView to F.O., so changes from the F.O. popup are propagated to this nodeView
-        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, filterOptions) -> {
-            if (oldFilterOptions != null) {
-                filterOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
-            }
-            if (filterOptions != null) {
-                filterOptionsPopup.getFilterOptionsUtils().subscribeViewToFilterOptions(filterOptions, viewProperties.nodeView());
-            }
-        });
-
-        coordinatesMenuButton.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (filterOptionsPopup.getNavigator() == null) {
-                Navigator navigator = new ViewNavigator(viewProperties.nodeView());
-                    filterOptionsPopup.setNavigator(new GraphFilterOptionsNavigator(navigator));
-                }
-                if (e.getButton() == MouseButton.PRIMARY) {
-                    if (filterOptionsPopup.isShowing()) {
-                        e.consume();
-                        filterOptionsPopup.hide();
-                    } else {
-
-                        Bounds buttonBounds = coordinatesMenuButton.localToScreen(coordinatesMenuButton.getLayoutBounds());
-                        // Show beneath the button
-                        filterOptionsPopup.show(coordinatesMenuButton, buttonBounds.getMinX(), buttonBounds.getMaxY() + 2);
-                    }
-                }
-            });
-            filterOptionsPopup.showingProperty().subscribe(showing ->
-                            coordinatesMenuButton.pseudoClassStateChanged(FILTER_SHOWING, showing));
-
-            filterOptionsPopup.defaultOptionsSetProperty().subscribe(isDefault ->
-                            coordinatesMenuButton.pseudoClassStateChanged(FILTER_SET, !isDefault));
-
-
-
-        filterOptionsPopup.filterOptionsProperty().addListener( (observable, oldValue, newValue) -> {
-            LOG.info("JournalController - filterOptionsPopup.filterOptionsProperty() " + newValue);
-            // begin altering parent view coordinates
-            viewProperties.parentView().setValue(newValue.observableViewForFilterProperty().getValue());
-        });
-            return filterOptionsPopup;
-        }
 
 }

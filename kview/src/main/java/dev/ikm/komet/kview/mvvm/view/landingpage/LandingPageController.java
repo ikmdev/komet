@@ -59,6 +59,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.EditCoordinateOptionsPopup;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.ViewOptionsPopupHelper;
 import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
 import dev.ikm.komet.kview.controls.NotificationPopup;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
@@ -361,10 +362,19 @@ public class LandingPageController implements BasicController {
         landingViewProperties.nodeView().addListener(
                 (obs, oldView, newView) -> journalParentCoordinates.setValue(newView));
 
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(landingViewProperties,
-                viewCoordinatesToggleButton, () -> {
-                    LOG.info("LandingController.filterOptionsPopup: updating view due to filter options change");
-                });
+        // One shared View Options control everywhere (ike-issues#681): the landing page differs only in its
+        // navigator (graph) and anchor (to the side of the toggle button); commit-on-Apply and the rest come from
+        // the shared ViewOptionsPopupHelper.
+        filterOptionsPopup = ViewOptionsPopupHelper.setupViewCoordinateOptionsPopup(
+                landingViewProperties,
+                FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE,
+                viewCoordinatesToggleButton,
+                vp -> new GraphFilterOptionsNavigator(new ViewNavigator(vp.nodeView())),
+                popup -> {
+                    Bounds buttonBounds = viewCoordinatesToggleButton.localToScreen(viewCoordinatesToggleButton.getLayoutBounds());
+                    popup.show(viewCoordinatesToggleButton, buttonBounds.getMaxX() + 5.5, buttonBounds.getMaxY() - 760);
+                },
+                () -> { /* landing-page view refresh propagates via the journal-parent listener on nodeView */ });
 
 //        editCoordinates = viewCoordinates.editCoordinate();
 //        editCoordinatesParent = new ObservableEditCoordinateNoOverride(editCoordinates);
@@ -721,70 +731,6 @@ public class LandingPageController implements BasicController {
         landingPageBorderPane.setCenter(klLandingPage);
     }
 
-    private FilterOptionsPopup setupViewCoordinateOptionsPopup(ViewProperties viewProperties,
-                                                               ButtonBase coordinatesButton,
-                                                               Runnable updateViewBlock) {
-        //ObservableViewNoOverride parentView2 = new ObservableViewNoOverride(windowSettings.getView());
-        // Filter Options Popup for the coordinates menu button.
-        FilterOptionsPopup filterOptionsPopup = new FilterOptionsPopup(LANDING_PAGE, viewProperties.parentView());
-        double prefHeight = 600;
-        filterOptionsPopup.setStyle("-popup-pref-height: " + prefHeight);
-        // Bind the popup's filter options to the view model's filter options. Update details if options change.
-        viewProperties.parentView().subscribe((_, nv) -> {
-            filterOptionsPopup.setNavigator(new GraphFilterOptionsNavigator(new ViewNavigator(nv)));
-            if (updateViewBlock != null) {
-                updateViewBlock.run();
-            }
-        });
-
-
-        // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
-        // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
-        filterOptionsPopup.getFilterOptionsUtils().subscribeFilterOptionsToView(
-                filterOptionsPopup.getInheritedFilterOptions(), viewProperties.nodeView());
-
-        // Subscribe nodeView to F.O., so changes from the F.O. popup are propagated to this nodeView
-        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, filterOptions) -> {
-            if (oldFilterOptions != null) {
-                filterOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
-            }
-            if (filterOptions != null) {
-                filterOptionsPopup.getFilterOptionsUtils().subscribeViewToFilterOptions(filterOptions, viewProperties.nodeView());
-            }
-        });
-
-        coordinatesButton.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (filterOptionsPopup.getNavigator() == null) {
-                Navigator navigator = new ViewNavigator(viewProperties.nodeView());
-                filterOptionsPopup.setNavigator(new GraphFilterOptionsNavigator(navigator));
-            }
-            if (e.getButton() == MouseButton.PRIMARY) {
-                if (filterOptionsPopup.isShowing()) {
-                    e.consume();
-                    filterOptionsPopup.hide();
-                } else {
-                    Bounds buttonBounds = coordinatesButton.localToScreen(coordinatesButton.getLayoutBounds());
-                    // Show beneath the button
-                    filterOptionsPopup.show(coordinatesButton, buttonBounds.getMaxX() + 5.5, buttonBounds.getMaxY() - prefHeight);
-                }
-            }
-        });
-
-        filterOptionsPopup.showingProperty().subscribe(showing ->
-                coordinatesButton.pseudoClassStateChanged(FILTER_SHOWING, showing));
-
-        filterOptionsPopup.defaultOptionsSetProperty().subscribe(isDefault ->
-                coordinatesButton.pseudoClassStateChanged(FILTER_SET, !isDefault));
-
-
-
-        filterOptionsPopup.filterOptionsProperty().addListener( (observable, oldValue, newValue) -> {
-            LOG.info("LandingController - filterOptionsPopup.filterOptionsProperty() " + newValue);
-            // begin altering parent view coordinates
-            viewProperties.parentView().setValue(newValue.observableViewForFilterProperty().getValue());
-        });
-        return filterOptionsPopup;
-    }
 
     private EditCoordinateOptionsPopup setupEditCoordinateOptionsPopup(ViewProperties viewProperties,
                                                                        ButtonBase editCoordinatesButton,

@@ -12,12 +12,15 @@ import dev.ikm.komet.layout.controls.FilterOptionsNavigator;
 import dev.ikm.komet.layout.controls.SavedFiltersPopup;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.Preferences;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
@@ -32,12 +35,14 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import javafx.util.Subscription;
 
 import java.io.ByteArrayInputStream;
@@ -66,6 +71,21 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
     private final AccordionBox accordionBox;
     private final ScrollPane scrollPane;
     private final Button revertButton;
+    private final Button applyButton;
+    /// Persistent "N pending changes" cue above Apply, and tooltips that spell out exactly what each action does.
+    private Label summaryLine;
+    private Tooltip applyTooltip;
+    private Tooltip revertTooltip;
+    private Tooltip revertAllTooltip;
+    /// True while the popup holds changes the user has edited but not yet Applied to the view; drives the Apply
+    /// and Revert button enablement. Named for the action (Apply) — not "committed" (these are not ACID
+    /// transactions) and not "dirty".
+    private final BooleanProperty unappliedChanges = new SimpleBooleanProperty(this, "unappliedChanges", false);
+    /// The last filter options Applied to the view (the initial load, then each Apply); the popup has unapplied
+    /// changes whenever the current options differ from this.
+    private FilterOptions appliedSnapshot;
+    /// True when the window's nodeView carries any override; drives the header "remove all overrides" control.
+    private final BooleanProperty viewOverridden = new SimpleBooleanProperty(this, "viewOverridden", false);
     private final SavedFiltersPopup savedFiltersPopup;
     private final KometPreferences kometPreferences;
 
@@ -84,7 +104,9 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                     control.setFilterOptions(filterOptions);
                     control.getProperties().put(DEFAULT_OPTIONS_KEY, isDefault);
                 }
-                revertButton.setDisable(isDefault);
+                boolean unapplied = appliedSnapshot != null && !appliedSnapshot.equals(filterOptions);
+                unappliedChanges.set(unapplied);
+                updateHints();
 
                 List<FilterOptions.LanguageFilterCoordinates> languageCoordinatesList = filterOptions.getLanguageCoordinatesList();
                 boolean disable = languageCoordinatesList.stream()
@@ -113,7 +135,23 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         ToggleButton filterPane = new ToggleButton(null, new IconRegion("icon", "filter"));
         filterPane.getStyleClass().add("filter-button");
 
-        HBox headerBox = new HBox(closePane, title, filterPane);
+        // Global "remove all overrides": resets EVERY facet to its inherited parent (a staged edit, like each
+        // pane's own revert) so the result is reviewable and committed on Apply. The dot + revert appear together,
+        // only while the view carries overrides — the same rule each pane uses (ike-issues#681).
+        StackPane revertAllPane = new StackPane(new IconRegion("icon", "revert"));
+        revertAllPane.getStyleClass().add("revert-all-pane");
+        revertAllPane.setOnMouseClicked(_ -> revertAllToInherited());
+        Region headerOverrideDot = new Region();
+        headerOverrideDot.getStyleClass().add("header-override-dot");
+        HBox revertAllGroup = new HBox(headerOverrideDot, revertAllPane);
+        revertAllGroup.getStyleClass().add("revert-all-group");
+        revertAllGroup.visibleProperty().bind(viewOverridden);
+        revertAllGroup.managedProperty().bind(viewOverridden);
+        revertAllTooltip = new Tooltip();
+        revertAllTooltip.setShowDelay(Duration.millis(300));
+        Tooltip.install(revertAllPane, revertAllTooltip);
+
+        HBox headerBox = new HBox(closePane, title, revertAllGroup, filterPane);
         headerBox.getStyleClass().add("header-box");
 
         accordionBox = new AccordionBox();
@@ -147,7 +185,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         revertButton = new Button(resources.getString("button.revert"));
         revertButton.setOnAction(_ -> revertFilterOptions());
 
-        Button applyButton = new Button(resources.getString("button.apply"));
+        applyButton = new Button(resources.getString("button.apply"));
         applyButton.getStyleClass().add("apply-button");
         applyButton.setOnAction(_ -> {
             // Collapse the language pane so it commits its (possibly reordered) description-type / dialect order
@@ -157,9 +195,30 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             accordionBox.getLangAccordion().setExpandedPane(null);
             updateCurrentFilterOptions();
             control.getFilterOptionsUtils().commitToView(currentFilterOptionsProperty.get());
+            // commit, then re-project from the now-updated nodeView so the display matches the view by
+            // construction — kills the post-Apply staleness (ike-issues#681)
+            reproject();
         });
 
-        VBox bottomBox = new VBox(applyButton, revertButton);
+        // Apply and Revert both act on the popup's unapplied edits — Apply commits them, Revert discards them back
+        // to the applied state — so both are enabled only while there are unapplied edits (ike-issues#681).
+        applyButton.disableProperty().bind(unappliedChanges.not());
+        revertButton.disableProperty().bind(unappliedChanges.not());
+
+        // Pending-change transparency: tooltips spell out exactly what each action will do, and a persistent
+        // one-line summary shows how many changes are staged — so Apply is never "blind" (ike-issues#681).
+        applyTooltip = new Tooltip();
+        applyTooltip.setShowDelay(Duration.millis(300));
+        applyButton.setTooltip(applyTooltip);
+        revertTooltip = new Tooltip();
+        revertTooltip.setShowDelay(Duration.millis(300));
+        revertButton.setTooltip(revertTooltip);
+        summaryLine = new Label();
+        summaryLine.getStyleClass().add("pending-summary");
+        summaryLine.setManaged(false);
+        summaryLine.setVisible(false);
+
+        VBox bottomBox = new VBox(summaryLine, applyButton, revertButton);
         bottomBox.getStyleClass().add("bottom-box");
 
         root = new VBox(headerBox, scrollPane, spacer, bottomBox);
@@ -181,6 +240,13 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             if (control.getNavigator() != null) {
                 // parentView -> inheritedF.O. -> refresh default
                 setupDefaultFilterOptions(control.getNavigator());
+            }
+        }));
+        // Re-project the panes from a fresh nodeView read every time the popup opens — stateless rebuild, like
+        // the hierarchical menu; nothing retained to go stale (ike-issues#681).
+        subscription = subscription.and(control.showingProperty().subscribe((_, showing) -> {
+            if (showing && control.getNavigator() != null) {
+                reproject();
             }
         }));
         subscription = subscription.and(filterPane.selectedProperty().subscribe((_, selected) -> {
@@ -282,14 +348,9 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         accordionBox.getLangAccordion().getPanes().removeIf(t -> t instanceof LangFilterTitledPane langFilterTitledPane
                 && langFilterTitledPane.getOrdinal() > 0);
         accordionBox.disableAddButton(FxGet.allowedLanguages().size() < 2);
-        updating = true;
-        currentFilterOptionsProperty.set(null);
-        setupFilter(null);
-        control.setFilterOptions(null);
-        setupFilter(defaultFilterOptions);
-        updating = false;
-        updateCurrentFilterOptions();
-        currentFilterOptionsProperty.set(defaultFilterOptions.copy());
+        // Revert DISCARDS the popup's unapplied edits by re-reading the applied nodeView into the panes; it does
+        // NOT remove applied overrides — that is a separate "reset to inherited" action (ike-issues#681).
+        reproject();
     }
 
     private <T> void updateCurrentFilterOptions() {
@@ -393,8 +454,9 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
             // once we have navigator, update pending options with av/sel default options
             setAvailableOptionsFromNavigator(defaultFilterOptions, navigator);
         }
-        // then pass the inherited options, to override av/sel default options where set
-        setDefaultOptions(control.getInheritedFilterOptions());
+        // The pane baseline (its "default") is the INHERITED PARENT, projected fresh — so a pane's override dot
+        // shows exactly when its nodeView value differs from the value it inherits (ike-issues#681).
+        control.getFilterOptionsUtils().projectFromView(defaultFilterOptions, getSkinnable().getParentViewCoordinate());
         // pass default options to panes
         accordionBox.updateMainPanes(pane ->
                 pane.setDefaultOption(defaultFilterOptions.getOptionForItem(pane.getOption().item())));
@@ -404,15 +466,145 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 pane.setDefaultLangCoordinates(defaultFilterOptions.getLanguageCoordinates(0).copy());
             }
         });
-        // finally, setup filter with default options
-        setupFilter(defaultFilterOptions);
+        // finally, display a fresh projection of the window's nodeView (inherited + applied overrides) — the
+        // faithful, stateless read (ike-issues#681)
+        reproject();
     }
 
-    private void setDefaultOptions(FilterOptions filterOptions) {
-        filterOptions.getMainCoordinates().getOptions().forEach(sourceOption ->
-                setInheritedOptions(sourceOption, defaultFilterOptions.getOptionForItem(sourceOption.item())));
-        filterOptions.getLanguageCoordinates(0).getOptions().forEach(sourceOption ->
-                setInheritedOptions(sourceOption, defaultFilterOptions.getLangOptionForItem(0, sourceOption.item())));
+    /// Records the current options as the applied baseline (initial load, and after each Apply) and clears the
+    /// unapplied-changes flag; subsequent edits are unapplied until the next Apply.
+    private void markApplied() {
+        FilterOptions current = currentFilterOptionsProperty.get();
+        appliedSnapshot = current == null ? null : current.copy();
+        unappliedChanges.set(false);
+        updateHints();
+    }
+
+    /// Rebuilds the popup's panes from a fresh projection of the window's nodeView — the faithful, stateless read
+    /// performed on each show and after each Apply. {@code defaultFilterOptions} remains the inherited baseline
+    /// (the panes' modified indicator); the displayed values are read from the nodeView, so the popup cannot
+    /// drift from the coordinate the view actually renders (ike-issues#681).
+    private void reproject() {
+        if (defaultFilterOptions == null) {
+            return;
+        }
+        FilterOptions effective = defaultFilterOptions.copy();
+        control.getFilterOptionsUtils().projectFromView(effective);
+        setupFilter(effective);
+        markApplied();
+    }
+
+    /// Stages every facet back to its inherited parent — the same reset each pane's revert performs, applied to
+    /// all of them — so the result is reviewable and committed on Apply, removing every override at once
+    /// (ike-issues#681).
+    private void revertAllToInherited() {
+        accordionBox.setExpandedPane(null);
+        accordionBox.updateMainPanes(pane -> {
+            if (pane.getDefaultOption() != null) {
+                pane.setOption(pane.getDefaultOption().copy());
+            }
+        });
+        accordionBox.updateLangPanes(pane -> {
+            if (pane.getOrdinal() == 0 && pane.getDefaultLangCoordinates() != null) {
+                pane.setLangCoordinates(pane.getDefaultLangCoordinates().copy());
+            }
+        });
+    }
+
+    /// Refreshes the pending-change transparency: the persistent summary line, and the Apply / Revert /
+    /// global-revert tooltips that spell out exactly what each action will do (ike-issues#681).
+    private void updateHints() {
+        if (summaryLine == null) {
+            return;
+        }
+        List<String> pending = describeChanges(appliedSnapshot, currentFilterOptionsProperty.get());
+        int n = pending.size();
+        summaryLine.setText(n == 0 ? "" : n + (n == 1 ? " pending change" : " pending changes"));
+        summaryLine.setVisible(n > 0);
+        summaryLine.setManaged(n > 0);
+        if (applyTooltip != null) {
+            applyTooltip.setText(n == 0 ? "No changes to apply" : "Apply:\n  " + String.join("\n  ", pending));
+        }
+        if (revertTooltip != null) {
+            revertTooltip.setText(n == 0 ? "No changes to discard"
+                    : "Discard " + n + (n == 1 ? " unapplied change" : " unapplied changes"));
+        }
+        // The header override indicator mirrors the panes: it shows iff any facet differs from its inherited
+        // default — the same comparison each pane's dot uses, so the header and panes never disagree (#681).
+        List<String> overrides = describeChanges(defaultFilterOptions, currentFilterOptionsProperty.get());
+        viewOverridden.set(!overrides.isEmpty());
+        if (revertAllTooltip != null) {
+            revertAllTooltip.setText(overrides.isEmpty() ? "No overrides to remove"
+                    : "Remove all overrides:\n  " + String.join("\n  ", overrides));
+        }
+    }
+
+    /// Lists the facets where {@code current} differs from {@code baseline}, each as "facet → new value", for the
+    /// pending-change summary and tooltips (ike-issues#681).
+    private List<String> describeChanges(FilterOptions baseline, FilterOptions current) {
+        List<String> result = new ArrayList<>();
+        if (baseline == null || current == null) {
+            return result;
+        }
+        addChangeDescriptions(baseline.getMainCoordinates().getOptions(), current.getMainCoordinates().getOptions(), result);
+        List<FilterOptions.LanguageFilterCoordinates> baseLangs = baseline.getLanguageCoordinatesList();
+        List<FilterOptions.LanguageFilterCoordinates> currentLangs = current.getLanguageCoordinatesList();
+        if (!baseLangs.isEmpty() && !currentLangs.isEmpty()) {
+            addChangeDescriptions(baseLangs.get(0).getOptions(), currentLangs.get(0).getOptions(), result);
+        }
+        return result;
+    }
+
+    private void addChangeDescriptions(List<?> baseline, List<?> current, List<String> out) {
+        for (int i = 0; i < Math.min(baseline.size(), current.size()); i++) {
+            if (!Objects.equals(baseline.get(i), current.get(i)) && current.get(i) instanceof FilterOptions.Option<?> option) {
+                out.add(facetLabel(option) + " → " + describeFacetValue(option));
+            }
+        }
+    }
+
+    private String facetLabel(FilterOptions.Option<?> option) {
+        return option == null || option.item() == null ? "?" : option.item().getName();
+    }
+
+    private String describeFacetValue(FilterOptions.Option<?> option) {
+        try {
+            if (option == null) {
+                return "?";
+            }
+            if (option.hasAny() && option.any()) {
+                return "Any";
+            }
+            ObservableList<?> selected = option.selectedOptions();
+            if (selected == null || selected.isEmpty()) {
+                return "none";
+            }
+            List<String> values = selected.stream().map(this::describeValue).toList();
+            return String.join(", ", values);
+        } catch (Exception e) {
+            return "?";
+        }
+    }
+
+    private String describeValue(Object value) {
+        if (value instanceof EntityFacade ef) {
+            return ef.description();
+        }
+        String s = String.valueOf(value);
+        try {
+            // A bare epoch-millis (the time facet) — render it via the tinkar date-time util, labelling the
+            // Long.MAX/MIN sentinels (ike-issues#681).
+            long epochMillis = Long.parseLong(s.trim());
+            if (epochMillis == Long.MAX_VALUE) {
+                return "Latest";
+            }
+            if (epochMillis == Long.MIN_VALUE) {
+                return "Premundane";
+            }
+            return DateTimeUtil.format(epochMillis);
+        } catch (NumberFormatException e) {
+            return s;
+        }
     }
 
     private void setAvailableOptionsFromNavigator(FilterOptions options, FilterOptionsNavigator navigator) {
