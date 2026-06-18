@@ -186,7 +186,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         revertButton.setOnAction(_ -> revertFilterOptions());
 
         applyButton = new Button(resources.getString("button.apply"));
-        applyButton.getStyleClass().add("apply-button");
+        applyButton.getStyleClass().add("apply");
         applyButton.setOnAction(_ -> {
             // Collapse the language pane so it commits its (possibly reordered) description-type / dialect order
             // into the panes, rebuild the authoritative current filter options from the panes, then commit the
@@ -234,12 +234,6 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         subscription = subscription.and(savedFiltersPopup.showingProperty().subscribe((_, showing) -> {
             if (!showing) {
                 filterPane.setSelected(false);
-            }
-        }));
-        subscription = subscription.and(control.getInheritedFilterOptions().observableViewForFilterProperty().subscribe((_, _) -> {
-            if (control.getNavigator() != null) {
-                // parentView -> inheritedF.O. -> refresh default
-                setupDefaultFilterOptions(control.getNavigator());
             }
         }));
         // Re-project the panes from a fresh nodeView read every time the popup opens — stateless rebuild, like

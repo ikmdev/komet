@@ -38,7 +38,6 @@ public class FilterOptionsUtils {
 
     private Subscription nodeSubscription;
     private Subscription viewSubscription;
-    private Subscription optionSubscription;
 
     private boolean fromView;
     private boolean fromFilter;
@@ -230,16 +229,12 @@ public class FilterOptionsUtils {
     }
 
     // The popup's edits are committed onto the nodeView only on explicit Apply (see commitToView) — one whole-value
-    // setValue per facet, never the live same-value reconciliation that forced the //Dummy pokes (ike-issues#666,
-    // #692). Here we only remember the commit target and keep the popup's own display model
-    // (observableViewForFilter) in sync with the UI via addOptionSubscriptions.
+    // setValue per dimension, never the live preview mesh that forced the //Dummy pokes (ike-issues#666, #692, #697).
+    // Here we only remember the commit target; the display comes from projectFromView, not a live preview view.
     public void subscribeViewToFilterOptions(FilterOptions filterOptions, ObservableView observableView) {
         // remove previous subscriptions
         unsubscribeNodeFilterOptions();
         this.committedNodeView = observableView;
-
-        // add Option to observableViewForFilterProperty subscriptions
-        addOptionSubscriptions(filterOptions);
     }
 
     /// Commit the popup's current UI selections ({@code current} — the authoritative state rebuilt from the panes)
@@ -388,183 +383,6 @@ public class FilterOptionsUtils {
             nodeSubscription.unsubscribe();
         }
         nodeSubscription = Subscription.EMPTY;
-    }
-
-    // Subscribe Option's selectedOptions observable list to notify F.O. observableViewForFilter related coordinates properties
-    private void addOptionSubscriptions(FilterOptions filterOptions) {
-        // remove previous subscriptions
-        unsubscribeOptions();
-
-        FilterOptions.MainFilterCoordinates mainCoordinates = filterOptions.getMainCoordinates();
-        List<FilterOptions.LanguageFilterCoordinates> languageCoordinatesList = filterOptions.getLanguageCoordinatesList();
-
-        // NAVIGATOR
-        optionSubscription = optionSubscription.and(mainCoordinates.getNavigator().selectedOptions().subscribe(() ->
-                updateNavigatorProperty(filterOptions)));
-        updateNavigatorProperty(filterOptions);
-
-        // STATUS
-        optionSubscription = optionSubscription.and(mainCoordinates.getStatus().selectedOptions().subscribe(() ->
-                updateStatusProperty(filterOptions)));
-        updateStatusProperty(filterOptions);
-
-        // TIME
-        optionSubscription = optionSubscription.and(mainCoordinates.getTime().selectedOptions().subscribe(() ->
-                updateTimeProperty(filterOptions)));
-        updateTimeProperty(filterOptions);
-
-        // MODULE
-        optionSubscription = optionSubscription.and(mainCoordinates.getModule().selectedOptions().subscribe(() ->
-                updateModuleProperty(filterOptions)));
-        updateModuleProperty(filterOptions);
-
-        optionSubscription = optionSubscription.and(mainCoordinates.getModule().excludedOptions().subscribe(() ->
-                updateModuleExcProperty(filterOptions)));
-        updateModuleExcProperty(filterOptions);
-
-        // PATH
-        optionSubscription = optionSubscription.and(mainCoordinates.getPath().selectedOptions().subscribe(() ->
-                updatePathProperty(filterOptions)));
-        updatePathProperty(filterOptions);
-
-        // LANGUAGE
-        optionSubscription = optionSubscription.and(languageCoordinatesList.getFirst().getLanguage().selectedOptions().subscribe(() ->
-                updateLangProperty(filterOptions)));
-        updateLangProperty(filterOptions);
-
-        optionSubscription = optionSubscription.and(languageCoordinatesList.getFirst().getDialect().selectedOptions().subscribe(() ->
-                updateDialectProperty(filterOptions)));
-        updateDialectProperty(filterOptions);
-
-        optionSubscription = optionSubscription.and(languageCoordinatesList.getFirst().getDescriptionType().selectedOptions().subscribe(() ->
-                updateDescriptionProperty(filterOptions)));
-        updateDescriptionProperty(filterOptions);
-    }
-
-    private void unsubscribeOptions() {
-        if (optionSubscription != null) {
-            optionSubscription.unsubscribe();
-        }
-        optionSubscription = Subscription.EMPTY;
-    }
-
-    private void updateNavigatorProperty(FilterOptions filterOptions) {
-        if (fromView) {
-            return;
-        }
-        ObservableList<PatternFacade> selectedOptions = filterOptions.getMainCoordinates().getNavigator().selectedOptions();
-        if (!selectedOptions.isEmpty()) {
-            PatternFacade patternFacade = selectedOptions.getFirst();
-            fromFilter = true;
-            filterOptions.observableViewForFilterProperty().navigationCoordinate().navigationPatternsProperty().set(FXCollections.observableSet(patternFacade));
-            fromFilter = false;
-        }
-    }
-
-    private void updateStatusProperty(FilterOptions filterOptions) {
-        if (fromView) {
-            return;
-        }
-        List<State> stateList = filterOptions.getMainCoordinates().getStatus().selectedOptions().stream().toList();
-        fromFilter = true;
-        filterOptions.observableViewForFilterProperty().stampCoordinate().allowedStatesProperty().set(StateSet.of(stateList));
-        fromFilter = false;
-    }
-
-    private void updateTimeProperty(FilterOptions filterOptions) {
-        if (fromView) {
-            return;
-        }
-        ObservableList<String> selectedOptions = filterOptions.getMainCoordinates().getTime().selectedOptions();
-        if (!selectedOptions.isEmpty()) {
-            String time = selectedOptions.getFirst();
-            long t;
-            try {
-                t = Long.parseLong(time);
-            } catch (NumberFormatException e) {
-                t = Long.MAX_VALUE;
-            }
-            fromFilter = true;
-            filterOptions.observableViewForFilterProperty().stampCoordinate().timeProperty().set(t);
-            fromFilter = false;
-        }
-    }
-
-    private void updateModuleProperty(FilterOptions filterOptions) {
-        if (fromView) {
-            return;
-        }
-        Set<ConceptFacade> includedSet = new HashSet<>();
-        if (!filterOptions.getMainCoordinates().getModule().any()) {
-            includedSet.addAll(filterOptions.getMainCoordinates().getModule().selectedOptions());
-        }
-        fromFilter = true;
-        // whole-value replace (not addAll) so a module deselection actually takes (ike-issues#666)
-        filterOptions.observableViewForFilterProperty().stampCoordinate().moduleSpecificationsProperty().setValue(FXCollections.observableSet(includedSet));
-        fromFilter = false;
-    }
-
-    private void updateModuleExcProperty(FilterOptions filterOptions) {
-        if (fromView) {
-            return;
-        }
-        Set<ConceptFacade> excludedSet = new HashSet<>(filterOptions.getMainCoordinates().getModule().excludedOptions());
-        fromFilter = true;
-        // whole-value replace (not addAll) so an excluded-module deselection actually takes (ike-issues#666)
-        filterOptions.observableViewForFilterProperty().stampCoordinate().excludedModuleSpecificationsProperty().setValue(FXCollections.observableSet(excludedSet));
-        fromFilter = false;
-    }
-
-    private void updatePathProperty(FilterOptions filterOptions) {
-        if (fromView) {
-            return;
-        }
-        ObservableList<ConceptFacade> selectedOptions = filterOptions.getMainCoordinates().getPath().selectedOptions();
-        if (!selectedOptions.isEmpty()) {
-            ConceptFacade conceptFacade = selectedOptions.getFirst();
-            fromFilter = true;
-            filterOptions.observableViewForFilterProperty().stampCoordinate().pathConceptProperty().set(conceptFacade);
-            fromFilter = false;
-        }
-    }
-
-    private void updateLangProperty(FilterOptions filterOptions) {
-        if (fromView) {
-            return;
-        }
-        ObservableList<EntityFacade> selectedOptions = filterOptions.getLanguageCoordinatesList().getFirst().getLanguage().selectedOptions();
-        if (!selectedOptions.isEmpty()) {
-            EntityFacade entityFacade = selectedOptions.getFirst();
-            fromFilter = true;
-            filterOptions.observableViewForFilterProperty().languageCoordinates().getFirst().languageConceptProperty().set((ConceptFacade) entityFacade);
-            fromFilter = false;
-        }
-    }
-
-    private void updateDialectProperty(FilterOptions filterOptions) {
-        if (fromView) {
-            return;
-        }
-        ObservableList<PatternFacade> selectedOptions = filterOptions.getLanguageCoordinatesList().getFirst().getDialect().selectedOptions().stream()
-                .map(e -> (PatternFacade) e).collect(Collectors.toCollection(FXCollections::observableArrayList));
-        if (!selectedOptions.isEmpty()) {
-            fromFilter = true;
-            filterOptions.observableViewForFilterProperty().languageCoordinates().getFirst().dialectPatternPreferenceListProperty().setValue(selectedOptions);
-            fromFilter = false;
-        }
-    }
-
-    private void updateDescriptionProperty(FilterOptions filterOptions) {
-        if (fromView) {
-            return;
-        }
-        ObservableList<ConceptFacade> selectedOptions = filterOptions.getLanguageCoordinatesList().getFirst().getDescriptionType().selectedOptions().stream()
-                .map(e -> (ConceptFacade) e).collect(Collectors.toCollection(FXCollections::observableArrayList));
-        if (!selectedOptions.isEmpty()) {
-            fromFilter = true;
-            filterOptions.observableViewForFilterProperty().languageCoordinates().getFirst().descriptionTypePreferenceListProperty().setValue(selectedOptions);
-            fromFilter = false;
-        }
     }
 
     public static List<ZonedDateTime> getTimesInUse() {
