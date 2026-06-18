@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.framework.view;
 
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -229,5 +231,40 @@ class OverrideOfTest {
         assertEquals(1, fires.get(), "an inherited list reorder fires the child (the cascade for list dimensions)");
         assertEquals(List.of("Regular", "FQN"), override.get());
         assertFalse(override.isOverridden(), "and does not pin — the child still inherits");
+    }
+
+    // --- set-as-value: order insensitivity -----------------------------------------------------------
+
+    /** A set dimension (the stamp module set) is held as one immutable set value; adding an element is a genuine
+     *  change — the whole-value path the stamp module menu uses ({@code setValue(get().newWith(x))}). */
+    @Test
+    void setValue_addElementToSet_isAGenuineOverride_andFires() {
+        var parent = new SimpleEqualityBasedObjectProperty<ImmutableSet<String>>(new Object(), "moduleSet", Sets.immutable.of("SNOMED"));
+        var override = new OverrideOf<>(parent, this);
+
+        AtomicInteger fires = new AtomicInteger();
+        override.addListener((obs, oldV, newV) -> fires.incrementAndGet());
+
+        override.setValue(override.get().newWith("LOINC"));
+
+        assertTrue(override.isOverridden(), "adding a module pins an override");
+        assertEquals(Sets.immutable.of("SNOMED", "LOINC"), override.get(), "the new set wins");
+        assertEquals(1, fires.get(), "a set element change fires exactly one change");
+    }
+
+    /** A set is order-insensitive: the same elements in a different construction order is not a change and not
+     *  an override (unlike a list reorder, which is). */
+    @Test
+    void setValue_equalSetDifferentInsertionOrder_isNotAnOverride() {
+        var parent = new SimpleEqualityBasedObjectProperty<ImmutableSet<String>>(new Object(), "moduleSet", Sets.immutable.of("SNOMED", "LOINC"));
+        var override = new OverrideOf<>(parent, this);
+
+        AtomicInteger fires = new AtomicInteger();
+        override.addListener((obs, oldV, newV) -> fires.incrementAndGet());
+
+        override.setValue(Sets.immutable.of("LOINC", "SNOMED"));
+
+        assertFalse(override.isOverridden(), "an equal set (order-insensitive) is not an override");
+        assertEquals(0, fires.get(), "and fires nothing");
     }
 }

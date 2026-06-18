@@ -14,7 +14,9 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.set.ImmutableSet;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
@@ -124,9 +126,8 @@ public class FilterOptionsUtils {
                         // If it only contains a few of them, "Select All" and "Any" are deselected, and those modules
                         // are selected.
                         mainCoordinates.getModule().setAny(m.isEmpty());
-                        mainCoordinates.getModule().selectedOptions().addAll(m.stream().toList());
-                        observableViewForFilterProperty.stampCoordinate().moduleSpecificationsProperty().set(
-                                m.stream().collect(Collectors.toCollection(FXCollections::observableSet)));
+                        mainCoordinates.getModule().selectedOptions().addAll(m.castToSet());
+                        observableViewForFilterProperty.stampCoordinate().moduleSpecificationsProperty().setValue(m);
                     } else {
                         observableViewForFilterProperty.stampCoordinate().moduleSpecificationsProperty().set(null);
                     }
@@ -139,9 +140,8 @@ public class FilterOptionsUtils {
                     fromView = true;
                     mainCoordinates.getModule().excludedOptions().clear();
                     if (e != null) {
-                        mainCoordinates.getModule().excludedOptions().addAll(e.stream().toList());
-                        observableViewForFilterProperty.stampCoordinate().excludedModuleSpecificationsProperty().set(
-                                e.stream().collect(Collectors.toCollection(FXCollections::observableSet)));
+                        mainCoordinates.getModule().excludedOptions().addAll(e.castToSet());
+                        observableViewForFilterProperty.stampCoordinate().excludedModuleSpecificationsProperty().setValue(e);
                     } else {
                         observableViewForFilterProperty.stampCoordinate().excludedModuleSpecificationsProperty().set(null);
                     }
@@ -274,9 +274,9 @@ public class FilterOptionsUtils {
             if (!main.getModule().any()) {
                 includedModules.addAll(main.getModule().selectedOptions());
             }
-            stamp.moduleSpecificationsProperty().setValue(FXCollections.observableSet(includedModules));
+            stamp.moduleSpecificationsProperty().setValue(Sets.immutable.ofAll(includedModules));
             stamp.excludedModuleSpecificationsProperty().setValue(
-                    FXCollections.observableSet(new HashSet<>(main.getModule().excludedOptions())));
+                    Sets.immutable.ofAll(main.getModule().excludedOptions()));
 
             // PATH (skip when nothing is chosen)
             ObservableList<ConceptFacade> pathOptions = main.getPath().selectedOptions();
@@ -341,12 +341,12 @@ public class FilterOptionsUtils {
         // an empty selection with any=true — NOT every module enumerated. Both the display (nodeView) and the
         // baseline (parent) project through here, so empty == empty and no spurious override dot appears
         // (ike-issues#681).
-        Set<ConceptFacade> modules = stamp.moduleSpecificationsProperty().get();
+        ImmutableSet<ConceptFacade> modules = stamp.moduleSpecificationsProperty().get();
         boolean anyModule = modules == null || modules.isEmpty();
         main.getModule().setAny(anyModule);
-        main.getModule().selectedOptions().setAll(anyModule ? List.of() : modules.stream().toList());
-        Set<ConceptFacade> excluded = stamp.excludedModuleSpecificationsProperty().get();
-        main.getModule().excludedOptions().setAll(excluded == null ? List.of() : excluded.stream().toList());
+        main.getModule().selectedOptions().setAll(anyModule ? List.of() : modules.toList());
+        ImmutableSet<ConceptFacade> excluded = stamp.excludedModuleSpecificationsProperty().get();
+        main.getModule().excludedOptions().setAll(excluded == null ? List.of() : excluded.toList());
 
         // PATH
         ConceptFacade path = stamp.pathConceptProperty().get();

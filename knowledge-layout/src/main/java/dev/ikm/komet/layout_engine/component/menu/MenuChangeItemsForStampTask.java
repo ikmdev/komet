@@ -11,9 +11,8 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableSet;
 import javafx.scene.control.CheckMenuItem;
+import org.eclipse.collections.api.factory.Sets;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import org.eclipse.collections.api.list.primitive.ImmutableLongList;
@@ -136,21 +135,21 @@ public class MenuChangeItemsForStampTask implements Callable<MenuItem>, ScopedVa
         Menu addIncludedModulesMenu = new Menu("Change included modules");
         menuItems.add(addIncludedModulesMenu);
         CheckMenuItem allModulesItem = new CheckMenuItem("all module wildcard");
-        allModulesItem.setSelected(observableCoordinate.moduleSpecificationsProperty().isEmpty());
+        allModulesItem.setSelected(observableCoordinate.moduleSpecificationsProperty().get().isEmpty());
         if (allModulesItem.isSelected()) {
             allModulesItem.setDisable(true);
         }
         addIncludedModulesMenu.getItems().add(allModulesItem);
         allModulesItem.setOnAction(event -> {
             Platform.runLater(() -> {
-                observableCoordinate.moduleSpecificationsProperty().clear();
+                observableCoordinate.moduleSpecificationsProperty().setValue(Sets.immutable.empty());
             });
             event.consume();
         });
 
         CheckMenuItem allIndividualModulesItem = new CheckMenuItem("all individual modules");
 
-        allIndividualModulesItem.setSelected(observableCoordinate.moduleSpecificationsProperty().containsAll(
+        allIndividualModulesItem.setSelected(observableCoordinate.moduleSpecificationsProperty().get().castToSet().containsAll(
                 StampService.get().getModulesInUse().castToSet()));
         if (allIndividualModulesItem.isSelected()) {
             allIndividualModulesItem.setDisable(true);
@@ -159,27 +158,25 @@ public class MenuChangeItemsForStampTask implements Callable<MenuItem>, ScopedVa
         addIncludedModulesMenu.getItems().add(allIndividualModulesItem);
         allIndividualModulesItem.setOnAction(event -> {
             Platform.runLater(() -> {
-                ObservableSet<ConceptFacade> newSet = FXCollections.observableSet();
-                newSet.addAll(StampService.get().getModulesInUse().castToSet());
-                observableCoordinate.moduleSpecificationsProperty().setValue(newSet);
+                observableCoordinate.moduleSpecificationsProperty().setValue(StampService.get().getModulesInUse());
             });
             event.consume();
         });
 
         StampService.get().getModulesInUse().forEach(moduleConcept -> {
             CheckMenuItem item = new CheckMenuItem(viewCalculator.getPreferredDescriptionStringOrNid(moduleConcept));
-            item.setSelected(observableCoordinate.moduleSpecificationsProperty().contains(moduleConcept));
+            item.setSelected(observableCoordinate.moduleSpecificationsProperty().get().contains(moduleConcept));
             if (item.isSelected()) {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
-                        observableCoordinate.moduleSpecificationsProperty().remove(moduleConcept);
+                        observableCoordinate.moduleSpecificationsProperty().setValue(observableCoordinate.moduleSpecificationsProperty().get().newWithout(moduleConcept));
                     });
                     event.consume();
                 });
             } else {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
-                        observableCoordinate.moduleSpecificationsProperty().add(moduleConcept);
+                        observableCoordinate.moduleSpecificationsProperty().setValue(observableCoordinate.moduleSpecificationsProperty().get().newWith(moduleConcept));
                     });
                     event.consume();
                 });
@@ -194,7 +191,7 @@ public class MenuChangeItemsForStampTask implements Callable<MenuItem>, ScopedVa
         Menu excludedModulesMenu = new Menu("Change excluded modules");
         menuItems.add(excludedModulesMenu);
         CheckMenuItem noExclusionsWildcard = new CheckMenuItem("no exclusions wildcard");
-        noExclusionsWildcard.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().isEmpty());
+        noExclusionsWildcard.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().get().isEmpty());
         if (noExclusionsWildcard.isSelected()) {
             noExclusionsWildcard.setDisable(true);
         }
@@ -202,47 +199,45 @@ public class MenuChangeItemsForStampTask implements Callable<MenuItem>, ScopedVa
         excludedModulesMenu.getItems().add(noExclusionsWildcard);
         noExclusionsWildcard.setOnAction(event -> {
             Platform.runLater(() -> {
-                observableCoordinate.excludedModuleSpecificationsProperty().clear();
+                observableCoordinate.excludedModuleSpecificationsProperty().setValue(Sets.immutable.empty());
             });
             event.consume();
         });
 
         CheckMenuItem excludeAllIndividualModulesItem = new CheckMenuItem("exclude all individual modules");
 
-        excludeAllIndividualModulesItem.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().containsAll(
+        excludeAllIndividualModulesItem.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().get().castToSet().containsAll(
                 StampService.get().getModulesInUse().castToSet()));
         excludedModulesMenu.getItems().add(excludeAllIndividualModulesItem);
         if (excludeAllIndividualModulesItem.isSelected()) {
             excludeAllIndividualModulesItem.setOnAction(event -> {
                 Platform.runLater(() -> {
-                    observableCoordinate.excludedModuleSpecificationsProperty().clear();
+                    observableCoordinate.excludedModuleSpecificationsProperty().setValue(Sets.immutable.empty());
                 });
                 event.consume();
             });
         } else {
             excludeAllIndividualModulesItem.setOnAction(event -> {
                 Platform.runLater(() -> {
-                    ObservableSet<ConceptFacade> newSet = FXCollections.observableSet();
-                    newSet.addAll(StampService.get().getModulesInUse().castToSet());
-                    observableCoordinate.excludedModuleSpecificationsProperty().setValue(newSet);
+                    observableCoordinate.excludedModuleSpecificationsProperty().setValue(StampService.get().getModulesInUse());
                 });
                 event.consume();
             });
         }
         StampService.get().getModulesInUse().forEach(moduleConcept -> {
             CheckMenuItem item = new CheckMenuItem(viewCalculator.getPreferredDescriptionStringOrNid(moduleConcept));
-            item.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().contains(moduleConcept));
+            item.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().get().contains(moduleConcept));
             if (item.isSelected()) {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
-                        observableCoordinate.excludedModuleSpecificationsProperty().remove(moduleConcept);
+                        observableCoordinate.excludedModuleSpecificationsProperty().setValue(observableCoordinate.excludedModuleSpecificationsProperty().get().newWithout(moduleConcept));
                     });
                     event.consume();
                 });
             } else {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
-                        observableCoordinate.excludedModuleSpecificationsProperty().add(moduleConcept);
+                        observableCoordinate.excludedModuleSpecificationsProperty().setValue(observableCoordinate.excludedModuleSpecificationsProperty().get().newWith(moduleConcept));
                     });
                     event.consume();
                 });
