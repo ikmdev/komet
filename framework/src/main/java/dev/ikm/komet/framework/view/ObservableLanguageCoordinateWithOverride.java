@@ -96,8 +96,8 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> languageConceptProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.languageConceptProperty();
+    public OverrideOf<ConceptFacade> languageConceptProperty() {
+        return (OverrideOf<ConceptFacade>) super.languageConceptProperty();
     }
 
     @Override
@@ -109,7 +109,7 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeLanguageProperty(LanguageCoordinate languageCoordinate) {
         ObservableLanguageCoordinate overriddenCoordinate = (ObservableLanguageCoordinate) languageCoordinate;
-        return new ObjectPropertyWithOverride<>(overriddenCoordinate.languageConceptProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.languageConceptProperty(), this);
     }
 
     @Override

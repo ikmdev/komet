@@ -44,8 +44,8 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> pathConceptProperty() {
-        return (ObjectPropertyWithOverride) super.pathConceptProperty();
+    public OverrideOf<ConceptFacade> pathConceptProperty() {
+        return (OverrideOf) super.pathConceptProperty();
     }
 
     @Override
@@ -64,8 +64,8 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
     }
 
     @Override
-    public ObjectPropertyWithOverride<StateSet> allowedStatesProperty() {
-        return (ObjectPropertyWithOverride) super.allowedStatesProperty();
+    public OverrideOf<StateSet> allowedStatesProperty() {
+        return (OverrideOf) super.allowedStatesProperty();
     }
 
     @Override
@@ -113,9 +113,9 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
     }
 
     @Override
-    protected ObjectPropertyWithOverride makeAllowedStatusProperty(StampCoordinate stampCoordinate) {
+    protected OverrideOf makeAllowedStatusProperty(StampCoordinate stampCoordinate) {
         ObservableStampCoordinate observableStampFilter = (ObservableStampCoordinate) stampCoordinate;
-        return new ObjectPropertyWithOverride<>(observableStampFilter.allowedStatesProperty(), this);
+        return new OverrideOf<>(observableStampFilter.allowedStatesProperty(), this);
     }
 
     @Override
@@ -137,9 +137,9 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
     }
 
     @Override
-    protected ObjectPropertyWithOverride<ConceptFacade> makePathConceptProperty(StampCoordinate stampCoordinate) {
+    protected OverrideOf<ConceptFacade> makePathConceptProperty(StampCoordinate stampCoordinate) {
         ObservableStampCoordinate observableStampFilter = (ObservableStampCoordinate) stampCoordinate;
-        return new ObjectPropertyWithOverride<>(observableStampFilter.pathConceptProperty(), this);
+        return new OverrideOf<>(observableStampFilter.pathConceptProperty(), this);
     }
 
     @Override

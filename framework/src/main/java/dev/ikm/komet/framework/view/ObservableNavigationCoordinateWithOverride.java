@@ -57,25 +57,25 @@ public class ObservableNavigationCoordinateWithOverride extends ObservableNaviga
     }
 
     @Override
-    public ObjectPropertyWithOverride<StateSet> vertexStatesProperty() {
-        return (ObjectPropertyWithOverride<StateSet>) super.vertexStatesProperty();
+    public OverrideOf<StateSet> vertexStatesProperty() {
+        return (OverrideOf<StateSet>) super.vertexStatesProperty();
     }
 
     @Override
-    protected ObjectPropertyWithOverride<StateSet> makeVertexStatesProperty(NavigationCoordinate navigationCoordinate) {
+    protected OverrideOf<StateSet> makeVertexStatesProperty(NavigationCoordinate navigationCoordinate) {
         ObservableNavigationCoordinate observableNavigationCoordinate = (ObservableNavigationCoordinate) navigationCoordinate;
-        return new ObjectPropertyWithOverride<>(observableNavigationCoordinate.vertexStatesProperty(), this);
+        return new OverrideOf<>(observableNavigationCoordinate.vertexStatesProperty(), this);
     }
 
     @Override
-    public ObjectPropertyWithOverride<Boolean> sortVerticesProperty() {
-        return (ObjectPropertyWithOverride<Boolean>) super.sortVerticesProperty();
+    public OverrideOf<Boolean> sortVerticesProperty() {
+        return (OverrideOf<Boolean>) super.sortVerticesProperty();
     }
 
     @Override
-    protected ObjectPropertyWithOverride<Boolean> makeSortVerticesProperty(NavigationCoordinate navigationCoordinate) {
+    protected OverrideOf<Boolean> makeSortVerticesProperty(NavigationCoordinate navigationCoordinate) {
         ObservableNavigationCoordinate observableNavigationCoordinate = (ObservableNavigationCoordinate) navigationCoordinate;
-        return new ObjectPropertyWithOverride<>(observableNavigationCoordinate.sortVerticesProperty(), this) ;
+        return new OverrideOf<>(observableNavigationCoordinate.sortVerticesProperty(), this) ;
     }
 
     @Override

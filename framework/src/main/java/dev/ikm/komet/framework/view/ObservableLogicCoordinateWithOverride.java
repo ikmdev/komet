@@ -83,91 +83,91 @@ public class ObservableLogicCoordinateWithOverride extends ObservableLogicCoordi
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> classifierProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.classifierProperty();
+    public OverrideOf<ConceptFacade> classifierProperty() {
+        return (OverrideOf<ConceptFacade>) super.classifierProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<PatternFacade> conceptMemberPatternProperty() {
-        return (ObjectPropertyWithOverride<PatternFacade>) super.conceptMemberPatternProperty();
+    public OverrideOf<PatternFacade> conceptMemberPatternProperty() {
+        return (OverrideOf<PatternFacade>) super.conceptMemberPatternProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> descriptionLogicProfileProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.descriptionLogicProfileProperty();
+    public OverrideOf<ConceptFacade> descriptionLogicProfileProperty() {
+        return (OverrideOf<ConceptFacade>) super.descriptionLogicProfileProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<PatternFacade> inferredAxiomsPatternProperty() {
-        return (ObjectPropertyWithOverride<PatternFacade>) super.inferredAxiomsPatternProperty();
+    public OverrideOf<PatternFacade> inferredAxiomsPatternProperty() {
+        return (OverrideOf<PatternFacade>) super.inferredAxiomsPatternProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<PatternFacade> statedAxiomsPatternProperty() {
-        return (ObjectPropertyWithOverride<PatternFacade>) super.statedAxiomsPatternProperty();
+    public OverrideOf<PatternFacade> statedAxiomsPatternProperty() {
+        return (OverrideOf<PatternFacade>) super.statedAxiomsPatternProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<PatternFacade> statedNavigationPatternProperty() {
-        return (ObjectPropertyWithOverride<PatternFacade>) super.statedNavigationPatternProperty();
+    public OverrideOf<PatternFacade> statedNavigationPatternProperty() {
+        return (OverrideOf<PatternFacade>) super.statedNavigationPatternProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<PatternFacade> inferredNavigationPatternProperty() {
-        return (ObjectPropertyWithOverride<PatternFacade>) super.inferredNavigationPatternProperty();
+    public OverrideOf<PatternFacade> inferredNavigationPatternProperty() {
+        return (OverrideOf<PatternFacade>) super.inferredNavigationPatternProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> rootConceptProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.rootConceptProperty();
+    public OverrideOf<ConceptFacade> rootConceptProperty() {
+        return (OverrideOf<ConceptFacade>) super.rootConceptProperty();
     }
 
     @Override
     protected ObjectProperty<ConceptFacade> makeClassifierProperty(LogicCoordinate logicCoordinate) {
         ObservableLogicCoordinate overriddenCoordinate = (ObservableLogicCoordinate) logicCoordinate;
-        return new ObjectPropertyWithOverride<>(overriddenCoordinate.classifierProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.classifierProperty(), this);
     }
 
     @Override
     protected ObjectProperty<PatternFacade> makeConceptMemberPattern(LogicCoordinate logicCoordinate) {
         ObservableLogicCoordinate overriddenCoordinate = (ObservableLogicCoordinate) logicCoordinate;
-        return new ObjectPropertyWithOverride<>(overriddenCoordinate.conceptMemberPatternProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.conceptMemberPatternProperty(), this);
     }
 
     @Override
     protected ObjectProperty<ConceptFacade> makeDescriptionLogicProfileProperty(LogicCoordinate logicCoordinate) {
         ObservableLogicCoordinate overriddenCoordinate = (ObservableLogicCoordinate) logicCoordinate;
-        return new ObjectPropertyWithOverride<>(overriddenCoordinate.descriptionLogicProfileProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.descriptionLogicProfileProperty(), this);
     }
 
     @Override
     protected ObjectProperty<PatternFacade> makeInferredAxiomPatternProperty(LogicCoordinate logicCoordinate) {
         ObservableLogicCoordinate overriddenCoordinate = (ObservableLogicCoordinate) logicCoordinate;
-        return new ObjectPropertyWithOverride<>(overriddenCoordinate.inferredAxiomsPatternProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.inferredAxiomsPatternProperty(), this);
     }
 
     @Override
     protected ObjectProperty<PatternFacade> makeStatedAxiomPatternProperty(LogicCoordinate logicCoordinate) {
         ObservableLogicCoordinate overriddenCoordinate = (ObservableLogicCoordinate) logicCoordinate;
-        return new ObjectPropertyWithOverride<>(overriddenCoordinate.statedAxiomsPatternProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.statedAxiomsPatternProperty(), this);
     }
 
     @Override
     protected ObjectProperty<PatternFacade> makeInferredNavigationPatternProperty(LogicCoordinate logicCoordinate) {
         ObservableLogicCoordinate overriddenCoordinate = (ObservableLogicCoordinate) logicCoordinate;
-        return new ObjectPropertyWithOverride<>(overriddenCoordinate.inferredNavigationPatternProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.inferredNavigationPatternProperty(), this);
     }
 
     @Override
     protected ObjectProperty<PatternFacade> makeStatedNavigationPatternProperty(LogicCoordinate logicCoordinate) {
         ObservableLogicCoordinate overriddenCoordinate = (ObservableLogicCoordinate) logicCoordinate;
-        return new ObjectPropertyWithOverride<>(overriddenCoordinate.statedNavigationPatternProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.statedNavigationPatternProperty(), this);
     }
 
     @Override
     protected ObjectProperty<ConceptFacade> makeRootConceptProperty(LogicCoordinate logicCoordinate) {
         ObservableLogicCoordinate overriddenCoordinate = (ObservableLogicCoordinate) logicCoordinate;
-        return new ObjectPropertyWithOverride<>(overriddenCoordinate.rootConceptProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.rootConceptProperty(), this);
     }
     @Override
     public LogicCoordinateRecord getOriginalValue() {

@@ -116,56 +116,56 @@ int authorNid, int defaultModuleNid, int promotionPathNid, int destinationModule
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeAuthorForChangesProperty(EditCoordinate editCoordinate) {
         ObservableEditCoordinate observableEditCoordinate = (ObservableEditCoordinate) editCoordinate;
-        return new ObjectPropertyWithOverride<>(observableEditCoordinate.authorForChangesProperty(), this);
+        return new OverrideOf<>(observableEditCoordinate.authorForChangesProperty(), this);
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeDefaultModuleProperty(EditCoordinate editCoordinate) {
         ObservableEditCoordinate observableEditCoordinate = (ObservableEditCoordinate) editCoordinate;
-        return new ObjectPropertyWithOverride<>(observableEditCoordinate.defaultModuleProperty(), this);
+        return new OverrideOf<>(observableEditCoordinate.defaultModuleProperty(), this);
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeDestinationModuleProperty(EditCoordinate editCoordinate) {
         ObservableEditCoordinate observableEditCoordinate = (ObservableEditCoordinate) editCoordinate;
-        return new ObjectPropertyWithOverride<>(observableEditCoordinate.destinationModuleProperty(), this);
+        return new OverrideOf<>(observableEditCoordinate.destinationModuleProperty(), this);
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeDefaultPathProperty(EditCoordinate editCoordinate) {
         ObservableEditCoordinate observableEditCoordinate = (ObservableEditCoordinate) editCoordinate;
-        return new ObjectPropertyWithOverride<>(observableEditCoordinate.defaultPathProperty(), this);
+        return new OverrideOf<>(observableEditCoordinate.defaultPathProperty(), this);
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makePromotionPathProperty(EditCoordinate editCoordinate) {
         ObservableEditCoordinate observableEditCoordinate = (ObservableEditCoordinate) editCoordinate;
-        return new ObjectPropertyWithOverride<>(observableEditCoordinate.promotionPathProperty(), this);
+        return new OverrideOf<>(observableEditCoordinate.promotionPathProperty(), this);
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> authorForChangesProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.authorForChangesProperty();
+    public OverrideOf<ConceptFacade> authorForChangesProperty() {
+        return (OverrideOf<ConceptFacade>) super.authorForChangesProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> defaultModuleProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.defaultModuleProperty();
+    public OverrideOf<ConceptFacade> defaultModuleProperty() {
+        return (OverrideOf<ConceptFacade>) super.defaultModuleProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> destinationModuleProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.destinationModuleProperty();
+    public OverrideOf<ConceptFacade> destinationModuleProperty() {
+        return (OverrideOf<ConceptFacade>) super.destinationModuleProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> defaultPathProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.defaultPathProperty();
+    public OverrideOf<ConceptFacade> defaultPathProperty() {
+        return (OverrideOf<ConceptFacade>) super.defaultPathProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> promotionPathProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.promotionPathProperty();
+    public OverrideOf<ConceptFacade> promotionPathProperty() {
+        return (OverrideOf<ConceptFacade>) super.promotionPathProperty();
     }
 }
 
