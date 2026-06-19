@@ -28,8 +28,10 @@ import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
+import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
@@ -51,6 +53,7 @@ import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
@@ -234,6 +237,9 @@ public class GenPurposeDetailsController {
         // Setup Properties Bump out view
         setupProperties();
 
+        // When the user submits an edited STAMP from the properties panel, refresh the header STAMP.
+        propertiesController.getStampFormViewModel().getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED)
+                .subscribe(isConfirmed -> onStampConfirmedOrSubmitted(isConfirmed));
 
         // Assign the tooltip to the StackPane (container of Publish button)
         setupTooltipForDisabledButton(savePatternButton);
@@ -353,9 +359,10 @@ public class GenPurposeDetailsController {
 
         updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
 
-//        isUpdatingStampSelection = true;
-//        stampViewControl.setSelected(propertyToggle.isSelected());
-//        isUpdatingStampSelection = false;
+        // Keep the header STAMP control's selected state in sync with the properties panel toggle.
+        isUpdatingStampSelection = true;
+        stampViewControl.setSelected(propertyToggle.isSelected());
+        isUpdatingStampSelection = false;
 
         EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(propertyToggle, eventEvtType));
     }
@@ -390,13 +397,16 @@ public class GenPurposeDetailsController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
-//            if (CREATE.equals(patternViewModel.getPropertyValue(MODE))) {
-//                EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.CREATE_STAMP));
-//            } else {
-//                EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
-//            }
-//        } else {
-//            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
+            // The reference component always exists in a Knowledge Layout window, so editing its STAMP
+            // always adds a new version (ADD_STAMP). Guard against a window opened without one.
+            EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+            if (refComponent != null) {
+                EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
+                        new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
+            }
+        } else {
+            EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
+                    new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
         }
     }
 
@@ -540,13 +550,12 @@ public class GenPurposeDetailsController {
             return;
         }
 
-//        updateStampControlFromViewModel();
-
-//        if (patternViewModel.getPropertyValue(MODE).equals(EDIT)) {
-//            patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
-//        }
-
-        stampViewControl.setDisable(true);
+        // A new STAMP version was committed for the reference component; refresh the header from the
+        // committed latest version. The control stays enabled so the STAMP can be edited again.
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        if (refComponent != null) {
+            updateStampControl(refComponent);
+        }
     }
 
     public ViewProperties getViewProperties() {
