@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.fxutils.window;
+package dev.ikm.komet.layout_engine.window;
 
 import javafx.scene.Cursor;
 
-import static dev.ikm.komet.kview.fxutils.window.CursorMappings.ResizeDirection;
+import static dev.ikm.komet.layout_engine.window.CursorMappings.ResizeDirection;
 
 /**
  * Base class for resize handle implementations that provides common functionality.

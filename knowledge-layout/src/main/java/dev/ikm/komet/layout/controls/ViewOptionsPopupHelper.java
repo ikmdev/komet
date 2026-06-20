@@ -88,6 +88,11 @@ public final class ViewOptionsPopupHelper {
         filterOptionsPopup.getFilterOptionsUtils().subscribeFilterOptionsToView(
                 filterOptionsPopup.getInheritedFilterOptions(), viewProperties.nodeView());
 
+        // Eagerly record the commit/display target so the FIRST projection (setupDefaultFilterOptions →
+        // reproject, which can run before any filterOptionsProperty change has lazily set committedNodeView)
+        // reads the nodeView and its applied overrides — not the inherited parent baseline (ike-issues#710).
+        filterOptionsPopup.getFilterOptionsUtils().setCommitTargetView(viewProperties.nodeView());
+
         // Subscribe nodeView to F.O., so changes from the F.O. popup are propagated to this nodeView
         filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, filterOptions) -> {
             if (oldFilterOptions != null) {

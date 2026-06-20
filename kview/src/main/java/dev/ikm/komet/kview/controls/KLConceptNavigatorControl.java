@@ -219,6 +219,16 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     public void setOnKLAction(BiConsumer<ConceptFacade, String> consumer) { onKLAction.set(consumer); }
 
     /**
+     * Action to perform when the user clicks on a context menu option that opens an editor-designed
+     * layout as a {@code DynamicCard} (the kview-free, layout-engine card).
+     * The BiConsumer receives the Concept that the user right-clicked on and the layout title.
+     */
+    private final ObjectProperty<BiConsumer<ConceptFacade, String>> onKLDynamicCardAction = new SimpleObjectProperty<>();
+    public BiConsumer<ConceptFacade, String> getOnKLDynamicCardAction() { return onKLDynamicCardAction.get(); }
+    public ObjectProperty<BiConsumer<ConceptFacade, String>> onKLDynamicCardActionProperty() { return onKLDynamicCardAction; }
+    public void setOnKLDynamicCardAction(BiConsumer<ConceptFacade, String> consumer) { onKLDynamicCardAction.set(consumer); }
+
+    /**
      * <p>Double property that sets the milliseconds of activation or delay for highlighting a
      * {@link ConceptNavigatorTreeItem} and its ancestors, or for showing a tooltip, after "long" hovering over
      * such item.</p>

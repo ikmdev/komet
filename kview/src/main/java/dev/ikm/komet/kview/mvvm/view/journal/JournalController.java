@@ -82,7 +82,9 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.layout.KlPeerable;
 import dev.ikm.komet.layout.area.KlToolArea;
+import dev.ikm.komet.layout_engine.host.KlCardProvider;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.layout.controls.ViewOptionsPopupHelper;
 import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
@@ -103,10 +105,13 @@ import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.AbstractChapterKlWindow;
-import dev.ikm.komet.kview.klwindows.ToolAreaChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.CardKlWindow;
+import dev.ikm.komet.kview.klwindows.ToolCardKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
+import dev.ikm.komet.kview.klwindows.DynamicCardKlWindow;
+import dev.ikm.komet.layout_engine.host.DynamicComponentCard;
 import dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
@@ -230,9 +235,6 @@ public class JournalController {
 
     @FXML
     private MenuItem newConceptMenuItem;
-
-    @FXML
-    private HBox chapterHeaderbarHBox;
 
     @FXML
     private HBox projectBarHBox;
@@ -388,6 +390,12 @@ public class JournalController {
         journalViewProperties = windowView.makeOverridableViewProperties("JournalController.filterOptionsPopup");
         journalViewCoordAsParent = new ObservableViewNoOverride(journalViewProperties.nodeView());
 
+        // Expose the journal's live coordinate as the journal-stratum KlContext on the workspace pane, so a
+        // chapter window resolves it as its coordinate parent by walking the scene graph and establishes its
+        // own coordinate childOf it (ike-issues#698, KB -> journal -> window).
+        workspace.getProperties().put(KlPeerable.PropertyKeys.KL_CONTEXT,
+                new JournalKlContext(journalViewProperties.nodeView()));
+
         // One shared View Options control everywhere: the journal differs only in its navigator (graph) and where
         // the popup is anchored (beneath the toolbar button); commit-on-Apply and the rest come from the shared
         // ViewOptionsPopupHelper (ike-issues#681).
@@ -528,6 +536,14 @@ public class JournalController {
             windowMenuItem.setOnAction(actionEvent -> newCreateGenPurposeKLWindow(null, windowTitle));
 
             windowTitleToMenuItem.put(windowTitle, windowMenuItem);
+
+            // Parallel entry: realize the same designed layout as a kview-free DynamicCard.
+            MenuItem dynamicCardMenuItem = new MenuItem(windowTitle + " — Dynamic Card",
+                    KometIcon.create(KL_EDITABLE_VIEW));
+            // Open as a component-focusable card so an empty card shows the identicon + name drop target —
+            // drag a concept onto it to focus the card (and populate its component areas).
+            dynamicCardMenuItem.setOnAction(actionEvent -> newCreateDynamicComponentCardWindow(null, windowTitle));
+            addContextMenu.getItems().add(dynamicCardMenuItem);
         }
 
         // Discover summonable tool areas (e.g. the Claude Assistant) contributed via
@@ -541,27 +557,48 @@ public class JournalController {
             toolMenuItem.setOnAction(actionEvent -> createToolAreaWindow(toolAreaFactory));
             addContextMenu.getItems().add(toolMenuItem);
         }
+        // Discover plugin-contributed first-class cards (e.g. the Claude Assistant as a ClaudeCard),
+        // ServiceLoader-discovered as KlCardProvider, and add a "+"-menu entry that opens each natively —
+        // its own chrome + sandboxed prefs-node storage — via the generic CardKlWindow.
+        for (var cardProvider : PluggableService.load(KlCardProvider.class)) {
+            anyToolArea = true;
+            MenuItem cardMenuItem = new MenuItem(cardProvider.cardName());
+            cardMenuItem.setOnAction(actionEvent -> createCardWindow(cardProvider));
+            addContextMenu.getItems().add(cardMenuItem);
+        }
         if (anyToolArea) {
             addContextMenuSeparator.setVisible(true);
         }
     }
 
     /**
-     * Creates a tool-area window (e.g. the Claude Assistant) and adds it to the workspace.
-     * The area is hosted in a non-entity {@link ToolAreaChapterKlWindow} and is handed the
-     * journal view so its in-process tools query the coordinate the user currently sees.
+     * Creates a tool-area window (e.g. the Claude Assistant) and adds it to the workspace. The area is
+     * hosted in a kview-free, layout-engine {@link ToolCardKlWindow} (a sandboxed {@code ToolCard}) and is
+     * handed the journal view so its in-process tools query the coordinate the user currently sees. Each
+     * tool card keeps its own per-instance preferences, so two of the same tool never share state.
      *
      * @param toolAreaFactory the discovered tool-area factory selected from the "+" menu
      */
     private void createToolAreaWindow(KlToolArea.Factory toolAreaFactory) {
         ViewProperties viewProperties =
                 windowView.makeOverridableViewProperties("JournalController.createToolAreaWindow");
-        final java.util.UUID windowTopic = java.util.UUID.randomUUID();
-        final KometPreferences windowPreferences = KlWindowPreferencesUtils.getWindowPreferences(
-                journalTopic, windowTopic, ToolAreaChapterKlWindow.TOOL_WINDOW_TYPE);
-        ToolAreaChapterKlWindow toolWindow = new ToolAreaChapterKlWindow(
-                windowTopic, toolAreaFactory, viewProperties, windowPreferences);
+        ToolCardKlWindow toolWindow =
+                ToolCardKlWindow.create(journalTopic, toolAreaFactory, viewProperties, null);
         setupWorkspaceWindow(toolWindow);
+    }
+
+    /**
+     * Creates a plugin-contributed first-class card window (e.g. the Claude Assistant as a {@code ClaudeCard})
+     * and adds it to the workspace. The provider's card supplies its own chrome and sandboxed per-instance
+     * prefs-node storage; the generic {@link CardKlWindow} only bridges it to the workspace.
+     *
+     * @param cardProvider the discovered card provider selected from the "+" menu
+     */
+    private void createCardWindow(KlCardProvider cardProvider) {
+        ViewProperties viewProperties =
+                windowView.makeOverridableViewProperties("JournalController.createCardWindow");
+        CardKlWindow cardWindow = CardKlWindow.create(journalTopic, cardProvider, viewProperties, null);
+        setupWorkspaceWindow(cardWindow);
     }
 
     private String formatPromptText(String title) {
@@ -1670,10 +1707,22 @@ public class JournalController {
                 final KometPreferences windowPreferences = journalPreferences.node(windowId);
                 windowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
                 try {
-                    if (windowId.startsWith(ToolAreaChapterKlWindow.TOOL_WINDOW_TYPE.getPrefix())) {
-                        // Non-entity tool window: restore via the Kl framework (PluggableService),
-                        // not the entity-centric EntityKlWindowFactory path.
-                        setupWorkspaceWindow(ToolAreaChapterKlWindow.restore(windowSettings, windowPreferences));
+                    if (windowId.startsWith(CardKlWindow.CARD_WINDOW_TYPE.getPrefix())) {
+                        // Plugin-contributed first-class card window: restore via its provider (resolved by
+                        // class name across module layers) from the card's own node. Hand it the live
+                        // journalViewProperties so the restored card tracks journal-coordinate changes.
+                        setupWorkspaceWindow(CardKlWindow.restore(windowPreferences, journalViewProperties));
+                    } else if (windowId.startsWith(ToolCardKlWindow.TOOL_CARD_WINDOW_TYPE.getPrefix())) {
+                        // Non-entity tool-card window: restore via its own static factory, which
+                        // re-instantiates the hosted tool from the card's per-instance node. Hand it the
+                        // live journalViewProperties so the restored card tracks journal-coordinate changes.
+                        setupWorkspaceWindow(ToolCardKlWindow.restore(windowPreferences, journalViewProperties));
+                    } else if (windowId.startsWith(DynamicCardKlWindow.DYNAMIC_CARD_WINDOW_TYPE.getPrefix())) {
+                        // Non-entity dynamic-card window: restore via its own static factory, which
+                        // re-realizes the editor layout for the saved reference component. Hand it the
+                        // live journalViewProperties (not a reconstructed view) so the restored card
+                        // tracks journal-coordinate changes like a freshly created one.
+                        setupWorkspaceWindow(DynamicCardKlWindow.restore(windowPreferences, journalViewProperties));
                     } else {
                         setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences));
                     }
@@ -1755,6 +1804,50 @@ public class JournalController {
         final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
 
         createGenPurposeKLWindow(entityFacade, editorWindowPreferences);
+    }
+
+    /**
+     * Creates a {@link DynamicCardKlWindow} hosting a kview-free, layout-engine {@code DynamicCard}
+     * that realizes the given editor-designed layout, and adds it to the workspace.
+     *
+     * @param entityFacade            the reference component the layout is about, or {@code null}
+     * @param editorWindowPreferences the preferences node of the designed layout
+     * @param layoutTitle             the title of the designed layout
+     */
+    private void createDynamicCardWindow(EntityFacade entityFacade,
+                                         KometPreferences editorWindowPreferences,
+                                         String layoutTitle,
+                                         boolean componentFocused) {
+        DynamicCardKlWindow window = DynamicCardKlWindow.create(journalTopic, entityFacade, layoutTitle,
+                editorWindowPreferences, componentFocused, journalViewProperties, null);
+        setupWorkspaceWindow(window);
+    }
+
+    /**
+     * Opens the named editor-designed layout as a plain {@link DynamicCardKlWindow} in the workspace.
+     *
+     * @param entityFacade the reference component, or {@code null}
+     * @param windowTitle  the title of the saved editor layout to realize
+     */
+    public void newCreateDynamicCardWindow(EntityFacade entityFacade, String windowTitle) {
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+        createDynamicCardWindow(entityFacade, editorWindowPreferences, windowTitle, false);
+    }
+
+    /**
+     * Opens the named editor-designed layout as a component-focused {@link DynamicComponentCard}
+     * (hosted in a {@link DynamicCardKlWindow}) in the workspace, with the given component as subject.
+     *
+     * @param entityFacade the component the card views
+     * @param windowTitle  the title of the saved editor layout to realize
+     */
+    public void newCreateDynamicComponentCardWindow(EntityFacade entityFacade, String windowTitle) {
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+        createDynamicCardWindow(entityFacade, editorWindowPreferences, windowTitle, true);
     }
 
     /**

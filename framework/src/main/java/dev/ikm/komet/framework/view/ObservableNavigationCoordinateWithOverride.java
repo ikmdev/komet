@@ -90,6 +90,21 @@ public class ObservableNavigationCoordinateWithOverride extends ObservableNaviga
         return new OverrideOf<>(observableNavigationCoordinate.verticesSortPatternListProperty(), this);
     }
 
+    /**
+     * Applies {@code coordinateWithOverrides} as this coordinate's override state: each dimension is
+     * {@link OverrideOf#set set}, which pins it when the value differs from the inherited parent and clears
+     * the pin (reverting to inheriting) when it equals the parent. Dimensions matching the parent stay
+     * inherited, so cascade tracking is preserved.
+     *
+     * @param coordinateWithOverrides the desired resolved navigation coordinate
+     */
+    public void setOverrides(NavigationCoordinateRecord coordinateWithOverrides) {
+        navigationPatternsProperty().setValue(coordinateWithOverrides.navigationPatternNids().map(PatternFacade::make));
+        vertexStatesProperty().set(coordinateWithOverrides.vertexStates());
+        sortVerticesProperty().set(coordinateWithOverrides.sortVertices());
+        verticesSortPatternListProperty().setValue(coordinateWithOverrides.verticesSortPatternNidList().map(PatternFacade::make));
+    }
+
     @Override
     public NavigationCoordinateRecord getOriginalValue() {
         /**

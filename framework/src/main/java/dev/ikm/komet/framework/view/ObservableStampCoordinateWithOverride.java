@@ -143,6 +143,24 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
         return new OverrideOf<>(observableStampFilter.pathConceptProperty(), this);
     }
 
+    /**
+     * Applies {@code coordinateWithOverrides} as this coordinate's override state: each dimension is
+     * {@link OverrideOf#set set}, which pins it when the value differs from the inherited parent and clears
+     * the pin (reverting to inheriting) when it equals the parent. The inverse direction of
+     * {@link #setExceptOverrides} — used to re-apply a persisted/captured override — and the dimensions that
+     * match the parent stay inherited, so cascade tracking is preserved.
+     *
+     * @param coordinateWithOverrides the desired resolved stamp coordinate
+     */
+    public void setOverrides(StampCoordinateRecord coordinateWithOverrides) {
+        timeProperty().set(coordinateWithOverrides.stampPosition().time());
+        pathConceptProperty().setValue(coordinateWithOverrides.pathForFilter());
+        allowedStatesProperty().setValue(coordinateWithOverrides.allowedStates());
+        moduleSpecificationsProperty().setValue(coordinateWithOverrides.moduleNids().map(ConceptFacade::make));
+        excludedModuleSpecificationsProperty().setValue(coordinateWithOverrides.excludedModuleNids().map(ConceptFacade::make));
+        modulePriorityOrderProperty().setValue(coordinateWithOverrides.modulePriorityNidList().map(ConceptFacade::make));
+    }
+
     @Override
     public StampCoordinateRecord getOriginalValue() {
         return StampCoordinateRecord.make(this.allowedStatesProperty().getOriginalValue(),

@@ -131,6 +131,23 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
         return new OverrideOf<>(overriddenCoordinate.modulePreferenceListForLanguageProperty(), this);
     }
 
+    /**
+     * Applies {@code coordinateWithOverrides} as this coordinate's override state: each dimension is
+     * {@link OverrideOf#set set}, which pins it when the value differs from the inherited parent and clears
+     * the pin (reverting to inheriting) when it equals the parent. Dimensions matching the parent stay
+     * inherited, so cascade tracking is preserved.
+     *
+     * @param coordinateWithOverrides the desired resolved language coordinate
+     */
+    public void setOverrides(LanguageCoordinateRecord coordinateWithOverrides) {
+        languageConceptProperty().setValue(coordinateWithOverrides.languageConcept());
+        descriptionPatternPreferenceListProperty().setValue(
+                coordinateWithOverrides.descriptionPatternPreferenceNidList().map(PatternFacade::make));
+        dialectPatternPreferenceListProperty().setValue(coordinateWithOverrides.dialectPatternPreferenceList());
+        descriptionTypePreferenceListProperty().setValue(coordinateWithOverrides.descriptionTypePreferenceList());
+        modulePreferenceListForLanguageProperty().setValue(coordinateWithOverrides.modulePreferenceListForLanguage());
+    }
+
     @Override
     public LanguageCoordinateRecord getOriginalValue() {
         return LanguageCoordinateRecord.make(languageConceptProperty().getOriginalValue().nid(),

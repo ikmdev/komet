@@ -169,6 +169,25 @@ public class ObservableLogicCoordinateWithOverride extends ObservableLogicCoordi
         ObservableLogicCoordinate overriddenCoordinate = (ObservableLogicCoordinate) logicCoordinate;
         return new OverrideOf<>(overriddenCoordinate.rootConceptProperty(), this);
     }
+    /**
+     * Applies {@code coordinateWithOverrides} as this coordinate's override state: each dimension is
+     * {@link OverrideOf#set set}, which pins it when the value differs from the inherited parent and clears
+     * the pin (reverting to inheriting) when it equals the parent. Dimensions matching the parent stay
+     * inherited, so cascade tracking is preserved.
+     *
+     * @param coordinateWithOverrides the desired resolved logic coordinate
+     */
+    public void setOverrides(LogicCoordinateRecord coordinateWithOverrides) {
+        classifierProperty().setValue(coordinateWithOverrides.classifier());
+        conceptMemberPatternProperty().setValue(coordinateWithOverrides.conceptMemberPattern());
+        descriptionLogicProfileProperty().setValue(coordinateWithOverrides.descriptionLogicProfile());
+        inferredAxiomsPatternProperty().setValue(coordinateWithOverrides.inferredAxiomsPattern());
+        statedAxiomsPatternProperty().setValue(coordinateWithOverrides.statedAxiomsPattern());
+        statedNavigationPatternProperty().setValue(coordinateWithOverrides.statedNavigationPattern());
+        inferredNavigationPatternProperty().setValue(coordinateWithOverrides.inferredNavigationPattern());
+        rootConceptProperty().setValue(coordinateWithOverrides.root());
+    }
+
     @Override
     public LogicCoordinateRecord getOriginalValue() {
         return LogicCoordinateRecord.make(classifierProperty().getOriginalValue(),

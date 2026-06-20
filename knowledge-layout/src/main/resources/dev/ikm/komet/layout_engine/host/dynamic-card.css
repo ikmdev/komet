@@ -1,0 +1,203 @@
+/*
+ * Styling for the engine-native dynamic cards (DynamicCard / DynamicComponentCard).
+ * Approximates the classic Komet concept-window chrome: a dark control toolbar over a
+ * white component-identity header (identicon + title + identifiers on the left, STAMP on
+ * the right), above the realized layout body.
+ */
+
+/* The card root is transparent so the floating tab shows the workspace beside it, not white. */
+.dynamic-card-root {
+    -fx-background-color: transparent;
+    -fx-padding: 0 4 4 0;
+}
+
+/* The toolbar + identity container, inside the bordered body. */
+.dynamic-card-header {
+    -fx-background-color: transparent;
+}
+
+/* The tab row is transparent; only the tab chip is dark. */
+.dynamic-card-tab-row {
+    -fx-background-color: transparent;
+}
+
+/* The bordered, rounded, shadowed card body (everything below the floating tab). */
+.dynamic-card-body {
+    -fx-background-color: white;
+    -fx-border-color: #34465f;   /* match the tab/toolbar (title bar) color */
+    -fx-border-width: 0 2 2 2;   /* sides + bottom; no top, so no white line under the tab/toolbar */
+    -fx-border-radius: 0 8 8 8;
+    -fx-background-radius: 0 8 8 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 8, 0, 0, 2);
+}
+
+.dynamic-card-body > .scroll-pane,
+.dynamic-card-body > .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* ---- Chapter chrome: a draggable tab over an icon toolbar (Pedro-style) ---- */
+
+/* The browser-style tab (drag handle + window name) jutting up at the top-left. */
+.dynamic-card-tab {
+    -fx-background-color: #34465f;
+    -fx-background-radius: 8 8 0 0;
+    -fx-border-radius: 8 8 0 0;
+    -fx-border-color: #34465f;   /* match the tab/toolbar (title bar) color */
+    -fx-border-width: 2 2 0 2;   /* top + sides; no bottom, so it meets the body seamlessly */
+    -fx-padding: 4 16 2 16;
+}
+
+.dynamic-card-tab-text {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+/* The 3x3 drag-dots handle. */
+.nine-dots-icon {
+    -fx-background-color: white;
+    -fx-shape: "M0 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M14 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 7a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 7a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M14 7a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 14a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 14a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M14 14a2 2 0 1 0 4 0a2 2 0 1 0 -4 0";
+    -fx-min-width: 18px;
+    -fx-min-height: 18px;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+}
+
+/* The dark icon toolbar under the tab. */
+.dynamic-card-toolbar {
+    -fx-background-color: #34465f;
+    -fx-background-radius: 0 8 0 0;
+    -fx-border-radius: 0 8 0 0;
+    -fx-padding: 4 8 4 8;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+}
+
+/* Publish button: outlined white-on-dark; dimmed when there are no uncommitted changes. */
+.dynamic-card-publish-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-border-color: rgba(255, 255, 255, 0.4);
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.dynamic-card-publish-button:disabled {
+    -fx-opacity: 0.45;
+}
+
+/* Coordinate crosshair: the MenuButton itself is shaped as the icon (graphic-only, no arrow). */
+.coordinate {
+    -fx-min-width: 18;
+    -fx-min-height: 18;
+    -fx-max-width: 18;
+    -fx-max-height: 18;
+    -fx-background-color: white;
+    -fx-shape: "M8.16699 0.666687V2.39169C5.15033 2.77502 2.77533 5.15002 2.39199 8.16669H0.666992V9.83335H2.39199C2.77533 12.85 5.15033 15.225 8.16699 15.6084V17.3334H9.83366V15.6084C12.8503 15.225 15.2253 12.85 15.6087 9.83335H17.3337V8.16669H15.6087C15.2253 5.15002 12.8503 2.77502 9.83366 2.39169V0.666687M8.16699 4.06669V5.66669H9.83366V4.07502C11.917 4.41669 13.5837 6.08335 13.9337 8.16669H12.3337V9.83335H13.9253C13.5837 11.9167 11.917 13.5834 9.83366 13.9334V12.3334H8.16699V13.925C6.08366 13.5834 4.41699 11.9167 4.06699 9.83335H5.66699V8.16669H4.07533C4.41699 6.08335 6.08366 4.41669 8.16699 4.06669ZM9.00033 8.16669C8.77931 8.16669 8.56735 8.25448 8.41107 8.41077C8.25479 8.56705 8.16699 8.77901 8.16699 9.00002C8.16699 9.22103 8.25479 9.433 8.41107 9.58928C8.56735 9.74556 8.77931 9.83335 9.00033 9.83335C9.22134 9.83335 9.4333 9.74556 9.58958 9.58928C9.74586 9.433 9.83366 9.22103 9.83366 9.00002C9.83366 8.77901 9.74586 8.56705 9.58958 8.41077C9.4333 8.25448 9.22134 8.16669 9.00033 8.16669Z";
+}
+
+.coordinate.menu-button > .arrow-button,
+.coordinate.menu-button > .arrow-button > .arrow {
+    -fx-padding: 0;
+}
+
+/* Crosshair turns orange when this card's coordinate overrides its parent. */
+.coordinate.menu-button:filter-set,
+.coordinate.override.menu-button {
+    -fx-background-color: #ff9100;
+}
+
+/* Close (X) control. */
+.dynamic-card-close-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 6;
+}
+
+.close-window {
+    -fx-min-width: 12;
+    -fx-min-height: 13;
+    -fx-max-width: 12;
+    -fx-max-height: 13;
+    -fx-background-color: white;
+    -fx-shape: "M11.8337 1.8415L10.6587 0.666504L6.00033 5.32484L1.34199 0.666504L0.166992 1.8415L4.82533 6.49984L0.166992 11.1582L1.34199 12.3332L6.00033 7.67484L10.6587 12.3332L11.8337 11.1582L7.17533 6.49984L11.8337 1.8415Z";
+}
+
+/* Component identity header (white card under the toolbar). */
+.dynamic-component-card-identity {
+    -fx-padding: 12 16 12 16;
+    -fx-background-color: white;
+    -fx-spacing: 16;
+}
+
+.dynamic-component-card-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2a44;
+}
+
+/* Identicon slot: a fixed, bordered placeholder so the identicon area is visible even when the card has no
+   concept in focus — the target you drag a concept onto. The identicon image fills it when focused. */
+.dynamic-component-card-identicon-slot {
+    -fx-min-width: 40;
+    -fx-min-height: 40;
+    -fx-background-color: #f2f4f7;
+    -fx-background-radius: 6;
+    -fx-border-color: #c2c8d2;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+}
+
+.dynamic-component-card-id {
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 11px;
+}
+
+.dynamic-component-card-ids {
+    -fx-spacing: 1;
+}
+
+.dynamic-component-card-ids .label {
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 11px;
+}
+
+/* Copy-to-clipboard control on each identifier row; revealed on hover (see copyableIdRow). */
+.dynamic-card-copy-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0 0 0 2;
+    -fx-cursor: hand;
+}
+
+.dynamic-card-copy-icon {
+    -fx-min-width: 14;
+    -fx-min-height: 14;
+    -fx-max-width: 14;
+    -fx-max-height: 14;
+    -fx-background-color: #6b7280;
+    -fx-shape: "M2 18.1975L2 11.2384C1.99999 10.7622 1.99998 10.3492 2.02781 10.0086C2.05725 9.64823 2.12245 9.28699 2.29997 8.93858C2.56383 8.42072 2.98486 7.99969 3.50272 7.73583C3.85114 7.5583 4.21238 7.4931 4.57271 7.46366C4.91336 7.43583 5.32628 7.43584 5.80251 7.43585L7.43586 7.43585L7.43586 5.8025C7.43585 5.32625 7.43584 4.91337 7.46367 4.57271C7.49311 4.21238 7.5583 3.85113 7.73583 3.50272C7.99969 2.98486 8.42072 2.56383 8.93858 2.29997C9.287 2.12244 9.64823 2.05725 10.0086 2.02781C10.3493 1.99997 10.7622 1.99998 11.2385 2L18.1973 2C18.6736 1.99998 19.0866 1.99997 19.4273 2.02781C19.7876 2.05725 20.1489 2.12244 20.4973 2.29997C21.0151 2.56383 21.4362 2.98486 21.7 3.50272C21.8776 3.85113 21.9428 4.21237 21.9722 4.57271C22 4.91341 22 5.32635 22 5.80266L22 12.7615C22 13.2378 22 13.6507 21.9722 13.9914C21.9428 14.3518 21.8776 14.713 21.7 15.0614C21.4362 15.5793 21.0151 16.0003 20.4973 16.2642C20.1489 16.4417 19.7876 16.5069 19.4273 16.5363C19.0866 16.5642 18.6737 16.5642 18.1975 16.5641L16.5641 16.5641L16.5641 18.1976C16.5642 18.6738 16.5642 19.0866 16.5363 19.4273C16.5069 19.7876 16.4417 20.1489 16.2642 20.4973C16.0003 21.0151 15.5793 21.4362 15.0614 21.7C14.713 21.8776 14.3518 21.9427 13.9914 21.9722C13.6508 22 13.2379 22 12.7616 22L5.80252 22C5.32627 22 4.91338 22 4.57271 21.9722C4.21238 21.9427 3.85114 21.8776 3.50272 21.7C2.98487 21.4362 2.56384 21.0151 2.29997 20.4973C2.12245 20.1489 2.05725 19.7876 2.02781 19.4273C1.99998 19.0866 1.99999 18.6737 2 18.1975ZM3.90204 19.2742C3.88121 19.0192 3.88047 18.6836 3.88047 18.1606L3.88047 11.2752C3.88047 10.7522 3.88121 10.4167 3.90204 10.1617C3.92198 9.91759 3.95556 9.83139 3.97548 9.79229C4.05906 9.62827 4.19242 9.49491 4.35644 9.41134C4.39554 9.39142 4.48173 9.35783 4.72584 9.33789C4.9808 9.31706 5.31637 9.31633 5.83936 9.31633L7.43586 9.31633L7.43586 12.7616C7.43585 13.2378 7.43584 13.6508 7.46367 13.9914C7.49311 14.3518 7.5583 14.713 7.73583 15.0614C7.99969 15.5793 8.42072 16.0003 8.93858 16.2642C9.287 16.4417 9.64824 16.5069 10.0086 16.5363C10.3492 16.5642 10.7622 16.5642 11.2384 16.5641L14.6837 16.5641L14.6837 18.1606C14.6837 18.6836 14.6829 19.0192 14.6621 19.2742C14.6422 19.5183 14.6086 19.6045 14.5887 19.6436C14.5051 19.8076 14.3717 19.9409 14.2077 20.0245C14.1686 20.0444 14.0824 20.078 13.8383 20.098C13.5833 20.1188 13.2478 20.1195 12.7248 20.1195L5.83936 20.1195C5.31637 20.1195 4.9808 20.1188 4.72584 20.098C4.48173 20.078 4.39554 20.0444 4.35644 20.0245C4.19241 19.9409 4.05906 19.8076 3.97549 19.6436C3.95556 19.6045 3.92198 19.5183 3.90204 19.2742ZM9.3379 13.8383C9.31706 13.5833 9.31633 13.2478 9.31633 12.7248L9.31633 5.83936C9.31633 5.31637 9.31706 4.98079 9.3379 4.72584C9.35784 4.48173 9.39142 4.39554 9.41134 4.35644C9.49492 4.19241 9.62827 4.05906 9.7923 3.97548C9.8314 3.95556 9.91759 3.92198 10.1617 3.90203C10.4167 3.8812 10.7522 3.88047 11.2752 3.88047L18.1606 3.88047C18.6836 3.88047 19.0192 3.8812 19.2742 3.90203C19.5183 3.92198 19.6045 3.95556 19.6436 3.97548C19.8076 4.05906 19.9409 4.19241 20.0245 4.35644C20.0444 4.39554 20.078 4.48173 20.098 4.72584C20.1188 4.98079 20.1195 5.31637 20.1195 5.83936L20.1195 12.7248C20.1195 13.2478 20.1188 13.5833 20.098 13.8383C20.078 14.0824 20.0444 14.1686 20.0245 14.2077C19.9409 14.3717 19.8076 14.5051 19.6436 14.5887C19.6045 14.6086 19.5183 14.6422 19.2742 14.6621C19.0192 14.6829 18.6836 14.6837 18.1606 14.6837L11.2752 14.6837C10.7522 14.6837 10.4167 14.6829 10.1617 14.6621C9.91759 14.6422 9.8314 14.6086 9.7923 14.5887C9.62827 14.5051 9.49492 14.3717 9.41134 14.2077C9.39142 14.1686 9.35784 14.0824 9.3379 13.8383Z";
+}
+
+/* STAMP block on the right. */
+.dynamic-component-card-stamp {
+    -fx-spacing: 2;
+}
+
+.dynamic-component-card-stamp {
+    -fx-spacing: 2;
+}
+
+.dynamic-component-card-stamp .label {
+    -fx-font-size: 11px;
+    -fx-text-fill: #1f2a44;
+}
+
+/* Bold STAMP field labels (Status:, Last Updated:, Author:, Module:, Path:). */
+.dynamic-component-card-stamp-label {
+    -fx-font-weight: bold;
+}

@@ -27,7 +27,7 @@ import java.util.UUID;
 public sealed abstract class AreaBlueprint<FX extends Region>
         extends StateAndContextBlueprint<FX>
         implements KlPeerToRegion<FX>
-        permits SupplementalAreaBlueprint, FeatureAreaBlueprint, FeatureListAreaBlueprint, ParentAreaBlueprint {
+        permits SupplementalAreaBlueprint, FeatureAreaBlueprint, FeatureListAreaBlueprint, ParentAreaBlueprint, CardBlueprint {
 
     protected static final Logger LOG = LoggerFactory.getLogger(AreaBlueprint.class);
 

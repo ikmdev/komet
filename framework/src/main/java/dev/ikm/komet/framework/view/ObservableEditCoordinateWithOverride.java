@@ -103,6 +103,22 @@ int authorNid, int defaultModuleNid, int promotionPathNid, int destinationModule
         }
     }
 
+    /**
+     * Applies {@code coordinateWithOverrides} as this coordinate's override state: each dimension is
+     * {@link OverrideOf#set set}, which pins it when the value differs from the inherited parent and clears
+     * the pin (reverting to inheriting) when it equals the parent. Dimensions matching the parent stay
+     * inherited, so cascade tracking is preserved.
+     *
+     * @param coordinateWithOverrides the desired resolved edit coordinate
+     */
+    public void setOverrides(EditCoordinateRecord coordinateWithOverrides) {
+        authorForChangesProperty().setValue(coordinateWithOverrides.getAuthorForChanges());
+        defaultModuleProperty().setValue(coordinateWithOverrides.getDefaultModule());
+        destinationModuleProperty().setValue(coordinateWithOverrides.getDestinationModule());
+        defaultPathProperty().setValue(coordinateWithOverrides.getDefaultPath());
+        promotionPathProperty().setValue(coordinateWithOverrides.getPromotionPath());
+    }
+
     @Override
     public EditCoordinateRecord getOriginalValue() {
         return EditCoordinateRecord.make(authorForChangesProperty().getOriginalValue(),

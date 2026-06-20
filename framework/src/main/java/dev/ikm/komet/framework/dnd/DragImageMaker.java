@@ -17,9 +17,7 @@
 package dev.ikm.komet.framework.dnd;
 
 import dev.ikm.komet.framework.Dialogs;
-import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -28,8 +26,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Transform;
-import javafx.stage.Screen;
-import javafx.stage.Window;
 
 import java.util.Objects;
 
@@ -56,7 +52,8 @@ import java.util.Objects;
  */
 public class DragImageMaker implements DraggableWithImage {
 
-    private static final double STANDARD_DPI = 96.0;
+    /** Every drag image is rendered at this standard height (px), regardless of the source node's size. */
+    private static final double STANDARD_DRAG_IMAGE_HEIGHT = 32.0;
     private static final PseudoClass SNAPSHOT_PSEUDO_CLASS = PseudoClass.getPseudoClass("snapshot");
 
     /**
@@ -107,25 +104,23 @@ public class DragImageMaker implements DraggableWithImage {
             parent.layout();
         }
 
-        // Get the screen DPI where the scene is displayed
-        final double screenDpi = getDpiOfScreenForScene(scene);
-
-        // Calculate the scale factor based on the screen DPI
-        final double scaleFactor = Math.ceil(screenDpi / STANDARD_DPI);
-
-        // Calculate the node's dimensions with scaling
         final double layoutWidth = node.getLayoutBounds().getWidth();
         final double layoutHeight = node.getLayoutBounds().getHeight();
-        final double scaledWidth = layoutWidth * scaleFactor;
-        final double scaledHeight = layoutHeight * scaleFactor;
+
+        // Scale the snapshot so every drag image is a STANDARD height regardless of the source node's
+        // size — otherwise the image is the size of whatever was dragged (large title rows drag big,
+        // tiny axiom rows drag small). Width follows proportionally, preserving the aspect ratio.
+        final double targetScale = layoutHeight > 0 ? STANDARD_DRAG_IMAGE_HEIGHT / layoutHeight : 1.0;
+        final double scaledWidth = layoutWidth * targetScale;
+        final double scaledHeight = layoutHeight * targetScale;
 
         // Ensure dimensions are at least 1 pixel
         final int width = (int) Math.max(Math.ceil(scaledWidth), 1);
         final int height = (int) Math.max(Math.ceil(scaledHeight), 1);
 
-        // Create SnapshotParameters with scaling
+        // Create SnapshotParameters with the standard-size scaling
         SnapshotParameters snapshotParameters = new SnapshotParameters();
-        snapshotParameters.setTransform(Transform.scale(scaleFactor, scaleFactor));
+        snapshotParameters.setTransform(Transform.scale(targetScale, targetScale));
         snapshotParameters.setFill(Color.TRANSPARENT);
 
         // Create a WritableImage with the scaled dimensions
@@ -152,40 +147,5 @@ public class DragImageMaker implements DraggableWithImage {
     @Override
     public double getDragViewOffsetX() {
         return dragOffset;
-    }
-
-    /**
-     * Retrieves the DPI (Dots Per Inch) of the screen where the specified scene is currently displayed.
-     *
-     * @param scene the JavaFX {@link Scene} for which to determine the screen DPI
-     * @return the DPI of the screen, or {@code 96.0} if unable to determine
-     */
-    private double getDpiOfScreenForScene(Scene scene) {
-        // Get the window that contains the scene
-        final Window window = scene.getWindow();
-        if (window == null) {
-            // Handle the case where the scene is not attached to any window
-            return STANDARD_DPI; // Return standard DPI as fallback
-        }
-
-        // Get the window's position and size
-        final double windowX = window.getX();
-        final double windowY = window.getY();
-        final double windowWidth = window.getWidth();
-        final double windowHeight = window.getHeight();
-
-        // Create a rectangle based on the window's position and size
-        final Rectangle2D windowBounds = new Rectangle2D(windowX, windowY, windowWidth, windowHeight);
-
-        // Get the screens that intersect with the window bounds
-        final ObservableList<Screen> screens = Screen.getScreensForRectangle(windowBounds);
-        if (screens.isEmpty()) {
-            // Fallback to primary screen DPI
-            return Screen.getPrimary().getDpi();
-        }
-
-        // Assuming the first screen is the primary one for the window
-        final Screen screen = screens.getFirst();
-        return screen.getDpi();
     }
 }

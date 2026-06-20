@@ -202,6 +202,28 @@ public final class ViewContext implements KlContext, KlStateCommands {
     }
 
     /**
+     * Like {@link #createOverView(KlContextProvider, ObservableView, String)}, but also publishes the
+     * provider's popup-ready {@link ViewProperties} on the context so the standard View Options control
+     * (which surfaces the editable coordinate popup only when {@link #viewProperties()} is non-null) can
+     * find and edit this context's overridable coordinate. The {@code sourceView} should be the
+     * {@code nodeView()} of {@code viewProperties} (the live override).
+     *
+     * @param contextProvider the gadget providing this context
+     * @param sourceView      the live override coordinate to expose (the provider's coordinate of record)
+     * @param viewProperties  the popup-ready view properties (nodeView = sourceView, parentView = inherited baseline)
+     * @param contextName     a display name for the context
+     * @return the created {@code ViewContext} with {@link #viewProperties()} populated
+     */
+    public static ViewContext createOverView(KlContextProvider contextProvider,
+                                             ObservableView sourceView, ViewProperties viewProperties,
+                                             String contextName) {
+        PublicIdStringKey<KlContext> publicIdStringKey = new PublicIdStringKey<>(PublicIds.newRandom(), contextName);
+        ViewContext viewContext = new ViewContext(contextProvider, sourceView, publicIdStringKey);
+        viewContext.viewProperties = viewProperties;
+        return viewContext;
+    }
+
+    /**
      * Creates a context whose view is a live <em>override</em> of the parent context's view, realizing
      * one link of the depth-independent coordinate cascade (ike-issues#666). The child inherits every
      * facet it does not pin and tracks the parent for those; pinned facets survive parent changes

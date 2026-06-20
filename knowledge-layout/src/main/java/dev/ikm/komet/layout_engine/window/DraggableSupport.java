@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.fxutils.window;
+package dev.ikm.komet.layout_engine.window;
 
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static dev.ikm.komet.kview.fxutils.window.WindowSupport.setupWindowSupport;
+import static dev.ikm.komet.layout_engine.window.WindowSupport.setupWindowSupport;
 
 /**
  * Utility class that provides a clean, declarative API for adding window dragging behavior to JavaFX panes.

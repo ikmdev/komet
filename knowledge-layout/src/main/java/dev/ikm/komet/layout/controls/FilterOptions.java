@@ -188,12 +188,17 @@ public class FilterOptions implements Serializable {
             if (!Objects.equals(title, option.title)) return false;
             if (any != option.any) return false;
             if (inOverride != option.inOverride) return false;
+            // Description-type and dialect are ORDERED preference lists (first match wins), so they compare
+            // order-sensitively; every other option is an unordered set. (Before ike-issues#710 these used
+            // helpers whose names were inverted relative to their behavior — that hid order-only overrides.)
+            // Detection is correct provided the option model is populated from the nodeView's resolved order
+            // (see FilterOptionsUtils.projectFromView).
             if (option.item == OPTION_ITEM.DIALECT || option.item == OPTION_ITEM.DESCRIPTION_TYPE) {
-                if (!compareSortedLists(selectedOptions, option.selectedOptions)) return false;
-                if (!compareSortedLists(excludedOptions, option.excludedOptions)) return false;
+                if (!equalInOrder(selectedOptions, option.selectedOptions)) return false;
+                if (!equalInOrder(excludedOptions, option.excludedOptions)) return false;
             } else {
-                if (!compareLists(selectedOptions, option.selectedOptions)) return false;
-                if (!compareLists(excludedOptions, option.excludedOptions)) return false;
+                if (!equalIgnoringOrder(selectedOptions, option.selectedOptions)) return false;
+                if (!equalIgnoringOrder(excludedOptions, option.excludedOptions)) return false;
             }
             return true;
         }
@@ -651,7 +656,8 @@ public class FilterOptions implements Serializable {
         if (!Objects.equals(mainCoordinates, that.mainCoordinates)) {
             return false;
         }
-        if (!compareLists(languageCoordinatesList, that.languageCoordinatesList)) {
+        // The language coordinates are ORDERED (primary before fallback), so compare order-sensitively.
+        if (!equalInOrder(languageCoordinatesList, that.languageCoordinatesList)) {
             return false;
         }
         return true;
@@ -671,20 +677,45 @@ public class FilterOptions implements Serializable {
                 "}";
     }
 
-    static boolean compareLists(List<?> list1, List<?> list2) {
-        if (list1 == null && list2 != null) return false;
-        if (list1 != null && list2 == null) return false;
-        if (list1 != null && list1.size() != list2.size()) return false;
-        return list1 == null ||
-                list1.stream().sorted().toList().equals(list2.stream().sorted().toList());
+    /**
+     * Order-SENSITIVE list equality: equal only if the lists hold the same elements in the same positions.
+     * Use for the ORDERED preference dimensions — description-type and dialect ("first match wins") and the
+     * language-coordinate list (primary before fallback) — where a reorder is a genuine change. Null-safe
+     * (only null equals null) and does not mutate either argument.
+     *
+     * @param list1 first list (may be null)
+     * @param list2 second list (may be null)
+     * @return {@code true} if both are null, or both non-null with equal elements in the same order
+     */
+    static boolean equalInOrder(List<?> list1, List<?> list2) {
+        if (list1 == null || list2 == null) {
+            return list1 == list2;
+        }
+        if (list1.size() != list2.size()) {
+            return false;
+        }
+        return list1.equals(list2);
     }
 
-    static boolean compareSortedLists(List<?> list1, List<?> list2) {
-        if (list1 == null && list2 != null) return false;
-        if (list1 != null && list2 == null) return false;
-        if (list1 != null && list1.size() != list2.size()) return false;
-        return list1 == null ||
-                list1.stream().toList().equals(list2.stream().toList());
+    /**
+     * Order-INSENSITIVE list equality: equal if the lists hold the same elements regardless of position,
+     * compared as sets (the dimensions that use this — status, module, navigation, … — carry no duplicates).
+     * Use for the UNORDERED dimensions. Unlike a sort-then-compare, this requires no {@link Comparable} on the
+     * elements (e.g. {@code EntityFacade} is not Comparable, so sorting a 2+ element module list would throw)
+     * and does not mutate either argument.
+     *
+     * @param list1 first list (may be null)
+     * @param list2 second list (may be null)
+     * @return {@code true} if both are null, or both non-null with the same set of elements
+     */
+    static boolean equalIgnoringOrder(List<?> list1, List<?> list2) {
+        if (list1 == null || list2 == null) {
+            return list1 == list2;
+        }
+        if (list1.size() != list2.size()) {
+            return false;
+        }
+        return new HashSet<>(list1).equals(new HashSet<>(list2));
     }
 
 }

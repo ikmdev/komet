@@ -17,6 +17,7 @@ package dev.ikm.komet.preferences;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeListener;
@@ -161,6 +162,11 @@ public class KometPreferencesWrapper implements KometPreferences {
     @Override
     public String absolutePath() {
         return delegate.absolutePath();
+    }
+
+    @Override
+    public Optional<Path> directory() {
+        return delegate.directory();
     }
 
     @Override

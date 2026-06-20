@@ -239,6 +239,20 @@ public class FilterOptionsUtils {
         this.committedNodeView = observableView;
     }
 
+    /**
+     * Eagerly records the view that {@link #projectFromView(FilterOptions)} reads (and {@link #commitToView}
+     * writes), so the popup's very first projection reads the window's nodeView — including any applied
+     * overrides — rather than returning early and leaving the display on the inherited parent baseline.
+     * {@code committedNodeView} is otherwise set only lazily, by {@link #subscribeViewToFilterOptions} when the
+     * filter options first change, which is after {@code setupDefaultFilterOptions}'s initial
+     * {@code reproject()} has already projected (ike-issues#710).
+     *
+     * @param observableView the window's nodeView (the editable override the popup displays and commits to)
+     */
+    public void setCommitTargetView(ObservableView observableView) {
+        this.committedNodeView = observableView;
+    }
+
     /// Commit the popup's current UI selections ({@code current} — the authoritative state rebuilt from the panes)
     /// onto the window's nodeView as whole values: one {@code setValue}/{@code setAll} per facet. Each override
     /// property reverts to its parent automatically when the committed value equals the parent's. Invoked on Apply.
@@ -361,10 +375,18 @@ public class FilterOptionsUtils {
         ObservableLanguageCoordinate viewLang = view.languageCoordinates().getFirst();
         ConceptFacade langConcept = viewLang.languageConceptProperty().get();
         langFilter.getLanguage().selectedOptions().setAll(langConcept == null ? List.of() : List.of((EntityFacade) langConcept));
+        // Read the nested-language preference ORDER from the RESOLVED composite coordinate (view.getValue() —
+        // the same source the card's ViewCalculator renders from), NOT the per-dimension override properties.
+        // Those properties can desync from the composite for nested language coordinates after a bind-time-
+        // restored override, so the popup would show the inherited order while the card renders the override
+        // (ike-issues#710). The composite is the single source of truth shared with the card and the override
+        // indicator, so the panel can no longer disagree with what the card displays.
         langFilter.getDialect().selectedOptions().setAll(
-                viewLang.dialectPatternPreferenceListProperty().get().castToList().stream().map(p -> (EntityFacade) p).toList());
+                view.getValue().languageCoordinateList().getFirst()
+                        .dialectPatternPreferenceList().castToList().stream().map(p -> (EntityFacade) p).toList());
         langFilter.getDescriptionType().selectedOptions().setAll(
-                viewLang.descriptionTypePreferenceListProperty().get().castToList().stream().map(c -> (EntityFacade) c).toList());
+                view.getValue().languageCoordinateList().getFirst()
+                        .descriptionTypePreferenceList().castToList().stream().map(c -> (EntityFacade) c).toList());
     }
 
     /// True when the window's nodeView currently carries any override (vs its inherited parent) — drives the

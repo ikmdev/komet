@@ -287,6 +287,9 @@ public class ConceptPatternNavController {
         conceptNavigatorControl.setOnKLAction((conceptFacade, windowTitle) -> {
             journalController.newCreateGenPurposeKLWindow(conceptFacade, windowTitle);
         });
+        conceptNavigatorControl.setOnKLDynamicCardAction((conceptFacade, windowTitle) -> {
+            journalController.newCreateDynamicComponentCardWindow(conceptFacade, windowTitle);
+        });
 
         searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
         searchControl.setOnSearchResultClick(_ -> conceptNavigatorControl.unhighlightConceptsWithDelay());

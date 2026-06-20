@@ -30,6 +30,7 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout.editor;
     exports dev.ikm.komet.layout_engine.blueprint;
     exports dev.ikm.komet.layout_engine.host;
+    exports dev.ikm.komet.layout_engine.window;
     exports dev.ikm.komet.layout.controls;
 
     opens dev.ikm.komet.layout to javafx.fxml;

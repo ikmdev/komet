@@ -23,11 +23,13 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
@@ -180,6 +182,11 @@ public class KometPreferencesImpl
         if (!directory.delete()) {
             throw new BackingStoreException("Couldn't delete: " + directory);
         }
+    }
+
+    /** The filesystem directory backing this node (see {@link KometPreferences#directory()}). */
+    public Optional<Path> directory() {
+        return Optional.of(directory.toPath());
     }
 
     @Override

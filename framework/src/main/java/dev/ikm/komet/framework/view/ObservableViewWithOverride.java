@@ -120,8 +120,32 @@ public class ObservableViewWithOverride extends ObservableViewBase {
                 this.editCoordinate().getOriginalValue());
     }
 
+    /**
+     * Applies {@code coordinateWithOverrides} as this view's override state by delegating to the
+     * {@code setOverrides} of each constituent coordinate (stamp, language, logic, navigation, edit): every
+     * dimension is set, and {@link OverrideOf#set} pins it only where its value
+     * differs from the inherited parent (clearing the pin where it equals the parent). This is the inverse
+     * of {@link #setExceptOverrides} and the re-apply side of the persist/restore round-trip — a dimension
+     * that matches the parent stays inherited, so the cascade still tracks parent (e.g. journal) changes for
+     * everything that was not genuinely pinned.
+     *
+     * @param coordinateWithOverrides the desired resolved view coordinate
+     */
     public void setOverrides(ViewCoordinateRecord coordinateWithOverrides) {
-        throw new UnsupportedOperationException();
+        stampCoordinate().setOverrides(coordinateWithOverrides.stampCoordinate());
+        setLanguageCoordinatesOverrides(coordinateWithOverrides);
+        navigationCoordinate().setOverrides(coordinateWithOverrides.navigationCoordinate());
+        logicCoordinate().setOverrides(coordinateWithOverrides.logicCoordinate());
+        ((ObservableEditCoordinateWithOverride) editCoordinate())
+                .setOverrides(coordinateWithOverrides.editCoordinate());
+    }
+
+    /// Apply per-language overrides for each language-coordinate position, mirroring setLanguageCoordinatesExceptOverrides.
+    private void setLanguageCoordinatesOverrides(ViewCoordinateRecord updatedCoordinate) {
+        for (int i = 0; i < languageCoordinates.size() && i < updatedCoordinate.languageCoordinates().size(); i++) {
+            ((ObservableLanguageCoordinateWithOverride) languageCoordinates.get(i)).setOverrides(
+                    updatedCoordinate.languageCoordinates().get(i).toLanguageCoordinateRecord());
+        }
     }
 
     @Override

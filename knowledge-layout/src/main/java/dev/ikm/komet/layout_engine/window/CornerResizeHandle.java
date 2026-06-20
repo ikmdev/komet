@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.fxutils.window;
+package dev.ikm.komet.layout_engine.window;
 
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -21,7 +21,7 @@ import javafx.scene.shape.Circle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static dev.ikm.komet.kview.fxutils.window.CursorMappings.ResizeDirection;
+import static dev.ikm.komet.layout_engine.window.CursorMappings.ResizeDirection;
 
 /**
  * Implementation for corner-based resize handles represented as circular regions.

@@ -316,6 +316,7 @@ import java.util.function.Predicate;
  */
 public abstract sealed class ObservableEntitySnapshot<OE extends ObservableEntity<OV>,
         OV extends ObservableEntityVersion<?,?>>
+        implements dev.ikm.komet.framework.observable.read.SnapshotReads
         permits ObservableConceptSnapshot, ObservablePatternSnapshot, ObservableSemanticSnapshot, ObservableStampSnapshot {
     protected final Latest<OV> latestVersion;
     protected final IntIdCollection latestStampIds;
@@ -362,6 +363,10 @@ public abstract sealed class ObservableEntitySnapshot<OE extends ObservableEntit
     /**
      *
      */
+    public ViewCalculator viewCalculator() {
+        return viewCalculator;
+    }
+
     public ImmutableList<OV> getProcessedVersions() {
         return processedVersions.toImmutable();
     }

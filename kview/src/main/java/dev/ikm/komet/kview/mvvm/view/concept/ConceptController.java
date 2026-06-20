@@ -23,8 +23,8 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
@@ -936,8 +936,42 @@ public class ConceptController {
         setUpDescriptionContextMenu(addDescriptionButton);
         // TODO Update stamps view model
 
+        logPopulateDiagnostics();
+
         // Force a layout to ensure all controls are properly sized and displayed
         forceLayout();
+    }
+
+    /**
+     * One-shot diagnostic for the intermittent "empty shell" concept window on restore: a window whose
+     * chrome appears but whose descriptions/axioms are blank because content was populated exactly once,
+     * synchronously, at restore — against a view calculator that was not yet warm (no latest version
+     * resolvable under the coordinate). This emits a single definitive line per populate capturing:
+     * was the entity resolved (present in the datastore), is its data loaded (a latest version is
+     * resolvable under this window's coordinate), and how many description nodes this render produced.
+     * A {@code WARN} with {@code dataLoaded=false} is the empty-shell signature; a later {@code INFO}
+     * with {@code dataLoaded=true} is the self-heal re-render landing. See the {@code updateView}
+     * refresh hooks (entity invalidation, {@code RefreshCalculatorCacheEvent}, coordinate change).
+     */
+    private void logPopulateDiagnostics() {
+        final EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
+        if (entityFacade == null) {
+            // No CURRENT_ENTITY means create mode (blank form by design), not the empty-shell symptom.
+            return;
+        }
+        final Object mode = getConceptViewModel().getPropertyValue(ViewModelKey.MODE);
+        final boolean entityResolved = Entity.getFast(entityFacade.nid()) != null;
+        final boolean dataLoaded = conceptViewModel.getViewProperties().calculator()
+                .latest(entityFacade).isPresent();
+        // Counts may include a single "No version for view" placeholder VBox when the list is otherwise empty.
+        final int fqnNodes = fullyQualifiedNameNodeListControl.getItems().size();
+        final int otherNameNodes = otherNamesNodeListControl.getItems().size();
+        final String msg = "Concept window populate: nid={} mode={} entityResolved={} dataLoaded={} fqnNodes={} otherNameNodes={}";
+        if (!entityResolved || !dataLoaded) {
+            LOG.warn("EMPTY-SHELL? " + msg, entityFacade.nid(), mode, entityResolved, dataLoaded, fqnNodes, otherNameNodes);
+        } else {
+            LOG.info(msg, entityFacade.nid(), mode, entityResolved, dataLoaded, fqnNodes, otherNameNodes);
+        }
     }
 
     /**

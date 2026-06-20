@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ikm.komet.kview.fxutils.window;
+package dev.ikm.komet.layout_engine.window;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.DoubleProperty;
@@ -39,15 +39,15 @@ import org.slf4j.LoggerFactory;
 import java.util.Comparator;
 import java.util.function.BiConsumer;
 
-import static dev.ikm.komet.kview.fxutils.window.CursorMappings.ResizeDirection;
-import static dev.ikm.komet.kview.fxutils.window.CursorMappings.createCursorSubscription;
-import static dev.ikm.komet.kview.fxutils.window.CursorMappings.getDirection;
-import static dev.ikm.komet.kview.fxutils.window.CursorMappings.handleResize;
-import static dev.ikm.komet.kview.fxutils.window.SubscriptionUtils.createConsumerSubscription;
-import static dev.ikm.komet.kview.fxutils.window.SubscriptionUtils.createContextEventSubscription;
-import static dev.ikm.komet.kview.fxutils.window.SubscriptionUtils.createListSubscription;
-import static dev.ikm.komet.kview.fxutils.window.SubscriptionUtils.createMultiPropertySubscription;
-import static dev.ikm.komet.kview.fxutils.window.SubscriptionUtils.createPropertySubscription;
+import static dev.ikm.komet.layout_engine.window.CursorMappings.ResizeDirection;
+import static dev.ikm.komet.layout_engine.window.CursorMappings.createCursorSubscription;
+import static dev.ikm.komet.layout_engine.window.CursorMappings.getDirection;
+import static dev.ikm.komet.layout_engine.window.CursorMappings.handleResize;
+import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createConsumerSubscription;
+import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createContextEventSubscription;
+import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createListSubscription;
+import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createMultiPropertySubscription;
+import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createPropertySubscription;
 import static javafx.scene.layout.Region.USE_COMPUTED_SIZE;
 import static javafx.scene.paint.Color.TRANSPARENT;
 
