@@ -4,8 +4,11 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.layout.KlArea;
+import dev.ikm.komet.layout.KlToolbarItem;
 import dev.ikm.komet.layout.KlView;
 import dev.ikm.komet.layout.controls.KlDrawer;
+import dev.ikm.komet.layout_engine.toolbar.SpacerToolbarItem;
+import dev.ikm.komet.layout_engine.toolbar.ToggleToolbarItem;
 import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.blueprint.CardBlueprint;
@@ -13,13 +16,7 @@ import dev.ikm.komet.layout_engine.component.view.ViewContext;
 import dev.ikm.komet.layout_engine.window.DraggableSupport;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
-import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
-import javafx.util.Duration;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -30,7 +27,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -214,6 +210,9 @@ public abstract class AbstractHostCard extends CardBlueprint {
     /** Drawers added to this card, each with the area it hosts and its persistence key. */
     private final List<DrawerHandle> drawers = new ArrayList<>();
 
+    /** Toolbar items currently live in the header; unbound and replaced when the header is rebuilt. */
+    private final List<KlToolbarItem> liveToolbarItems = new ArrayList<>();
+
     /** Overlay created on the first drawer; holds the card content with drawers that slide out beyond its edges. */
     private StackPane drawerContainer;
 
@@ -345,54 +344,19 @@ public abstract class AbstractHostCard extends CardBlueprint {
         };
     }
 
-    /** Adds a label + sliding toggle switch for each drawer to the toolbar, reflecting and driving its open state. */
+    /** Adds a factory-produced toggle item for each drawer to the toolbar, reflecting and driving its open state. */
     private void addDrawerToggles(HBox toolBar) {
+        // The header is being (re)built: release the previously bound items so their listeners don't leak.
+        liveToolbarItems.forEach(KlToolbarItem::unbind);
+        liveToolbarItems.clear();
+
+        ToggleToolbarItem.Factory toggleFactory = ToggleToolbarItem.factory();
         for (DrawerHandle handle : drawers) {
-            Label label = new Label(handle.toggleLabel().toUpperCase());
-            label.getStyleClass().add("dynamic-card-drawer-toggle-label");
-            Region toggle = makeToggleSwitch(handle.drawer().expandedProperty());
-            HBox item = new HBox(6, label, toggle);
-            item.setAlignment(Pos.CENTER_LEFT);
-            item.getStyleClass().add("dynamic-card-drawer-toggle");
-            toolBar.getChildren().add(item);
+            ToggleToolbarItem item = toggleFactory.create(handle.toggleLabel(), handle.drawer().expandedProperty());
+            item.bind();
+            liveToolbarItems.add(item);
+            toolBar.getChildren().add(item.toolbarNode());
         }
-    }
-
-    /**
-     * Builds a sliding toggle switch bound to {@code selected}: a rounded track whose colour changes and a white
-     * thumb that animates between the off (left) and on (right) positions, mirroring the classic Properties switch.
-     *
-     * @param selected the boolean the switch reflects and drives
-     * @return the switch node
-     */
-    private static Region makeToggleSwitch(BooleanProperty selected) {
-        final double trackWidth = 34;
-        final double trackHeight = 18;
-        final double thumbRadius = 7;
-        final double offX = 3;
-        final double onX = trackWidth - 2 * thumbRadius - 3;
-
-        Rectangle track = new Rectangle(trackWidth, trackHeight);
-        track.setArcWidth(trackHeight);
-        track.setArcHeight(trackHeight);
-        Circle thumb = new Circle(thumbRadius);
-        thumb.setFill(Color.WHITE);
-
-        StackPane control = new StackPane(track, thumb);
-        control.setMaxSize(trackWidth, trackHeight);
-        StackPane.setAlignment(thumb, Pos.CENTER_LEFT);
-        control.setCursor(Cursor.HAND);
-
-        thumb.setTranslateX(selected.get() ? onX : offX);
-        track.setFill(selected.get() ? Color.web("#5b8def") : Color.web("#c4c8cf"));
-        selected.addListener((obs, wasSelected, isSelected) -> {
-            track.setFill(isSelected ? Color.web("#5b8def") : Color.web("#c4c8cf"));
-            TranslateTransition slide = new TranslateTransition(Duration.millis(120), thumb);
-            slide.setToX(isSelected ? onX : offX);
-            slide.play();
-        });
-        control.setOnMouseClicked(event -> selected.set(!selected.get()));
-        return control;
     }
 
     /** Binds every drawer's hosted area (if any) into the knowledge-layout lifecycle. */
@@ -490,11 +454,11 @@ public abstract class AbstractHostCard extends CardBlueprint {
         toolBar.getStyleClass().add("dynamic-card-toolbar");
         toolBar.setAlignment(Pos.CENTER_LEFT);
         buildToolbarControls(toolBar);
-        addDrawerToggles(toolBar);
 
-        Region toolbarSpacer = new Region();
-        HBox.setHgrow(toolbarSpacer, Priority.ALWAYS);
-        toolBar.getChildren().add(toolbarSpacer);
+        toolBar.getChildren().add(SpacerToolbarItem.factory().create().toolbarNode());
+
+        // Drawer toggles sit on the trailing (right) side, after the growing spacer, before the close control.
+        addDrawerToggles(toolBar);
 
         if (onCloseRequest != null) {
             Region closeIcon = new Region();
