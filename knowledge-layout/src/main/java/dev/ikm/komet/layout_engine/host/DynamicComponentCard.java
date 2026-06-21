@@ -96,7 +96,7 @@ public final class DynamicComponentCard extends DynamicCard {
     }
 
     @Override
-    protected void contributeToHeader(VBox headerBox, HBox toolBar) {
+    protected void contributeToHeader(VBox headerBox, Region toolBar) {
         identiconView.setFitWidth(40);
         identiconView.setFitHeight(40);
         identiconView.setPreserveRatio(true);

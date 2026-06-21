@@ -21,6 +21,7 @@ import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.blueprint.ToolbarItemBlueprint;
 import dev.ikm.komet.preferences.KometPreferences;
 import javafx.application.Platform;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -36,11 +37,13 @@ public final class SpacerToolbarItem extends ToolbarItemBlueprint<Region> {
     private SpacerToolbarItem(KometPreferences preferences) {
         super(preferences, new Region());
         HBox.setHgrow(fxObject(), Priority.ALWAYS);
+        GridPane.setHgrow(fxObject(), Priority.ALWAYS);
     }
 
     private SpacerToolbarItem(KlPreferencesFactory preferencesFactory, KlArea.Factory areaFactory) {
         super(preferencesFactory, areaFactory, new Region());
         HBox.setHgrow(fxObject(), Priority.ALWAYS);
+        GridPane.setHgrow(fxObject(), Priority.ALWAYS);
     }
 
     @Override

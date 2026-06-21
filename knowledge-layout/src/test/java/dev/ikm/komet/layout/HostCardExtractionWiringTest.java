@@ -6,6 +6,7 @@ import dev.ikm.komet.layout_engine.host.DynamicCard;
 import dev.ikm.komet.layout_engine.host.DynamicComponentCard;
 import dev.ikm.komet.layout_engine.host.ToolCard;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.junit.jupiter.api.Test;
 
@@ -86,8 +87,8 @@ class HostCardExtractionWiringTest {
                         AbstractHostCard.class.getDeclaredMethod("buildToolbarControls", HBox.class).getModifiers()),
                 "buildToolbarControls(HBox) must be an overridable hook");
         assertFalse(Modifier.isAbstract(
-                        AbstractHostCard.class.getDeclaredMethod("contributeToHeader", VBox.class, HBox.class).getModifiers()),
-                "contributeToHeader(VBox, HBox) must be an overridable hook");
+                        AbstractHostCard.class.getDeclaredMethod("contributeToHeader", VBox.class, Region.class).getModifiers()),
+                "contributeToHeader(VBox, Region) must be an overridable hook");
     }
 
     @Test

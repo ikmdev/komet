@@ -7,6 +7,7 @@ import dev.ikm.komet.layout.KlArea;
 import dev.ikm.komet.layout.KlToolbarItem;
 import dev.ikm.komet.layout.KlView;
 import dev.ikm.komet.layout.controls.KlDrawer;
+import dev.ikm.komet.layout_engine.toolbar.NodeToolbarItem;
 import dev.ikm.komet.layout_engine.toolbar.SpacerToolbarItem;
 import dev.ikm.komet.layout_engine.toolbar.ToggleToolbarItem;
 import dev.ikm.komet.layout.context.KlContext;
@@ -20,12 +21,14 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
+import javafx.geometry.VPos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -63,7 +66,7 @@ import java.util.UUID;
  *
  * <p><b>Content is the variation point.</b> Concrete cards supply the body content and chrome details
  * through a small set of hooks — {@link #renderContent()}, {@link #clearContent()}, {@link #cardTitle()},
- * {@link #buildToolbarControls(HBox)}, {@link #contributeToHeader(VBox, HBox)}, {@link #refreshHeader()},
+ * {@link #buildToolbarControls(HBox)}, {@link #contributeToHeader(VBox, Region)}, {@link #refreshHeader()},
  * {@link #subCardSave()} / {@link #subCardRestore()} — without re-implementing the host machinery. So a
  * component view, a realized editor layout, and a hosted tool area are all the same kind of citizen,
  * differing only in what fills the body and toolbar.
@@ -210,8 +213,10 @@ public abstract class AbstractHostCard extends CardBlueprint {
     /** Drawers added to this card, each with the area it hosts and its persistence key. */
     private final List<DrawerHandle> drawers = new ArrayList<>();
 
-    /** The growing spacer item (a {@link KlToolbarItem}), created once and re-added when the header rebuilds. */
+    /** Toolbar items created once (each with its own prefs node) and re-placed when the header rebuilds. */
     private SpacerToolbarItem spacerItem;
+    private NodeToolbarItem leadingItem;
+    private NodeToolbarItem closeItem;
 
     /** Overlay created on the first drawer; holds the card content with drawers that slide out beyond its edges. */
     private StackPane drawerContainer;
@@ -352,11 +357,38 @@ public abstract class AbstractHostCard extends CardBlueprint {
         };
     }
 
-    /** Adds each drawer's toggle item (a KlArea) to the toolbar; the item is created and bound once at addDrawer. */
-    private void addDrawerToggles(HBox toolBar) {
-        for (DrawerHandle handle : drawers) {
-            toolBar.getChildren().add(handle.toggleItem().fxObject());
+    /** The leading-controls item, wrapping the card's own controls; created once, content refreshed per build. */
+    private NodeToolbarItem leadingItem() {
+        if (leadingItem == null) {
+            leadingItem = NodeToolbarItem.factory()
+                    .create(KlPreferencesFactory.create(preferences(), NodeToolbarItem.class));
         }
+        return leadingItem;
+    }
+
+    /** The growing spacer item that right-aligns the trailing items; created once. */
+    private SpacerToolbarItem spacerItem() {
+        if (spacerItem == null) {
+            spacerItem = SpacerToolbarItem.factory()
+                    .create(KlPreferencesFactory.create(preferences(), SpacerToolbarItem.class));
+        }
+        return spacerItem;
+    }
+
+    /** The close-control item, built once and reused (added to the bar only when a close action is set). */
+    private NodeToolbarItem closeItem() {
+        if (closeItem == null) {
+            Region closeIcon = new Region();
+            closeIcon.getStyleClass().add("close-window");
+            Button closeButton = new Button();
+            closeButton.setGraphic(closeIcon);
+            closeButton.getStyleClass().add("dynamic-card-close-button");
+            closeButton.setOnAction(event -> requestClose());
+            closeItem = NodeToolbarItem.factory()
+                    .create(KlPreferencesFactory.create(preferences(), NodeToolbarItem.class));
+            closeItem.setNode(closeButton);
+        }
+        return closeItem;
     }
 
     /** Binds every drawer's hosted area (if any) into the knowledge-layout lifecycle. */
@@ -450,29 +482,32 @@ public abstract class AbstractHostCard extends CardBlueprint {
         FlowPane tabRow = new FlowPane(tab);   // hugs the tab to its content width at the top-left
         tabRow.getStyleClass().add("dynamic-card-tab-row");
 
-        // Icon toolbar: the concrete card's controls, a growing spacer, then the close control.
-        HBox toolBar = new HBox();
+        // Toolbar: a GridPane of KlToolbarItems — the card's controls (leading), a growing spacer, the drawer
+        // toggles, then the close control. Each item's node sits in its own column; the spacer's column grows,
+        // so the toggles and close are pushed to the trailing edge.
+        GridPane toolBar = new GridPane();
         toolBar.getStyleClass().add("dynamic-card-toolbar");
-        toolBar.setAlignment(Pos.CENTER_LEFT);
-        buildToolbarControls(toolBar);
+        toolBar.setMaxWidth(Double.MAX_VALUE);
 
-        if (spacerItem == null) {
-            spacerItem = SpacerToolbarItem.factory()
-                    .create(KlPreferencesFactory.create(preferences(), SpacerToolbarItem.class));
+        HBox leadingControls = new HBox(8);
+        leadingControls.setAlignment(Pos.CENTER_LEFT);
+        buildToolbarControls(leadingControls);
+        leadingItem().setNode(leadingControls);
+
+        List<KlToolbarItem<?>> items = new ArrayList<>();
+        items.add(leadingItem());
+        items.add(spacerItem());
+        for (DrawerHandle handle : drawers) {
+            items.add(handle.toggleItem());
         }
-        toolBar.getChildren().add(spacerItem.fxObject());
-
-        // Drawer toggles sit on the trailing (right) side, after the growing spacer, before the close control.
-        addDrawerToggles(toolBar);
-
         if (onCloseRequest != null) {
-            Region closeIcon = new Region();
-            closeIcon.getStyleClass().add("close-window");
-            Button closeButton = new Button();
-            closeButton.setGraphic(closeIcon);
-            closeButton.getStyleClass().add("dynamic-card-close-button");
-            closeButton.setOnAction(event -> requestClose());
-            toolBar.getChildren().add(closeButton);
+            items.add(closeItem());
+        }
+        for (int column = 0; column < items.size(); column++) {
+            Region itemNode = items.get(column).fxObject();
+            GridPane.setColumnIndex(itemNode, column);
+            GridPane.setValignment(itemNode, VPos.CENTER);
+            toolBar.getChildren().add(itemNode);
         }
 
         fxObject().setTop(tabRow);   // the tab floats above the bordered body; workspace shows beside it
@@ -538,7 +573,7 @@ public abstract class AbstractHostCard extends CardBlueprint {
      * @param headerBox the header container (toolbar already added)
      * @param toolBar   the icon toolbar, for adding further controls
      */
-    protected void contributeToHeader(VBox headerBox, HBox toolBar) {
+    protected void contributeToHeader(VBox headerBox, Region toolBar) {
         // No additional header content for a minimal card.
     }
 
