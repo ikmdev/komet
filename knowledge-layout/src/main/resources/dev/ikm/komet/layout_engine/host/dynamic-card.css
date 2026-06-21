@@ -31,6 +31,23 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 8, 0, 0, 2);
 }
 
+/* When a drawer is open on an edge, square the card's corners on that edge so it meets the slid-out drawer
+   flush — the rounded corners would otherwise leave a notch between card and drawer. */
+.dynamic-card-body.drawer-open-right {
+    -fx-border-radius: 0 0 0 8;
+    -fx-background-radius: 0 0 0 8;
+}
+
+.dynamic-card-body.drawer-open-right .dynamic-card-toolbar {
+    -fx-background-radius: 0 0 0 0;
+    -fx-border-radius: 0 0 0 0;
+}
+
+.dynamic-card-body.drawer-open-left {
+    -fx-border-radius: 0 8 8 0;
+    -fx-background-radius: 0 8 8 0;
+}
+
 .dynamic-card-body > .scroll-pane,
 .dynamic-card-body > .scroll-pane > .viewport {
     -fx-background-color: transparent;
@@ -125,6 +142,27 @@
     -fx-max-height: 13;
     -fx-background-color: white;
     -fx-shape: "M11.8337 1.8415L10.6587 0.666504L6.00033 5.32484L1.34199 0.666504L0.166992 1.8415L4.82533 6.49984L0.166992 11.1582L1.34199 12.3332L6.00033 7.67484L10.6587 12.3332L11.8337 11.1582L7.17533 6.49984L11.8337 1.8415Z";
+}
+
+/* Drawer chrome: the slid-out drawer's own title bar (same navy as the card's, so the bar reads as extending
+   across it), a divider on the docked edge, and a frame around the content. */
+.dynamic-card-drawer {
+    -fx-background-color: white;
+    -fx-border-color: #b0b0b0;
+    -fx-border-width: 0 1 1 1;
+}
+
+.dynamic-card-drawer-header {
+    -fx-background-color: #34465f;
+    -fx-min-height: 40;
+    -fx-padding: 4 8 4 8;
+    -fx-alignment: center-left;
+    -fx-spacing: 6;
+}
+
+.dynamic-card-drawer-title {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
 }
 
 /* Component identity header (white card under the toolbar). */

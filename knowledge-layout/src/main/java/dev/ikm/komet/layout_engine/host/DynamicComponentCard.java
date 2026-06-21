@@ -153,17 +153,14 @@ public final class DynamicComponentCard extends DynamicCard {
      * @return the placeholder content region
      */
     private Region buildPropertiesPlaceholder() {
-        Label heading = new Label("Properties");
-        heading.getStyleClass().add("dynamic-component-card-properties-heading");
+        // The drawer chrome (navy header titled "Properties" + frame + divider) is supplied by the host card,
+        // so this is just the content surface.
         Label note = new Label("Editing controls will appear here.");
         note.setWrapText(true);
-        VBox panel = new VBox(8, heading, note);
+        VBox panel = new VBox(8, note);
         panel.setPadding(new Insets(12));
         panel.setPrefWidth(320);
         panel.getStyleClass().add("dynamic-component-card-properties");
-        // A framed surface so the drawer reads as a distinct panel beside the card content.
-        panel.setStyle("-fx-background-color: white; -fx-border-color: #b0b0b0; -fx-border-width: 1; "
-                + "-fx-background-radius: 4; -fx-border-radius: 4;");
         return panel;
     }
 
