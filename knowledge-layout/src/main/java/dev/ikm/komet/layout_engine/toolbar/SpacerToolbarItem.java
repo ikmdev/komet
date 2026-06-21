@@ -15,37 +15,57 @@
  */
 package dev.ikm.komet.layout_engine.toolbar;
 
-import dev.ikm.komet.layout.KlToolbarItem;
+import dev.ikm.komet.layout.KlArea;
 import dev.ikm.komet.layout.area.AreaGridSettings;
-import javafx.scene.Node;
+import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
+import dev.ikm.komet.layout_engine.blueprint.ToolbarItemBlueprint;
+import dev.ikm.komet.preferences.KometPreferences;
+import javafx.application.Platform;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 /**
- * A {@link KlToolbarItem} that contributes a growing spacer — an empty region with {@code hGrow = ALWAYS} — so
- * the items placed after it are pushed to the trailing (right) edge. It is the toolbar's right-alignment lever,
- * expressed as a placed item rather than a hand-coded gap; in a grid toolbar its column absorbs the slack, and
- * in a row ({@code HBox}) the node's own {@code hgrow} does the same.
+ * A {@link dev.ikm.komet.layout.KlToolbarItem} that contributes a growing spacer — an empty region with
+ * {@code hGrow = ALWAYS} — so the items placed after it are pushed to the trailing (right) edge. It is the
+ * toolbar's right-alignment lever, expressed as a placed area rather than a hand-coded gap. It is a leaf area
+ * with no content state of its own, so its {@code subArea*} hooks are empty.
  */
-public final class SpacerToolbarItem implements KlToolbarItem {
+public final class SpacerToolbarItem extends ToolbarItemBlueprint<Region> {
 
-    private final Region node = new Region();
-    private final AreaGridSettings placement;
+    private SpacerToolbarItem(KometPreferences preferences) {
+        super(preferences, new Region());
+        HBox.setHgrow(fxObject(), Priority.ALWAYS);
+    }
 
-    private SpacerToolbarItem(AreaGridSettings placement) {
-        this.placement = placement;
-        HBox.setHgrow(node, Priority.ALWAYS);
+    private SpacerToolbarItem(KlPreferencesFactory preferencesFactory, KlArea.Factory areaFactory) {
+        super(preferencesFactory, areaFactory, new Region());
+        HBox.setHgrow(fxObject(), Priority.ALWAYS);
     }
 
     @Override
-    public Node toolbarNode() {
-        return node;
+    protected void subAreaSave() {
+        // A spacer has no content state.
     }
 
     @Override
-    public AreaGridSettings placement() {
-        return placement;
+    protected void subAreaRestoreFromPreferencesOrDefault() {
+        // A spacer has no content state.
+    }
+
+    @Override
+    protected void subAreaRevert() {
+        // A spacer has no content state.
+    }
+
+    @Override
+    public void knowledgeLayoutBind() {
+        Platform.runLater(() -> this.lifecycleState.set(LifecycleState.BOUND));
+    }
+
+    @Override
+    public void knowledgeLayoutUnbind() {
+        // Nothing to unbind.
     }
 
     /**
@@ -58,32 +78,30 @@ public final class SpacerToolbarItem implements KlToolbarItem {
     }
 
     /**
-     * Factory that produces {@link SpacerToolbarItem} instances.
+     * Restores a {@code SpacerToolbarItem} from previously stored preferences.
+     *
+     * @param preferences the preferences node backing the item
+     * @return the restored item
      */
-    public static final class Factory implements KlToolbarItem.Factory<SpacerToolbarItem> {
+    public static SpacerToolbarItem restore(KometPreferences preferences) {
+        return factory().restore(preferences);
+    }
+
+    /**
+     * Factory that produces and restores {@link SpacerToolbarItem} instances.
+     */
+    public static final class Factory implements ToolbarItemBlueprint.Factory<Region, SpacerToolbarItem> {
 
         @Override
-        public AreaGridSettings defaultPlacement() {
-            return AreaGridSettings.DEFAULT.withHGrow(Priority.ALWAYS);
+        public SpacerToolbarItem restore(KometPreferences preferences) {
+            return new SpacerToolbarItem(preferences);
         }
 
-        /**
-         * Creates a spacer item with the default (growing) placement.
-         *
-         * @return the created item
-         */
-        public SpacerToolbarItem create() {
-            return create(defaultPlacement());
-        }
-
-        /**
-         * Creates a spacer item with the given placement.
-         *
-         * @param placement the grid placement within the toolbar
-         * @return the created item
-         */
-        public SpacerToolbarItem create(AreaGridSettings placement) {
-            return new SpacerToolbarItem(placement);
+        @Override
+        public SpacerToolbarItem create(KlPreferencesFactory preferencesFactory, AreaGridSettings areaGridSettings) {
+            SpacerToolbarItem item = new SpacerToolbarItem(preferencesFactory, this);
+            item.setAreaLayout(areaGridSettings.with(this.getClass()));
+            return item;
         }
     }
 }

@@ -210,14 +210,15 @@ public abstract class AbstractHostCard extends CardBlueprint {
     /** Drawers added to this card, each with the area it hosts and its persistence key. */
     private final List<DrawerHandle> drawers = new ArrayList<>();
 
-    /** Toolbar items currently live in the header; unbound and replaced when the header is rebuilt. */
-    private final List<KlToolbarItem> liveToolbarItems = new ArrayList<>();
+    /** The growing spacer item (a {@link KlToolbarItem}), created once and re-added when the header rebuilds. */
+    private SpacerToolbarItem spacerItem;
 
     /** Overlay created on the first drawer; holds the card content with drawers that slide out beyond its edges. */
     private StackPane drawerContainer;
 
     /** A drawer plus the area it reveals, the preference key for its open state, and its toggle label. */
-    private record DrawerHandle(KlDrawer drawer, KlArea<? extends Region> area, String prefKey, String toggleLabel) {
+    private record DrawerHandle(KlDrawer drawer, KlArea<? extends Region> area, String prefKey, String toggleLabel,
+                                ToggleToolbarItem toggleItem) {
     }
 
     /**
@@ -276,7 +277,14 @@ public abstract class AbstractHostCard extends CardBlueprint {
         placeDrawerInContainer(drawer, side);
 
         String prefKey = DRAWER_EXPANDED_KEY_PREFIX + drawers.size();
-        drawers.add(new DrawerHandle(drawer, area, prefKey, toggleLabel));
+        // The toggle is a first-class KlArea item: its own preferences node, lifecycle, save/restore. Created
+        // once here (bound for the life of the card); the header rebuild only re-adds its node.
+        ToggleToolbarItem toggleItem = ToggleToolbarItem.factory()
+                .create(KlPreferencesFactory.create(preferences(), ToggleToolbarItem.class));
+        toggleItem.setLabel(toggleLabel);
+        toggleItem.setSelected(drawer.expandedProperty());
+        toggleItem.knowledgeLayoutBind();
+        drawers.add(new DrawerHandle(drawer, area, prefKey, toggleLabel, toggleItem));
 
         // Restore the persisted open state without animation (a restored card opens its drawer instantly),
         // then enable animation for subsequent user toggles.
@@ -344,18 +352,10 @@ public abstract class AbstractHostCard extends CardBlueprint {
         };
     }
 
-    /** Adds a factory-produced toggle item for each drawer to the toolbar, reflecting and driving its open state. */
+    /** Adds each drawer's toggle item (a KlArea) to the toolbar; the item is created and bound once at addDrawer. */
     private void addDrawerToggles(HBox toolBar) {
-        // The header is being (re)built: release the previously bound items so their listeners don't leak.
-        liveToolbarItems.forEach(KlToolbarItem::unbind);
-        liveToolbarItems.clear();
-
-        ToggleToolbarItem.Factory toggleFactory = ToggleToolbarItem.factory();
         for (DrawerHandle handle : drawers) {
-            ToggleToolbarItem item = toggleFactory.create(handle.toggleLabel(), handle.drawer().expandedProperty());
-            item.bind();
-            liveToolbarItems.add(item);
-            toolBar.getChildren().add(item.toolbarNode());
+            toolBar.getChildren().add(handle.toggleItem().fxObject());
         }
     }
 
@@ -371,6 +371,7 @@ public abstract class AbstractHostCard extends CardBlueprint {
     /** Unbinds every drawer's hosted area (if any) from the knowledge-layout lifecycle. */
     private void unbindDrawers() {
         for (DrawerHandle handle : drawers) {
+            handle.toggleItem().knowledgeLayoutUnbind();
             if (handle.area() != null) {
                 handle.area().knowledgeLayoutUnbind();
             }
@@ -455,7 +456,11 @@ public abstract class AbstractHostCard extends CardBlueprint {
         toolBar.setAlignment(Pos.CENTER_LEFT);
         buildToolbarControls(toolBar);
 
-        toolBar.getChildren().add(SpacerToolbarItem.factory().create().toolbarNode());
+        if (spacerItem == null) {
+            spacerItem = SpacerToolbarItem.factory()
+                    .create(KlPreferencesFactory.create(preferences(), SpacerToolbarItem.class));
+        }
+        toolBar.getChildren().add(spacerItem.fxObject());
 
         // Drawer toggles sit on the trailing (right) side, after the growing spacer, before the close control.
         addDrawerToggles(toolBar);
