@@ -13,7 +13,13 @@ import dev.ikm.komet.layout_engine.component.view.ViewContext;
 import dev.ikm.komet.layout_engine.window.DraggableSupport;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -21,7 +27,6 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -209,31 +214,70 @@ public abstract class AbstractHostCard extends CardBlueprint {
     /** Drawers added to this card, each with the area it hosts and its persistence key. */
     private final List<DrawerHandle> drawers = new ArrayList<>();
 
-    /** Overlay created on the first drawer; stacks the drawers over the card body. */
-    private StackPane drawerOverlay;
+    /** Overlay created on the first drawer; holds the card content with drawers that slide out beyond its edges. */
+    private StackPane drawerContainer;
 
-    /** A drawer plus the area it reveals and the preference key for its open state. */
-    private record DrawerHandle(KlDrawer drawer, KlArea<? extends Region> area, String prefKey) {
+    /** A drawer plus the area it reveals, the preference key for its open state, and its toggle label. */
+    private record DrawerHandle(KlDrawer drawer, KlArea<? extends Region> area, String prefKey, String toggleLabel) {
     }
 
     /**
-     * Adds a slide-out drawer on the given side hosting the given area's content. The drawer overlays the
-     * card body from that edge; a toggle is added to the card toolbar; the drawer's open state persists with
-     * the card; and the hosted area participates in the card's bind/unbind lifecycle. Restores the persisted
-     * open state immediately, so a restored card reopens its drawer.
+     * Adds a slide-out drawer on the given side hosting the given area's content, with a "Properties" toggle.
      *
      * @param side the edge to dock the drawer to
      * @param area the area whose {@link KlArea#fxObject() content} the drawer reveals
      * @return the created drawer
      */
     public KlDrawer addDrawer(Side side, KlArea<? extends Region> area) {
-        ensureDrawerOverlay();
-        KlDrawer drawer = new KlDrawer(side, area.fxObject());
-        StackPane.setAlignment(drawer, alignmentForSide(side));
-        drawerOverlay.getChildren().add(drawer);
+        return addDrawer(side, area, "Properties");
+    }
+
+    /**
+     * Adds a slide-out drawer on the given side hosting the given area's content, with a labeled toggle. The
+     * drawer overlays the card content from that edge; the toggle is added to the card toolbar; the drawer's
+     * open state persists with the card; and the hosted area participates in the card's bind/unbind lifecycle.
+     *
+     * @param side        the edge to dock the drawer to
+     * @param area        the area whose {@link KlArea#fxObject() content} the drawer reveals
+     * @param toggleLabel the text of the toolbar toggle that opens the drawer
+     * @return the created drawer
+     */
+    public KlDrawer addDrawer(Side side, KlArea<? extends Region> area, String toggleLabel) {
+        return addDrawerInternal(side, area.fxObject(), area, toggleLabel);
+    }
+
+    /**
+     * Adds a slide-out drawer on the given side hosting plain content (no hosted area), with a labeled toggle.
+     * Use this for content that is not (yet) a {@link KlArea}; the drawer's open state still persists with the
+     * card, but no area lifecycle is bound.
+     *
+     * @param side        the edge to dock the drawer to
+     * @param content     the content region the drawer reveals
+     * @param toggleLabel the text of the toolbar toggle that opens the drawer
+     * @return the created drawer
+     */
+    public KlDrawer addDrawer(Side side, Region content, String toggleLabel) {
+        return addDrawerInternal(side, content, null, toggleLabel);
+    }
+
+    /**
+     * Shared drawer wiring: installs the drawer in the overlay on the given edge, records it for persistence
+     * and lifecycle, restores its persisted open state, and (when the card is already realized) binds any
+     * hosted area and refreshes the header so the toggle appears.
+     *
+     * @param side        the edge to dock the drawer to
+     * @param content     the content region the drawer reveals
+     * @param area        the hosted area for lifecycle binding, or {@code null} for plain content
+     * @param toggleLabel the text of the toolbar toggle that opens the drawer
+     * @return the created drawer
+     */
+    private KlDrawer addDrawerInternal(Side side, Region content, KlArea<? extends Region> area, String toggleLabel) {
+        ensureDrawerContainer();
+        KlDrawer drawer = new KlDrawer(side, content);
+        placeDrawerInContainer(drawer, side);
 
         String prefKey = DRAWER_EXPANDED_KEY_PREFIX + drawers.size();
-        drawers.add(new DrawerHandle(drawer, area, prefKey));
+        drawers.add(new DrawerHandle(drawer, area, prefKey, toggleLabel));
 
         // Restore the persisted open state without animation (a restored card opens its drawer instantly),
         // then enable animation for subsequent user toggles.
@@ -242,29 +286,56 @@ public abstract class AbstractHostCard extends CardBlueprint {
             drawer.setExpanded(preferences().getBoolean(prefKey, false));
             drawer.setAnimated(true);
         }
-        // A toggle marks the card changed so the next framework save persists the new open state.
+        // A user toggle marks the card changed (so the open state persists) and grows or shrinks the card so
+        // the drawer slides out beside the content, widening the card, rather than overlaying the content.
         drawer.expandedProperty().addListener((obs, wasOpen, isOpen) -> changedProperty().set(true));
 
         if (isRealized()) {
-            // The card is already on screen: bind the new area and refresh the header so its toggle appears.
-            area.knowledgeLayoutBind();
+            // The card is already on screen: bind the hosted area and refresh the header so its toggle appears.
+            if (area != null) {
+                area.knowledgeLayoutBind();
+            }
             buildHeader();
         }
         return drawer;
     }
 
-    /** Lazily wraps the card body in an overlay stack so drawers can float over it from an edge. */
-    private void ensureDrawerOverlay() {
-        if (drawerOverlay == null) {
-            drawerOverlay = new StackPane();
-            drawerOverlay.getStyleClass().add("dynamic-card-drawer-overlay");
-            fxObject().setCenter(null);
-            drawerOverlay.getChildren().add(body);
-            fxObject().setCenter(drawerOverlay);
+    /**
+     * Lazily wraps the card's content (the body center) in a container that holds the content in the center and
+     * a drawer in each edge slot. Placing a drawer <em>beside</em> the content (rather than over it) lets the
+     * card widen as the drawer opens, while the header — and its drawer toggles — stay visible above the content.
+     */
+    private void ensureDrawerContainer() {
+        if (drawerContainer == null) {
+            drawerContainer = new StackPane();
+            drawerContainer.getStyleClass().add("dynamic-card-drawer-overlay");
+            Node content = body.getCenter();
+            body.setCenter(null);
+            if (content != null) {
+                drawerContainer.getChildren().add(content);
+            }
+            body.setCenter(drawerContainer);
         }
     }
 
-    /** Maps a docked side to the {@link Pos} that pins a drawer to that edge within the overlay stack. */
+    /**
+     * Adds the drawer to the overlay pinned to its edge, then pushes it <em>outward beyond</em> that edge by its
+     * own (animating) extent, so on reveal it slides out as a separate node — never covering the content and
+     * never resizing the card. The drawer renders past the card's footprint; raising the card so it sits over a
+     * neighbour is the separate {@code #716} concern.
+     */
+    private void placeDrawerInContainer(KlDrawer drawer, Side side) {
+        StackPane.setAlignment(drawer, alignmentForSide(side));
+        switch (side) {
+            case RIGHT -> drawer.translateXProperty().bind(drawer.widthProperty());
+            case LEFT -> drawer.translateXProperty().bind(drawer.widthProperty().negate());
+            case BOTTOM -> drawer.translateYProperty().bind(drawer.heightProperty());
+            case TOP -> drawer.translateYProperty().bind(drawer.heightProperty().negate());
+        }
+        drawerContainer.getChildren().add(drawer);
+    }
+
+    /** Maps a docked side to the {@link Pos} that pins a drawer to that edge of the overlay. */
     private static Pos alignmentForSide(Side side) {
         return switch (side) {
             case TOP -> Pos.TOP_CENTER;
@@ -274,28 +345,71 @@ public abstract class AbstractHostCard extends CardBlueprint {
         };
     }
 
-    /** Adds a toggle for each drawer to the toolbar, reflecting and driving its open state. */
+    /** Adds a label + sliding toggle switch for each drawer to the toolbar, reflecting and driving its open state. */
     private void addDrawerToggles(HBox toolBar) {
         for (DrawerHandle handle : drawers) {
-            ToggleButton toggle = new ToggleButton();
-            toggle.getStyleClass().add("dynamic-card-drawer-toggle");
-            toggle.setSelected(handle.drawer().isExpanded());
-            toggle.setOnAction(event -> handle.drawer().setExpanded(toggle.isSelected()));
-            toolBar.getChildren().add(toggle);
+            Label label = new Label(handle.toggleLabel().toUpperCase());
+            label.getStyleClass().add("dynamic-card-drawer-toggle-label");
+            Region toggle = makeToggleSwitch(handle.drawer().expandedProperty());
+            HBox item = new HBox(6, label, toggle);
+            item.setAlignment(Pos.CENTER_LEFT);
+            item.getStyleClass().add("dynamic-card-drawer-toggle");
+            toolBar.getChildren().add(item);
         }
     }
 
-    /** Binds every drawer's hosted area into the knowledge-layout lifecycle. */
+    /**
+     * Builds a sliding toggle switch bound to {@code selected}: a rounded track whose colour changes and a white
+     * thumb that animates between the off (left) and on (right) positions, mirroring the classic Properties switch.
+     *
+     * @param selected the boolean the switch reflects and drives
+     * @return the switch node
+     */
+    private static Region makeToggleSwitch(BooleanProperty selected) {
+        final double trackWidth = 34;
+        final double trackHeight = 18;
+        final double thumbRadius = 7;
+        final double offX = 3;
+        final double onX = trackWidth - 2 * thumbRadius - 3;
+
+        Rectangle track = new Rectangle(trackWidth, trackHeight);
+        track.setArcWidth(trackHeight);
+        track.setArcHeight(trackHeight);
+        Circle thumb = new Circle(thumbRadius);
+        thumb.setFill(Color.WHITE);
+
+        StackPane control = new StackPane(track, thumb);
+        control.setMaxSize(trackWidth, trackHeight);
+        StackPane.setAlignment(thumb, Pos.CENTER_LEFT);
+        control.setCursor(Cursor.HAND);
+
+        thumb.setTranslateX(selected.get() ? onX : offX);
+        track.setFill(selected.get() ? Color.web("#5b8def") : Color.web("#c4c8cf"));
+        selected.addListener((obs, wasSelected, isSelected) -> {
+            track.setFill(isSelected ? Color.web("#5b8def") : Color.web("#c4c8cf"));
+            TranslateTransition slide = new TranslateTransition(Duration.millis(120), thumb);
+            slide.setToX(isSelected ? onX : offX);
+            slide.play();
+        });
+        control.setOnMouseClicked(event -> selected.set(!selected.get()));
+        return control;
+    }
+
+    /** Binds every drawer's hosted area (if any) into the knowledge-layout lifecycle. */
     private void bindDrawers() {
         for (DrawerHandle handle : drawers) {
-            handle.area().knowledgeLayoutBind();
+            if (handle.area() != null) {
+                handle.area().knowledgeLayoutBind();
+            }
         }
     }
 
-    /** Unbinds every drawer's hosted area from the knowledge-layout lifecycle. */
+    /** Unbinds every drawer's hosted area (if any) from the knowledge-layout lifecycle. */
     private void unbindDrawers() {
         for (DrawerHandle handle : drawers) {
-            handle.area().knowledgeLayoutUnbind();
+            if (handle.area() != null) {
+                handle.area().knowledgeLayoutUnbind();
+            }
         }
     }
 

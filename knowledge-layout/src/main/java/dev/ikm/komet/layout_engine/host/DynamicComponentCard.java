@@ -19,7 +19,9 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.ProxyFactory;
 import dev.ikm.tinkar.terms.State;
 import org.eclipse.collections.api.list.ImmutableList;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
@@ -78,6 +80,13 @@ public final class DynamicComponentCard extends DynamicCard {
     private static final String HISTORY_KEY = "dynamicCard.componentHistory";
     private final List<EntityFacade> componentHistory = new ArrayList<>();
 
+    {
+        // A right-side "Properties" drawer with placeholder content (the editing area replaces it
+        // incrementally). Added at construction so it is present before the card realizes; its toggle is
+        // contributed to the toolbar when the header builds, and its open state persists with the card.
+        addDrawer(Side.RIGHT, buildPropertiesPlaceholder(), "Properties");
+    }
+
     private DynamicComponentCard(KometPreferences preferences) {
         super(preferences);
     }
@@ -135,6 +144,27 @@ public final class DynamicComponentCard extends DynamicCard {
         HBox.setHgrow(identityLeft, Priority.ALWAYS);
         identityRow.getStyleClass().add("dynamic-component-card-identity");
         headerBox.getChildren().add(identityRow);
+    }
+
+    /**
+     * Builds the placeholder content for the right "Properties" drawer. The editing controls arrive
+     * incrementally; for now this is a simple labeled panel so the slide-out is visible and usable.
+     *
+     * @return the placeholder content region
+     */
+    private Region buildPropertiesPlaceholder() {
+        Label heading = new Label("Properties");
+        heading.getStyleClass().add("dynamic-component-card-properties-heading");
+        Label note = new Label("Editing controls will appear here.");
+        note.setWrapText(true);
+        VBox panel = new VBox(8, heading, note);
+        panel.setPadding(new Insets(12));
+        panel.setPrefWidth(320);
+        panel.getStyleClass().add("dynamic-component-card-properties");
+        // A framed surface so the drawer reads as a distinct panel beside the card content.
+        panel.setStyle("-fx-background-color: white; -fx-border-color: #b0b0b0; -fx-border-width: 1; "
+                + "-fx-background-radius: 4; -fx-border-radius: 4;");
+        return panel;
     }
 
     /**
