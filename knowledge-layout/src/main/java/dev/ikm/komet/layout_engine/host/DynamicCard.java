@@ -247,7 +247,7 @@ public class DynamicCard extends AbstractHostCard {
      * Reflects the current edit transaction in the Publish button: bound to the composer's
      * uncommitted-changes state when a composer exists, otherwise disabled.
      */
-    private void updatePublishState() {
+    protected void updatePublishState() {
         publishButton.disableProperty().unbind();
         if (composer != null) {
             publishButton.disableProperty().bind(composer.hasUncommittedChangesProperty().not());
@@ -340,7 +340,7 @@ public class DynamicCard extends AbstractHostCard {
      *
      * @return the composer for this realization pass
      */
-    private ObservableComposer composer() {
+    protected ObservableComposer composer() {
         if (composer == null) {
             final ViewProperties cardViewProperties = getCardViewProperties();
             ConceptFacade author = cardViewProperties.nodeView().editCoordinate().getAuthorForChanges();

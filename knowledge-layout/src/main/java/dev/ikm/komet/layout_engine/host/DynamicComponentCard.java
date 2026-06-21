@@ -7,17 +7,24 @@ import dev.ikm.komet.framework.dnd.DragAndDropHelper;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
+import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.layout.KlArea;
 import dev.ikm.komet.layout.area.AreaGridSettings;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
+import dev.ikm.komet.layout_engine.component.area.EditingArea;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.ProxyFactory;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.list.ImmutableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -80,11 +87,14 @@ public final class DynamicComponentCard extends DynamicCard {
     private static final String HISTORY_KEY = "dynamicCard.componentHistory";
     private final List<EntityFacade> componentHistory = new ArrayList<>();
 
+    private EditingArea editingArea;
+
     {
-        // A right-side "Properties" drawer with placeholder content (the editing area replaces it
-        // incrementally). Added at construction so it is present before the card realizes; its toggle is
-        // contributed to the toolbar when the header builds, and its open state persists with the card.
-        addDrawer(Side.RIGHT, buildPropertiesPlaceholder(), "Properties");
+        // A right-side "Properties" drawer hosting the editing area. Added at construction so it is present
+        // before the card realizes; its toggle is contributed to the toolbar when the header builds, its open
+        // state persists with the card, and its editing context is (re)injected each time the content renders.
+        editingArea = EditingArea.create(KlPreferencesFactory.create(preferences(), EditingArea.class));
+        addDrawer(Side.RIGHT, editingArea, "Properties");
     }
 
     private DynamicComponentCard(KometPreferences preferences) {
@@ -93,6 +103,47 @@ public final class DynamicComponentCard extends DynamicCard {
 
     private DynamicComponentCard(KlPreferencesFactory preferencesFactory, KlArea.Factory areaFactory) {
         super(preferencesFactory, areaFactory);
+    }
+
+    @Override
+    protected void renderContent() {
+        super.renderContent();
+        // Connect the editing drawer to this card's selection nexus, publish a stub selection so it renders an
+        // editor end-to-end (replaced by the real focus-driven body signal later), then re-bind Publish — the
+        // composer may have just been created, so its uncommitted-changes state must drive the button.
+        if (editingArea != null) {
+            editingArea.setSelectionContext(selectionContext(), getCardViewProperties().nodeView());
+            publishStubFocusedField();
+            updatePublishState();
+        }
+    }
+
+    /**
+     * TEMPORARY body-signal stub: publishes the focused component's first text (String) description field as the
+     * selected editable, so the drawer renders an editor end-to-end. Replaced by the real focus-driven body
+     * publish once the body controls participate in the nexus.
+     */
+    private void publishStubFocusedField() {
+        EntityFacade component = getReferenceComponent();
+        if (component == null) {
+            return;
+        }
+        List<SemanticEntity<SemanticEntityVersion>> descriptions = new ArrayList<>();
+        EntityService.get().forEachSemanticForComponentOfPattern(
+                component.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(), descriptions::add);
+        if (descriptions.isEmpty()) {
+            return;
+        }
+        SemanticEntity<SemanticEntityVersion> descriptionSemantic = descriptions.getFirst();
+        ObservableSemanticVersion.Editable editableVersion = composer()
+                .composeSemantic(descriptionSemantic.publicId(), component, TinkarTerm.DESCRIPTION_PATTERN)
+                .getEditableVersion();
+        for (ObservableField.Editable<?> editableField : editableVersion.getEditableFields()) {
+            if (editableField.getValue() instanceof String) {
+                selectionContext().setFocusedField(editableField);
+                return;
+            }
+        }
     }
 
     @Override
@@ -144,24 +195,6 @@ public final class DynamicComponentCard extends DynamicCard {
         HBox.setHgrow(identityLeft, Priority.ALWAYS);
         identityRow.getStyleClass().add("dynamic-component-card-identity");
         headerBox.getChildren().add(identityRow);
-    }
-
-    /**
-     * Builds the placeholder content for the right "Properties" drawer. The editing controls arrive
-     * incrementally; for now this is a simple labeled panel so the slide-out is visible and usable.
-     *
-     * @return the placeholder content region
-     */
-    private Region buildPropertiesPlaceholder() {
-        // The drawer chrome (navy header titled "Properties" + frame + divider) is supplied by the host card,
-        // so this is just the content surface.
-        Label note = new Label("Editing controls will appear here.");
-        note.setWrapText(true);
-        VBox panel = new VBox(8, note);
-        panel.setPadding(new Insets(12));
-        panel.setPrefWidth(320);
-        panel.getStyleClass().add("dynamic-component-card-properties");
-        return panel;
     }
 
     /**

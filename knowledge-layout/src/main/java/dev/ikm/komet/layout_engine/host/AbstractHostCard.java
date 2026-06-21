@@ -7,6 +7,8 @@ import dev.ikm.komet.layout.KlArea;
 import dev.ikm.komet.layout.KlToolbarItem;
 import dev.ikm.komet.layout.KlView;
 import dev.ikm.komet.layout.controls.KlDrawer;
+import dev.ikm.komet.layout.selection.KlSelectionContext;
+import dev.ikm.komet.layout.selection.KlSelectionContextFactory;
 import dev.ikm.komet.layout_engine.toolbar.NodeToolbarItem;
 import dev.ikm.komet.layout_engine.toolbar.SpacerToolbarItem;
 import dev.ikm.komet.layout_engine.toolbar.ToggleToolbarItem;
@@ -223,6 +225,8 @@ public abstract class AbstractHostCard extends CardBlueprint {
     /** Overlay created on the first drawer; holds the card content with drawers that slide out beyond its edges. */
     private StackPane drawerContainer;
 
+    private KlSelectionContext selectionContext;
+
     /** A drawer plus the area it reveals, the preference key for its open state, and its toggle label. */
     private record DrawerHandle(KlDrawer drawer, KlArea<? extends Region> area, String prefKey, String toggleLabel,
                                 ToggleToolbarItem toggleItem) {
@@ -434,6 +438,20 @@ public abstract class AbstractHostCard extends CardBlueprint {
     }
 
     /** The leading-controls item, wrapping the card's own controls; created once, content refreshed per build. */
+    /**
+     * The per-card selection nexus, created once and registered on the card's root node so the body (writer)
+     * and the drawer (reader) discover it by walking up the scene graph rather than referencing each other.
+     *
+     * @return the selection context
+     */
+    protected KlSelectionContext selectionContext() {
+        if (selectionContext == null) {
+            selectionContext = KlSelectionContextFactory.provider().create();
+            fxObject().getProperties().put(KlSelectionContext.class.getName(), selectionContext);
+        }
+        return selectionContext;
+    }
+
     private NodeToolbarItem leadingItem() {
         if (leadingItem == null) {
             leadingItem = NodeToolbarItem.factory()
