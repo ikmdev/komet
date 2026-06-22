@@ -1,5 +1,3 @@
-/* turn off the border and set the background color to transparent */
-
 .public-id-list  {
     -fx-border-style: none;
     -fx-background-color: transparent;
@@ -14,6 +12,30 @@
 
 .public-id-list .scroll-pane > .viewport {
     -fx-background-color: transparent;
+}
+
+.public-id-list .scroll-pane > .scroll-bar:vertical,
+.public-id-list .scroll-pane > .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
+
+.public-id-list .scroll-pane > .scroll-bar .increment-arrow,
+.public-id-list .scroll-pane > .scroll-bar .decrement-arrow {
+    -fx-padding:0;
+    -fx-background-color: transparent;
+}
+
+.public-id-list .scroll-bar:vertical .increment-button ,
+.public-id-list .scroll-bar:vertical .decrement-button {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding:0 10 0 0;
+}
+
+.public-id-list .scroll-pane > .scroll-bar:vertical .thumb {
+    -fx-background-insets: 3px 5px 3px 1px;
+    -fx-background-color: #9f9f9f;
 }
 
 .public-id-list .identifier-vbox  {
