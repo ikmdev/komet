@@ -21,11 +21,13 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
+import javafx.scene.input.Dragboard;
 import dev.ikm.tinkar.component.Component;
 import dev.ikm.tinkar.component.Version;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.ProxyFactory;
 
 import java.util.*;
 import java.util.function.Function;
@@ -45,6 +47,8 @@ public class KometClipboard extends ClipboardContent {
     public static final DataFormat KOMET_CONCEPT_VERSION_PROXY = new DataFormat("application/komet-concept-version-proxy");
     public static final DataFormat KOMET_PATTERN_VERSION_PROXY = new DataFormat("application/komet-pattern-version-proxy");
     public static final DataFormat KOMET_SEMANTIC_VERSION_PROXY = new DataFormat("application/komet-semantic-version-proxy");
+    public static final DataFormat KOMET_STAMP_PROXY = new DataFormat("application/komet-stamp-proxy");
+    public static final DataFormat KOMET_STAMP_VERSION_PROXY = new DataFormat("application/komet-stamp-version-proxy");
 
     /**
      * Drag format used when dragging a Component. Can be used anywhere a Component is in the clipboard and a Public Id is stored
@@ -55,6 +59,7 @@ public class KometClipboard extends ClipboardContent {
     public static final Set<DataFormat> CONCEPT_TYPES = new HashSet<>(Arrays.asList(KOMET_CONCEPT_VERSION_PROXY, KOMET_CONCEPT_PROXY));
     public static final Set<DataFormat> PATTERN_TYPES = new HashSet<>(Arrays.asList(KOMET_PATTERN_VERSION_PROXY, KOMET_PATTERN_PROXY));
     public static final Set<DataFormat> SEMANTIC_TYPES = new HashSet<>(Arrays.asList(KOMET_SEMANTIC_VERSION_PROXY, KOMET_SEMANTIC_PROXY));
+    public static final Set<DataFormat> STAMP_TYPES = new HashSet<>(Arrays.asList(KOMET_STAMP_VERSION_PROXY, KOMET_STAMP_PROXY));
     private static final HashMap<DataFormat, Function<? super Component, ? extends Object>> GENERATOR_MAP
             = new HashMap<>();
 
@@ -118,6 +123,8 @@ public class KometClipboard extends ClipboardContent {
                 this.put(KOMET_SEMANTIC_VERSION_PROXY, semanticVersion.toXmlFragment());
             } else if (version instanceof PatternEntityVersion patternVersion) {
                 this.put(KOMET_PATTERN_VERSION_PROXY, patternVersion.toXmlFragment());
+            } else if (version instanceof StampEntityVersion stampVersion) {
+                this.put(KOMET_STAMP_VERSION_PROXY, stampVersion.toXmlFragment());
             }
         } else if (component instanceof EntityFacade entityFacade) {
             addEntity(entityFacade);
@@ -131,6 +138,61 @@ public class KometClipboard extends ClipboardContent {
         this.put(DataFormat.PLAIN_TEXT, entityProxyList.toString());
     }
 
+    private KometClipboard() {
+        super();
+    }
+
+    /**
+     * Builds clipboard content for a single component proxy, putting its atom format
+     * <em>unconditionally</em> from the proxy's serialized form — there is no
+     * {@link EntityHandle} presence gate, so the payload is present even when the component
+     * is not yet loaded (the gate that made drops silently fail). The format is chosen by
+     * the proxy's concrete component type (concept / pattern / semantic / stamp).
+     *
+     * @param proxy the component proxy to place on the clipboard; must not be {@code null}
+     * @return clipboard content carrying {@code proxy}
+     */
+    public static KometClipboard forProxy(EntityProxy proxy) {
+        KometClipboard content = new KometClipboard();
+        content.put(formatFor(proxy), proxy.toXmlFragment());
+        content.put(DataFormat.PLAIN_TEXT, proxy.publicId().toString());
+        return content;
+    }
+
+    /**
+     * Builds clipboard content for the concept with the given nid — a convenience over
+     * {@link #forProxy(EntityProxy)} for the common concept drag.
+     *
+     * @param nid the concept nid
+     * @return clipboard content carrying the concept proxy
+     */
+    public static KometClipboard forConcept(int nid) {
+        return forProxy(EntityProxy.Concept.make(nid));
+    }
+
+    /**
+     * The atom clipboard format for a proxy's concrete component type, falling back to
+     * {@link #COMPONENT_DRAG_FORMAT} for a bare (untyped) {@link EntityProxy}.
+     *
+     * @param proxy the component proxy
+     * @return the matching {@link DataFormat}
+     */
+    static DataFormat formatFor(EntityProxy proxy) {
+        if (proxy instanceof EntityProxy.Concept) {
+            return KOMET_CONCEPT_PROXY;
+        }
+        if (proxy instanceof EntityProxy.Pattern) {
+            return KOMET_PATTERN_PROXY;
+        }
+        if (proxy instanceof EntityProxy.Semantic) {
+            return KOMET_SEMANTIC_PROXY;
+        }
+        if (proxy instanceof EntityProxy.Stamp) {
+            return KOMET_STAMP_PROXY;
+        }
+        return COMPONENT_DRAG_FORMAT;
+    }
+
     public static boolean containsAny(Collection<?> c1,
                                       Collection<?> c2) {
         return !Collections.disjoint(c1, c2);
@@ -141,13 +203,47 @@ public class KometClipboard extends ClipboardContent {
                 .ifConcept(concept -> this.put(KOMET_CONCEPT_PROXY, concept.toXmlFragment()))
                 .ifPattern(pattern -> this.put(KOMET_PATTERN_PROXY, pattern.toXmlFragment()))
                 .ifSemantic(semantic -> this.put(KOMET_SEMANTIC_PROXY, semantic.toXmlFragment()))
-                .ifStamp(stamp -> addEntity(stamp));
+                .ifStamp(stamp -> this.put(KOMET_STAMP_PROXY, stamp.toXmlFragment()));
     }
 
     //~--- methods -------------------------------------------------------------
     private void addExtra(DataFormat format, Component component) {
         put(format, GENERATOR_MAP.get(format)
                 .apply(component));
+    }
+
+    /**
+     * The concept nid carried by a Komet concept dragboard, or empty when the board has no
+     * {@link #KOMET_CONCEPT_PROXY} content or the payload is malformed. The inverse of
+     * {@link #forConcept(int)} on the drop side.
+     *
+     * @param dragboard the drag-and-drop content; may be {@code null}
+     * @return the dropped concept nid, or {@link OptionalInt#empty()}
+     */
+    public static OptionalInt conceptNid(Dragboard dragboard) {
+        if (dragboard != null && dragboard.hasContent(KOMET_CONCEPT_PROXY)) {
+            return conceptNidFromProxyXml((String) dragboard.getContent(KOMET_CONCEPT_PROXY));
+        }
+        return OptionalInt.empty();
+    }
+
+    /**
+     * Decodes a concept nid from a {@link #KOMET_CONCEPT_PROXY} XML fragment — the testable
+     * seam behind {@link #conceptNid(Dragboard)}. Returns empty for a {@code null}, blank,
+     * or unparseable fragment rather than throwing.
+     *
+     * @param proxyXmlFragment the serialized concept proxy
+     * @return the concept nid, or {@link OptionalInt#empty()}
+     */
+    static OptionalInt conceptNidFromProxyXml(String proxyXmlFragment) {
+        if (proxyXmlFragment == null || proxyXmlFragment.isBlank()) {
+            return OptionalInt.empty();
+        }
+        try {
+            return OptionalInt.of(ProxyFactory.fromXmlFragment(proxyXmlFragment).nid());
+        } catch (RuntimeException malformed) {
+            return OptionalInt.empty();
+        }
     }
 
     @Override
