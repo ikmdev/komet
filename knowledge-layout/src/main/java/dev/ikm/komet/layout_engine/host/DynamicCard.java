@@ -1,8 +1,6 @@
 package dev.ikm.komet.layout_engine.host;
 
 import dev.ikm.komet.framework.observable.ObservableComposer;
-import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.layout.KlArea;
 import dev.ikm.komet.layout.area.AreaGridSettings;
@@ -179,21 +177,9 @@ public class DynamicCard extends AbstractHostCard {
         ViewOptionsPopupHelper.setupViewCoordinateOptionsPopup(getCardViewProperties(),
                 FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, fxObject(), coordinateButton, () -> {});
 
-        // Drive the crosshair's orange "overridden" state directly from this card's coordinate — its resolved
-        // value differing from the inherited (parent) baseline — rather than the popup's own detection, which
-        // does not reflect a restored override. getValue()/getOriginalValue() compose every dimension, so this
-        // also catches nested pins (e.g. a language description-type order override).
-        ObservableView cardView = getCardViewProperties().nodeView();
-        Runnable syncOverrideIndicator = () -> {
-            boolean overridden = cardView instanceof ObservableViewWithOverride overrideView
-                    && !overrideView.getValue().equals(overrideView.getOriginalValue());
-            coordinateButton.getStyleClass().remove("override");
-            if (overridden) {
-                coordinateButton.getStyleClass().add("override");
-            }
-        };
-        syncOverrideIndicator.run();
-        cardView.subscribe(syncOverrideIndicator);
+        // Light the crosshair from the card's per-dimension override flags (hasOverrides), the same
+        // parent-relative predicate the panel dots and the persistence capture use, so the indicators agree.
+        wireCoordinateOverrideIndicator(coordinateButton);
 
         publishButton.getStyleClass().add("dynamic-card-publish-button");
         publishButton.setOnAction(event -> commitEdits());

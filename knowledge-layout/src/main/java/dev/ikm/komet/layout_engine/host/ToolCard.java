@@ -3,13 +3,19 @@ package dev.ikm.komet.layout_engine.host;
 import dev.ikm.komet.layout.KlArea;
 import dev.ikm.komet.layout.area.AreaGridSettings;
 import dev.ikm.komet.layout.area.KlToolArea;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.ViewOptionsPopupHelper;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.blueprint.CardBlueprint;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.PluggableService;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.HBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,6 +87,27 @@ public final class ToolCard extends AbstractHostCard {
         if (toolArea == null) {
             instantiateTool();
         }
+    }
+
+    /**
+     * Adds the tool card's toolbar control: the coordinate crosshair (the overridable View control wired to
+     * this card's coordinate of record), so the hosted tool's view — the one its queries resolve against —
+     * is visible and overridable, consistent with the tiles, the journal, and the editor cards.
+     */
+    @Override
+    protected void buildToolbarControls(HBox toolBar) {
+        MenuButton coordinateButton = new MenuButton();
+        coordinateButton.getStyleClass().add("coordinate");
+        coordinateButton.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        coordinateButton.setTooltip(new Tooltip("Coordinates"));
+        ViewOptionsPopupHelper.setupViewCoordinateOptionsPopup(getCardViewProperties(),
+                FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, fxObject(), coordinateButton, () -> { });
+
+        // Light the crosshair from the card's per-dimension override flags (hasOverrides), the same
+        // parent-relative predicate the panel dots and the persistence capture use, so the indicators agree.
+        wireCoordinateOverrideIndicator(coordinateButton);
+
+        toolBar.getChildren().add(coordinateButton);
     }
 
     /**

@@ -28,6 +28,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
@@ -663,6 +664,35 @@ public abstract class AbstractHostCard extends CardBlueprint {
      */
     protected void buildToolbarControls(HBox toolBar) {
         // A minimal card has no toolbar controls of its own.
+    }
+
+    /**
+     * Wires a toolbar coordinate control's orange {@code "override"} state to this card's coordinate of
+     * record. The control is lit exactly when the card genuinely pins at least one coordinate dimension
+     * relative to its inherited parent — read from the per-dimension override flags via
+     * {@link dev.ikm.komet.framework.view.ObservableCoordinate#hasOverrides()}, the single parent-relative
+     * predicate the View Options panel dots, the popup's "remove all overrides" control, and this card's
+     * persistence capture ({@link #captureViewOverride()}) all already use. The crosshair, the dots, and the
+     * persisted state therefore cannot disagree about whether the card overrides its parent.
+     *
+     * <p>It deliberately does <em>not</em> compare the whole resolved {@code getValue()} against
+     * {@code getOriginalValue()}: that record-level value diff lights on phantom record-rebuild artifacts
+     * (e.g. the {@code EditCoordinateRecord} {@code destinationModule}/{@code promotionPath} field swap)
+     * with no real pin, so the crosshair would read orange while every panel dot stayed dark
+     * (IKE-Network/ike-issues#743).
+     *
+     * @param coordinateButton the toolbar coordinate control whose {@code "override"} style class is driven
+     */
+    protected void wireCoordinateOverrideIndicator(MenuButton coordinateButton) {
+        ObservableView cardView = getCardViewProperties().nodeView();
+        Runnable syncOverrideIndicator = () -> {
+            coordinateButton.getStyleClass().remove("override");
+            if (cardView.hasOverrides()) {
+                coordinateButton.getStyleClass().add("override");
+            }
+        };
+        syncOverrideIndicator.run();
+        cardView.subscribe(syncOverrideIndicator);
     }
 
     /**
