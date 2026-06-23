@@ -133,7 +133,7 @@ public class DescrNameViewModel extends FormViewModel {
                 System.currentTimeMillis(),
                 viewProperties.nodeView().editCoordinate().getAuthorForChanges().nid(),
                 ((ConceptEntity)getValue(MODULE)).nid(), // SNOMED CT, LOINC, etc
-                TinkarTerm.DEVELOPMENT_PATH.nid()); //TODO should this path come from the parent concept's path?
+                viewProperties.nodeView().editCoordinate().getDefaultPath().nid()); // path from the edit coordinate (ike-issues#752)
 
 
         // existing semantic
@@ -209,7 +209,7 @@ public class DescrNameViewModel extends FormViewModel {
                 System.currentTimeMillis(),
                 viewProperties.nodeView().editCoordinate().getAuthorForChanges().nid(),
                 ((ConceptEntity)getValue(MODULE)).nid(), // SNOMED CT, LOINC, etc
-                TinkarTerm.DEVELOPMENT_PATH.nid()); //TODO should this path come from the parent concept's path?
+                viewProperties.nodeView().editCoordinate().getDefaultPath().nid()); // path from the edit coordinate (ike-issues#752)
 
         // existing semantic
         SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());

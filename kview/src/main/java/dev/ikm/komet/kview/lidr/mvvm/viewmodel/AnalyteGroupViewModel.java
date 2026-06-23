@@ -96,9 +96,11 @@ public class AnalyteGroupViewModel extends FormViewModel {
         StampEntity stampEntity = transaction.getStamp(
                 State.fromConcept(TinkarTerm.ACTIVE_STATE), // default to active
                 System.currentTimeMillis(),
-                TinkarTerm.USER.nid(),
-                lidrRecord.nid(), // is this correct?
-                TinkarTerm.DEVELOPMENT_PATH.nid()); // default to dev path???
+                // Author/module/path from the edit coordinate — the single write source, so LIDR commits under
+                // the logged-in user, not the generic "Author" (IKE-Network/ike-issues#752).
+                editCoordinateRecord.getAuthorNidForChanges(),
+                editCoordinateRecord.getDefaultModuleNid(),
+                editCoordinateRecord.getDefaultPathNid());
 
         MutableList<Object> descriptionFields = Lists.mutable.empty();
         descriptionFields.add(getPropertyValue(ANALYTE_ENTITY));

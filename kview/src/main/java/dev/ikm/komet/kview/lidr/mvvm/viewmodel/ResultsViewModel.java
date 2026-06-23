@@ -131,9 +131,11 @@ public class ResultsViewModel extends FormViewModel {
         StampEntity stampEntity = transaction.getStamp(
                 State.fromConceptNid(TinkarTerm.ACTIVE_STATE.nid()), // default to active
                 System.currentTimeMillis(),
-                TinkarTerm.USER.nid(),
-                -1, // have no idea what the NID would be here
-                TinkarTerm.DEVELOPMENT_PATH.nid()); // default to dev path???
+                // Author/module/path from the edit coordinate — the single write source, so LIDR commits under
+                // the logged-in user, not the generic "Author" (and a real module, not -1) (IKE-Network/ike-issues#752).
+                editCoordinateRecord.getAuthorNidForChanges(),
+                editCoordinateRecord.getDefaultModuleNid(),
+                editCoordinateRecord.getDefaultPathNid());
 
         ConceptEntityBuilder newConceptBuilder = ConceptEntityBuilder.builder(stampEntity);
 

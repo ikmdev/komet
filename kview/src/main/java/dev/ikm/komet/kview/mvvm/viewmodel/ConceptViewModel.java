@@ -330,7 +330,7 @@ public class ConceptViewModel extends FormViewModel {
                 System.currentTimeMillis(),
                 getViewProperties().nodeView().editCoordinate().getAuthorForChanges().nid(),
                 otherName.getModule().nid(), // SNOMED CT, LOINC, etc
-                TinkarTerm.DEVELOPMENT_PATH.nid()); // Should this be defaulted???
+                getViewProperties().nodeView().editCoordinate().getDefaultPath().nid()); // path from the edit coordinate (ike-issues#752)
 
         // get the public id of the referenced concept
         PublicId conceptRecordPublicId =  otherName.getParentConcept();
