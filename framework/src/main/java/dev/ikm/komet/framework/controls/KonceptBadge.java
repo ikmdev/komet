@@ -17,6 +17,7 @@ package dev.ikm.komet.framework.controls;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.StyleClasses;
+import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdList;
@@ -31,11 +32,13 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.css.PseudoClass;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,8 +76,17 @@ public class KonceptBadge extends HBox {
     /** Pseudo-class driving the struck-through, retired-colour label when the component is inactive. */
     private static final PseudoClass INACTIVE = PseudoClass.getPseudoClass("inactive");
 
+    /**
+     * Pseudo-class a concept-expecting host enables via {@link #setConceptExpected(boolean)} to
+     * escalate (for example a red border) a badge that carries a non-concept kind sigil.
+     */
+    private static final PseudoClass ALARM = PseudoClass.getPseudoClass("alarm");
+
     /** Default identicon edge length in pixels, sized to sit beside body text. */
     private static final double DEFAULT_ICON_SIZE = 14;
+
+    /** Inline edge length (px) of the {@link ComponentKind#STAMP} pentagon sigil. */
+    private static final double STAMP_SIGIL_SIZE = 14;
 
     /** Sentinel nid for a presentation-only badge built without a populated store/view. */
     private static final int UNKNOWN_NID = Integer.MIN_VALUE;
@@ -84,6 +96,7 @@ public class KonceptBadge extends HBox {
     private final ViewProperties viewProperties;
     private final boolean inactive;
 
+    private final HBox sigilBox = new HBox();
     private final HBox statusBox = new HBox();
     private final ImageView identicon;
     private final Label label = new Label();
@@ -92,6 +105,8 @@ public class KonceptBadge extends HBox {
     private String sctid;
     private PremiseType premiseType = PremiseType.INFERRED;
     private KonceptStatus status = KonceptStatus.NONE;
+    private ComponentKind kind = ComponentKind.CONCEPT;
+    private boolean conceptExpected = false;
 
     /**
      * Creates a badge for the given component, resolving its name, identicon, inactive state and
@@ -164,10 +179,15 @@ public class KonceptBadge extends HBox {
         setMaxWidth(Double.MAX_VALUE);
         setConceptName(explicitName != null ? explicitName : resolveName(nid, viewProperties));
 
-        getChildren().addAll(statusBox, identicon, label);
+        getChildren().addAll(sigilBox, statusBox, identicon, label);
         setStatus(showStatus && viewProperties != null && nid != UNKNOWN_NID
                 ? computeStatus(nid, viewProperties, premiseType)
                 : KonceptStatus.NONE);
+        // Be honest about the component kind: a concept stays bare, every other kind gets its sigil
+        // (a presentation-only badge, with no view to verify, stays the bare concept default).
+        setKind(viewProperties != null && nid != UNKNOWN_NID
+                ? ComponentKindResolver.resolve(nid, viewProperties.calculator())
+                : ComponentKind.CONCEPT);
 
         pseudoClassStateChanged(INACTIVE, inactive);
 
@@ -208,6 +228,73 @@ public class KonceptBadge extends HBox {
      */
     public KonceptStatus getStatus() {
         return status;
+    }
+
+    /**
+     * Sets the component-kind sigil shown ahead of the identicon, replacing any current sigil
+     * (ike-issues#638). A {@link ComponentKind#CONCEPT} shows no sigil (the bare default);
+     * {@link ComponentKind#STAMP} shows the {@link StampSigil} pentagon; every other kind shows its
+     * coloured letter glyph. The accessible kind name is installed on the sigil's tooltip — the
+     * non-colour accessibility channel, so kind is never carried by colour alone.
+     *
+     * @param kind the component kind; {@code null} is treated as {@link ComponentKind#CONCEPT}
+     */
+    public final void setKind(ComponentKind kind) {
+        this.kind = (kind == null) ? ComponentKind.CONCEPT : kind;
+        sigilBox.getChildren().clear();
+        boolean visible = this.kind.hasSigil();
+        sigilBox.setManaged(visible);
+        sigilBox.setVisible(visible);
+        if (visible) {
+            Node sigil = this.kind.isStamp() ? new StampSigil(STAMP_SIGIL_SIZE) : letterSigil(this.kind);
+            Tooltip.install(sigil, new Tooltip(this.kind.accessibleName()));
+            sigilBox.getChildren().add(sigil);
+        }
+        refreshAlarm();
+    }
+
+    /**
+     * The component kind this badge is honest about.
+     *
+     * @return the current {@link ComponentKind} (never {@code null})
+     */
+    public ComponentKind getKind() {
+        return kind;
+    }
+
+    /**
+     * Whether this badge would violate a concept expectation — it carries a sigil, i.e. it is not a
+     * bare concept — so a concept-expecting host can escalate it even without enabling the built-in
+     * {@code alarm} styling.
+     *
+     * @return {@code true} when {@link #getKind()} is anything other than {@link ComponentKind#CONCEPT}
+     */
+    public boolean isConceptViolation() {
+        return kind.hasSigil();
+    }
+
+    /**
+     * Declares whether this badge sits in a context that <em>expects a concept</em> (a concept slot,
+     * the assistant chip). When {@code true} and the badge carries any kind sigil, the badge enters
+     * the {@code alarm} pseudo-class state so the host can escalate it (for example a red border).
+     * The badge stays neutral by default; the host opts into the alarm.
+     *
+     * @param conceptExpected {@code true} if the host context requires a concept
+     */
+    public final void setConceptExpected(boolean conceptExpected) {
+        this.conceptExpected = conceptExpected;
+        refreshAlarm();
+    }
+
+    private void refreshAlarm() {
+        pseudoClassStateChanged(ALARM, conceptExpected && kind.hasSigil());
+    }
+
+    private static Text letterSigil(ComponentKind kind) {
+        Text glyph = new Text(kind.glyph());
+        glyph.getStyleClass().add(StyleClasses.KONCEPT_SIGIL.toString());
+        glyph.setFill(Color.web(kind.colorHex()));
+        return glyph;
     }
 
     /**
