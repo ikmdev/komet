@@ -11,6 +11,7 @@ import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLSearchControl;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
@@ -289,6 +290,14 @@ public class ConceptPatternNavController {
         });
         conceptNavigatorControl.setOnKLDynamicCardAction((conceptFacade, windowTitle) -> {
             journalController.newCreateDynamicComponentCardWindow(conceptFacade, windowTitle);
+        });
+        conceptNavigatorControl.setOnConceptNavigationFailed((conceptFacade, message) -> {
+            Toast toast = JournalController.toast();
+            if (toast != null) {
+                toast.show(Toast.Status.FAILURE, message);
+            } else {
+                LOG.warn("Concept could not be displayed in the navigator: {}", message);
+            }
         });
 
         searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);

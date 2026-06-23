@@ -76,6 +76,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -791,10 +792,42 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
 
         ConceptNavigatorUtils.resetConceptNavigator(treeView);
         List<InvertedTree.ConceptItem> lineage = ConceptNavigatorUtils.findShorterLineage(conceptItem, treeView.getNavigator());
+        if (lineage.isEmpty()) {
+            // The concept has no lineage to any root visible in this navigator, so it cannot be expanded here
+            // (e.g. it is retired and this navigator shows only active concepts). Investigate its state and report
+            // it gracefully, rather than dispatching an expansion that would fail (and leave the navigator locked).
+            // Only an explicit "select" gesture (highlight == false) notifies the user; a passive long-hover
+            // (highlight == true) is reported to the log only, to avoid notification spam while hovering.
+            reportConceptNotDisplayed(conceptItem, !highlight);
+            return;
+        }
         TinkExecutor.threadPool().execute(() -> {
             lock = true;
             counter.set(0);
             expandAncestor(lineage, (ConceptNavigatorTreeItem) treeView.getRoot(), highlight);
+        });
+    }
+
+    /**
+     * <p>Handles the case where a concept could not be placed in the navigator's hierarchy. Investigates the
+     * state of the concept (off the JavaFX Application Thread, as it reads from the datastore), logs a diagnostic,
+     * and, when {@code notifyUser} is set and a handler is registered, surfaces a user-facing message via
+     * {@link KLConceptNavigatorControl#onConceptNavigationFailedProperty()}.
+     * @param conceptItem the {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem} that failed to display
+     * @param notifyUser whether to surface a user-facing message, in addition to logging the diagnostic
+     */
+    private void reportConceptNotDisplayed(InvertedTree.ConceptItem conceptItem, boolean notifyUser) {
+        int nid = conceptItem.childNid();
+        TinkExecutor.threadPool().execute(() -> {
+            ConceptNavigatorUtils.ConceptDisplayDiagnosis diagnosis =
+                    ConceptNavigatorUtils.investigateUndisplayableConcept(nid, treeView.getNavigator());
+            LOG.warn("Concept (nid={}) could not be displayed in the Concept Navigator. {}", nid, diagnosis.detail());
+
+            BiConsumer<ConceptFacade, String> handler = treeView.getOnConceptNavigationFailed();
+            if (notifyUser && handler != null) {
+                ConceptFacade facade = EntityHandle.get(nid).isConcept() ? Entity.getFast(nid) : null;
+                Platform.runLater(() -> handler.accept(facade, diagnosis.summary()));
+            }
         });
     }
 
