@@ -194,6 +194,28 @@ public class DataModelHelper {
     }
 
     /**
+     * Retrieves the LEAF descendants of a concept — descendants that have no children of their own.
+     * Used for author selection, where only the named users (the leaves of the
+     * {@link dev.ikm.tinkar.terms.TinkarTerm#USER} subtree) are valid commit authors and grouping
+     * concepts (which have children) must be excluded.
+     *
+     * @param viewCalculator The navigation-capable view calculator used to determine descendants and children
+     * @param publicId The public identifier of the ancestor concept whose leaf descendants are to be retrieved
+     * @return A set of ConceptEntity objects for the leaf descendants (never the ancestor itself). The set may
+     *         contain fewer elements than expected if some concept entities could not be retrieved.
+     */
+    public static Set<ConceptEntity> fetchLeafDescendentsOfConcept(ViewCalculator viewCalculator, PublicId publicId) {
+        Objects.requireNonNull(viewCalculator, "View calculator cannot be null");
+        Objects.requireNonNull(publicId, "Public ID cannot be null");
+        IntIdSet descendants = viewCalculator.descendentsOf(EntityService.get().nidForPublicId(publicId));
+        return descendants.intStream()
+                .filter(nid -> viewCalculator.childrenOf(nid).isEmpty())
+                .mapToObj(DataModelHelper::getConceptEntitySafely)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    /**
      * Safely retrieves a ConceptEntity for the given node identifier (nid).
      *
      * @param nid The node identifier to retrieve the concept entity for

@@ -26,6 +26,7 @@ import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalD
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
 import static dev.ikm.komet.kview.mvvm.model.Constants.JOURNAL_NAME_PREFIX;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchLeafDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SET;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SHOWING;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
@@ -808,13 +809,14 @@ public class LandingPageController implements BasicController {
 
     private void populateAvailableAuthors(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
         ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
-        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
+        // Authors are the leaf descendants of USER — named users only, excluding grouping concepts (ike-issues#754).
+        Set<ConceptEntity> conceptEntitySet = fetchLeafDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
         List<ConceptEntity> authors = conceptEntitySet.stream().toList();
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().availableOptions().addAll(authors);
         ConceptFacade defaultAuthor = authors
                 .stream()
                 .filter(author -> author.nid() == viewProperties.parentView().getAuthorForChanges().nid())
-                .findFirst().orElse(null); // TODO get default author from preferences.
+                .findFirst().orElse(null); // TODO default author from preferences (last-used / selected-list) — ike-issues#754.
 
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().selectedOptions().add(defaultAuthor);
 
@@ -825,12 +827,12 @@ public class LandingPageController implements BasicController {
         Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.PATH.publicId());
         List<ConceptEntity> entities = conceptEntitySet.stream().toList();
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().availableOptions().addAll(entities);
-        ConceptFacade defaultAuthor = entities
+        ConceptFacade defaultPath = entities
                 .stream()
-                .filter(author -> author.nid() == viewProperties.parentView().getAuthorForChanges().nid())
-                .findFirst().orElse(null); // TODO get default author from preferences.
+                .filter(path -> path.nid() == viewProperties.parentView().editCoordinate().getDefaultPath().nid())
+                .findFirst().orElse(null); // TODO default path from preferences — ike-issues#754.
 
-        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().selectedOptions().add(defaultAuthor);
+        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().selectedOptions().add(defaultPath);
 
     }
 }

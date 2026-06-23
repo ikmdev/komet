@@ -22,7 +22,7 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchLeafDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.LoginProperties.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 
@@ -57,7 +57,8 @@ public class LoginAuthorController {
         ViewProperties viewProperties = getViewProperties();
         // Create new instance of ViewCalculator to have stated navigation along with inferred.
         ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
-        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
+        // Only leaf descendants of USER are named users; grouping concepts in the subtree are excluded (ike-issues#754).
+        Set<ConceptEntity> conceptEntitySet = fetchLeafDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
 
         //If there are no authors mentioned in the stated or inferred then we use the default tinkar term user.
         if (conceptEntitySet.isEmpty()) {
