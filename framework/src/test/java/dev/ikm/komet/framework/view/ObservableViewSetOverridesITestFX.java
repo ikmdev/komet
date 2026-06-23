@@ -21,6 +21,7 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -35,6 +36,7 @@ import java.io.File;
 import static dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXThread;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -203,5 +205,43 @@ class ObservableViewSetOverridesITestFX {
         wholeValue.setOverrides(resolved);
         assertTrue(wholeValue.navigationCoordinate().sortVerticesProperty().isOverridden(),
                 "whole-value setOverrides freezes the inherited dimension as a spurious pin (the bug delta avoids)");
+    }
+
+    /**
+     * The edit-coordinate author must ride the view cascade (IKE-Network/ike-issues#750): setting the author on
+     * a parent view (as login/landing does) must fold into the parent's composite {@code ViewCoordinateRecord}
+     * and reach a child view's record, so a journal/inner-editing window commits under that author. This is the
+     * dimension that was severed because {@code ObservableViewBase.addListeners()} never registered the
+     * edit-coordinate listener; with it registered, the author propagates and survives a later view refresh.
+     */
+    @Test
+    @RunOnJavaFXThread
+    @Order(5)
+    void editAuthorChange_foldsIntoTheViewRecord_reachesAChildView_andSurvivesARefresh() {
+        ViewCoordinateRecord defaultView = Coordinates.View.DefaultView();
+        ObservableViewNoOverride parent = new ObservableViewNoOverride(defaultView);
+        parent.addListener((obs, oldValue, newValue) -> { });   // keep parent listening so its record refreshes
+
+        ObservableViewWithOverride child = new ObservableViewWithOverride(parent);
+        child.addListener((obs, oldValue, newValue) -> { });    // keep child listening, as the journal's view is
+
+        int defaultAuthor = defaultView.editCoordinate().getAuthorNidForChanges();
+        int namedUser = TinkarTerm.KOMET_USER.nid();
+        assertNotEquals(defaultAuthor, namedUser, "precondition: KOMET user is not the default author");
+
+        // Set the commit author on the PARENT, as login/landing does for the logged-in user.
+        parent.editCoordinate().authorForChangesProperty().setValue(TinkarTerm.KOMET_USER);
+
+        // It folds into the parent's composite record (the registration that makes the author ride the cascade)...
+        assertEquals(namedUser, parent.getValue().editCoordinate().getAuthorNidForChanges(),
+                "the edit-author change enters the parent view's composite ViewCoordinateRecord");
+        // ...and reaches the child view that a journal/inner window is built from.
+        assertEquals(namedUser, child.getValue().editCoordinate().getAuthorNidForChanges(),
+                "the inherited edit-author reaches the child view's record (rides the cascade)");
+
+        // Sticking: a later VIEW refresh (an unrelated dimension change) must not revert the author to default.
+        child.stampCoordinate().timeProperty().set(defaultView.stampCoordinate().stampPosition().time() - 1000L);
+        assertEquals(namedUser, child.getValue().editCoordinate().getAuthorNidForChanges(),
+                "the edit-author survives a later view refresh (no clobber back to default)");
     }
 }
