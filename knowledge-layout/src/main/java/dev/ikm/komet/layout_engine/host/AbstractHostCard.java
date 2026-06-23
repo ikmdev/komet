@@ -91,11 +91,22 @@ public abstract class AbstractHostCard extends CardBlueprint {
     /** Re-render trigger on coordinate change; removed on unbind to avoid a listener leak. */
     private ChangeListener<ViewCoordinateRecord> reRenderListener;
     /**
-     * Captured coordinate override — the resolved coordinate when the card view carries any pin — re-applied
-     * via {@link ObservableViewWithOverride#setOverrides} at the next bind, so a per-card override survives a
-     * rebind, a newly inserted parent context, and a restart.
+     * Captured coordinate override — the resolved coordinate ({@code getValue()}) when the card view carries any
+     * pin — re-applied as a DELTA against {@link #pendingViewBaseline} at the next bind (see
+     * {@link ObservableViewWithOverride#setOverridesFromDelta}), so a per-card override survives a rebind, a newly
+     * inserted parent context, and a restart, and so only genuinely-pinned dimensions re-pin — leaving inherited
+     * ones tracking the current parent even when it changed between sessions (ike-issues#745).
      */
     private ViewCoordinateRecord pendingViewOverride;
+
+    /**
+     * The inherited parent baseline ({@code getOriginalValue()}) captured alongside {@link #pendingViewOverride}.
+     * The genuinely-pinned dimensions are exactly those where the override differs from this baseline, so the two
+     * together carry the override DELTA without persisting a per-dimension flag (ike-issues#745). Null for a legacy
+     * override persisted before the baseline was stored — re-applied via the whole-value
+     * {@link ObservableViewWithOverride#setOverrides} fallback.
+     */
+    private ViewCoordinateRecord pendingViewBaseline;
 
     /** Journal topic used by content presenters for event coordination. */
     private UUID journalTopic;
@@ -117,6 +128,8 @@ public abstract class AbstractHostCard extends CardBlueprint {
     private static final String JOURNAL_TOPIC_KEY = "dynamicCard.journalTopic";
     /** Preference key for the card's framework-persisted per-card coordinate override (a {@link ViewCoordinateRecord}). */
     private static final String VIEW_OVERRIDE_KEY = "dynamicCard.viewOverride";
+    /** Preference key for the inherited parent baseline captured with the override, to re-apply it as a delta (ike-issues#745). */
+    private static final String VIEW_BASELINE_KEY = "dynamicCard.viewBaseline";
 
     /**
      * Constructs a host card from a restored preferences node.
@@ -546,12 +559,19 @@ public abstract class AbstractHostCard extends CardBlueprint {
 
         // Re-apply any captured/persisted override onto this freshly created child view AFTER attaching the
         // listener — the view must be "listening" for a per-dimension pin to propagate consistently into the
-        // composite coordinate (and the override indicators); applying it while the view has no observers
-        // leaves the dimension pins and the resolved coordinate out of sync. setOverrides pins only the
-        // dimensions that differ from the (current) parent, so a dimension that still matches the journal keeps
-        // tracking it — the override survives a rebind, a newly inserted parent context, and a restart.
+        // composite coordinate (and the override indicators); applying it while the view has no observers leaves
+        // the dimension pins and the resolved coordinate out of sync. Re-apply as a DELTA against the captured
+        // baseline: only dimensions that were genuinely pinned (override differs from the parent-at-capture)
+        // re-pin, so dimensions that were merely inherited keep tracking THIS (possibly changed) parent instead
+        // of freezing at the stale captured value — the override survives a rebind, a newly inserted parent
+        // context, a restart, AND a journal-coordinate change between sessions (ike-issues#745).
         if (pendingViewOverride != null && cardView instanceof ObservableViewWithOverride overrideView) {
-            overrideView.setOverrides(pendingViewOverride);
+            if (pendingViewBaseline != null) {
+                overrideView.setOverridesFromDelta(pendingViewOverride, pendingViewBaseline);
+            } else {
+                // Legacy override persisted before the baseline was stored — re-apply whole-value.
+                overrideView.setOverrides(pendingViewOverride);
+            }
         }
     }
 
@@ -808,10 +828,13 @@ public abstract class AbstractHostCard extends CardBlueprint {
         if (journalTopic != null) {
             preferences().put(JOURNAL_TOPIC_KEY, journalTopic.toString());
         }
-        if (pendingViewOverride != null) {
+        if (pendingViewOverride != null && pendingViewBaseline != null) {
             preferences().putObject(VIEW_OVERRIDE_KEY, pendingViewOverride);
+            preferences().putObject(VIEW_BASELINE_KEY, pendingViewBaseline);
         } else {
-            preferences().remove(VIEW_OVERRIDE_KEY);   // the override was cleared — drop any stale persisted copy
+            // No override (or no baseline) — drop any stale persisted copy of both.
+            preferences().remove(VIEW_OVERRIDE_KEY);
+            preferences().remove(VIEW_BASELINE_KEY);
         }
         for (DrawerHandle handle : drawers) {
             preferences().putBoolean(handle.prefKey(), handle.drawer().isExpanded());
@@ -824,18 +847,28 @@ public abstract class AbstractHostCard extends CardBlueprint {
         preferences().get(JOURNAL_TOPIC_KEY).ifPresent(topic -> this.journalTopic = UUID.fromString(topic));
         Optional<ViewCoordinateRecord> savedOverride = preferences().getObject(VIEW_OVERRIDE_KEY);
         savedOverride.ifPresent(record -> this.pendingViewOverride = record);
+        // The baseline may be absent for a legacy override (pre-#745); establishViewContext then falls back to
+        // the whole-value setOverrides re-apply.
+        Optional<ViewCoordinateRecord> savedBaseline = preferences().getObject(VIEW_BASELINE_KEY);
+        savedBaseline.ifPresent(record -> this.pendingViewBaseline = record);
         subCardRestore();
     }
 
     /**
-     * Captures the card view's current coordinate override — its resolved coordinate when it carries any pin,
-     * or {@code null} when it carries none — into {@link #pendingViewOverride}, for re-apply at the next bind
-     * and for persistence. No-op while the view is not realized, so a restored-but-not-yet-bound override is
-     * not wiped before it can be re-applied.
+     * Captures the card view's current coordinate override as a delta pair — its resolved coordinate
+     * ({@link #pendingViewOverride}) plus the inherited parent baseline ({@link #pendingViewBaseline}) — when it
+     * carries any pin, or clears both when it carries none. The two together identify exactly the pinned
+     * dimensions (those where the resolved value differs from the baseline), so the override re-applies at the
+     * next bind as a delta against the current parent (ike-issues#745). No-op while the view is not realized, so
+     * a restored-but-not-yet-bound override is not wiped before it can be re-applied.
      */
     private void captureViewOverride() {
-        if (cardView != null) {
-            this.pendingViewOverride = cardView.hasOverrides() ? cardView.getValue() : null;
+        if (cardView instanceof ObservableViewWithOverride overrideView && overrideView.hasOverrides()) {
+            this.pendingViewOverride = overrideView.getValue();
+            this.pendingViewBaseline = overrideView.getOriginalValue();
+        } else if (cardView != null) {
+            this.pendingViewOverride = null;
+            this.pendingViewBaseline = null;
         }
     }
 

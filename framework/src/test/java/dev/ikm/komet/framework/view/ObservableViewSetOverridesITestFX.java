@@ -153,4 +153,55 @@ class ObservableViewSetOverridesITestFX {
         assertEquals(!originalSort, restored.navigationCoordinate().sortVerticesProperty().get(),
                 "the unpinned navigation dimension tracks the parent change (cascade preserved)");
     }
+
+    /**
+     * The persistence delta round-trip (ike-issues#745): when the parent (journal) coordinate changes
+     * <em>between sessions</em>, re-applying a captured override must re-pin only the genuinely-pinned
+     * dimensions and let the merely-inherited ones track the NEW parent — not freeze them at their stale
+     * captured values. {@link ObservableViewWithOverride#setOverridesFromDelta} achieves this from the
+     * captured {@code (getValue(), getOriginalValue())} pair; the old whole-value
+     * {@link ObservableViewWithOverride#setOverrides} does not.
+     */
+    @Test
+    @RunOnJavaFXThread
+    @Order(4)
+    void setOverridesFromDelta_reAppliesOnlyPinnedDimensions_soInheritedOnesTrackAChangedParent() {
+        ViewCoordinateRecord defaultView = Coordinates.View.DefaultView();
+        ObservableViewNoOverride parent = new ObservableViewNoOverride(defaultView);
+
+        // Pin ONLY the stamp time on the source; navigation sortVertices stays inherited.
+        ObservableViewWithOverride source = new ObservableViewWithOverride(parent);
+        source.addListener((obs, oldValue, newValue) -> { });   // keep it listening, as the Card's view is
+        long pinnedTime = defaultView.stampCoordinate().stampPosition().time() - 7000L;
+        boolean inheritedSortAtCapture = source.navigationCoordinate().sortVerticesProperty().get();
+        source.stampCoordinate().timeProperty().set(pinnedTime);
+
+        // Capture the delta pair the Card persists: the resolved coordinate AND the inherited parent baseline.
+        ViewCoordinateRecord resolved = source.getValue();
+        ViewCoordinateRecord baseline = source.getOriginalValue();
+
+        // The journal coordinate CHANGES between sessions: flip the (unpinned) navigation sortVertices on the parent.
+        parent.navigationCoordinate().sortVerticesProperty().set(!inheritedSortAtCapture);
+
+        // Re-apply as a delta onto a fresh child of the (now-changed) parent.
+        ObservableViewWithOverride restored = new ObservableViewWithOverride(parent);
+        restored.setOverridesFromDelta(resolved, baseline);
+
+        // The genuinely-pinned dimension re-pins to its captured value (pin-wins).
+        assertTrue(restored.stampCoordinate().timeProperty().isOverridden(), "the pinned stamp time re-pinned");
+        assertEquals(pinnedTime, restored.stampCoordinate().timeProperty().get(), "the pinned stamp time value restored");
+
+        // The merely-inherited dimension is NOT frozen as a spurious pin — it tracks the CHANGED parent.
+        assertFalse(restored.navigationCoordinate().sortVerticesProperty().isOverridden(),
+                "an inherited dimension is not spuriously re-pinned when the parent changed between sessions");
+        assertEquals(!inheritedSortAtCapture, restored.navigationCoordinate().sortVerticesProperty().get(),
+                "the inherited dimension resolves through to the changed parent (cascade preserved across restore)");
+
+        // Contrast: the whole-value setOverrides WOULD freeze the inherited dimension as a spurious pin against
+        // the changed parent — exactly the persistence bug the delta re-apply fixes.
+        ObservableViewWithOverride wholeValue = new ObservableViewWithOverride(parent);
+        wholeValue.setOverrides(resolved);
+        assertTrue(wholeValue.navigationCoordinate().sortVerticesProperty().isOverridden(),
+                "whole-value setOverrides freezes the inherited dimension as a spurious pin (the bug delta avoids)");
+    }
 }

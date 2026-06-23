@@ -148,6 +148,36 @@ public class ObservableViewWithOverride extends ObservableViewBase {
         }
     }
 
+    /**
+     * Re-applies a persisted override as a DELTA against the current parent: each constituent re-pins only the
+     * dimensions that genuinely differed at capture — where {@code resolved} (the captured override) differs from
+     * {@code baseline} (the inherited parent at capture time) — and leaves every merely-inherited dimension
+     * untouched, so it tracks the current (possibly changed) parent rather than freezing at the stale captured
+     * value. This is what lets a restored card-level override survive a journal-coordinate change between
+     * sessions (IKE-Network/ike-issues#745). Inverse of capturing {@code (getValue(), getOriginalValue())}.
+     *
+     * @param resolved the captured resolved view coordinate ({@code getValue()} at capture time)
+     * @param baseline the inherited parent view coordinate at capture ({@code getOriginalValue()} at capture time)
+     */
+    public void setOverridesFromDelta(ViewCoordinateRecord resolved, ViewCoordinateRecord baseline) {
+        stampCoordinate().setOverridesFromDelta(resolved.stampCoordinate(), baseline.stampCoordinate());
+        setLanguageCoordinatesOverridesFromDelta(resolved, baseline);
+        navigationCoordinate().setOverridesFromDelta(resolved.navigationCoordinate(), baseline.navigationCoordinate());
+        logicCoordinate().setOverridesFromDelta(resolved.logicCoordinate(), baseline.logicCoordinate());
+        ((ObservableEditCoordinateWithOverride) editCoordinate())
+                .setOverridesFromDelta(resolved.editCoordinate(), baseline.editCoordinate());
+    }
+
+    /// Apply per-language override deltas for each language-coordinate position, mirroring setLanguageCoordinatesOverrides.
+    private void setLanguageCoordinatesOverridesFromDelta(ViewCoordinateRecord resolved, ViewCoordinateRecord baseline) {
+        for (int i = 0; i < languageCoordinates.size()
+                && i < resolved.languageCoordinates().size() && i < baseline.languageCoordinates().size(); i++) {
+            ((ObservableLanguageCoordinateWithOverride) languageCoordinates.get(i)).setOverridesFromDelta(
+                    resolved.languageCoordinates().get(i).toLanguageCoordinateRecord(),
+                    baseline.languageCoordinates().get(i).toLanguageCoordinateRecord());
+        }
+    }
+
     @Override
     protected ObservableStampCoordinateBase makeStampCoordinateObservable(ViewCoordinate viewRecord) {
         ObservableView observableView = (ObservableView) viewRecord;

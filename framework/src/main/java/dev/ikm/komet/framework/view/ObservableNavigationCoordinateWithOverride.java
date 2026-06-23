@@ -105,6 +105,30 @@ public class ObservableNavigationCoordinateWithOverride extends ObservableNaviga
         verticesSortPatternListProperty().setValue(coordinateWithOverrides.verticesSortPatternNidList().map(PatternFacade::make));
     }
 
+    /**
+     * Re-pins only the navigation dimensions that genuinely differ between {@code resolved} (the captured
+     * override) and {@code baseline} (the inherited parent at capture time), leaving every matching dimension
+     * inherited so it keeps tracking the current parent. The delta-aware inverse of {@link #setOverrides}
+     * (IKE-Network/ike-issues#745).
+     *
+     * @param resolved the captured resolved navigation coordinate
+     * @param baseline the inherited parent navigation coordinate at capture time
+     */
+    public void setOverridesFromDelta(NavigationCoordinateRecord resolved, NavigationCoordinateRecord baseline) {
+        if (!resolved.navigationPatternNids().equals(baseline.navigationPatternNids())) {
+            navigationPatternsProperty().setValue(resolved.navigationPatternNids().map(PatternFacade::make));
+        }
+        if (!resolved.vertexStates().equals(baseline.vertexStates())) {
+            vertexStatesProperty().set(resolved.vertexStates());
+        }
+        if (resolved.sortVertices() != baseline.sortVertices()) {
+            sortVerticesProperty().set(resolved.sortVertices());
+        }
+        if (!resolved.verticesSortPatternNidList().equals(baseline.verticesSortPatternNidList())) {
+            verticesSortPatternListProperty().setValue(resolved.verticesSortPatternNidList().map(PatternFacade::make));
+        }
+    }
+
     @Override
     public NavigationCoordinateRecord getOriginalValue() {
         /**

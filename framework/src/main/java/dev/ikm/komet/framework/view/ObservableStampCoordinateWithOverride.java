@@ -161,6 +161,37 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
         modulePriorityOrderProperty().setValue(coordinateWithOverrides.modulePriorityNidList().map(ConceptFacade::make));
     }
 
+    /**
+     * Re-pins only the stamp dimensions that genuinely differ between {@code resolved} (the captured override)
+     * and {@code baseline} (the inherited parent at capture time), leaving every matching dimension inherited
+     * so it keeps tracking the current parent. The delta-aware inverse of {@link #setOverrides}, used to
+     * restore a persisted override against a possibly-changed parent without freezing inherited dimensions
+     * (IKE-Network/ike-issues#745).
+     *
+     * @param resolved the captured resolved stamp coordinate
+     * @param baseline the inherited parent stamp coordinate at capture time
+     */
+    public void setOverridesFromDelta(StampCoordinateRecord resolved, StampCoordinateRecord baseline) {
+        if (resolved.stampPosition().time() != baseline.stampPosition().time()) {
+            timeProperty().set(resolved.stampPosition().time());
+        }
+        if (resolved.pathNidForFilter() != baseline.pathNidForFilter()) {
+            pathConceptProperty().setValue(resolved.pathForFilter());
+        }
+        if (!resolved.allowedStates().equals(baseline.allowedStates())) {
+            allowedStatesProperty().setValue(resolved.allowedStates());
+        }
+        if (!resolved.moduleNids().equals(baseline.moduleNids())) {
+            moduleSpecificationsProperty().setValue(resolved.moduleNids().map(ConceptFacade::make));
+        }
+        if (!resolved.excludedModuleNids().equals(baseline.excludedModuleNids())) {
+            excludedModuleSpecificationsProperty().setValue(resolved.excludedModuleNids().map(ConceptFacade::make));
+        }
+        if (!resolved.modulePriorityNidList().equals(baseline.modulePriorityNidList())) {
+            modulePriorityOrderProperty().setValue(resolved.modulePriorityNidList().map(ConceptFacade::make));
+        }
+    }
+
     @Override
     public StampCoordinateRecord getOriginalValue() {
         return StampCoordinateRecord.make(this.allowedStatesProperty().getOriginalValue(),

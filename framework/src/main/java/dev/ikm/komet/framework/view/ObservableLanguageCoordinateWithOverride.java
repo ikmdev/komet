@@ -148,6 +148,34 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
         modulePreferenceListForLanguageProperty().setValue(coordinateWithOverrides.modulePreferenceListForLanguage());
     }
 
+    /**
+     * Re-pins only the language dimensions that genuinely differ between {@code resolved} (the captured
+     * override) and {@code baseline} (the inherited parent at capture time), leaving every matching dimension
+     * inherited so it keeps tracking the current parent. The delta-aware inverse of {@link #setOverrides}
+     * (IKE-Network/ike-issues#745).
+     *
+     * @param resolved the captured resolved language coordinate
+     * @param baseline the inherited parent language coordinate at capture time
+     */
+    public void setOverridesFromDelta(LanguageCoordinateRecord resolved, LanguageCoordinateRecord baseline) {
+        if (resolved.languageConceptNid() != baseline.languageConceptNid()) {
+            languageConceptProperty().setValue(resolved.languageConcept());
+        }
+        if (!resolved.descriptionPatternPreferenceNidList().equals(baseline.descriptionPatternPreferenceNidList())) {
+            descriptionPatternPreferenceListProperty().setValue(
+                    resolved.descriptionPatternPreferenceNidList().map(PatternFacade::make));
+        }
+        if (!resolved.dialectPatternPreferenceNidList().equals(baseline.dialectPatternPreferenceNidList())) {
+            dialectPatternPreferenceListProperty().setValue(resolved.dialectPatternPreferenceList());
+        }
+        if (!resolved.descriptionTypePreferenceNidList().equals(baseline.descriptionTypePreferenceNidList())) {
+            descriptionTypePreferenceListProperty().setValue(resolved.descriptionTypePreferenceList());
+        }
+        if (!resolved.modulePreferenceNidListForLanguage().equals(baseline.modulePreferenceNidListForLanguage())) {
+            modulePreferenceListForLanguageProperty().setValue(resolved.modulePreferenceListForLanguage());
+        }
+    }
+
     @Override
     public LanguageCoordinateRecord getOriginalValue() {
         return LanguageCoordinateRecord.make(languageConceptProperty().getOriginalValue().nid(),

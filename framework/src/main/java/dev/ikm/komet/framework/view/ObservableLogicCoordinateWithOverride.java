@@ -188,6 +188,42 @@ public class ObservableLogicCoordinateWithOverride extends ObservableLogicCoordi
         rootConceptProperty().setValue(coordinateWithOverrides.root());
     }
 
+    /**
+     * Re-pins only the logic dimensions that genuinely differ between {@code resolved} (the captured override)
+     * and {@code baseline} (the inherited parent at capture time), leaving every matching dimension inherited
+     * so it keeps tracking the current parent. The delta-aware inverse of {@link #setOverrides}
+     * (IKE-Network/ike-issues#745).
+     *
+     * @param resolved the captured resolved logic coordinate
+     * @param baseline the inherited parent logic coordinate at capture time
+     */
+    public void setOverridesFromDelta(LogicCoordinateRecord resolved, LogicCoordinateRecord baseline) {
+        if (resolved.classifierNid() != baseline.classifierNid()) {
+            classifierProperty().setValue(resolved.classifier());
+        }
+        if (resolved.conceptMemberPatternNid() != baseline.conceptMemberPatternNid()) {
+            conceptMemberPatternProperty().setValue(resolved.conceptMemberPattern());
+        }
+        if (resolved.descriptionLogicProfileNid() != baseline.descriptionLogicProfileNid()) {
+            descriptionLogicProfileProperty().setValue(resolved.descriptionLogicProfile());
+        }
+        if (resolved.inferredAxiomsPatternNid() != baseline.inferredAxiomsPatternNid()) {
+            inferredAxiomsPatternProperty().setValue(resolved.inferredAxiomsPattern());
+        }
+        if (resolved.statedAxiomsPatternNid() != baseline.statedAxiomsPatternNid()) {
+            statedAxiomsPatternProperty().setValue(resolved.statedAxiomsPattern());
+        }
+        if (resolved.statedNavigationPatternNid() != baseline.statedNavigationPatternNid()) {
+            statedNavigationPatternProperty().setValue(resolved.statedNavigationPattern());
+        }
+        if (resolved.inferredNavigationPatternNid() != baseline.inferredNavigationPatternNid()) {
+            inferredNavigationPatternProperty().setValue(resolved.inferredNavigationPattern());
+        }
+        if (resolved.rootNid() != baseline.rootNid()) {
+            rootConceptProperty().setValue(resolved.root());
+        }
+    }
+
     @Override
     public LogicCoordinateRecord getOriginalValue() {
         return LogicCoordinateRecord.make(classifierProperty().getOriginalValue(),

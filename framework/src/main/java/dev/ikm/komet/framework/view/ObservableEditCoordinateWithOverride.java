@@ -119,6 +119,33 @@ int authorNid, int defaultModuleNid, int promotionPathNid, int destinationModule
         promotionPathProperty().setValue(coordinateWithOverrides.getPromotionPath());
     }
 
+    /**
+     * Re-pins only the edit dimensions that genuinely differ between {@code resolved} (the captured override)
+     * and {@code baseline} (the inherited parent at capture time), leaving every matching dimension inherited
+     * so it keeps tracking the current parent. The delta-aware inverse of {@link #setOverrides}
+     * (IKE-Network/ike-issues#745).
+     *
+     * @param resolved the captured resolved edit coordinate
+     * @param baseline the inherited parent edit coordinate at capture time
+     */
+    public void setOverridesFromDelta(EditCoordinateRecord resolved, EditCoordinateRecord baseline) {
+        if (resolved.getAuthorNidForChanges() != baseline.getAuthorNidForChanges()) {
+            authorForChangesProperty().setValue(resolved.getAuthorForChanges());
+        }
+        if (resolved.getDefaultModuleNid() != baseline.getDefaultModuleNid()) {
+            defaultModuleProperty().setValue(resolved.getDefaultModule());
+        }
+        if (resolved.getDestinationModuleNid() != baseline.getDestinationModuleNid()) {
+            destinationModuleProperty().setValue(resolved.getDestinationModule());
+        }
+        if (resolved.getDefaultPathNid() != baseline.getDefaultPathNid()) {
+            defaultPathProperty().setValue(resolved.getDefaultPath());
+        }
+        if (resolved.getPromotionPathNid() != baseline.getPromotionPathNid()) {
+            promotionPathProperty().setValue(resolved.getPromotionPath());
+        }
+    }
+
     @Override
     public EditCoordinateRecord getOriginalValue() {
         return EditCoordinateRecord.make(authorForChangesProperty().getOriginalValue(),
