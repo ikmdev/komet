@@ -78,8 +78,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
@@ -674,13 +674,8 @@ public class PatternDetailsController {
             DragAndDropType dropType = getDragAndDropType(entityFacade);
             node.setUserData(new DragAndDropInfo(dropType, entityFacade.publicId()));
 
-            // Generate the drag image using DragImageMaker
-            DragImageMaker dragImageMaker = new DragImageMaker(node);
-            Image dragImage = dragImageMaker.getDragImage();
-            // Set the drag image on the dragboard
-            if (dragImage != null) {
-                dragboard.setDragView(dragImage);
-            }
+            // Standard-size drag image with canonical cursor placement (right of the identicon).
+            KonceptDragSource.setDragView(dragboard, node);
 
             // Place the content on the dragboard
             dragboard.setContent(content);

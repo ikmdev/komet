@@ -15,12 +15,19 @@
  */
 package dev.ikm.komet.framework.dnd;
 
+import dev.ikm.komet.framework.StyleClasses;
 import dev.ikm.komet.framework.controls.KonceptBadge;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * The single concept drag-source convention, shared by the {@link KonceptBadge} atom and by
@@ -59,44 +66,127 @@ public final class KonceptDragSource {
     }
 
     /**
-     * Starts a concept drag from {@code source}, using {@code badge} as the drag image. For the
-     * cell case — where the press lands on the cell (which swallows the first click) rather than
-     * the badge — pass the cell as {@code source} and the cell's badge graphic as {@code badge}.
+     * Wires an arbitrary identicon-bearing node (for example a transcript chip that is not a
+     * {@link KonceptBadge}) as a concept drag source, with the same canonical placement.
      *
-     * @param source the node the drag gesture starts on; must be attached to a scene
-     * @param badge  the badge providing the drag image and identicon geometry
+     * @param source the node to drag; its leading identicon positions the drag cursor
      * @param nid    the concept nid the drag carries
-     * @param event  the {@code DRAG_DETECTED} event; consumed on success
+     */
+    public static void install(Node source, int nid) {
+        source.setOnDragDetected(event -> start(source, source, nid, event));
+    }
+
+    /**
+     * Starts a concept drag from {@code source}, using {@code dragImageNode} as the drag image. For
+     * the cell case — where the press lands on the cell (which swallows the first click) rather than
+     * the badge — pass the cell as {@code source} and the cell's badge graphic as
+     * {@code dragImageNode}.
+     *
+     * @param source        the node the drag gesture starts on; must be attached to a scene
+     * @param dragImageNode the node providing the drag image and identicon geometry
+     * @param nid           the concept nid the drag carries
+     * @param event         the {@code DRAG_DETECTED} event; consumed on success
      * @return {@code true} if the drag started, {@code false} if a node was detached
      */
-    public static boolean start(Node source, KonceptBadge badge, int nid, MouseEvent event) {
-        if (source.getScene() == null || badge.getScene() == null) {
+    public static boolean start(Node source, Node dragImageNode, int nid, MouseEvent event) {
+        if (source.getScene() == null || dragImageNode.getScene() == null) {
             return false;
         }
         Dragboard dragboard = source.startDragAndDrop(TransferMode.COPY);
-        setBadgeDragView(dragboard, badge);
+        setDragView(dragboard, dragImageNode);
         dragboard.setContent(KometClipboard.forConcept(nid));
         event.consume();
         return true;
     }
 
     /**
-     * Places the drag view so the cursor sits just right of the identicon with its tip on the
-     * image's bottom border. {@link DragImageMaker} rescales every drag image to
+     * Places the canonical drag view for {@code node} on {@code dragboard}: the standard-height
+     * image from {@link DragImageMaker}, with the cursor just to the right of the node's identicon
+     * and its tip on the image's bottom border, so the identicon detail and the dragged label stay
+     * fully visible. This is the single placement convention every concept/component drag source
+     * should use — call it in place of a bare {@code dragboard.setDragView(image)}.
+     *
+     * <p>{@link DragImageMaker} rescales every image to
      * {@link DragImageMaker#STANDARD_DRAG_IMAGE_HEIGHT}, so the identicon's local right edge is
      * scaled by the same factor to find the cursor's x in image space.
      *
      * @param dragboard the active dragboard
-     * @param badge     the badge being dragged
+     * @param node      the node providing the drag image and identicon geometry
      */
-    private static void setBadgeDragView(Dragboard dragboard, KonceptBadge badge) {
-        Image image = new DragImageMaker(badge).getDragImage();
+    public static void setDragView(Dragboard dragboard, Node node) {
+        Image image = new DragImageMaker(node).getDragImage();
         if (image == null) {
             return;
         }
-        double badgeHeight = badge.getLayoutBounds().getHeight();
-        double scale = badgeHeight > 0 ? DragImageMaker.STANDARD_DRAG_IMAGE_HEIGHT / badgeHeight : 1.0;
-        double cursorX = (badge.identiconRightEdge() * scale) + CURSOR_GAP;
-        dragboard.setDragView(image, cursorX, DragImageMaker.STANDARD_DRAG_IMAGE_HEIGHT);
+        dragboard.setDragView(image, cursorX(node), DragImageMaker.STANDARD_DRAG_IMAGE_HEIGHT);
+    }
+
+    /**
+     * The canonical cursor x (image space) for {@code node}: the identicon's right edge scaled to
+     * the standard drag-image height, plus the gap. Package-private so the placement convention can
+     * be unit-tested without simulating a full drag gesture.
+     *
+     * @param node the node being dragged
+     * @return the cursor's x offset within the drag image
+     */
+    static double cursorX(Node node) {
+        double height = node.getLayoutBounds().getHeight();
+        double scale = height > 0 ? DragImageMaker.STANDARD_DRAG_IMAGE_HEIGHT / height : 1.0;
+        return (identiconRightEdge(node) * scale) + CURSOR_GAP;
+    }
+
+    /**
+     * The identicon's right-edge x within {@code node}'s local coordinates, used to place the drag
+     * cursor just to its right. A {@link KonceptBadge} reports it directly; for any other node the
+     * leading {@link ImageView} (preferring one tagged {@code koncept-identicon}) is located and its
+     * right edge mapped into {@code node}-local space. Returns {@code 0} when no identicon is found,
+     * so the cursor falls a small gap in from the left edge — still uniform, never on the identicon.
+     *
+     * @param node the node being dragged
+     * @return the identicon's right-edge x in {@code node}-local coordinates, or {@code 0}
+     */
+    private static double identiconRightEdge(Node node) {
+        if (node instanceof KonceptBadge badge) {
+            return badge.identiconRightEdge();
+        }
+        ImageView identicon = findIdenticon(node);
+        if (identicon == null || identicon == node) {
+            return 0;
+        }
+        Bounds inScene = identicon.localToScene(identicon.getLayoutBounds());
+        if (inScene == null) {
+            return 0;
+        }
+        Bounds inNode = node.sceneToLocal(inScene);
+        return inNode == null ? 0 : Math.max(0, inNode.getMaxX());
+    }
+
+    /**
+     * The leading identicon image within {@code root}: an {@link ImageView} carrying the
+     * {@code koncept-identicon} style class if present, otherwise the first {@link ImageView}
+     * found in a breadth-first traversal.
+     *
+     * @param root the node being dragged
+     * @return the identicon image view, or {@code null} if the node holds no image
+     */
+    private static ImageView findIdenticon(Node root) {
+        ImageView firstImageView = null;
+        Deque<Node> queue = new ArrayDeque<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            Node current = queue.poll();
+            if (current instanceof ImageView imageView) {
+                if (imageView.getStyleClass().contains(StyleClasses.KONCEPT_IDENTICON.toString())) {
+                    return imageView;
+                }
+                if (firstImageView == null) {
+                    firstImageView = imageView;
+                }
+            }
+            if (current instanceof Parent parentNode) {
+                queue.addAll(parentNode.getChildrenUnmodifiable());
+            }
+        }
+        return firstImageView;
     }
 }

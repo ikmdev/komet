@@ -1,8 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
 
-import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -347,13 +347,8 @@ public class ConceptPatternNavController {
             // Here, KometClipboard is used to encapsulate the entity's unique identifier (nid)
             KometClipboard content = new KometClipboard(EntityFacade.make(entity.nid()));
 
-            // Generate the drag image using DragImageMaker
-            DragImageMaker dragImageMaker = new DragImageMaker(node);
-            Image dragImage = dragImageMaker.getDragImage();
-            // Set the drag image on the dragboard
-            if (dragImage != null) {
-                dragboard.setDragView(dragImage);
-            }
+            // Standard-size drag image with canonical cursor placement (right of the identicon).
+            KonceptDragSource.setDragView(dragboard, node);
 
             // Place the content on the dragboard
             dragboard.setContent(content);

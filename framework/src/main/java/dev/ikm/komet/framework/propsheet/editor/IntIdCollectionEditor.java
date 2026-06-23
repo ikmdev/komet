@@ -31,7 +31,7 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import org.controlsfx.property.editor.PropertyEditor;
 import dev.ikm.komet.framework.PseudoClasses;
-import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdCollection;
@@ -95,8 +95,7 @@ public abstract class IntIdCollectionEditor<T extends IntIdCollection> implement
         if (!listView.getSelectionModel().getSelectedIndices().isEmpty()) {
             int nid = listView.getSelectionModel().getSelectedIndices().get(0);
             Dragboard db = listView.startDragAndDrop(TransferMode.COPY);
-            DragImageMaker dragImageMaker = new DragImageMaker(listView);
-            db.setDragView(dragImageMaker.getDragImage());
+            KonceptDragSource.setDragView(db, listView);
             KometClipboard content = new KometClipboard((Entity) Entity.getFast(nid));
             db.setContent(content);
         }
@@ -227,10 +226,8 @@ public abstract class IntIdCollectionEditor<T extends IntIdCollection> implement
         private void handleDragDetected(MouseEvent event) {
             LOG.debug("Drag detected: " + event);
 
-            DragImageMaker dragImageMaker = new DragImageMaker(this);
             Dragboard db = startDragAndDrop(TransferMode.COPY);
-
-            db.setDragView(dragImageMaker.getDragImage());
+            KonceptDragSource.setDragView(db, this);
 
             KometClipboard content = new KometClipboard((Entity) Entity.getFast(entityNid));
             db.setContent(content);

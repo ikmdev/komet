@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -161,7 +162,12 @@ public class ConceptTile extends HBox {
                 }
                 clipboardContent.putString(treeItem.toString());
                 dragboard.setContent(clipboardContent);
-                dragboard.setDragView(ConceptNavigatorUtils.getTileSnapshot(this));
+                // Standard-size drag image with canonical cursor placement (right of the identicon).
+                // Guard the scene first: DragImageMaker shows an error dialog if the node is detached,
+                // where the old getTileSnapshot returned null silently.
+                if (getScene() != null) {
+                    KonceptDragSource.setDragView(dragboard, this);
+                }
                 cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
                 treeViewSkin.setDraggingAllowed(true);
             }

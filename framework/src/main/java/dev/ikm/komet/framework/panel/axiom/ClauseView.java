@@ -29,8 +29,8 @@ import dev.ikm.komet.framework.Dialogs;
 import dev.ikm.komet.framework.MenuItemWithText;
 import dev.ikm.komet.framework.StyleClasses;
 import dev.ikm.komet.framework.controls.EntityLabel;
-import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.docbook.DocBook;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
@@ -612,10 +612,8 @@ public class ClauseView {
     private void handleDragDetected(MouseEvent event) {
         LOG.debug("Drag detected: " + event);
 
-        DragImageMaker dragImageMaker = new DragImageMaker(titleLabel);
         Dragboard db = titleLabel.startDragAndDrop(TransferMode.COPY);
-
-        db.setDragView(dragImageMaker.getDragImage());
+        KonceptDragSource.setDragView(db, titleLabel);
 
         int conceptNid = switch (LogicalOperatorsForVertex.get(axiomVertex)) {
             case CONCEPT -> {

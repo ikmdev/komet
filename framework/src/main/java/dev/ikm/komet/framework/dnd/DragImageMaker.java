@@ -18,14 +18,16 @@ package dev.ikm.komet.framework.dnd;
 
 import dev.ikm.komet.framework.Dialogs;
 import javafx.css.PseudoClass;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
-import javafx.scene.transform.Transform;
+import javafx.scene.transform.Affine;
 
 import java.util.Objects;
 
@@ -52,8 +54,14 @@ import java.util.Objects;
  */
 public class DragImageMaker implements DraggableWithImage {
 
-    /** Every drag image is rendered at this standard height (px), regardless of the source node's size. */
-    private static final double STANDARD_DRAG_IMAGE_HEIGHT = 32.0;
+    /**
+     * The single, authoritative drag-image height (px) for every concept/component drag in the app.
+     * Each image produced by {@link #getDragImage()} is rescaled to this height (aspect preserved),
+     * regardless of the source node's size — so a concept dragged from a dense field view and the
+     * same concept dragged from a card look identical. Adjust here to change drag-glyph size
+     * everywhere; do not introduce per-site sizes.
+     */
+    public static final double STANDARD_DRAG_IMAGE_HEIGHT = 32.0;
     private static final PseudoClass SNAPSHOT_PSEUDO_CLASS = PseudoClass.getPseudoClass("snapshot");
 
     /**
@@ -93,53 +101,67 @@ public class DragImageMaker implements DraggableWithImage {
             return null;
         }
 
-        // Change the pseudo-class state to 'snapshot'
+        // Change the pseudo-class state to 'snapshot' (adds the drag-affordance border in CSS).
         node.pseudoClassStateChanged(SNAPSHOT_PSEUDO_CLASS, true);
-
-        // Apply CSS and layout pass to the node to ensure the snapshot is accurate
         node.applyCss();
 
-        Parent parent = node.getParent();
-        if (parent != null) {
+        // Render the drag image from the node at its UNCONSTRAINED preferred size, not its on-screen
+        // (possibly width-constrained, ellipsized) size. A concept dragged from a narrow pane must
+        // show its full label and full border — identical to the same concept dragged from a wide
+        // list — otherwise the right edge (and the snapshot border) is clipped. The node is briefly
+        // resized to its preferred size and restored within this one synchronous call, so the live
+        // scene never repaints the resized state and nothing flickers.
+        final Region region = (node instanceof Region r) ? r : null;
+        final Parent parent = node.getParent();
+        final double restoreWidth = region != null ? region.getWidth() : 0;
+        final double restoreHeight = region != null ? region.getHeight() : 0;
+        if (region != null) {
+            final double prefWidth = region.prefWidth(-1);
+            final double prefHeight = region.prefHeight(prefWidth);
+            region.resize(prefWidth, prefHeight);
+            region.layout();
+        } else if (parent != null) {
             parent.layout();
         }
 
-        final double layoutWidth = node.getLayoutBounds().getWidth();
-        final double layoutHeight = node.getLayoutBounds().getHeight();
+        // Use the full visual bounds (boundsInLocal), which include the snapshot border and any
+        // effect, so no edge is clipped — layoutBounds would exclude an outset border/effect.
+        final Bounds visual = node.getBoundsInLocal();
 
-        // Scale the snapshot so every drag image is a STANDARD height regardless of the source node's
-        // size — otherwise the image is the size of whatever was dragged (large title rows drag big,
-        // tiny axiom rows drag small). Width follows proportionally, preserving the aspect ratio.
-        final double targetScale = layoutHeight > 0 ? STANDARD_DRAG_IMAGE_HEIGHT / layoutHeight : 1.0;
-        final double scaledWidth = layoutWidth * targetScale;
-        final double scaledHeight = layoutHeight * targetScale;
+        // Rescale so every drag image is a STANDARD height regardless of the source node's size —
+        // otherwise the image is the size of whatever was dragged (large title rows drag big, tiny
+        // axiom rows drag small). Width follows proportionally, preserving the aspect ratio.
+        final double targetScale = visual.getHeight() > 0 ? STANDARD_DRAG_IMAGE_HEIGHT / visual.getHeight() : 1.0;
+        final int width = (int) Math.max(Math.ceil(visual.getWidth() * targetScale), 1);
+        final int height = (int) Math.max(Math.ceil(visual.getHeight() * targetScale), 1);
 
-        // Ensure dimensions are at least 1 pixel
-        final int width = (int) Math.max(Math.ceil(scaledWidth), 1);
-        final int height = (int) Math.max(Math.ceil(scaledHeight), 1);
+        // Scale to the standard height, then translate so the (possibly negative) top-left of the
+        // visual bounds lands on the image origin — captures borders/effects on every edge.
+        final Affine transform = new Affine();
+        transform.appendTranslation(-visual.getMinX() * targetScale, -visual.getMinY() * targetScale);
+        transform.appendScale(targetScale, targetScale);
 
-        // Create SnapshotParameters with the standard-size scaling
-        SnapshotParameters snapshotParameters = new SnapshotParameters();
-        snapshotParameters.setTransform(Transform.scale(targetScale, targetScale));
+        final SnapshotParameters snapshotParameters = new SnapshotParameters();
+        snapshotParameters.setTransform(transform);
         snapshotParameters.setFill(Color.TRANSPARENT);
 
-        // Create a WritableImage with the scaled dimensions
-        WritableImage writableImage = new WritableImage(width, height);
+        final WritableImage writableImage = new WritableImage(width, height);
+        final Image snapshotImage = node.snapshot(snapshotParameters, writableImage);
 
-        // Take the snapshot image of the node
-        Image snapshotImage = node.snapshot(snapshotParameters, writableImage);
-
-        // Revert the pseudo-class state
         node.pseudoClassStateChanged(SNAPSHOT_PSEUDO_CLASS, false);
 
-        // Calculate dragOffset
-        double widthDifference = node.getBoundsInParent().getWidth() - node.getLayoutBounds().getWidth();
-        double widthAdjustment = 0;
-        if (widthDifference > 0) {
-            widthDifference = Math.rint(widthDifference);
-            widthAdjustment = widthDifference / 2;
+        // Legacy horizontal offset (used only by the deprecated DraggableWithImage placement path;
+        // KonceptDragSource computes its own cursor placement and ignores this).
+        dragOffset = Math.max(0, visual.getMinX() * targetScale);
+
+        // Restore the on-screen layout: undo the temporary preferred-size resize.
+        if (region != null) {
+            region.resize(restoreWidth, restoreHeight);
+            region.layout();
         }
-        dragOffset = node.getBoundsInParent().getMinX() + widthAdjustment;
+        if (parent != null) {
+            parent.requestLayout();
+        }
 
         return snapshotImage;
     }
