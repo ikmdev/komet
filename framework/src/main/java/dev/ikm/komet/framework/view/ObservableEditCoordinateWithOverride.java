@@ -53,7 +53,7 @@ public class ObservableEditCoordinateWithOverride
             this.destinationModuleProperty().setValue(newValue.getDestinationModule());
         }
         if (!this.defaultPathProperty().isOverridden()) {
-            this.defaultPathProperty().setValue(newValue.getPromotionPath());
+            this.defaultPathProperty().setValue(newValue.getDefaultPath());
         }
         if (!this.promotionPathProperty().isOverridden()) {
             this.promotionPathProperty().setValue(newValue.getPromotionPath());
