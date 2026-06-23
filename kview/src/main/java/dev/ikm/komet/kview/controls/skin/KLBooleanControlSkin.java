@@ -31,6 +31,8 @@ public class KLBooleanControlSkin extends SkinBase<KLBooleanControl> {
         titleLabel.textProperty().bind(control.titleProperty());
         titleLabel.getStyleClass().add("editable-title-label");
 
+        comboBox.getStyleClass().add("boolean-combo-box");
+
         addMenuItemsToComboBox();
         comboBox.valueProperty().bindBidirectional(control.valueProperty());
 
