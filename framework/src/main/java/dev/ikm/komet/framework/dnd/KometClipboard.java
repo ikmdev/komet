@@ -19,6 +19,7 @@ package dev.ikm.komet.framework.dnd;
 
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PrimitiveData;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
@@ -161,13 +162,36 @@ public class KometClipboard extends ClipboardContent {
 
     /**
      * Builds clipboard content for the concept with the given nid — a convenience over
-     * {@link #forProxy(EntityProxy)} for the common concept drag.
+     * {@link #forProxy(EntityProxy)} for the common concept drag. Resolves the concept's
+     * description from the store (see {@link #forConcept(int, String)} for why a description
+     * is required).
      *
      * @param nid the concept nid
      * @return clipboard content carrying the concept proxy
      */
     public static KometClipboard forConcept(int nid) {
-        return forProxy(EntityProxy.Concept.make(nid));
+        return forConcept(nid, null);
+    }
+
+    /**
+     * Builds clipboard content for a concept nid with a known description (e.g. a badge's
+     * resolved label). A concept proxy MUST carry a non-null description: {@code toXmlFragment()}
+     * escapes the description for XML, and a {@code null} one throws there. The supplied
+     * description is used when present; otherwise the store's default text is resolved; the nid
+     * string is the final fallback so the payload is always well-formed.
+     *
+     * @param nid         the concept nid
+     * @param description the concept's display label, or {@code null} to resolve from the store
+     * @return clipboard content carrying the concept proxy
+     */
+    public static KometClipboard forConcept(int nid, String description) {
+        String resolved = (description != null && !description.isBlank())
+                ? description
+                : PrimitiveData.text(nid);
+        if (resolved == null || resolved.isBlank()) {
+            resolved = Integer.toString(nid);
+        }
+        return forProxy(EntityProxy.Concept.make(resolved, PrimitiveData.publicId(nid)));
     }
 
     /**

@@ -17,8 +17,7 @@ package dev.ikm.komet.framework.controls;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.StyleClasses;
-import dev.ikm.komet.framework.dnd.DragImageMaker;
-import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIds;
@@ -26,7 +25,6 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -36,9 +34,6 @@ import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
@@ -177,7 +172,7 @@ public class KonceptBadge extends HBox {
         pseudoClassStateChanged(INACTIVE, inactive);
 
         if (nid != UNKNOWN_NID) {
-            setOnDragDetected(this::handleDragDetected);
+            KonceptDragSource.install(this, nid);
         }
         installTooltip();
     }
@@ -239,13 +234,20 @@ public class KonceptBadge extends HBox {
     }
 
     /**
-     * Sets the identicon edge length in pixels.
+     * Sets the identicon edge length in pixels, regenerating the raster at that size so the
+     * identicon stays crisp rather than upscaling the default {@value #DEFAULT_ICON_SIZE}px raster
+     * (the {@link ImageView} has smoothing disabled). A larger badge therefore renders a sharp
+     * identicon, not a blurred one.
      *
      * @param pixels the identicon width and height in pixels
      */
     public void setIconSize(double pixels) {
         identicon.setFitWidth(pixels);
         identicon.setFitHeight(pixels);
+        if (publicId != null && pixels > 0) {
+            int px = (int) Math.round(pixels);
+            identicon.setImage(Identicon.generateIdenticon(publicId, px, px).getImage());
+        }
     }
 
     /**
@@ -301,12 +303,15 @@ public class KonceptBadge extends HBox {
         Tooltip.install(this, new Tooltip(tip.toString()));
     }
 
-    private void handleDragDetected(MouseEvent event) {
-        DragImageMaker dragImageMaker = new DragImageMaker(this);
-        Dragboard db = startDragAndDrop(TransferMode.COPY);
-        db.setDragView(dragImageMaker.getDragImage());
-        EntityHandle.get(nid).ifPresent(entity -> db.setContent(new KometClipboard(entity)));
-        event.consume();
+    /**
+     * The right edge of the identicon within this badge, in local (unscaled) coordinates —
+     * used by {@link KonceptDragSource} to place the drag-view cursor just to the right of the
+     * identicon so its detail stays fully visible.
+     *
+     * @return the identicon's right-edge x in badge-local coordinates
+     */
+    public double identiconRightEdge() {
+        return identicon.getBoundsInParent().getMaxX();
     }
 
     private static String resolveName(int nid, ViewProperties viewProperties) {
