@@ -108,6 +108,14 @@ public abstract class AbstractHostCard extends CardBlueprint {
      */
     private ViewCoordinateRecord pendingViewBaseline;
 
+    /**
+     * Coordinate-context parent seeded by the host window, preferred over the scene-graph {@code KL_CONTEXT}
+     * walk in {@link #establishViewContext()}. The journal hands this in so the card inherits the journal's
+     * data-bearing view rather than silently falling back to the default knowledge-base view when, at the
+     * deferred bind pulse, its pane is not yet a live descendant of the workspace pane carrying the context.
+     */
+    private KlContext seedParentContext;
+
     /** Journal topic used by content presenters for event coordination. */
     private UUID journalTopic;
     /** Optional close action set by the host; when present, the chrome shows a close control. */
@@ -523,6 +531,18 @@ public abstract class AbstractHostCard extends CardBlueprint {
      ******************************************************************************/
 
     /**
+     * Seeds the coordinate-context parent the host window supplies (the journal's live view), used in
+     * preference to the scene-graph {@code KL_CONTEXT} walk in {@link #establishViewContext()} so the card
+     * inherits the journal's data-bearing coordinate rather than the default knowledge-base view. The host
+     * must call this before {@link #knowledgeLayoutBind()}.
+     *
+     * @param parentContext the host's coordinate context; ignored when null
+     */
+    public void setSeedParentContext(KlContext parentContext) {
+        this.seedParentContext = parentContext;
+    }
+
+    /**
      * Establishes this card's coordinate context, builds the header, and realizes content. Invoked from
      * {@link #knowledgeLayoutBind()} once the card is in the composed scene graph — <em>not</em> at
      * construction, because the card discovers its container's coordinate from the scene graph.
@@ -545,7 +565,13 @@ public abstract class AbstractHostCard extends CardBlueprint {
         // Loose coupling: discover the container's context by walking the scene graph for the nearest
         // KL_CONTEXT (the journal publishes its JournalKlContext on the workspace pane). The card binds
         // to "whatever context is above me" — chapter, Surface, anything — never a hard-wired host view.
-        KlContext parentContext = KlView.context(fxObject());
+        // Prefer the host-seeded parent (the journal's view) over the scene-graph walk: at the deferred bind
+        // pulse the card pane may not yet be a live descendant of the workspace pane that carries KL_CONTEXT,
+        // so the walk can silently fall back to the default knowledge-base view. The seed is the journal's
+        // overridable view, so the per-card override and the live coordinate cascade are preserved.
+        KlContext parentContext = (seedParentContext != null)
+                ? seedParentContext
+                : KlView.context(fxObject());
         this.cardViewContext = ViewContext.createChildOf(this, parentContext, "Dynamic card view");
         this.cardViewProperties = cardViewContext.viewProperties();
         this.cardView = cardViewProperties.nodeView();

@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.klwindows;
 
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.view.journal.JournalKlContext;
 import dev.ikm.komet.layout_engine.host.AbstractHostCard;
 import dev.ikm.komet.layout_engine.host.KlCardProvider;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -115,6 +116,12 @@ public final class CardKlWindow extends AbstractChapterKlWindow<Pane> {
         setWindowState(windowState);
 
         this.card = card;
+        // Seed the card's coordinate-context parent with the journal's live view, so it inherits the
+        // data-bearing journal coordinate instead of falling back to the default knowledge-base view when its
+        // pane is not yet a workspace scene-graph descendant at the deferred bind pulse. ToolCard does the
+        // equivalent via setToolViewProperties; this is the card-window analogue, and fixes both the create
+        // and restore paths because both run this constructor.
+        this.card.setSeedParentContext(new JournalKlContext(viewProperties.nodeView()));
         // The chrome's close control delegates to the window's close action (wired by the journal's
         // setupWorkspaceWindow), so closing a card removes it from the workspace.
         this.card.setOnCloseRequest(() -> getOnClose().ifPresent(Runnable::run));

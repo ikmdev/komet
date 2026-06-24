@@ -3449,6 +3449,12 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-color: -Primary-05;
     -fx-border-radius: 0;
     -fx-border-width: 4;
+    /* Outset the stroke by its own width so it is drawn OUTSIDE the layout bounds and
+       boundsInLocal grows to include it on every edge. With insets 0 the border is painted
+       inside the box, boundsInLocal does not grow, and the right stroke (flush with the right
+       bound) is shaved off by the drag-image downscale + ceil — leaving the border open on the
+       right. The negative inset closes it without enlarging the live layout. (ike-issues#638) */
+    -fx-border-insets: -4;
 }
 
 /* The main title of the Pattern that shows in the top of the window */

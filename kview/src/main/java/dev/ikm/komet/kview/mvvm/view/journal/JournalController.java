@@ -122,6 +122,7 @@ import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
+import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
@@ -145,6 +146,8 @@ import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.ProxyFactory;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -179,6 +182,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -498,6 +502,9 @@ public class JournalController {
         // initialize drag and drop for search results of next gen search
         setupDragNDrop(workspace);
 
+        // Drop a concept on the Navigator launcher icon to open the navigator and navigate to that concept.
+        setupNavigatorIconDropTarget();
+
         // Hide the progress toggle button by default
         progressToggleButton.setVisible(false);
 
@@ -717,6 +724,70 @@ public class JournalController {
             event.setDropCompleted(success);
             event.consume();
         });
+    }
+
+    /**
+     * Wires the Navigator launcher toggle as a concept drop target: dropping a concept on it opens the
+     * navigator panel (if not already open) and navigates it to that concept, by publishing the same
+     * {@link ShowNavigationalPanelEvent} the search results use. The icon tints while a droppable concept
+     * is over it.
+     */
+    private void setupNavigatorIconDropTarget() {
+        navigatorToggleButton.setOnDragOver(event -> {
+            if (conceptNidFromDragboard(event.getDragboard()) != null) {
+                event.acceptTransferModes(TransferMode.COPY);
+                setNavigatorIconHighlight(true);
+            }
+            event.consume();
+        });
+        navigatorToggleButton.setOnDragExited(event -> {
+            setNavigatorIconHighlight(false);
+            event.consume();
+        });
+        navigatorToggleButton.setOnDragDropped(event -> {
+            Integer nid = conceptNidFromDragboard(event.getDragboard());
+            boolean success = false;
+            if (nid != null) {
+                journalEventBus.publish(journalTopic, new ShowNavigationalPanelEvent(navigatorToggleButton,
+                        ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT,
+                        EntityProxy.Concept.make(nid)));
+                success = true;
+            }
+            setNavigatorIconHighlight(false);
+            event.setDropCompleted(success);
+            event.consume();
+        });
+    }
+
+    /** The dropped concept's nid from a Komet concept dragboard, or null if it carries no concept. */
+    private static Integer conceptNidFromDragboard(Dragboard dragboard) {
+        if (dragboard.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
+            try {
+                EntityProxy.Concept proxy = ProxyFactory.fromXmlFragment(
+                        (String) dragboard.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
+                return proxy.nid();
+            } catch (RuntimeException ignored) {
+                // malformed payload; treat as no concept
+            }
+        }
+        return null;
+    }
+
+    /** The Navigator launcher's inline style captured before the drop highlight, restored after. */
+    private String navigatorIconOriginalStyle;
+
+    /** Toggles a drop-target tint on the Navigator launcher icon, preserving its existing inline style. */
+    private void setNavigatorIconHighlight(boolean on) {
+        if (on) {
+            if (navigatorIconOriginalStyle == null) {
+                navigatorIconOriginalStyle = navigatorToggleButton.getStyle();
+            }
+            navigatorToggleButton.setStyle((navigatorIconOriginalStyle == null ? "" : navigatorIconOriginalStyle)
+                    + "; -fx-background-color: #00b4d8;");
+        } else {
+            navigatorToggleButton.setStyle(navigatorIconOriginalStyle == null ? "" : navigatorIconOriginalStyle);
+            navigatorIconOriginalStyle = null;
+        }
     }
 
     /**
