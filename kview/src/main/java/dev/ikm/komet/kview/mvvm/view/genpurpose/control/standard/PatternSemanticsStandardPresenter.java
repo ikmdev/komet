@@ -10,6 +10,7 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.AbstractPatternSemantics
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
+import dev.ikm.komet.layout.editor.property.StandardPatternProperties;
 import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -93,7 +94,10 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
             }
         }
 
-        semanticViewControl.numberColumnsProperty().bind(editorPatternModel.numberColumnsProperty());
+        // The column count is a Standard-factory property; bind it from the pattern's factory property set.
+        if (editorPatternModel.getFactoryProperties() instanceof StandardPatternProperties standardProperties) {
+            semanticViewControl.numberColumnsProperty().bind(standardProperties.numberColumnsProperty());
+        }
 
         return semanticViewControl;
     }

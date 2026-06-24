@@ -8,7 +8,6 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
@@ -57,10 +56,10 @@ public class FieldViewControl extends GridBaseControl {
     }
 
     // -- parent pattern
-    private ReadOnlyObjectWrapper<PatternViewControl> parentPattern = new ReadOnlyObjectWrapper<>();
-    public PatternViewControl getParentPattern() { return parentPattern.get(); }
-    public ReadOnlyObjectProperty<PatternViewControl> parentPatternProperty() { return parentPattern.getReadOnlyProperty(); }
-    void setParentPattern(PatternViewControl parentSection) { this.parentPattern.set(parentSection); }
+    private ReadOnlyObjectWrapper<PatternStandardEditorControl> parentPattern = new ReadOnlyObjectWrapper<>();
+    public PatternStandardEditorControl getParentPattern() { return parentPattern.get(); }
+    public ReadOnlyObjectProperty<PatternStandardEditorControl> parentPatternProperty() { return parentPattern.getReadOnlyProperty(); }
+    void setParentPattern(PatternStandardEditorControl parentSection) { this.parentPattern.set(parentSection); }
 
     // -- title
     private final StringProperty title = new SimpleStringProperty();

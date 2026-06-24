@@ -28,8 +28,10 @@ import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
@@ -51,6 +53,7 @@ import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
@@ -122,8 +125,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
@@ -161,6 +166,12 @@ public class GenPurposeDetailsController {
      * Given a SemanticEntity what's its associated Semantic Control.
      */
     private final Map<SemanticEntity<SemanticEntityVersion>, SemanticStandardControl> semanticEntityToSemanticView = new HashMap<>();
+
+    /**
+     * Sections currently being refreshed by a reference-component cascade. Used as a re-entrancy guard
+     * so a malformed (cyclic) reference chain can't drive infinite recursion (see komet-desktop #3).
+     */
+    private final Set<EditorSectionModel> refreshingSections = new HashSet<>();
 
     private final Tooltip publishTooltip = new Tooltip();
 
@@ -235,6 +246,9 @@ public class GenPurposeDetailsController {
         // Setup Properties Bump out view
         setupProperties();
 
+        // When the user submits an edited STAMP from the properties panel, refresh the header STAMP.
+        propertiesController.getStampFormViewModel().getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED)
+                .subscribe(isConfirmed -> onStampConfirmedOrSubmitted(isConfirmed));
 
         // Assign the tooltip to the StackPane (container of Publish button)
         setupTooltipForDisabledButton(savePatternButton);
@@ -354,9 +368,10 @@ public class GenPurposeDetailsController {
 
         updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
 
-//        isUpdatingStampSelection = true;
-//        stampViewControl.setSelected(propertyToggle.isSelected());
-//        isUpdatingStampSelection = false;
+        // Keep the header STAMP control's selected state in sync with the properties panel toggle.
+        isUpdatingStampSelection = true;
+        stampViewControl.setSelected(propertyToggle.isSelected());
+        isUpdatingStampSelection = false;
 
         EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(propertyToggle, eventEvtType));
     }
@@ -391,13 +406,16 @@ public class GenPurposeDetailsController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
-//            if (CREATE.equals(patternViewModel.getPropertyValue(MODE))) {
-//                EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.CREATE_STAMP));
-//            } else {
-//                EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
-//            }
-//        } else {
-//            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
+            // The reference component always exists in a Knowledge Layout window, so editing its STAMP
+            // always adds a new version (ADD_STAMP). Guard against a window opened without one.
+            EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+            if (refComponent != null) {
+                EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
+                        new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
+            }
+        } else {
+            EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
+                    new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
         }
     }
 
@@ -552,13 +570,12 @@ public class GenPurposeDetailsController {
             return;
         }
 
-//        updateStampControlFromViewModel();
-
-//        if (patternViewModel.getPropertyValue(MODE).equals(EDIT)) {
-//            patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
-//        }
-
-        stampViewControl.setDisable(true);
+        // A new STAMP version was committed for the reference component; refresh the header from the
+        // committed latest version. The control stays enabled so the STAMP can be edited again.
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        if (refComponent != null) {
+            updateStampControl(refComponent);
+        }
     }
 
     public ViewProperties getViewProperties() {
@@ -755,6 +772,11 @@ public class GenPurposeDetailsController {
         sectionModelToTitledPaneGridPane.put(sectionModel, titledPaneGridPane);
 
         sectionModelToTitledPane.put(sectionModel, titledPane);
+
+        // When this section's resolved reference component changes, cascade to any section that anchors
+        // on it (i.e. whose reference pattern is displayed in this section), so downstream sections in a
+        // reference-component chain re-resolve and re-populate (see komet-desktop #3).
+        titledPane.selectedReferenceComponentProperty().subscribe(() -> refreshSectionsAnchoredOn(sectionModel));
 
         return titledPane;
     }
@@ -1033,46 +1055,125 @@ public class GenPurposeDetailsController {
         genPurposeViewModel.setPropertyValue(ViewModelKey.COMPOSER, composer);
     }
 
+    /**
+     * The component a section's rows resolve against: the window's reference component for a section
+     * with no reference pattern, otherwise the component currently selected for that section. This is
+     * what lets reference-component chains resolve to arbitrary depth — a downstream section anchors on
+     * the resolved component of the section that owns its reference pattern, rather than always anchoring
+     * on the window component (see komet-desktop #3).
+     */
+    private EntityFacade resolveSectionReferenceComponent(EditorSectionModel section) {
+        if (section == null || section.getReferenceComponent() == null) {
+            return genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        }
+        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(section);
+        return titledPane == null ? null : titledPane.getSelectedReferenceComponent();
+    }
+
     private List<EntityFacade> getReferenceComponentsToUse(EditorPatternModel sectionReferenceComponent) {
         List<EntityFacade> refComponents = new ArrayList<>();
 
-        EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
-        if (windowRefComponent == null) {
-            // No reference concept for this window yet — nothing to resolve, and never return a
-            // list containing null (callers treat a non-empty list as having a usable component).
-            return refComponents;
-        }
-
         if (sectionReferenceComponent != null) {
-            EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), sectionReferenceComponent.getNid(),
-                    (SemanticEntity<SemanticEntityVersion> semantic) -> {
-                        refComponents.add(semantic);
-                    }
-            );
+            // Anchor on the resolved reference component of the section that owns the reference pattern,
+            // so chains where one section references another section's semantic resolve to any depth.
+            EntityFacade base = resolveSectionReferenceComponent(sectionReferenceComponent.getParentSection());
+            if (base != null) {
+                EntityService.get().forEachSemanticForComponentOfPattern(base.nid(), sectionReferenceComponent.getNid(),
+                        (SemanticEntity<SemanticEntityVersion> semantic) -> {
+                            refComponents.add(semantic);
+                        }
+                );
+            }
         } else {
-            refComponents.add(windowRefComponent);
+            // No section reference pattern — the section resolves directly against the window component.
+            // Never return a list containing null (callers treat a non-empty list as having a usable component).
+            EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+            if (windowRefComponent != null) {
+                refComponents.add(windowRefComponent);
+            }
         }
 
         return refComponents;
     }
 
     private List<EntityFacade> getSemanticsOfPattern(EditorPatternModel editorPatternModel) {
-        EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
-
         List<EntityFacade> refComponents = new ArrayList<>();
 
-        if (windowRefComponent == null) {
-            // No reference concept for this window — no semantics to resolve.
+        // Anchor on the resolved reference component of the section that owns this reference pattern, so
+        // a section referencing another section's semantic populates its options (see komet-desktop #3).
+        EntityFacade base = resolveSectionReferenceComponent(editorPatternModel.getParentSection());
+        if (base == null) {
             return refComponents;
         }
 
-        EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), editorPatternModel.getNid(),
+        EntityService.get().forEachSemanticForComponentOfPattern(base.nid(), editorPatternModel.getNid(),
                 (SemanticEntity<SemanticEntityVersion> semantic) -> {
                     refComponents.add(semantic);
                 }
         );
 
         return refComponents;
+    }
+
+    /**
+     * Visits every section in this window (the main section and all additional sections).
+     */
+    private void forEachSection(Consumer<EditorSectionModel> action) {
+        if (editorWindowModel == null) {
+            return;
+        }
+        action.accept(editorWindowModel.getMainSection());
+        editorWindowModel.getAdditionalSections().forEach(action);
+    }
+
+    /**
+     * Re-resolves every section whose reference pattern lives in {@code changedSection}, so a change to
+     * that section's reference component propagates down the reference-component chain. Each refreshed
+     * section's own selection change drives the next hop, so the cascade naturally reaches arbitrary
+     * depth (see komet-desktop #3).
+     */
+    private void refreshSectionsAnchoredOn(EditorSectionModel changedSection) {
+        forEachSection(section -> {
+            EditorPatternModel referencePattern = section.getReferenceComponent();
+            if (referencePattern != null && referencePattern.getParentSection() == changedSection) {
+                refreshSectionReferenceComponents(section);
+            }
+        });
+    }
+
+    /**
+     * Recomputes a section's reference-component options against its (now-changed) upstream anchor,
+     * preserving the prior selection when it survives and otherwise defaulting to the first option.
+     * Re-selecting re-populates the section's rows and cascades to its own downstream sections.
+     */
+    private void refreshSectionReferenceComponents(EditorSectionModel section) {
+        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(section);
+        // Skip when the section isn't built yet (initial load resolves it directly) or it is already
+        // mid-refresh (guards against a cyclic reference chain recursing forever).
+        if (titledPane == null || !refreshingSections.add(section)) {
+            return;
+        }
+
+        List<EntityFacade> options = getSemanticsOfPattern(section.getReferenceComponent());
+        EntityFacade previousSelection = titledPane.getSelectedReferenceComponent();
+
+        titledPane.getReferenceComponents().setAll(options);
+
+        EntityFacade newSelection = null;
+        if (previousSelection != null) {
+            for (EntityFacade option : options) {
+                if (option.nid() == previousSelection.nid()) {
+                    newSelection = option;
+                    break;
+                }
+            }
+        }
+        if (newSelection == null && !options.isEmpty()) {
+            newSelection = options.getFirst();
+        }
+
+        titledPane.setSelectedReferenceComponent(newSelection);
+        refreshingSections.remove(section);
     }
 
     private void onSectionPatternsChanged(ListChangeListener.Change<? extends EditorPatternModel> change) {

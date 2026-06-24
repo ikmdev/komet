@@ -23,7 +23,7 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
 
         // listen to semantics ObservableList
         control.getSemantics().addListener(this::onSemanticsChanged);
-        control.getSemantics().forEach(this::addSemantic);
+        rebuildSemantics();
 
         control.editingSemanticProperty().subscribe(semanticInEditMode -> onEditingSemanticChanged(semanticInEditMode));
         control.previewingSemanticProperty().subscribe(semanticInPreviewMode -> onPreviewingSemanticChanged(semanticInPreviewMode));
@@ -56,23 +56,20 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
     }
 
     private void onSemanticsChanged(ListChangeListener.Change<? extends SemanticStandardControl> change) {
-        while (change.next()) {
-            if (change.wasAdded()) {
-                change.getAddedSubList().forEach(this::addSemantic);
-            }
-            if (change.wasRemoved()) {
-                change.getRemoved().forEach(semanticViewControl -> {
-                    semanticsContainer.getChildren().remove((semanticViewControl));
-                });
-            }
-        }
+        // Rebuild the whole container from the current list rather than mutating it incrementally.
+        // This isn't the most performant solution so if there are performance issues we can revisit.
+        rebuildSemantics();
     }
 
-    private void addSemantic(SemanticStandardControl semanticViewControl) {
-        if(getSkinnable().getSemantics().indexOf(semanticViewControl) > 0) {
-            Separator separator = new Separator();
-            semanticsContainer.getChildren().add(separator);
+    private void rebuildSemantics() {
+        semanticsContainer.getChildren().clear();
+
+        var semantics = getSkinnable().getSemantics();
+        for (int i = 0; i < semantics.size(); i++) {
+            if (i > 0) {
+                semanticsContainer.getChildren().add(new Separator());
+            }
+            semanticsContainer.getChildren().add(semantics.get(i));
         }
-        semanticsContainer.getChildren().add(semanticViewControl);
     }
 }

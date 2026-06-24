@@ -2,8 +2,8 @@ package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
-import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
-import dev.ikm.komet.kleditorapp.view.control.PatternViewControlBase;
+import dev.ikm.komet.kleditorapp.view.control.PatternStandardEditorControl;
+import dev.ikm.komet.kleditorapp.view.control.PatternEditorControlBase;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -35,12 +35,12 @@ public class SelectionManager {
 
     private void setupSectionView(SectionViewControl sectionViewControl) {
         sectionViewControl.getPatterns().forEach(this::setupPatternForSelection);
-        sectionViewControl.getPatterns().addListener((ListChangeListener<? super PatternViewControlBase>) sectionChange -> onPatternViewsChanged(sectionChange));
+        sectionViewControl.getPatterns().addListener((ListChangeListener<? super PatternEditorControlBase>) sectionChange -> onPatternViewsChanged(sectionChange));
 
         setupListenersForSelection(sectionViewControl);
     }
 
-    private void onPatternViewsChanged(ListChangeListener.Change<? extends PatternViewControlBase> change) {
+    private void onPatternViewsChanged(ListChangeListener.Change<? extends PatternEditorControlBase> change) {
         while (change.next()) {
             if (change.wasAdded()) {
                 change.getAddedSubList().forEach(this::setupPatternForSelection);
@@ -48,11 +48,11 @@ public class SelectionManager {
         }
     }
 
-    private void setupPatternForSelection(PatternViewControlBase pattern) {
+    private void setupPatternForSelection(PatternEditorControlBase pattern) {
         setupListenersForSelection(pattern);
         // Only the standard pattern view has selectable field tiles; the table renders fields as columns.
-        if (pattern instanceof PatternViewControl patternViewControl) {
-            patternViewControl.getFields().forEach(this::setupListenersForSelection);
+        if (pattern instanceof PatternStandardEditorControl patternStandardEditorControl) {
+            patternStandardEditorControl.getFields().forEach(this::setupListenersForSelection);
         }
     }
 

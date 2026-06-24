@@ -721,7 +721,7 @@
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 0px, 0px, 0px, 0px;
-    -fx-padding: 2 19 2 12;
+    -fx-padding: 4 19 4 12;
     -fx-font-family: "Noto Sans";
     -fx-font-size: 14px;
     -fx-font-style: normal;
@@ -745,6 +745,18 @@
     width: 152;
     -fx-pref-width: width;
     -fx-max-width: width;
+}
+
+/* A nav button whose label wraps to multiple lines (e.g. "Knowledge Layout Editor").
+   Let the height follow the wrapped text instead of the fixed -default-button-height, so the
+   text is never clipped at any display scale or for any label length. This works only because
+   the label is given a definite wrap width in the FXML (knowledgeLayoutButtonLabel) — otherwise
+   JavaFX cannot measure the wrapped height and the button balloons. -default-button-height stays
+   the minimum so it lines up with the single-line buttons when the text happens to fit. */
+.side-bar > .toggle-button.multiline-nav-button,
+.side-bar.show-text > .toggle-button.multiline-nav-button {
+    -fx-pref-height: -1;
+    -fx-max-height: -1;
 }
 
 .side-bar .toggle-button .icon-container {

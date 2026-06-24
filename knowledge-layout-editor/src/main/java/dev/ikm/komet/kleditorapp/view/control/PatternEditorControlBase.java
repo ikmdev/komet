@@ -14,17 +14,17 @@ import javafx.scene.layout.VBox;
 /**
  * Common base for the editor-side representations of a pattern. Holds the parts shared by every
  * representation — the title, its visibility, the parent-section link and the titled container — while
- * leaving the body to subclasses: {@link PatternViewControl} fills it with an author-sized grid of field
- * tiles, {@link PatternTableViewControl} with an actual table. Subclasses install their body via
+ * leaving the body to subclasses: {@link PatternStandardEditorControl} fills it with an author-sized grid of field
+ * tiles, {@link PatternTableEditorControl} with an actual table. Subclasses install their body via
  * {@link #setContent(Node)}.
  */
-public abstract class PatternViewControlBase extends GridBaseControl {
+public abstract class PatternEditorControlBase extends GridBaseControl {
     public static final PseudoClass TITLE_VISIBLE = PseudoClass.getPseudoClass("title-visible");
 
     private final VBox patternContainer = new VBox();
     private final Label patternTitle = new Label();
 
-    protected PatternViewControlBase() {
+    protected PatternEditorControlBase() {
         patternContainer.getStyleClass().add("pattern-container");
         patternTitle.getStyleClass().add("pattern-title");
 

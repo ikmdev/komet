@@ -26,7 +26,6 @@ import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampAddSubmitFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampCreateFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
@@ -59,8 +58,10 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.Confi
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELD_INDEX;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.REF_COMPONENT;
+import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
 
 public class GenPurposePropertiesController {
 
@@ -103,8 +104,6 @@ public class GenPurposePropertiesController {
 
     private StampAddSubmitFormViewModel stampAddSubmitFormViewModel;
 
-    private StampCreateFormViewModel stampCreateFormViewModel;
-
     private JFXNode<Pane, StampFormController> stampJFXNode;
 
     @InjectViewModel
@@ -116,58 +115,49 @@ public class GenPurposePropertiesController {
 
     private Subscriber<StampEvent> addStampSubscriber;
 
-    private Subscriber<StampEvent> createStampSubscriber;
-
     private JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
 
     private JFXNode<Pane, ReferenceComponentController> referenceComponentJfxNode;
 
     public GenPurposePropertiesController() {
-        this.stampAddSubmitFormViewModel = new StampAddSubmitFormViewModel(SEMANTIC);
-        this.stampCreateFormViewModel = new StampCreateFormViewModel(SEMANTIC);
+        // The header STAMP belongs to the window's reference component, which is a Concept.
+        this.stampAddSubmitFormViewModel = new StampAddSubmitFormViewModel(CONCEPT);
     }
 
     @FXML
     private void initialize() {
         clearView();
 
-//        setupShowingStampForm();
+        setupShowingStampForm();
         setupShowingPanelHandlers();
 //        setupShowReferencePanelHandlers();
     }
 
-//    private void setupShowingStampForm() {
-//        // Load Stamp add View Panel (FXML & Controller)
-//        Config stampConfig = new Config(StampFormController.class.getResource(StampFormController.STAMP_FORM_FXML_FILE));
-//        stampJFXNode = FXMLMvvmLoader.make(stampConfig);
-//
-//        // -- add stamp
-//        addStampSubscriber = evt -> {
-//            if (evt.getEventType() == ADD_STAMP) {
-//                stampJFXNode.controller().init(stampAddSubmitFormViewModel);
-//                this.stampAddSubmitFormViewModel.update(genEditingViewModel.getPropertyValue(ViewModelKey.SEMANTIC),
-//                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
-//
-//                contentBorderPane.setCenter(stampJFXNode.node());
-//
-//                addEditButton.setSelected(true);
-//            }
-//        };
-//        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, addStampSubscriber);
+    private void setupShowingStampForm() {
+        // Load Stamp add View Panel (FXML & Controller)
+        Config stampConfig = new Config(StampFormController.class.getResource(StampFormController.STAMP_FORM_FXML_FILE));
+        stampJFXNode = FXMLMvvmLoader.make(stampConfig);
 
-//        // -- create stamp
-//        createStampSubscriber = evt -> {
-//            if (evt.getEventType() == CREATE_STAMP) {
-//                stampJFXNode.controller().init(stampCreateFormViewModel);
-//                this.stampCreateFormViewModel.update(genEditingViewModel.getPropertyValue(ViewModelKey.SEMANTIC),
-//                        genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
-//
-//                contentBorderPane.setCenter(stampJFXNode.node());
-//                addEditButton.setSelected(true);
-//            }
-//        };
-//        EvtBusFactory.getDefaultEvtBus().subscribe(genEditingViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, createStampSubscriber);
-//    }
+        // -- add stamp: edit the STAMP of the window's reference component (which always exists in a
+        //    Knowledge Layout window), adding a new committed version. There is no CREATE flow here
+        //    because the reference component is never created from this window.
+        addStampSubscriber = evt -> {
+            if (evt.getEventType() == ADD_STAMP) {
+                EntityFacade refComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
+                if (refComponent == null) {
+                    return;
+                }
+                stampJFXNode.controller().init(stampAddSubmitFormViewModel);
+                stampAddSubmitFormViewModel.update(refComponent,
+                        genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), genPurposeViewModel.getViewProperties());
+
+                contentBorderPane.setCenter(stampJFXNode.node());
+
+                addEditButton.setSelected(true);
+            }
+        };
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, addStampSubscriber);
+    }
 
     //Refers to Add Reference Component
 //    private void setupShowReferencePanelHandlers() {
@@ -310,26 +300,17 @@ public class GenPurposePropertiesController {
         return propertiesTabsPane;
     }
 
-//    public void updateModel(EntityFacade newSemantic) {
-//        this.newSemantic = newSemantic;
-//
-//        if (newSemantic != null && stampAddSubmitFormViewModel != null) {
-//            setStampFormViewModel(stampAddSubmitFormViewModel);
-//        } else if (newSemantic == null && stampCreateFormViewModel != null) {
-//            setStampFormViewModel(stampCreateFormViewModel);
-//        }
-//        stampFormViewModel.get().update(newSemantic, genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
-//    }
-
     /***************************************************************************
      *                                                                         *
      * Properties                                                              *
      *                                                                         *
      **************************************************************************/
 
-    // -- stamp form view model
-//    private final ObjectProperty<StampFormViewModelBase> stampFormViewModel = new SimpleObjectProperty<>();
-//    public StampFormViewModelBase getStampFormViewModel() { return stampFormViewModel.get(); }
-//    public ObjectProperty<StampFormViewModelBase> stampFormViewModelProperty() { return stampFormViewModel; }
-//    public void setStampFormViewModel(StampFormViewModelBase stampFormViewModel) { this.stampFormViewModel.set(stampFormViewModel); }
+    /**
+     * The STAMP form view model used to edit the reference component's STAMP. The details controller
+     * reads this to refresh the header STAMP once the user submits a new version.
+     */
+    public StampFormViewModelBase getStampFormViewModel() {
+        return stampAddSubmitFormViewModel;
+    }
 }

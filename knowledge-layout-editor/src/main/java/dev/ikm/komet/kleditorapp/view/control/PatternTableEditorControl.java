@@ -10,15 +10,15 @@ import javafx.scene.control.TableView;
  * {@code PatternSemanticsTableControl}). Its body is an actual {@link TableView} whose columns are the
  * pattern's fields, so it reads like the journal-side table (each semantic becomes a row).
  * <p>
- * Unlike {@link PatternViewControl} it holds no {@link FieldViewControl}s: a table renders its fields as
+ * Unlike {@link PatternStandardEditorControl} it holds no {@link FieldViewControl}s: a table renders its fields as
  * column headers, not as editable field tiles.
  */
-public class PatternTableViewControl extends PatternViewControlBase {
+public class PatternTableEditorControl extends PatternEditorControlBase {
     public static final String DEFAULT_STYLE_CLASS = "pattern-table-view";
 
     private final TableView<Object> tableView = new TableView<>();
 
-    PatternTableViewControl() {
+    PatternTableEditorControl() {
         tableView.getStyleClass().add("pattern-table");
 
         setContent(tableView);

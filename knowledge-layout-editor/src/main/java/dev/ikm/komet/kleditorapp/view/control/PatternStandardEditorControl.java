@@ -13,12 +13,12 @@ import javafx.collections.ObservableList;
  * an {@link EditorGridPane} of {@link FieldViewControl}s whose column count is author-controlled via
  * {@link #numberColumnsProperty()}.
  */
-public class PatternViewControl extends PatternViewControlBase {
+public class PatternStandardEditorControl extends PatternEditorControlBase {
     public static final String DEFAULT_STYLE_CLASS = "pattern-view";
 
     private final EditorGridPane gridPane = new EditorGridPane();
 
-    PatternViewControl() {
+    PatternStandardEditorControl() {
         Bindings.bindContent(gridPane.getItems(), getFields());
 
         fields.addListener(this::onFieldsChanged);
