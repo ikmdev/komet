@@ -195,6 +195,78 @@ public class KometClipboard extends ClipboardContent {
     }
 
     /**
+     * Builds the eager clipboard map for the component with the given nid — the centralized source-side
+     * builder for a Koncept drag <em>or</em> copy (ike-issues#638). JavaFX's {@link ClipboardContent} is
+     * an eager map, so every representation is populated up front and the drop side simply picks the
+     * format it wants — there is no per-target conversion. The map carries the component's <em>actual</em>
+     * base type (concept, description or other semantic, pattern, or stamp) and, when that is not already
+     * a concept, the <em>resolved</em> {@link #KOMET_CONCEPT_PROXY} (a description's referenced concept),
+     * so a concept drop target always finds a concept. The same instance serves a {@link Dragboard} or
+     * the system {@code Clipboard}.
+     *
+     * @param nid the component nid — a concept, a description/semantic, a pattern, or a stamp
+     * @return the eager clipboard content for {@code nid}
+     */
+    public static KometClipboard forComponent(int nid) {
+        KometClipboard content = new KometClipboard();
+        Entity<?> entity = loadedEntity(nid);
+        if (entity != null) {
+            content.addEntity(entity);
+        }
+        // A concept drop target always wants a concept: resolve a semantic to its referenced concept;
+        // for an unloaded nid fall back to treating it as a concept (the prior unconditional-payload
+        // guarantee). A loaded pattern or stamp is genuinely not a concept, so carries no concept proxy.
+        if (!content.containsKey(KOMET_CONCEPT_PROXY)) {
+            OptionalInt conceptNid = (entity == null) ? OptionalInt.of(nid) : resolvedConceptNid(nid);
+            conceptNid.ifPresent(cn -> content.put(KOMET_CONCEPT_PROXY, conceptProxyXml(cn)));
+        }
+        content.put(DataFormat.PLAIN_TEXT, PrimitiveData.publicId(nid).toString());
+        return content;
+    }
+
+    /** The loaded entity for a nid, or {@code null} when it is not currently loadable. */
+    private static Entity<?> loadedEntity(int nid) {
+        try {
+            return EntityHandle.get(nid).entity().orElse(null);
+        } catch (RuntimeException notLoadable) {
+            return null;
+        }
+    }
+
+    /**
+     * The concept nid a koncept drag should also carry: a concept resolves to itself; a description — or
+     * any semantic — resolves to the concept it references (following {@code referencedComponentNid} until
+     * a concept is reached); a pattern, stamp, or unresolvable component yields empty (it is not a concept).
+     *
+     * @param nid the dragged component nid
+     * @return the referenced concept nid, or {@link OptionalInt#empty()} when none
+     */
+    private static OptionalInt resolvedConceptNid(int nid) {
+        int current = nid;
+        for (int hop = 0; hop < 8; hop++) {
+            Entity<?> entity = loadedEntity(current);
+            if (entity instanceof ConceptEntity<?>) {
+                return OptionalInt.of(current);
+            }
+            if (entity instanceof SemanticEntity<?> semantic) {
+                current = semantic.referencedComponentNid();
+            } else {
+                return OptionalInt.empty();
+            }
+        }
+        return OptionalInt.empty();
+    }
+
+    /** A well-formed {@link #KOMET_CONCEPT_PROXY} XML fragment for a concept nid (description required). */
+    private static String conceptProxyXml(int conceptNid) {
+        String description = PrimitiveData.text(conceptNid);
+        if (description == null || description.isBlank()) {
+            description = Integer.toString(conceptNid);
+        }
+        return EntityProxy.Concept.make(description, PrimitiveData.publicId(conceptNid)).toXmlFragment();
+    }
+
+    /**
      * The atom clipboard format for a proxy's concrete component type, falling back to
      * {@link #COMPONENT_DRAG_FORMAT} for a bare (untyped) {@link EntityProxy}.
      *
@@ -246,20 +318,57 @@ public class KometClipboard extends ClipboardContent {
      */
     public static OptionalInt conceptNid(Dragboard dragboard) {
         if (dragboard != null && dragboard.hasContent(KOMET_CONCEPT_PROXY)) {
-            return conceptNidFromProxyXml((String) dragboard.getContent(KOMET_CONCEPT_PROXY));
+            return nidFromProxyXml((String) dragboard.getContent(KOMET_CONCEPT_PROXY));
         }
         return OptionalInt.empty();
     }
 
     /**
-     * Decodes a concept nid from a {@link #KOMET_CONCEPT_PROXY} XML fragment — the testable
-     * seam behind {@link #conceptNid(Dragboard)}. Returns empty for a {@code null}, blank,
-     * or unparseable fragment rather than throwing.
+     * The semantic nid carried by a Komet dragboard (e.g. a dragged description), or empty when the
+     * board has no {@link #KOMET_SEMANTIC_PROXY}. The drop-side request for the semantic itself,
+     * alongside {@link #conceptNid(Dragboard)} for the concept a description describes.
      *
-     * @param proxyXmlFragment the serialized concept proxy
-     * @return the concept nid, or {@link OptionalInt#empty()}
+     * @param dragboard the drag-and-drop content; may be {@code null}
+     * @return the dropped semantic nid, or {@link OptionalInt#empty()}
      */
-    static OptionalInt conceptNidFromProxyXml(String proxyXmlFragment) {
+    public static OptionalInt semanticNidFrom(Dragboard dragboard) {
+        if (dragboard != null && dragboard.hasContent(KOMET_SEMANTIC_PROXY)) {
+            return nidFromProxyXml((String) dragboard.getContent(KOMET_SEMANTIC_PROXY));
+        }
+        return OptionalInt.empty();
+    }
+
+    /** The base-type proxy formats {@link #entityNidFrom(Dragboard)} reads, in precedence order. */
+    private static final List<DataFormat> ATOM_PROXY_FORMATS =
+            List.of(KOMET_CONCEPT_PROXY, KOMET_SEMANTIC_PROXY, KOMET_PATTERN_PROXY, KOMET_STAMP_PROXY);
+
+    /**
+     * The nid of whatever base-type proxy the dragboard carries — concept, semantic, pattern, or stamp,
+     * in that precedence — the drop-side request for "the component as dragged", with no conversion.
+     *
+     * @param dragboard the drag-and-drop content; may be {@code null}
+     * @return the dropped component nid, or {@link OptionalInt#empty()}
+     */
+    public static OptionalInt entityNidFrom(Dragboard dragboard) {
+        if (dragboard != null) {
+            for (DataFormat format : ATOM_PROXY_FORMATS) {
+                if (dragboard.hasContent(format)) {
+                    return nidFromProxyXml((String) dragboard.getContent(format));
+                }
+            }
+        }
+        return OptionalInt.empty();
+    }
+
+    /**
+     * Decodes a component nid from any base-type proxy XML fragment (concept, semantic, pattern, or
+     * stamp) — the testable seam behind {@link #conceptNid(Dragboard)} and the other typed readers.
+     * Returns empty for a {@code null}, blank, or unparseable fragment rather than throwing.
+     *
+     * @param proxyXmlFragment the serialized component proxy
+     * @return the component nid, or {@link OptionalInt#empty()}
+     */
+    static OptionalInt nidFromProxyXml(String proxyXmlFragment) {
         if (proxyXmlFragment == null || proxyXmlFragment.isBlank()) {
             return OptionalInt.empty();
         }

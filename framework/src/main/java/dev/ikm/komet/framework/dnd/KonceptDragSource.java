@@ -59,7 +59,7 @@ public final class KonceptDragSource {
      * Wires {@code badge} as a concept drag source. Safe to call from the badge constructor.
      *
      * @param badge the badge to drag
-     * @param nid   the concept nid the drag carries
+     * @param nid   the koncept's nid; a description is resolved to the concept it describes
      */
     public static void install(KonceptBadge badge, int nid) {
         badge.setOnDragDetected(event -> start(badge, badge, nid, event));
@@ -70,7 +70,7 @@ public final class KonceptDragSource {
      * {@link KonceptBadge}) as a concept drag source, with the same canonical placement.
      *
      * @param source the node to drag; its leading identicon positions the drag cursor
-     * @param nid    the concept nid the drag carries
+     * @param nid    the koncept's nid; a description is resolved to the concept it describes
      */
     public static void install(Node source, int nid) {
         source.setOnDragDetected(event -> start(source, source, nid, event));
@@ -84,7 +84,7 @@ public final class KonceptDragSource {
      *
      * @param source        the node the drag gesture starts on; must be attached to a scene
      * @param dragImageNode the node providing the drag image and identicon geometry
-     * @param nid           the concept nid the drag carries
+     * @param nid           the koncept's nid; a description is resolved to the concept it describes
      * @param event         the {@code DRAG_DETECTED} event; consumed on success
      * @return {@code true} if the drag started, {@code false} if a node was detached
      */
@@ -94,7 +94,7 @@ public final class KonceptDragSource {
         }
         Dragboard dragboard = source.startDragAndDrop(TransferMode.COPY);
         setDragView(dragboard, dragImageNode);
-        dragboard.setContent(KometClipboard.forConcept(nid));
+        dragboard.setContent(KometClipboard.forComponent(nid));
         event.consume();
         return true;
     }

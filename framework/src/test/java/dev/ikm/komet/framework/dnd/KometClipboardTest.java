@@ -100,25 +100,25 @@ class KometClipboardTest {
     }
 
     @Nested
-    @DisplayName("conceptNidFromProxyXml is null/blank/malformed-safe")
+    @DisplayName("nidFromProxyXml is null/blank/malformed-safe")
     class Decoder {
 
         @Test
         @DisplayName("null fragment → empty")
         void nullIsEmpty() {
-            assertEquals(OptionalInt.empty(), KometClipboard.conceptNidFromProxyXml(null));
+            assertEquals(OptionalInt.empty(), KometClipboard.nidFromProxyXml(null));
         }
 
         @Test
         @DisplayName("blank fragment → empty")
         void blankIsEmpty() {
-            assertEquals(OptionalInt.empty(), KometClipboard.conceptNidFromProxyXml("   "));
+            assertEquals(OptionalInt.empty(), KometClipboard.nidFromProxyXml("   "));
         }
 
         @Test
         @DisplayName("unparseable fragment → empty (not thrown)")
         void malformedIsEmpty() {
-            assertEquals(OptionalInt.empty(), KometClipboard.conceptNidFromProxyXml("not-a-proxy"));
+            assertEquals(OptionalInt.empty(), KometClipboard.nidFromProxyXml("not-a-proxy"));
         }
     }
 }
