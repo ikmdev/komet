@@ -240,6 +240,7 @@
                             <!-- Add JavaFX arguments for headless testing -->
                             <argLine>
                                 --enable-preview
+                                --add-modules jdk.incubator.vector
                                 -Dtestfx.headless=true
                                 --add-opens=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED
                                 --add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
