@@ -255,7 +255,7 @@ public class DynamicCard extends AbstractHostCard {
         applyColumns(sectionGrid, Math.max(1, section.numberColumnsProperty().get()));
 
         renderPatterns(section, sectionGrid);
-        SupplementalAreaRenderer.renderInto(section, sectionGrid, cardViewProperties, referenceComponent);
+        SupplementalAreaRenderer.renderInto(section, sectionGrid.getChildren(), cardViewProperties, referenceComponent);
 
         TitledPane sectionPane = new TitledPane();
         sectionPane.textProperty().bind(section.nameProperty());
