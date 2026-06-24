@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalViewProperties;
 
 /**
  * A factory able to create a semantic edit window (entity chapter type window) to be managed and displayed
@@ -53,7 +52,8 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
     }
 
     @SuppressWarnings("removal")
-    public GenEditingKlWindow restore(WindowSettings windowSettings, KometPreferences preferences) {
+    public GenEditingKlWindow restore(WindowSettings windowSettings, KometPreferences preferences,
+                                      ViewProperties journalViewProperties) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
         try {
             // Load window state from preferences
@@ -63,7 +63,9 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
             Optional<UUID> journalTopicOpt = preferences.getUuid(JOURNAL_TOPIC);
             if (journalTopicOpt.isPresent()) {
                 final UUID journalTopic = journalTopicOpt.get();
-                final ViewProperties viewProperties = getJournalViewProperties(windowSettings, journalTopic);
+                // Live journal view, not a preferences reconstruction, so the restored window tracks the
+                // live coordinate/author like a new window (ike-issues#756).
+                final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
                 final int entityNid = windowState.getEntityNid();

@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalViewProperties;
 
 /**
  * A factory for creating {@link LidrKlWindow} instances, which display LIDR (Logical Instrumentation,
@@ -55,7 +54,8 @@ public class LidrKlWindowFactory implements EntityKlWindowFactory {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    public LidrKlWindow restore(WindowSettings windowSettings, KometPreferences preferences) {
+    public LidrKlWindow restore(WindowSettings windowSettings, KometPreferences preferences,
+                                ViewProperties journalViewProperties) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
         try {
             // Load window state from preferences
@@ -65,7 +65,9 @@ public class LidrKlWindowFactory implements EntityKlWindowFactory {
             Optional<UUID> journalTopicOpt = preferences.getUuid(JOURNAL_TOPIC);
             if (journalTopicOpt.isPresent()) {
                 final UUID journalTopic = journalTopicOpt.get();
-                final ViewProperties viewProperties = getJournalViewProperties(windowSettings, journalTopic);
+                // Live journal view, not a preferences reconstruction, so the restored window tracks the
+                // live coordinate/author like a new window (ike-issues#756).
+                final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
                 final int entityNid = windowState.getEntityNid();

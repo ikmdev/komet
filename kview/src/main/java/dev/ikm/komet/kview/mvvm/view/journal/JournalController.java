@@ -1724,7 +1724,10 @@ public class JournalController {
                         // tracks journal-coordinate changes like a freshly created one.
                         setupWorkspaceWindow(DynamicCardKlWindow.restore(windowPreferences, journalViewProperties));
                     } else {
-                        setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences));
+                        // Pass the live journalViewProperties (like the card branch above) so a restored
+                        // entity window derives its coordinate from the live journal, not a reconstruction
+                        // from preferences — keeping the logged-in author (ike-issues#756).
+                        setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences, journalViewProperties));
                     }
                 } catch (Exception e) {
                     LOG.error("Error restoring window: {}", windowId, e);
