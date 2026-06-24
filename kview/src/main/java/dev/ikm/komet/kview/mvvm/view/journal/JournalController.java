@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.kview.mvvm.view.journal;
 
+import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
+import static dev.ikm.komet.framework.dnd.KometClipboard.decodeUuids;
 import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
 import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.JOURNAL_VIEW;
@@ -39,9 +41,9 @@ import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SE
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SHOWING;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.JOURNAL_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
@@ -80,6 +82,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.layout.area.KlToolArea;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.KometIcon;
@@ -97,6 +100,8 @@ import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.AbstractChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.ToolAreaChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
@@ -127,6 +132,7 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
@@ -215,7 +221,7 @@ public class JournalController {
      * Top level journal root pane for Scene.
      */
     @FXML
-    private BorderPane journalBorderPane;
+    private BorderPane journalRootPane;
 
     @FXML
     private KLWorkspace workspace;
@@ -373,6 +379,8 @@ public class JournalController {
         // Initialize journal topic (UUID) value
         journalTopic = journalViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
 
+        journalRootPane.getProperties().put(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
+
         // Initialize the journal window view, which is provided in the WindowSettings
         windowView = journalViewModel.getPropertyValue(JournalViewModel.PARENT_VIEW_COORDINATES);
         journalViewProperties = windowView.makeOverridableViewProperties("JournalController.filterOptionsPopup");
@@ -426,10 +434,10 @@ public class JournalController {
                 createConceptWindow(conceptFacade, NID_TEXT, null);
             } else if (entityFacade instanceof PatternFacade patternFacade) {
                 // TODO is this used??  The makePatternWindowEventSubscriber below is handling the event to create the Pattern Window
-                createPatternWindow(patternFacade, journalViewCoordAsParent.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.PatternFacade"));
+                createPatternWindow(patternFacade, journalViewProperties);
             } else if (entityFacade instanceof SemanticFacade semanticFacade) {
                 // TODO is this used??  The makeGenEditWindowEventSubscriber below is handling the event to create the Semantic (GenEdit) Window
-                createGenEditWindow(semanticFacade, journalViewCoordAsParent.makeOverridableViewProperties("JournalController.makeComponentWindowEventSubscriber.SemanticFacade"), false);
+                createGenEditWindow(semanticFacade, journalViewProperties, false);
             }
         };
         journalEventBus.subscribe(journalTopic, MakeConceptWindowEvent.class, makeComponentWindowEventSubscriber);
@@ -510,6 +518,39 @@ public class JournalController {
 
             windowTitleToMenuItem.put(windowTitle, windowMenuItem);
         }
+
+        // Discover summonable tool areas (e.g. the Claude Assistant) contributed via
+        // ServiceLoader as KlToolArea.Factory, and add a "+"-menu entry that opens each as
+        // a tool window in the workspace. This is the next-gen replacement for legacy
+        // KometNodeFactory panels, which are not reachable from the Journal workspace.
+        boolean anyToolArea = false;
+        for (var toolAreaFactory : PluggableService.load(KlToolArea.Factory.class)) {
+            anyToolArea = true;
+            MenuItem toolMenuItem = new MenuItem(toolAreaFactory.toolName());
+            toolMenuItem.setOnAction(actionEvent -> createToolAreaWindow(toolAreaFactory));
+            addContextMenu.getItems().add(toolMenuItem);
+        }
+        if (anyToolArea) {
+            addContextMenuSeparator.setVisible(true);
+        }
+    }
+
+    /**
+     * Creates a tool-area window (e.g. the Claude Assistant) and adds it to the workspace.
+     * The area is hosted in a non-entity {@link ToolAreaChapterKlWindow} and is handed the
+     * journal view so its in-process tools query the coordinate the user currently sees.
+     *
+     * @param toolAreaFactory the discovered tool-area factory selected from the "+" menu
+     */
+    private void createToolAreaWindow(KlToolArea.Factory toolAreaFactory) {
+        ViewProperties viewProperties =
+                windowView.makeOverridableViewProperties("JournalController.createToolAreaWindow");
+        final java.util.UUID windowTopic = java.util.UUID.randomUUID();
+        final KometPreferences windowPreferences = KlWindowPreferencesUtils.getWindowPreferences(
+                journalTopic, windowTopic, ToolAreaChapterKlWindow.TOOL_WINDOW_TYPE);
+        ToolAreaChapterKlWindow toolWindow = new ToolAreaChapterKlWindow(
+                windowTopic, toolAreaFactory, viewProperties, windowPreferences);
+        setupWorkspaceWindow(toolWindow);
     }
 
     private String formatPromptText(String title) {
@@ -616,6 +657,9 @@ public class JournalController {
                                 .filter(db -> db.hasContent(MULTI_PARENT_GRAPH_DRAG_FORMAT))
                                 .map(db -> handleUuidArrayDrag(db, MULTI_PARENT_GRAPH_DRAG_FORMAT)))
                         .or(() -> dragboardOpt
+                                .filter(db -> db.hasContent(COMPONENT_DRAG_FORMAT))
+                                .map(db -> handleComponentDrag(db)))
+                        .or(() -> dragboardOpt
                                 .filter(Dragboard::hasString)
                                 .map(db -> handleEntityDrag(event.getGestureSource())))
                         .orElse(false);
@@ -625,6 +669,27 @@ public class JournalController {
             event.setDropCompleted(success);
             event.consume();
         });
+    }
+
+    /**
+     * Handles a drop when the Data Format is COMPONENT_DRAG_FORMAT,
+     * which encodes a PublicId as a comma-separated list of UUID strings.
+     *
+     * @param dragboard the dragboard containing the encoded UUID string
+     * @return true if a window was successfully created
+     */
+    private boolean handleComponentDrag(Dragboard dragboard) {
+        String encoded = (String) dragboard.getContent(COMPONENT_DRAG_FORMAT);
+        if (encoded == null || encoded.isBlank()) {
+            return false;
+        }
+        try {
+            createWindowFromUuids(decodeUuids(encoded));
+            return true;
+        } catch (IllegalArgumentException e) {
+            LOG.error("Failed to parse UUIDs from ComponentItemNode drag: {}", encoded, e);
+            return false;
+        }
     }
 
     /**
@@ -731,7 +796,7 @@ public class JournalController {
      */
     public void createWindowFromUuids(UUID[] uuids) {
         createAndSetupWindow(() -> createFromUuids(uuids, journalTopic,
-                        windowView.makeOverridableViewProperties("JournalController.createWindowFromUuids"), null),
+                        journalViewProperties, null),
                 "UUID array: " + ArrayIterate.makeString(uuids));
     }
 
@@ -746,7 +811,7 @@ public class JournalController {
         if (entityFacade == null) return;
 
         createAndSetupWindow(() -> createFromEntity(entityFacade, journalTopic,
-                        windowView.makeOverridableViewProperties("JournalController.createWindowFromEntity"), null),
+                        journalViewProperties, null),
                 "entity " + entityFacade.nid());
     }
 
@@ -909,8 +974,8 @@ public class JournalController {
         return settingsToggleButton;
     }
 
-    public BorderPane getJournalBorderPane() {
-        return journalBorderPane;
+    public BorderPane getJournalRootPane() {
+        return journalRootPane;
     }
 
     private void slideOut(Toggle toggleButton) {
@@ -1047,13 +1112,13 @@ public class JournalController {
                 if (entity instanceof ConceptFacade conceptFacade) {
                     createConceptWindow(conceptFacade, nidTextEnum, null);
                 } else if (entity instanceof PatternFacade patternFacade) {
-                    createPatternWindow(patternFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.ConceptFacade"));
+                    createPatternWindow(patternFacade, journalViewProperties);
                 } else if (entity instanceof SemanticFacade semanticFacade) {
-                    createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.SemanticFacade"), false);
+                    createGenEditWindow(semanticFacade, journalViewProperties, false);
                 }
             } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
                 SemanticFacade semanticFacade = semanticEntityVersion.entity();
-                createGenEditWindow(semanticFacade, windowView.makeOverridableViewProperties("JournalController.loadSearchPanel.displayInDetailsView.SemanticEntityVersion"), false);
+                createGenEditWindow(semanticFacade, journalViewProperties, false);
             }
         };
         controller.getDoubleCLickConsumers().add(displayInDetailsView);
@@ -1148,7 +1213,7 @@ public class JournalController {
             preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
         }
 
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.createConceptWindow");
+        ViewProperties viewProperties = journalViewProperties;
 
         AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
                 journalTopic, conceptFacade, viewProperties, preferences);
@@ -1160,7 +1225,7 @@ public class JournalController {
 //            preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
 //        }
 
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.createGenPurposeKLWindow");
+        ViewProperties viewProperties = journalViewProperties;
 
         GenPurposeKLWindow genPurposeKLWindow = (GenPurposeKLWindow) createWindow(EntityKlWindowTypes.GEN_PURPOSE_KL,
                 journalTopic, entityFacade, viewProperties, null);
@@ -1274,7 +1339,7 @@ public class JournalController {
                                   ConceptFacade deviceConcept,
                                   KometPreferences preferences) {
         AbstractEntityChapterKlWindow lidrKlWindow = createWindow(EntityKlWindowTypes.LIDR,
-                journalTopic, deviceConcept, windowView.makeOverridableViewProperties("JournalController.createLidrWindow"), preferences);
+                journalTopic, deviceConcept, journalViewProperties, preferences);
         setupWorkspaceWindow(lidrKlWindow);
     }
 
@@ -1479,12 +1544,12 @@ public class JournalController {
     }
 
     public String getTitle() {
-        Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        Stage stage = (Stage) journalRootPane.getScene().getWindow();
         return stage.getTitle();
     }
 
     public void close() {
-        Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        Stage stage = (Stage) journalRootPane.getScene().getWindow();
         stage.close();
     }
 
@@ -1520,6 +1585,18 @@ public class JournalController {
     public void saveWindows(KometPreferences journalWindowPreferences) {
         Objects.requireNonNull(journalWindowPreferences, "journalWindowPreferences cannot be null");
 
+        // Persist each window's current state before recording the list, so restoration
+        // brings them back where they were (tool windows have no reactive save trigger).
+        workspace.getWindows().forEach(window -> {
+            if (window instanceof AbstractChapterKlWindow<?> chapterWindow) {
+                try {
+                    chapterWindow.save();
+                } catch (Exception e) {
+                    LOG.error("Error saving window state for {}", window.getWindowTopic(), e);
+                }
+            }
+        });
+
         final ImmutableList<String> windowNames = Lists.immutable.fromStream(workspace.getWindows()
                 .stream().map(window -> {
                     final UUID windowTopic = window.getWindowTopic();
@@ -1528,7 +1605,7 @@ public class JournalController {
                 }));
 
         // Put journal metadata in our preferences.
-        final Stage stage = (Stage) journalBorderPane.getScene().getWindow();
+        final Stage stage = (Stage) journalRootPane.getScene().getWindow();
         journalWindowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
         journalWindowPreferences.put(JOURNAL_TITLE, stage.getTitle());
         journalWindowPreferences.put(JOURNAL_DIR_NAME, getJournalDirName());
@@ -1582,7 +1659,13 @@ public class JournalController {
                 final KometPreferences windowPreferences = journalPreferences.node(windowId);
                 windowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
                 try {
-                    setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences));
+                    if (windowId.startsWith(ToolAreaChapterKlWindow.TOOL_WINDOW_TYPE.getPrefix())) {
+                        // Non-entity tool window: restore via the Kl framework (PluggableService),
+                        // not the entity-centric EntityKlWindowFactory path.
+                        setupWorkspaceWindow(ToolAreaChapterKlWindow.restore(windowSettings, windowPreferences));
+                    } else {
+                        setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences));
+                    }
                 } catch (Exception e) {
                     LOG.error("Error restoring window: {}", windowId, e);
                 }
@@ -1618,8 +1701,8 @@ public class JournalController {
      * Bring window to the front of all windows.
      */
     public void windowToFront() {
-        if (journalBorderPane != null && journalBorderPane.getScene() != null && journalBorderPane.getScene().getWindow() != null) {
-            ((Stage) journalBorderPane.getScene().getWindow()).toFront();
+        if (journalRootPane != null && journalRootPane.getScene() != null && journalRootPane.getScene().getWindow() != null) {
+            ((Stage) journalRootPane.getScene().getWindow()).toFront();
         }
     }
 

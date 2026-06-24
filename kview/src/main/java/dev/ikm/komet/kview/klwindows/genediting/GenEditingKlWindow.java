@@ -37,10 +37,11 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.PATTERN;
 
 /**
  * The General Editing Chapter window showing semantic details on the Journal Window's surface as a JavaFX Pane
@@ -99,7 +100,9 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
         }
         Config config = new Config(GenEditingDetailsController.class.getResource("genediting-details.fxml"))
                 .updateViewModel("genEditingViewModel", genEditingViewModel ->
-                        genEditingViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                        // Feed the view model the window's DERIVED coordinate (the one the ViewContext
+                        // wraps and the View menu drives), so the content follows it (#660).
+                        genEditingViewModel.setPropertyValue(VIEW_PROPERTIES, getViewProperties())
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                                 .setPropertyValue(WINDOW_TOPIC, getWindowTopic())
 //                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
@@ -126,6 +129,9 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
 
         // Getting the concept window pane
         this.paneWindow = jfxNode.node();
+
+        // Establish the window's KL ViewContext on the root pane now that paneWindow exists (#660).
+        establishViewContext();
 
         // Calls the remove method to remove and concepts that were closed by the user.
         jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {

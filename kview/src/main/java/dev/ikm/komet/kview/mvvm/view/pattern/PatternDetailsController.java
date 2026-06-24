@@ -16,7 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 
-import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW;
 import static dev.ikm.komet.kview.controls.KometIcon.IconValue.PLUS;
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
@@ -45,14 +44,14 @@ import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
 import static dev.ikm.komet.kview.mvvm.view.common.SVGConstants.DUPLICATE_SVG_PATH;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FIELDS_COLLECTION;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELDS_COLLECTION;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.FQN_DESCRIPTION_NAME_TEXT;
@@ -61,14 +60,14 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.OTHER_NAMES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.PATTERN;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PUBLISH_PENDING;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.SELECTED_PATTERN_FIELD;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.STATE_MACHINE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
@@ -330,13 +329,13 @@ public class PatternDetailsController {
 
     @FXML
     private void initialize() {
-        // Set up the filter options popup for the coordinates menu button.
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(
-                patternViewModel.getViewProperties(),
-                CHAPTER_WINDOW,
-                detailsOuterBorderPane,
+        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
+        // replacing the kview FilterOptionsPopup.
+        setupViewContextMenu(
                 coordinatesMenuButton,
-                () -> { /* noop TODO: needs a way to redraw details based on view coordinates  */ }
+                detailsOuterBorderPane,
+                patternViewModel.getViewProperties(),
+                patternViewModel::refreshForCoordinate
         );
 
 
@@ -464,6 +463,29 @@ public class PatternDetailsController {
             } else {
                 patternViewModel.setPropertyValue(MODE, CREATE);
                 stampViewControl.setSelected(true);
+            }
+        });
+
+        // Rule-driven + plugin-contributed identicon context menu (e.g. the plugin's
+        // "Post state + history to Zulip"), uniform with the concept identicon via
+        // AddToContextMenu.providers() — so plugins need not touch this controller.
+        identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
+            EntityFacade currentPatternFacade = patternViewModel.getPropertyValue(PATTERN);
+            if (currentPatternFacade == null) {
+                return;
+            }
+            javafx.scene.control.ContextMenu identiconContextMenu = new javafx.scene.control.ContextMenu();
+            javafx.beans.property.SimpleObjectProperty<EntityFacade> focusedEntity =
+                    new javafx.beans.property.SimpleObjectProperty<>(currentPatternFacade);
+            for (dev.ikm.komet.framework.context.AddToContextMenu provider
+                    : dev.ikm.komet.framework.context.AddToContextMenu.providers()) {
+                provider.addToContextMenu((javafx.scene.control.Control) null, identiconContextMenu,
+                        getViewProperties(), focusedEntity,
+                        new javafx.beans.property.SimpleIntegerProperty(), () -> { });
+            }
+            if (!identiconContextMenu.getItems().isEmpty()) {
+                identiconContextMenu.show(identiconImageView,
+                        contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
             }
         });
 

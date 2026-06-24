@@ -4,14 +4,17 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kleditorapp.KLEditorSession;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
+import dev.ikm.komet.kleditorapp.view.control.ControlBrowserCell;
 import dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell;
 import dev.ikm.komet.kleditorapp.view.propertiespane.PropertiesPane;
+import dev.ikm.komet.layout.area.KlSupplementalArea;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.KLEditorWindowCreatedOrRemovedEvent;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -22,6 +25,7 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
+import javafx.beans.binding.BooleanExpression;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -69,7 +73,7 @@ public class KLEditorMainScreenController {
     private ListView<PatternBrowserItem> patternBrowserListView;
 
     @FXML
-    private ListView controlsListView;
+    private ListView<ControlBrowserItem> controlsListView;
 
     private KLEditorWindowController klEditorWindowController;
 
@@ -151,8 +155,18 @@ public class KLEditorMainScreenController {
         patternBrowserListView.setItems(patternsList);
     }
 
+    @SuppressWarnings("rawtypes")
     private void initControlsList() {
-
+        ObservableList<ControlBrowserItem> controls = FXCollections.observableArrayList();
+        // Cross-layer discovery (PluggableService) so plugin-supplied areas appear alongside
+        // the built-in ones, mirroring how the journal "+" menu discovers KlToolArea factories.
+        for (KlSupplementalArea.Factory factory : PluggableService.load(KlSupplementalArea.Factory.class)) {
+            controls.add(new ControlBrowserItem(factory));
+        }
+        FXCollections.sort(controls,
+                Comparator.comparing(ControlBrowserItem::getLabel, String.CASE_INSENSITIVE_ORDER));
+        controlsListView.setCellFactory(param -> new ControlBrowserCell());
+        controlsListView.setItems(controls);
     }
 
     private void initWindow(String windowTitle) {
@@ -205,6 +219,16 @@ public class KLEditorMainScreenController {
 
     @FXML
     private void onSave(ActionEvent actionEvent) {
+        saveWindow();
+    }
+
+    /**
+     * Validates the title and persists the current editor window model under the KL editor
+     * application preferences node, notifies listeners that a window was created/updated, and
+     * shows a confirmation toast. Invoked both by the in-pane Save button ({@link #onSave})
+     * and by the window's {@code File > Save Layout} menu item.
+     */
+    public void saveWindow() {
         // Do last validation on title text before actually saving
         validateTitleText();
 
@@ -214,8 +238,19 @@ public class KLEditorMainScreenController {
         EditorWindowManager.save(klEditorAppPreferences, editorWindowModel);
 
         eventBus.publish(KL_TOPIC,
-                new KLEditorWindowCreatedOrRemovedEvent(actionEvent, KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED, editorWindowModel.getTitle()));
+                new KLEditorWindowCreatedOrRemovedEvent(saveButton, KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED, editorWindowModel.getTitle()));
 
         KLToastManager.toast().show(Toast.Status.SUCCESS, "Window saved successfully");
+    }
+
+    /**
+     * A boolean expression that is {@code true} while the window title field is empty. The
+     * {@code File > Save Layout} menu item binds its disabled state to this so that, like the
+     * in-pane Save button, saving is only enabled once the layout has a title.
+     *
+     * @return a boolean expression reflecting whether the title field is empty
+     */
+    public BooleanExpression titleIsEmpty() {
+        return titleTextField.textProperty().isEmpty();
     }
 }

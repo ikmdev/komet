@@ -18,11 +18,11 @@
             <ImageView fitHeight="635.0" fitWidth="903.0" pickOnBounds="true">
                <Image url="@../images/LoginBackground.png" />
             </ImageView>
-            <ComboBox id="Button" fx:id="userChooser" layoutX="83.0" layoutY="288.0" onAction="#cleanError" prefHeight="43.0" prefWidth="285.0" promptText="choose user" style="-fx-background-color: #fff;" stylesheets="@../kview.css" />
-            <PasswordField fx:id="passwordField" layoutX="83.0" layoutY="379.0" onAction="#signInAction" onKeyPressed="#countLength" prefHeight="43.0" prefWidth="285.0" promptText="Password" styleClass="text-field" stylesheets="@../kview.css" />
-            <Button fx:id="loginButton" layoutX="83.0" layoutY="496.0" mnemonicParsing="false" onAction="#signInAction" prefHeight="43.0" prefWidth="285.0" style="-fx-background-color: #4581deff;" stylesheets="@../kview.css" text="SIGN IN" textFill="WHITE" />
-            <Label fx:id="userErrorLabel" layoutX="83.0" layoutY="341.0" prefHeight="18.0" prefWidth="340.0" textFill="RED" />
-            <Label fx:id="passwordErrorLabel" layoutX="83.0" layoutY="432.0" prefHeight="18.0" prefWidth="340.0" textFill="RED" />
+            <ComboBox id="Button" fx:id="userChooser" layoutX="83.0" layoutY="270.0" onAction="#cleanError" prefHeight="43.0" prefWidth="285.0" promptText="choose user" style="-fx-background-color: #fff;" stylesheets="@../kview.css" />
+            <PasswordField fx:id="passwordField" layoutX="83.0" layoutY="335.0" onAction="#signInAction" onKeyPressed="#countLength" prefHeight="43.0" prefWidth="285.0" promptText="Password" styleClass="text-field" stylesheets="@../kview.css" />
+            <Button fx:id="loginButton" layoutX="83.0" layoutY="450.0" mnemonicParsing="false" onAction="#signInAction" prefHeight="43.0" prefWidth="285.0" style="-fx-background-color: #4581deff;" stylesheets="@../kview.css" text="SIGN IN" textFill="WHITE" />
+            <Label fx:id="userErrorLabel" layoutX="83.0" layoutY="316.0" prefHeight="18.0" prefWidth="340.0" textFill="RED" />
+            <Label fx:id="passwordErrorLabel" layoutX="83.0" layoutY="381.0" prefHeight="18.0" prefWidth="340.0" textFill="RED" />
             <ImageView fitHeight="37.0" fitWidth="120.0" layoutX="83.0" layoutY="82.0" pickOnBounds="true" preserveRatio="true">
                <Image url="@../images/kometlogo.png" />
             </ImageView>
@@ -31,23 +31,28 @@
                   <Font size="28.0" />
                </font>
             </Label>
-            <Label layoutX="83.0" layoutY="172.0" prefHeight="20.0" prefWidth="397.0" text="The most robust collaborative authoring environment for">
+            <Label layoutX="83.0" layoutY="172.0" prefHeight="20.0" prefWidth="397.0" text="A collaborative authoring environment for">
                <font>
                   <Font size="14.0" />
                </font>
             </Label>
-            <Label layoutX="83.0" layoutY="197.0" prefHeight="18.0" prefWidth="374.0" text="the Integrated Knowledge Exchange (IKE).">
+            <Label layoutX="83.0" layoutY="197.0" prefHeight="18.0" prefWidth="374.0" text="Integrated Knowledge Management">
                <font>
                   <Font size="14.0" />
                </font>
             </Label>
-            <TextField fx:id="passwordTextField" layoutX="83.0" layoutY="379.0" onAction="#signInAction" onKeyTyped="#clicked" prefHeight="43.0" prefWidth="285.0" />
-            <ImageView fx:id="visibilityIcon" fitHeight="20.0" fitWidth="20.0" layoutX="339.0" layoutY="391.0" onMouseClicked="#visibleClicked" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="339.0" AnchorPane.topAnchor="391.0">
+            <TextField fx:id="passwordTextField" layoutX="83.0" layoutY="335.0" onAction="#signInAction" onKeyTyped="#clicked" prefHeight="43.0" prefWidth="285.0" />
+            <ImageView fx:id="visibilityIcon" fitHeight="20.0" fitWidth="20.0" layoutX="339.0" layoutY="347.0" onMouseClicked="#visibleClicked" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="339.0" AnchorPane.topAnchor="347.0">
                <image>
                   <Image url="@../images/hidden.png" />
                </image>
             </ImageView>
-            <Label fx:id="loginErrorLabel" layoutX="83.0" layoutY="549.0" prefHeight="18.0" prefWidth="340.0" textFill="RED" />
+            <Label fx:id="loginErrorLabel" layoutX="83.0" layoutY="496.0" prefHeight="18.0" prefWidth="340.0" textFill="RED" />
+            <ImageView fx:id="poweredByIkeImage" fitWidth="285.0" layoutX="83.0" layoutY="540.0" onMouseClicked="#openIkeNetwork" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;" styleClass="powered-by-ike">
+               <image>
+                  <Image url="@../images/powered-by-ike-mono-on-light.png" />
+               </image>
+            </ImageView>
          </children>
       </AnchorPane>
    </children>

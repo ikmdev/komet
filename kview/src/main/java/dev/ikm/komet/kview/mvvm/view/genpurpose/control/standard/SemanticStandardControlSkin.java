@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.view.genpurpose.control;
+package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import javafx.beans.binding.Bindings;
@@ -10,7 +10,7 @@ import javafx.scene.layout.Priority;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SemanticViewControlSkin extends SkinBase<SemanticViewControl> {
+public class SemanticStandardControlSkin extends SkinBase<SemanticStandardControl> {
 
     private final GridPane fieldsContainer = new GridPane();
 
@@ -19,7 +19,7 @@ public class SemanticViewControlSkin extends SkinBase<SemanticViewControl> {
      *
      * @param control The control for which this Skin should attach to.
      */
-    public SemanticViewControlSkin(SemanticViewControl control) {
+    public SemanticStandardControlSkin(SemanticStandardControl control) {
         super(control);
 
         getChildren().add(fieldsContainer);

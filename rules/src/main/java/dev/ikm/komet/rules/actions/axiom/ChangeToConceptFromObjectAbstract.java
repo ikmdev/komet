@@ -22,34 +22,44 @@ import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.SemanticFacade;
 import javafx.event.ActionEvent;
 
 public abstract class ChangeToConceptFromObjectAbstract extends AbstractAxiomAction {
 
-    final ConceptFacade conceptFacade;
+    ConceptFacade conceptFacade;
 
     @SuppressWarnings("removal")
     public ChangeToConceptFromObjectAbstract(String text, Object object, AxiomSubjectRecord axiomSubjectRecord, ViewCalculator viewCalculator, EditCoordinate editCoordinate) {
         super(text, axiomSubjectRecord, viewCalculator, editCoordinate);
         switch (object) {
-            case ConceptFacade conceptFacade -> this.conceptFacade = conceptFacade;
-            case ConceptEntityVersion conceptEntityVersion -> this.conceptFacade = EntityService.get().getEntityFast(conceptEntityVersion.nid());
-            case SemanticFacade semanticFacade -> {
-                SemanticEntity semantic = EntityService.get().getEntityFast(semanticFacade);
-                this.conceptFacade = (ConceptFacade) semantic.topEnclosingComponent();
+            case EntityFacade entityFacade -> {
+                if (EntityHandle.get(entityFacade).isConcept()) {
+                    this.conceptFacade = EntityHandle.get(entityFacade).expectConcept();
+                } else {
+                    this.conceptFacade = EntityHandle.get(EntityHandle.get(entityFacade).expectSemantic().nid()).expectConcept();
+                }
             }
-            case SemanticEntityVersion semanticVersion -> {
-                SemanticEntity semantic = EntityService.get().getEntityFast(semanticVersion.nid());
-                this.conceptFacade = (ConceptFacade) semantic.topEnclosingComponent();
+
+            case EntityVersion entityVersion -> {
+                if (EntityHandle.get(entityVersion.nid()).isConcept()) {
+                    this.conceptFacade = EntityHandle.get(entityVersion.nid()).expectConcept();
+                } else {
+                    this.conceptFacade = EntityHandle.get(EntityHandle.get(entityVersion.nid()).expectSemantic().nid()).expectConcept();
+                }
             }
             case SearchPanelController.NidTextRecord nidTextRecord -> {
-                switch (Entity.getFast(nidTextRecord.nid())) {
-                    case ConceptEntity conceptEntity -> this.conceptFacade = conceptEntity;
-                    case SemanticEntity semanticFacade -> this.conceptFacade = (ConceptFacade) semanticFacade.topEnclosingComponent();
-                    case null -> throw new IllegalStateException("Null object provided");
-                    default -> throw new IllegalStateException("Entity is not a concept: " + object);
-                }
+
+                EntityHandle.get(nidTextRecord.nid()).ifPresent((Entity<?> entity) -> {
+                    switch (entity) {
+                        case ConceptEntity<?> c -> this.conceptFacade = c;
+                        case SemanticEntity<?> s when EntityHandle.get(s.referencedComponentNid()).isConcept() ->
+                            this.conceptFacade = EntityHandle.get(s.referencedComponentNid()).expectConcept();
+                        case SemanticEntity<?> s -> throw new IllegalStateException("Expecting semantic pointing to a concept. Found: " + entity);
+                        default ->  throw new IllegalStateException("Expecting a concept. Found: " + entity);
+                     }
+                });
             }
             case null -> throw new IllegalStateException("Null object provided");
             default -> throw new IllegalStateException("Entity is not a concept: " + object);

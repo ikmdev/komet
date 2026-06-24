@@ -14,8 +14,8 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.LoginProperties.SELECTED_AUTHOR;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.JOURNAL_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.AUTHOR_LOGIN_WINDOW;
@@ -72,6 +72,16 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * <strong>⚠ LEGACY — SLATED FOR REMOVAL.</strong> This is the page/window launching code for the
+ * legacy {@code dev.ikm.komet:application} module, <em>not</em> the shipping desktop app. The Komet
+ * desktop application that is actually built and run is <strong>{@code komet-desktop}</strong>
+ * ({@code dev.ikm.ike:komet-desktop}); its live equivalent is {@code dev.ikm.komet.desktop.AppPages}
+ * (e.g. {@code launchKLEditorViewPage}, {@code launchJournalViewPage}). <strong>Do not add or change
+ * window launching here</strong> — it has no effect on the running app; edit
+ * {@code dev.ikm.komet.desktop.AppPages} instead. Retained only until the module's remaining
+ * responsibilities are migrated to {@code komet-desktop}.
+ */
 public class AppPages {
     private static final Logger LOG = LoggerFactory.getLogger(AppPages.class);
 

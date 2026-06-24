@@ -192,11 +192,12 @@ public class DataModelHelper {
     public static List<PatternEntityVersion> getMembershipPatterns() {
         List<PatternEntityVersion> membershipPatternList = new ArrayList<>();
         PrimitiveData.get().forEachPatternNid((patternNid) -> {
-            PatternEntityVersion patternEntityVersion = (PatternEntityVersion)
-                    Calculators.View.Default().stampCalculator().latest(patternNid).get();
-            if (patternEntityVersion.semanticPurposeNid() == TinkarTerm.MEMBERSHIP_SEMANTIC.nid()) {
-                membershipPatternList.add(patternEntityVersion);
-            }
+            Calculators.View.Default().stampCalculator().<PatternEntityVersion>latest(patternNid)
+                    .ifPresent(patternEntityVersion -> {
+                        if (patternEntityVersion.semanticPurposeNid() == TinkarTerm.MEMBERSHIP_SEMANTIC.nid()) {
+                            membershipPatternList.add(patternEntityVersion);
+                        }
+                    });
         });
         return membershipPatternList;
     }

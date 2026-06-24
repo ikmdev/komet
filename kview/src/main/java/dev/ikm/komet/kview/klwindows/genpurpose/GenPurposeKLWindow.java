@@ -21,13 +21,13 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.Optional;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.FIELDS_COLLECTION;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELDS_COLLECTION;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.REF_COMPONENT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.PATTERN;
 
 public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
     private final JFXNode<Pane, GenPurposeDetailsController> jfxNode;
@@ -47,7 +47,7 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
         // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
         Config patternConfig = new Config(GenPurposeDetailsController.class.getResource("genpurpose-details.fxml"))
                 .updateViewModel("genPurposeViewModel", genPurposeViewModel ->
-                        genPurposeViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                        genPurposeViewModel.setPropertyValue(VIEW_PROPERTIES, getViewProperties())
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                                 .setPropertyValue(WINDOW_TOPIC, getWindowTopic())
 //                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
@@ -63,6 +63,9 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
         // Getting the concept window pane
         paneWindow = jfxNode.node();
 
+        // Establish the window's KL ViewContext on the root pane now that paneWindow exists (#660).
+        establishViewContext();
+
         // Calls the remove method to remove and concepts that were closed by the user.
         jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {
             getOnClose().ifPresent(Runnable::run);
@@ -74,8 +77,8 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
     }
 
     public void initKLWindowPreferences(KometPreferences klWindowPreferences, ViewProperties viewProperties) {
-        // Initialize the controller
-        jfxNode.controller().init(klWindowPreferences, viewProperties);
+        // Initialize the controller with the window's derived coordinate (#660), not the raw arg.
+        jfxNode.controller().init(klWindowPreferences, getViewProperties());
     }
 
     /**

@@ -83,7 +83,7 @@ public class ConceptViewModel extends FormViewModel {
 
 
     public ConceptViewModel() {
-        super(); // addProperty(MODE, VIEW); By default
+        super(); // addProperty(ViewModelKey.MODE, VIEW); By default
         addProperty(CURRENT_ENTITY, (EntityFacade) null)
                 .addProperty(FULLY_QUALIFIED_NAMES,  (Collection) new ArrayList<>())
                 .addProperty(OTHER_NAMES, (Collection) new ArrayList<>())
@@ -207,8 +207,8 @@ public class ConceptViewModel extends FormViewModel {
         // place inside as current Concept
         setValue(CURRENT_ENTITY, conceptFacade);
         setPropertyValue(CURRENT_ENTITY, conceptFacade);
-        setValue(MODE, EDIT);
-        setPropertyValue(MODE, EDIT);
+        setValue(ViewModelKey.MODE, EDIT);
+        setPropertyValue(ViewModelKey.MODE, EDIT);
         return true;
     }
 
@@ -382,7 +382,7 @@ public class ConceptViewModel extends FormViewModel {
     }
 
     public ViewProperties getViewProperties() {
-        return getPropertyValue(VIEW_PROPERTIES);
+        return getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
     }
 
 }

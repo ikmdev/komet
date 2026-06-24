@@ -35,6 +35,7 @@ import java.util.List;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.*;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.*;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class StampEditController extends AbstractBasicController {
 
@@ -115,7 +116,7 @@ public class StampEditController extends AbstractBasicController {
      * disables the radio button inactive
      */
     public void selectActiveStatusToggle() {
-        if(stampViewModel.getPropertyValue(MODE) == CREATE){
+        if(stampViewModel.getPropertyValue(ViewModelKey.MODE) == CREATE){
             inactiveStatus.setDisable(true);
             activeStatus.setSelected(true);
         }else{

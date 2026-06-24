@@ -611,7 +611,11 @@ public class FilterOptionsUtils {
     public static List<ZonedDateTime> getTimesInUse() {
         SortedSet<ZonedDateTime> sortedSet = new TreeSet<>(Comparator.reverseOrder());
         PrimitiveData.get().forEachStampNid(nid -> {
-            long time = EntityHandle.get(nid).expectStamp().time();
+            EntityHandle handle = EntityHandle.get(nid);
+            if (handle.isAbsent()) {
+                return;
+            }
+            long time = handle.expectStamp().time();
             if (time != PREMUNDANE_TIME) {
                 sortedSet.add(Instant.ofEpochMilli(time).atZone(ZoneOffset.systemDefault()));
             }

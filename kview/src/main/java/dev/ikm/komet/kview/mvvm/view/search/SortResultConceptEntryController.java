@@ -17,9 +17,10 @@ package dev.ikm.komet.kview.mvvm.view.search;
 
 import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.getDragAndDropType;
 import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.setUpDraggable;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.search.HighlightedSegments;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
@@ -55,8 +56,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
@@ -77,7 +76,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     private ImageView identicon;
 
     @FXML
-    private Text componentText;
+    private TextFlow componentTextFlow;
 
     @FXML
     private HBox retiredHBox;
@@ -176,8 +175,19 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         this.identicon.setImage(identiconImage);
     }
 
-    public void setComponentText(String topText) {
-        this.componentText.setText(topText);
+    /**
+     * Render the concept's title into the cell header. The input may be a
+     * Lucene-formatted highlighted snippet from
+     * {@link dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator#highlight(String, String)}
+     * — words wrapped in {@code <B>...</B>} get the {@code highlight} CSS class
+     * on their containing {@code StackPane}, matching the per-word visual
+     * treatment of the description-semantic rows below the header.
+     *
+     * @param highlightedTopText the marked-up title (or plain text if no terms
+     *                           matched, or null/empty)
+     */
+    public void setComponentText(String highlightedTopText) {
+        HighlightedSegments.renderHighlightedInto(componentTextFlow, highlightedTopText);
     }
 
     public ObservableList<LatestVersionSearchResult> getDescriptionListViewItems() { return descriptionsListView.getItems(); }
@@ -309,33 +319,8 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                     currentNid = semanticEntityVersion.nid();
                     setUpDraggable(cellContainer, semanticEntityVersion.entity(), getDragAndDropType(semanticEntityVersion.entity()));
                 });
-                if (item.highlightedString() != null) {
-                    updateTextFlow(textFlow, item.highlightedString());
-                }
+                HighlightedSegments.renderHighlightedInto(textFlow, item.highlightedString());
                 setGraphic(cellContainer);
-            }
-        }
-
-        private void updateTextFlow(TextFlow textFlow, String highlightedString) {
-            textFlow.getChildren().clear();
-            String[] words = highlightedString.split(" ");
-            for (String word : words) {
-                Text text = new Text();
-                StackPane textContainer = new StackPane(text);
-
-                if (word.contains("<B>")) {
-                    text.setText(word.replaceAll("<B>", "")
-                            .replaceAll("</B>", "")
-                            .replaceAll("\\s+", " "));
-
-                    textContainer.getStyleClass().add("highlight");
-                } else {
-                    text.setText(word);
-                }
-
-                textContainer.getStyleClass().add("word-container");
-
-                textFlow.getChildren().add(textContainer);
             }
         }
     }

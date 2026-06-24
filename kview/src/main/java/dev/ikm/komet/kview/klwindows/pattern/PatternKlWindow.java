@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 
 /**
@@ -54,7 +55,9 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
         StateMachine patternSM = StateMachine.create(new PatternDetailsPattern());
         Config patternConfig = new Config(PatternDetailsController.class.getResource("pattern-details.fxml"))
                 .updateViewModel("patternViewModel", (PatternViewModel patternViewModel) ->
-                        patternViewModel.setPropertyValue(VIEW_PROPERTIES, viewProperties)
+                        // Feed the view model the window's DERIVED coordinate (the one the ViewContext
+                        // wraps and the View menu drives), so the pattern content follows it (#660).
+                        patternViewModel.setPropertyValue(VIEW_PROPERTIES, getViewProperties())
                                 .setPropertyValue(MODE, mode)
                                 .setPropertyValue(PATTERN_TOPIC, getWindowTopic())
                                 .setPropertyValue(STATE_MACHINE, patternSM)
@@ -82,6 +85,9 @@ public class PatternKlWindow extends AbstractEntityChapterKlWindow {
 
         // Getting the concept window pane
         paneWindow = jfxNode.node();
+
+        // Establish the window's KL ViewContext on the root pane now that paneWindow exists (#660).
+        establishViewContext();
 
         // Calls the remove method to remove and concepts that were closed by the user.
         jfxNode.controller().setOnCloseConceptWindow(windowEvent -> {

@@ -3119,13 +3119,21 @@ Timeline Year line segment (will overlay change circles)
     -fx-padding: 1 0 0 6px;
 }
 
-.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container .text-container .word-container {
+/* Per-word renderer styling. Scope is intentionally broad: the
+   .word-container / .word-container.highlight pair is the contract emitted by
+   HighlightedSegments.renderHighlightedInto(), and any next-gen search cell
+   that calls that helper expects the same visual treatment — the inter-word
+   2px padding, and the green background on matched terms. The earlier
+   .descriptions-list-view-scoped rule meant the concept-title TextFlow
+   rendered word-containers with zero padding (words visually fused) and no
+   highlight background, even though the renderer was emitting the right
+   structure. */
+.word-container {
     -fx-padding: 2px;
 }
 
-.next-gen-search-main-container .descriptions-list-view .list-cell .cell-container .text-container .word-container.highlight {
+.word-container.highlight {
     -fx-background-color: rgba(192, 245, 160, 0.6);
-
     -fx-background-insets: 0 1 0 1;
     -fx-background-radius: 4;
 }
@@ -3814,6 +3822,7 @@ Timeline Year line segment (will overlay change circles)
 
 .welcome-container > .status-pane .status-label.dataset {
     -fx-text-fill: -Secondary-06;
+    -fx-font-size: 18px;
 }
 
 .welcome-container > .status-pane .github-status-link {
@@ -3828,9 +3837,9 @@ Timeline Year line segment (will overlay change circles)
 }
 
 .welcome-container .selected-dataset-title-label {
-    -fx-font-family: "Noto Sans Medium";
-    -fx-font-weight: 500;
-    -fx-font-size: 14px;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 700;
+    -fx-font-size: 18px;
     -fx-text-fill: -Secondary-06;
 }
 
@@ -3859,24 +3868,6 @@ Timeline Year line segment (will overlay change circles)
 
 .notification-container {
     -fx-spacing: 8;
-}
-/* notification section hbox > region dropdown button*/
-.notification-title-icon {
-    -fx-pref-width: 20px;
-    -fx-max-width: 20;
-    -fx-pref-height: 20px;
-    -fx-max-height: 20px;
-    -fx-background-color: -Grey-Black;
-    -fx-shape: "M19 17V11.8C18.5 11.9 18 12 17.5 12H17V18H7V11C7 8.2 9.2 6 12 6C12.1 4.7 12.7 3.6 13.5 2.7C13.2 2.3 12.6 2 12 2C10.9 2 10 2.9 10 4V4.3C7 5.2 5 7.9 5 11V17L3 19V20H21V19L19 17ZM10 21C10 22.1 10.9 23 12 23C13.1 23 14 22.1 14 21H10ZM21 6.5C21 8.4 19.4 10 17.5 10C15.6 10 14 8.4 14 6.5C14 4.6 15.6 3 17.5 3C19.4 3 21 4.6 21 6.5Z";
-    /*-fx-background-insets: -1, 0;*/
-}
-.notification-title {
-    -fx-text-fill: -Grey-11;
-    -fx-font-family: Noto Sans;
-    -fx-font-size: 16px;
-    -fx-font-style: normal;
-    -fx-font-weight: 600;
-    -fx-max-width: 1728px;
 }
 
 
@@ -3949,22 +3940,6 @@ Timeline Year line segment (will overlay change circles)
 }
 
 
-.notification-card-container.scroll-pane,
-.notification-card-container.scroll-pane:focused {
-    -fx-pref-height: 196px;
-    -fx-background-color: -Grey-3;
-    -fx-background-insets: 0;
-    -fx-background-radius: 0;
-    -fx-padding: 0;
-}
-.notification-card-container.scroll-pane > .viewport,
-.notification-card-container.scroll-pane:focused > .viewport {
-    -fx-pref-height: 196px;
-    -fx-background-color: -Grey-3;
-    -fx-background-insets: 0;
-    -fx-background-radius: 0;
-    -fx-padding: 0;
-}
 .card {
     -fx-background-radius: 8px;
     -fx-background-color: -Grey-White;
@@ -4219,11 +4194,6 @@ Styling a context menu for kview ui/ux controls
     -fx-shape: "M9.00008 0.666504C4.40758 0.666504 0.666748 4.40733 0.666748 8.99984C0.666748 13.5923 4.40758 17.3332 9.00008 17.3332C13.5926 17.3332 17.3334 13.5923 17.3334 8.99984C17.3334 4.40733 13.5926 0.666504 9.00008 0.666504ZM9.00008 2.33317C12.6919 2.33317 15.6667 5.30807 15.6667 8.99984C15.6667 12.6916 12.6919 15.6665 9.00008 15.6665C5.30831 15.6665 2.33341 12.6916 2.33341 8.99984C2.33341 5.30807 5.30831 2.33317 9.00008 2.33317ZM8.16675 4.83317V8.1665H4.83342V9.83317H8.16675V13.1665H9.83342V9.83317H13.1667V8.1665H9.83342V4.83317H8.16675Z"
 }
 
-.notification-card {
-    -fx-pref-width: 280px;
-    -fx-pref-height: 178px;
-}
-
 .journal-project-card {
     -default-width: 280px;
     -default-height: 226px;
@@ -4235,21 +4205,6 @@ Styling a context menu for kview ui/ux controls
     -fx-max-height: -default-height;
 }
 
-/* region svg shape of an X to close card */
-.notification-card .close-button {
-    -fx-background-radius: 4px;
-    -fx-background-insets: 0;
-    -fx-background-color: -Grey-8;
-    -fx-padding: 4;
-
-    -width-size: 12px;
-    -height-size: 12px;
-    -fx-min-height: -height-size;
-    -fx-min-width: -width-size;
-    -fx-max-height: -height-size;
-    -fx-max-width: -width-size;
-    -fx-shape: "M15.8334 5.3415L14.6584 4.1665L10.0001 8.82484L5.34175 4.1665L4.16675 5.3415L8.82508 9.99984L4.16675 14.6582L5.34175 15.8332L10.0001 11.1748L14.6584 15.8332L15.8334 14.6582L11.1751 9.99984L15.8334 5.3415Z";
-}
 /* Contains the card's info VBox */
 .card-info-container {
     /*-fx-padding: 12px 16px;*/
@@ -4262,33 +4217,8 @@ Styling a context menu for kview ui/ux controls
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
-.card-info-container .validation-counts {
-    -fx-text-fill: -Grey-12;
-    -fx-font-family: Noto Sans;
-    -fx-font-size: 25px;
-    -fx-font-style: normal;
-    -fx-font-weight: 500;
-}
-.card-info-container .validation-message {
-    -fx-text-fill: -Grey-12;
-    -fx-font-family: Noto Sans;
-    -fx-font-size: 13px;
-    -fx-font-style: normal;
-    -fx-font-weight: 400;
-}
-.card-info-container .edit-info-container {
-    -fx-spacing: 6px;
-}
 .card-info-container .icon.avatar {
     -fx-background-color: -Secondary-05;
-}
-
-.card-info-container .last-user-edit {
-    -fx-font-family: Noto Sans;
-    -fx-font-size: 11px;
-    -fx-font-style: normal;
-    -fx-font-weight: 500;
-    -fx-text-fill: -Grey-11;
 }
 
 .card-info-container .edit-time {
@@ -4328,15 +4258,6 @@ Styling a context menu for kview ui/ux controls
     -fx-background-radius: 4;
 }
 
-/* All notification button on landing page */
-.landing-container .button.all-notification-button {
-    -fx-background-color: -Secondary-05, -Grey-2;
-}
-
-.landing-container .button.all-notification-button:hover {
-    -fx-background-color: -Secondary-04, -Grey-1;
-    -fx-text-fill: -Secondary-04;
-}
 
 .add-symbol {
     -fx-shape: "M16.6666 10.8334H10.8333V16.6667H9.16665V10.8334H3.33331V9.16671H9.16665V3.33337H10.8333V9.16671H16.6666V10.8334Z";
@@ -6021,8 +5942,9 @@ Styling a context menu for kview ui/ux controls
 
 .klcontext-menu .menu-item > .label {
     -fx-font-family: "Noto Sans";
-
+    -fx-font-size: 13px;
     -fx-text-fill: white;
+    -fx-font-weight: 500;
 }
 
 .klcontext-menu .menu-item > .graphic-container {
@@ -6143,6 +6065,26 @@ Styling a context menu for kview ui/ux controls
 
 .icon.populate {
     -fx-shape: "M4.12492 15.8333H15.7916V11.6667H17.4583V15.8333C17.4583 16.2754 17.2827 16.6993 16.9701 17.0118C16.6575 17.3244 16.2336 17.5 15.7916 17.5H4.12492C3.68289 17.5 3.25897 17.3244 2.94641 17.0118C2.63385 16.6993 2.45825 16.2754 2.45825 15.8333V4.16667C2.45825 3.72464 2.63385 3.30072 2.94641 2.98816C3.25897 2.67559 3.68289 2.5 4.12492 2.5H8.29158V4.16667H4.12492V15.8333ZM13.5416 5.25L10.7916 2.5H17.4583V9.16667L14.7083 6.41667L9.95829 11.1667L8.79162 10L13.5416 5.25Z";
+}
+
+.icon.copy {
+    -fx-shape: "M2 18.1975L2 11.2384C1.99999 10.7622 1.99998 10.3492 2.02781 10.0086C2.05725 9.64823 2.12245 9.28699 2.29997 8.93858C2.56383 8.42072 2.98486 7.99969 3.50272 7.73583C3.85114 7.5583 4.21238 7.4931 4.57271 7.46366C4.91336 7.43583 5.32628 7.43584 5.80251 7.43585L7.43586 7.43585L7.43586 5.8025C7.43585 5.32625 7.43584 4.91337 7.46367 4.57271C7.49311 4.21238 7.5583 3.85113 7.73583 3.50272C7.99969 2.98486 8.42072 2.56383 8.93858 2.29997C9.287 2.12244 9.64823 2.05725 10.0086 2.02781C10.3493 1.99997 10.7622 1.99998 11.2385 2L18.1973 2C18.6736 1.99998 19.0866 1.99997 19.4273 2.02781C19.7876 2.05725 20.1489 2.12244 20.4973 2.29997C21.0151 2.56383 21.4362 2.98486 21.7 3.50272C21.8776 3.85113 21.9428 4.21237 21.9722 4.57271C22 4.91341 22 5.32635 22 5.80266L22 12.7615C22 13.2378 22 13.6507 21.9722 13.9914C21.9428 14.3518 21.8776 14.713 21.7 15.0614C21.4362 15.5793 21.0151 16.0003 20.4973 16.2642C20.1489 16.4417 19.7876 16.5069 19.4273 16.5363C19.0866 16.5642 18.6737 16.5642 18.1975 16.5641L16.5641 16.5641L16.5641 18.1976C16.5642 18.6738 16.5642 19.0866 16.5363 19.4273C16.5069 19.7876 16.4417 20.1489 16.2642 20.4973C16.0003 21.0151 15.5793 21.4362 15.0614 21.7C14.713 21.8776 14.3518 21.9427 13.9914 21.9722C13.6508 22 13.2379 22 12.7616 22L5.80252 22C5.32627 22 4.91338 22 4.57271 21.9722C4.21238 21.9427 3.85114 21.8776 3.50272 21.7C2.98487 21.4362 2.56384 21.0151 2.29997 20.4973C2.12245 20.1489 2.05725 19.7876 2.02781 19.4273C1.99998 19.0866 1.99999 18.6737 2 18.1975ZM3.90204 19.2742C3.88121 19.0192 3.88047 18.6836 3.88047 18.1606L3.88047 11.2752C3.88047 10.7522 3.88121 10.4167 3.90204 10.1617C3.92198 9.91759 3.95556 9.83139 3.97548 9.79229C4.05906 9.62827 4.19242 9.49491 4.35644 9.41134C4.39554 9.39142 4.48173 9.35783 4.72584 9.33789C4.9808 9.31706 5.31637 9.31633 5.83936 9.31633L7.43586 9.31633L7.43586 12.7616C7.43585 13.2378 7.43584 13.6508 7.46367 13.9914C7.49311 14.3518 7.5583 14.713 7.73583 15.0614C7.99969 15.5793 8.42072 16.0003 8.93858 16.2642C9.287 16.4417 9.64824 16.5069 10.0086 16.5363C10.3492 16.5642 10.7622 16.5642 11.2384 16.5641L14.6837 16.5641L14.6837 18.1606C14.6837 18.6836 14.6829 19.0192 14.6621 19.2742C14.6422 19.5183 14.6086 19.6045 14.5887 19.6436C14.5051 19.8076 14.3717 19.9409 14.2077 20.0245C14.1686 20.0444 14.0824 20.078 13.8383 20.098C13.5833 20.1188 13.2478 20.1195 12.7248 20.1195L5.83936 20.1195C5.31637 20.1195 4.9808 20.1188 4.72584 20.098C4.48173 20.078 4.39554 20.0444 4.35644 20.0245C4.19241 19.9409 4.05906 19.8076 3.97549 19.6436C3.95556 19.6045 3.92198 19.5183 3.90204 19.2742ZM9.3379 13.8383C9.31706 13.5833 9.31633 13.2478 9.31633 12.7248L9.31633 5.83936C9.31633 5.31637 9.31706 4.98079 9.3379 4.72584C9.35784 4.48173 9.39142 4.39554 9.41134 4.35644C9.49492 4.19241 9.62827 4.05906 9.7923 3.97548C9.8314 3.95556 9.91759 3.92198 10.1617 3.90203C10.4167 3.8812 10.7522 3.88047 11.2752 3.88047L18.1606 3.88047C18.6836 3.88047 19.0192 3.8812 19.2742 3.90203C19.5183 3.92198 19.6045 3.95556 19.6436 3.97548C19.8076 4.05906 19.9409 4.19241 20.0245 4.35644C20.0444 4.39554 20.078 4.48173 20.098 4.72584C20.1188 4.98079 20.1195 5.31637 20.1195 5.83936L20.1195 12.7248C20.1195 13.2478 20.1188 13.5833 20.098 13.8383C20.078 14.0824 20.0444 14.1686 20.0245 14.2077C19.9409 14.3717 19.8076 14.5051 19.6436 14.5887C19.6045 14.6086 19.5183 14.6422 19.2742 14.6621C19.0192 14.6829 18.6836 14.6837 18.1606 14.6837L11.2752 14.6837C10.7522 14.6837 10.4167 14.6829 10.1617 14.6621C9.91759 14.6422 9.8314 14.6086 9.7923 14.5887C9.62827 14.5051 9.49492 14.3717 9.41134 14.2077C9.39142 14.1686 9.35784 14.0824 9.3379 13.8383Z";
+}
+
+.icon.copy-to-clipboard-icon {
+    -fx-pref-width: 16px;
+    -fx-pref-height: 16px;
+    -fx-min-width: 16px;
+    -fx-min-height: 16px;
+    -fx-max-width: 16px;
+    -fx-max-height: 16px;
+
+}
+
+.copy-to-clipboard-icon .copy-to-clipboard-svg {
+    -fx-fill: white;
+    -fx-scale-x: 0.75;
+    -fx-scale-y: 0.75;
 }
 
 .icon.plus-without-circle {
@@ -6385,13 +6327,65 @@ Styling a context menu for kview ui/ux controls
  *                                                                             *
  ******************************************************************************/
 
+ .window-main-title .label {
+     -fx-font-family: "Noto Sans";
+     -fx-font-size: 18px;
+
+     -fx-graphic-text-gap: 8px;
+ }
+
+ .window-main-title .label > .image-view {
+    size: 24;
+    -fx-fit-width: size;
+    -fx-fit-height: size;
+ }
+
+/* SplitPane that contains the Sections */
+.gen-purpose-window .split-pane {
+    -fx-background-color: -fx-control-inner-background;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.gen-purpose-window .split-pane > .split-pane-divider {
+    -fx-padding: 0 0.25em 0 0.25em; /* 0 3 0 3 */
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+/* Sections */
+.gen-purpose-window .section-titled-pane .section-titled-pane-container {
+    -fx-padding: 10px 8px 4 8px;
+}
+
 .gen-purpose-window .gen-purpose-pattern-title {
     -fx-font-family: "Noto Sans Bold";
     -fx-font-size: 16px;
     -fx-padding: 0 0 3px 0;
 }
 
-/* Section semantics combobox */
+/* Pattern container */
+.gen-purpose-window .pattern-container {
+    -fx-padding: 0 0 10px 0;
+}
+
+.gen-purpose-window .pattern-container:last-child {
+    -fx-padding: 0 0 5px 0;
+}
+
+.gen-purpose-window .pattern-container .semantics-container {
+    -fx-spacing: 10px;
+}
+
+.gen-purpose-window .pattern-container .semantics-container > .separator  > .line {
+    -fx-border-width: 0, 0 0 1px 0;
+    -fx-border-style: solid, solid;
+    -fx-border-insets: 0, 0 3px 0 3px;
+    -fx-border-color: transparent, transparent transparent #ddd transparent;
+}
+
+/*******************  Section Semantics ComboBox  **************************/
+
 .gen-purpose-window .titled-pane .section-combo-box {
     -fx-text-fill: -Grey-11;
     -fx-background-color: -Grey-1;
@@ -6424,28 +6418,6 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .titled-pane .section-combo-box > .arrow-button > .arrow {
     -fx-shape: "M1.40988 0.295017L-0.000122333 1.70502L5.99988 7.70502L11.9999 1.70502L10.5899 0.295017L5.99988 4.87502L1.40988 0.295017Z";
 }
-
-/* Pattern container */
-.gen-purpose-window .pattern-container {
-    -fx-padding: 0 0 10px 0;
-}
-
-.gen-purpose-window .pattern-container:last-child {
-    -fx-padding: 0 0 5px 0;
-}
-
-.gen-purpose-window .pattern-container .semantics-container {
-    -fx-spacing: 10px;
-}
-
-.gen-purpose-window .pattern-container .semantics-container > .separator  > .line {
-    -fx-border-width: 0, 0 0 1px 0;
-    -fx-border-style: solid, solid;
-    -fx-border-insets: 0, 0 3px 0 3px;
-    -fx-border-color: transparent, transparent transparent #ddd transparent;
-}
-
-/*******************  Section Semantics ComboBox  **************************/
 
 .gen-purpose-window .section-titled-pane > .section-combo-box {
     -fx-min-width: -1;
@@ -6529,6 +6501,8 @@ Styling a context menu for kview ui/ux controls
     -fx-alignment: center_left;
 
     -fx-opacity: 0.9;
+
+    -fx-min-width: 200px;
 }
 
 .edit-semantic-popup .label {
@@ -6568,4 +6542,124 @@ Styling a context menu for kview ui/ux controls
 .edit-semantic-popup .popup-entry.komet-label:hover > .label,
 .edit-semantic-popup .popup-entry.label:hover {
     -fx-background-color: rgba(200, 200, 200, 0.3);
+}
+
+/*******************************************************************************
+ * Pattern Semantics Table                                                     *
+ ******************************************************************************/
+
+.gen-purpose-window .table-view {
+    header_background_color: #DCE3F1;
+    table_view_border_color: #ddd;
+    table_view_body_border_color: #e9e9e9;
+
+    edit_mode_background_color: #f4fbf0;
+    edit_mode_border_color: #66bb38;
+
+    preview_mode_background_color: #f4f4f4;
+    preview_mode_border_color: #dfdfdf;
+
+    -fx-cell-focus-inner-border: transparent;
+
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: table_view_border_color;
+}
+
+/* Scroll Bar inside Table View */
+.gen-purpose-window .table-view .scroll-bar {
+    -fx-background-color: white;
+}
+
+.gen-purpose-window .table-view .scroll-bar .track,
+.gen-purpose-window .table-view .scroll-bar .track-background {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+/********************************  Header  **********************************/
+
+.gen-purpose-window .table-view .column-header,
+.gen-purpose-window .table-view .filler {
+    -fx-background-color: header_background_color;
+    -fx-background-insets: 0;
+
+    -fx-border-color: table_view_border_color;
+    -fx-border-width: 0 1px 2px 0;
+}
+
+.gen-purpose-window .table-view .column-header .label {
+    -fx-text-fill: text_color;
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 1em;  /* 12 */
+    -fx-alignment: center-left;
+
+    -fx-padding: 3px 7px 3px 7px;
+
+    -fx-background-color: transparent;
+}
+
+.table-view .show-hide-columns-button {
+    -fx-background-color: header_background_color;
+}
+
+/********************************  Body  **********************************/
+
+.gen-purpose-window .table-view .table-cell {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 500;
+    -fx-font-size: 1em;  /* 12 */
+    -fx-alignment: top-left;
+
+    -fx-border-width: 0;
+    -fx-padding: 10px 13px 13px 13px;
+}
+
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell {
+    -fx-border-width: 1px;
+    -fx-border-color: transparent;
+}
+
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell .table-cell {
+    -fx-border-color: transparent table_view_body_border_color transparent transparent;
+    -fx-border-width: 1px;
+    -fx-border-insets: 0px 0px 0px 0px;
+}
+
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:edit-mode {
+    -fx-background-color: edit_mode_background_color;
+    -fx-border-color: edit_mode_border_color;
+}
+
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:preview-mode {
+    -fx-background-color: preview_mode_background_color;
+    -fx-border-color: preview_mode_border_color;
+}
+
+/************ Semantic Identicon *********/
+.gen-purpose-window .table-view .table-cell.semantic-identicon-cell .component-item .image-view {
+    -fx-fit-width: 15px;
+    -fx-fit-height: 15px;
+}
+
+.gen-purpose-window .table-view .table-cell.semantic-identicon-cell {
+    -fx-alignment: top-center;
+}
+
+.gen-purpose-window .table-view .column-header.identicon-column .label {
+    -fx-alignment: top-center;
+}
+
+/************ Data type: COMPONENT_ID_SET_FIELD (Component Set), COMPONENT_FIELD (Component) ********/
+.gen-purpose-window .table-view .table-cell .component-container {
+    -fx-spacing: 5px;
+}
+
+.gen-purpose-window .table-view .table-cell .component-item {
+    -fx-spacing: 5px;
+    -fx-alignment: center;
+}
+
+.gen-purpose-window .table-view .table-cell .component-item .image-view {
+    -fx-fit-width: 12px;
+    -fx-fit-height: 12px;
 }

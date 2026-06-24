@@ -35,3 +35,40 @@
 .boolean-control:disabled {
     -fx-opacity: 0.4;
 }
+
+/* --- Popup options --- */
+.boolean-control .boolean-combo-box > .combo-box-popup > .list-view {
+    -fx-background-color: -Grey-5, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4px;
+}
+
+.boolean-control .boolean-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: white;
+    -fx-padding: 4 8 4 8;
+}
+
+.boolean-control .boolean-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover,
+.boolean-control .boolean-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected {
+    -fx-background-color: #f4fbf0;
+}
+
+.boolean-control .boolean-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell .label {
+    -fx-text-fill: -Grey-12;
+}
+
+.boolean-control .boolean-combo-box > .combo-box-popup .check-mark {
+    -fx-min-width: 12px;
+    -fx-min-height: 12px;
+    -fx-background-color: transparent;
+    -fx-shape: "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z";
+}
+
+/* Selected */
+.boolean-control .boolean-combo-box > .combo-box-popup .list-cell:selected .check-mark {
+    -fx-background-color: #79bf3b;
+}
+
+.boolean-control .boolean-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:selected .label {
+    -fx-text-fill: white;
+}

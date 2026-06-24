@@ -2,11 +2,12 @@ package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.kleditorapp.view.SelectionManager;
-import dev.ikm.komet.kleditorapp.view.control.EditorWindowBaseControl;
+import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
-import dev.ikm.komet.kleditorapp.view.control.PatternViewControl;
+import dev.ikm.komet.kleditorapp.view.control.PatternEditorControlBase;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
-import dev.ikm.komet.kleditorapp.view.control.WindowControlFactory;
+import dev.ikm.komet.kleditorapp.view.control.SupplementalAreaViewControl;
+import dev.ikm.komet.kleditorapp.view.control.KlEditorWindowControlFactory;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
@@ -24,6 +25,7 @@ public class PropertiesPane extends Region {
     private final SectionPropertiesPane sectionPropertiesPane = new SectionPropertiesPane();
     private final PatternPropertiesPane patternPropertiesPane = new PatternPropertiesPane();
     private final FieldPropertiesPane fieldPropertiesPane = new FieldPropertiesPane();
+    private final SupplementalAreaPropertiesPane supplementalAreaPropertiesPane = new SupplementalAreaPropertiesPane();
 
     private ControlBasePropertiesPane currentPropertiesPane;
 
@@ -41,7 +43,8 @@ public class PropertiesPane extends Region {
         controlPropertiesContainer.getChildren().addAll(
                 sectionPropertiesPane,
                 patternPropertiesPane,
-                fieldPropertiesPane
+                fieldPropertiesPane,
+                supplementalAreaPropertiesPane
         );
 
         getChildren().add(mainContainer);
@@ -63,7 +66,7 @@ public class PropertiesPane extends Region {
                     setTitle(sectionView.getTagText());
                     setCurrentPropertiesPane(sectionPropertiesPane);
                 }
-                case PatternViewControl patternView -> {
+                case PatternEditorControlBase patternView -> {
                     setTitle("Pattern");
                     setCurrentPropertiesPane(patternPropertiesPane);
                 }
@@ -71,9 +74,13 @@ public class PropertiesPane extends Region {
                     setTitle("Field");
                     setCurrentPropertiesPane(fieldPropertiesPane);
                 }
+                case SupplementalAreaViewControl areaView -> {
+                    setTitle("Area");
+                    setCurrentPropertiesPane(supplementalAreaPropertiesPane);
+                }
                 default -> System.out.println("TODO...");
             }
-            currentPropertiesPane.initControl(WindowControlFactory.getModel(control));
+            currentPropertiesPane.initControl(KlEditorWindowControlFactory.getModel(control));
 
         });
     }

@@ -17,6 +17,7 @@ package dev.ikm.komet.details.concept;
 
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import dev.ikm.komet.framework.comment.CommentReader;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -102,16 +103,12 @@ public class StampControl extends Label {
                     sb.append("\nM: ").append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampVersion.moduleNid()));
                     sb.append("\nP: ").append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampVersion.pathNid()));
 
-                    // TODO: need pattern for commit comments...
-                    /*
-                    Optional<String> optionalComment = Get.commitService()
-                            .getComment(stampSequence);
-
-                    if (optionalComment.isPresent()) {
-                        sb.append("\n\ncomment: ");
-                        sb.append(optionalComment.get());
+                    for (CommentReader.CommentEntry comment : CommentReader.getComments(stampNid, viewCalculator)) {
+                        sb.append("\n\n")
+                                .append(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(comment.authorNid()))
+                                .append(": ")
+                                .append(comment.text());
                     }
-                     */
 
                     return sb.toString();
                 });

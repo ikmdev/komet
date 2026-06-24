@@ -20,11 +20,19 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import static dev.ikm.tinkar.common.service.PrimitiveData.SCOPED_PATTERN_PUBLICID_FOR_NID;
 import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
 import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import dev.ikm.komet.framework.observable.ObservableComposer;
+import dev.ikm.komet.framework.observable.ObservableComposer.EntityComposer;
+import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservablePattern;
+import dev.ikm.komet.framework.observable.ObservablePatternVersion;
+import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
@@ -32,14 +40,7 @@ import dev.ikm.komet.kview.mvvm.model.PatternField;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.composer.Composer;
-import dev.ikm.tinkar.composer.Session;
-import dev.ikm.tinkar.composer.assembler.PatternAssembler;
-import dev.ikm.tinkar.composer.assembler.PatternAssemblerConsumer;
-import dev.ikm.tinkar.composer.template.FullyQualifiedName;
-import dev.ikm.tinkar.composer.template.Synonym;
-import dev.ikm.tinkar.composer.template.USDialect;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.ConceptRecord;
@@ -79,7 +80,7 @@ public class PatternViewModel extends FormViewModel {
     // --------------------------------------------
     // Known properties
     // --------------------------------------------
-    public static String STAMP_VIEW_MODEL = "stampViewModel";
+    // STAMP_VIEW_MODEL, FIELDS_COLLECTION, PATTERN inherited from ViewModelKey.
 
     public static String STATE_MACHINE = "stateMachine";
 
@@ -109,10 +110,6 @@ public class PatternViewModel extends FormViewModel {
 
     public static String FQN_DESCRIPTION_NAME_TEXT = "fqnDescrNameText";
 
-    public static String FIELDS_COLLECTION = "fieldsCollection";
-
-    public static String PATTERN = "pattern";
-
     public static String FQN_PROXY = "fqnProxy";
 
     public static String HAS_CHANGED = "hasChanged";
@@ -133,11 +130,11 @@ public class PatternViewModel extends FormViewModel {
 
     public PatternViewModel() {
         super();
-            addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+            addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null)
                     .addProperty(PATTERN_TITLE_TEXT, "")
                     .addProperty(PATTERN_TOPIC, (UUID) null)
                     .addProperty(STATE_MACHINE, (StateMachine) null)
-                    .addProperty(STAMP_VIEW_MODEL, (StampFormViewModelBase) null)
+                    .addProperty(ViewModelKey.STAMP_VIEW_MODEL, (StampFormViewModelBase) null)
                     .addProperty(FQN_DESCRIPTION_NAME, (DescrName) null)
                     .addProperty(OTHER_NAMES, new ArrayList<DescrName>())
                     .addProperty(OTHER_NAME_SEMANTIC_VERSION_MAP, new HashMap<DescrName, SemanticEntityVersion>())
@@ -150,17 +147,17 @@ public class PatternViewModel extends FormViewModel {
                     // PATTERN>DESCRIPTION FQN and Other Name
                     .addProperty(FQN_DESCRIPTION_NAME_TEXT, "")
                     // Ordered collection of Fields
-                    .addProperty(FIELDS_COLLECTION, new ArrayList<PatternField>())
+                    .addProperty(ViewModelKey.FIELDS_COLLECTION, new ArrayList<PatternField>())
                     .addProperty(SELECTED_PATTERN_FIELD, (PatternField) null)
                     .addProperty(IS_INVALID, true)
-                    .addProperty(PATTERN, (EntityFacade) null) // once saved, this is the pattern facade
+                    .addProperty(ViewModelKey.PATTERN, (EntityFacade) null) // once saved, this is the pattern facade
                     .addProperty(FQN_PROXY, (EntityProxy.Semantic) null)
                     .addProperty(HAS_CHANGED, false)
                     .addValidator(IS_INVALID, "Is Invalid", (ValidationResult vr, ViewModel viewModel) -> {
                         ObjectProperty<EntityFacade> purposeEntity = viewModel.getProperty(PURPOSE_ENTITY);
                         ObjectProperty<EntityFacade> meaningEntity = viewModel.getProperty(MEANING_ENTITY);
                         ObjectProperty<DescrName> fqnProperty = viewModel.getProperty(FQN_DESCRIPTION_NAME);
-                        StampFormViewModelBase stampFormViewModel = viewModel.getPropertyValue(STAMP_VIEW_MODEL);
+                        StampFormViewModelBase stampFormViewModel = viewModel.getPropertyValue(ViewModelKey.STAMP_VIEW_MODEL);
                         ObjectProperty<?> stampModule = stampFormViewModel.getProperty(MODULE);
                         ObjectProperty<?> stampPath = stampFormViewModel.getProperty(PATH);
                         ObjectProperty<?> stampStatus = stampFormViewModel.getProperty(STATUS);
@@ -199,7 +196,7 @@ public class PatternViewModel extends FormViewModel {
     }
 
     public void reLoadPatternValues(){
-        ObservableList<PatternField> patternFieldObsList = getObservableList(FIELDS_COLLECTION);
+        ObservableList<PatternField> patternFieldObsList = getObservableList(ViewModelKey.FIELDS_COLLECTION);
         patternFieldObsList.clear();
         ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
         otherNamesList.clear();
@@ -208,21 +205,21 @@ public class PatternViewModel extends FormViewModel {
 
     @SuppressWarnings("removal")
     public void loadPatternValues(){
-        ObjectProperty<EntityFacade> patternProperty = getProperty(PATTERN);
+        ObjectProperty<EntityFacade> patternProperty = getProperty(ViewModelKey.PATTERN);
         EntityFacade patternFacade = patternProperty.getValue();
-        if (patternFacade != null && getPropertyValue(MODE).equals(EDIT)) {
+        if (patternFacade != null && getPropertyValue(ViewModelKey.MODE).equals(EDIT)) {
             Entity entity = EntityService.get().getEntityFast(patternFacade);
             ViewCalculator viewCalculator = getViewProperties().calculator();
 
             // Load Fields data.
-            ObservableList<PatternField> patternFieldObsList = getObservableList(FIELDS_COLLECTION);
+            ObservableList<PatternField> patternFieldObsList = getObservableList(ViewModelKey.FIELDS_COLLECTION);
             PatternVersionRecord patternVersionRecord = (PatternVersionRecord) viewCalculator.latest(entity).get();
             ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = patternVersionRecord.fieldDefinitions();
 
             fieldDefinitionRecords.stream().forEachOrdered( fieldDefinitionForEntity ->
             {
                 EntityVersion latest = (EntityVersion) viewCalculator.latest(fieldDefinitionForEntity.meaning()).get();
-                PatternField patternField = new PatternField(fieldDefinitionForEntity.meaning().description(), fieldDefinitionForEntity.dataType(),
+                PatternField patternField = new PatternField(viewCalculator.getDescriptionTextOrNid(fieldDefinitionForEntity.meaning().nid()), fieldDefinitionForEntity.dataType(),
                         fieldDefinitionForEntity.purpose(), fieldDefinitionForEntity.meaning(), "", latest.stamp());
                 patternFieldObsList.add(patternField);
             });
@@ -233,11 +230,11 @@ public class PatternViewModel extends FormViewModel {
 
             Entity purposeEntity = ((PatternVersionRecord) entityVersion).semanticPurpose();
             setPropertyValue(PURPOSE_ENTITY, purposeEntity);
-            setPropertyValue(PURPOSE_TEXT, purposeEntity.description());
+            setPropertyValue(PURPOSE_TEXT, viewCalculator.getDescriptionTextOrNid(purposeEntity.nid()));
 
             Entity meaningEntity = ((PatternVersionRecord) entityVersion).semanticMeaning();
             setPropertyValue(MEANING_ENTITY, meaningEntity);
-            setPropertyValue(MEANING_TEXT, meaningEntity.description());
+            setPropertyValue(MEANING_TEXT, viewCalculator.getDescriptionTextOrNid(meaningEntity.nid()));
 
             String patternTitleText = retrieveDisplayName((PatternFacade) patternFacade);
             setPropertyValue(PATTERN_TITLE_TEXT, patternTitleText);
@@ -268,7 +265,7 @@ public class PatternViewModel extends FormViewModel {
         }
 
         // Reload STAMP Form View Model
-        StampFormViewModelBase stampFormViewModel = getPropertyValue(STAMP_VIEW_MODEL);
+        StampFormViewModelBase stampFormViewModel = getPropertyValue(ViewModelKey.STAMP_VIEW_MODEL);
         stampFormViewModel.update(patternFacade, getPropertyValue(PATTERN_TOPIC), getViewProperties());
     }
 
@@ -280,8 +277,13 @@ public class PatternViewModel extends FormViewModel {
          * A contradiction implies a discrepancy. IN other parts of the code where we needed to sort thing based on time,
          * there are position records that can be sorted via a HashTree Collection object.
          * */
-        SemanticEntityVersion fqnSemanticEntityVersion = getViewProperties().calculator().languageCalculator()
-                .getFullyQualifiedDescription(patternFacade).getWithContradictions().getFirstOptional().get();
+        Latest<SemanticEntityVersion> latestFqn = getViewProperties().calculator().languageCalculator()
+                .getFullyQualifiedDescription(patternFacade);
+        if (!latestFqn.isPresent()) {
+            LOG.warn("No FQN description found for pattern: {} (nid={})", patternFacade, patternFacade.nid());
+            return;
+        }
+        SemanticEntityVersion fqnSemanticEntityVersion = latestFqn.get();
 
         EntityFacade fqnLanguage = (EntityFacade) fqnSemanticEntityVersion.fieldValues().get(0);
         String fqnString = (String) fqnSemanticEntityVersion.fieldValues().get(1);
@@ -299,11 +301,33 @@ public class PatternViewModel extends FormViewModel {
     }
 
     private String retrieveDisplayName(PatternFacade patternFacade) {
-        ViewProperties viewProperties = getPropertyValue(VIEW_PROPERTIES);
-        ViewCalculator viewCalculator = viewProperties.calculator();
-        Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
-        Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
-        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
+        ViewProperties viewProperties = getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
+        // Follow the view coordinate's description-type preference (FQN vs regular) so the pattern
+        // title tracks the language coordinate like the concept banner and axiom badges (#660).
+        return viewProperties.calculator().getDescriptionTextOrNid(patternFacade.nid());
+    }
+
+    /**
+     * Re-resolves the coordinate-dependent display values (title, semantic purpose, semantic meaning)
+     * and updates their bound properties. Unlike {@link #loadPatternValues()} (which appends to the
+     * field/name lists) this is safe to call repeatedly, so it is wired to a view-coordinate change to
+     * keep these following the language coordinate (ike-issues#660). The field-name list is resolved at
+     * load time only; refreshing those live would require rebuilding the field list.
+     */
+    public void refreshForCoordinate() {
+        ViewCalculator viewCalculator = getViewProperties().calculator();
+        EntityFacade patternFacade = getPropertyValue(ViewModelKey.PATTERN);
+        if (patternFacade != null) {
+            setPropertyValue(PATTERN_TITLE_TEXT, retrieveDisplayName((PatternFacade) patternFacade));
+        }
+        Entity purposeEntity = getPropertyValue(PURPOSE_ENTITY);
+        if (purposeEntity != null) {
+            setPropertyValue(PURPOSE_TEXT, viewCalculator.getDescriptionTextOrNid(purposeEntity.nid()));
+        }
+        Entity meaningEntity = getPropertyValue(MEANING_ENTITY);
+        if (meaningEntity != null) {
+            setPropertyValue(MEANING_TEXT, viewCalculator.getDescriptionTextOrNid(meaningEntity.nid()));
+        }
     }
 
     public boolean createPattern() {
@@ -314,149 +338,141 @@ public class PatternViewModel extends FormViewModel {
             }
             return false;
         }
-        PublicId patternPublicId =  getPropertyValue(PATTERN) == null ? PublicIds.newRandom():  ((PatternFacade) getPropertyValue(PATTERN)).publicId();
-        Pattern pattern = Pattern.make(null, patternPublicId);
 
-        // Generate the nid now, since tinkar composer is not handling the ScopedValue...
-        ScopedValue
-                .where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Pattern.pattern())
-                .call(() -> Entity.nid(patternPublicId));
+        PublicId patternPublicId = getPropertyValue(ViewModelKey.PATTERN) == null
+                ? PublicIds.newRandom()
+                : ((PatternFacade) getPropertyValue(ViewModelKey.PATTERN)).publicId();
+        boolean isEdit = getPropertyValue(ViewModelKey.PATTERN) != null;
 
-        Composer composer = new Composer("Save Pattern Definition");
-
-        // get the STAMP values from the nested stampViewModel
-        StampFormViewModelBase stampFormViewModel = getPropertyValue(STAMP_VIEW_MODEL);
+        // Extract STAMP values from the nested stampViewModel
+        StampFormViewModelBase stampFormViewModel = getPropertyValue(ViewModelKey.STAMP_VIEW_MODEL);
         State state = stampFormViewModel.getPropertyValue(STATUS);
 
         Object authorObject = stampFormViewModel.getPropertyValue(AUTHOR);
         EntityProxy.Concept authorConcept = null;
-        if (authorObject instanceof EntityProxy.Concept) {
-            authorConcept = (EntityProxy.Concept) authorObject;
+        if (authorObject instanceof EntityProxy.Concept concept) {
+            authorConcept = concept;
         } else if (authorObject instanceof ConceptRecord authorConceptRecord) {
             authorConcept = EntityProxy.Concept.make(authorConceptRecord.nid());
         }
 
         ConceptEntity module = stampFormViewModel.getPropertyValue(MODULE);
         ConceptEntity path = stampFormViewModel.getPropertyValue(PATH);
-        Session session = composer.open(state, authorConcept, module.toProxy(), path.toProxy());
-        EntityProxy.Concept conceptEntityMeaning = EntityProxy.Concept.make(((EntityFacade)getPropertyValue(MEANING_ENTITY)).nid());
-        EntityProxy.Concept conceptEntityPurpose = EntityProxy.Concept.make(((EntityFacade)getPropertyValue(PURPOSE_ENTITY)).nid());
 
-        // set up pattern with the fully qualified name
-        ObservableList<PatternField> fieldsProperty = getObservableList(FIELDS_COLLECTION);
+        // Create ObservableComposer — handles scoped values internally
+        ObservableComposer composer = ObservableComposer.create(
+                getViewProperties().calculator(), state, authorConcept, module, path,
+                "Save Pattern Definition");
 
-        // get the fqn semantic version
+        // --- Compose the pattern entity ---
+        EntityComposer<ObservablePatternVersion.Editable, ObservablePattern> patternComposer =
+                composer.composePattern(patternPublicId);
+        ObservablePatternVersion.Editable patternEditable = patternComposer.getEditableVersion();
+
+        EntityFacade meaningEntity = (EntityFacade) getPropertyValue(MEANING_ENTITY);
+        EntityFacade purposeEntity = (EntityFacade) getPropertyValue(PURPOSE_ENTITY);
+        patternEditable.getMeaningProperty().set(meaningEntity);
+        patternEditable.getPurposeProperty().set(purposeEntity);
+
+        // Build field definitions from the UI collection
+        ObservableList<PatternField> fieldsProperty = getObservableList(ViewModelKey.FIELDS_COLLECTION);
+        int patternNid = PrimitiveData.nid(patternPublicId);
+        int stampNid = patternEditable.getEditStamp().nid();
+        org.eclipse.collections.api.list.MutableList<FieldDefinitionRecord> fieldDefs =
+                org.eclipse.collections.api.factory.Lists.mutable.ofInitialCapacity(fieldsProperty.size());
+        for (int i = 0; i < fieldsProperty.size(); i++) {
+            PatternField pf = fieldsProperty.get(i);
+            fieldDefs.add(new FieldDefinitionRecord(
+                    pf.dataType().nid(), pf.purpose().nid(), pf.meaning().nid(),
+                    stampNid, patternNid, i));
+        }
+        patternEditable.setFieldDefinitions(fieldDefs.toImmutable());
+        patternComposer.save();
+
+        ObservablePattern observablePattern = patternComposer.getEntity();
+
+        // --- Compose FQN description semantic ---
+        // Only compose if creating new, or FQN has changed in edit mode
         ObjectProperty<EntityProxy.Semantic> fqnProp = getObjectProperty(FQN_PROXY);
-        if (fqnProp.isNull().get()) {
-            // if the FQN is empty, create a new one
-            EntityProxy.Semantic fqnProxy = EntityProxy.Semantic.make(null, PublicIds.newRandom());
-            fqnProp.set(fqnProxy);
+        if (!isEdit || generateFqnHash() != changeHash) {
+            PublicId fqnPublicId = (fqnProp.get() != null)
+                    ? fqnProp.get().publicId()
+                    : PublicIds.newRandom();
+
+            EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> fqnComposer =
+                    composer.composeSemantic(fqnPublicId, observablePattern, TinkarTerm.DESCRIPTION_PATTERN);
+            ObservableSemanticVersion.Editable fqnEditable = fqnComposer.getEditableVersion();
+
+            // DESCRIPTION_PATTERN fields: [0]=language, [1]=text, [2]=caseSignificance, [3]=descriptionType
+            fqnEditable.getEditableField(0).setObjectValue(getPropertyValue(FQN_LANGUAGE));
+            fqnEditable.getEditableField(1).setObjectValue(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT));
+            fqnEditable.getEditableField(2).setObjectValue(getPropertyValue(FQN_CASE_SIGNIFICANCE));
+            fqnEditable.getEditableField(3).setObjectValue(FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+            fqnComposer.save();
+
+            // Update the FQN proxy property
+            fqnProp.set(EntityProxy.Semantic.make(fqnPublicId));
+
+            // Compose US Dialect for the FQN
+            PublicId dialectPublicId = PublicIds.newRandom();
+            EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> dialectComposer =
+                    composer.composeSemantic(dialectPublicId, fqnComposer.getEntity(), TinkarTerm.US_DIALECT_PATTERN);
+            ObservableSemanticVersion.Editable dialectEditable = dialectComposer.getEditableVersion();
+            // US_DIALECT_PATTERN fields: [0]=acceptability
+            dialectEditable.getEditableField(0).setObjectValue(ACCEPTABLE);
+            dialectComposer.save();
         }
 
-        if (getPropertyValue(PATTERN) == null) {
-            // create pattern compose statement
-            session.compose((PatternAssembler patternAssembler) -> {
-                patternAssembler
-                        .pattern(pattern)
-                        .meaning(conceptEntityMeaning)
-                        .purpose(conceptEntityPurpose)
-                        .attach(FullyQualifiedName.class, fqn -> fqn
-                            .semantic(fqnProp.get())
-                            .language(((EntityFacade)getPropertyValue(FQN_LANGUAGE)).toProxy())
-                            .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
-                            .caseSignificance(((EntityFacade)getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy())
-                            .attach(new USDialect().acceptability(ACCEPTABLE))
-                );
-
-                // add the field definitions
-                for (int i = 0; i < fieldsProperty.size(); i++) {
-                    PatternField patternField = fieldsProperty.get(i);
-                    EntityProxy.Concept conceptEntityFieldMeaning = EntityProxy.Concept.make(patternField.meaning().nid());
-                    EntityProxy.Concept conceptEntityFieldPurpose = EntityProxy.Concept.make(patternField.purpose().nid());
-                    EntityProxy.Concept conceptEntityFieldDatatype = EntityProxy.Concept.make(patternField.dataType().nid());
-                    patternAssembler.fieldDefinition(conceptEntityFieldMeaning, conceptEntityFieldPurpose, conceptEntityFieldDatatype, i);
-                }
-            });
-        } else {
-            // only write when there is change in Semantic meaning or Semantic purpose
-            session.compose((PatternAssemblerConsumer) patternAssembler -> {
-                patternAssembler
-                        .pattern(pattern)
-                        .meaning(conceptEntityMeaning)
-                        .purpose(conceptEntityPurpose);
-                     /*
-                        only write a fqn version IF there is a change to
-                            - FQN language,
-                            - FQN case significance,
-                            - FQN text (description),
-                            - FQN status
-                            - path
-                            - module
-                     */
-                    if (generateFqnHash() != changeHash) {
-                        patternAssembler.attach(FullyQualifiedName.class, fqn -> fqn
-                                        .semantic(fqnProp.get())
-                                        .language(((EntityFacade) getPropertyValue(FQN_LANGUAGE)).toProxy())
-                                        .text(getPropertyValue(FQN_DESCRIPTION_NAME_TEXT))
-                                        .caseSignificance(((EntityFacade) getPropertyValue(FQN_CASE_SIGNIFICANCE)).toProxy())
-                                .attach(new USDialect().acceptability(ACCEPTABLE))
-                        );
-                    }
-                    // add the field definitions
-                    for (int i = 0; i < fieldsProperty.size(); i++) {
-                        PatternField patternField = fieldsProperty.get(i);
-                        EntityProxy.Concept conceptEntityFieldMeaning = EntityProxy.Concept.make(patternField.meaning().nid());
-                        EntityProxy.Concept conceptEntityFieldPurpose = EntityProxy.Concept.make(patternField.purpose().nid());
-                        EntityProxy.Concept conceptEntityFieldDatatype = EntityProxy.Concept.make(patternField.dataType().nid());
-                        patternAssembler.fieldDefinition(conceptEntityFieldMeaning, conceptEntityFieldPurpose, conceptEntityFieldDatatype, i);
-                    }
-            });
-        }
-
-
-        // add the other name description semantics if they exist
+        // --- Compose other name (synonym) description semantics ---
         ObservableList<DescrName> otherNamesProperty = getObservableList(OTHER_NAMES);
-        boolean isEdit = getPropertyValue(MODE).equals("EDIT");
         Map<String, Integer> currentOtherNameMap = Map.of();
         if (isEdit) {
             currentOtherNameMap = generateOtherNameHash();
         }
         final Map<String, Integer> finalCurrentOtherNameMap = currentOtherNameMap;
-        otherNamesProperty.forEach(otherName -> {
-            Synonym synonym = new Synonym()
-                    .language(otherName.getLanguage().toProxy())
-                    .text(otherName.getNameText())
-                    .caseSignificance(otherName.getCaseSignificance().toProxy());
+
+        for (DescrName otherName : otherNamesProperty) {
+            boolean shouldCompose;
+            PublicId otherNamePublicId;
+
             if (isEdit) {
-                String otKey = otherName.getSemanticPublicId() != null ? otherName.getSemanticPublicId().idString() : "-not-found-";
-                // if there is a CHANGE to the other name, then we allow the update
-                if (!baselineOtherNameHashMap.containsKey(otKey) || !baselineOtherNameHashMap.get(otKey).equals(finalCurrentOtherNameMap.get(otKey))) {
-                    HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
-                    if (regularNamesMap != null && regularNamesMap.get(otherName) != null) {
-                        SemanticEntityVersion semanticEntityVersion = regularNamesMap.get(otherName); // get the right other name to edit
-                        SemanticEntity<SemanticEntityVersion> semanticEntity = semanticEntityVersion.chronology();
-                        synonym.semantic(semanticEntity.toProxy());
-                        session.compose(synonym, pattern);
-                    } else {
-                        session.compose(synonym, pattern)
-                                .attach(new USDialect().acceptability(ACCEPTABLE));
-                    }
-                }
+                String otKey = otherName.getSemanticPublicId() != null
+                        ? otherName.getSemanticPublicId().idString() : "-not-found-";
+                shouldCompose = !baselineOtherNameHashMap.containsKey(otKey)
+                        || !baselineOtherNameHashMap.get(otKey).equals(finalCurrentOtherNameMap.get(otKey));
+                otherNamePublicId = otherName.getSemanticPublicId() != null
+                        ? otherName.getSemanticPublicId() : PublicIds.newRandom();
             } else {
-                session.compose(synonym, pattern)
-                        .attach(new USDialect().acceptability(ACCEPTABLE));
+                shouldCompose = true;
+                otherNamePublicId = PublicIds.newRandom();
             }
 
-        });
-        boolean isSuccess = composer.commitSession(session);
+            if (shouldCompose) {
+                EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> synComposer =
+                        composer.composeSemantic(otherNamePublicId, observablePattern, TinkarTerm.DESCRIPTION_PATTERN);
+                ObservableSemanticVersion.Editable synEditable = synComposer.getEditableVersion();
+                synEditable.getEditableField(0).setObjectValue(otherName.getLanguage());
+                synEditable.getEditableField(1).setObjectValue(otherName.getNameText());
+                synEditable.getEditableField(2).setObjectValue(otherName.getCaseSignificance());
+                synEditable.getEditableField(3).setObjectValue(REGULAR_NAME_DESCRIPTION_TYPE);
+                synComposer.save();
 
-        // change hash code
-        //TODO create the hash of the pattern and its values
-        //changeHash = generateFqnHash();
+                // Compose US Dialect for the synonym (only for new synonyms)
+                if (!isEdit || otherName.getSemanticPublicId() == null) {
+                    PublicId synDialectPublicId = PublicIds.newRandom();
+                    EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> synDialectComposer =
+                            composer.composeSemantic(synDialectPublicId, synComposer.getEntity(), TinkarTerm.US_DIALECT_PATTERN);
+                    synDialectComposer.getEditableVersion().getEditableField(0).setObjectValue(ACCEPTABLE);
+                    synDialectComposer.save();
+                }
+            }
+        }
 
+        // Commit all composed entities
+        composer.commit();
 
-        setPropertyValue(PATTERN, pattern);
-        return isSuccess;
+        setPropertyValue(ViewModelKey.PATTERN, Pattern.make(null, patternPublicId));
+        return true;
     }
 
 
@@ -488,6 +504,6 @@ public class PatternViewModel extends FormViewModel {
     }
 
     public ViewProperties getViewProperties() {
-        return getPropertyValue(VIEW_PROPERTIES);
+        return getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
     }
 }

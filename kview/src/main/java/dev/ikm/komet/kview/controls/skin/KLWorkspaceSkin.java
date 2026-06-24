@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Comparator;
 import java.util.Objects;
 
+import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
 import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLDropRegion.Type.BOX;
@@ -401,7 +402,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // Show drop-region if a valid item is dragged over
         workspace.setOnDragOver(event -> {
             if (event.getGestureSource() != null && (event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)
-                    || event.getDragboard().hasContent(MULTI_PARENT_GRAPH_DRAG_FORMAT) || event.getDragboard().hasString())) {
+                    || event.getDragboard().hasContent(MULTI_PARENT_GRAPH_DRAG_FORMAT)
+                    || event.getDragboard().hasContent(COMPONENT_DRAG_FORMAT)
+                    || event.getDragboard().hasString())) {
                 // Convert screen coordinates to local coordinates of the desktop pane
                 final Point2D localCoords = desktopPane.screenToLocal(event.getScreenX(), event.getScreenY());
                 final double mouseX = localCoords.getX();

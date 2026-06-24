@@ -190,7 +190,8 @@
  * Pattern View                                                                *
  ******************************************************************************/
 
-.window .section-view .pattern-view .pattern-container {
+.window .section-view .pattern-view .pattern-container,
+.window .section-view .pattern-table-view .pattern-container {
     -fx-border-color: transparent, #9747ff, transparent; /* First border acts like a margin */
     -fx-border-radius: 3px, 3px, 3px;
     -fx-border-style: solid, segments(3, 3), solid;
@@ -203,12 +204,14 @@
     -fx-padding: 6px;
 }
 
-.window .section-view .pattern-view .pattern-title {
+.window .section-view .pattern-view .pattern-title,
+.window .section-view .pattern-table-view .pattern-title {
     -fx-padding: 0 2px 0 2px;
 }
 
 /************  Hover  *************/
-.window .section-view .pattern-view .pattern-container:hover {
+.window .section-view .pattern-view .pattern-container:hover,
+.window .section-view .pattern-table-view .pattern-container:hover {
     -fx-border-color: transparent, rgba(98, 137, 247, 0.5), transparent;
     -fx-border-style: solid, solid, solid;
 
@@ -219,7 +222,8 @@
 
 /***********  Selection  ***********/
 
-.window .section-view .pattern-view:selected .pattern-container {
+.window .section-view .pattern-view:selected .pattern-container,
+.window .section-view .pattern-table-view:selected .pattern-container {
     -fx-border-color: transparent, #5dcf16, #5dcf16;
     -fx-border-style: solid, solid, solid;
 }
@@ -274,6 +278,81 @@
     -fx-border-color: #5dcf16, transparent;
     -fx-background-color: #f4fbf0;
 }
+
+/*******************************************************************************
+ * Pattern Table View                                                          *
+ *                                                                             *
+ * The table body mirrors the journal-side .pattern-semantics-table look       *
+ * (see kview.css): light-blue headers, thin grey gridlines, Noto Sans.        *
+ ******************************************************************************/
+
+.window .section-view .pattern-table-view .pattern-table {
+    -fx-background-color: white;
+    -fx-border-color: #ddd;
+    -fx-border-width: 1px;
+
+    -fx-pref-height: 140px;
+
+    -fx-faint-focus-color: transparent;
+    -fx-focus-color: #ddd;
+    -fx-cell-focus-inner-border: transparent;
+}
+
+/********************************  Header  **********************************/
+
+.window .section-view .pattern-table-view .pattern-table .column-header,
+.window .section-view .pattern-table-view .pattern-table .filler {
+    -fx-background-color: #DCE3F1;
+    -fx-background-insets: 0;
+
+    -fx-border-color: #ddd;
+    -fx-border-width: 0 1px 2px 0;
+}
+
+.window .section-view .pattern-table-view .pattern-table .column-header .label {
+    -fx-text-fill: #2d2d2d;
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 12px;
+    -fx-alignment: center-left;
+
+    -fx-padding: 3px 7px 3px 7px;
+
+    -fx-background-color: transparent;
+}
+
+.window .section-view .pattern-table-view .pattern-table .show-hide-columns-button {
+    -fx-background-color: #DCE3F1;
+}
+
+/********************************  Body  **********************************/
+
+.window .section-view .pattern-table-view .pattern-table .table-cell {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 500;
+    -fx-font-size: 12px;
+    -fx-alignment: top-left;
+
+    -fx-border-color: transparent #e9e9e9 transparent transparent;
+    -fx-border-width: 1px;
+    -fx-padding: 10px 13px 13px 13px;
+}
+
+.window .section-view .pattern-table-view .pattern-table > .virtual-flow > .clipped-container > .sheet > .table-row-cell {
+    -fx-border-width: 1px;
+    -fx-border-color: transparent;
+}
+
+/* Scroll bars, matching the journal table */
+.window .section-view .pattern-table-view .pattern-table .scroll-bar {
+    -fx-background-color: white;
+}
+
+.window .section-view .pattern-table-view .pattern-table .scroll-bar .track,
+.window .section-view .pattern-table-view .pattern-table .scroll-bar .track-background {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
 /*******************************************************************************
  *                                                                             *
  * Others                                                                      *

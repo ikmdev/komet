@@ -13,6 +13,7 @@ import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.blueprint.FeatureAreaBlueprint;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.entity.EntityHandle;
 
 import java.util.*;
 
@@ -74,7 +75,8 @@ public final class ReadOnlyObservableChronologyFieldArea extends FeatureAreaBlue
             int nid = newValue.value().nid();
             ObservableEntityHandle.get(nid).entity().ifPresent((observableEntity -> {
                 PublicId pid = observableEntity.publicId();
-                ComponentItem componentItem = new ComponentItem(purpose, Identicon.generateIdenticonImage(pid), nid);
+                boolean isConcept = EntityHandle.get(nid).isConcept();
+                ComponentItem componentItem = new ComponentItem(purpose, Identicon.generateIdenticonImage(pid), pid, isConcept);
                 getFxPeer().setValue(componentItem);
             }));
         }

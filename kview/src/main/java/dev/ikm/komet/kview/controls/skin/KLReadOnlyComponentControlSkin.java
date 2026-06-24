@@ -1,19 +1,15 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.NodeUtils;
+import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
-import dev.ikm.komet.kview.controls.KometIcon;
-import javafx.scene.control.Label;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
 public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KLReadOnlyComponentControl> {
 
     private final HBox textContainer = new HBox();
-    private final ImageView iconImageView = new ImageView();
-    private final Label textLabel = new Label();
+    private final ComponentItemNode componentItemNode = new ComponentItemNode();
 
     /**
      * @param control The control for which this Skin should attach to.
@@ -23,38 +19,25 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
 
         mainContainer.getChildren().addAll(textContainer);
 
-        textContainer.getChildren().addAll(iconImageView, promptTextLabel, textLabel);
+        textContainer.getChildren().addAll(promptTextLabel, componentItemNode);
 
         HBox.setHgrow(promptTextLabel, Priority.ALWAYS);
         promptTextLabel.setMaxWidth(Double.MAX_VALUE);
 
         if (control.getValue() != null) {
-            textLabel.setText(control.getValue().getText());
-            iconImageView.setImage(control.getValue().getIcon());
+            componentItemNode.setComponentItem(control.getValue());
         }
-        control.valueProperty().subscribe((oldVal, newVal) -> {
-            if (newVal != null) {
-                textLabel.setText(newVal.getText());
-                iconImageView.setImage(newVal.getIcon());
-            } else {
-                textLabel.setText("");
-                iconImageView.setImage(null);
-            }
-        });
+        control.valueProperty().subscribe(componentItemNode::setComponentItem);
 
-        textLabel.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(textLabel, Priority.ALWAYS);
+        control.setContextMenu(null);
 
-        iconImageView.setFitWidth(16);
-        iconImageView.setFitHeight(16);
+        componentItemNode.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(componentItemNode, Priority.ALWAYS);
 
         initTexts(control);
 
-        setupContextMenu(control);
-
         // CSS
         textContainer.getStyleClass().add("text-container");
-        textLabel.getStyleClass().add("text");
     }
 
     private void initTexts(KLReadOnlyComponentControl control) {
@@ -66,18 +49,6 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
         boolean showPromptText = control.getValue() == null;
 
         NodeUtils.setShowing(promptTextLabel, showPromptText);
-        NodeUtils.setShowing(textLabel, !showPromptText);
-        NodeUtils.setShowing(iconImageView, !showPromptText);
-    }
-
-    private void setupContextMenu(KLReadOnlyComponentControl control) {
-        contextMenu.getItems().add(
-                createMenuItem("Edit Component", KometIcon.IconValue.PENCIL, this::fireOnEditAction)
-        );
-
-        contextMenu.getItems().addAll(
-                new SeparatorMenuItem(),
-                createMenuItem("Remove", KometIcon.IconValue.TRASH, this::fireOnRemoveAction)
-        );
+        NodeUtils.setShowing(componentItemNode, !showPromptText);
     }
 }

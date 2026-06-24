@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class DeviceViewModel extends FormViewModel {
 
@@ -55,8 +56,8 @@ public class DeviceViewModel extends FormViewModel {
     public DeviceViewModel() {
         super();
         addProperty(LIDR_RECORD, (SemanticRecord) null)
-                .addProperty(CONCEPT_TOPIC, (UUID) null)
-                .addProperty(VIEW_PROPERTIES, (ViewProperties) null)
+                .addProperty(ViewModelKey.CONCEPT_TOPIC, (UUID) null)
+                .addProperty(ViewModelKey.VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(DEVICE_ENTITY, (EntityFacade) null) // this is/will be the device concept entity
                 // in non-manual mode, a device entity will already have a FQN
                 .addProperty(FULLY_QUALIFIED_NAME, (Object) null) // this is the FQN of the device concept

@@ -27,7 +27,6 @@ module dev.ikm.komet.kview {
     requires dev.ikm.komet.progress;
     requires org.carlfx.cognitive;
     requires org.carlfx.axonic;
-    requires dev.ikm.tinkar.composer;
 
     // JPro related modules
     requires jpro.webapi;
@@ -43,6 +42,7 @@ module dev.ikm.komet.kview {
     requires javafx.graphics;
     requires javafx.fxml;
     requires javafx.controls;
+    requires java.desktop;
     requires org.slf4j;
     requires javafx.base;
     requires dev.ikm.tinkar.common;
@@ -52,6 +52,7 @@ module dev.ikm.komet.kview {
     requires dev.ikm.tinkar.events;
     requires dev.ikm.komet.preferences;
     requires dev.ikm.komet.rules;
+    requires dev.ikm.tinkar.schema;
 
     exports dev.ikm.komet.kview.state;
     exports dev.ikm.komet.kview.state.pattern;
@@ -177,6 +178,12 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.viewmodel.stamp to dev.ikm.komet.application, javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.genpurpose.control;
     opens dev.ikm.komet.kview.mvvm.view.genpurpose.control to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
+    opens dev.ikm.komet.kview.mvvm.view.genpurpose.control.table to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
+    opens dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard to javafx.fxml, org.carlfx.cognitive;
+    exports dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell;
+    opens dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell to javafx.fxml, org.carlfx.cognitive;
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.concept.ConceptNodeFactory;
 
@@ -189,6 +196,7 @@ module dev.ikm.komet.kview {
 
     uses dev.ikm.tinkar.events.EvtBus;
     uses EntityKlWindowFactory;
+    uses dev.ikm.komet.layout.area.KlToolArea.Factory;
 
     // Primary service interface for discovering ALL area factories (built-in and plugins)
     provides dev.ikm.komet.layout.KlArea.Factory with
@@ -243,4 +251,5 @@ module dev.ikm.komet.kview {
     provides dev.ikm.komet.layout.area.KlAreaForString.Factory with
             dev.ikm.komet.kview.klauthoring.readonly.stringfield.ReadOnlyStringFieldArea.Factory,
             dev.ikm.komet.kview.klauthoring.editable.stringfield.EditableStringFieldArea.Factory;
+
 }

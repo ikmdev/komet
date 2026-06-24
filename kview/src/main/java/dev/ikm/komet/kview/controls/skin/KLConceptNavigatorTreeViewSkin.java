@@ -16,6 +16,7 @@ import dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell;
 import dev.ikm.komet.kview.controls.MultipleSelectionContextMenu;
 import dev.ikm.komet.kview.controls.SingleSelectionContextMenu;
 import dev.ikm.tinkar.common.flow.FlowSubscriber;
+import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -262,16 +263,15 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
 
         // External drag and drop
         treeView.setOnDragOver(event -> {
-            if (event.getDragboard().hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
+            if (getDraggedConcept(event.getDragboard()) != null) {
                 event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
             }
             event.consume();
         });
 
         treeView.setOnDragDropped(event -> {
-            Dragboard dragboard = event.getDragboard();
-            if (dragboard.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
-                ConceptFacade conceptFacade = ProxyFactory.fromXmlFragment((String) dragboard.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
+            ConceptFacade conceptFacade = getDraggedConcept(event.getDragboard());
+            if (conceptFacade != null) {
                 InvertedTree.ConceptItem parentConceptItem = new InvertedTree.ConceptItem(-1, conceptFacade.nid(), "");
                 expandAndSelectConcept(parentConceptItem);
                 event.setDropCompleted(true);
@@ -317,6 +317,27 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             treeView.unhighlightConceptsWithDelay();
             highlighted.set(false);
         };
+    }
+
+    /**
+     * Resolves the concept being dragged onto the navigator, regardless of which drag source
+     * produced the dragboard. Concepts dragged from the nextgen concept window arrive as a
+     * {@link KometClipboard#KOMET_CONCEPT_PROXY} XML fragment, while identicons dragged from the
+     * Standard view arrive as a {@link KometClipboard#COMPONENT_DRAG_FORMAT} encoded public id.
+     * Non-concept components (semantics, patterns) resolve to {@code null} and are not accepted.
+     *
+     * @param dragboard the dragboard of the current drag-and-drop gesture
+     * @return the dragged {@link ConceptFacade}, or {@code null} if the dragboard does not carry a concept
+     */
+    private ConceptFacade getDraggedConcept(Dragboard dragboard) {
+        if (dragboard.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
+            return ProxyFactory.fromXmlFragment((String) dragboard.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
+        }
+        if (dragboard.hasContent(KometClipboard.COMPONENT_DRAG_FORMAT)) {
+            PublicId publicId = KometClipboard.decodePublicId((String) dragboard.getContent(KometClipboard.COMPONENT_DRAG_FORMAT));
+            return EntityHandle.get(publicId).asConcept().map(ConceptFacade.class::cast).orElse(null);
+        }
+        return null;
     }
 
     /**

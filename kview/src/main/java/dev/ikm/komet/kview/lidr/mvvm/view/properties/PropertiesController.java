@@ -55,6 +55,7 @@ import java.util.UUID;
 import static dev.ikm.komet.kview.fxutils.CssHelper.genText;
 import static dev.ikm.komet.kview.lidr.events.ShowPanelEvent.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.*;
 
 /**
  * The properties window providing tabs of Edit, Hierarchy, History, and Comments.

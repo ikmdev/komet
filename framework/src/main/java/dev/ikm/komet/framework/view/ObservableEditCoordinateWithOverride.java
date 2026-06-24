@@ -37,9 +37,7 @@ public class ObservableEditCoordinateWithOverride
      */
     public ObservableEditCoordinateWithOverride(ObservableEditCoordinate editCoordinate, String coordinateName) {
         super(editCoordinate, coordinateName);
-        if (editCoordinate instanceof ObservableEditCoordinateWithOverride) {
-            throw new IllegalStateException("Cannot override an overridden Coordinate. ");
-        }
+        // Depth-independent override nesting (ike-issues#663): an override may wrap another override.
 
     }
 

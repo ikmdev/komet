@@ -1426,6 +1426,9 @@ public final class ObservableComposer {
          */
         public ObservablePatternBuilder publicId(PublicId publicId) {
             this.publicId = publicId;
+            // Diagnostic for ikmdev/komet-desktop#12: confirm this code path runs on UI "Publish" of a new pattern.
+            LOG.info("ObservablePatternBuilder.publicId: allocating nid for publicId={} (scopedPatternPublicId={})",
+                    publicId, EntityBinding.Pattern.pattern().publicId());
             ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Pattern.pattern())
                     .call(() -> PrimitiveData.nid(publicId));
             return this;
@@ -1444,6 +1447,9 @@ public final class ObservableComposer {
                 // Generate publicId if not provided
                 if (publicId == null) {
                     publicId = PublicIds.newRandom();
+                    // Diagnostic for ikmdev/komet-desktop#12: confirm this code path runs on UI "Publish" of a new pattern.
+                    LOG.info("PatternComposer.ensureInitialized: allocating nid for new pattern publicId={} (scopedPatternPublicId={})",
+                            publicId, EntityBinding.Pattern.pattern().publicId());
                     ScopedValue.where(SCOPED_PATTERN_PUBLICID_FOR_NID, EntityBinding.Pattern.pattern())
                             .call(() -> PrimitiveData.nid(publicId));
                 }
@@ -1498,7 +1504,7 @@ public final class ObservableComposer {
         private void makeEmptyVersion(PatternRecord patternRecord, ObservableStamp stampEntity, RecordListBuilder versions) {
             PatternVersionRecord patternVersionRecord = new PatternVersionRecord(patternRecord, stampEntity.nid(),
             TinkarTerm.PURPOSE.nid(), TinkarTerm.MEANING.nid(),
-                    versions);
+                    Lists.immutable.empty());
             versions.add(patternVersionRecord);
         }
 

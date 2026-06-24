@@ -15,6 +15,7 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout;
     exports dev.ikm.komet.layout.action;
     exports dev.ikm.komet.layout.area;
+    exports dev.ikm.komet.layout.check;
     exports dev.ikm.komet.layout.component;
     exports dev.ikm.komet.layout.context;
     exports dev.ikm.komet.layout.event;
@@ -27,10 +28,16 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout.window;
     exports dev.ikm.komet.layout.editor.model;
     exports dev.ikm.komet.layout.editor;
+    exports dev.ikm.komet.layout.editor.property;
     exports dev.ikm.komet.layout_engine.blueprint;
+    exports dev.ikm.komet.layout_engine.host;
 
     opens dev.ikm.komet.layout to javafx.fxml;
     opens dev.ikm.layout.app to javafx.fxml;
+
+    // Pattern semantics factories are provided downstream (knowledge-layout-editor) but discovered
+    // and shared here via KlPatternSemanticsFactories, so the lookup lives in one place.
+    uses dev.ikm.komet.layout.KlPatternSemanticsFactory;
 
     // Primary service interface for discovering ALL area factories (built-in and plugins)
     provides dev.ikm.komet.layout.KlArea.Factory
@@ -45,7 +52,12 @@ module dev.ikm.komet.layout {
                  dev.ikm.komet.layout_engine.component.area.SimpleVersionList.Factory,
                  dev.ikm.komet.layout_engine.component.area.MultiVersionArea.Factory,
                  dev.ikm.komet.layout_engine.component.area.SupplementalTestArea.Factory,
-                 dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea.Factory;
+                 dev.ikm.komet.layout_engine.component.area.EvreteCheckArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.StatedAxiomArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.InferredAxiomArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.StatedKonceptAxiomArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.InferredKonceptAxiomArea.Factory;
 
     // Type-specific service interfaces for targeted discovery
     provides dev.ikm.komet.layout.area.KlAreaForBoolean.Factory
@@ -73,7 +85,12 @@ module dev.ikm.komet.layout {
             with dev.ikm.komet.layout_engine.component.area.MultiVersionArea.Factory;
 
     provides dev.ikm.komet.layout.area.KlSupplementalArea.Factory
-            with dev.ikm.komet.layout_engine.component.area.SupplementalTestArea.Factory;
+            with dev.ikm.komet.layout_engine.component.area.SupplementalTestArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.EvreteCheckArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.StatedAxiomArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.InferredAxiomArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.StatedKonceptAxiomArea.Factory,
+                 dev.ikm.komet.layout_engine.component.area.InferredKonceptAxiomArea.Factory;
 
     provides dev.ikm.komet.layout.component.KlGenericChronologyArea.Factory
             with dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea.Factory;

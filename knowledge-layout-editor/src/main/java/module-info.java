@@ -56,4 +56,10 @@ open module dev.ikm.komet.kleditorapp {
     uses dev.ikm.komet.layout.area.KlAreaForInteger.Factory;
     uses dev.ikm.komet.layout.area.KlAreaForBoolean.Factory;
     uses dev.ikm.komet.layout.area.KlAreaForImage.Factory;
+
+    uses dev.ikm.komet.layout.area.KlSupplementalArea.Factory;
+
+    provides dev.ikm.komet.layout.KlPatternSemanticsFactory with
+            dev.ikm.komet.kleditorapp.factory.KlPatternSemanticsStandardFactory,
+            dev.ikm.komet.kleditorapp.factory.KlPatternSemanticsTableFactory;
 }

@@ -1,4 +1,4 @@
-package dev.ikm.komet.kleditorapp.view.control;
+package dev.ikm.komet.layout.editor;
 
 
 import javafx.beans.property.BooleanProperty;

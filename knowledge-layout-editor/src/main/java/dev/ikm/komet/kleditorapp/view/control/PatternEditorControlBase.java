@@ -1,61 +1,48 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
-public class PatternViewControl extends GridBaseControl {
+/**
+ * Common base for the editor-side representations of a pattern. Holds the parts shared by every
+ * representation — the title, its visibility, the parent-section link and the titled container — while
+ * leaving the body to subclasses: {@link PatternStandardEditorControl} fills it with an author-sized grid of field
+ * tiles, {@link PatternTableEditorControl} with an actual table. Subclasses install their body via
+ * {@link #setContent(Node)}.
+ */
+public abstract class PatternEditorControlBase extends GridBaseControl {
     public static final PseudoClass TITLE_VISIBLE = PseudoClass.getPseudoClass("title-visible");
-
-    public static final String DEFAULT_STYLE_CLASS = "pattern-view";
 
     private final VBox patternContainer = new VBox();
     private final Label patternTitle = new Label();
-    private final EditorGridPane gridPane = new EditorGridPane();
 
-    PatternViewControl() {
+    protected PatternEditorControlBase() {
         patternContainer.getStyleClass().add("pattern-container");
+        patternTitle.getStyleClass().add("pattern-title");
 
         patternTitle.textProperty().bind(title);
-        patternContainer.getChildren().addAll(patternTitle, gridPane);
-
-        Bindings.bindContent(gridPane.getItems(), getFields());
+        patternContainer.getChildren().add(patternTitle);
 
         getChildren().add(patternContainer);
-
-        fields.addListener(this::onFieldsChanged);
-
-        gridPane.numberColumnsProperty().bind(numberColumns);
-
-        gridPane.setHgap(5);
-        gridPane.setVgap(0);
-
-        gridPane.setOnShouldDragAndDropRearrange(gridBaseControl -> gridBaseControl instanceof FieldViewControl);
-
-        // CSS
-        patternTitle.getStyleClass().add("pattern-title");
-        getStyleClass().add(DEFAULT_STYLE_CLASS);
     }
 
-    private void onFieldsChanged(ListChangeListener.Change<? extends FieldViewControl> change) {
-        while (change.next()) {
-            if (change.wasAdded()) {
-                change.getAddedSubList().forEach(fieldViewControl -> {
-                    fieldViewControl.setParentPattern(this);
-                });
-            }
+    /**
+     * Installs the representation-specific body below the title. The title is always the first child; the
+     * body is the second, replaced on subsequent calls.
+     */
+    protected void setContent(Node content) {
+        if (patternContainer.getChildren().size() > 1) {
+            patternContainer.getChildren().set(1, content);
+        } else {
+            patternContainer.getChildren().add(content);
         }
     }
 
@@ -78,7 +65,7 @@ public class PatternViewControl extends GridBaseControl {
     }
 
     // -- parent section
-    private ReadOnlyObjectWrapper<SectionViewControl> parentSection = new ReadOnlyObjectWrapper<>();
+    private final ReadOnlyObjectWrapper<SectionViewControl> parentSection = new ReadOnlyObjectWrapper<>();
     public SectionViewControl getParentSection() { return parentSection.get(); }
     public ReadOnlyObjectProperty<SectionViewControl> parentSectionProperty() { return parentSection.getReadOnlyProperty(); }
     void setParentSection(SectionViewControl parentSection) { this.parentSection.set(parentSection); }
@@ -99,14 +86,4 @@ public class PatternViewControl extends GridBaseControl {
     public boolean isTitleVisible() { return titleVisible.get(); }
     public BooleanProperty titleVisibleProperty() { return titleVisible; }
     public void setTitleVisible(boolean value) { titleVisible.setValue(value); }
-
-    // -- number columns
-    private final IntegerProperty numberColumns = new SimpleIntegerProperty(1);
-    public int getNumberColumns() { return numberColumns.get(); }
-    public IntegerProperty numberColumnsProperty() { return numberColumns; }
-    public void setNumberColumns(int number) { numberColumns.set(number); }
-
-    // -- fields
-    private final ObservableList<FieldViewControl> fields = FXCollections.observableArrayList();
-    public ObservableList<FieldViewControl> getFields() { return fields; }
 }

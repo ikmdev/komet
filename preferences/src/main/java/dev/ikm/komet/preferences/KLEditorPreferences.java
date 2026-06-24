@@ -26,6 +26,17 @@ public class KLEditorPreferences {
      */
     public static final String KL_REFERENCE_COMPONENT = "kl-reference-component";
 
+    /**
+     * Key for the list of supplemental areas placed in a Section (a list of area ids).
+     */
+    public static final String KL_SUPPLEMENTAL_AREAS = "KL-SUPPLEMENTAL-AREAS";
+
+    /**
+     * Key for a placed supplemental area's factory class name — the runtime
+     * {@code KlSupplementalArea.Factory} used to restore the area.
+     */
+    public static final String KL_AREA_FACTORY_CLASS_NAME = "kl-area-factory-class-name";
+
     public enum ListKey {
         /**
          * List of Patterns in a Section
@@ -61,5 +72,6 @@ public class KLEditorPreferences {
 
     public class PatternKey {
         public static String PATTERN_TITLE_VISIBLE = "pattern-title-visible";
+        public static String PATTERN_SEMANTICS_FACTORY = "pattern-semantics-factory";
     }
 }

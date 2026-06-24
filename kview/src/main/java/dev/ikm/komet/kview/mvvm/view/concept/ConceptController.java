@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.concept;
 
-import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW;
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
@@ -30,16 +29,16 @@ import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPatt
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.AXIOM;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_ENTITY;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.EDIT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.FULLY_QUALIFIED_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.OTHER_NAMES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.VIEW;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
@@ -69,7 +68,6 @@ import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.StampViewControl;
@@ -159,6 +157,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.function.*;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class ConceptController {
 
@@ -172,11 +171,6 @@ public class ConceptController {
 
     @FXML
     private MenuButton coordinatesMenuButton;
-
-    /**
-     * popup for the filter coordinates menu, used with coordinatesMenuButton. An instance of FilterOptionsPopup.
-     */
-    private FilterOptionsPopup filterOptionsPopup;
 
     /**
      * model required for the filter coordinates menu, used with coordinatesMenuButton
@@ -350,14 +344,10 @@ public class ConceptController {
     @FXML
     public void initialize() {
 
-        // Set up the filter options popup for the coordinates menu button.
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(
-                conceptViewModel.getViewProperties(),
-                CHAPTER_WINDOW,
-                detailsOuterBorderPane,
-                coordinatesMenuButton,
-                this::updateView
-        );
+        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
+        // replacing the kview FilterOptionsPopup.
+        setupViewContextMenu(coordinatesMenuButton, detailsOuterBorderPane,
+                conceptViewModel.getViewProperties(), this::updateView);
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
@@ -399,6 +389,18 @@ public class ConceptController {
             // then add the sorted removed (that can be added)
             removedMenuItems.sort(patternMenuComparator);
             membershipContextMenu.getItems().addAll(removedMenuItems);
+
+            // Rule-driven + plugin-contributed items: the Evrete engine surfaces, e.g.,
+            // the plugin's "Post state + history to Zulip" rule. Discovered uniformly via
+            // AddToContextMenu.providers() so plugins need not touch this controller.
+            javafx.beans.property.SimpleObjectProperty<EntityFacade> focusedEntity =
+                    new javafx.beans.property.SimpleObjectProperty<>(currentConceptFacade);
+            for (dev.ikm.komet.framework.context.AddToContextMenu provider
+                    : dev.ikm.komet.framework.context.AddToContextMenu.providers()) {
+                provider.addToContextMenu((javafx.scene.control.Control) null, membershipContextMenu,
+                        conceptViewModel.getViewProperties(), focusedEntity,
+                        new javafx.beans.property.SimpleIntegerProperty(), () -> { });
+            }
 
             membershipContextMenu.show(identiconImageView, contextMenuEvent.getScreenX(),
                     contextMenuEvent.getSceneY() + identiconImageView.getFitHeight());
@@ -484,7 +486,7 @@ public class ConceptController {
                 return;
             }
 
-            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+            if (CREATE.equals(conceptViewModel.getPropertyValue(ViewModelKey.MODE))) {
                 if (evt.getEventType() == CreateConceptEvent.ADD_FQN) {
                     fullyQualifiedNames.clear();
                     fullyQualifiedNames.add(descrName);
@@ -505,7 +507,7 @@ public class ConceptController {
                 // remove 'Add Fully Qualified Name' from the menu
                 setUpDescriptionContextMenu(addDescriptionButton);
                 //TODO revisit: why should the mode ever be edit inside a create event?
-            } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
+            } else if (EDIT.equals(conceptViewModel.getPropertyValue(ViewModelKey.MODE))){
                     conceptViewModel.addOtherName(conceptViewModel.getViewProperties().calculator().viewCoordinateRecord().editCoordinate(), descrName);
                     otherNames.add(descrName);
             }
@@ -521,7 +523,7 @@ public class ConceptController {
                 LOG.warn("ViewModel should not be null. Event type:" + evt.getEventType());
                 return;
             }
-            if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))) {
+            if (EDIT.equals(conceptViewModel.getPropertyValue(ViewModelKey.MODE))) {
                 if (evt.getEventType() == EditConceptEvent.EDIT_FQN) {
                     // the listener will fire on the FQN when we update this
                     fullyQualifiedNames.add(descrName);
@@ -581,7 +583,7 @@ public class ConceptController {
                 updateView();
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(conceptViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(conceptViewModel.getPropertyValue(ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, refreshSubscriber);
 
         conceptViewModel.getViewProperties().nodeView().addListener((obs, oldViewCoord, newViewCoord) -> {
@@ -591,10 +593,10 @@ public class ConceptController {
             }
         });
 
-        conceptViewModel.getProperty(MODE).subscribe(() -> {
-            propertiesController.setEditMode(conceptViewModel.getPropertyValue(MODE).equals(EDIT));
+        conceptViewModel.getProperty(ViewModelKey.MODE).subscribe(() -> {
+            propertiesController.setEditMode(conceptViewModel.getPropertyValue(ViewModelKey.MODE).equals(EDIT));
 
-            if (conceptViewModel.getPropertyValue(MODE).equals(CREATE)) {
+            if (conceptViewModel.getPropertyValue(ViewModelKey.MODE).equals(CREATE)) {
                 StampFormViewModelBase stampFormViewModel = propertiesController.getStampFormViewModel();
                 stampFormViewModel.getProperty(IS_CONFIRMED_OR_SUBMITTED).subscribe(this::onConfirmStampFormWhenCreating);
             } else {
@@ -709,7 +711,7 @@ public class ConceptController {
     }
 
     private void onAddDescriptionButtonPressed(ActionEvent actionEvent) {
-        if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
+        if (this.conceptViewModel.getPropertyValue(ViewModelKey.MODE).equals(CREATE) &&
                 getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES).isEmpty()) {
             // Show the context menu with 'Add Fully Qualified' option when it is a new concept in create mode and
             // there is no fully qualified name.
@@ -759,7 +761,7 @@ public class ConceptController {
         // if there is a fully qualified name, then do not give the option Add Fully Qualified
         Object[][] menuItems;
         // show the 'Add Fully Qualified' option when it is a new concept in create mode and there is no fully qualified name
-        if (this.conceptViewModel.getPropertyValue(MODE).equals(CREATE) &&
+        if (this.conceptViewModel.getPropertyValue(ViewModelKey.MODE).equals(CREATE) &&
                 getConceptViewModel().getObservableList(FULLY_QUALIFIED_NAMES).isEmpty()) {
             menuItems = new Object[][]{
                     {"ADD DESCRIPTION", true, new String[]{"menu-header-left-align"}, null, null},
@@ -822,7 +824,7 @@ public class ConceptController {
         conceptViewModel.setPropertyValue(AXIOM, ConceptViewModel.NECESSARY_SET);
 
         // Attempts to write data
-        if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+        if (CREATE.equals(conceptViewModel.getPropertyValue(ViewModelKey.MODE))) {
             boolean isWritten = conceptViewModel.createConcept(propertiesController.getStampFormViewModel());
             LOG.info("Is " + conceptViewModel + " created? " + isWritten);
             if (isWritten) {
@@ -836,7 +838,7 @@ public class ConceptController {
         conceptViewModel.setPropertyValue(AXIOM, ConceptViewModel.SUFFICIENT_SET);
 
         // Attempts to write data
-        if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+        if (CREATE.equals(conceptViewModel.getPropertyValue(ViewModelKey.MODE))) {
             boolean isWritten = conceptViewModel.createConcept(propertiesController.getStampFormViewModel());
             LOG.info("Is " + conceptViewModel + " created? " + isWritten);
             if (isWritten) {
@@ -903,9 +905,9 @@ public class ConceptController {
     public void updateView() {
         EntityFacade entityFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
         if (entityFacade != null) { // edit concept
-            getConceptViewModel().setPropertyValue(MODE, EDIT);
+            getConceptViewModel().setPropertyValue(ViewModelKey.MODE, EDIT);
         } else { // create concept
-            getConceptViewModel().setPropertyValue(MODE, CREATE);
+            getConceptViewModel().setPropertyValue(ViewModelKey.MODE, CREATE);
             stampViewControl.setSelected(true);
         }
 
@@ -954,7 +956,7 @@ public class ConceptController {
      */
     public void updateConceptBanner() {
         // do not update ui should be blank
-        if (getConceptViewModel().getPropertyValue(MODE) == CREATE) {
+        if (getConceptViewModel().getPropertyValue(ViewModelKey.MODE) == CREATE) {
             return;
         }
 
@@ -963,8 +965,9 @@ public class ConceptController {
         final ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
 
         if (entityFacade != null) {
-            // Title (FQN of concept)
-            String conceptNameStr = viewCalculator.languageCalculator().getDescriptionTextOrNid(entityFacade.nid());
+            // Title: follow the view coordinate's description-type preference (FQN vs preferred), like the
+            // axiom badges, so the header tracks the coordinate too (ike-issues#660).
+            String conceptNameStr = viewCalculator.getDescriptionTextOrNid(entityFacade.nid());
             fqnTitleText.setText(conceptNameStr);
             conceptNameTooltip.setText(conceptNameStr);
 
@@ -1052,7 +1055,7 @@ public class ConceptController {
      */
     public void updateConceptDescription() {
         // do not update ui should be blank
-        if (getConceptViewModel().getPropertyValue(MODE) == CREATE) {
+        if (getConceptViewModel().getPropertyValue(ViewModelKey.MODE) == CREATE) {
             return;
         }
 
@@ -1112,7 +1115,7 @@ public class ConceptController {
 
         // when there are no versions for the concept, show no versions for view text
         Runnable showNoVersionForViewText = () -> {
-            getConceptViewModel().setPropertyValue(MODE, VIEW);
+            getConceptViewModel().setPropertyValue(ViewModelKey.MODE, VIEW);
             List<DescrName> fqns = getConceptViewModel().getValue(FULLY_QUALIFIED_NAMES);
             if (fqns != null && fqns.isEmpty()) {
                 VBox fqnVBox = new VBox(new Label(NO_VERSION_FOR_VIEW_TEXT));
@@ -1408,7 +1411,7 @@ public class ConceptController {
     private void updateAxioms() {
 
         // do not update ui should be blank
-        if (getConceptViewModel().getPropertyValue(MODE) == CREATE) {
+        if (getConceptViewModel().getPropertyValue(ViewModelKey.MODE) == CREATE) {
             return;
         }
 
@@ -1500,7 +1503,7 @@ public class ConceptController {
         }
 
         if (stampViewControl.isSelected()) {
-            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE))) {
+            if (CREATE.equals(conceptViewModel.getPropertyValue(ViewModelKey.MODE))) {
                 eventBus.publish(conceptTopic, new StampEvent(stampViewControl, StampEvent.CREATE_STAMP));
             } else {
                 eventBus.publish(conceptTopic, new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
@@ -1524,11 +1527,11 @@ public class ConceptController {
 
             updateDraggableNodesForPropertiesPanel(true);
 
-            if (CREATE.equals(conceptViewModel.getPropertyValue(MODE)) && !stampViewControl.isSelected()) {
+            if (CREATE.equals(conceptViewModel.getPropertyValue(ViewModelKey.MODE)) && !stampViewControl.isSelected()) {
                 // show the Add FQN
                 eventBus.publish(conceptTopic, new AddFullyQualifiedNameEvent(propertyToggle,
                         AddFullyQualifiedNameEvent.ADD_FQN, conceptViewModel.getViewProperties()));
-            } else if (EDIT.equals(conceptViewModel.getPropertyValue(MODE))){
+            } else if (EDIT.equals(conceptViewModel.getPropertyValue(ViewModelKey.MODE))){
                 // show the button form
                 eventBus.publish(conceptTopic, new OpenPropertiesPanelEvent(propertyToggle,
                         OpenPropertiesPanelEvent.OPEN_PROPERTIES_PANEL, fqnPublicId, fqnTitleText.getText()));

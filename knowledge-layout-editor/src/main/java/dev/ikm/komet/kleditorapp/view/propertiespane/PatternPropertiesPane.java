@@ -1,21 +1,22 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kview.controls.ToggleSwitch;
+import dev.ikm.komet.layout.KlPatternSemanticsFactories;
+import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
-import javafx.beans.property.ObjectProperty;
-import javafx.collections.FXCollections;
+import dev.ikm.komet.layout.editor.property.KlPropertySet;
 import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
-
-import java.util.List;
+import javafx.util.Subscription;
 
 public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternModel> {
     public static final String DEFAULT_STYLE_CLASS = "pattern-properties";
@@ -26,16 +27,20 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     private final TextField identifierTextField;
     private final ToggleSwitch titleVisibleTSwitch;
 
-    private final ComboBox<Integer> columnsComboBox = new ComboBox<>();
+    private final ComboBox<KlPatternSemanticsFactory> displayComboBox;
 
-    private ObjectProperty<Integer> previousControlColumnsObjProperty;
+    // Factory-specific properties section, rebuilt from the model whenever the factory changes.
+    private final Separator factoryPropertiesSeparator = new Separator();
+    private final Label factoryPropertiesTitleLabel = new Label("PROPERTIES");
+    private final VBox factoryPropertiesSection = new VBox();
+    private Subscription factoryPropertiesSubscription;
 
     public PatternPropertiesPane() {
         super(true);
 
         // Section name container
         VBox titleContainer = new VBox();
-        titleContainer.getStyleClass().add("title-container");
+        titleContainer.getStyleClass().addAll("sub-section", "title-container");
         titleContainer.setSpacing(4);
 
         Label titleLabel = new Label("Pattern Title:");
@@ -64,57 +69,87 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         Separator separator = new Separator();
         separator.setPrefWidth(200);
 
-        // "GRID LAYOUT" label
-        Label gridTitleLabel = new Label("GRID LAYOUT");
-        gridTitleLabel.getStyleClass().add("group-title");
+        // Positioning container
+        VBox positioningContainer = new VBox();
+        positioningContainer.getStyleClass().addAll("sub-section", "positioning-container");
+        positioningContainer.setSpacing(4);
+        positioningContainer.getChildren().addAll(
+                positioningLabel,
+                positioningGridPane
+        );
 
-        // GridPane
-        GridPane gridLayoutGridPane = new GridPane();
-        gridLayoutGridPane.setHgap(8);
-        gridLayoutGridPane.setVgap(8);
+        // Interaction container
+        VBox interactionContainer = new VBox();
+        interactionContainer.getStyleClass().addAll("sub-section", "interaction-container");
+        interactionContainer.setSpacing(4);
 
-        // Column constraints
-        ColumnConstraints columnsComboBoxConstraints1 = new ColumnConstraints();
-        columnsComboBoxConstraints1.setMinWidth(10);
-        columnsComboBoxConstraints1.setPrefWidth(100);
+        // "INTERACTION" label
+        Label interactionTitleLabel = new Label("INTERACTION");
+        interactionTitleLabel.getStyleClass().add("group-title");
 
-        ColumnConstraints columnsComboBoxConstraints2 = new ColumnConstraints();
-        columnsComboBoxConstraints2.setMinWidth(10);
-        columnsComboBoxConstraints2.setHgrow(Priority.ALWAYS);
+        // Display GridPane
+        GridPane displayGridPane = new GridPane();
+        displayGridPane.setHgap(8);
+        displayGridPane.setVgap(8);
 
-        gridLayoutGridPane.getColumnConstraints().addAll(columnsComboBoxConstraints1, columnsComboBoxConstraints2);
+        // - Column constraints
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setMinWidth(10);
+        col1.setPrefWidth(100);
 
-        // Row constraints
-        for (int i = 0; i < 3; i++) {
-            RowConstraints row = new RowConstraints();
-            row.setMinHeight(10);
-            row.setPrefHeight(30);
-            gridLayoutGridPane.getRowConstraints().add(row);
-        }
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setMinWidth(10);
+        col2.setHgrow(Priority.ALWAYS);
 
-        // "Column(s)" label in grid
-        Label columnsLabel = new Label("Column(s)");
-        GridPane.setHalignment(columnsLabel, HPos.RIGHT);
-        gridLayoutGridPane.add(columnsLabel, 0, 0);
+        displayGridPane.getColumnConstraints().addAll(col1, col2);
 
-        // Columns ComboBox in grid
-        columnsComboBox.setItems(FXCollections.observableArrayList(List.of(1, 2, 3)));
-        columnsComboBox.getSelectionModel().select((Integer)1);
-        columnsComboBox.setMaxWidth(Double.MAX_VALUE);
-        gridLayoutGridPane.add(columnsComboBox, 1, 0);
+        // - "Display" label in grid
+        Label displayLabel = new Label("Display");
+        GridPane.setHalignment(displayLabel, HPos.RIGHT);
+        displayGridPane.add(displayLabel, 0, 0);
+
+        // - "Display" ComboBox in grid
+        displayComboBox = new ComboBox<>();
+        displayComboBox.setCellFactory(_ -> createDisplayCell());
+        displayComboBox.setButtonCell(createDisplayCell());
+        displayComboBox.setMaxWidth(Double.MAX_VALUE);
+        displayGridPane.add(displayComboBox, 1, 0);
+
+        populateDisplayComboBox();
+
+        interactionContainer.getChildren().addAll(
+                interactionTitleLabel,
+                displayGridPane
+        );
 
         // Separator
-        Separator separator2 = new Separator();
-        separator.setPrefWidth(200);
+        Separator separator3 = new Separator();
+        separator3.setPrefWidth(200);
+
+        // Properties container
+        VBox propertiesContainer = new VBox();
+        propertiesContainer.getStyleClass().addAll("sub-section", "properties-container");
+        propertiesContainer.setSpacing(4);
+
+        // Factory-specific properties section
+        factoryPropertiesSeparator.setPrefWidth(200);
+        factoryPropertiesTitleLabel.getStyleClass().add("group-title");
+        factoryPropertiesSection.getStyleClass().add("factory-properties-section");
+        factoryPropertiesSection.setSpacing(8);
+
+        propertiesContainer.getChildren().addAll(
+                factoryPropertiesTitleLabel,
+                factoryPropertiesSection
+        );
 
         patternMainContainer.getChildren().addAll(
                 titleContainer,
                 separator,
-                gridTitleLabel,
-                gridLayoutGridPane,
-                separator2,
-                positioningLabel,
-                positioningGridPane
+                positioningContainer,
+                separator3,
+                interactionContainer,
+                factoryPropertiesSeparator,
+                propertiesContainer
         );
 
         mainContainer.setCenter(patternMainContainer);
@@ -124,23 +159,73 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         patternMainContainer.getStyleClass().add("pattern-main-container");
     }
 
+    private static ListCell<KlPatternSemanticsFactory> createDisplayCell() {
+        return new ListCell<>() {
+            {
+                setContentDisplay(ContentDisplay.TEXT_ONLY);
+            }
+
+            @Override
+            protected void updateItem(KlPatternSemanticsFactory item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.displayName());
+                }
+            }
+        };
+    }
+
     @Override
     protected void doInit() {
         super.doInit();
 
         if (previouslyShownModel != null) {
-            columnsComboBox.valueProperty().unbindBidirectional(previousControlColumnsObjProperty);
             titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.titleVisibleProperty());
+            displayComboBox.valueProperty().unbindBidirectional(previouslyShownModel.factoryProperty());
+
+            if (factoryPropertiesSubscription != null) {
+                factoryPropertiesSubscription.unsubscribe();
+            }
         }
 
         titleTextField.setText(currentlyShownModel.getTitle());
         titleVisibleTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.titleVisibleProperty());
 
-        // Columns ComboBox
-        previousControlColumnsObjProperty = currentlyShownModel.numberColumnsProperty().asObject();
-        columnsComboBox.valueProperty().bindBidirectional(previousControlColumnsObjProperty);
-
         // Identifier
         identifierTextField.textProperty().bindBidirectional(currentlyShownModel.identifierProperty());
+
+        // Display
+        displayComboBox.valueProperty().bindBidirectional(currentlyShownModel.factoryProperty());
+
+        // Factory-specific properties — rebuild now and whenever the factory (and thus its property
+        // set) changes. subscribe(Consumer) fires immediately with the current set.
+        factoryPropertiesSubscription = currentlyShownModel.factoryPropertiesProperty()
+                .subscribe(this::rebuildFactoryProperties);
+    }
+
+    private void rebuildFactoryProperties(KlPropertySet propertySet) {
+        factoryPropertiesSection.getChildren().clear();
+
+        boolean hasProperties = propertySet != null && !propertySet.discoverProperties().isEmpty();
+
+        factoryPropertiesSeparator.setVisible(hasProperties);
+        factoryPropertiesSeparator.setManaged(hasProperties);
+        factoryPropertiesTitleLabel.setVisible(hasProperties);
+        factoryPropertiesTitleLabel.setManaged(hasProperties);
+        factoryPropertiesSection.setVisible(hasProperties);
+        factoryPropertiesSection.setManaged(hasProperties);
+
+        if (hasProperties) {
+            factoryPropertiesSection.getChildren().add(KlPropertySetEditor.create(propertySet));
+        }
+    }
+
+    private void populateDisplayComboBox() {
+        // Use the shared factory instances so the combo's selected value (set by the model from the
+        // same registry) matches a list item and renders its display name rather than the class name.
+        displayComboBox.getItems().setAll(KlPatternSemanticsFactories.all());
     }
 }

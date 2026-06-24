@@ -1,5 +1,8 @@
 package dev.ikm.komet.layout.editor.model;
 
+import dev.ikm.komet.layout.KlPatternSemanticsFactories;
+import dev.ikm.komet.layout.KlPatternSemanticsFactory;
+import dev.ikm.komet.layout.editor.property.KlPropertySet;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -10,11 +13,11 @@ import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -31,16 +34,24 @@ import java.util.UUID;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 
-import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRID_NUMBER_COLUMNS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
+import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTICS_FACTORY;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_TITLE_VISIBLE;
 
 /**
  * Represents a Pattern. It has properties like the title of the Pattern, the fields inside it (EditorFieldModel instances),
- * number of columns, its nid.
+ * its nid.
  */
-public class EditorPatternModel extends EditorGridNodeModel implements ParentGridModel {
+public class EditorPatternModel extends EditorGridNodeModel {
     private static final Logger LOG = LoggerFactory.getLogger(EditorPatternModel.class);
+
+    /**
+     * Fully qualified name of the factory used by default when a pattern has no factory stored. Referenced
+     * by name (not type) because the factory implementations live in the downstream knowledge-layout-editor
+     * module; depending on them directly would create a cycle.
+     */
+    private static final String DEFAULT_FACTORY_CLASS_NAME =
+            "dev.ikm.komet.kleditorapp.factory.KlPatternSemanticsStandardFactory";
 
     private final ViewCalculator viewCalculator;
     private final PatternFacade patternFacade;
@@ -100,6 +111,15 @@ public class EditorPatternModel extends EditorGridNodeModel implements ParentGri
         existingPatterns.add(this);
 
         parentGridProperty().bind(parentSectionProperty());
+
+        // Refresh the factory-specific property set whenever the factory changes. Fires immediately
+        // for the initial (default) factory, so getFactoryProperties() is populated from the start.
+        factory.subscribe(currentFactory -> {
+            KlPropertySet propertySet = currentFactory == null
+                    ? null
+                    : currentFactory.createProperties().orElse(null);
+            factoryProperties.set(propertySet);
+        });
     }
 
     // -- existing patterns
@@ -147,13 +167,34 @@ public class EditorPatternModel extends EditorGridNodeModel implements ParentGri
     }
 
     private void loadPatternDetails(KometPreferences patternPreferences, ViewCalculator viewCalculator) {
-        patternPreferences.getInt(KL_GRID_NUMBER_COLUMNS).ifPresent(this::setNumberColumns);
         patternPreferences.getBoolean(PATTERN_TITLE_VISIBLE).ifPresent(this::setTitleVisible);
+
+        loadFactory(patternPreferences);
+
+        // Load after loadFactory so the property set for the restored factory already exists.
+        KlPropertySet factoryPropertySet = getFactoryProperties();
+        if (factoryPropertySet != null) {
+            factoryPropertySet.load(patternPreferences);
+        }
+
         loadGridNodeDetails(patternPreferences);
 
         for (EditorFieldModel fieldModel : getFields()) {
             fieldModel.load(patternPreferences, viewCalculator);
         }
+    }
+
+    private void loadFactory(KometPreferences patternPreferences) {
+        Optional<String> factoryClassName = patternPreferences.get(PATTERN_SEMANTICS_FACTORY);
+        factoryClassName.ifPresent(className -> {
+            if (className.equals("")) {
+                return;
+            }
+
+            KlPatternSemanticsFactories.byClassName(className).ifPresentOrElse(
+                    this::setFactory,
+                    () -> LOG.warn("Unknown pattern semantics factory '{}'; keeping default", className));
+        });
     }
 
     /**
@@ -181,11 +222,19 @@ public class EditorPatternModel extends EditorGridNodeModel implements ParentGri
     private void savePatternDetails(KometPreferences sectionPreferences) {
         KometPreferences patternPreferences = sectionPreferences.node(patternFacadeToPrefsDirName(patternFacade));
 
-        // Grid
-        patternPreferences.putInt(KL_GRID_NUMBER_COLUMNS, getNumberColumns());
-
         // title visible
         patternPreferences.putBoolean(PATTERN_TITLE_VISIBLE, isTitleVisible());
+
+        // factory
+        KlPatternSemanticsFactory klPatternSemanticsFactory = getFactory();
+        String className = klPatternSemanticsFactory == null ? "" : klPatternSemanticsFactory.getClass().getName();
+        patternPreferences.put(PATTERN_SEMANTICS_FACTORY, className);
+
+        // factory-specific properties
+        KlPropertySet factoryPropertySet = getFactoryProperties();
+        if (factoryPropertySet != null) {
+            factoryPropertySet.save(patternPreferences);
+        }
 
         saveGridNodeDetails(patternPreferences);
 
@@ -240,14 +289,6 @@ public class EditorPatternModel extends EditorGridNodeModel implements ParentGri
      */
     public int getNid() { return nid; }
 
-    // -- number columns
-    /**
-     * The number of columns the Grid layout inside this Pattern should have.
-     */
-    private final IntegerProperty numberColumns = new SimpleIntegerProperty(1);
-    @Override
-    public IntegerProperty numberColumnsProperty() { return numberColumns; }
-
     // -- parent section
     private ReadOnlyObjectWrapper<EditorSectionModel> parentSection = new ReadOnlyObjectWrapper<>();
     public EditorSectionModel getParentSection() { return parentSection.get(); }
@@ -259,4 +300,24 @@ public class EditorPatternModel extends EditorGridNodeModel implements ParentGri
     public String getIdentifier() { return identifier.get(); }
     public StringProperty identifierProperty() { return identifier; }
     public void setIdentifier(String identifier) { this.identifier.set(identifier); }
+
+    // -- factory
+    private ObjectProperty<KlPatternSemanticsFactory> factory = new SimpleObjectProperty<>(
+            KlPatternSemanticsFactories.byClassName(DEFAULT_FACTORY_CLASS_NAME)
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Default pattern semantics factory not registered: " + DEFAULT_FACTORY_CLASS_NAME)));
+    public KlPatternSemanticsFactory getFactory() { return factory.get(); }
+    public void setFactory(KlPatternSemanticsFactory factory) { this.factory.set(factory); }
+    public ObjectProperty<KlPatternSemanticsFactory> factoryProperty() { return factory; }
+
+    // -- factory properties
+    /**
+     * The live set of factory-specific properties for the currently selected factory. A fresh set is
+     * created whenever the factory changes (so switching factories discards the previous factory's
+     * values). This is the single instance the properties pane edits, that {@link #save} persists,
+     * and that the journal control binds to.
+     */
+    private final ObjectProperty<KlPropertySet> factoryProperties = new SimpleObjectProperty<>();
+    public KlPropertySet getFactoryProperties() { return factoryProperties.get(); }
+    public ObjectProperty<KlPropertySet> factoryPropertiesProperty() { return factoryProperties; }
 }

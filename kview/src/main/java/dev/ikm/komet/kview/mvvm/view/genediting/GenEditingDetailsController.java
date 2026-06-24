@@ -32,18 +32,18 @@ import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.PATTERN;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.STAMP_VIEW_MODEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.PATTERN;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.REF_COMPONENT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.SEMANTIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.STAMP_VIEW_MODEL;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
@@ -255,13 +255,13 @@ public class GenEditingDetailsController {
 
     @FXML
     private void initialize() {
-        // Set up the filter options popup for the coordinates menu button.
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(
-                getViewProperties(),
-                CHAPTER_WINDOW,
-                detailsOuterBorderPane,
+        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
+        // replacing the kview FilterOptionsPopup.
+        setupViewContextMenu(
                 coordinatesMenuButton,
-                () -> { /* noop TODO: needs a way to redraw details based on view coordinates  */ }
+                detailsOuterBorderPane,
+                getViewProperties(),
+                this::updateSemanticForPatternInfo
         );
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
@@ -564,22 +564,6 @@ public class GenEditingDetailsController {
         // Get editable fields from the editable version
         editableFields.addAll(editableVersion.getEditableFields());
 
-        // Create edit action for field controls
-        BiFunction<KLReadOnlyBaseControl, Integer, Runnable> editAction = (readOnlyBaseControl, fieldIndex) ->
-            () -> {
-                // Clear edit mode for all other controls
-                for (Node node : nodes) {
-                    if (node != readOnlyBaseControl) {
-                        KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
-                        klReadOnlyBaseControl.setEditMode(false);
-                    }
-                }
-                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new PropertyPanelEvent(readOnlyBaseControl, SHOW_EDIT_SINGLE_SEMANTIC_FIELD, fieldIndex));
-                EvtBusFactory.getDefaultEvtBus().publish(genEditingViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new PropertyPanelEvent(readOnlyBaseControl, OPEN_PANEL));
-            };
-
         // Generate UI nodes from editable fields
         int index = 0;
         for(ObservableField.Editable<?> editableField : editableFields){
@@ -599,7 +583,6 @@ public class GenEditingDetailsController {
 
             // Eliminated unsafe cast here...
             if (baseControl instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
-                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
                 semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
             }
         }
@@ -691,24 +674,25 @@ public class GenEditingDetailsController {
                 }
                 case ConceptEntity ignored -> {
                     refType = "Concept";
-                    description = refComponent2.description();
+                    description = getViewProperties().calculator().getDescriptionTextOrNid(refComponent2.nid());
                 }
                 case PatternEntity ignored -> {
                     refType= "Pattern";
-                    description = refComponent2.description();
+                    description = getViewProperties().calculator().getDescriptionTextOrNid(refComponent2.nid());
                 }
                 case null -> {
                     refType = "Unknown";
-                    description = refComponent2.description();
+                    description = getViewProperties().calculator().getDescriptionTextOrNid(refComponent2.nid());
                 }
                 default ->  {
                     refType = "Unknown";
-                    description = refComponent2.description();
+                    description = getViewProperties().calculator().getDescriptionTextOrNid(refComponent2.nid());
                 }
             };
 
+            boolean isConcept = EntityHandle.get(refComponent2.nid()).isConcept();
             ComponentItem componentItem = new ComponentItem(description,
-                    Identicon.generateIdenticonImage(refComponent2.publicId()), refComponent2.nid());
+                    Identicon.generateIdenticonImage(refComponent2.publicId()), refComponent2.publicId(), isConcept);
 
             referenceComponent.setTitle(refType);
             referenceComponent.setValue(componentItem);

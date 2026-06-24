@@ -90,7 +90,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -161,6 +160,7 @@ public class LandingPageController implements BasicController {
     private FilterOptionsPopup filterOptionsPopup;
     private ObservableViewNoOverride viewCoordinates; // main main view coordinates
     private ObservableViewNoOverride viewCoordinatesForFilterOptionsPopup; // clone for landingpage as main view coordinate
+    private ObservableViewNoOverride journalParentCoordinates; // live mirror of the landing's effective view, handed to journals (ike-issues#666)
 
     @FXML
     ToggleButton editCoordinatesToggleButton;
@@ -181,9 +181,6 @@ public class LandingPageController implements BasicController {
     BorderPane landingPageBorderPane;
 
     @FXML
-    ComboBox<String> notificationTypeFilterComboBox;
-
-    @FXML
     private Label knowledgeLayoutButtonLabel;
 
     public static final String DEMO_AUTHOR = "David";
@@ -200,14 +197,22 @@ public class LandingPageController implements BasicController {
 
 
     @FXML
+    public void openIkeNetwork() {
+        new Thread(() -> {
+            try {
+                java.awt.Desktop.getDesktop().browse(java.net.URI.create("https://ike.network"));
+            } catch (Exception e) {
+                org.slf4j.LoggerFactory.getLogger(getClass()).warn("Could not open ike.network", e);
+            }
+        }, "open-ike-network").start();
+    }
+
+    @FXML
     @Override
     public void initialize() {
         clearView();
 
         knowledgeLayoutButtonLabel.setText("Knowledge\nLayout Editor");
-
-        notificationTypeFilterComboBox.getItems().addAll("All types");
-        notificationTypeFilterComboBox.getSelectionModel().selectFirst();
 
         progressPopupPane.getStyleClass().add("progress-popup-pane");
 
@@ -268,7 +273,7 @@ public class LandingPageController implements BasicController {
                     // newly added card to landing page.
                     prefX = journalSettingsFinal;
                 }
-                prefX.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.viewCoordinatesForFilterOptionsPopup);
+                prefX.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.journalParentCoordinates);
 
                 // fire create journal event... AND this should be the ONLY place it comes from besides the menu
                 landingPageEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
@@ -347,6 +352,14 @@ public class LandingPageController implements BasicController {
 
         viewCoordinatesForFilterOptionsPopup = new ObservableViewNoOverride(viewCoordinates);
         ViewProperties landingViewProperties = viewCoordinatesForFilterOptionsPopup.makeOverridableViewProperties("LandingController.filterOptionsPopup");
+
+        // Hand journals a live child basis: a NoOverride that mirrors the landing's EFFECTIVE view, so a
+        // landing-page coordinate change propagates into every open journal and its inner windows (#666).
+        journalParentCoordinates = new ObservableViewNoOverride(
+                landingViewProperties.nodeView().toViewCoordinateRecord(), "Journal parent view");
+        landingViewProperties.nodeView().addListener(
+                (obs, oldView, newView) -> journalParentCoordinates.setValue(newView));
+
         filterOptionsPopup = setupViewCoordinateOptionsPopup(landingViewProperties,
                 viewCoordinatesToggleButton, () -> {
                     LOG.info("LandingController.filterOptionsPopup: updating view due to filter options change");
@@ -641,7 +654,7 @@ public class LandingPageController implements BasicController {
         journalWindowSettingsObjectMap.setValue(JOURNAL_TOPIC, journalTopic);
         journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
         journalWindowSettingsObjectMap.setValue(JOURNAL_DIR_NAME, journalDirName);
-        journalWindowSettingsObjectMap.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.viewCoordinatesForFilterOptionsPopup);
+        journalWindowSettingsObjectMap.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.journalParentCoordinates);
         // publish an event to create the tile on the landing page
         landingPageEventBus.publish(JOURNAL_TOPIC,
                 new JournalTileEvent(newProjectJournalButton, CREATE_JOURNAL_TILE, journalWindowSettingsObjectMap));

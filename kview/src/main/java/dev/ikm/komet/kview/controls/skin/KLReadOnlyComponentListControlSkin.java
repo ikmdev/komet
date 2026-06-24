@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
+import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.Label;
@@ -48,9 +49,6 @@ public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponent
         // Component (Icon + Text)
         ComponentItemNode componentUIItem = new ComponentItemNode(componentItem);
 
-        // Context Menu
-        componentUIItem.setContextMenu(createContextMenu(componentItem));
-
         componentRow.getChildren().addAll(
             numberLabel,
             componentUIItem
@@ -64,10 +62,5 @@ public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponent
         componentUIItems.put(componentItem, componentRow);
 
         updatePromptTextOrComponentsVisibility();
-    }
-
-    @Override
-    protected String getEditMenuItemLabel() {
-        return EDIT_MENU_ITEM_LABEL;
     }
 }

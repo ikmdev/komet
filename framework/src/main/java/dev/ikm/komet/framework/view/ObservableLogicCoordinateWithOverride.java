@@ -26,9 +26,7 @@ public class ObservableLogicCoordinateWithOverride extends ObservableLogicCoordi
 
     public ObservableLogicCoordinateWithOverride(ObservableLogicCoordinate logicCoordinate, String coordinateName) {
         super(logicCoordinate, coordinateName);
-        if (logicCoordinate instanceof ObservableLogicCoordinateWithOverride) {
-            throw new IllegalStateException("Cannot override an overridden Coordinate. ");
-        }
+        // Depth-independent override nesting (ike-issues#663): an override may wrap another override.
     }
 
     public ObservableLogicCoordinateWithOverride(ObservableLogicCoordinate logicCoordinate) {

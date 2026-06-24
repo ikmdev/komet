@@ -150,10 +150,6 @@
             <version>26.0.2</version>
         </dependency>
         <dependency>
-            <groupId>dev.ikm.tinkar</groupId>
-            <artifactId>composer</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
         </dependency>
@@ -225,9 +221,25 @@
     </dependencies>
     <build>
         <resources>
+            <!-- Narrow filtering to buildInfo.properties (the only resource
+                 that needs ${project.version}/${build.time} substitution per
+                 PR #480). Filtering the whole src/main/resources tree breaks
+                 binary files under icons/ with MalformedInputException, and
+                 also incorrectly processes log4j2 runtime ${prefix:name}
+                 tokens at build time. -->
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
+                <includes>
+                    <include>buildInfo.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>buildInfo.properties</exclude>
+                </excludes>
             </resource>
         </resources>
 

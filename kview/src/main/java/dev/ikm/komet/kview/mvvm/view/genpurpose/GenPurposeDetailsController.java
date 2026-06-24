@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
-import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.OPEN_PANEL;
@@ -28,12 +27,11 @@ import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
+import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.MODE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel.WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
@@ -41,29 +39,30 @@ import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
-import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservablePattern;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
+import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.FilterOptionsPopup;
-import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KometLabel;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
+import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
+import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
-import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SemanticViewControl;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandardControl;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
+import dev.ikm.komet.layout.KlPatternSemanticsFactory;
+import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
-import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
@@ -74,8 +73,6 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.Field;
-import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -87,10 +84,8 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -99,9 +94,8 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
-import javafx.scene.control.Separator;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -111,12 +105,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -131,28 +125,62 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class GenPurposeDetailsController {
 
     private static final Logger LOG = LoggerFactory.getLogger(GenPurposeDetailsController.class);
 
-    private final HashMap<EditorSectionModel, GridPane> sectionModelToTitledPaneGridPane = new HashMap<>();
-    private final HashMap<EditorSectionModel, SectionTitledPane<EntityFacade>> sectionModelToTitledPane = new HashMap<>();
-    private final HashMap<SemanticEntity<SemanticEntityVersion>, SemanticViewControl> semanticEntityToSemanticView = new HashMap<>();
+    /**
+     * Given a Pattern what is the Section that has it as its Reference Component.
+     */
+    private final Map<EditorPatternModel, SectionTitledPane<EntityFacade>> patternReferenceComponentToSectionTitledPane = new HashMap<>();
+
+    /**
+     * Given a SectionModel what's its associated GridPane (The GridPane is the container used in the SectionTitledPane).
+     */
+    private final Map<EditorSectionModel, GridPane> sectionModelToTitledPaneGridPane = new HashMap<>();
+
+    /**
+     * Given a SectionModel what's its associated SectionTitledPane.
+     */
+    private final Map<EditorSectionModel, SectionTitledPane<EntityFacade>> sectionModelToTitledPane = new HashMap<>();
+
+    /**
+     * Given an Editor Pattern Model what is the associated Pattern Presenter.
+     */
+    private final Map<EditorPatternModel, PatternSemanticsPresenter> editorPatternModelToPatternPresenter = new HashMap<>();
+
+    /**
+     * Given a Semantic what is the associated Pattern Control that has it.
+     */
+    private final Map<SemanticEntity<SemanticEntityVersion>, PatternSemanticsPresenter> semanticEntityToPatternSemanticsPresenter = new HashMap<>();
+
+    /**
+     * Given a SemanticEntity what's its associated Semantic Control.
+     */
+    private final Map<SemanticEntity<SemanticEntityVersion>, SemanticStandardControl> semanticEntityToSemanticView = new HashMap<>();
+
+    /**
+     * Sections currently being refreshed by a reference-component cascade. Used as a re-entrancy guard
+     * so a malformed (cyclic) reference chain can't drive infinite recursion (see komet-desktop #3).
+     */
+    private final Set<EditorSectionModel> refreshingSections = new HashSet<>();
 
     private final Tooltip publishTooltip = new Tooltip();
-    private final List<KLReadOnlyBaseControl> controls = new ArrayList<>();
 
-    private SemanticViewControl previousSemanticViewInEditMode;
+    private PatternSemanticsPresenter previousPatternSemanticsInEditMode;
 
     @FXML
     StampViewControl stampViewControl;
     @FXML
-    private VBox mainContent;
+    private SplitPane mainContent;
     @FXML
     private BorderPane detailsOuterBorderPane;
     @FXML
@@ -171,9 +199,9 @@ public class GenPurposeDetailsController {
     @FXML
     private ImageView identiconImageView;
     @FXML
-    private Label conceptTitleText;
+    private ComponentItemNode windowConceptTitle;
     @FXML
-    private Tooltip conceptNameTooltip;
+    private Tooltip windowConceptTitleTooltip;
     @FXML
     private PublicIDListControl identifierControl;
     @FXML
@@ -202,14 +230,10 @@ public class GenPurposeDetailsController {
     @FXML
     private void initialize() {
 
-        // Set up the filter options popup for the coordinates menu button.
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(
-                genPurposeViewModel.getViewProperties(),
-                CHAPTER_WINDOW,
-                detailsOuterBorderPane,
-                coordinatesMenuButton,
-                this::updateView
-        );
+        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
+        // replacing the kview FilterOptionsPopup.
+        setupViewContextMenu(coordinatesMenuButton, detailsOuterBorderPane,
+                genPurposeViewModel.getViewProperties(), this::updateView);
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
@@ -221,6 +245,9 @@ public class GenPurposeDetailsController {
         // Setup Properties Bump out view
         setupProperties();
 
+        // When the user submits an edited STAMP from the properties panel, refresh the header STAMP.
+        propertiesController.getStampFormViewModel().getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED)
+                .subscribe(isConfirmed -> onStampConfirmedOrSubmitted(isConfirmed));
 
         // Assign the tooltip to the StackPane (container of Publish button)
         setupTooltipForDisabledButton(savePatternButton);
@@ -261,31 +288,13 @@ public class GenPurposeDetailsController {
 //                    updateUIStamp(stampFormViewModelBase);
 //                }
 
-                // Initialize composer if not already done
+                // Commit transaction, finalizing all impending changes
+                composer.commit();
+
+                composer = null;
                 initializeComposer();
 
-                ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(semantic.publicId(), semantic.referencedComponent(), semantic.pattern());
-
-                // Get editable version with cached editing capabilities
-                ObservableSemanticVersion.Editable editableVersion = semanticEditor.getEditableVersion();
-                ObservableList<ObservableField.Editable<?>> editableFields = editableVersion.getEditableFields();
-
-                // Update editable field values using ObservableField.Editables
-                for (int i = 0; i < evt.getList().size(); i++) {
-                    ObservableField.Editable<?> editableField = editableFields.get(i);
-                    Object updatedField = evt.getList().get(i);
-                    if (updatedField != null && editableField != null) {
-                        // Update via editable field's cached property
-                        @SuppressWarnings("unchecked")
-                        ObservableField.Editable<Object> uncheckedField = (ObservableField.Editable<Object>) editableField;
-                        Runnable setValue = () -> uncheckedField.getObservableFeature().editableValueProperty().setValue(updatedField);
-                        if (!Platform.isFxApplicationThread()) {
-                            Platform.runLater(setValue);
-                        } else {
-                            setValue.run();
-                        }
-                    }
-                }
+                reloadSemanticViews(semantic);
             }
 
 //            semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
@@ -295,7 +304,7 @@ public class GenPurposeDetailsController {
 //            });
         };
 //        subscriberList.add(refreshSubscriber);
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                 GenPurposeEvent.class, refreshSubscriber);
 
         // Setup window support with explicit draggable nodes
@@ -304,7 +313,35 @@ public class GenPurposeDetailsController {
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
         closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
+
+        // Rule-driven + plugin-contributed identicon context menu (e.g. the plugin's
+        // "Post state + history to Zulip"), uniform with the concept identicon via
+        // AddToContextMenu.providers() — so plugins need not touch this controller.
+        // Guard: this window's FXML may not supply an identicon (its header differs from the
+        // concept/pattern windows), in which case the @FXML field is null. Skip wiring rather than fail init.
+        if (identiconImageView != null) {
+            identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
+                dev.ikm.tinkar.terms.EntityFacade currentEntity =
+                        genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+                if (currentEntity == null) {
+                    return;
+                }
+                javafx.scene.control.ContextMenu identiconContextMenu = new javafx.scene.control.ContextMenu();
+                javafx.beans.property.SimpleObjectProperty<dev.ikm.tinkar.terms.EntityFacade> focusedEntity =
+                        new javafx.beans.property.SimpleObjectProperty<>(currentEntity);
+                for (dev.ikm.komet.framework.context.AddToContextMenu provider
+                        : dev.ikm.komet.framework.context.AddToContextMenu.providers()) {
+                    provider.addToContextMenu((javafx.scene.control.Control) null, identiconContextMenu,
+                            getViewProperties(), focusedEntity,
+                            new javafx.beans.property.SimpleIntegerProperty(), () -> { });
+                }
+                if (!identiconContextMenu.getItems().isEmpty()) {
+                    identiconContextMenu.show(identiconImageView,
+                            contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
+                }
+            });
+        }
     }
 
     private void openPropertiesPanel() {
@@ -330,11 +367,12 @@ public class GenPurposeDetailsController {
 
         updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
 
-//        isUpdatingStampSelection = true;
-//        stampViewControl.setSelected(propertyToggle.isSelected());
-//        isUpdatingStampSelection = false;
+        // Keep the header STAMP control's selected state in sync with the properties panel toggle.
+        isUpdatingStampSelection = true;
+        stampViewControl.setSelected(propertyToggle.isSelected());
+        isUpdatingStampSelection = false;
 
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(propertyToggle, eventEvtType));
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(propertyToggle, eventEvtType));
     }
 
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
@@ -367,13 +405,16 @@ public class GenPurposeDetailsController {
             if (!propertiesToggleButton.isSelected()) {
                 propertiesToggleButton.fire();
             }
-//            if (CREATE.equals(patternViewModel.getPropertyValue(MODE))) {
-//                EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.CREATE_STAMP));
-//            } else {
-//                EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
-//            }
-//        } else {
-//            EvtBusFactory.getDefaultEvtBus().publish(patternViewModel.getPropertyValue(PATTERN_TOPIC), new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
+            // The reference component always exists in a Knowledge Layout window, so editing its STAMP
+            // always adds a new version (ADD_STAMP). Guard against a window opened without one.
+            EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+            if (refComponent != null) {
+                EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
+                        new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
+            }
+        } else {
+            EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
+                    new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
         }
     }
 
@@ -381,11 +422,6 @@ public class GenPurposeDetailsController {
     private void updateDisplayIdentifier(EntityFacade refComponent) {
         ViewCalculator viewCalculator = getViewProperties().calculator();
         identifierControl.updatePublicIdList(viewCalculator, refComponent);
-    }
-
-    private void updateIdenticon(EntityFacade refComponent) {
-        Image identicon = Identicon.generateIdenticonImage(refComponent.publicId());
-        identiconImageView.setImage(identicon);
     }
 
     private void updateStampControl(EntityFacade refConcept) {
@@ -432,9 +468,17 @@ public class GenPurposeDetailsController {
     }
 
     private void updateWindowTitle(EntityFacade refConcept) {
-        String conceptNameStr = getViewProperties().calculator().languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(refConcept.nid());
-        conceptTitleText.setText(conceptNameStr);
-        conceptNameTooltip.setText(conceptNameStr);
+        // Follow the view coordinate's description-type preference (FQN vs preferred), like the axiom
+        // badges, so the header tracks the coordinate too (ike-issues#660).
+        String conceptNameStr = getViewProperties().calculator().getDescriptionTextOrNid(refConcept.nid());
+        Image identicon = Identicon.generateIdenticonImage(refConcept.publicId());
+
+        boolean isConcept = EntityHandle.get(refConcept).isConcept();
+        ComponentItem componentItem = new ComponentItem(conceptNameStr, identicon, refConcept.publicId(), isConcept);
+
+        windowConceptTitle.setComponentItem(componentItem);
+
+        windowConceptTitleTooltip.setText(conceptNameStr);
     }
 
     /**
@@ -506,7 +550,7 @@ public class GenPurposeDetailsController {
             }
         };
 //        subscriberList.add(propertiesEventSubscriber);
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), KLPropertyPanelEvent.class, propertiesEventSubscriber);
+        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), KLPropertyPanelEvent.class, propertiesEventSubscriber);
     }
 
     private void onStampConfirmedOrSubmitted(boolean isSubmittedOrConfirmed) {
@@ -514,13 +558,12 @@ public class GenPurposeDetailsController {
             return;
         }
 
-//        updateStampControlFromViewModel();
-
-//        if (patternViewModel.getPropertyValue(MODE).equals(EDIT)) {
-//            patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
-//        }
-
-        stampViewControl.setDisable(true);
+        // A new STAMP version was committed for the reference component; refresh the header from the
+        // committed latest version. The control stays enabled so the STAMP can be edited again.
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        if (refComponent != null) {
+            updateStampControl(refComponent);
+        }
     }
 
     public ViewProperties getViewProperties() {
@@ -533,7 +576,7 @@ public class GenPurposeDetailsController {
 
     @FXML
     void closeConceptWindow(ActionEvent event) {
-        LOG.info("Cleanup occurring: Closing Window with pattern: " + conceptTitleText.getText());
+        LOG.info("Cleanup occurring: Closing Window: " + windowConceptTitle.getComponentItem());
 
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
@@ -632,16 +675,18 @@ public class GenPurposeDetailsController {
 
         // Main TitledPane
         TitledPane mainTitledPane = createTitledPane(mainSection);
-        addPatternViews(mainSection, mainSection.getPatterns());
-        mainContent.getChildren().add(mainTitledPane);
+        addPatternViewsOfSection(mainSection.getPatterns());
+        addSupplementalAreaViewsOfSection(mainSection);
+        mainContent.getItems().add(mainTitledPane);
 
-        mainSection.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) change -> onSectionPatternsChanged(mainSection, change));
+        mainSection.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
 
         // Additional Sections
         editorWindowModel.getAdditionalSections().forEach(section -> {
             TitledPane titledPane = createTitledPane(section);
-            addPatternViews(section, section.getPatterns());
-            mainContent.getChildren().add(titledPane);
+            addPatternViewsOfSection(section.getPatterns());
+            addSupplementalAreaViewsOfSection(section);
+            mainContent.getItems().add(titledPane);
         });
 
         // TODO: will sections need to be refreshed on coordinate changes?
@@ -656,14 +701,13 @@ public class GenPurposeDetailsController {
      */
     private void updateView() {
         LOG.info("Update view called - implement coordinate changes here.");
-        EntityFacade refConcept = (EntityFacade) genPurposeViewModel.getProperty(REF_COMPONENT).getValue();
+        EntityFacade refConcept = (EntityFacade) genPurposeViewModel.getProperty(ViewModelKey.REF_COMPONENT).getValue();
         if (refConcept != null) {
             updateDisplayIdentifier(refConcept);
-            updateIdenticon(refConcept);
             updateWindowTitle(refConcept);
             updateStampControl(refConcept);
         } else {
-            LOG.warn("REF_COMPONENT is null, cannot update view.");
+            LOG.warn("ViewModelKey.REF_COMPONENT is null, cannot update view.");
             // TODO: Handle null refConcept case appropriately. Display no data found in UI.
         }
     }
@@ -680,6 +724,7 @@ public class GenPurposeDetailsController {
         titledPane.getStyleClass().add("pattern-titled-pane");
 
         GridPane titledPaneGridPane = new GridPane();
+        titledPaneGridPane.getStyleClass().add("section-titled-pane-container");
 
         sectionModel.numberColumnsProperty().subscribe(newNumberColumns -> {
             List<ColumnConstraints> columns = new ArrayList<>();
@@ -695,8 +740,11 @@ public class GenPurposeDetailsController {
         // Section Semantics ComboBox
         List<EntityFacade> semanticsOfPattern = null;
         if (sectionModel.getReferenceComponent() != null) {
-            semanticsOfPattern = getSemanticsOfPattern(sectionModel.getReferenceComponent());
+            EditorPatternModel patternReferenceComponent = sectionModel.getReferenceComponent();
+            semanticsOfPattern = getSemanticsOfPattern(patternReferenceComponent);
             titledPane.getReferenceComponents().addAll(semanticsOfPattern);
+
+            patternReferenceComponentToSectionTitledPane.put(patternReferenceComponent, titledPane);
         }
         titledPane.setReferenceComponentCellFactory(_ -> createSectionSemanticsComboBoxCell(viewProperties));
         titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(viewProperties));
@@ -705,12 +753,18 @@ public class GenPurposeDetailsController {
         titledPane.setContent(titledPaneGridPane);
 
         titledPane.setOnEditAction(actionEvent -> onEditAction(actionEvent, sectionModel));
-        titledPane.setEditEnabled(sectionModel.getReferenceComponent() == null
-                || (semanticsOfPattern != null && !semanticsOfPattern.isEmpty()));
+
+        titledPane.editEnabledProperty().bind(sectionModel.referenceComponentProperty().isNull()
+                .or(Bindings.isNotEmpty(titledPane.getReferenceComponents())));
 
         sectionModelToTitledPaneGridPane.put(sectionModel, titledPaneGridPane);
 
         sectionModelToTitledPane.put(sectionModel, titledPane);
+
+        // When this section's resolved reference component changes, cascade to any section that anchors
+        // on it (i.e. whose reference pattern is displayed in this section), so downstream sections in a
+        // reference-component chain re-resolve and re-populate (see komet-desktop #3).
+        titledPane.selectedReferenceComponentProperty().subscribe(() -> refreshSectionsAnchoredOn(sectionModel));
 
         return titledPane;
     }
@@ -719,9 +773,14 @@ public class GenPurposeDetailsController {
         SectionSemanticsComboBoxCell sectionSemanticsComboBoxCell = new SectionSemanticsComboBoxCell(viewProperties);
         sectionSemanticsComboBoxCell.hoverProperty().subscribe(() -> {
             SemanticEntity<SemanticEntityVersion> semanticEntity = (SemanticEntity<SemanticEntityVersion>) sectionSemanticsComboBoxCell.getItem();
-            SemanticViewControl semanticViewControl = semanticEntityToSemanticView.get(semanticEntity);
-            if (semanticViewControl != null) {
-                semanticViewControl.setPreviewMode(sectionSemanticsComboBoxCell.isHover());
+            PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semanticEntity);
+
+            if (patternSemanticsPresenter != null) {
+                if (sectionSemanticsComboBoxCell.isHover()) {
+                    patternSemanticsPresenter.setPreviewingSemantic(semanticEntity);
+                } else {
+                    patternSemanticsPresenter.setPreviewingSemantic(null);
+                }
             }
         });
         return sectionSemanticsComboBoxCell;
@@ -734,14 +793,16 @@ public class GenPurposeDetailsController {
         EntityFacade refComponent;
 
         if (sectionModel.getReferenceComponent() == null) {
-            refComponent = genPurposeViewModel.getPropertyValue(GenPurposeViewModel.REF_COMPONENT);
+            refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
         } else {
             SectionTitledPane<EntityFacade> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
             refComponent = sectionTitledPane.getSelectedReferenceComponent();
         }
 
-        AtomicInteger numberSemantics = new AtomicInteger();
-        AtomicReference<SemanticEntity<SemanticEntityVersion>> lastSemantic = new AtomicReference<>();
+        if (refComponent == null) {
+            // No reference concept to edit against — nothing to populate.
+            return;
+        }
 
         // Populate the Popup
         EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
@@ -750,130 +811,196 @@ public class GenPurposeDetailsController {
                     semanticLabel.setShowTooltip(true);
 
                     semanticLabel.setOnMouseClicked(_ -> {
+                        initializeComposer();
                         showEditSemanticFieldsPanel(actionEvent, semantic);
                         popup.hide();
                     });
 
                     semanticLabel.hoverProperty().subscribe(() -> {
-                        semanticEntityToSemanticView.get(semantic).setPreviewMode(semanticLabel.isHover());
+                        PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
+
+                        if (semanticLabel.isHover()) {
+                            patternSemanticsPresenter.setPreviewingSemantic(semantic);
+                        } else {
+                            patternSemanticsPresenter.setPreviewingSemantic(null);
+                        }
                     });
 
                     popup.getItems().add(semanticLabel);
-
-                    numberSemantics.incrementAndGet();
-                    lastSemantic.set(semantic);
                 });
 
         popup.setOnCreateSemanticAction(() -> {
-            genPurposeViewModel.setPropertyValue(MODE, CREATE);
-            PatternFacade patternFacade = PatternFacade.make(sectionModel.getPatterns().getFirst().getNid());
-
-            SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade);
-
-            // Clear content of Section
-            GridPane gridPane = sectionModelToTitledPaneGridPane.get(sectionModel);
-            gridPane.getChildren().clear();
-
-            // Re-add content to Section
-            addPatternViews(sectionModel, sectionModel.getPatterns());
-
-            // Show Edit Panel to the right
-            showEditSemanticFieldsPanel(actionEvent, uncommitedSemantic);
+            initializeComposer();
+            onCreateSemantic(actionEvent, sectionModel, refComponent);
         });
 
-        // show Popup
+        // Show Popup
         SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
+        Point2D screenPoint = sectionTitledPane.localToScreen(
+                sectionTitledPane.getWidth(),
+                0
+        );
+        popup.show(sectionTitledPane, screenPoint.getX(), screenPoint.getY());
+    }
 
-        Point2D popupPosition = sectionTitledPane.getLocalToSceneTransform().transform(sectionTitledPane.getLayoutX() + sectionTitledPane.getWidth(),
-                sectionTitledPane.getBoundsInLocal().getMinY());
-        popup.show(sectionTitledPane, popupPosition.getX(), popupPosition.getY());
+    private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern, EntityFacade refComponent) {
+        genPurposeViewModel.setPropertyValue(ViewModelKey.MODE, CREATE);
+
+        EditorPatternModel editorPatternModel = sectionModelOfPattern.getPatterns().getFirst();
+        PatternFacade patternFacade = PatternFacade.make(editorPatternModel.getNid());
+
+        // Create uncommited Semantic
+        SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade);
+
+        PatternSemanticsPresenter patternSemanticsPresenter = editorPatternModelToPatternPresenter.get(editorPatternModel);
+
+        // Add content to Pattern inside Section
+        if (patternSemanticsPresenter == null) {
+            // First time adding a Semantic for the given Pattern
+            addPatternViewsOfSection(sectionModelOfPattern.getPatterns());
+        } else {
+            // Not the first time adding a Semantic for this Pattern so we just add the new one below the existing ones
+            patternSemanticsPresenter.addNewSemantic(uncommitedSemantic);
+        }
+
+        // If there are Section TitledPanes that have this Pattern as a Reference Component update them
+        SectionTitledPane<EntityFacade> sectionTitledPane = patternReferenceComponentToSectionTitledPane.get(editorPatternModel);
+        if (sectionTitledPane != null) {
+            sectionTitledPane.getReferenceComponents().add(uncommitedSemantic);
+            // If this is going to be the first Semantic, have it selected
+            if (sectionTitledPane.getReferenceComponents().size() == 1) {
+                sectionTitledPane.setSelectedReferenceComponent(uncommitedSemantic);
+            }
+        }
+
+        // Show Edit Panel to the right
+        showEditSemanticFieldsPanel(actionEvent, uncommitedSemantic);
     }
 
     private void showEditSemanticFieldsPanel(Event event, SemanticEntity<SemanticEntityVersion> semanticEntity) {
         // Notify bump out (right side) to display edit fields in Semantic Editing mode
         EvtBusFactory.getDefaultEvtBus()
-                .publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+                .publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                         new KLPropertyPanelEvent(event.getSource(),
                                 SHOW_EDIT_SEMANTIC_FIELDS, semanticEntity));
         // Notify to open properties bump out.
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(event.getSource(), OPEN_PANEL));
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(event.getSource(), OPEN_PANEL));
 
         // Turn on Edit mode on the left side for the Semantic being edited
-        if (previousSemanticViewInEditMode != null) {
-            previousSemanticViewInEditMode.setEditMode(false);
+        if (previousPatternSemanticsInEditMode != null) {
+            previousPatternSemanticsInEditMode.setEditingSemantic(null);
         }
-        SemanticViewControl semanticViewControl = semanticEntityToSemanticView.get(semanticEntity);
-        semanticViewControl.setEditMode(true);
-        previousSemanticViewInEditMode = semanticViewControl;
+        PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semanticEntity);
+        if (patternSemanticsPresenter != null) {
+            patternSemanticsPresenter.setEditingSemantic(semanticEntity);
+        }
+        previousPatternSemanticsInEditMode = patternSemanticsPresenter;
     }
 
-    private void addPatternViews(EditorSectionModel sectionModel, List<? extends EditorPatternModel> patternModels) {
-        GridPane content = sectionModelToTitledPaneGridPane.get(sectionModel);
+    private void addPatternViewsOfSection(List<? extends EditorPatternModel> patternModels) {
+        if (patternModels == null || patternModels.isEmpty()) {
+            // A section may legitimately contain no patterns — e.g. one that holds only
+            // supplemental areas (a Claude/Evrete check or chat). Nothing to render here.
+            return;
+        }
+
         for (EditorPatternModel editorPatternModel : patternModels) {
-            addPatternView(editorPatternModel, content, sectionModel);
+            addSinglePatternView(editorPatternModel);
         }
     }
 
-    private void addPatternView(EditorPatternModel editorPatternModel, GridPane content, EditorSectionModel parentSection) {
-        VBox patternMainContainer = new VBox();
-        patternMainContainer.getStyleClass().add("pattern-container");
+    /**
+     * Renders the section's placed supplemental areas (Claude/Evrete checks, chat, …). The whole
+     * capability lives in knowledge-layout's {@link SupplementalAreaRenderer}, which materializes
+     * each area generically from its plugin factory and injects this window's view and reference
+     * concept. This window only delegates.
+     */
+    private void addSupplementalAreaViewsOfSection(EditorSectionModel section) {
+        GridPane sectionGridPane = sectionModelToTitledPaneGridPane.get(section);
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        SupplementalAreaRenderer.renderInto(section, sectionGridPane, viewProperties, refComponent);
+    }
 
-        // Pattern title
-        Label patternTitle = new Label(editorPatternModel.getTitle());
-        patternTitle.getStyleClass().add("gen-purpose-pattern-title");
-        patternTitle.visibleProperty().bind(editorPatternModel.titleVisibleProperty());
-        patternTitle.managedProperty().bind(editorPatternModel.titleVisibleProperty());
-        patternMainContainer.getChildren().add(patternTitle);
+    private void addSinglePatternView(EditorPatternModel editorPatternModel) {
+        EditorSectionModel parentSection = editorPatternModel.getParentSection();
+        GridPane sectionGridPane = sectionModelToTitledPaneGridPane.get(parentSection);
 
-        // Pattern Fields Container
-        VBox semanticsContainer = new VBox();
-        semanticsContainer.getStyleClass().add("semantics-container");
+//        VBox patternMainContainer = createPatternContainer(editorPatternModel);
+//
+//        // Pattern title
+//        Label patternTitle = new Label(editorPatternModel.getTitle());
+//        patternTitle.getStyleClass().add("gen-purpose-pattern-title");
+//        patternTitle.visibleProperty().bind(editorPatternModel.titleVisibleProperty());
+//        patternTitle.managedProperty().bind(editorPatternModel.titleVisibleProperty());
+//        patternMainContainer.getChildren().add(patternTitle);
 
         // Pattern fields
-        createSemanticViews(editorPatternModel, semanticsContainer, parentSection);
+        PatternSemanticsPresenter patternSemanticsPresenter = addSemanticViews(editorPatternModel);
+
+        editorPatternModelToPatternPresenter.put(editorPatternModel, patternSemanticsPresenter);
+
+        Node view = patternSemanticsPresenter.getView();
 
         editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
-            GridPane.setRowIndex(patternMainContainer, newRowIndex.intValue());
+            GridPane.setRowIndex(view, newRowIndex.intValue());
         });
 
         editorPatternModel.columnIndexProperty().subscribe(newColumnIndex -> {
-            GridPane.setColumnIndex(patternMainContainer, newColumnIndex.intValue());
+            GridPane.setColumnIndex(view, newColumnIndex.intValue());
         });
 
         editorPatternModel.columnSpanProperty().subscribe(newColumnSpan -> {
-            GridPane.setColumnSpan(patternMainContainer, newColumnSpan.intValue());
+            GridPane.setColumnSpan(view, newColumnSpan.intValue());
         });
 
-        patternMainContainer.getChildren().add(semanticsContainer);
-        content.getChildren().add(patternMainContainer);
+        // Always expand to fill height of the GridPane
+        GridPane.setVgrow(view, Priority.ALWAYS);
+
+        sectionGridPane.getChildren().add(view);
     }
 
-    private List<KLReadOnlyBaseControl> createSemanticViews(EditorPatternModel editorPatternModel, VBox semanticsContainer,
-                                                            EditorSectionModel parentSection) {
-//        PatternVersionRecord patternVersionRecord = (PatternVersionRecord) getViewProperties().calculator().latest(patternEntity).get();
+    private PatternSemanticsPresenter addSemanticViews(EditorPatternModel editorPatternModel) {
+        EditorSectionModel parentSection = editorPatternModel.getParentSection();
 
         List<EntityFacade> refComponents = getReferenceComponentsToUse(parentSection.getReferenceComponent());
 
-        List<KLReadOnlyBaseControl> controlItems = new ArrayList<>();
-
         SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(parentSection);
 
+        initializeComposer();
+
+        // The model always supplies a factory (it defaults to the Standard factory), so no fallback is needed here.
+        KlPatternSemanticsFactory klPatternSemanticsFactory = editorPatternModel.getFactory();
+
+        PatternSemanticsPresenter patternSemanticsPresenter = klPatternSemanticsFactory.createJournalControl(editorPatternModel,
+                viewProperties, composer, genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
+
         if (!refComponents.isEmpty()) {
-            doCreateSemanticViews(editorPatternModel, semanticsContainer, refComponents, controlItems);
+            doAddSemanticViews(editorPatternModel, patternSemanticsPresenter, refComponents.getFirst());
             titledPane.setSelectedReferenceComponent(refComponents.getFirst());
         }
 
         titledPane.selectedReferenceComponentProperty().subscribe(() -> {
-            semanticsContainer.getChildren().clear();
-            doCreateSemanticViews(editorPatternModel, semanticsContainer, List.of(titledPane.getSelectedReferenceComponent()), controlItems);
+            patternSemanticsPresenter.clearSemantics();
+            doAddSemanticViews(editorPatternModel, patternSemanticsPresenter, titledPane.getSelectedReferenceComponent());
         });
 
-        controls.addAll(controlItems);
-        return controlItems;
+        return patternSemanticsPresenter;
     }
 
-    private void doCreateSemanticViews(EditorPatternModel editorPatternModel, VBox semanticsContainer,
-                                       List<EntityFacade> refComponents, List<KLReadOnlyBaseControl> controlItems) {
+    private void reloadSemanticViews(SemanticEntity<SemanticEntityVersion> semantic) {
+        editorPatternModelToPatternPresenter.forEach((patternModel, presenter) -> {
+            if (patternModel.getNid() == semantic.patternNid()) {
+                presenter.clearSemantics();
+                doAddSemanticViews(patternModel, presenter, semantic.referencedComponent());
+            }
+        });
+    }
+
+    private void doAddSemanticViews(EditorPatternModel editorPatternModel, PatternSemanticsPresenter patternSemanticsPresenter, EntityFacade referenceComponent) {
+        if (referenceComponent == null) {
+            // No reference concept selected — nothing to render for this pattern's semantics.
+            return;
+        }
 
         // Pattern Entity
         int patternNid = editorPatternModel.getNid();
@@ -888,43 +1015,10 @@ public class GenPurposeDetailsController {
         initializeComposer();
 
         // Start adding Semantics
-        AtomicInteger index = new AtomicInteger(0);
-        EntityService.get().forEachSemanticForComponentOfPattern(refComponents.getFirst().nid(), patternEntity.nid(),
+        EntityService.get().forEachSemanticForComponentOfPattern(referenceComponent.nid(), patternEntity.nid(),
                 (semantic) -> {
-                    // add Separator
-                    if (index.get() > 0) {
-                        Separator separator = new Separator();
-                        semanticsContainer.getChildren().add(separator);
-                    }
-
-                    SemanticViewControl semanticViewControl = new SemanticViewControl();
-
-                    semanticEntityToSemanticView.put(semantic, semanticViewControl);
-
-                    ObservableEntity referencedComponent = ObservableEntityHandle.get(refComponents.getFirst().nid()).expectEntity();
-                    ObservablePattern pattern = ObservableEntityHandle.get(patternEntity.nid()).expectPattern();
-                    ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(semantic.publicId(), referencedComponent, pattern);
-
-                    // Get editable version with cached editing capabilities
-                    ObservableSemanticVersion.Editable editableVersion = semanticEditor.getEditableVersion();
-
-                    ObservableList<ObservableField.Editable<?>> editableFields = editableVersion.getEditableFields();
-
-                    for (int i = 0; i < editableFields.size(); ++i) {
-                        ObservableField.Editable observableField = editableFields.get(i);
-
-                        for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
-                            if (observableField.getFieldIndex() == editorFieldModel.getIndex()) {
-                                createFieldView(observableField.getObservableFeature(), editorFieldModel, controlItems, semanticViewControl);
-                            }
-                        }
-                    }
-
-                    semanticViewControl.numberColumnsProperty().bind(editorPatternModel.numberColumnsProperty());
-
-                    semanticsContainer.getChildren().add(semanticViewControl);
-
-                    index.incrementAndGet();
+                    patternSemanticsPresenter.addNewSemantic(semantic);
+                    semanticEntityToPatternSemanticsPresenter.put(semantic, patternSemanticsPresenter);
                 });
     }
 
@@ -945,32 +1039,62 @@ public class GenPurposeDetailsController {
                 path,
                 "Edit Semantic Details"
         );
+
+        genPurposeViewModel.setPropertyValue(ViewModelKey.COMPOSER, composer);
+    }
+
+    /**
+     * The component a section's rows resolve against: the window's reference component for a section
+     * with no reference pattern, otherwise the component currently selected for that section. This is
+     * what lets reference-component chains resolve to arbitrary depth — a downstream section anchors on
+     * the resolved component of the section that owns its reference pattern, rather than always anchoring
+     * on the window component (see komet-desktop #3).
+     */
+    private EntityFacade resolveSectionReferenceComponent(EditorSectionModel section) {
+        if (section == null || section.getReferenceComponent() == null) {
+            return genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        }
+        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(section);
+        return titledPane == null ? null : titledPane.getSelectedReferenceComponent();
     }
 
     private List<EntityFacade> getReferenceComponentsToUse(EditorPatternModel sectionReferenceComponent) {
         List<EntityFacade> refComponents = new ArrayList<>();
 
-        EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
-
         if (sectionReferenceComponent != null) {
-            EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), sectionReferenceComponent.getNid(),
-                    (SemanticEntity<SemanticEntityVersion> semantic) -> {
-                        refComponents.add(semantic);
-                    }
-            );
+            // Anchor on the resolved reference component of the section that owns the reference pattern,
+            // so chains where one section references another section's semantic resolve to any depth.
+            EntityFacade base = resolveSectionReferenceComponent(sectionReferenceComponent.getParentSection());
+            if (base != null) {
+                EntityService.get().forEachSemanticForComponentOfPattern(base.nid(), sectionReferenceComponent.getNid(),
+                        (SemanticEntity<SemanticEntityVersion> semantic) -> {
+                            refComponents.add(semantic);
+                        }
+                );
+            }
         } else {
-            refComponents.add(windowRefComponent);
+            // No section reference pattern — the section resolves directly against the window component.
+            // Never return a list containing null (callers treat a non-empty list as having a usable component).
+            EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+            if (windowRefComponent != null) {
+                refComponents.add(windowRefComponent);
+            }
         }
 
         return refComponents;
     }
 
     private List<EntityFacade> getSemanticsOfPattern(EditorPatternModel editorPatternModel) {
-        EntityFacade windowRefComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
-
         List<EntityFacade> refComponents = new ArrayList<>();
 
-        EntityService.get().forEachSemanticForComponentOfPattern(windowRefComponent.nid(), editorPatternModel.getNid(),
+        // Anchor on the resolved reference component of the section that owns this reference pattern, so
+        // a section referencing another section's semantic populates its options (see komet-desktop #3).
+        EntityFacade base = resolveSectionReferenceComponent(editorPatternModel.getParentSection());
+        if (base == null) {
+            return refComponents;
+        }
+
+        EntityService.get().forEachSemanticForComponentOfPattern(base.nid(), editorPatternModel.getNid(),
                 (SemanticEntity<SemanticEntityVersion> semantic) -> {
                     refComponents.add(semantic);
                 }
@@ -979,47 +1103,71 @@ public class GenPurposeDetailsController {
         return refComponents;
     }
 
-    private void createFieldView(ObservableField<?> observableField, EditorFieldModel fieldModel,
-                                 List<KLReadOnlyBaseControl> controlItems, SemanticViewControl semanticViewControl) {
-        Field<?> field = observableField.field();
-
-        // Generate node using the underlying ObservableField (read-only view)
-        // This was throwing a cast exception, expecting KLReadOnlyBaseControl.
-        Node baseControl = KlFieldHelper.createReadOnlyKlField(
-                (FieldRecord<?>) field,
-                observableField, // Use underlying ObservableField for display
-                getViewProperties(),
-                null,
-                genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC)
-        );
-
-        // Eliminated unsafe cast here...
-        if (baseControl instanceof KLReadOnlyBaseControl klReadOnlyBaseControl) {
-//                                klReadOnlyBaseControl.setOnEditAction(editAction.apply(klReadOnlyBaseControl, index++));
-//                                semanticDetailsVBox.getChildren().add(klReadOnlyBaseControl);
-            controlItems.add(klReadOnlyBaseControl);
+    /**
+     * Visits every section in this window (the main section and all additional sections).
+     */
+    private void forEachSection(Consumer<EditorSectionModel> action) {
+        if (editorWindowModel == null) {
+            return;
         }
-
-        fieldModel.rowIndexProperty().subscribe(newRowIndex -> {
-            GridPane.setRowIndex(baseControl, newRowIndex.intValue());
-        });
-
-        fieldModel.columnIndexProperty().subscribe(newColumnIndex -> {
-            GridPane.setColumnIndex(baseControl, newColumnIndex.intValue());
-        });
-
-        fieldModel.columnSpanProperty().subscribe(newColumnSpan -> {
-            GridPane.setColumnSpan(baseControl, newColumnSpan.intValue());
-        });
-
-        semanticViewControl.getFields().add((KLReadOnlyBaseControl) baseControl);
+        action.accept(editorWindowModel.getMainSection());
+        editorWindowModel.getAdditionalSections().forEach(action);
     }
 
+    /**
+     * Re-resolves every section whose reference pattern lives in {@code changedSection}, so a change to
+     * that section's reference component propagates down the reference-component chain. Each refreshed
+     * section's own selection change drives the next hop, so the cascade naturally reaches arbitrary
+     * depth (see komet-desktop #3).
+     */
+    private void refreshSectionsAnchoredOn(EditorSectionModel changedSection) {
+        forEachSection(section -> {
+            EditorPatternModel referencePattern = section.getReferenceComponent();
+            if (referencePattern != null && referencePattern.getParentSection() == changedSection) {
+                refreshSectionReferenceComponents(section);
+            }
+        });
+    }
 
-    private void onSectionPatternsChanged(EditorSectionModel editorSectionModel, ListChangeListener.Change<? extends EditorPatternModel> change) {
+    /**
+     * Recomputes a section's reference-component options against its (now-changed) upstream anchor,
+     * preserving the prior selection when it survives and otherwise defaulting to the first option.
+     * Re-selecting re-populates the section's rows and cascades to its own downstream sections.
+     */
+    private void refreshSectionReferenceComponents(EditorSectionModel section) {
+        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(section);
+        // Skip when the section isn't built yet (initial load resolves it directly) or it is already
+        // mid-refresh (guards against a cyclic reference chain recursing forever).
+        if (titledPane == null || !refreshingSections.add(section)) {
+            return;
+        }
+
+        List<EntityFacade> options = getSemanticsOfPattern(section.getReferenceComponent());
+        EntityFacade previousSelection = titledPane.getSelectedReferenceComponent();
+
+        titledPane.getReferenceComponents().setAll(options);
+
+        EntityFacade newSelection = null;
+        if (previousSelection != null) {
+            for (EntityFacade option : options) {
+                if (option.nid() == previousSelection.nid()) {
+                    newSelection = option;
+                    break;
+                }
+            }
+        }
+        if (newSelection == null && !options.isEmpty()) {
+            newSelection = options.getFirst();
+        }
+
+        titledPane.setSelectedReferenceComponent(newSelection);
+        refreshingSections.remove(section);
+    }
+
+    private void onSectionPatternsChanged(ListChangeListener.Change<? extends EditorPatternModel> change) {
         while (change.next()) {
             if (change.wasAdded()) {
-                addPatternViews(editorSectionModel, change.getAddedSubList());
+                addPatternViewsOfSection(change.getAddedSubList());
             }
         }
     }
@@ -1029,11 +1177,10 @@ public class GenPurposeDetailsController {
             if (change.wasAdded()) {
                 for (EditorSectionModel additionalSectionModel : change.getAddedSubList()) {
                     TitledPane titledPane = createTitledPane(additionalSectionModel);
-                    addPatternViews(additionalSectionModel, additionalSectionModel.getPatterns());
-                    additionalSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>)
-                            patternsChange -> onSectionPatternsChanged(additionalSectionModel, patternsChange));
+                    addPatternViewsOfSection(additionalSectionModel.getPatterns());
+                    additionalSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
 
-                    mainContent.getChildren().add(titledPane);
+                    mainContent.getItems().add(titledPane);
                 }
             }
         }

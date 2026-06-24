@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.LoginProperties.*;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.VIEW_PROPERTIES;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 
 public class LoginAuthorController {
     private static final Logger LOG = LoggerFactory.getLogger(LoginAuthorController.class);
@@ -171,5 +171,16 @@ public class LoginAuthorController {
     @FXML
     public void countLength(Event event) {
         clicked();
+    }
+
+    @FXML
+    public void openIkeNetwork() {
+        new Thread(() -> {
+            try {
+                java.awt.Desktop.getDesktop().browse(java.net.URI.create("https://ike.network"));
+            } catch (Exception e) {
+                org.slf4j.LoggerFactory.getLogger(getClass()).warn("Could not open ike.network", e);
+            }
+        }, "open-ike-network").start();
     }
 }

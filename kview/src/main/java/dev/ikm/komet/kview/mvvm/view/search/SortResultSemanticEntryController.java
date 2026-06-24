@@ -15,16 +15,17 @@
  */
 package dev.ikm.komet.kview.mvvm.view.search;
 
-import dev.ikm.komet.kview.events.MakeKLWindowEvent;
-import dev.ikm.tinkar.events.EvtBus;
-import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.komet.framework.search.HighlightedSegments;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
+import dev.ikm.komet.kview.events.MakeKLWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.events.EvtBus;
+import dev.ikm.tinkar.events.EvtBusFactory;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -34,14 +35,13 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 
 import java.util.UUID;
 
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 
 public class SortResultSemanticEntryController  {
 
@@ -53,9 +53,6 @@ public class SortResultSemanticEntryController  {
 
     @FXML
     private TextFlow textFlow;
-
-    @FXML
-    private Text semanticText;
 
     @FXML
     private HBox retiredHBox;
@@ -148,8 +145,23 @@ public class SortResultSemanticEntryController  {
         this.identicon.setImage(identiconImage);
     }
 
-    public void setSemanticText(String text) {
-        this.semanticText.setText(text);
+    /**
+     * Render the semantic's text into the cell's {@link TextFlow}. The input
+     * may be a Lucene-formatted highlighted snippet — words wrapped in
+     * {@code <B>...</B>} get the {@code highlight} CSS class on their
+     * containing {@code StackPane}, matching the per-word visual treatment of
+     * the concept-entry cell.
+     *
+     * <p>Splitting on a single space (not whitespace) preserves Lucene's
+     * {@code SimpleHTMLFormatter} output, which wraps each analyzed term
+     * individually — so each space-delimited word either contains the markup
+     * end-to-end or doesn't contain it at all.
+     *
+     * @param highlightedString the marked-up snippet, or plain text if no
+     *                          highlights apply; may be {@code null} or empty
+     */
+    public void setSemanticText(String highlightedString) {
+        HighlightedSegments.renderHighlightedInto(textFlow, highlightedString, "search-semantic-entry-text");
     }
 
     public void increaseTextFlowWidth() {

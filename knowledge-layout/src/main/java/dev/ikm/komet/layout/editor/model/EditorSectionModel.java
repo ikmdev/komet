@@ -20,11 +20,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRID_NUMBER_COLUMNS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_ADDITIONAL_SECTIONS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_REFERENCE_COMPONENT;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_SUPPLEMENTAL_AREAS;
 
 /**
  * Represents a Section. It has properties like the Section name, the patterns inside it (EditorPatternModel instances),
@@ -35,8 +37,11 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
 
     public static final String UNTITLED_SECTION_NAME = "Untitled";
 
+    private boolean hasBeenAutonamedFromPatternAdded = false;
+
     public EditorSectionModel() {
         patterns.addListener(this::patternsChanged);
+        supplementalAreas.addListener(this::supplementalAreasChanged);
     }
 
     /*******************************************************************************
@@ -84,6 +89,13 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
 
         List<EditorPatternModel> editorPatternModels = EditorPatternModel.load(sectionPreferences, viewCalculator);
         getPatterns().setAll(editorPatternModels);
+
+        List<String> areaIds = sectionPreferences.getList(KL_SUPPLEMENTAL_AREAS);
+        List<EditorSupplementalAreaModel> areas = new ArrayList<>();
+        for (String areaId : areaIds) {
+            areas.add(EditorSupplementalAreaModel.load(sectionPreferences, UUID.fromString(areaId)));
+        }
+        getSupplementalAreas().setAll(areas);
     }
 
     /**
@@ -116,9 +128,49 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
     private void patternsChanged(ListChangeListener.Change<? extends EditorPatternModel> change) {
         while(change.next()) {
             if (change.wasAdded()) {
+                if (!hasBeenAutonamedFromPatternAdded) {
+                    autoNameSection(change.getAddedSubList());
+                }
                 change.getAddedSubList().forEach(pattern -> pattern.setParentSection(this));
             }
         }
+    }
+
+    /**
+     * Auto names this Section if it's still untitled.
+     * This implementation names the Section based of the first Pattern in the list that is passed
+     * into this method. It uses the Patterns name with the  "Pattern" part stripped of the name of the Pattern
+     * if it's there.
+     *
+     * @param addedPatterns the Patterns that were added
+     */
+    private void autoNameSection(List<? extends EditorPatternModel> addedPatterns) {
+        if (isUntitledSection()){
+            String patternTitle = addedPatterns.getFirst().getTitle();
+            String newName = patternTitle.endsWith("Pattern")
+                    ? patternTitle.substring(0, patternTitle.length() - "Pattern".length()).trim()
+                    : patternTitle.stripTrailing();
+            name.set(newName);
+        }
+
+        hasBeenAutonamedFromPatternAdded = true;
+    }
+
+    private void supplementalAreasChanged(ListChangeListener.Change<? extends EditorSupplementalAreaModel> change) {
+        while (change.next()) {
+            if (change.wasAdded()) {
+                change.getAddedSubList().forEach(area -> area.setParentSection(this));
+            }
+        }
+    }
+
+    /**
+     * Checks if the Section is Unitlted (Section's are initially named "Untitled" + a number).
+     *
+     * @return returns true if this Section is untitled
+     */
+    private boolean isUntitledSection() {
+        return name.get().matches("^Untitled\\s*\\d*$");
     }
 
     private void saveSectionDetails(KometPreferences editorWindowPreferences) {
@@ -132,6 +184,13 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
         for (EditorPatternModel editorPatternModel : getPatterns()) {
             editorPatternModel.save(sectionPreferences);
         }
+
+        List<String> areaIds = new ArrayList<>();
+        for (EditorSupplementalAreaModel area : getSupplementalAreas()) {
+            area.save(sectionPreferences);
+            areaIds.add(area.getId().toString());
+        }
+        sectionPreferences.putList(KL_SUPPLEMENTAL_AREAS, areaIds);
 
         try {
             sectionPreferences.flush();
@@ -170,6 +229,13 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
      */
     private final ObservableList<EditorPatternModel> patterns = FXCollections.observableArrayList();
     public ObservableList<EditorPatternModel> getPatterns() { return patterns; }
+
+    // -- supplemental areas
+    /**
+     * The collection of placed supplemental areas inside this Section.
+     */
+    private final ObservableList<EditorSupplementalAreaModel> supplementalAreas = FXCollections.observableArrayList();
+    public ObservableList<EditorSupplementalAreaModel> getSupplementalAreas() { return supplementalAreas; }
 
     // -- number columns
     /**

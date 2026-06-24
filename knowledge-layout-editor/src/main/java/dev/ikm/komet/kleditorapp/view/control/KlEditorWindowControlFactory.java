@@ -1,14 +1,17 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
+import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorGridNodeModel;
 import dev.ikm.komet.layout.editor.model.EditorModelBase;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
+import dev.ikm.komet.layout.editor.model.EditorSupplementalAreaModel;
+import dev.ikm.komet.layout.editor.property.StandardPatternProperties;
 
 import java.util.HashMap;
 
-public class WindowControlFactory {
+public class KlEditorWindowControlFactory {
     private static final HashMap<EditorWindowBaseControl, EditorModelBase> windowControlToModel = new HashMap<>();
     private static final HashMap<EditorModelBase, EditorWindowBaseControl> modelToWindowControl = new HashMap<>();
 
@@ -27,19 +30,46 @@ public class WindowControlFactory {
         return sectionViewControl;
     }
 
-    public static PatternViewControl createPatternView(EditorPatternModel editorPatternModel) {
-        PatternViewControl patternViewControl = new PatternViewControl();
+    public static PatternStandardEditorControl createStandardPatternView(EditorPatternModel editorPatternModel) {
+        PatternStandardEditorControl patternStandardEditorControl = new PatternStandardEditorControl();
 
-        patternViewControl.titleProperty().bind(editorPatternModel.titleProperty());
-        patternViewControl.titleVisibleProperty().bindBidirectional(editorPatternModel.titleVisibleProperty());
+        patternStandardEditorControl.titleProperty().bind(editorPatternModel.titleProperty());
+        patternStandardEditorControl.titleVisibleProperty().bindBidirectional(editorPatternModel.titleVisibleProperty());
 
-        patternViewControl.numberColumnsProperty().bindBidirectional(editorPatternModel.numberColumnsProperty());
+        // The column count is a Standard-factory property; bind it from the pattern's factory property set.
+        if (editorPatternModel.getFactoryProperties() instanceof StandardPatternProperties standardProperties) {
+            patternStandardEditorControl.numberColumnsProperty().bindBidirectional(standardProperties.numberColumnsProperty());
+        }
 
-        bindGridNodeProperties(editorPatternModel, patternViewControl);
+        bindGridNodeProperties(editorPatternModel, patternStandardEditorControl);
 
-        updateMaps(editorPatternModel, patternViewControl);
+        updateMaps(editorPatternModel, patternStandardEditorControl);
 
-        return patternViewControl;
+        // Populate the field tiles from the pattern's fields.
+        for (EditorFieldModel fieldModel : editorPatternModel.getFields()) {
+            patternStandardEditorControl.getFields().add(createFieldView(fieldModel));
+        }
+
+        return patternStandardEditorControl;
+    }
+
+    public static PatternTableEditorControl createTablePatternView(EditorPatternModel editorPatternModel) {
+        PatternTableEditorControl patternTableViewControl = new PatternTableEditorControl();
+
+        patternTableViewControl.titleProperty().bind(editorPatternModel.titleProperty());
+        patternTableViewControl.titleVisibleProperty().bindBidirectional(editorPatternModel.titleVisibleProperty());
+
+        // No numberColumns binding: a table's columns are its fields, not an author-set count.
+        bindGridNodeProperties(editorPatternModel, patternTableViewControl);
+
+        updateMaps(editorPatternModel, patternTableViewControl);
+
+        // A table renders each field as a column header (no FieldViewControls).
+        for (EditorFieldModel fieldModel : editorPatternModel.getFields()) {
+            patternTableViewControl.addColumn(fieldModel.titleProperty());
+        }
+
+        return patternTableViewControl;
     }
 
     public static FieldViewControl createFieldView(EditorFieldModel editorFieldModel) {
@@ -52,6 +82,18 @@ public class WindowControlFactory {
         updateMaps(editorFieldModel, fieldViewControl);
 
         return fieldViewControl;
+    }
+
+    public static SupplementalAreaViewControl createSupplementalAreaView(EditorSupplementalAreaModel model) {
+        SupplementalAreaViewControl view = new SupplementalAreaViewControl();
+
+        view.titleProperty().bind(model.titleProperty());
+
+        bindGridNodeProperties(model, view);
+
+        updateMaps(model, view);
+
+        return view;
     }
 
     public static EditorModelBase getModel(EditorWindowBaseControl editorWindowBaseControl) {

@@ -1,6 +1,6 @@
-# Komet
+# komet
 
-JavaFX-based knowledge management application framework.
+komet component.
 
 ## Build Standards
 
@@ -15,7 +15,16 @@ mvn clean verify -DskipTests -T4
 ## Key Facts
 
 - GroupId: `dev.ikm.komet`
-- Parent: `network.ike:ike-parent`
+- Version: `1.59.0-SNAPSHOT`
 - Uses `--enable-preview` (Java 25)
-- BOM: imports `dev.ikm.ike:ike-bom`
-- 18 submodules using `<subprojects>` aggregation
+- BOM: imports `dev.ikm.ike:ike-bom` for dependency version management
+
+## Prohibited Patterns
+
+- **Never use `maven-antrun-plugin`** — use a proper Maven goal or `exec-maven-plugin`
+- **Never use `build-helper-maven-plugin` for multi-execution property chaining** —
+  write a proper Maven goal in `ike-maven-plugin`
+- **Never embed shell commands inline in POM** — extract to a named script
+
+See `.claude/standards/` (after `mvn validate`) for full standards.
+See `CLAUDE-komet.md` for project-specific notes.

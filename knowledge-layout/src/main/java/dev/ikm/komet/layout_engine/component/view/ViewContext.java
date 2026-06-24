@@ -1,7 +1,9 @@
 package dev.ikm.komet.layout_engine.component.view;
 
 import dev.ikm.komet.framework.view.ObservableView;
+import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.komet.layout.*;
 import dev.ikm.komet.layout.context.KlContext;
 import dev.ikm.komet.layout.context.KlContextProvider;
@@ -60,7 +62,9 @@ public final class ViewContext implements KlContext, KlStateCommands {
     private final PreferencePropertyString contextUuidStringProperty;
 
     final KometPreferences preferences;
-    final ObservableViewNoOverride observableView;
+    // Widened from ObservableViewNoOverride to ObservableView so a context's view may itself be an
+    // override of its parent context's view — the depth-independent cascade (ike-issues#666, #663).
+    final ObservableView observableView;
     final PublicIdStringKey publicIdStringKey;
     final KlPeerable klPeerable;
 
@@ -77,6 +81,27 @@ public final class ViewContext implements KlContext, KlStateCommands {
                 PreferencePropertyObject.stringProp(this.klPeerable, PreferenceKeys.CONTEXT_NAME);
 
         this.observableView = new ObservableViewNoOverride(viewCoordinateRecord, publicIdStringKey.getString());
+        this.publicIdStringKey = publicIdStringKey;
+
+        this.klPeerable.properties().put(KlPeerable.PropertyKeys.KL_CONTEXT, this);
+    }
+
+    // create wrapping a provided live source view, rather than building one from a record. The window
+    // owns this coordinate and derives its (legacy) ViewProperties from the same ObservableView, so
+    // there is one coordinate of record, not two — the basis for the authority-first inner-window
+    // unification (ike-issues#660).
+    protected ViewContext(KlContextProvider contextProvider, ObservableView sourceView,
+                          PublicIdStringKey publicIdStringKey) {
+        this.preferences = contextProvider.klObject().preferences();
+        this.klPeerable = contextProvider.klObject();
+        this.viewCoordinateProperty =
+                PreferencePropertyObject.objectProp(this.klPeerable, PreferenceKeys.VIEW_COORDINATE);
+        this.contextUuidStringProperty =
+                PreferencePropertyObject.stringProp(this.klPeerable, PreferenceKeys.CONTEXT_UUID);
+        this.contextNameProperty =
+                PreferencePropertyObject.stringProp(this.klPeerable, PreferenceKeys.CONTEXT_NAME);
+
+        this.observableView = sourceView;
         this.publicIdStringKey = publicIdStringKey;
 
         this.klPeerable.properties().put(KlPeerable.PropertyKeys.KL_CONTEXT, this);
@@ -148,6 +173,42 @@ public final class ViewContext implements KlContext, KlStateCommands {
     public static ViewContext create(KlContextProvider contextProvider, ViewCoordinateRecord viewCoordinateRecord, String contextName) {
         PublicIdStringKey<KlContext> publicIdStringKey = new PublicIdStringKey<>(PublicIds.newRandom(), contextName);
         return new ViewContext(contextProvider, viewCoordinateRecord, publicIdStringKey);
+    }
+
+    /**
+     * Creates a context that wraps a provided live source view, making that view the provider's single
+     * coordinate of record. The provider derives its (legacy) {@link dev.ikm.komet.framework.view.ViewProperties}
+     * from the same {@code ObservableView}, so menu edits, the derived view, and KL areas all read one
+     * coordinate. The context attaches itself as the {@code KL_CONTEXT} on the provider's node.
+     *
+     * @param contextProvider the window providing this context
+     * @param sourceView      the live coordinate source to expose
+     * @param contextName     a display name for the context
+     * @return the created {@code ViewContext}
+     */
+    public static ViewContext createOverView(KlContextProvider contextProvider,
+                                             ObservableView sourceView, String contextName) {
+        PublicIdStringKey<KlContext> publicIdStringKey = new PublicIdStringKey<>(PublicIds.newRandom(), contextName);
+        return new ViewContext(contextProvider, sourceView, publicIdStringKey);
+    }
+
+    /**
+     * Creates a context whose view is a live <em>override</em> of the parent context's view, realizing
+     * one link of the depth-independent coordinate cascade (ike-issues#666). The child inherits every
+     * facet it does not pin and tracks the parent for those; pinned facets survive parent changes
+     * (pin-wins). Enabled by depth-independent override nesting (ike-issues#663).
+     *
+     * @param contextProvider the gadget providing this context (e.g. an inner window)
+     * @param parentContext   the enclosing scope's context whose view this one overrides
+     * @param contextName     a display name for the context
+     * @return the created child {@code ViewContext}
+     */
+    public static ViewContext createChildOf(KlContextProvider contextProvider,
+                                            KlContext parentContext, String contextName) {
+        ObservableViewWithOverride childView =
+                new ObservableViewWithOverride((ObservableViewBase) parentContext.viewCoordinate(), contextName);
+        PublicIdStringKey<KlContext> publicIdStringKey = new PublicIdStringKey<>(PublicIds.newRandom(), contextName);
+        return new ViewContext(contextProvider, childView, publicIdStringKey);
     }
 
     public static ViewContext restore(KometPreferences preferences, KlContextProvider contextProvider) {

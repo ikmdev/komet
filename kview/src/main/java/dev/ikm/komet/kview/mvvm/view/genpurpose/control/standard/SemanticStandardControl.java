@@ -1,4 +1,4 @@
-package dev.ikm.komet.kview.mvvm.view.genpurpose.control;
+package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import javafx.beans.property.BooleanProperty;
@@ -13,15 +13,15 @@ import javafx.scene.control.Skin;
 /**
  * A control that shows 1 Semantic.
  */
-public class SemanticViewControl extends Control {
+public class SemanticStandardControl extends Control {
 
-    public SemanticViewControl() {
+    public SemanticStandardControl() {
         getStyleClass().add("semantic-view");
     }
 
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new SemanticViewControlSkin(this);
+        return new SemanticStandardControlSkin(this);
     }
 
     // -- read only fields

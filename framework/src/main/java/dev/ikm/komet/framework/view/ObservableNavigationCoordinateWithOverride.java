@@ -28,9 +28,7 @@ public class ObservableNavigationCoordinateWithOverride extends ObservableNaviga
 
     public ObservableNavigationCoordinateWithOverride(ObservableNavigationCoordinate navigationCoordinate, String coordinateName) {
         super(navigationCoordinate, coordinateName);
-        if (navigationCoordinate instanceof ObservableNavigationCoordinateWithOverride) {
-            throw new IllegalStateException("Cannot override an overridden Coordinate. ");
-        }
+        // Depth-independent override nesting (ike-issues#663): an override may wrap another override.
 
     }
 

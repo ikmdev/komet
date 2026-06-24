@@ -2,10 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
     <modelVersion>4.1.0</modelVersion>
-    <parent>
-        <groupId>network.ike</groupId>
+ <parent>
+        <groupId>network.ike.platform</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>47</version>
+        <version>106</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -22,6 +22,16 @@
             <comments>A business-friendly OSS license</comments>
         </license>
     </licenses>
+    <distributionManagement>
+        <!-- Explicit <site> URL — see ike-parent/CLAUDE.md
+             ("Inheriting projects MUST declare their own
+             <distributionManagement><site>") and ike-issues#380/#383.
+             Artifact id is `komet-parent`; site lives at the repo path. -->
+        <site>
+            <id>ike-site</id>
+            <url>https://ike.network/komet/</url>
+        </site>
+    </distributionManagement>
     <scm>
         <url>http://www.github.com/ikmdev/komet</url>
     </scm>
@@ -56,6 +66,7 @@
         <subproject>rules</subproject>
         <subproject>search</subproject>
         <subproject>knowledge-layout</subproject>
+        <subproject>komet-markdown-richtext</subproject>
         <subproject>kview</subproject>
         <subproject>sync</subproject>
         <subproject>knowledge-layout-editor</subproject>
@@ -89,8 +100,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>dev.ikm.ike</groupId>
-                <artifactId>ike-bom</artifactId>
+                <groupId>dev.ikm.komet</groupId>
+                <artifactId>komet-bom</artifactId>
                 <version>3.0.7-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -171,15 +182,11 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.2.8</version>
+                    <!-- version inherited from ike-base-parent; bc signer is required for
+                         parallel-safe signing (do not switch to native gpg) -->
                     <configuration>
                         <signer>bc</signer>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.1.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -197,11 +204,6 @@
                             </goals>
                         </execution>
                     </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>${maven.assembly-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.openjfx</groupId>
@@ -255,21 +257,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <!-- Local overrides: fork the compiler into a separate
+                         JVM, and restrict annotation processors to record-
+                         builder only. Source/target/release, compilerArgs,
+                         and the record-builder annotationProcessorPath are
+                         provided by ike-parent:13 (#282). -->
                     <fork>true</fork>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <release>${java.version}</release>
-                    <compilerArgs>
-                        <arg>-parameters</arg>
-                        <arg>--enable-preview</arg>
-                    </compilerArgs>
-                    <annotationProcessorPaths>
-                        <annotationProcessorPath>
-                            <groupId>io.soabase.record-builder</groupId>
-                            <artifactId>record-builder-processor</artifactId>
-                            <version>${record-builder-core.version}</version>
-                        </annotationProcessorPath>
-                    </annotationProcessorPaths>
                     <annotationProcessors>
                         <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor
                         </annotationProcessor>
