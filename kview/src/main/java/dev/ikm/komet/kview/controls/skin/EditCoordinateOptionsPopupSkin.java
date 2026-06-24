@@ -2,14 +2,19 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.kview.controls.EditCoordinateOptionsPopup;
-import dev.ikm.komet.kview.controls.IconRegion;
-import dev.ikm.komet.kview.controls.KLComponentControl;
-import dev.ikm.komet.kview.controls.KLComponentControlFactory;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.IconRegion;
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
+import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.property.ObjectProperty;
+import javafx.collections.FXCollections;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Skin;
 import javafx.scene.control.ToggleButton;
@@ -18,10 +23,13 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 import javafx.util.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOptionsPopup> {
@@ -47,15 +55,23 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
         HBox headerBox = new HBox(closePane, title);
         headerBox.getStyleClass().add("header-box");
 
-        // Create inline search fields for each edit coordinate property
+        // The author is read-only (login-driven); module and path are sorted drop-downs of the available
+        // concepts — modules = descendants of MODULE, paths = leaf descendants of PATH (ike-issues#754).
         ObservableEditCoordinate editCoordinate = control.getViewProperties().parentView().editCoordinate();
 
+        ViewCalculator navCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(
+                control.getViewProperties(), TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        List<ConceptEntity> sortedModules = sortedByName(
+                DataModelHelper.fetchDescendentsOfConcept(navCalculator, TinkarTerm.MODULE.publicId()), navCalculator);
+        List<ConceptEntity> sortedPaths = sortedByName(
+                DataModelHelper.fetchLeafDescendentsOfConcept(navCalculator, TinkarTerm.PATH.publicId()), navCalculator);
+
         VBox fieldsBox = new VBox(8,
-                createField("AUTHOR for CHANGES", editCoordinate.authorForChangesProperty()),
-                createField("DEFAULT MODULE", editCoordinate.defaultModuleProperty()),
-                createField("DESTINATION MODULE", editCoordinate.destinationModuleProperty()),
-                createField("DEFAULT PATH", editCoordinate.defaultPathProperty()),
-                createField("PROMOTION PATH", editCoordinate.promotionPathProperty())
+                createReadOnlyAuthorField(editCoordinate),
+                createDropDownField("DEFAULT MODULE", editCoordinate.defaultModuleProperty(), sortedModules),
+                createDropDownField("DESTINATION MODULE", editCoordinate.destinationModuleProperty(), sortedModules),
+                createDropDownField("DEFAULT PATH", editCoordinate.defaultPathProperty(), sortedPaths),
+                createDropDownField("PROMOTION PATH", editCoordinate.promotionPathProperty(), sortedPaths)
         );
         fieldsBox.getStyleClass().add("content-box");
 
@@ -74,50 +90,97 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
 
         root = new VBox(headerBox, fieldsBox, spacer, bottomBox);
         root.getStyleClass().add("filter-options-popup");
-        root.getStylesheets().add(EditCoordinateOptionsPopup.class.getResource("filter-options-popup.css").toExternalForm());
+        // The CSS lives with the relocated control in knowledge-layout (dev.ikm.komet.layout.controls), so
+        // anchor the lookup on that module's FilterOptionsPopup, like LangEditCoordinateTitledPaneSkin (ike-issues#758).
+        root.getStylesheets().add(FilterOptionsPopup.class.getResource("filter-options-popup.css").toExternalForm());
 
         control.setOnShown(_ -> {});
     }
 
     /**
-     * Creates a labeled KLComponentControl field that is bound to an edit coordinate property.
-     * The user can clear the current value and type to search for a replacement.
+     * Creates a labeled drop-down field for an edit-coordinate property: a sorted ComboBox of the available
+     * concepts (module or path), with the current value pre-selected and selection writing back to the
+     * coordinate property (ike-issues#754).
      */
-    private VBox createField(String labelText, ObjectProperty<ConceptFacade> coordinateProperty) {
+    private VBox createDropDownField(String labelText, ObjectProperty<ConceptFacade> coordinateProperty,
+                                     List<ConceptEntity> items) {
         Label label = new Label(labelText);
         label.getStyleClass().add("title-label");
+        label.setStyle("-fx-text-fill: #E1E8F1;");
 
-        KLComponentControl componentControl = KLComponentControlFactory.createComponentControl(
-                control.getViewProperties().calculator());
+        ViewCalculator calculator = control.getViewProperties().calculator();
+        ComboBox<ConceptEntity> comboBox = new ComboBox<>(FXCollections.observableArrayList(items));
+        comboBox.setMaxWidth(Double.MAX_VALUE);
+        comboBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(ConceptEntity concept) {
+                return concept == null ? "" : calculator.getPreferredDescriptionTextWithFallbackOrNid(concept.nid());
+            }
 
-        // Set the current value from the edit coordinate, and track future changes
+            @Override
+            public ConceptEntity fromString(String string) {
+                return null;
+            }
+        });
+
         ConceptFacade currentValue = coordinateProperty.get();
         if (currentValue != null) {
-            componentControl.setEntity(currentValue.toProxy());
+            items.stream().filter(e -> e.nid() == currentValue.nid()).findFirst().ifPresent(comboBox::setValue);
         }
         subscription = subscription.and(coordinateProperty.subscribe((_, newValue) -> {
-            if (newValue != null) {
-                EntityProxy current = componentControl.getEntity();
-                if (current == null || KLComponentControl.isEmpty(current) || current.nid() != newValue.nid()) {
-                    componentControl.setEntity(newValue.toProxy());
-                }
+            if (newValue == null) {
+                comboBox.setValue(null);
+            } else if (comboBox.getValue() == null || comboBox.getValue().nid() != newValue.nid()) {
+                items.stream().filter(e -> e.nid() == newValue.nid()).findFirst().ifPresent(comboBox::setValue);
+            }
+        }));
+        subscription = subscription.and(comboBox.valueProperty().subscribe((_, newEntity) -> {
+            if (newEntity != null && (coordinateProperty.get() == null || coordinateProperty.get().nid() != newEntity.nid())) {
+                coordinateProperty.setValue(newEntity);
+                LOG.info("Edit coordinate {} updated to: {}", labelText, newEntity);
             }
         }));
 
-        // When user selects a new concept via inline search, update the edit coordinate
-        subscription = subscription.and(componentControl.entityProperty().subscribe((_, newEntity) -> {
-            if (newEntity != null && !KLComponentControl.isEmpty(newEntity) && newEntity instanceof ConceptFacade newConcept) {
-                coordinateProperty.setValue(newConcept);
-                LOG.info("Edit coordinate {} updated to: {}", labelText, newConcept);
-            }
-        }));
-
-        // When user removes the concept, clear the field (but don't clear the coordinate)
-        componentControl.setOnRemoveAction(_ -> componentControl.setEntity(null));
-
-        VBox fieldBox = new VBox(2, label, componentControl);
+        VBox fieldBox = new VBox(2, label, comboBox);
         fieldBox.getStyleClass().add("edit-coordinate-field");
         return fieldBox;
+    }
+
+    private List<ConceptEntity> sortedByName(java.util.Set<ConceptEntity> concepts, ViewCalculator calculator) {
+        return concepts.stream()
+                .sorted(Comparator.comparing(c -> calculator.getPreferredDescriptionTextWithFallbackOrNid(c.nid())))
+                .toList();
+    }
+
+    /**
+     * Builds the READ-ONLY author field. The edit-coordinate author is the logged-in user, set at login
+     * (ike-issues#754); it must not be edited here — to change it, log in as a different user. So the resolved
+     * author is shown as plain text rather than an editable search control.
+     */
+    private VBox createReadOnlyAuthorField(ObservableEditCoordinate editCoordinate) {
+        Label label = new Label("AUTHOR for CHANGES");
+        label.getStyleClass().add("title-label");
+        label.setStyle("-fx-text-fill: #E1E8F1;");
+
+        Label authorValue = new Label();
+        authorValue.getStyleClass().add("edit-coordinate-readonly-value");
+        authorValue.setStyle("-fx-text-fill: #E1E8F1; -fx-font-size: 14; -fx-padding: 6 0 6 2;");
+        updateAuthorText(authorValue, editCoordinate.authorForChangesProperty().get());
+        subscription = subscription.and(editCoordinate.authorForChangesProperty().subscribe((_, newAuthor) ->
+                updateAuthorText(authorValue, newAuthor)));
+
+        VBox fieldBox = new VBox(2, label, authorValue);
+        fieldBox.getStyleClass().add("edit-coordinate-field");
+        return fieldBox;
+    }
+
+    private void updateAuthorText(Label authorValue, ConceptFacade author) {
+        if (author == null) {
+            authorValue.setText("—");
+        } else {
+            authorValue.setText(control.getViewProperties().calculator()
+                    .getPreferredDescriptionTextWithFallbackOrNid(author.nid()));
+        }
     }
 
     @Override

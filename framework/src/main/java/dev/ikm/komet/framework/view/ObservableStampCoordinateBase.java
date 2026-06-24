@@ -15,14 +15,10 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.property.ListProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SetProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
-import javafx.collections.SetChangeListener;
 import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
@@ -30,6 +26,9 @@ import dev.ikm.tinkar.coordinate.stamp.StampCoordinate;
 import dev.ikm.tinkar.coordinate.stamp.StampPositionRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.set.ImmutableSet;
 
 public abstract class ObservableStampCoordinateBase
         extends ObservableCoordinateAbstract<StampCoordinateRecord>
@@ -43,13 +42,13 @@ public abstract class ObservableStampCoordinateBase
      */
     private final ObjectProperty<ConceptFacade> pathConceptProperty;
 
-    private final SetProperty<ConceptFacade> moduleSpecificationsProperty;
+    private final SimpleEqualityBasedObjectProperty<ImmutableSet<ConceptFacade>> moduleSpecificationsProperty;
 
-    private final SetProperty<ConceptFacade> excludedModuleSpecificationsProperty;
+    private final SimpleEqualityBasedObjectProperty<ImmutableSet<ConceptFacade>> excludedModuleSpecificationsProperty;
 
     private final ObjectProperty<StateSet> allowedStatusProperty;
 
-    private final ListProperty<ConceptFacade> modulePriorityOrderProperty;
+    private final SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> modulePriorityOrderProperty;
 
     /**
      * Remove listener note...
@@ -61,9 +60,9 @@ public abstract class ObservableStampCoordinateBase
     private final ChangeListener<ConceptFacade> pathConceptListener = this::pathConceptChanged;
     private final ChangeListener<Number> timeListener = this::timeChanged;
     private final ChangeListener<StateSet> statusSetListener = this::statusSetChanged;
-    private final ListChangeListener<ConceptFacade> modulePreferenceOrderListener = this::modulePreferenceOrderChanged;
-    private final SetChangeListener<ConceptFacade> excludedModuleSetListener = this::excludedModuleSetChanged;
-    private final SetChangeListener<ConceptFacade> moduleSetListener = this::moduleSetChanged;
+    private final ChangeListener<ImmutableList<ConceptFacade>> modulePreferenceOrderListener = this::modulePreferenceOrderChanged;
+    private final ChangeListener<ImmutableSet<ConceptFacade>> excludedModuleSetListener = this::excludedModuleSetChanged;
+    private final ChangeListener<ImmutableSet<ConceptFacade>> moduleSetListener = this::moduleSetChanged;
 
     protected ObservableStampCoordinateBase(StampCoordinate stampCoordinate, String coordinateName) {
         super(stampCoordinate.toStampCoordinateRecord(), coordinateName);
@@ -76,13 +75,13 @@ public abstract class ObservableStampCoordinateBase
         addListeners();
     }
 
-    protected abstract ListProperty<ConceptFacade> makeModulePriorityOrderProperty(StampCoordinate stampCoordinate);
+    protected abstract SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeModulePriorityOrderProperty(StampCoordinate stampCoordinate);
 
     protected abstract ObjectProperty<StateSet> makeAllowedStatusProperty(StampCoordinate stampCoordinate);
 
-    protected abstract SetProperty<ConceptFacade> makeExcludedModuleSpecificationsProperty(StampCoordinate stampCoordinate);
+    protected abstract SimpleEqualityBasedObjectProperty<ImmutableSet<ConceptFacade>> makeExcludedModuleSpecificationsProperty(StampCoordinate stampCoordinate);
 
-    protected abstract SetProperty<ConceptFacade> makeModuleSpecificationsProperty(StampCoordinate stampCoordinate);
+    protected abstract SimpleEqualityBasedObjectProperty<ImmutableSet<ConceptFacade>> makeModuleSpecificationsProperty(StampCoordinate stampCoordinate);
 
     protected abstract LongProperty makeTimeProperty(StampCoordinate stampCoordinate);
 
@@ -135,7 +134,7 @@ public abstract class ObservableStampCoordinateBase
     }
 
     @Override
-    public SetProperty<ConceptFacade> moduleSpecificationsProperty() {
+    public ObjectProperty<ImmutableSet<ConceptFacade>> moduleSpecificationsProperty() {
         return this.moduleSpecificationsProperty;
     }
 
@@ -143,13 +142,13 @@ public abstract class ObservableStampCoordinateBase
      *
      * @return the specified modules property
      */
-    public SetProperty<ConceptFacade> excludedModuleSpecificationsProperty() {
+    public ObjectProperty<ImmutableSet<ConceptFacade>> excludedModuleSpecificationsProperty() {
         return this.excludedModuleSpecificationsProperty;
     }
 
 
     @Override
-    public ListProperty<ConceptFacade> modulePriorityOrderProperty() {
+    public ObjectProperty<ImmutableList<ConceptFacade>> modulePriorityOrderProperty() {
         return this.modulePriorityOrderProperty;
     }
 
@@ -168,28 +167,34 @@ public abstract class ObservableStampCoordinateBase
         return getValue();
     }
 
-    private void moduleSetChanged(SetChangeListener.Change<? extends ConceptFacade> c) {
+    private void moduleSetChanged(ObservableValue<? extends ImmutableSet<ConceptFacade>> observable,
+                                  ImmutableSet<ConceptFacade> oldSet,
+                                  ImmutableSet<ConceptFacade> newSet) {
         this.setValue(StampCoordinateRecord.make(allowedStates(),
                 stampPosition(),
-                IntIds.set.of(c.getSet().stream().mapToInt(value -> value.nid()).toArray()),
+                IntIds.set.of(newSet.castToSet(), EntityFacade::toNid),
                 excludedModuleNids(),
                 modulePriorityNidList()));
     }
 
-    private void excludedModuleSetChanged(SetChangeListener.Change<? extends ConceptFacade> c) {
+    private void excludedModuleSetChanged(ObservableValue<? extends ImmutableSet<ConceptFacade>> observable,
+                                          ImmutableSet<ConceptFacade> oldSet,
+                                          ImmutableSet<ConceptFacade> newSet) {
         this.setValue(StampCoordinateRecord.make(allowedStates(),
                 stampPosition(),
                 moduleNids(),
-                IntIds.set.of(c.getSet().stream().mapToInt(value -> value.nid()).toArray()),
+                IntIds.set.of(newSet.castToSet(), EntityFacade::toNid),
                 modulePriorityNidList()));
     }
 
-    private void modulePreferenceOrderChanged(ListChangeListener.Change<? extends ConceptFacade> c) {
+    private void modulePreferenceOrderChanged(ObservableValue<? extends ImmutableList<ConceptFacade>> observable,
+                                              ImmutableList<ConceptFacade> oldList,
+                                              ImmutableList<ConceptFacade> newList) {
         this.setValue(StampCoordinateRecord.make(allowedStates(),
                 stampPosition(),
                 moduleNids(),
                 excludedModuleNids(),
-                IntIds.list.of(c.getList().stream().mapToInt(value -> value.nid()).toArray())));
+                IntIds.list.of(newList.castToList(), EntityFacade::toNid)));
     }
 
     private void statusSetChanged(ObservableValue<? extends StateSet> observableStatusSet,

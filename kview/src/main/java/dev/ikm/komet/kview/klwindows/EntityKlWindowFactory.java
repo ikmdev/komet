@@ -104,11 +104,15 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
 
     /**
      * A factory method to restore a previously saved chapter window state.
-     * @param windowSettings App parent window settings to create view properties from.
+     * @param windowSettings App parent window settings (window geometry/state).
      * @param preferences komet preferences to restore window state from.
+     * @param journalViewProperties the journal's live view properties — the restored window derives its
+     *        coordinate from this (so it tracks the live journal author/coordinate like a new window),
+     *        not from a coordinate reconstructed out of preferences (IKE-Network/ike-issues#756).
      * @return AbstractEntityChapterKlWindow restored window.
      */
-    AbstractEntityChapterKlWindow restore(WindowSettings windowSettings, KometPreferences preferences);
+    AbstractEntityChapterKlWindow restore(WindowSettings windowSettings, KometPreferences preferences,
+                                          ViewProperties journalViewProperties);
     /**
      * Registry for locating and retrieving {@link EntityKlWindowFactory} implementations.
      * <p>     * This class provides a central registry for window factories, allowing the application
@@ -301,7 +305,8 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
          *                                  found in the preferences, or if the preferences
          *                                  contain invalid window state information
          */
-        public static AbstractEntityChapterKlWindow restoreWindow(WindowSettings windowSettings, KometPreferences preferences) {
+        public static AbstractEntityChapterKlWindow restoreWindow(WindowSettings windowSettings, KometPreferences preferences,
+                                                                  ViewProperties journalViewProperties) {
             EntityKlWindowState windowState = EntityKlWindowState.fromPreferences(preferences);
             EntityKlWindowType windowType = windowState.getWindowType();
             EntityKlWindowFactory factory = getFactory(windowType);
@@ -309,7 +314,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
                 LOG.warn("No factory registered for window type: {}", windowType);
                 throw new IllegalArgumentException("No factory registered for window type: " + windowType);
             }
-            return factory.restore(windowSettings, preferences);
+            return factory.restore(windowSettings, preferences, journalViewProperties);
         }
 
         /**

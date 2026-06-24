@@ -27,6 +27,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.PatternRecord;
@@ -646,8 +647,49 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
         return entityReference.get().additionalUuidLongs();
     }
 
+    /**
+     * Returns the semantics that reference this entity's component, each wrapped as an
+     * {@link ObservableSemantic}.
+     * <p>The referencing semantic nids are resolved through
+     * {@link EntityService#semanticNidsForComponent(int)} for this entity's {@link #nid()}, and each
+     * is mapped to its canonical {@link ObservableSemantic} instance from the shared
+     * {@link #CANONICAL_INSTANCES} pool (the same resolution path used by the other
+     * {@code ObservableEntity} accessors). The returned list is a point-in-time projection of the
+     * semantics present when this method is called; it is not a live view, so semantics added after
+     * the call will not appear.
+     *
+     * @return an immutable {@link Iterable} of the {@link ObservableSemantic}s referencing this
+     *         entity; empty if no semantic references it
+     * @throws RuntimeException if called off the JavaFX application thread, since observable entities
+     *         are resolved on the JavaFX application thread only
+     */
     public Iterable<ObservableSemantic> getObservableSemanticList() {
-        throw new UnsupportedOperationException();
+        int[] semanticNids = EntityService.get().semanticNidsForComponent(nid());
+        MutableList<ObservableSemantic> observableSemantics = Lists.mutable.empty();
+        for (int semanticNid : semanticNids) {
+            ObservableSemantic observableSemantic = packagePrivateGet(semanticNid);
+            observableSemantics.add(observableSemantic);
+        }
+        return observableSemantics.toImmutable();
+    }
+
+    /**
+     * Returns this component's semantics for the given pattern as {@link ObservableSemantic}
+     * instances — the observable, pattern-scoped analogue of {@link #getObservableSemanticList()}.
+     * It hits the pattern index directly rather than enumerating all of the component's semantics;
+     * coordinate filtering, if needed, is the caller's concern via a {@code ViewCalculator}.
+     *
+     * @param patternNid the pattern whose semantics referencing this component to return
+     * @return the observable semantics of {@code patternNid} referencing this component; empty if none
+     */
+    public Iterable<ObservableSemantic> getObservableSemanticListOfPattern(int patternNid) {
+        int[] semanticNids = EntityService.get().semanticNidsForComponentOfPattern(nid(), patternNid);
+        MutableList<ObservableSemantic> observableSemantics = Lists.mutable.empty();
+        for (int semanticNid : semanticNids) {
+            ObservableSemantic observableSemantic = packagePrivateGet(semanticNid);
+            observableSemantics.add(observableSemantic);
+        }
+        return observableSemantics.toImmutable();
     }
 
 

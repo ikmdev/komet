@@ -17,15 +17,13 @@ package dev.ikm.komet.framework.view;
 
 import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinate;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-
-import java.util.Set;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.set.ImmutableSet;
 
 public class ObservableStampCoordinateNoOverride extends ObservableStampCoordinateBase {
 
@@ -42,23 +40,14 @@ public class ObservableStampCoordinateNoOverride extends ObservableStampCoordina
     protected StampCoordinateRecord baseCoordinateChangedListenersRemoved(ObservableValue<? extends StampCoordinateRecord> observable, StampCoordinateRecord oldValue, StampCoordinateRecord newValue) {
         this.pathConceptProperty().setValue(newValue.pathForFilter());
         this.timeProperty().set(newValue.stampPosition().time());
-        this.modulePriorityOrderProperty().setAll(newValue.modulePriorityNidList().map(nid -> EntityProxy.Concept.make(nid)).castToList());
+        this.modulePriorityOrderProperty().setValue(newValue.modulePriorityNidList().map(ConceptFacade::make));
 
         if (newValue.allowedStates() != this.allowedStatesProperty().get()) {
             this.allowedStatesProperty().setValue(newValue.allowedStates());
         }
 
-        Set<? extends ConceptFacade> excludedModuleSet = newValue.excludedModuleNids().map(nid -> EntityProxy.Concept.make(nid)).castToSet();
-        if (!excludedModuleSet.equals(this.excludedModuleSpecificationsProperty().get())) {
-            this.excludedModuleSpecificationsProperty().retainAll(excludedModuleSet);
-            this.excludedModuleSpecificationsProperty().addAll(excludedModuleSet);
-        }
-
-        Set<? extends ConceptFacade> moduleSet = newValue.moduleNids().map(nid -> EntityProxy.Concept.make(nid)).castToSet();
-        if (!moduleSet.equals(this.moduleSpecificationsProperty().get())) {
-            this.moduleSpecificationsProperty().retainAll(moduleSet);
-            this.moduleSpecificationsProperty().addAll(moduleSet);
-        }
+        this.excludedModuleSpecificationsProperty().setValue(newValue.excludedModuleNids().map(ConceptFacade::make));
+        this.moduleSpecificationsProperty().setValue(newValue.moduleNids().map(ConceptFacade::make));
         return newValue;
     }
 
@@ -68,10 +57,10 @@ public class ObservableStampCoordinateNoOverride extends ObservableStampCoordina
     }
 
     @Override
-    protected ListProperty<ConceptFacade> makeModulePriorityOrderProperty(StampCoordinate stampCoordinate) {
-        return new SimpleEqualityBasedListProperty<>(this,
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeModulePriorityOrderProperty(StampCoordinate stampCoordinate) {
+        return new SimpleEqualityBasedObjectProperty<>(this,
                 KometTerm.MODULE_PREFERENCE_ORDER_FOR_STAMP_COORDINATE.toXmlFragment(),
-                FXCollections.observableArrayList(stampCoordinate.modulePriorityNidList().mapToList(EntityProxy.Concept::make)));
+                stampCoordinate.modulePriorityNidList().map(ConceptFacade::make));
     }
 
     @Override
@@ -96,17 +85,17 @@ public class ObservableStampCoordinateNoOverride extends ObservableStampCoordina
     }
 
     @Override
-    protected SetProperty<ConceptFacade> makeExcludedModuleSpecificationsProperty(StampCoordinate stampCoordinate) {
-        return new SimpleEqualityBasedSetProperty<>(this,
+    protected SimpleEqualityBasedObjectProperty<ImmutableSet<ConceptFacade>> makeExcludedModuleSpecificationsProperty(StampCoordinate stampCoordinate) {
+        return new SimpleEqualityBasedObjectProperty<>(this,
                 KometTerm.MODULE_EXCLUSION_SET_FOR_STAMP_COORDINATE.toXmlFragment(),
-                FXCollections.observableSet(stampCoordinate.excludedModuleNids().mapToSet(ConceptFacade::make)));
+                stampCoordinate.excludedModuleNids().map(ConceptFacade::make));
     }
 
     @Override
-    protected SetProperty<ConceptFacade> makeModuleSpecificationsProperty(StampCoordinate stampCoordinate) {
-        return new SimpleEqualityBasedSetProperty<>(this,
+    protected SimpleEqualityBasedObjectProperty<ImmutableSet<ConceptFacade>> makeModuleSpecificationsProperty(StampCoordinate stampCoordinate) {
+        return new SimpleEqualityBasedObjectProperty<>(this,
                 KometTerm.MODULES_FOR_STAMP_COORDINATE.toXmlFragment(),
-                FXCollections.observableSet(stampCoordinate.moduleNids().mapToSet(ConceptFacade::make)));
+                stampCoordinate.moduleNids().map(ConceptFacade::make));
     }
 
     public static ObservableStampCoordinateNoOverride make(StampCoordinate stampCoordinate) {

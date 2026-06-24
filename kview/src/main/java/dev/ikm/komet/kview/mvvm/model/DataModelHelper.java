@@ -50,8 +50,27 @@ import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.*;
 
 /**
- * utitity class for accessing and modifying common data operations
+ * Utility class for accessing and modifying common data operations.
+ *
+ * @deprecated Slated for removal. This grab-bag helper mixed coordinate-unaware reads, default-view
+ * lookups, and raw-transaction writes that bypass the observable model. Its capabilities are being
+ * excised onto coordinate-aware, observable-model-native homes — do not add new callers; migrate
+ * existing ones:
+ * <ul>
+ *   <li><b>Identifiers</b> — {@link #getIdsToAppend} → {@code SnapshotReads.externalIdentifiers()}
+ *       on the component's {@code ObservableEntitySnapshot}
+ *       ({@code dev.ikm.komet.framework.observable.read}).</li>
+ *   <li><b>Membership writes</b> — {@link #addToMembershipPattern}, {@link #removeFromMembershipPattern}
+ *       → {@code dev.ikm.komet.framework.observable.ObservableComposer} (planned
+ *       {@code observable.write}); membership reads ({@link #isInMembershipPattern},
+ *       {@link #getMembershipPatterns}) → coordinate-bound {@code observable.read} accessors.</li>
+ *   <li><b>Terminology / metadata reads</b> — {@link #fetchDescriptionTypes},
+ *       {@link #fetchFieldDefinitionDataTypes}, {@link #fetchDescendentsOfConcept}, {@link #fieldRecords}
+ *       → planned framework {@code observable.read} helpers (threaded with the caller's view coordinate,
+ *       not {@code Calculators.View.Default()}).</li>
+ * </ul>
  */
+@Deprecated(forRemoval = true)
 public class DataModelHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataModelHelper.class);
@@ -169,6 +188,28 @@ public class DataModelHelper {
         Objects.requireNonNull(publicId, "Public ID cannot be null");
         IntIdSet descendants = viewCalculator.descendentsOf(EntityService.get().nidForPublicId(publicId));
         return descendants.intStream()
+                .mapToObj(DataModelHelper::getConceptEntitySafely)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Retrieves the LEAF descendants of a concept — descendants that have no children of their own.
+     * Used for author selection, where only the named users (the leaves of the
+     * {@link dev.ikm.tinkar.terms.TinkarTerm#USER} subtree) are valid commit authors and grouping
+     * concepts (which have children) must be excluded.
+     *
+     * @param viewCalculator The navigation-capable view calculator used to determine descendants and children
+     * @param publicId The public identifier of the ancestor concept whose leaf descendants are to be retrieved
+     * @return A set of ConceptEntity objects for the leaf descendants (never the ancestor itself). The set may
+     *         contain fewer elements than expected if some concept entities could not be retrieved.
+     */
+    public static Set<ConceptEntity> fetchLeafDescendentsOfConcept(ViewCalculator viewCalculator, PublicId publicId) {
+        Objects.requireNonNull(viewCalculator, "View calculator cannot be null");
+        Objects.requireNonNull(publicId, "Public ID cannot be null");
+        IntIdSet descendants = viewCalculator.descendentsOf(EntityService.get().nidForPublicId(publicId));
+        return descendants.intStream()
+                .filter(nid -> viewCalculator.childrenOf(nid).isEmpty())
                 .mapToObj(DataModelHelper::getConceptEntitySafely)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -302,6 +343,12 @@ public class DataModelHelper {
         TinkExecutor.threadPool().submit(commitTransactionTask);
     }
 
+    /**
+     * @deprecated Slated for removal. Use {@code SnapshotReads.externalIdentifiers()} on the
+     * component's {@code ObservableEntitySnapshot} (coordinate-bound, observable-model-native) —
+     * {@code ObservableEntity.get(nid).getSnapshot(viewCalculator).externalIdentifiers()}.
+     */
+    @Deprecated(forRemoval = true)
     public static List<String> getIdsToAppend(ViewCalculator viewCalc, EntityProxy componentInDetailsViewer) {
         Latest<PatternEntityVersion> latestIdPattern = viewCalc.latestPatternEntityVersion(TinkarTerm.IDENTIFIER_PATTERN);
         List<String> identifiersToAppend = new ArrayList<>();

@@ -219,6 +219,29 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     public void setOnKLAction(BiConsumer<ConceptFacade, String> consumer) { onKLAction.set(consumer); }
 
     /**
+     * Action to perform when the user clicks on a context menu option that opens an editor-designed
+     * layout as a {@code DynamicCard} (the kview-free, layout-engine card).
+     * The BiConsumer receives the Concept that the user right-clicked on and the layout title.
+     */
+    private final ObjectProperty<BiConsumer<ConceptFacade, String>> onKLDynamicCardAction = new SimpleObjectProperty<>();
+    public BiConsumer<ConceptFacade, String> getOnKLDynamicCardAction() { return onKLDynamicCardAction.get(); }
+    public ObjectProperty<BiConsumer<ConceptFacade, String>> onKLDynamicCardActionProperty() { return onKLDynamicCardAction; }
+    public void setOnKLDynamicCardAction(BiConsumer<ConceptFacade, String> consumer) { onKLDynamicCardAction.set(consumer); }
+
+    /**
+     * Action to perform when a concept cannot be displayed in this navigator, for example when a retired
+     * (inactive) concept is dragged into a navigator that shows only active concepts. The BiConsumer receives
+     * the {@link ConceptFacade} that could not be shown (which may be {@code null} if the concept does not exist)
+     * and an informative message explaining why, including an investigation of the concept's state.
+     * <p>If no handler is set, the failure is reported to the log only.
+     * @see dev.ikm.komet.kview.controls.ConceptNavigatorUtils#investigateUndisplayableConcept(int, dev.ikm.komet.navigator.graph.Navigator)
+     */
+    private final ObjectProperty<BiConsumer<ConceptFacade, String>> onConceptNavigationFailed = new SimpleObjectProperty<>(this, "onConceptNavigationFailed");
+    public BiConsumer<ConceptFacade, String> getOnConceptNavigationFailed() { return onConceptNavigationFailed.get(); }
+    public ObjectProperty<BiConsumer<ConceptFacade, String>> onConceptNavigationFailedProperty() { return onConceptNavigationFailed; }
+    public void setOnConceptNavigationFailed(BiConsumer<ConceptFacade, String> consumer) { onConceptNavigationFailed.set(consumer); }
+
+    /**
      * <p>Double property that sets the milliseconds of activation or delay for highlighting a
      * {@link ConceptNavigatorTreeItem} and its ancestors, or for showing a tooltip, after "long" hovering over
      * such item.</p>

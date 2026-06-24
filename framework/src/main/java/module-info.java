@@ -30,6 +30,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.graphics;
     exports dev.ikm.komet.framework.observable;
     exports dev.ikm.komet.framework.observable.collection;
+    exports dev.ikm.komet.framework.observable.read;
     exports dev.ikm.komet.framework.panel;
     exports dev.ikm.komet.framework.performance.impl;
     exports dev.ikm.komet.framework.performance;
@@ -87,6 +88,10 @@ open module dev.ikm.komet.framework {
     requires transitive org.slf4j;
     requires transitive dev.ikm.tinkar.ext.lang.owl; // Owl expression builder
     requires com.sparrowwallet.toucan;
+    // ike-issues#623: the shared, JavaFX-free component-kind (KonceptKind) + stamp-sigil geometry,
+    // published upstream in ike-docs. transitive because framework's public API (KonceptBadge,
+    // KonceptKindResolver) exposes KonceptKind to its consumers (e.g. the komet-claude-plugin).
+    requires transitive network.ike.docs.konceptcore;
 
     uses dev.ikm.komet.framework.concurrent.TaskListsService;
     uses dev.ikm.komet.preferences.PreferencesService;

@@ -23,8 +23,9 @@ import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampPositionRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.value.ObservableValue;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
 
 public class ObservableStampCoordinateWithOverride extends ObservableStampCoordinateBase {
@@ -44,28 +45,28 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> pathConceptProperty() {
-        return (ObjectPropertyWithOverride) super.pathConceptProperty();
+    public OverrideOf<ConceptFacade> pathConceptProperty() {
+        return (OverrideOf) super.pathConceptProperty();
     }
 
     @Override
-    public SetPropertyWithOverride<ConceptFacade> moduleSpecificationsProperty() {
-        return (SetPropertyWithOverride) super.moduleSpecificationsProperty();
+    public OverrideOf<ImmutableSet<ConceptFacade>> moduleSpecificationsProperty() {
+        return (OverrideOf<ImmutableSet<ConceptFacade>>) super.moduleSpecificationsProperty();
     }
 
     @Override
-    public SetPropertyWithOverride<ConceptFacade> excludedModuleSpecificationsProperty() {
-        return (SetPropertyWithOverride) super.excludedModuleSpecificationsProperty();
+    public OverrideOf<ImmutableSet<ConceptFacade>> excludedModuleSpecificationsProperty() {
+        return (OverrideOf<ImmutableSet<ConceptFacade>>) super.excludedModuleSpecificationsProperty();
     }
 
     @Override
-    public ListPropertyWithOverride<ConceptFacade> modulePriorityOrderProperty() {
-        return (ListPropertyWithOverride) super.modulePriorityOrderProperty();
+    public OverrideOf<ImmutableList<ConceptFacade>> modulePriorityOrderProperty() {
+        return (OverrideOf<ImmutableList<ConceptFacade>>) super.modulePriorityOrderProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<StateSet> allowedStatesProperty() {
-        return (ObjectPropertyWithOverride) super.allowedStatesProperty();
+    public OverrideOf<StateSet> allowedStatesProperty() {
+        return (OverrideOf) super.allowedStatesProperty();
     }
 
     @Override
@@ -107,27 +108,27 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
     }
 
     @Override
-    protected ListPropertyWithOverride<ConceptFacade> makeModulePriorityOrderProperty(StampCoordinate stampCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeModulePriorityOrderProperty(StampCoordinate stampCoordinate) {
         ObservableStampCoordinate observableStampFilter = (ObservableStampCoordinate) stampCoordinate;
-        return new ListPropertyWithOverride<>(observableStampFilter.modulePriorityOrderProperty(), this);
+        return new OverrideOf<>(observableStampFilter.modulePriorityOrderProperty(), this);
     }
 
     @Override
-    protected ObjectPropertyWithOverride makeAllowedStatusProperty(StampCoordinate stampCoordinate) {
+    protected OverrideOf makeAllowedStatusProperty(StampCoordinate stampCoordinate) {
         ObservableStampCoordinate observableStampFilter = (ObservableStampCoordinate) stampCoordinate;
-        return new ObjectPropertyWithOverride<>(observableStampFilter.allowedStatesProperty(), this);
+        return new OverrideOf<>(observableStampFilter.allowedStatesProperty(), this);
     }
 
     @Override
-    protected SetPropertyWithOverride<ConceptFacade> makeExcludedModuleSpecificationsProperty(StampCoordinate stampCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableSet<ConceptFacade>> makeExcludedModuleSpecificationsProperty(StampCoordinate stampCoordinate) {
         ObservableStampCoordinate observableStampFilter = (ObservableStampCoordinate) stampCoordinate;
-        return new SetPropertyWithOverride<>(observableStampFilter.excludedModuleSpecificationsProperty(), this);
+        return new OverrideOf<>(observableStampFilter.excludedModuleSpecificationsProperty(), this);
     }
 
     @Override
-    protected SetPropertyWithOverride<ConceptFacade> makeModuleSpecificationsProperty(StampCoordinate stampCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableSet<ConceptFacade>> makeModuleSpecificationsProperty(StampCoordinate stampCoordinate) {
         ObservableStampCoordinate observableStampFilter = (ObservableStampCoordinate) stampCoordinate;
-        return new SetPropertyWithOverride<>(observableStampFilter.moduleSpecificationsProperty(), this);
+        return new OverrideOf<>(observableStampFilter.moduleSpecificationsProperty(), this);
     }
 
     @Override
@@ -137,9 +138,58 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
     }
 
     @Override
-    protected ObjectPropertyWithOverride<ConceptFacade> makePathConceptProperty(StampCoordinate stampCoordinate) {
+    protected OverrideOf<ConceptFacade> makePathConceptProperty(StampCoordinate stampCoordinate) {
         ObservableStampCoordinate observableStampFilter = (ObservableStampCoordinate) stampCoordinate;
-        return new ObjectPropertyWithOverride<>(observableStampFilter.pathConceptProperty(), this);
+        return new OverrideOf<>(observableStampFilter.pathConceptProperty(), this);
+    }
+
+    /**
+     * Applies {@code coordinateWithOverrides} as this coordinate's override state: each dimension is
+     * {@link OverrideOf#set set}, which pins it when the value differs from the inherited parent and clears
+     * the pin (reverting to inheriting) when it equals the parent. The inverse direction of
+     * {@link #setExceptOverrides} — used to re-apply a persisted/captured override — and the dimensions that
+     * match the parent stay inherited, so cascade tracking is preserved.
+     *
+     * @param coordinateWithOverrides the desired resolved stamp coordinate
+     */
+    public void setOverrides(StampCoordinateRecord coordinateWithOverrides) {
+        timeProperty().set(coordinateWithOverrides.stampPosition().time());
+        pathConceptProperty().setValue(coordinateWithOverrides.pathForFilter());
+        allowedStatesProperty().setValue(coordinateWithOverrides.allowedStates());
+        moduleSpecificationsProperty().setValue(coordinateWithOverrides.moduleNids().map(ConceptFacade::make));
+        excludedModuleSpecificationsProperty().setValue(coordinateWithOverrides.excludedModuleNids().map(ConceptFacade::make));
+        modulePriorityOrderProperty().setValue(coordinateWithOverrides.modulePriorityNidList().map(ConceptFacade::make));
+    }
+
+    /**
+     * Re-pins only the stamp dimensions that genuinely differ between {@code resolved} (the captured override)
+     * and {@code baseline} (the inherited parent at capture time), leaving every matching dimension inherited
+     * so it keeps tracking the current parent. The delta-aware inverse of {@link #setOverrides}, used to
+     * restore a persisted override against a possibly-changed parent without freezing inherited dimensions
+     * (IKE-Network/ike-issues#745).
+     *
+     * @param resolved the captured resolved stamp coordinate
+     * @param baseline the inherited parent stamp coordinate at capture time
+     */
+    public void setOverridesFromDelta(StampCoordinateRecord resolved, StampCoordinateRecord baseline) {
+        if (resolved.stampPosition().time() != baseline.stampPosition().time()) {
+            timeProperty().set(resolved.stampPosition().time());
+        }
+        if (resolved.pathNidForFilter() != baseline.pathNidForFilter()) {
+            pathConceptProperty().setValue(resolved.pathForFilter());
+        }
+        if (!resolved.allowedStates().equals(baseline.allowedStates())) {
+            allowedStatesProperty().setValue(resolved.allowedStates());
+        }
+        if (!resolved.moduleNids().equals(baseline.moduleNids())) {
+            moduleSpecificationsProperty().setValue(resolved.moduleNids().map(ConceptFacade::make));
+        }
+        if (!resolved.excludedModuleNids().equals(baseline.excludedModuleNids())) {
+            excludedModuleSpecificationsProperty().setValue(resolved.excludedModuleNids().map(ConceptFacade::make));
+        }
+        if (!resolved.modulePriorityNidList().equals(baseline.modulePriorityNidList())) {
+            modulePriorityOrderProperty().setValue(resolved.modulePriorityNidList().map(ConceptFacade::make));
+        }
     }
 
     @Override
@@ -147,9 +197,9 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
         return StampCoordinateRecord.make(this.allowedStatesProperty().getOriginalValue(),
                 StampPositionRecord.make(timeProperty().getOriginalValue().longValue(),
                         pathConceptProperty().getOriginalValue()),
-                IntIds.set.of(moduleSpecificationsProperty().getOriginalValue().stream().mapToInt(value -> value.nid()).toArray()),
-                IntIds.set.of(excludedModuleSpecificationsProperty().getOriginalValue().stream().mapToInt(value -> value.nid()).toArray()),
-                IntIds.list.of(modulePriorityOrderProperty().getOriginalValue().stream().mapToInt(value -> value.nid()).toArray()));
+                IntIds.set.of(moduleSpecificationsProperty().getOriginalValue().castToSet(), EntityFacade::toNid),
+                IntIds.set.of(excludedModuleSpecificationsProperty().getOriginalValue().castToSet(), EntityFacade::toNid),
+                IntIds.list.of(modulePriorityOrderProperty().getOriginalValue().castToList(), EntityFacade::toNid));
     }
 
 
@@ -166,7 +216,7 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
         }
 
         if (!this.modulePriorityOrderProperty().isOverridden()) {
-            this.modulePriorityOrderProperty().setAll(newValue.modulePriorityNidList().map(nid -> EntityProxy.Concept.make(nid)).castToList());
+            this.modulePriorityOrderProperty().setValue(newValue.modulePriorityNidList().map(ConceptFacade::make));
         }
 
         if (!this.allowedStatesProperty().isOverridden()) {
@@ -176,23 +226,17 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
         }
 
         if (!this.excludedModuleSpecificationsProperty().isOverridden()) {
-            ImmutableSet<ConceptFacade> excludedModuleSet = newValue.excludedModuleNids().map(nid -> EntityProxy.Concept.make(nid));
-            if (!excludedModuleSet.equals(this.excludedModuleSpecificationsProperty().get())) {
-                this.excludedModuleSpecificationsProperty().setAll(excludedModuleSet.castToSet());
-            }
+            this.excludedModuleSpecificationsProperty().setValue(newValue.excludedModuleNids().map(ConceptFacade::make));
         }
         if (!this.moduleSpecificationsProperty().isOverridden()) {
-            ImmutableSet<ConceptFacade> moduleSet = newValue.moduleNids().map(nid -> EntityProxy.Concept.make(nid));
-            if (!moduleSet.equals(this.moduleSpecificationsProperty().get())) {
-                this.moduleSpecificationsProperty().setAll(moduleSet.castToSet());
-            }
+            this.moduleSpecificationsProperty().setValue(newValue.moduleNids().map(ConceptFacade::make));
         }
         return StampCoordinateRecord.make(this.allowedStatesProperty().get(),
                 StampPositionRecord.make(timeProperty().get(),
                         pathConceptProperty().get().nid()),
-                IntIds.set.of(moduleSpecificationsProperty().stream().mapToInt(value -> value.nid()).toArray()),
-                IntIds.set.of(excludedModuleSpecificationsProperty().stream().mapToInt(value -> value.nid()).toArray()),
-                IntIds.list.of(modulePriorityOrderProperty().getOriginalValue().stream().mapToInt(value -> value.nid()).toArray()));
+                IntIds.set.of(moduleSpecificationsProperty().get().castToSet(), EntityFacade::toNid),
+                IntIds.set.of(excludedModuleSpecificationsProperty().get().castToSet(), EntityFacade::toNid),
+                IntIds.list.of(modulePriorityOrderProperty().getOriginalValue().castToList(), EntityFacade::toNid));
     }
 
 }

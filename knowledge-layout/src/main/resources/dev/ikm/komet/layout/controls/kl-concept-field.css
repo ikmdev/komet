@@ -1,0 +1,50 @@
+/*
+ * Copyright © 2024 Integrated Knowledge Management (support@ikm.dev)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.kl-concept-field {
+    -fx-padding: 0;
+}
+
+.kl-concept-field .kl-concept-field-root {
+    -fx-spacing: 4;
+    -fx-alignment: center-left;
+}
+
+.kl-concept-field .kl-concept-field-badge {
+    -fx-font-size: 14px;
+}
+
+.kl-concept-field .kl-concept-field-search {
+    -fx-font-size: 13px;
+}
+
+/* A small, low-key clear (X) — trailing, outside the badge, so a press on it is never a badge press. */
+.kl-concept-field .kl-concept-field-clear {
+    -fx-background-color: transparent;
+    -fx-text-fill: #999999;
+    -fx-font-size: 11px;
+    -fx-padding: 1 4 1 4;
+    -fx-cursor: hand;
+}
+
+.kl-concept-field .kl-concept-field-clear:hover {
+    -fx-text-fill: #b5651d;
+}
+
+.kl-concept-field-results {
+    -fx-font-size: 13px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 8, 0, 0, 2);
+}

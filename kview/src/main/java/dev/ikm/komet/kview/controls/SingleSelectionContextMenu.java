@@ -57,6 +57,7 @@ public class SingleSelectionContextMenu extends ContextMenu {
 
     private final HashMap<String, MenuItem> windowTitleToMenuItem = new HashMap<>();
     private Consumer<String> klConsumer;
+    private Consumer<String> klDynamicCardConsumer;
 
     /**
      * Creates a new SingleSelectionContextMenu
@@ -85,6 +86,16 @@ public class SingleSelectionContextMenu extends ContextMenu {
                 windowTitleToMenuItem.put(windowTitle, windowMenuItem);
                 windowMenuItem.setOnAction(actionEvent -> onKLEditorWindowMenuItemAction(actionEvent, windowTitle));
                 getItems().add(windowMenuItem);
+
+                // Parallel entry: realize the same designed layout as a kview-free, component-focused
+                // DynamicComponentCard subject to the right-clicked concept.
+                MenuItem dynamicCardMenuItem = new MenuItem("Open as " + windowTitle + " (Component Card)");
+                dynamicCardMenuItem.setOnAction(actionEvent -> {
+                    if (klDynamicCardConsumer != null) {
+                        klDynamicCardConsumer.accept(windowTitle);
+                    }
+                });
+                getItems().add(dynamicCardMenuItem);
             }
         }
 
@@ -107,6 +118,10 @@ public class SingleSelectionContextMenu extends ContextMenu {
      */
     public void setWorkspaceMenuItemAction(EventHandler<ActionEvent> eventHandler) {
         workspaceMenuItem.setOnAction(eventHandler);
+    }
+
+    public void setKLDynamicCardMenuItemAction(Consumer<String> consumer) {
+        this.klDynamicCardConsumer = consumer;
     }
 
     public void setKLWindowMenuItemAction(Consumer<String> consumer) {

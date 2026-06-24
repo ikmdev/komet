@@ -77,9 +77,6 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.reasoner to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.reasoner;
 
-    opens dev.ikm.komet.kview.fxutils.window to javafx.fxml, org.carlfx.cognitive;
-    exports dev.ikm.komet.kview.fxutils.window;
-
     opens dev.ikm.komet.kview.mvvm.view.common to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.common;
 
@@ -196,6 +193,7 @@ module dev.ikm.komet.kview {
     uses dev.ikm.tinkar.events.EvtBus;
     uses EntityKlWindowFactory;
     uses dev.ikm.komet.layout.area.KlToolArea.Factory;
+    uses dev.ikm.komet.layout_engine.host.KlCardProvider;
 
     // Primary service interface for discovering ALL area factories (built-in and plugins)
     provides dev.ikm.komet.layout.KlArea.Factory with

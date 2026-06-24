@@ -12,6 +12,8 @@ import dev.ikm.komet.layout_engine.blueprint.StateAndContextBlueprint;
 import dev.ikm.komet.layout_engine.component.area.ChronologyDetailsArea;
 import dev.ikm.komet.layout_engine.component.area.SupplementalTestArea;
 import dev.ikm.komet.layout_engine.component.menu.ViewContextMenuButtonArea;
+import dev.ikm.komet.layout_engine.component.view.ViewContext;
+import dev.ikm.komet.layout.context.KnowledgeBaseContext;
 import dev.ikm.komet.layout_engine.layout.SimpleKnowledgeLayout;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
@@ -80,6 +82,9 @@ public final class FxWindow
      * <p>     * This property is primarily used to ensure that the window reopens at the
      * same horizontal position it was at when last used.
      */
+    /** This window's per-scope coordinate context — a WithOverride child of its enclosing context (#666). */
+    private ViewContext windowViewContext;
+
     private final PreferencePropertyDouble locationX = PreferencePropertyDouble.doubleProp(klView(), WINDOW_X_LOCATION);
     /**
      * Represents the Y-coordinate of the window's position in the user interface.
@@ -187,6 +192,12 @@ public final class FxWindow
     private void finishSetup() {
         subscribeToChanges();
         restoreFromPreferencesOrDefaults();
+        // Establish this window's own coordinate context as a WithOverride child of its enclosing context, so
+        // the window's areas resolve through one per-window coordinate that its View Options popup edits
+        // (ike-issues#666). A standalone layout window inherits from the KnowledgeBaseContext; the journal
+        // stratum (KB->journal->window) will reparent this once a journal context exists.
+        this.windowViewContext = ViewContext.createChildOf(this,
+                KnowledgeBaseContext.INSTANCE.context(), "Layout window view");
         windowStage().setOnCloseRequest(this::onCloseRequest);
     }
 

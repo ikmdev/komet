@@ -19,7 +19,7 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import dev.ikm.komet.framework.view.LongPropertyWithOverride;
-import dev.ikm.komet.framework.view.ObjectPropertyWithOverride;
+import dev.ikm.komet.framework.view.OverrideOf;
 import dev.ikm.tinkar.coordinate.stamp.StampPosition;
 import dev.ikm.tinkar.coordinate.stamp.StampPositionRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -58,8 +58,8 @@ public class ObservableStampPositionWithOverride
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> pathConceptProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.pathConceptProperty();
+    public OverrideOf<ConceptFacade> pathConceptProperty() {
+        return (OverrideOf<ConceptFacade>) super.pathConceptProperty();
     }
 
     @Override
@@ -69,7 +69,7 @@ public class ObservableStampPositionWithOverride
 
     protected ObjectProperty<ConceptFacade> makePathConceptProperty(StampPosition stampPosition) {
         ObservableStampPosition observableStampPosition = (ObservableStampPosition) stampPosition;
-        return new ObjectPropertyWithOverride<>(observableStampPosition.pathConceptProperty(), this);
+        return new OverrideOf<>(observableStampPosition.pathConceptProperty(), this);
     }
 
     protected LongProperty makeTimeProperty(StampPosition stampPosition) {

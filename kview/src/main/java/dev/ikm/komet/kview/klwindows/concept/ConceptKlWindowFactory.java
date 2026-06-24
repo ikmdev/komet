@@ -33,7 +33,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalViewProperties;
 
 /**
  * A factory for creating {@link ConceptKlWindow} instances to display and manage
@@ -60,7 +59,8 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
     }
 
     @Override
-    public ConceptKlWindow restore(WindowSettings windowSettings, KometPreferences preferences) {
+    public ConceptKlWindow restore(WindowSettings windowSettings, KometPreferences preferences,
+                                   ViewProperties journalViewProperties) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
         try {
             // Load window state from preferences
@@ -71,8 +71,9 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
             if (journalTopicOpt.isPresent()) {
                 final UUID journalTopic = journalTopicOpt.get();
 
-                // don't call this
-                final ViewProperties viewProperties = getJournalViewProperties(windowSettings, journalTopic);
+                // Derive from the journal's LIVE view so a restored window tracks the live coordinate/author
+                // like a new window, not a coordinate reconstructed from preferences (ike-issues#756).
+                final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
                 final int entityNid = windowState.getEntityNid();

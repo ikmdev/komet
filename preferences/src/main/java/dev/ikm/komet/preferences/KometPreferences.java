@@ -21,6 +21,7 @@ import dev.ikm.tinkar.terms.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeListener;
@@ -1379,6 +1380,21 @@ public interface KometPreferences {
      * @return this preference node's absolute path name.
      */
     String absolutePath();
+
+    /**
+     * Returns the filesystem directory backing this preference node, when the implementation is
+     * directory-backed (the default file store). A node's directory is its own per-instance location:
+     * files written here are isolated to this node and are removed together with the node when it is
+     * {@linkplain #removeNode() removed} — so a host (e.g. a card) can give its content a sandboxed,
+     * lifecycle-coupled store for data too large for preference values (which are capped at a few KB).
+     * Keep such files <em>flat</em> in the directory; node removal deletes flat files but not populated
+     * subdirectories.
+     *
+     * @return the node's backing directory, or empty for non-directory-backed implementations
+     */
+    default Optional<Path> directory() {
+        return Optional.empty();
+    }
 
     /**
      * @return the preference node type. CONFIGURATION, USER, or SYSTEM.

@@ -65,8 +65,7 @@ public class DragHelper {
             Dragboard db = region.startDragAndDrop(TransferMode.COPY);
             KometClipboard content = new KometClipboard(objectToDragSupplier.get());
 
-            DragImageMaker dragImageMaker = new DragImageMaker(region);
-            db.setDragView(dragImageMaker.getDragImage());
+            KonceptDragSource.setDragView(db, region);
             db.setContent(content);
 
             event.consume();

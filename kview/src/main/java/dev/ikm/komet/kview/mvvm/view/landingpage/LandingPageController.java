@@ -17,7 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.landingpage;
 
 import static dev.ikm.komet.framework.controls.TimeUtils.calculateTimeAgoWithPeriodAndDuration;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE;
+import static dev.ikm.komet.layout.controls.FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE;
 import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.CREATE_JOURNAL_TILE;
@@ -26,6 +26,7 @@ import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalD
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
 import static dev.ikm.komet.kview.mvvm.model.Constants.JOURNAL_NAME_PREFIX;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchLeafDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SET;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SHOWING;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
@@ -58,7 +59,9 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.controls.EditCoordinateOptionsPopup;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.ViewOptionsPopupHelper;
+import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
 import dev.ikm.komet.kview.controls.NotificationPopup;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.DeleteJournalEvent;
@@ -360,10 +363,19 @@ public class LandingPageController implements BasicController {
         landingViewProperties.nodeView().addListener(
                 (obs, oldView, newView) -> journalParentCoordinates.setValue(newView));
 
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(landingViewProperties,
-                viewCoordinatesToggleButton, () -> {
-                    LOG.info("LandingController.filterOptionsPopup: updating view due to filter options change");
-                });
+        // One shared View Options control everywhere (ike-issues#681): the landing page differs only in its
+        // navigator (graph) and anchor (to the side of the toggle button); commit-on-Apply and the rest come from
+        // the shared ViewOptionsPopupHelper.
+        filterOptionsPopup = ViewOptionsPopupHelper.setupViewCoordinateOptionsPopup(
+                landingViewProperties,
+                FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE,
+                viewCoordinatesToggleButton,
+                vp -> new GraphFilterOptionsNavigator(new ViewNavigator(vp.nodeView())),
+                popup -> {
+                    Bounds buttonBounds = viewCoordinatesToggleButton.localToScreen(viewCoordinatesToggleButton.getLayoutBounds());
+                    popup.show(viewCoordinatesToggleButton, buttonBounds.getMaxX() + 5.5, buttonBounds.getMaxY() - 760);
+                },
+                () -> { /* landing-page view refresh propagates via the journal-parent listener on nodeView */ });
 
 //        editCoordinates = viewCoordinates.editCoordinate();
 //        editCoordinatesParent = new ObservableEditCoordinateNoOverride(editCoordinates);
@@ -720,70 +732,6 @@ public class LandingPageController implements BasicController {
         landingPageBorderPane.setCenter(klLandingPage);
     }
 
-    private FilterOptionsPopup setupViewCoordinateOptionsPopup(ViewProperties viewProperties,
-                                                               ButtonBase coordinatesButton,
-                                                               Runnable updateViewBlock) {
-        //ObservableViewNoOverride parentView2 = new ObservableViewNoOverride(windowSettings.getView());
-        // Filter Options Popup for the coordinates menu button.
-        FilterOptionsPopup filterOptionsPopup = new FilterOptionsPopup(LANDING_PAGE, viewProperties.parentView());
-        double prefHeight = 600;
-        filterOptionsPopup.setStyle("-popup-pref-height: " + prefHeight);
-        // Bind the popup's filter options to the view model's filter options. Update details if options change.
-        viewProperties.parentView().subscribe((_, nv) -> {
-            filterOptionsPopup.setNavigator(new ViewNavigator(nv));
-            if (updateViewBlock != null) {
-                updateViewBlock.run();
-            }
-        });
-
-
-        // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
-        // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
-        filterOptionsPopup.getFilterOptionsUtils().subscribeFilterOptionsToView(
-                filterOptionsPopup.getInheritedFilterOptions(), viewProperties.nodeView());
-
-        // Subscribe nodeView to F.O., so changes from the F.O. popup are propagated to this nodeView
-        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, filterOptions) -> {
-            if (oldFilterOptions != null) {
-                filterOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
-            }
-            if (filterOptions != null) {
-                filterOptionsPopup.getFilterOptionsUtils().subscribeViewToFilterOptions(filterOptions, viewProperties.nodeView());
-            }
-        });
-
-        coordinatesButton.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (filterOptionsPopup.getNavigator() == null) {
-                Navigator navigator = new ViewNavigator(viewProperties.nodeView());
-                filterOptionsPopup.setNavigator(navigator);
-            }
-            if (e.getButton() == MouseButton.PRIMARY) {
-                if (filterOptionsPopup.isShowing()) {
-                    e.consume();
-                    filterOptionsPopup.hide();
-                } else {
-                    Bounds buttonBounds = coordinatesButton.localToScreen(coordinatesButton.getLayoutBounds());
-                    // Show beneath the button
-                    filterOptionsPopup.show(coordinatesButton, buttonBounds.getMaxX() + 5.5, buttonBounds.getMaxY() - prefHeight);
-                }
-            }
-        });
-
-        filterOptionsPopup.showingProperty().subscribe(showing ->
-                coordinatesButton.pseudoClassStateChanged(FILTER_SHOWING, showing));
-
-        filterOptionsPopup.defaultOptionsSetProperty().subscribe(isDefault ->
-                coordinatesButton.pseudoClassStateChanged(FILTER_SET, !isDefault));
-
-
-
-        filterOptionsPopup.filterOptionsProperty().addListener( (observable, oldValue, newValue) -> {
-            LOG.info("LandingController - filterOptionsPopup.filterOptionsProperty() " + newValue);
-            // begin altering parent view coordinates
-            viewProperties.parentView().setValue(newValue.observableViewForFilterProperty().getValue());
-        });
-        return filterOptionsPopup;
-    }
 
     private EditCoordinateOptionsPopup setupEditCoordinateOptionsPopup(ViewProperties viewProperties,
                                                                        ButtonBase editCoordinatesButton,
@@ -861,13 +809,14 @@ public class LandingPageController implements BasicController {
 
     private void populateAvailableAuthors(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
         ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
-        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
+        // Authors are the leaf descendants of USER — named users only, excluding grouping concepts (ike-issues#754).
+        Set<ConceptEntity> conceptEntitySet = fetchLeafDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
         List<ConceptEntity> authors = conceptEntitySet.stream().toList();
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().availableOptions().addAll(authors);
         ConceptFacade defaultAuthor = authors
                 .stream()
                 .filter(author -> author.nid() == viewProperties.parentView().getAuthorForChanges().nid())
-                .findFirst().orElse(null); // TODO get default author from preferences.
+                .findFirst().orElse(null); // TODO default author from preferences (last-used / selected-list) — ike-issues#754.
 
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().selectedOptions().add(defaultAuthor);
 
@@ -878,12 +827,12 @@ public class LandingPageController implements BasicController {
         Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.PATH.publicId());
         List<ConceptEntity> entities = conceptEntitySet.stream().toList();
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().availableOptions().addAll(entities);
-        ConceptFacade defaultAuthor = entities
+        ConceptFacade defaultPath = entities
                 .stream()
-                .filter(author -> author.nid() == viewProperties.parentView().getAuthorForChanges().nid())
-                .findFirst().orElse(null); // TODO get default author from preferences.
+                .filter(path -> path.nid() == viewProperties.parentView().editCoordinate().getDefaultPath().nid())
+                .findFirst().orElse(null); // TODO default path from preferences — ike-issues#754.
 
-        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().selectedOptions().add(defaultAuthor);
+        editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().selectedOptions().add(defaultPath);
 
     }
 }

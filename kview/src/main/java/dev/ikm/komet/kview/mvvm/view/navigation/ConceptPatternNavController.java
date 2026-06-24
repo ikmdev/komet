@@ -1,8 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
 
-import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -11,6 +11,7 @@ import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLSearchControl;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
@@ -287,6 +288,17 @@ public class ConceptPatternNavController {
         conceptNavigatorControl.setOnKLAction((conceptFacade, windowTitle) -> {
             journalController.newCreateGenPurposeKLWindow(conceptFacade, windowTitle);
         });
+        conceptNavigatorControl.setOnKLDynamicCardAction((conceptFacade, windowTitle) -> {
+            journalController.newCreateDynamicComponentCardWindow(conceptFacade, windowTitle);
+        });
+        conceptNavigatorControl.setOnConceptNavigationFailed((conceptFacade, message) -> {
+            Toast toast = JournalController.toast();
+            if (toast != null) {
+                toast.show(Toast.Status.FAILURE, message);
+            } else {
+                LOG.warn("Concept could not be displayed in the navigator: {}", message);
+            }
+        });
 
         searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
         searchControl.setOnSearchResultClick(_ -> conceptNavigatorControl.unhighlightConceptsWithDelay());
@@ -335,13 +347,8 @@ public class ConceptPatternNavController {
             // Here, KometClipboard is used to encapsulate the entity's unique identifier (nid)
             KometClipboard content = new KometClipboard(EntityFacade.make(entity.nid()));
 
-            // Generate the drag image using DragImageMaker
-            DragImageMaker dragImageMaker = new DragImageMaker(node);
-            Image dragImage = dragImageMaker.getDragImage();
-            // Set the drag image on the dragboard
-            if (dragImage != null) {
-                dragboard.setDragView(dragImage);
-            }
+            // Standard-size drag image with canonical cursor placement (right of the identicon).
+            KonceptDragSource.setDragView(dragboard, node);
 
             // Place the content on the dragboard
             dragboard.setContent(content);

@@ -1,6 +1,6 @@
 package dev.ikm.komet.kleditorapp.view.skin;
 
-import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.kleditorapp.view.GridDropInfo;
 import dev.ikm.komet.kleditorapp.view.control.EditorGridPane;
 import dev.ikm.komet.kleditorapp.view.control.GridBaseControl;
@@ -122,13 +122,8 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
             ClipboardContent clipboardContent = new ClipboardContent();
             clipboardContent.putString(gridBaseControl.toString());
 
-            // Generate the drag image using DragImageMaker
-            DragImageMaker dragImageMaker = new DragImageMaker(gridBaseControl);
-            Image dragImage = dragImageMaker.getDragImage();
-            // Set the drag image on the dragboard
-            if (dragImage != null) {
-                dragboard.setDragView(dragImage);
-            }
+            // Standard-size drag image with canonical cursor placement (right of the identicon).
+            KonceptDragSource.setDragView(dragboard, gridBaseControl);
 
             // Place the content on the dragboard
             dragboard.setContent(clipboardContent);

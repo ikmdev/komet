@@ -65,11 +65,6 @@
                                     <SVGPath content="M9.00002 0.666748C4.40002 0.666748 0.666687 4.40008 0.666687 9.00008C0.666687 13.6001 4.40002 17.3334 9.00002 17.3334C13.6 17.3334 17.3334 13.6001 17.3334 9.00008C17.3334 4.40008 13.6 0.666748 9.00002 0.666748ZM8.16669 13.1667V11.5001H9.83335V13.1667H8.16669ZM8.16669 4.83342V9.83342H9.83335V4.83342H8.16669Z" fill="WHITE" fillRule="EVEN_ODD" />
                                  </graphic>
                             </MenuItem>
-                            <MenuItem mnemonicParsing="false" text="New Chapter">
-                                 <graphic>
-                                    <SVGPath content="M9.00002 0.666748C4.40002 0.666748 0.666687 4.40008 0.666687 9.00008C0.666687 13.6001 4.40002 17.3334 9.00002 17.3334C13.6 17.3334 17.3334 13.6001 17.3334 9.00008C17.3334 4.40008 13.6 0.666748 9.00002 0.666748ZM8.16669 13.1667V11.5001H9.83335V13.1667H8.16669ZM8.16669 4.83342V9.83342H9.83335V4.83342H8.16669Z" fill="WHITE" fillRule="EVEN_ODD" />
-                                 </graphic>
-                            </MenuItem>
                               <SeparatorMenuItem fx:id="addContextMenuSeparator" visible="false"/>
                           </items>
                         </ContextMenu>
@@ -111,49 +106,11 @@
             <BorderPane BorderPane.alignment="CENTER">
                <center>
                   <BorderPane prefHeight="200.0" prefWidth="200.0">
-                     <top>
-                        <HBox fx:id="chapterHeaderbarHBox" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" styleClass="chapter-header-bar" BorderPane.alignment="CENTER">
-                           <children>
-                              <Button mnemonicParsing="false" text="Button">
-                                 <graphic>
-                                    <Region prefHeight="200.0" prefWidth="200.0">
-                                       <styleClass>
-                                          <String fx:value="icon" />
-                                          <String fx:value="left-arrow" />
-                                       </styleClass>
-                                    </Region>
-                                 </graphic>
-                              </Button>
-                              <Label fx:id="chaptertitleLabel" alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Chapter #1" HBox.hgrow="ALWAYS" />
-                              <Button mnemonicParsing="false" text="Button">
-                                 <graphic>
-                                    <Region prefHeight="200.0" prefWidth="200.0" styleClass="hamburger" />
-                                 </graphic>
-                              </Button>
-                              <Button mnemonicParsing="false" prefWidth="44.0" text="Button">
-                                 <graphic>
-                                    <Region prefHeight="200.0" prefWidth="200.0" styleClass="collapse" />
-                                 </graphic>
-                              </Button>
-                           </children>
-                        </HBox>
-                     </top>
                      <center>
                         <KLWorkspace fx:id="workspace" focusTraversable="true" />
                      </center>
                   </BorderPane>
                </center>
-               <right>
-                  <HBox prefHeight="100.0" prefWidth="200.0" styleClass="chapter-block-bar-stack" BorderPane.alignment="CENTER">
-                     <children>
-                        <VBox prefHeight="200.0" prefWidth="100.0" spacing="5.0" styleClass="chapter-block-bar">
-                           <children>
-                              <Label alignment="BOTTOM_CENTER" minWidth="-Infinity" rotate="-90.0" text="Chapter #2" textFill="WHITE" VBox.vgrow="ALWAYS" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </HBox>
-               </right>
             </BorderPane>
          </center>
          <left>

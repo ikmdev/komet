@@ -1,8 +1,9 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
-import dev.ikm.komet.kview.controls.IconRegion;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.komet.kview.controls.LangEditCoordinateTitledPane;
+import dev.ikm.komet.layout.controls.FilterOptionsUtils;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.css.PseudoClass;

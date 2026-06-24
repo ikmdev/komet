@@ -24,10 +24,10 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -45,7 +45,7 @@ import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ComponentItem;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KometLabel;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
@@ -224,10 +224,11 @@ public class GenPurposeDetailsController {
     @FXML
     private void initialize() {
 
-        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
-        // replacing the kview FilterOptionsPopup.
-        setupViewContextMenu(coordinatesMenuButton, detailsOuterBorderPane,
-                genPurposeViewModel.getViewProperties(), this::updateView);
+        // Drive the coordinates menu from the relocated FilterOptionsPopup (ike-issues#661); the popup
+        // writes the window's nodeView override, which the window's KL context + areas resolve through.
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(genPurposeViewModel.getViewProperties(),
+                FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, detailsOuterBorderPane,
+                coordinatesMenuButton, this::updateView);
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
@@ -420,7 +421,18 @@ public class GenPurposeDetailsController {
 
     private void updateStampControl(EntityFacade refConcept) {
         ObservableEntity observableEntity = ObservableEntity.get(refConcept.nid());
-        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+        ObservableEntitySnapshot observableEntitySnapshot;
+        try {
+            observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+        } catch (IllegalStateException e) {
+            // No version of the concept passes the current view coordinate (e.g. a status/path filter that
+            // excludes every version); leave the stamp control as-is rather than throwing out of the
+            // coordinate-change listener chain — which would also abort the supplemental areas' re-render
+            // (ike-issues#666).
+            LOG.debug("No latest version for nid {} under the current view coordinate; skipping stamp update",
+                    refConcept.nid());
+            return;
+        }
         Latest<EntityVersion> latestEntityVersion = retrieveCommittedLatestVersion(observableEntitySnapshot);
         latestEntityVersion.ifPresent(latestVersion -> {
             StampEntity stampEntity = latestEntityVersion.get().stamp();

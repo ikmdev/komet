@@ -28,6 +28,16 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
+/**
+ * Override semantics for a <em>structural</em> list. The one remaining use is
+ * {@code ObservableViewWithOverride}'s list of child {@code ObservableLanguageCoordinate}s
+ * ({@code makeLanguageCoordinateListProperty}) — a list of live child coordinates, not a value
+ * dimension (ike-issues#697). Every value coordinate dimension (list-, set-, scalar-, and
+ * object-valued) is now held as one whole immutable value in {@link OverrideOf}; this type is retained
+ * only for the structural language-coordinate list, which the convergence keeps structural: its members
+ * are live observable coordinates with their own override cascades, not an immutable collection value.
+ * {@code SetPropertyWithOverride} had no such structural use and was deleted.
+ */
 public class ListPropertyWithOverride<T> extends SimpleEqualityBasedListProperty<T> implements PropertyWithOverride<ObservableList<T>> {
 
     private final ListProperty<T> overriddenProperty;

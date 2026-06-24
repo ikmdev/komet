@@ -28,8 +28,8 @@ import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
 import org.controlsfx.control.PopOver;
 import dev.ikm.komet.framework.StyleClasses;
-import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.menu.MenuSupplierForFocusedEntity;
 import dev.ikm.komet.framework.panel.axiom.AxiomView;
@@ -87,10 +87,8 @@ public class EntityLabel extends Label {
     private void handleDragDetected(MouseEvent event) {
         LOG.debug("Drag detected: " + event);
 
-        DragImageMaker dragImageMaker = new DragImageMaker(this);
         Dragboard db = this.startDragAndDrop(TransferMode.COPY);
-
-        db.setDragView(dragImageMaker.getDragImage());
+        KonceptDragSource.setDragView(db, this);
 
         EntityHandle.get(entityNid).ifPresent(entity -> {
             KometClipboard content = new KometClipboard(entity);

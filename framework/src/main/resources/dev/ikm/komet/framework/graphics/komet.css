@@ -1419,6 +1419,21 @@ modena.css is the default css.
     -fx-fill: #8a6d00;
 }
 
+/* Component-kind sigil (ike-issues#638): the leading D/S/P/? letter glyph. Its colour is the
+   kind's own colour, applied inline from ComponentKind (data, for cross-medium parity), not here. */
+.koncept-sigil {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+/* A concept-expecting host (a concept slot, the assistant chip) enables this via
+   setConceptExpected(true) to escalate a badge whose kind is not a bare concept. */
+.koncept-chip:alarm {
+    -fx-border-color: #b00020;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 6;
+}
+
 /* Koncept axiom tree (ike-issues#639): clause-label + operator-glyph styling for the
    model-driven axiom renderer; concepts render as .koncept-chip badges and clause
    types reuse the .def-* accent bars. */

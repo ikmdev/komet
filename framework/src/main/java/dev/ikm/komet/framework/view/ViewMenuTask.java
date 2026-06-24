@@ -44,6 +44,8 @@ import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.primitive.ImmutableLongList;
 import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
@@ -300,13 +302,13 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         Menu addIncludedModulesMenu = new Menu("Change included modules");
         menuItems.add(addIncludedModulesMenu);
         CheckMenuItem allModulesItem = new CheckMenuItem("all module wildcard");
-        allModulesItem.setSelected(observableCoordinate.moduleSpecificationsProperty().isEmpty());
+        allModulesItem.setSelected(observableCoordinate.moduleSpecificationsProperty().get().isEmpty());
         addIncludedModulesMenu.getItems().add(allModulesItem);
         allModulesItem.setOnAction(event -> {
             Platform.runLater(() -> {
                 // ensure that the wildcard menu item is never deselected
                 if (allModulesItem.isSelected()) {
-                    observableCoordinate.moduleSpecificationsProperty().clear();
+                    observableCoordinate.moduleSpecificationsProperty().setValue(Sets.immutable.empty());
                 } else {
                     allModulesItem.setSelected(true);
                 }
@@ -316,32 +318,30 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
 
         CheckMenuItem allIndividualModulesItem = new CheckMenuItem("all individual modules");
 
-        allIndividualModulesItem.setSelected(observableCoordinate.moduleSpecificationsProperty().containsAll(
+        allIndividualModulesItem.setSelected(observableCoordinate.moduleSpecificationsProperty().get().castToSet().containsAll(
                 StampService.get().getModulesInUse().castToSet()));
         addIncludedModulesMenu.getItems().add(allIndividualModulesItem);
         allIndividualModulesItem.setOnAction(event -> {
             Platform.runLater(() -> {
-                ObservableSet<ConceptFacade> newSet = FXCollections.observableSet();
-                newSet.addAll(StampService.get().getModulesInUse().castToSet());
-                observableCoordinate.moduleSpecificationsProperty().setValue(newSet);
+                observableCoordinate.moduleSpecificationsProperty().setValue(StampService.get().getModulesInUse());
             });
             event.consume();
         });
 
         StampService.get().getModulesInUse().forEach(moduleConcept -> {
             CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionStringOrNid(viewCalculator, moduleConcept));
-            item.setSelected(observableCoordinate.moduleSpecificationsProperty().contains(moduleConcept));
+            item.setSelected(observableCoordinate.moduleSpecificationsProperty().get().contains(moduleConcept));
             if (item.isSelected()) {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
-                        observableCoordinate.moduleSpecificationsProperty().remove(moduleConcept);
+                        observableCoordinate.moduleSpecificationsProperty().setValue(observableCoordinate.moduleSpecificationsProperty().get().newWithout(moduleConcept));
                     });
                     event.consume();
                 });
             } else {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
-                        observableCoordinate.moduleSpecificationsProperty().add(moduleConcept);
+                        observableCoordinate.moduleSpecificationsProperty().setValue(observableCoordinate.moduleSpecificationsProperty().get().newWith(moduleConcept));
                     });
                     event.consume();
                 });
@@ -356,13 +356,13 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         Menu excludedModulesMenu = new Menu("Change excluded modules");
         menuItems.add(excludedModulesMenu);
         CheckMenuItem noExclusionsWildcard = new CheckMenuItem("no exclusions wildcard");
-        noExclusionsWildcard.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().isEmpty());
+        noExclusionsWildcard.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().get().isEmpty());
         excludedModulesMenu.getItems().add(noExclusionsWildcard);
         noExclusionsWildcard.setOnAction(event -> {
             Platform.runLater(() -> {
                 // ensure that the wildcard menu item is never deselected
                 if (noExclusionsWildcard.isSelected()) {
-                    observableCoordinate.excludedModuleSpecificationsProperty().clear();
+                    observableCoordinate.excludedModuleSpecificationsProperty().setValue(Sets.immutable.empty());
                 } else {
                     noExclusionsWildcard.setSelected(true);
                 }
@@ -372,40 +372,38 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
 
         CheckMenuItem excludeAllIndividualModulesItem = new CheckMenuItem("exclude all individual modules");
 
-        excludeAllIndividualModulesItem.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().containsAll(
+        excludeAllIndividualModulesItem.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().get().castToSet().containsAll(
                 StampService.get().getModulesInUse().castToSet()));
         excludedModulesMenu.getItems().add(excludeAllIndividualModulesItem);
         if (excludeAllIndividualModulesItem.isSelected()) {
             excludeAllIndividualModulesItem.setOnAction(event -> {
                 Platform.runLater(() -> {
-                    observableCoordinate.excludedModuleSpecificationsProperty().clear();
+                    observableCoordinate.excludedModuleSpecificationsProperty().setValue(Sets.immutable.empty());
                 });
                 event.consume();
             });
         } else {
             excludeAllIndividualModulesItem.setOnAction(event -> {
                 Platform.runLater(() -> {
-                    ObservableSet<ConceptFacade> newSet = FXCollections.observableSet();
-                    newSet.addAll(StampService.get().getModulesInUse().castToSet());
-                    observableCoordinate.excludedModuleSpecificationsProperty().setValue(newSet);
+                    observableCoordinate.excludedModuleSpecificationsProperty().setValue(StampService.get().getModulesInUse());
                 });
                 event.consume();
             });
         }
         StampService.get().getModulesInUse().forEach(moduleConcept -> {
             CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionStringOrNid(viewCalculator, moduleConcept));
-            item.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().contains(moduleConcept));
+            item.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().get().contains(moduleConcept));
             if (item.isSelected()) {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
-                        observableCoordinate.excludedModuleSpecificationsProperty().remove(moduleConcept);
+                        observableCoordinate.excludedModuleSpecificationsProperty().setValue(observableCoordinate.excludedModuleSpecificationsProperty().get().newWithout(moduleConcept));
                     });
                     event.consume();
                 });
             } else {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
-                        observableCoordinate.excludedModuleSpecificationsProperty().add(moduleConcept);
+                        observableCoordinate.excludedModuleSpecificationsProperty().setValue(observableCoordinate.excludedModuleSpecificationsProperty().get().newWith(moduleConcept));
                     });
                     event.consume();
                 });
@@ -501,8 +499,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             if (!item.isSelected()) {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
-                        ObservableSet<PatternFacade> newSet = FXCollections.observableSet(navOption.toArray(new PatternFacade[navOption.size()]));
-                        observableCoordinate.navigationPatternsProperty().setValue(newSet);
+                        observableCoordinate.navigationPatternsProperty().setValue(Sets.immutable.ofAll(navOption));
                     });
                     event.consume();
                 });
@@ -546,10 +543,9 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             CheckMenuItem dialectOrderItem = new CheckMenuItem(viewCalculator.toEntityString(dialectPreferenceList.castToList(),
                     entityFacade -> toEntityStringOrPublicIdAndNid(viewCalculator, entityFacade)));
             changeDialectOrder.getItems().add(dialectOrderItem);
-            dialectOrderItem.setSelected(observableCoordinate.dialectPatternPreferenceListProperty().getValue().equals(dialectPreferenceList.castToList()));
+            dialectOrderItem.setSelected(observableCoordinate.dialectPatternPreferenceListProperty().getValue().equals(dialectPreferenceList));
             dialectOrderItem.setOnAction(event -> {
-                ObservableList<PatternFacade> prefList = FXCollections.observableArrayList(dialectPreferenceList.toArray(new PatternFacade[0]));
-                Platform.runLater(() -> observableCoordinate.dialectPatternPreferenceListProperty().setValue(prefList));
+                Platform.runLater(() -> observableCoordinate.dialectPatternPreferenceListProperty().setValue(Lists.immutable.ofAll(dialectPreferenceList)));
                 event.consume();
             });
         }
@@ -658,7 +654,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             CheckMenuItem typeOrderItem = new CheckMenuItem(viewCalculator.toEntityString(typePreferenceList.castToList(),
                     entityFacade -> toEntityStringOrPublicIdAndNid(viewCalculator, entityFacade)));
             changeDescriptionPreferenceMenu.getItems().add(typeOrderItem);
-            typeOrderItem.setSelected(languageCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList.castToList()));
+            typeOrderItem.setSelected(languageCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList));
             typeOrderItem.setDisable(typeOrderItem.isSelected());
             typeOrderItem.setOnAction(event -> {
 
@@ -666,9 +662,8 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
                     LOG.debug("JournalController menu");
                 }
 
-                ObservableList<ConceptFacade> prefList = FXCollections.observableArrayList(typePreferenceList.toArray(new ConceptFacade[0]));
                 Platform.runLater(() ->
-                        languageCoordinate.descriptionTypePreferenceListProperty().setValue(prefList)
+                        languageCoordinate.descriptionTypePreferenceListProperty().setValue(Lists.immutable.ofAll(typePreferenceList))
                 );
                 event.consume();
             });

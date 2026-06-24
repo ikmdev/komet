@@ -19,7 +19,7 @@ import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
 import static dev.ikm.komet.framework.dnd.KometClipboard.decodeUuids;
 import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
-import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.JOURNAL_VIEW;
+import static dev.ikm.komet.layout.controls.FilterOptionsPopup.FILTER_TYPE.JOURNAL_VIEW;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
 import static dev.ikm.komet.kview.controls.KometIcon.IconValue.KL_EDITABLE_VIEW;
@@ -82,8 +82,12 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.layout.KlPeerable;
 import dev.ikm.komet.layout.area.KlToolArea;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout_engine.host.KlCardProvider;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.ViewOptionsPopupHelper;
+import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.controls.NotificationPopup;
@@ -101,10 +105,13 @@ import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.AbstractChapterKlWindow;
-import dev.ikm.komet.kview.klwindows.ToolAreaChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.CardKlWindow;
+import dev.ikm.komet.kview.klwindows.ToolCardKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
+import dev.ikm.komet.kview.klwindows.DynamicCardKlWindow;
+import dev.ikm.komet.layout_engine.host.DynamicComponentCard;
 import dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindow;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
@@ -115,6 +122,7 @@ import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
 import dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
+import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
@@ -138,6 +146,8 @@ import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.ProxyFactory;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -172,6 +182,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -228,9 +239,6 @@ public class JournalController {
 
     @FXML
     private MenuItem newConceptMenuItem;
-
-    @FXML
-    private HBox chapterHeaderbarHBox;
 
     @FXML
     private HBox projectBarHBox;
@@ -386,10 +394,25 @@ public class JournalController {
         journalViewProperties = windowView.makeOverridableViewProperties("JournalController.filterOptionsPopup");
         journalViewCoordAsParent = new ObservableViewNoOverride(journalViewProperties.nodeView());
 
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(journalViewProperties,
-                coordinatesMenuButton, () -> {
-                    System.out.println("JournalController.filterOptionsPopup: updating view due to filter options change");
-                });
+        // Expose the journal's live coordinate as the journal-stratum KlContext on the workspace pane, so a
+        // chapter window resolves it as its coordinate parent by walking the scene graph and establishes its
+        // own coordinate childOf it (ike-issues#698, KB -> journal -> window).
+        workspace.getProperties().put(KlPeerable.PropertyKeys.KL_CONTEXT,
+                new JournalKlContext(journalViewProperties.nodeView()));
+
+        // One shared View Options control everywhere: the journal differs only in its navigator (graph) and where
+        // the popup is anchored (beneath the toolbar button); commit-on-Apply and the rest come from the shared
+        // ViewOptionsPopupHelper (ike-issues#681).
+        filterOptionsPopup = ViewOptionsPopupHelper.setupViewCoordinateOptionsPopup(
+                journalViewProperties,
+                FilterOptionsPopup.FILTER_TYPE.JOURNAL_VIEW,
+                coordinatesMenuButton,
+                vp -> new GraphFilterOptionsNavigator(new ViewNavigator(vp.nodeView())),
+                popup -> {
+                    Bounds buttonBounds = coordinatesMenuButton.localToScreen(coordinatesMenuButton.getLayoutBounds());
+                    popup.show(coordinatesMenuButton, buttonBounds.getMinX(), buttonBounds.getMaxY() + 2);
+                },
+                () -> { /* journal windows re-render reactively on the nodeView change */ });
         // FIXME remove the menu option for parent view coordinate
         coordinatesMenuButton.getItems().remove(windowCoordinates);
 
@@ -479,6 +502,9 @@ public class JournalController {
         // initialize drag and drop for search results of next gen search
         setupDragNDrop(workspace);
 
+        // Drop a concept on the Navigator launcher icon to open the navigator and navigate to that concept.
+        setupNavigatorIconDropTarget();
+
         // Hide the progress toggle button by default
         progressToggleButton.setVisible(false);
 
@@ -517,6 +543,14 @@ public class JournalController {
             windowMenuItem.setOnAction(actionEvent -> newCreateGenPurposeKLWindow(null, windowTitle));
 
             windowTitleToMenuItem.put(windowTitle, windowMenuItem);
+
+            // Parallel entry: realize the same designed layout as a kview-free DynamicCard.
+            MenuItem dynamicCardMenuItem = new MenuItem(windowTitle + " — Dynamic Card",
+                    KometIcon.create(KL_EDITABLE_VIEW));
+            // Open as a component-focusable card so an empty card shows the identicon + name drop target —
+            // drag a concept onto it to focus the card (and populate its component areas).
+            dynamicCardMenuItem.setOnAction(actionEvent -> newCreateDynamicComponentCardWindow(null, windowTitle));
+            addContextMenu.getItems().add(dynamicCardMenuItem);
         }
 
         // Discover summonable tool areas (e.g. the Claude Assistant) contributed via
@@ -530,27 +564,48 @@ public class JournalController {
             toolMenuItem.setOnAction(actionEvent -> createToolAreaWindow(toolAreaFactory));
             addContextMenu.getItems().add(toolMenuItem);
         }
+        // Discover plugin-contributed first-class cards (e.g. the Claude Assistant as a ClaudeCard),
+        // ServiceLoader-discovered as KlCardProvider, and add a "+"-menu entry that opens each natively —
+        // its own chrome + sandboxed prefs-node storage — via the generic CardKlWindow.
+        for (var cardProvider : PluggableService.load(KlCardProvider.class)) {
+            anyToolArea = true;
+            MenuItem cardMenuItem = new MenuItem(cardProvider.cardName());
+            cardMenuItem.setOnAction(actionEvent -> createCardWindow(cardProvider));
+            addContextMenu.getItems().add(cardMenuItem);
+        }
         if (anyToolArea) {
             addContextMenuSeparator.setVisible(true);
         }
     }
 
     /**
-     * Creates a tool-area window (e.g. the Claude Assistant) and adds it to the workspace.
-     * The area is hosted in a non-entity {@link ToolAreaChapterKlWindow} and is handed the
-     * journal view so its in-process tools query the coordinate the user currently sees.
+     * Creates a tool-area window (e.g. the Claude Assistant) and adds it to the workspace. The area is
+     * hosted in a kview-free, layout-engine {@link ToolCardKlWindow} (a sandboxed {@code ToolCard}) and is
+     * handed the journal view so its in-process tools query the coordinate the user currently sees. Each
+     * tool card keeps its own per-instance preferences, so two of the same tool never share state.
      *
      * @param toolAreaFactory the discovered tool-area factory selected from the "+" menu
      */
     private void createToolAreaWindow(KlToolArea.Factory toolAreaFactory) {
         ViewProperties viewProperties =
                 windowView.makeOverridableViewProperties("JournalController.createToolAreaWindow");
-        final java.util.UUID windowTopic = java.util.UUID.randomUUID();
-        final KometPreferences windowPreferences = KlWindowPreferencesUtils.getWindowPreferences(
-                journalTopic, windowTopic, ToolAreaChapterKlWindow.TOOL_WINDOW_TYPE);
-        ToolAreaChapterKlWindow toolWindow = new ToolAreaChapterKlWindow(
-                windowTopic, toolAreaFactory, viewProperties, windowPreferences);
+        ToolCardKlWindow toolWindow =
+                ToolCardKlWindow.create(journalTopic, toolAreaFactory, viewProperties, null);
         setupWorkspaceWindow(toolWindow);
+    }
+
+    /**
+     * Creates a plugin-contributed first-class card window (e.g. the Claude Assistant as a {@code ClaudeCard})
+     * and adds it to the workspace. The provider's card supplies its own chrome and sandboxed per-instance
+     * prefs-node storage; the generic {@link CardKlWindow} only bridges it to the workspace.
+     *
+     * @param cardProvider the discovered card provider selected from the "+" menu
+     */
+    private void createCardWindow(KlCardProvider cardProvider) {
+        ViewProperties viewProperties =
+                windowView.makeOverridableViewProperties("JournalController.createCardWindow");
+        CardKlWindow cardWindow = CardKlWindow.create(journalTopic, cardProvider, viewProperties, null);
+        setupWorkspaceWindow(cardWindow);
     }
 
     private String formatPromptText(String title) {
@@ -669,6 +724,70 @@ public class JournalController {
             event.setDropCompleted(success);
             event.consume();
         });
+    }
+
+    /**
+     * Wires the Navigator launcher toggle as a concept drop target: dropping a concept on it opens the
+     * navigator panel (if not already open) and navigates it to that concept, by publishing the same
+     * {@link ShowNavigationalPanelEvent} the search results use. The icon tints while a droppable concept
+     * is over it.
+     */
+    private void setupNavigatorIconDropTarget() {
+        navigatorToggleButton.setOnDragOver(event -> {
+            if (conceptNidFromDragboard(event.getDragboard()) != null) {
+                event.acceptTransferModes(TransferMode.COPY);
+                setNavigatorIconHighlight(true);
+            }
+            event.consume();
+        });
+        navigatorToggleButton.setOnDragExited(event -> {
+            setNavigatorIconHighlight(false);
+            event.consume();
+        });
+        navigatorToggleButton.setOnDragDropped(event -> {
+            Integer nid = conceptNidFromDragboard(event.getDragboard());
+            boolean success = false;
+            if (nid != null) {
+                journalEventBus.publish(journalTopic, new ShowNavigationalPanelEvent(navigatorToggleButton,
+                        ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT,
+                        EntityProxy.Concept.make(nid)));
+                success = true;
+            }
+            setNavigatorIconHighlight(false);
+            event.setDropCompleted(success);
+            event.consume();
+        });
+    }
+
+    /** The dropped concept's nid from a Komet concept dragboard, or null if it carries no concept. */
+    private static Integer conceptNidFromDragboard(Dragboard dragboard) {
+        if (dragboard.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
+            try {
+                EntityProxy.Concept proxy = ProxyFactory.fromXmlFragment(
+                        (String) dragboard.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
+                return proxy.nid();
+            } catch (RuntimeException ignored) {
+                // malformed payload; treat as no concept
+            }
+        }
+        return null;
+    }
+
+    /** The Navigator launcher's inline style captured before the drop highlight, restored after. */
+    private String navigatorIconOriginalStyle;
+
+    /** Toggles a drop-target tint on the Navigator launcher icon, preserving its existing inline style. */
+    private void setNavigatorIconHighlight(boolean on) {
+        if (on) {
+            if (navigatorIconOriginalStyle == null) {
+                navigatorIconOriginalStyle = navigatorToggleButton.getStyle();
+            }
+            navigatorToggleButton.setStyle((navigatorIconOriginalStyle == null ? "" : navigatorIconOriginalStyle)
+                    + "; -fx-background-color: #00b4d8;");
+        } else {
+            navigatorToggleButton.setStyle(navigatorIconOriginalStyle == null ? "" : navigatorIconOriginalStyle);
+            navigatorIconOriginalStyle = null;
+        }
     }
 
     /**
@@ -1659,12 +1778,27 @@ public class JournalController {
                 final KometPreferences windowPreferences = journalPreferences.node(windowId);
                 windowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
                 try {
-                    if (windowId.startsWith(ToolAreaChapterKlWindow.TOOL_WINDOW_TYPE.getPrefix())) {
-                        // Non-entity tool window: restore via the Kl framework (PluggableService),
-                        // not the entity-centric EntityKlWindowFactory path.
-                        setupWorkspaceWindow(ToolAreaChapterKlWindow.restore(windowSettings, windowPreferences));
+                    if (windowId.startsWith(CardKlWindow.CARD_WINDOW_TYPE.getPrefix())) {
+                        // Plugin-contributed first-class card window: restore via its provider (resolved by
+                        // class name across module layers) from the card's own node. Hand it the live
+                        // journalViewProperties so the restored card tracks journal-coordinate changes.
+                        setupWorkspaceWindow(CardKlWindow.restore(windowPreferences, journalViewProperties));
+                    } else if (windowId.startsWith(ToolCardKlWindow.TOOL_CARD_WINDOW_TYPE.getPrefix())) {
+                        // Non-entity tool-card window: restore via its own static factory, which
+                        // re-instantiates the hosted tool from the card's per-instance node. Hand it the
+                        // live journalViewProperties so the restored card tracks journal-coordinate changes.
+                        setupWorkspaceWindow(ToolCardKlWindow.restore(windowPreferences, journalViewProperties));
+                    } else if (windowId.startsWith(DynamicCardKlWindow.DYNAMIC_CARD_WINDOW_TYPE.getPrefix())) {
+                        // Non-entity dynamic-card window: restore via its own static factory, which
+                        // re-realizes the editor layout for the saved reference component. Hand it the
+                        // live journalViewProperties (not a reconstructed view) so the restored card
+                        // tracks journal-coordinate changes like a freshly created one.
+                        setupWorkspaceWindow(DynamicCardKlWindow.restore(windowPreferences, journalViewProperties));
                     } else {
-                        setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences));
+                        // Pass the live journalViewProperties (like the card branch above) so a restored
+                        // entity window derives its coordinate from the live journal, not a reconstruction
+                        // from preferences — keeping the logged-in author (ike-issues#756).
+                        setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences, journalViewProperties));
                     }
                 } catch (Exception e) {
                     LOG.error("Error restoring window: {}", windowId, e);
@@ -1747,6 +1881,50 @@ public class JournalController {
     }
 
     /**
+     * Creates a {@link DynamicCardKlWindow} hosting a kview-free, layout-engine {@code DynamicCard}
+     * that realizes the given editor-designed layout, and adds it to the workspace.
+     *
+     * @param entityFacade            the reference component the layout is about, or {@code null}
+     * @param editorWindowPreferences the preferences node of the designed layout
+     * @param layoutTitle             the title of the designed layout
+     */
+    private void createDynamicCardWindow(EntityFacade entityFacade,
+                                         KometPreferences editorWindowPreferences,
+                                         String layoutTitle,
+                                         boolean componentFocused) {
+        DynamicCardKlWindow window = DynamicCardKlWindow.create(journalTopic, entityFacade, layoutTitle,
+                editorWindowPreferences, componentFocused, journalViewProperties, null);
+        setupWorkspaceWindow(window);
+    }
+
+    /**
+     * Opens the named editor-designed layout as a plain {@link DynamicCardKlWindow} in the workspace.
+     *
+     * @param entityFacade the reference component, or {@code null}
+     * @param windowTitle  the title of the saved editor layout to realize
+     */
+    public void newCreateDynamicCardWindow(EntityFacade entityFacade, String windowTitle) {
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+        createDynamicCardWindow(entityFacade, editorWindowPreferences, windowTitle, false);
+    }
+
+    /**
+     * Opens the named editor-designed layout as a component-focused {@link DynamicComponentCard}
+     * (hosted in a {@link DynamicCardKlWindow}) in the workspace, with the given component as subject.
+     *
+     * @param entityFacade the component the card views
+     * @param windowTitle  the title of the saved editor layout to realize
+     */
+    public void newCreateDynamicComponentCardWindow(EntityFacade entityFacade, String windowTitle) {
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+        createDynamicCardWindow(entityFacade, editorWindowPreferences, windowTitle, true);
+    }
+
+    /**
      * Creates a new LIDR window when triggered from the menu.
      * <p>     * This method initializes a new LIDR window in creation mode with the current
      * window view context but no predefined device concept.
@@ -1772,69 +1950,5 @@ public class JournalController {
     }
 
     public static Toast toast() { return toast; }
-
-    private FilterOptionsPopup setupViewCoordinateOptionsPopup(ViewProperties viewProperties,
-                                                               MenuButton coordinatesMenuButton,
-                                                               Runnable updateViewBlock) {
-        //ObservableViewNoOverride parentView2 = new ObservableViewNoOverride(windowSettings.getView());
-        // Filter Options Popup for the coordinates menu button.
-        FilterOptionsPopup filterOptionsPopup = new FilterOptionsPopup(JOURNAL_VIEW, viewProperties.parentView());
-        filterOptionsPopup.setStyle("-popup-pref-height: " + 600);
-        // Bind the popup's filter options to the view model's filter options. Update details if options change.
-        viewProperties.parentView().subscribe((_, nv) -> {
-            filterOptionsPopup.setNavigator(new ViewNavigator(nv));
-            if (updateViewBlock != null) {
-                updateViewBlock.run();
-            }
-        });
-
-
-        // Subscribe default F.O. to this nodeView, so changes from its menu are propagated to default F.O.
-        // Typically, changes to nodeView can come from parentView, if the coordinate has no overrides
-        filterOptionsPopup.getFilterOptionsUtils().subscribeFilterOptionsToView(
-            filterOptionsPopup.getInheritedFilterOptions(), viewProperties.nodeView());
-
-        // Subscribe nodeView to F.O., so changes from the F.O. popup are propagated to this nodeView
-        filterOptionsPopup.filterOptionsProperty().subscribe((oldFilterOptions, filterOptions) -> {
-            if (oldFilterOptions != null) {
-                filterOptionsPopup.getFilterOptionsUtils().unsubscribeNodeFilterOptions();
-            }
-            if (filterOptions != null) {
-                filterOptionsPopup.getFilterOptionsUtils().subscribeViewToFilterOptions(filterOptions, viewProperties.nodeView());
-            }
-        });
-
-        coordinatesMenuButton.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (filterOptionsPopup.getNavigator() == null) {
-                Navigator navigator = new ViewNavigator(viewProperties.nodeView());
-                    filterOptionsPopup.setNavigator(navigator);
-                }
-                if (e.getButton() == MouseButton.PRIMARY) {
-                    if (filterOptionsPopup.isShowing()) {
-                        e.consume();
-                        filterOptionsPopup.hide();
-                    } else {
-
-                        Bounds buttonBounds = coordinatesMenuButton.localToScreen(coordinatesMenuButton.getLayoutBounds());
-                        // Show beneath the button
-                        filterOptionsPopup.show(coordinatesMenuButton, buttonBounds.getMinX(), buttonBounds.getMaxY() + 2);
-                    }
-                }
-            });
-            filterOptionsPopup.showingProperty().subscribe(showing ->
-                            coordinatesMenuButton.pseudoClassStateChanged(FILTER_SHOWING, showing));
-
-            filterOptionsPopup.defaultOptionsSetProperty().subscribe(isDefault ->
-                            coordinatesMenuButton.pseudoClassStateChanged(FILTER_SET, !isDefault));
-
-
-
-        filterOptionsPopup.filterOptionsProperty().addListener( (observable, oldValue, newValue) -> {
-            LOG.info("JournalController - filterOptionsPopup.filterOptionsProperty() " + newValue);
-            // begin altering parent view coordinates
-            viewProperties.parentView().setValue(newValue.observableViewForFilterProperty().getValue());
-        });
-            return filterOptionsPopup;
-        }
 
 }

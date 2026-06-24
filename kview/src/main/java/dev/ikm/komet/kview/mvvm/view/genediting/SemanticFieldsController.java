@@ -176,7 +176,8 @@ public class SemanticFieldsController {
         if (composer != null) {
             return; // Already initialized
         }
-        ConceptFacade author = getViewProperties().parentView().editCoordinate().getAuthorForChanges();
+        // Author from nodeView() like module/path — a single, consistent edit-coordinate source (ike-issues#752).
+        ConceptFacade author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
         ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
         ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
         if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {

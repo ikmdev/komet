@@ -77,36 +77,6 @@ public interface KlWindowPreferencesUtils {
         return base36;
     }
 
-    /**
-     * Retrieves view properties for a specific journal instance.
-     * <p>     * This utility method creates view properties by loading saved journal settings
-     * from application preferences. The method:
-     * <ol>
-     *   <li>Constructs the preference path for the journal using its UUID</li>
-     *   <li>Retrieves the journal's preference node</li>
-     *   <li>Creates window settings from these preferences</li>
-     *   <li>Extracts and returns overridable view properties</li>
-     * </ol>
-     * <p>     * This default implementation is provided for all factory implementations to ensure
-     * consistent view property retrieval across different window types. It enables
-     * windows to maintain visual and behavioral consistency with their parent journal.
-     *
-     * @param windowSettings the parent's window settings
-     * @param journalTopic the UUID identifying the journal for which to retrieve view properties
-     * @return view properties configured for the specified journal
-     * @throws NullPointerException if journalTopic is null
-     * @see WindowSettings
-     * @see ObservableViewNoOverride#makeOverridableViewProperties()
-     */
-    static ViewProperties getJournalViewProperties(WindowSettings windowSettings, UUID journalTopic) {
-        KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final String journalPath = JOURNALS + separator
-                + JOURNAL_FOLDER_PREFIX + shortenUUID(journalTopic);
-        KometPreferences journalPreferences = appPreferences.node(journalPath);
-        //WindowSettings journalWindowSettings = new WindowSettings(journalPreferences);
-        ObservableViewNoOverride windowView = windowSettings.getView();
-        return windowView.makeOverridableViewProperties("KlWindowPreferencesUtils.getJournalViewProperties");
-    }
 
     /**
      * Generates a unique journal directory name based on the journal's UUID.

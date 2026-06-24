@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.LangEditCoordinateTitledPaneSkin;
+import dev.ikm.komet.layout.controls.FilterTitledPane;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.Skin;

@@ -8,9 +8,13 @@ import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.blueprint.SupplementalAreaBlueprint;
 import dev.ikm.komet.layout_engine.blueprint.ViewContextBlueprint;
 import dev.ikm.komet.layout_engine.component.view.ViewContext;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.ViewOptionsPopupHelper;
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import javafx.application.Platform;
 import javafx.event.Event;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuButton;
@@ -23,13 +27,21 @@ public final class ViewContextMenuButtonArea extends ViewContextBlueprint {
 
     MenuButton viewPropertiesMenuButton = new MenuButton();
     private final ToolBar toolBar = new ToolBar(viewPropertiesMenuButton, new Label("Simple View"));
+    private boolean viewOptionsWired = false;
 
     {
         fxObject().setTop(toolBar);
-        viewPropertiesMenuButton.setOnShowing(this::onShowing);
-        viewPropertiesMenuButton.setOnHidden(this::onHidden);
         viewPropertiesMenuButton.setMinHeight(25);
         Platform.runLater(() -> viewPropertiesMenuButton.setGraphic(new Label("View")));
+        // Wire the View Options control once this area is attached to a scene, where its enclosing window
+        // context (and that context's overridable ViewProperties) is resolvable (ike-issues#661/#666).
+        if (fxObject() instanceof Node node) {
+            node.sceneProperty().subscribe((oldScene, newScene) -> {
+                if (newScene != null && !viewOptionsWired) {
+                    wireViewOptions();
+                }
+            });
+        }
     }
 
     public ViewContextMenuButtonArea(KometPreferences preferences) {
@@ -61,6 +73,31 @@ public final class ViewContextMenuButtonArea extends ViewContextBlueprint {
             Menu viewPropertiesMenu = ViewMenuFactory.create(context.viewCoordinate(),
                     context.viewCoordinate().calculator());
             viewPropertiesMenuButton.getItems().add(viewPropertiesMenu);
+        }
+    }
+
+    /**
+     * Drives the View Options from the nearest enclosing context that exposes an overridable
+     * {@link ViewProperties} — the per-window coordinate the window's areas resolve through — via the
+     * relocated {@link FilterOptionsPopup} (ike-issues#661/#666). Falls back to the legacy
+     * {@code ViewMenuFactory} coordinate menu when no overridable window context is found.
+     */
+    private void wireViewOptions() {
+        viewOptionsWired = true;
+        ViewProperties windowViewProperties = null;
+        for (KlContext context : contexts()) {
+            if (context.viewProperties() != null) {
+                windowViewProperties = context.viewProperties();
+                break;
+            }
+        }
+        if (windowViewProperties != null) {
+            ViewOptionsPopupHelper.setupViewCoordinateOptionsPopup(windowViewProperties,
+                    FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, fxObject(), viewPropertiesMenuButton, () -> {});
+        } else {
+            // No overridable window context — keep the legacy coordinate menu.
+            viewPropertiesMenuButton.setOnShowing(this::onShowing);
+            viewPropertiesMenuButton.setOnHidden(this::onHidden);
         }
     }
 

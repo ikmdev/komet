@@ -15,12 +15,12 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
-import javafx.beans.property.SetProperty;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.set.ImmutableSet;
 
 interface StampFilterTemplateProperties {
 
@@ -49,18 +49,18 @@ interface StampFilterTemplateProperties {
      *
      * @return the specified modules property
      */
-    SetProperty<ConceptFacade> moduleSpecificationsProperty();
+    ObjectProperty<ImmutableSet<ConceptFacade>> moduleSpecificationsProperty();
 
     /**
      *
      * @return the specified modules property
      */
-    SetProperty<ConceptFacade> excludedModuleSpecificationsProperty();
+    ObjectProperty<ImmutableSet<ConceptFacade>> excludedModuleSpecificationsProperty();
 
     /**
      * Module preference list property.
      *
      * @return the object property
      */
-    ListProperty<ConceptFacade> modulePriorityOrderProperty();
+    ObjectProperty<ImmutableList<ConceptFacade>> modulePriorityOrderProperty();
 }

@@ -18,11 +18,11 @@ package dev.ikm.komet.framework.dnd;
 import dev.ikm.tinkar.entity.EntityHandle;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
+import javafx.scene.control.Cell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeCell;
-import javafx.scene.image.Image;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
@@ -127,21 +127,13 @@ public class DragDetectedCellEventHandler
 
             Dragboard db = eventNode.startDragAndDrop(TransferMode.COPY);
 
-            if (eventNode instanceof DraggableWithImage) {
-                DraggableWithImage draggableWithImageNode = (DraggableWithImage) eventNode;
-                Image dragImage = draggableWithImageNode.getDragImage();
-                double xOffset = ((dragImage.getWidth() / 2) + draggableWithImageNode.getDragViewOffsetX()) - event.getX();
-                double yOffset = event.getY() - (dragImage.getHeight() / 2);
-
-                db.setDragView(dragImage, xOffset, yOffset);
-            } else {
-                DragImageMaker dragImageMaker = new DragImageMaker(eventNode);
-                Image dragImage = dragImageMaker.getDragImage();
-                double xOffset = ((dragImage.getWidth() / 2) + dragImageMaker.getDragViewOffsetX()) - event.getX();
-                double yOffset = event.getY() - (dragImage.getHeight() / 2);
-
-                db.setDragView(dragImage, xOffset, yOffset);
-            }
+            // Snapshot the cell's graphic when present (trims the tree indent / disclosure area);
+            // otherwise the node itself. Canonical placement — standard size, cursor just right of
+            // the identicon on the image's bottom border — replacing the old grab-point-relative
+            // centered offset so a tree/list drag looks like every other concept drag.
+            Node imageNode = (eventNode instanceof Cell<?> cell && cell.getGraphic() != null)
+                    ? cell.getGraphic() : eventNode;
+            KonceptDragSource.setDragView(db, imageNode);
 
             /* Put a string on a dragboard */
             if (entityHandle.isPresent()) {

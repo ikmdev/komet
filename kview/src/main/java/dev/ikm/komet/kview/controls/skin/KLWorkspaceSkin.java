@@ -18,7 +18,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLDropRegion;
 import dev.ikm.komet.kview.controls.KLWorkspace;
-import dev.ikm.komet.kview.fxutils.window.WindowSupport;
+import dev.ikm.komet.layout_engine.window.WindowSupport;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
@@ -68,9 +68,9 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.STANDARD_HEIGHT;
 import static dev.ikm.komet.kview.controls.KLWorkspace.STANDARD_WIDTH;
 import static dev.ikm.komet.kview.controls.KLWorkspace.USE_COMPUTED_SIZE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.DEFAULT_ANIMATION_DURATION;
-import static dev.ikm.komet.kview.fxutils.window.WindowSupport.WINDOW_SUPPORT_KEY;
-import static dev.ikm.komet.kview.fxutils.window.WindowSupport.setupWindowSupport;
-import static dev.ikm.komet.kview.fxutils.window.WindowSupport.cleanupWindowSupport;
+import static dev.ikm.komet.layout_engine.window.WindowSupport.WINDOW_SUPPORT_KEY;
+import static dev.ikm.komet.layout_engine.window.WindowSupport.setupWindowSupport;
+import static dev.ikm.komet.layout_engine.window.WindowSupport.cleanupWindowSupport;
 
 /**
  * A custom skin implementation for the {@link KLWorkspace} control that provides a scrollable
