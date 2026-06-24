@@ -52,7 +52,7 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
         ObservableEditCoordinate editCoordinate = control.getViewProperties().parentView().editCoordinate();
 
         VBox fieldsBox = new VBox(8,
-                createField("AUTHOR for CHANGES", editCoordinate.authorForChangesProperty()),
+                createReadOnlyAuthorField(editCoordinate),
                 createField("DEFAULT MODULE", editCoordinate.defaultModuleProperty()),
                 createField("DESTINATION MODULE", editCoordinate.destinationModuleProperty()),
                 createField("DEFAULT PATH", editCoordinate.defaultPathProperty()),
@@ -89,6 +89,9 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
     private VBox createField(String labelText, ObjectProperty<ConceptFacade> coordinateProperty) {
         Label label = new Label(labelText);
         label.getStyleClass().add("title-label");
+        // The shared filter-options-popup.css has no rule for these content labels, so they render faint;
+        // pin a legible light fill (matching the header title) against the dark popup body (ike-issues#754).
+        label.setStyle("-fx-text-fill: #E1E8F1;");
 
         KLComponentControl componentControl = KLComponentControlFactory.createComponentControl(
                 control.getViewProperties().calculator());
@@ -121,6 +124,37 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
         VBox fieldBox = new VBox(2, label, componentControl);
         fieldBox.getStyleClass().add("edit-coordinate-field");
         return fieldBox;
+    }
+
+    /**
+     * Builds the READ-ONLY author field. The edit-coordinate author is the logged-in user, set at login
+     * (ike-issues#754); it must not be edited here — to change it, log in as a different user. So the resolved
+     * author is shown as plain text rather than an editable search control.
+     */
+    private VBox createReadOnlyAuthorField(ObservableEditCoordinate editCoordinate) {
+        Label label = new Label("AUTHOR for CHANGES");
+        label.getStyleClass().add("title-label");
+        label.setStyle("-fx-text-fill: #E1E8F1;");
+
+        Label authorValue = new Label();
+        authorValue.getStyleClass().add("edit-coordinate-readonly-value");
+        authorValue.setStyle("-fx-text-fill: #E1E8F1; -fx-font-size: 14; -fx-padding: 6 0 6 2;");
+        updateAuthorText(authorValue, editCoordinate.authorForChangesProperty().get());
+        subscription = subscription.and(editCoordinate.authorForChangesProperty().subscribe((_, newAuthor) ->
+                updateAuthorText(authorValue, newAuthor)));
+
+        VBox fieldBox = new VBox(2, label, authorValue);
+        fieldBox.getStyleClass().add("edit-coordinate-field");
+        return fieldBox;
+    }
+
+    private void updateAuthorText(Label authorValue, ConceptFacade author) {
+        if (author == null) {
+            authorValue.setText("—");
+        } else {
+            authorValue.setText(control.getViewProperties().calculator()
+                    .getPreferredDescriptionTextWithFallbackOrNid(author.nid()));
+        }
     }
 
     @Override
