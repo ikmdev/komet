@@ -27,11 +27,14 @@ import dev.ikm.komet.layout.preferences.KlProfiles;
 import dev.ikm.komet.layout_engine.blueprint.AbstractCheckArea;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Renders <em>placed supplemental areas</em> — the pluggable-area capability of the Knowledge
@@ -62,13 +65,15 @@ public final class SupplementalAreaRenderer {
      * a single bad plugin cannot break the whole window.
      *
      * @param section        the section whose placed areas should be rendered; may be {@code null}
-     * @param targetGrid     the grid to add the area nodes to; may be {@code null}
+     * @param targetAreas    the content-area list to add the area nodes to; may be {@code null}. Each
+     *                       node carries its {@link GridPane} placement constraints, so the receiving
+     *                       container is expected to lay them out in a grid.
      * @param viewProperties the host view the areas should query
      * @param focus          the concept a check area should evaluate; may be {@code null}
      */
-    public static void renderInto(EditorSectionModel section, GridPane targetGrid,
+    public static void renderInto(EditorSectionModel section, List<Node> targetAreas,
                                   ViewProperties viewProperties, EntityFacade focus) {
-        if (section == null || targetGrid == null) {
+        if (section == null || targetAreas == null) {
             return;
         }
         for (EditorSupplementalAreaModel model : section.getSupplementalAreas()) {
@@ -79,7 +84,7 @@ public final class SupplementalAreaRenderer {
                 GridPane.setColumnIndex(node, model.getColumnIndex());
                 GridPane.setColumnSpan(node, Math.max(1, model.getColumnSpan()));
                 GridPane.setVgrow(node, Priority.ALWAYS);
-                targetGrid.getChildren().add(node);
+                targetAreas.add(node);
             } catch (RuntimeException e) {
                 LOG.error("Could not render supplemental area {}", model.getAreaFactoryClassName(), e);
             }

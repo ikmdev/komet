@@ -11,6 +11,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
@@ -45,6 +46,11 @@ public class SectionTitledPane<T> extends TitledPane {
     public int getNumberColumns() { return numberColumns.get(); }
     public IntegerProperty numberColumnsProperty() { return numberColumns; }
     public void setNumberColumns(int numberColumns) { this.numberColumns.set(numberColumns); }
+
+    // -- items
+    // The views laid out in this Section's content.
+    private final ObservableList<Node> items = FXCollections.observableArrayList();
+    public ObservableList<Node> getItems() { return items; }
 
     // -- reference components
     private final ObservableList<T> referenceComponents = FXCollections.observableArrayList();

@@ -103,7 +103,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
 import javafx.scene.layout.HBox;
@@ -141,11 +140,6 @@ public class GenPurposeDetailsController {
      * Given a Pattern what is the Section that has it as its Reference Component.
      */
     private final Map<EditorPatternModel, SectionTitledPane<EntityFacade>> patternReferenceComponentToSectionTitledPane = new HashMap<>();
-
-    /**
-     * Given a SectionModel what's its associated GridPane (The GridPane is the container used in the SectionTitledPane).
-     */
-    private final Map<EditorSectionModel, GridPane> sectionModelToTitledPaneGridPane = new HashMap<>();
 
     /**
      * Given a SectionModel what's its associated SectionTitledPane.
@@ -723,19 +717,7 @@ public class GenPurposeDetailsController {
 
         titledPane.getStyleClass().add("pattern-titled-pane");
 
-        GridPane titledPaneGridPane = new GridPane();
-        titledPaneGridPane.getStyleClass().add("section-titled-pane-container");
-
-        sectionModel.numberColumnsProperty().subscribe(newNumberColumns -> {
-            List<ColumnConstraints> columns = new ArrayList<>();
-            for (int i = 0; i < newNumberColumns.intValue(); ++i) {
-                ColumnConstraints columnConstraints = new ColumnConstraints();
-                columnConstraints.setHgrow(Priority.ALWAYS);
-                columnConstraints.setPercentWidth(100 / ((double) newNumberColumns.intValue()));
-                columns.add(columnConstraints);
-            }
-            titledPaneGridPane.getColumnConstraints().setAll(columns);
-        });
+        titledPane.numberColumnsProperty().bind(sectionModel.numberColumnsProperty());
 
         // Section Semantics ComboBox
         List<EntityFacade> semanticsOfPattern = null;
@@ -749,15 +731,10 @@ public class GenPurposeDetailsController {
         titledPane.setReferenceComponentCellFactory(_ -> createSectionSemanticsComboBoxCell(viewProperties));
         titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(viewProperties));
 
-        // Content
-        titledPane.setContent(titledPaneGridPane);
-
         titledPane.setOnEditAction(actionEvent -> onEditAction(actionEvent, sectionModel));
 
         titledPane.editEnabledProperty().bind(sectionModel.referenceComponentProperty().isNull()
                 .or(Bindings.isNotEmpty(titledPane.getReferenceComponents())));
-
-        sectionModelToTitledPaneGridPane.put(sectionModel, titledPaneGridPane);
 
         sectionModelToTitledPane.put(sectionModel, titledPane);
 
@@ -916,14 +893,14 @@ public class GenPurposeDetailsController {
      * concept. This window only delegates.
      */
     private void addSupplementalAreaViewsOfSection(EditorSectionModel section) {
-        GridPane sectionGridPane = sectionModelToTitledPaneGridPane.get(section);
+        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(section);
         EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
-        SupplementalAreaRenderer.renderInto(section, sectionGridPane, viewProperties, refComponent);
+        SupplementalAreaRenderer.renderInto(section, titledPane.getItems(), viewProperties, refComponent);
     }
 
     private void addSinglePatternView(EditorPatternModel editorPatternModel) {
         EditorSectionModel parentSection = editorPatternModel.getParentSection();
-        GridPane sectionGridPane = sectionModelToTitledPaneGridPane.get(parentSection);
+        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(parentSection);
 
 //        VBox patternMainContainer = createPatternContainer(editorPatternModel);
 //
@@ -956,7 +933,7 @@ public class GenPurposeDetailsController {
         // Always expand to fill height of the GridPane
         GridPane.setVgrow(view, Priority.ALWAYS);
 
-        sectionGridPane.getChildren().add(view);
+        titledPane.getItems().add(view);
     }
 
     private PatternSemanticsPresenter addSemanticViews(EditorPatternModel editorPatternModel) {
