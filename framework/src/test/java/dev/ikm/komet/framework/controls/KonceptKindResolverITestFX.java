@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package dev.ikm.komet.framework.controls;
+import network.ike.docs.konceptcore.KonceptKind;
 
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -38,14 +39,14 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Integration tests for {@link ComponentKindResolver} against the Tinkar starter data, per the
+ * Integration tests for {@link KonceptKindResolver} against the Tinkar starter data, per the
  * coordinate-behaviour testing discipline (resolve real components, don't mock). Confirms the four
  * atoms map from the entity type, that a semantic on the view coordinate's description pattern is
- * {@link ComponentKind#DESCRIPTION} (and a plain {@link ComponentKind#SEMANTIC} otherwise), and that
- * an unresolvable id is {@link ComponentKind#UNKNOWN} — never silently a concept (ike-issues#638).
+ * {@link KonceptKind#DESCRIPTION} (and a plain {@link KonceptKind#SEMANTIC} otherwise), and that
+ * an unresolvable id is {@link KonceptKind#UNKNOWN} — never silently a concept (ike-issues#638).
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ComponentKindResolverITestFX {
+class KonceptKindResolverITestFX {
 
     private static final File TEST_DATA_DIR = new File("target/data");
     private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "tinkar-starter-data-reasoned-pb.zip");
@@ -66,14 +67,14 @@ class ComponentKindResolverITestFX {
 
     @Test
     void aConceptResolvesToConcept() {
-        assertEquals(ComponentKind.CONCEPT,
-                ComponentKindResolver.resolve(TinkarTerm.ENGLISH_LANGUAGE.nid(), calculator));
+        assertEquals(KonceptKind.CONCEPT,
+                KonceptKindResolver.resolve(TinkarTerm.ENGLISH_LANGUAGE.nid(), calculator));
     }
 
     @Test
     void aPatternResolvesToPattern() {
-        assertEquals(ComponentKind.PATTERN,
-                ComponentKindResolver.resolve(TinkarTerm.DESCRIPTION_PATTERN.nid(), calculator));
+        assertEquals(KonceptKind.PATTERN,
+                KonceptKindResolver.resolve(TinkarTerm.DESCRIPTION_PATTERN.nid(), calculator));
     }
 
     @Test
@@ -83,11 +84,11 @@ class ComponentKindResolverITestFX {
         assertTrue(descriptionNids.length > 0, "English Language must carry description semantics");
         int descriptionNid = descriptionNids[0];
 
-        assertEquals(ComponentKind.DESCRIPTION, ComponentKindResolver.resolve(descriptionNid, calculator),
+        assertEquals(KonceptKind.DESCRIPTION, KonceptKindResolver.resolve(descriptionNid, calculator),
                 "a semantic on the coordinate's description pattern is a Description");
         // Without a view the coordinate cannot be asked, so it falls back to a plain Semantic — never
         // a wrong guess.
-        assertEquals(ComponentKind.SEMANTIC, ComponentKindResolver.resolve(descriptionNid, null),
+        assertEquals(KonceptKind.SEMANTIC, KonceptKindResolver.resolve(descriptionNid, null),
                 "with no calculator a description is a plain Semantic, not a misclassification");
     }
 
@@ -108,20 +109,20 @@ class ComponentKindResolverITestFX {
         }
         assertNotEquals(Integer.MIN_VALUE, otherSemanticNid,
                 "starter data should carry a non-description semantic");
-        assertEquals(ComponentKind.SEMANTIC, ComponentKindResolver.resolve(otherSemanticNid, calculator));
+        assertEquals(KonceptKind.SEMANTIC, KonceptKindResolver.resolve(otherSemanticNid, calculator));
     }
 
     @Test
     void aStampResolvesToStamp() {
         Entity<?> englishLanguage = EntityHandle.get(TinkarTerm.ENGLISH_LANGUAGE.nid()).entity().orElseThrow();
         int stampNid = englishLanguage.versions().get(0).stampNid();
-        assertEquals(ComponentKind.STAMP, ComponentKindResolver.resolve(stampNid, calculator));
+        assertEquals(KonceptKind.STAMP, KonceptKindResolver.resolve(stampNid, calculator));
     }
 
     @Test
     void anUnresolvableIdResolvesToUnknownNotConcept() {
-        assertEquals(ComponentKind.UNKNOWN, ComponentKindResolver.resolve(Integer.MAX_VALUE, calculator),
+        assertEquals(KonceptKind.UNKNOWN, KonceptKindResolver.resolve(Integer.MAX_VALUE, calculator),
                 "an id that does not resolve must be UNKNOWN — the bare 'concept' default is never a fallback");
-        assertEquals(ComponentKind.UNKNOWN, ComponentKindResolver.resolve((EntityFacade) null, calculator));
+        assertEquals(KonceptKind.UNKNOWN, KonceptKindResolver.resolve((EntityFacade) null, calculator));
     }
 }

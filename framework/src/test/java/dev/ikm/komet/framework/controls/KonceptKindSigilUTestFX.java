@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package dev.ikm.komet.framework.controls;
+import network.ike.docs.konceptcore.StampSigilGeometry;
+import network.ike.docs.konceptcore.KonceptKind;
 
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXThread;
@@ -39,38 +41,38 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @ExtendWith(JavaFXThreadExtension.class)
 @RunOnJavaFXThread
-class ComponentKindSigilUTestFX {
+class KonceptKindSigilUTestFX {
 
     @Test
     void conceptIsTheBareDefaultWithNoSigil() {
-        assertTrue(ComponentKind.CONCEPT.isBare());
-        assertFalse(ComponentKind.CONCEPT.hasSigil(), "concept must be bare — no sigil");
-        assertNull(ComponentKind.CONCEPT.glyph());
-        assertNull(ComponentKind.CONCEPT.colorHex());
+        assertTrue(KonceptKind.CONCEPT.isBare());
+        assertFalse(KonceptKind.CONCEPT.hasSigil(), "concept must be bare — no sigil");
+        assertNull(KonceptKind.CONCEPT.glyph());
+        assertNull(KonceptKind.CONCEPT.colorHex());
         // Exactly one kind is bare.
-        long bare = java.util.Arrays.stream(ComponentKind.values()).filter(ComponentKind::isBare).count();
+        long bare = java.util.Arrays.stream(KonceptKind.values()).filter(KonceptKind::isBare).count();
         assertEquals(1, bare, "only CONCEPT is the bare default");
     }
 
     @Test
     void letterKindsCarryTheirSigil() {
-        assertEquals("D", ComponentKind.DESCRIPTION.glyph());
-        assertEquals("S", ComponentKind.SEMANTIC.glyph());
-        assertEquals("P", ComponentKind.PATTERN.glyph());
-        assertEquals("?", ComponentKind.UNKNOWN.glyph(), "unresolvable/presentation-only is ?, never bare");
-        assertTrue(ComponentKind.DESCRIPTION.hasLetterGlyph());
-        assertTrue(ComponentKind.UNKNOWN.hasSigil());
+        assertEquals("D", KonceptKind.DESCRIPTION.glyph());
+        assertEquals("S", KonceptKind.SEMANTIC.glyph());
+        assertEquals("P", KonceptKind.PATTERN.glyph());
+        assertEquals("?", KonceptKind.UNKNOWN.glyph(), "unresolvable/presentation-only is ?, never bare");
+        assertTrue(KonceptKind.DESCRIPTION.hasLetterGlyph());
+        assertTrue(KonceptKind.UNKNOWN.hasSigil());
     }
 
     @Test
     void stampUsesThePentagonNotALetter() {
-        assertTrue(ComponentKind.STAMP.isStamp());
-        assertNull(ComponentKind.STAMP.glyph(), "stamp has no letter glyph — it uses the pentagon");
-        assertFalse(ComponentKind.STAMP.hasLetterGlyph());
-        assertTrue(ComponentKind.STAMP.hasSigil());
-        assertEquals(StampSigilGeometry.COLOR, ComponentKind.STAMP.colorHex());
+        assertTrue(KonceptKind.STAMP.isStamp());
+        assertNull(KonceptKind.STAMP.glyph(), "stamp has no letter glyph — it uses the pentagon");
+        assertFalse(KonceptKind.STAMP.hasLetterGlyph());
+        assertTrue(KonceptKind.STAMP.hasSigil());
+        assertEquals(StampSigilGeometry.COLOR, KonceptKind.STAMP.colorHex());
         // Exactly one kind is the stamp pentagon.
-        long stamps = java.util.Arrays.stream(ComponentKind.values()).filter(ComponentKind::isStamp).count();
+        long stamps = java.util.Arrays.stream(KonceptKind.values()).filter(KonceptKind::isStamp).count();
         assertEquals(1, stamps);
     }
 
@@ -78,7 +80,7 @@ class ComponentKindSigilUTestFX {
     void everySigilHasBothChannels() {
         // Accessibility: never colour alone. Every kind that shows a sigil must also have a
         // non-colour channel (a letter glyph or the pentagon) and an accessible name.
-        for (ComponentKind kind : ComponentKind.values()) {
+        for (KonceptKind kind : KonceptKind.values()) {
             assertNotNull(kind.accessibleName());
             if (kind.hasSigil()) {
                 assertNotNull(kind.colorHex(), kind + " sigil must have a colour");

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package dev.ikm.komet.framework.controls;
+import network.ike.docs.konceptcore.KonceptKind;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.StyleClasses;
@@ -85,7 +86,7 @@ public class KonceptBadge extends HBox {
     /** Default identicon edge length in pixels, sized to sit beside body text. */
     private static final double DEFAULT_ICON_SIZE = 14;
 
-    /** Inline edge length (px) of the {@link ComponentKind#STAMP} pentagon sigil. */
+    /** Inline edge length (px) of the {@link KonceptKind#STAMP} pentagon sigil. */
     private static final double STAMP_SIGIL_SIZE = 14;
 
     /** Sentinel nid for a presentation-only badge built without a populated store/view. */
@@ -105,7 +106,7 @@ public class KonceptBadge extends HBox {
     private String sctid;
     private PremiseType premiseType = PremiseType.INFERRED;
     private KonceptStatus status = KonceptStatus.NONE;
-    private ComponentKind kind = ComponentKind.CONCEPT;
+    private KonceptKind kind = KonceptKind.CONCEPT;
     private boolean conceptExpected = false;
 
     /**
@@ -186,8 +187,12 @@ public class KonceptBadge extends HBox {
         // Be honest about the component kind: a concept stays bare, every other kind gets its sigil
         // (a presentation-only badge, with no view to verify, stays the bare concept default).
         setKind(viewProperties != null && nid != UNKNOWN_NID
-                ? ComponentKindResolver.resolve(nid, viewProperties.calculator())
-                : ComponentKind.CONCEPT);
+                ? KonceptKindResolver.resolve(nid, viewProperties.calculator())
+                : KonceptKind.CONCEPT);
+        // A stamp shows its compact provenance (status · date-time · author) rather than a name.
+        if (kind.isStamp() && viewProperties != null && nid != UNKNOWN_NID) {
+            setConceptName(StampText.compact(nid, viewProperties.calculator()));
+        }
 
         pseudoClassStateChanged(INACTIVE, inactive);
 
@@ -232,15 +237,15 @@ public class KonceptBadge extends HBox {
 
     /**
      * Sets the component-kind sigil shown ahead of the identicon, replacing any current sigil
-     * (ike-issues#638). A {@link ComponentKind#CONCEPT} shows no sigil (the bare default);
-     * {@link ComponentKind#STAMP} shows the {@link StampSigil} pentagon; every other kind shows its
+     * (ike-issues#638). A {@link KonceptKind#CONCEPT} shows no sigil (the bare default);
+     * {@link KonceptKind#STAMP} shows the {@link StampSigil} pentagon; every other kind shows its
      * coloured letter glyph. The accessible kind name is installed on the sigil's tooltip — the
      * non-colour accessibility channel, so kind is never carried by colour alone.
      *
-     * @param kind the component kind; {@code null} is treated as {@link ComponentKind#CONCEPT}
+     * @param kind the component kind; {@code null} is treated as {@link KonceptKind#CONCEPT}
      */
-    public final void setKind(ComponentKind kind) {
-        this.kind = (kind == null) ? ComponentKind.CONCEPT : kind;
+    public final void setKind(KonceptKind kind) {
+        this.kind = (kind == null) ? KonceptKind.CONCEPT : kind;
         sigilBox.getChildren().clear();
         boolean visible = this.kind.hasSigil();
         sigilBox.setManaged(visible);
@@ -250,15 +255,19 @@ public class KonceptBadge extends HBox {
             Tooltip.install(sigil, new Tooltip(this.kind.accessibleName()));
             sigilBox.getChildren().add(sigil);
         }
+        // A stamp is the pentagon + its compact provenance text (no identicon — it is provenance,
+        // not a name-pill); every other kind keeps its identicon.
+        identicon.setManaged(!this.kind.isStamp());
+        identicon.setVisible(!this.kind.isStamp());
         refreshAlarm();
     }
 
     /**
      * The component kind this badge is honest about.
      *
-     * @return the current {@link ComponentKind} (never {@code null})
+     * @return the current {@link KonceptKind} (never {@code null})
      */
-    public ComponentKind getKind() {
+    public KonceptKind getKind() {
         return kind;
     }
 
@@ -267,7 +276,7 @@ public class KonceptBadge extends HBox {
      * bare concept — so a concept-expecting host can escalate it even without enabling the built-in
      * {@code alarm} styling.
      *
-     * @return {@code true} when {@link #getKind()} is anything other than {@link ComponentKind#CONCEPT}
+     * @return {@code true} when {@link #getKind()} is anything other than {@link KonceptKind#CONCEPT}
      */
     public boolean isConceptViolation() {
         return kind.hasSigil();
@@ -290,7 +299,7 @@ public class KonceptBadge extends HBox {
         pseudoClassStateChanged(ALARM, conceptExpected && kind.hasSigil());
     }
 
-    private static Text letterSigil(ComponentKind kind) {
+    private static Text letterSigil(KonceptKind kind) {
         Text glyph = new Text(kind.glyph());
         glyph.getStyleClass().add(StyleClasses.KONCEPT_SIGIL.toString());
         glyph.setFill(Color.web(kind.colorHex()));

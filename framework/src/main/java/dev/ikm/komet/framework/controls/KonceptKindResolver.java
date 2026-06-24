@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package dev.ikm.komet.framework.controls;
+import network.ike.docs.konceptcore.KonceptKind;
 
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
@@ -30,33 +31,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <em>Positively</em> determines the {@link ComponentKind} a component carries — the honest-typing
+ * <em>Positively</em> determines the {@link KonceptKind} a component carries — the honest-typing
  * guardrail for the component badge (ike-issues#638): the kind is read from the store, never assumed,
- * so an unresolvable id becomes {@link ComponentKind#UNKNOWN} rather than silently a concept.
+ * so an unresolvable id becomes {@link KonceptKind#UNKNOWN} rather than silently a concept.
  *
  * <p>The four atoms map directly from the entity type ({@link ConceptEntity}, {@link PatternEntity},
- * {@link StampEntity}); a {@link SemanticEntity} is further split into {@link ComponentKind#DESCRIPTION}
+ * {@link StampEntity}); a {@link SemanticEntity} is further split into {@link KonceptKind#DESCRIPTION}
  * when its pattern is one of the view <em>coordinate's</em> description patterns — asked of the
  * {@link ViewCalculator}, never a hardcoded {@code TinkarTerm.DESCRIPTION_PATTERN}, so configured
- * dialects and description types are respected — and {@link ComponentKind#SEMANTIC} otherwise.
+ * dialects and description types are respected — and {@link KonceptKind#SEMANTIC} otherwise.
  */
-public final class ComponentKindResolver {
+public final class KonceptKindResolver {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ComponentKindResolver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KonceptKindResolver.class);
 
-    private ComponentKindResolver() {
+    private KonceptKindResolver() {
     }
 
     /**
      * Determines the kind of the component referenced by {@code facade}.
      *
-     * @param facade     the component to classify; {@code null} yields {@link ComponentKind#UNKNOWN}
+     * @param facade     the component to classify; {@code null} yields {@link KonceptKind#UNKNOWN}
      * @param calculator the view used to resolve description patterns; {@code null} treats every
-     *                   semantic as a plain {@link ComponentKind#SEMANTIC}
+     *                   semantic as a plain {@link KonceptKind#SEMANTIC}
      * @return the component's kind, never {@code null}
      */
-    public static ComponentKind resolve(EntityFacade facade, ViewCalculator calculator) {
-        return facade == null ? ComponentKind.UNKNOWN : resolve(facade.nid(), calculator);
+    public static KonceptKind resolve(EntityFacade facade, ViewCalculator calculator) {
+        return facade == null ? KonceptKind.UNKNOWN : resolve(facade.nid(), calculator);
     }
 
     /**
@@ -64,29 +65,29 @@ public final class ComponentKindResolver {
      *
      * @param nid        the component nid
      * @param calculator the view used to resolve description patterns; {@code null} treats every
-     *                   semantic as a plain {@link ComponentKind#SEMANTIC}
-     * @return the component's kind, never {@code null}; {@link ComponentKind#UNKNOWN} when the nid
+     *                   semantic as a plain {@link KonceptKind#SEMANTIC}
+     * @return the component's kind, never {@code null}; {@link KonceptKind#UNKNOWN} when the nid
      *         does not resolve to a known component
      */
-    public static ComponentKind resolve(int nid, ViewCalculator calculator) {
+    public static KonceptKind resolve(int nid, ViewCalculator calculator) {
         Entity<?> entity;
         try {
             entity = EntityHandle.get(nid).entity().orElse(null);
         } catch (RuntimeException e) {
             LOG.warn("Could not resolve a component for nid {}", nid, e);
-            return ComponentKind.UNKNOWN;
+            return KonceptKind.UNKNOWN;
         }
         if (entity == null) {
-            return ComponentKind.UNKNOWN;
+            return KonceptKind.UNKNOWN;
         }
         return switch (entity) {
-            case ConceptEntity<?> _ -> ComponentKind.CONCEPT;
-            case PatternEntity<?> _ -> ComponentKind.PATTERN;
-            case StampEntity<?> _ -> ComponentKind.STAMP;
+            case ConceptEntity<?> _ -> KonceptKind.CONCEPT;
+            case PatternEntity<?> _ -> KonceptKind.PATTERN;
+            case StampEntity<?> _ -> KonceptKind.STAMP;
             case SemanticEntity<?> semantic -> isDescription(semantic.patternNid(), calculator)
-                    ? ComponentKind.DESCRIPTION
-                    : ComponentKind.SEMANTIC;
-            default -> ComponentKind.UNKNOWN;
+                    ? KonceptKind.DESCRIPTION
+                    : KonceptKind.SEMANTIC;
+            default -> KonceptKind.UNKNOWN;
         };
     }
 

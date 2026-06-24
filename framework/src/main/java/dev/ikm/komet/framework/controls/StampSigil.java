@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package dev.ikm.komet.framework.controls;
+import network.ike.docs.konceptcore.StampSigilGeometry;
+import network.ike.docs.konceptcore.KonceptKind;
 
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
@@ -24,7 +26,7 @@ import javafx.scene.shape.StrokeType;
 import javafx.scene.layout.Region;
 
 /**
- * The JavaFX rendering of the STAMP {@link ComponentKind} sigil — the point-up pentagon with one
+ * The JavaFX rendering of the STAMP {@link KonceptKind} sigil — the point-up pentagon with one
  * reading dot per axis and a centre hub, drawn from the locked {@link StampSigilGeometry}.
  *
  * <p>This is the live adapter of the geometry; the same numbers render the adoc SVG badge and the
@@ -32,7 +34,7 @@ import javafx.scene.layout.Region;
  * instance — the dots are floored so they stay visible rather than scaling to specks at small sizes.
  *
  * @see StampSigilGeometry
- * @see ComponentKind#STAMP
+ * @see KonceptKind#STAMP
  */
 public final class StampSigil extends Region {
 

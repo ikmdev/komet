@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package dev.ikm.komet.framework.controls;
+import network.ike.docs.konceptcore.KonceptKind;
 
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXThread;
@@ -53,7 +54,7 @@ class KonceptBadgeKindUTestFX {
     @Test
     void aPresentationBadgeIsABareConcept() {
         KonceptBadge badge = badge();
-        assertEquals(ComponentKind.CONCEPT, badge.getKind());
+        assertEquals(KonceptKind.CONCEPT, badge.getKind());
         assertFalse(badge.isConceptViolation(), "a concept badge carries no sigil");
         assertTrue(sigilBox(badge).getChildrenUnmodifiable().isEmpty(), "no sigil node for a concept");
         assertFalse(sigilBox(badge).isManaged(), "the empty sigil slot collapses");
@@ -62,8 +63,8 @@ class KonceptBadgeKindUTestFX {
     @Test
     void stampShowsThePentagonSigil() {
         KonceptBadge badge = badge();
-        badge.setKind(ComponentKind.STAMP);
-        assertEquals(ComponentKind.STAMP, badge.getKind());
+        badge.setKind(KonceptKind.STAMP);
+        assertEquals(KonceptKind.STAMP, badge.getKind());
         assertTrue(badge.isConceptViolation());
         assertInstanceOf(StampSigil.class, sigilBox(badge).getChildrenUnmodifiable().get(0),
                 "a stamp's sigil is the pentagon, not a letter");
@@ -73,26 +74,26 @@ class KonceptBadgeKindUTestFX {
     void letterKindsShowTheirColouredGlyph() {
         KonceptBadge badge = badge();
 
-        badge.setKind(ComponentKind.DESCRIPTION);
+        badge.setKind(KonceptKind.DESCRIPTION);
         Text d = assertInstanceOf(Text.class, sigilBox(badge).getChildrenUnmodifiable().get(0));
         assertEquals("D", d.getText());
-        assertEquals(Color.web(ComponentKind.DESCRIPTION.colorHex()), d.getFill(),
+        assertEquals(Color.web(KonceptKind.DESCRIPTION.colorHex()), d.getFill(),
                 "the sigil colour is the kind's own colour (data)");
 
-        badge.setKind(ComponentKind.SEMANTIC);
+        badge.setKind(KonceptKind.SEMANTIC);
         assertEquals("S", ((Text) sigilBox(badge).getChildrenUnmodifiable().get(0)).getText());
 
-        badge.setKind(ComponentKind.UNKNOWN);
+        badge.setKind(KonceptKind.UNKNOWN);
         assertEquals("?", ((Text) sigilBox(badge).getChildrenUnmodifiable().get(0)).getText());
     }
 
     @Test
     void settingKindBackToConceptClearsTheSigil() {
         KonceptBadge badge = badge();
-        badge.setKind(ComponentKind.PATTERN);
+        badge.setKind(KonceptKind.PATTERN);
         assertFalse(sigilBox(badge).getChildrenUnmodifiable().isEmpty());
 
-        badge.setKind(ComponentKind.CONCEPT);
+        badge.setKind(KonceptKind.CONCEPT);
         assertTrue(sigilBox(badge).getChildrenUnmodifiable().isEmpty());
         assertFalse(badge.isConceptViolation());
     }
@@ -103,20 +104,20 @@ class KonceptBadgeKindUTestFX {
 
         // Concept-expecting context, but a bare concept → no alarm.
         badge.setConceptExpected(true);
-        badge.setKind(ComponentKind.CONCEPT);
+        badge.setKind(KonceptKind.CONCEPT);
         assertFalse(badge.getPseudoClassStates().contains(ALARM));
 
         // A non-concept in that context → alarm.
-        badge.setKind(ComponentKind.STAMP);
+        badge.setKind(KonceptKind.STAMP);
         assertTrue(badge.getPseudoClassStates().contains(ALARM), "a sigil in a concept slot is the alarm");
 
         // Switching back to concept clears it.
-        badge.setKind(ComponentKind.CONCEPT);
+        badge.setKind(KonceptKind.CONCEPT);
         assertFalse(badge.getPseudoClassStates().contains(ALARM));
 
         // In a mixed context (not concept-expecting) the same sigil is merely informative — no alarm.
         badge.setConceptExpected(false);
-        badge.setKind(ComponentKind.DESCRIPTION);
+        badge.setKind(KonceptKind.DESCRIPTION);
         assertFalse(badge.getPseudoClassStates().contains(ALARM));
     }
 }
