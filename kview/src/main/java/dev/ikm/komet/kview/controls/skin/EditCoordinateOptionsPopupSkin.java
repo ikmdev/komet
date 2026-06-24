@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.kview.controls.EditCoordinateOptionsPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
@@ -74,7 +75,9 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
 
         root = new VBox(headerBox, fieldsBox, spacer, bottomBox);
         root.getStyleClass().add("filter-options-popup");
-        root.getStylesheets().add(EditCoordinateOptionsPopup.class.getResource("filter-options-popup.css").toExternalForm());
+        // The CSS lives with the relocated control in knowledge-layout (dev.ikm.komet.layout.controls), so
+        // anchor the lookup on that module's FilterOptionsPopup, like LangEditCoordinateTitledPaneSkin (ike-issues#758).
+        root.getStylesheets().add(FilterOptionsPopup.class.getResource("filter-options-popup.css").toExternalForm());
 
         control.setOnShown(_ -> {});
     }
