@@ -2,6 +2,8 @@ package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
+import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityService;
@@ -86,6 +88,12 @@ public class LoginAuthorController {
         userChooser.valueProperty().bindBidirectional(loginAuthorViewModel.getProperty(SELECTED_AUTHOR));
         passwordField.textProperty().bindBidirectional(loginAuthorViewModel.getProperty(PASSWORD));
 
+        // Default the picker to the last-used author from preferences (ike-issues#754).
+        ComponentWithNid defaultAuthor = resolveDefaultAuthor();
+        if (defaultAuthor != null) {
+            userChooser.setValue(defaultAuthor);
+        }
+
         passwordTextField.setVisible(false);
         loginButton.setDisable(true);
         loginButton.disableProperty().bind(loginAuthorViewModel.invalidProperty());
@@ -111,9 +119,79 @@ public class LoginAuthorController {
         if (loginAuthorViewModel.validProperty().get() && loginAuthorViewModel.authenticateUser()) {
             loginAuthorViewModel.setPropertyValue(LOGIN_ERROR, "");
             LOG.info("Author selected: " + userChooser.getValue().toString());
+            persistSelectedAuthor(userChooser.getValue());
             onLoginFuture.complete(loginAuthorViewModel);
         } else {
             loginAuthorViewModel.setPropertyValue(LOGIN_ERROR, "Login failed, please check your credentials");
+        }
+    }
+
+    private static final String AUTHOR_LOGIN_NODE = "author-login";
+    private static final String LAST_AUTHOR_KEY = "last-author-uuid";
+    private static final String SELECTED_AUTHORS_KEY = "selected-author-uuids";
+
+    /**
+     * Resolves the author to pre-select: the last-used author if it is present in the knowledge base, else the
+     * first preference-listed author present in the KB, else the first available leaf (the items are already
+     * sorted by name). Returns {@code null} only when no authors are available (ike-issues#754).
+     *
+     * @return the author to pre-select, or {@code null} if none are available
+     */
+    private ComponentWithNid resolveDefaultAuthor() {
+        java.util.List<ComponentWithNid> available = userChooser.getItems();
+        if (available.isEmpty()) {
+            return null;
+        }
+        KometPreferences authorPrefs = KometPreferencesImpl.getConfigurationRootPreferences().node(AUTHOR_LOGIN_NODE);
+        ComponentWithNid lastUsed = authorPrefs.get(LAST_AUTHOR_KEY).flatMap(uuid -> findByUuid(available, uuid)).orElse(null);
+        if (lastUsed != null) {
+            return lastUsed;
+        }
+        for (String uuid : authorPrefs.get(SELECTED_AUTHORS_KEY).orElse("").split(",")) {
+            ComponentWithNid match = findByUuid(available, uuid).orElse(null);
+            if (match != null) {
+                return match;
+            }
+        }
+        return available.get(0);
+    }
+
+    private java.util.Optional<ComponentWithNid> findByUuid(java.util.List<ComponentWithNid> available, String uuidText) {
+        try {
+            java.util.UUID uuid = java.util.UUID.fromString(uuidText.trim());
+            return available.stream()
+                    .filter(author -> EntityService.get().getEntityFast(author.nid()).publicId().asUuidList().contains(uuid))
+                    .findFirst();
+        } catch (IllegalArgumentException e) {
+            return java.util.Optional.empty();
+        }
+    }
+
+    /**
+     * Persists the signed-in author as the last-used author and accumulates it into the selected-authors list,
+     * so the next launch defaults to it (ike-issues#754).
+     *
+     * @param author the author the user signed in as
+     */
+    private void persistSelectedAuthor(ComponentWithNid author) {
+        if (author == null) {
+            return;
+        }
+        try {
+            KometPreferences authorPrefs = KometPreferencesImpl.getConfigurationRootPreferences().node(AUTHOR_LOGIN_NODE);
+            String uuid = EntityService.get().getEntityFast(author.nid()).publicId().asUuidList().get(0).toString();
+            authorPrefs.put(LAST_AUTHOR_KEY, uuid);
+            java.util.LinkedHashSet<String> selected = new java.util.LinkedHashSet<>();
+            for (String existing : authorPrefs.get(SELECTED_AUTHORS_KEY).orElse("").split(",")) {
+                if (!existing.isBlank()) {
+                    selected.add(existing.trim());
+                }
+            }
+            selected.add(uuid);
+            authorPrefs.put(SELECTED_AUTHORS_KEY, String.join(",", selected));
+            authorPrefs.flush();
+        } catch (Exception e) {
+            LOG.warn("Could not persist last-used author preference", e);
         }
     }
 
