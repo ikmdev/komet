@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.layout.controls.IconRegion;
@@ -159,6 +160,9 @@ public class ConceptTile extends HBox {
                 if (treeItem.getValue() != null && treeItem.getValue().publicId() != null) {
                     clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT,
                             List.<UUID[]>of(treeItem.getValue().publicId().asUuidArray()));
+                    // Also advertise the standard component proxies (ike-issues#638) so a navigator
+                    // concept drops on any standard target — not only the navigator's own format.
+                    clipboardContent.putAll(KometClipboard.forComponent(treeItem.getValue().nid()));
                 }
                 clipboardContent.putString(treeItem.toString());
                 dragboard.setContent(clipboardContent);
