@@ -54,9 +54,9 @@
                   <Insets bottom="5.0" left="8.0" top="5.0" />
                </VBox.margin>
             </Rectangle>
-            <ToggleButton mnemonicParsing="false" onAction="#showKlEditorLandingPage" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton mnemonicParsing="false" onAction="#showKlEditorLandingPage" styleClass="multiline-nav-button" toggleGroup="$sidebarToggleGroup">
                <graphic>
-                  <HBox prefHeight="47.0" prefWidth="109.0" styleClass="icon-container">
+                  <HBox styleClass="icon-container">
                      <children>
                         <StackPane styleClass="icon-image-container">
                            <children>
@@ -67,7 +67,7 @@
                                  </styleClass></Region>
                            </children>
                         </StackPane>
-                        <Label fx:id="knowledgeLayoutButtonLabel" wrapText="true" HBox.hgrow="ALWAYS" />
+                        <Label fx:id="knowledgeLayoutButtonLabel" minWidth="84.0" prefWidth="84.0" maxWidth="84.0" wrapText="true" />
                      </children>
                   </HBox>
                </graphic>
