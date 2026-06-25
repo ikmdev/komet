@@ -6665,6 +6665,9 @@ Styling a context menu for kview ui/ux controls
 
 .gen-purpose-window .table-view .column-header.identicon-column .label {
     -fx-alignment: top-center;
+    /* The column is named ("Semantic icon") so the show/hide-columns menu lists it,
+       but its header cell stays icon-only — hide the text here, not in the menu. */
+    -fx-content-display: graphic-only;
 }
 
 /************ Data type: COMPONENT_ID_SET_FIELD (Component Set), COMPONENT_FIELD (Component) ********/

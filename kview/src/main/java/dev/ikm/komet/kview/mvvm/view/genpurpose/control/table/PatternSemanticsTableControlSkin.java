@@ -9,12 +9,14 @@ import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
-import javafx.scene.control.Label;
+import javafx.scene.Node;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import javafx.util.Subscription;
@@ -31,6 +33,10 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
 
     private static final String TABLE_HEADER_ROW = "TableHeaderRow";
     private static final String SHOW_GRID_LINES_STYLE_CLASS = "show-grid-lines";
+
+    private static final String COLUMN_HEADER_STYLE_CLASS = ".column-header";
+    private static final String FIELD_PURPOSE_KEY = "fieldPurpose";
+    private static final String TOOLTIP_INSTALLED_KEY = "fieldPurposeTooltipInstalled";
 
     private final TableView<SemanticRow> tableView = new TableView<>();
 
@@ -60,6 +66,17 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
                 initializeTableView(control.getSemantics().getFirst());
             }
         }
+
+        // Header decorations (tooltips, menu-only titles) live on the TableColumnHeader nodes,
+        // which only exist once the table's skin has built and laid out. Re-run when the skin
+        // appears and whenever columns are (re)added.
+        tableView.skinProperty().subscribe(skin -> {
+            if (skin != null) {
+                installHeaderTooltips();
+            }
+        });
+        tableView.getColumns().addListener((ListChangeListener<TableColumn<SemanticRow, ?>>)
+                _ -> installHeaderTooltips());
 
         // Honor the factory-configured properties.
         control.headerVisibleProperty().subscribe(this::updateHeaderVisibility);
@@ -158,7 +175,9 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
     }
 
     private TableColumn<SemanticRow, Integer> createSemanticIdenticonColumn() {
-        TableColumn<SemanticRow, Integer> identiconColumn = new TableColumn<>();
+        // Named "Semantic icon" so the show/hide-columns menu lists it; the header cell itself
+        // stays icon-only via CSS (.column-header.identicon-column .label is graphic-only).
+        TableColumn<SemanticRow, Integer> identiconColumn = new TableColumn<>("Semantic icon");
         identiconColumn.setCellValueFactory(cellData ->
                 cellData.getValue().semanticNidProperty());
         identiconColumn.setCellFactory(_ -> new SemanticIdenticonCell(getSkinnable().getNidToComponentItem()));
@@ -194,11 +213,35 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
             tableColumn = col;
         }
 
-        // Column header
-        Label headerLabel = new Label(field.fieldTitle());
-        headerLabel.setTooltip(new Tooltip(field.fieldPurpose()));
-        tableColumn.setGraphic(headerLabel);
+        // Column header. Use the column's own text rather than a graphic Label so the
+        // built-in table-menu-button (show/hide columns) lists each column by name: its
+        // CheckMenuItems bind to TableColumn.textProperty(), which a graphic-only header
+        // leaves blank. The purpose is stashed so the tooltip can be installed on the
+        // header node once it exists (see installHeaderTooltips()).
+        tableColumn.setText(field.fieldTitle());
+        tableColumn.getProperties().put(FIELD_PURPOSE_KEY, field.fieldPurpose());
 
         return tableColumn;
+    }
+
+    /**
+     * Installs a tooltip describing each field's purpose on its column header. The built-in
+     * column header has no tooltip API, so the tooltip is attached to the {@link TableColumnHeader}
+     * node directly. Idempotent: a header is only decorated once.
+     */
+    private void installHeaderTooltips() {
+        for (Node node : tableView.lookupAll(COLUMN_HEADER_STYLE_CLASS)) {
+            if (node instanceof TableColumnHeader header) {
+                TableColumnBase<?, ?> column = header.getTableColumn();
+                if (column == null) {
+                    continue;
+                }
+                Object purpose = column.getProperties().get(FIELD_PURPOSE_KEY);
+                if (purpose != null
+                        && header.getProperties().putIfAbsent(TOOLTIP_INSTALLED_KEY, Boolean.TRUE) == null) {
+                    Tooltip.install(header, new Tooltip(purpose.toString()));
+                }
+            }
+        }
     }
 }
