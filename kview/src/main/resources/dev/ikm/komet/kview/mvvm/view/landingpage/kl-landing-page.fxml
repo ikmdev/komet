@@ -39,10 +39,15 @@
         </HBox>
         <Label styleClass="sub-title" text="Create new ..."/>
         <FlowPane prefHeight="200.0" prefWidth="200.0" styleClass="create-new-container">
-            <KLLandingPageCardControl title="View Only Layout" iconStyleClass="kl-view-only" createDecorations="true"/>
-            <KLLandingPageCardControl onMousePressed="#mousePressedOnCreateEditableLayout" title="Editable Layout"
+            <KLLandingPageCardControl onMousePressed="#mousePressedOnCreateComponentLayout" title="Component Layout"
                                       iconStyleClass="kl-editable-layout" createDecorations="true"/>
-            <KLLandingPageCardControl title="Action Panel" iconStyleClass="kl-action-panel" createDecorations="true"/>
+            <KLLandingPageCardControl title="General Purpose Layout" iconStyleClass="kl-action-panel" createDecorations="true"/>
+        </FlowPane>
+        <Label styleClass="sub-title" text="Edit Standard Views"/>
+        <FlowPane prefHeight="200.0" prefWidth="200.0" styleClass="edit-standard-views-container">
+            <KLLandingPageCardControl title="Concept View" iconStyleClass="kl-concept-view"/>
+            <KLLandingPageCardControl title="Pattern View" iconStyleClass="kl-pattern-view"/>
+            <KLLandingPageCardControl title="Semantic View" iconStyleClass="kl-semantic-view"/>
         </FlowPane>
         <Label styleClass="sub-title" text="Saved Custom Views"/>
         <FlowPane fx:id="customViewsContainer" prefHeight="200.0" prefWidth="200.0" styleClass="saved-views-container"/>
