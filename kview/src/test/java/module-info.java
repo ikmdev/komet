@@ -21,6 +21,7 @@ module dev.ikm.komet.kview.test {
     requires org.junit.jupiter;
     requires dev.ikm.komet.framework;
     requires dev.ikm.komet.kview;
+    requires dev.ikm.tinkar.entity;
     requires org.carlfx.axonic;
     requires org.carlfx.cognitive;
 
