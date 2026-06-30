@@ -934,9 +934,12 @@ public class PatternDetailsController {
 
         updateStampControlFromViewModel();
 
-        if (patternViewModel.getPropertyValue(MODE).equals(EDIT)) {
-            patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
-        }
+        // When editing an existing pattern the STAMP slideout commits the new
+        // version on submit (StampAddSubmitFormViewModel), so there is nothing
+        // left pending — do not flag PUBLISH_PENDING, which would enable
+        // "Save Pattern" and write a redundant duplicate-status version.
+        // A brand-new pattern still defers its stamp to createPattern() via the
+        // field/description edits that set PUBLISH_PENDING themselves.
 
         stampViewControl.setDisable(true);
     }
