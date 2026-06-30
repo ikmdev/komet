@@ -67,6 +67,8 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.ROWS;
 import static dev.ikm.komet.kview.controls.KLWorkspace.STANDARD_HEIGHT;
 import static dev.ikm.komet.kview.controls.KLWorkspace.STANDARD_WIDTH;
 import static dev.ikm.komet.kview.controls.KLWorkspace.USE_COMPUTED_SIZE;
+import static dev.ikm.komet.kview.controls.KLWorkspace.WINDOW_AUTHORED_HEIGHT_KEY;
+import static dev.ikm.komet.kview.controls.KLWorkspace.WINDOW_AUTHORED_WIDTH_KEY;
 import static dev.ikm.komet.kview.fxutils.FXUtils.DEFAULT_ANIMATION_DURATION;
 import static dev.ikm.komet.layout_engine.window.WindowSupport.WINDOW_SUPPORT_KEY;
 import static dev.ikm.komet.layout_engine.window.WindowSupport.setupWindowSupport;
@@ -674,6 +676,12 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         final Pane windowPanel = window.fxObject();
         Objects.requireNonNull(windowPanel, "Window panel cannot be null");
 
+        // Honor an author-specified preferred size (e.g. set in the KL layout editor) when the
+        // window content advertises one via the panel's properties. A value < 0 (or absent) means
+        // "Auto" — defer to the workspace's own sizing.
+        final double authoredWidth = authoredSize(windowPanel, WINDOW_AUTHORED_WIDTH_KEY);
+        final double authoredHeight = authoredSize(windowPanel, WINDOW_AUTHORED_HEIGHT_KEY);
+
         // Create subscriptions list for all window-related subscriptions
         MutableList<Subscription> windowSubscriptions = Lists.mutable.empty();
         WindowSupport windowSupport;
@@ -682,8 +690,16 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             // Create WindowSupport with proper configuration
             windowSupport = setupWindowSupport(windowPanel);
 
-            // Configure auto height with subscription
-            windowSubscriptions.add(windowSupport.configureAutoHeight(true, MAX_WINDOW_HEIGHT));
+            if (authoredHeight >= 0) {
+                // The window authored an explicit height: honor it as the initial height instead of
+                // auto-sizing to content. The pane stays user-resizable (max raised to fit the
+                // authored height), so we keep the preferred height rather than pinning min/max.
+                windowPanel.setPrefHeight(authoredHeight);
+                windowPanel.setMaxHeight(Math.max(MAX_WINDOW_HEIGHT, authoredHeight));
+            } else {
+                // Configure auto height with subscription
+                windowSubscriptions.add(windowSupport.configureAutoHeight(true, MAX_WINDOW_HEIGHT));
+            }
 
             // Add position constraints with state saving callback
             windowSubscriptions.add(windowSupport.setupPositionConstraints(obs -> window.save()));
@@ -711,9 +727,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
                 ? desktopPane.getHeight()
                 : desktopPane.getPrefHeight();
 
-        // Default dimensions for a new window
-        final double windowWidth = DEFAULT_WINDOW_WIDTH;
-        final double windowHeight = DEFAULT_WINDOW_HEIGHT;
+        // Default dimensions for a new window — or the author-specified size when present.
+        final double windowWidth = authoredWidth >= 0 ? authoredWidth : DEFAULT_WINDOW_WIDTH;
+        final double windowHeight = authoredHeight >= 0 ? authoredHeight : DEFAULT_WINDOW_HEIGHT;
 
         // --------------------------------------------------------------------
         // 1) If the drop region is visible, handle accordingly
@@ -832,6 +848,21 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
         // Save the window's position and size
         window.save();
+    }
+
+    /**
+     * Reads an author-specified preferred dimension that a window panel may advertise via its
+     * {@link Pane#getProperties()} map (see {@link KLWorkspace#WINDOW_AUTHORED_WIDTH_KEY} and
+     * {@link KLWorkspace#WINDOW_AUTHORED_HEIGHT_KEY}).
+     *
+     * @param windowPanel the window's root pane
+     * @param key         the property key to read
+     * @return the authored dimension as a {@code double}, or {@code -1} when absent or non-numeric
+     *         (i.e. "Auto" — the workspace decides the dimension)
+     */
+    private static double authoredSize(Pane windowPanel, String key) {
+        final Object value = windowPanel.getProperties().get(key);
+        return (value instanceof Number number) ? number.doubleValue() : -1;
     }
 
     /**

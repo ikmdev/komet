@@ -45,6 +45,7 @@ import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ComponentItem;
+import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KometLabel;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
@@ -655,14 +656,24 @@ public class GenPurposeDetailsController {
 
         // View size: apply an explicit Width/Height. "Auto" (< 0) leaves the workspace's own sizing
         // alone. The framework sizes this same root pane via setPrefWidth/Height, so we set (not bind) it.
+        // We also advertise the authored size on the pane's properties so the workspace honors it when
+        // placing the window (otherwise its default placement overrides our preferred width/height).
         editorWindowModel.prefWidthProperty().subscribe(width -> {
-            if (width.doubleValue() >= 0) {
-                detailsOuterBorderPane.setPrefWidth(width.doubleValue());
+            final double w = width.doubleValue();
+            if (w >= 0) {
+                detailsOuterBorderPane.setPrefWidth(w);
+                detailsOuterBorderPane.getProperties().put(KLWorkspace.WINDOW_AUTHORED_WIDTH_KEY, w);
+            } else {
+                detailsOuterBorderPane.getProperties().remove(KLWorkspace.WINDOW_AUTHORED_WIDTH_KEY);
             }
         });
         editorWindowModel.prefHeightProperty().subscribe(height -> {
-            if (height.doubleValue() >= 0) {
-                detailsOuterBorderPane.setPrefHeight(height.doubleValue());
+            final double h = height.doubleValue();
+            if (h >= 0) {
+                detailsOuterBorderPane.setPrefHeight(h);
+                detailsOuterBorderPane.getProperties().put(KLWorkspace.WINDOW_AUTHORED_HEIGHT_KEY, h);
+            } else {
+                detailsOuterBorderPane.getProperties().remove(KLWorkspace.WINDOW_AUTHORED_HEIGHT_KEY);
             }
         });
     }
