@@ -52,7 +52,8 @@ import java.util.Optional;
 public sealed interface KlArea<FX extends Region>
         extends KlView<FX>, KlPeerToRegion<FX>
         permits KlParent, KlAreaForAssociation, KlAreaForFeature, KlAreaForList, KlAreaForVersion,
-        KlGenericArea, KlMultiVersionArea, KlSupplementalArea, KlChronologyArea, KlMultiComponentArea, KlField {
+        KlGenericArea, KlMultiVersionArea, KlSupplementalArea, KlCard, KlChronologyArea, KlMultiComponentArea, KlField,
+        KlToolbarItem {
 
     /**
      * Keys for objects that {@code KlWidget}'s will store in the properties of their associated
@@ -246,7 +247,7 @@ public sealed interface KlArea<FX extends Region>
 
 
     sealed interface Factory<FX extends Region, KL extends KlArea<FX>> extends KlView.Factory<FX, KL>
-            permits KlAreaForAssociation.Factory, KlAreaForFeature.Factory, KlAreaForList.Factory, KlAreaForVersion.Factory, KlMultiVersionArea.Factory, KlSupplementalArea.Factory, KlChronologyArea.Factory, KlMultiComponentArea.Factory {
+            permits KlAreaForAssociation.Factory, KlAreaForFeature.Factory, KlAreaForList.Factory, KlAreaForVersion.Factory, KlMultiVersionArea.Factory, KlSupplementalArea.Factory, KlCard.Factory, KlChronologyArea.Factory, KlMultiComponentArea.Factory, KlToolbarItem.Factory {
 
         /**
          * Provides the default {@code AreaGridSettings} for the factory. The default settings

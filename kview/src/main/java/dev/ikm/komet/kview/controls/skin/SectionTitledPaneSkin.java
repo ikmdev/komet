@@ -9,12 +9,17 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Separator;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.skin.TitledPaneSkin;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
     private static final int SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON = 4;
@@ -38,7 +43,7 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
     public SectionTitledPaneSkin(SectionTitledPane<T> control) {
         super(control);
 
-        contentContainer = new GridPane();
+        createContentContainer(control);
 
         editButton = new EditButton(control);
         editButton.disableProperty().bind(control.editEnabledProperty().not());
@@ -52,6 +57,32 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
                 editButton,
                 referenceComponentSemanticsCB
         );
+    }
+
+    /**
+     * Builds the GridPane that holds the section's content areas and installs it as the pane's
+     * content. Users of this control add views through
+     * {@link SectionTitledPane#getItems()}, and the column layout follows the control's
+     * {@link SectionTitledPane#numberColumnsProperty()}.
+     */
+    private void createContentContainer(SectionTitledPane<T> control) {
+        contentContainer = new GridPane();
+        contentContainer.getStyleClass().add("section-titled-pane-container");
+
+        Bindings.bindContent(contentContainer.getChildren(), control.getItems());
+
+        control.numberColumnsProperty().subscribe(numberColumns -> {
+            List<ColumnConstraints> columns = new ArrayList<>();
+            for (int i = 0; i < numberColumns.intValue(); ++i) {
+                ColumnConstraints columnConstraints = new ColumnConstraints();
+                columnConstraints.setHgrow(Priority.ALWAYS);
+                columnConstraints.setPercentWidth(100 / ((double) numberColumns.intValue()));
+                columns.add(columnConstraints);
+            }
+            contentContainer.getColumnConstraints().setAll(columns);
+        });
+
+        control.setContent(contentContainer);
     }
 
     private void createReferenceComponentCB(SectionTitledPane<T> control) {

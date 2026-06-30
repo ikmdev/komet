@@ -5,7 +5,7 @@
  <parent>
         <groupId>network.ike.platform</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>106</version>
+        <version>129</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -243,6 +243,16 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <argLine>
+                            --enable-preview
+                            --add-modules jdk.incubator.vector
+                        </argLine>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <configuration>
                         <!-- Exclude files using JEP 447 (statements before super/this) - unsupported by Checkstyle parser -->
@@ -298,6 +308,7 @@
                                     </includes>
                                     <argLine>
                                         --enable-preview
+                                        --add-modules jdk.incubator.vector
                                         ${commonTestFXArgs}
                                     </argLine>
                                     <forkCount>1</forkCount>
@@ -344,6 +355,7 @@
                                     </includes>
                                     <argLine>
                                         --enable-preview
+                                        --add-modules jdk.incubator.vector
                                         ${commonTestFXArgs}
                                     </argLine>
                                 </configuration>

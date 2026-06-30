@@ -41,7 +41,6 @@ public class DropHelper {
     private final Predicate<DragEvent> acceptDrop;
     private final BooleanSupplier dragInProgress;
     private Background originalBackground;
-    private TransferMode[] transferMode = null;
 
     public DropHelper(Region region,
                       Consumer<Dragboard> draggedObjectAcceptor,
@@ -57,6 +56,25 @@ public class DropHelper {
         region.setOnDragDropped(this::handleDragDropped);
     }
 
+    /**
+     * Returns the transfer mode for a dragboard whose content is a droppable entity (concept, semantic, or
+     * pattern), or {@code null} otherwise. Computed per event from the live dragboard so the accept decision
+     * does not depend on {@code DRAG_ENTERED} firing — which is unreliable for a container target when the
+     * cursor is over a child node. {@code DRAG_OVER} and {@code DRAG_DROPPED} bubble to the container reliably.
+     *
+     * @param dragboard the drag-and-drop content
+     * @return {@link TransferMode#COPY_OR_MOVE} if the content is droppable, otherwise {@code null}
+     */
+    private static TransferMode[] droppableTransferMode(Dragboard dragboard) {
+        Set<DataFormat> types = dragboard.getContentTypes();
+        if (KometClipboard.containsAny(types, KometClipboard.CONCEPT_TYPES)
+                || KometClipboard.containsAny(types, KometClipboard.SEMANTIC_TYPES)
+                || KometClipboard.containsAny(types, KometClipboard.PATTERN_TYPES)) {
+            return TransferMode.COPY_OR_MOVE;
+        }
+        return null;
+    }
+
     private void handleDragOver(DragEvent event) {
         // LOG.info("Dragging over: " + event );
         if (this.dragInProgress.getAsBoolean()) {
@@ -67,7 +85,7 @@ public class DropHelper {
             event.consume();
             return;
         }
-        if (this.transferMode != null) {
+        if (droppableTransferMode(event.getDragboard()) != null) {
             event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
             event.consume();
         }
@@ -87,16 +105,12 @@ public class DropHelper {
 
         if (KometClipboard.containsAny(contentTypes, KometClipboard.CONCEPT_TYPES)) {
             backgroundColor = Color.AQUA;
-            this.transferMode = TransferMode.COPY_OR_MOVE;
         } else if (KometClipboard.containsAny(contentTypes, KometClipboard.SEMANTIC_TYPES)) {
             backgroundColor = Color.OLIVEDRAB;
-            this.transferMode = TransferMode.COPY_OR_MOVE;
         } else if (KometClipboard.containsAny(contentTypes, KometClipboard.PATTERN_TYPES)) {
             backgroundColor = Color.BLUEVIOLET;
-            this.transferMode = TransferMode.COPY_OR_MOVE;
         } else {
             backgroundColor = Color.RED;
-            this.transferMode = null;
         }
         BackgroundFill fill = new BackgroundFill(backgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
         region.setBackground(new Background(fill));
@@ -110,7 +124,6 @@ public class DropHelper {
             return;
         }
         region.setBackground(originalBackground);
-        this.transferMode = null;
         event.consume();
     }
 
@@ -122,7 +135,7 @@ public class DropHelper {
         if (!this.acceptDrop.test(event)) {
             return;
         }
-        if(this.transferMode != null){
+        if (droppableTransferMode(event.getDragboard()) != null) {
             Dragboard db = event.getDragboard();
             this.draggedObjectAcceptor.accept(db);
             event.setDropCompleted(true);

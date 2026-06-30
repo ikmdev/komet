@@ -3,7 +3,6 @@ package dev.ikm.komet.kview.klwindows.genpurpose;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.WINDOW_ID;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.WINDOW_TYPE;
-import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalViewProperties;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
@@ -52,7 +51,8 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
     }
 
     @Override
-    public GenPurposeKLWindow restore(WindowSettings windowSettings, KometPreferences preferences) {
+    public GenPurposeKLWindow restore(WindowSettings windowSettings, KometPreferences preferences,
+                                      ViewProperties journalViewProperties) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
         try {
             // Load window state from preferences
@@ -63,8 +63,9 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
             if (journalTopicOpt.isPresent()) {
                 final UUID journalTopic = journalTopicOpt.get();
 
-                // don't call this
-                final ViewProperties viewProperties = getJournalViewProperties(windowSettings, journalTopic);
+                // Derive from the journal's LIVE view so a restored window tracks the live coordinate/author
+                // like a new window, not a coordinate reconstructed from preferences (ike-issues#756).
+                final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
                 final int entityNid = windowState.getEntityNid();

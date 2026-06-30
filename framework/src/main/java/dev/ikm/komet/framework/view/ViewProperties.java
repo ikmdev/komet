@@ -60,6 +60,15 @@ public class ViewProperties {
         return overridableView;
     }
 
+    /**
+     * Releases the override view's two listeners on the parent view (ike-issues#693). Call when the window, popup,
+     * or area that owns these view properties is discarded; the parent ({@link #parentView()}) outlives them and
+     * otherwise retains each discarded override through its listener list.
+     */
+    public void dispose() {
+        overridableView.dispose();
+    }
+
     public enum Keys {
         VIEW_COORDINATE_BYTES,
     }

@@ -113,7 +113,12 @@ import java.util.prefs.BackingStoreException;
  * @see AppState
  * @see LoginFeatureFlag
  * @see KometPreferences
+ * @deprecated Legacy entry point. The shipping desktop application is
+ *             {@code dev.ikm.ike:komet-desktop} ({@code dev.ikm.komet.desktop.App}); make all
+ *             changes there. Retained only until its remaining responsibilities are migrated, after
+ *             which it will be deleted. See IKE-Network/ike-issues#786.
  */
+@Deprecated(forRemoval = true)
 public class App extends Application  {
 
     private static final Logger LOG = LoggerFactory.getLogger(App.class);

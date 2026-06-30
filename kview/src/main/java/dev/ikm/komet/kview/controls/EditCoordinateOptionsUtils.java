@@ -6,6 +6,7 @@ import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
 import dev.ikm.komet.framework.view.ObservableNavigationCoordinate;
 import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.framework.view.ObservableView;
+import dev.ikm.komet.layout.controls.FilterOptions;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.ConceptFacade;

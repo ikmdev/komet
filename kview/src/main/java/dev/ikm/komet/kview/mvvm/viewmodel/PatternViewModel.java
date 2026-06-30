@@ -267,6 +267,41 @@ public class PatternViewModel extends FormViewModel {
         // Reload STAMP Form View Model
         StampFormViewModelBase stampFormViewModel = getPropertyValue(ViewModelKey.STAMP_VIEW_MODEL);
         stampFormViewModel.update(patternFacade, getPropertyValue(PATTERN_TOPIC), getViewProperties());
+
+        logPopulateDiagnostics(patternFacade);
+    }
+
+    /**
+     * One-shot diagnostic for the intermittent "empty shell" pattern window on restore: a window whose
+     * chrome appears but whose fields/descriptions are blank because content was populated exactly once,
+     * synchronously, at restore — before the datastore was warm. Two empty-shell signatures are possible:
+     * (1) the persisted nid did not resolve to an entity yet (the restore factory's {@code Entity.getFast}
+     * returned {@code null}, so {@code PATTERN} is {@code null} and the EDIT-mode load block above is
+     * skipped entirely); or (2) the entity resolved but no latest version is resolvable under this
+     * window's coordinate. Unlike the concept window, the pattern window registers no data-ready re-render
+     * hook, so either case persists until a coordinate change or a commit. This emits one definitive line.
+     *
+     * @param patternFacade the PATTERN facade as seen at the end of this populate (may be {@code null})
+     */
+    private void logPopulateDiagnostics(EntityFacade patternFacade) {
+        final Object mode = getPropertyValue(ViewModelKey.MODE);
+        if (patternFacade == null) {
+            LOG.warn("EMPTY-SHELL? Pattern window populate: patternFacade=null mode={} "
+                    + "(persisted nid did not resolve to an entity at restore; load block skipped)", mode);
+            return;
+        }
+        final Entity entity = EntityService.get().getEntityFast(patternFacade.nid());
+        final boolean entityResolved = entity != null;
+        final boolean dataLoaded = entityResolved
+                && getViewProperties().calculator().latest(entity).isPresent();
+        final int fieldNodes = getObservableList(ViewModelKey.FIELDS_COLLECTION).size();
+        final int otherNameNodes = getObservableList(OTHER_NAMES).size();
+        final String msg = "Pattern window populate: nid={} mode={} entityResolved={} dataLoaded={} fieldNodes={} otherNameNodes={}";
+        if (!entityResolved || !dataLoaded) {
+            LOG.warn("EMPTY-SHELL? " + msg, patternFacade.nid(), mode, entityResolved, dataLoaded, fieldNodes, otherNameNodes);
+        } else {
+            LOG.info(msg, patternFacade.nid(), mode, entityResolved, dataLoaded, fieldNodes, otherNameNodes);
+        }
     }
 
     private void loadFqnDetails(EntityFacade patternFacade) {

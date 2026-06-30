@@ -2,9 +2,14 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
+import dev.ikm.tinkar.coordinate.stamp.StateSet;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.State;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.WritableImage;
@@ -17,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorControl.MAX_LEVEL;
 
@@ -277,6 +283,115 @@ public class ConceptNavigatorUtils {
                 .filter(list -> conceptItem.nid() == -1 || conceptItem.equals(list.getLast()))
                 .findFirst()
                 .orElse(List.of());
+    }
+
+    /**
+     * <p>Outcome of investigating why a concept could not be displayed in the
+     * {@link KLConceptNavigatorControl}.
+     * @param summary a short, user-facing explanation suitable for a notification
+     * @param detail a fuller, log-oriented diagnostic of the concept's state
+     */
+    public record ConceptDisplayDiagnosis(String summary, String detail) {}
+
+    /**
+     * <p>Investigates why a concept has no lineage that can be expanded in a {@link Navigator}, and
+     * therefore could not be shown in the {@link KLConceptNavigatorControl}.
+     * <p>{@link #findShorterLineage(InvertedTree.ConceptItem, Navigator)} returns an empty lineage whenever
+     * the concept cannot be traced from a root of this navigator down to itself. This is expected for concepts
+     * that fall outside the navigator's view, most commonly:
+     * <ul>
+     *     <li>a retired (inactive) concept shown to a navigator whose vertex states include only active
+     *     concepts &mdash; some navigators include retired concepts, others do not;</li>
+     *     <li>a concept in a module or path that the navigator's view coordinate excludes;</li>
+     *     <li>a concept that is itself a root of the navigator (already shown at the top level);</li>
+     *     <li>a concept that does not exist in the database.</li>
+     * </ul>
+     * <p>The investigation never throws: any failure to resolve a piece of state is captured in the
+     * returned diagnostic rather than propagated.
+     * @param nid the nid of the concept that failed to display
+     * @param navigator the {@link Navigator} that backs the control
+     * @return a {@link ConceptDisplayDiagnosis} with a user-facing summary and a log-oriented detail
+     */
+    public static ConceptDisplayDiagnosis investigateUndisplayableConcept(int nid, Navigator navigator) {
+        try {
+            ViewCalculator viewCalculator = navigator.getViewCalculator();
+            String name = viewCalculator.getDescriptionTextOrNid(nid);
+
+            if (EntityHandle.get(nid).isAbsent()) {
+                String summary = "“" + name + "” could not be shown: no concept with that identifier "
+                        + "exists in the database.";
+                return new ConceptDisplayDiagnosis(summary, summary + " (nid=" + nid + ")");
+            }
+
+            Latest<EntityVersion> latest = viewCalculator.latest(nid);
+            State state = latest.isPresent() ? latest.get().stamp().state() : null;
+            // The navigation coordinate is the source of truth for which vertex (concept) states this navigator
+            // includes; the navigation/view calculator derives allowedVertexStates() from it. Read it directly.
+            StateSet vertexStates = viewCalculator.navigationCalculator().navigationCoordinate().vertexStates();
+            int[] parentNids = getParentNids(navigator, nid);
+            boolean isRoot = isRoot(navigator, nid);
+
+            String summary;
+            if (isRoot) {
+                summary = "“" + name + "” is a root concept of this navigator and is already shown "
+                        + "at the top of the tree.";
+            } else if (state != null && vertexStates != null && !vertexStates.contains(state)) {
+                // Most common case: the concept's status is excluded by this navigator's vertex states.
+                summary = "“" + name + "” has status " + state + ", which this navigator does not "
+                        + "display (it shows " + vertexStates.toUserString() + " concepts only). Open it in a "
+                        + "navigator that includes " + state + " concepts to see it in context.";
+            } else if (parentNids.length == 0) {
+                summary = "“" + name + "” has no parent concepts in this navigator’s view"
+                        + (state != null ? " (status " + state + ")" : "")
+                        + ", so it cannot be placed in the tree. It may belong to a module or path this navigator "
+                        + "does not include.";
+            } else {
+                summary = "“" + name + "” could not be traced to a root concept visible in this "
+                        + "navigator, although it reports " + parentNids.length + " parent"
+                        + (parentNids.length == 1 ? "" : "s")
+                        + ". Its lineage may pass through concepts this navigator’s view excludes.";
+            }
+
+            String detail = "Concept “" + name + "” (nid=" + nid + ") is not displayable in this "
+                    + "navigator. latestState=" + (state != null ? state : "<no version visible in view>")
+                    + ", navigationCoordinateVertexStates=" + (vertexStates != null ? vertexStates.toUserString() : "<unknown>")
+                    + ", isRoot=" + isRoot
+                    + ", parentCountInView=" + parentNids.length
+                    + ", parentsInView=" + describeNids(parentNids, viewCalculator);
+            return new ConceptDisplayDiagnosis(summary, detail);
+        } catch (RuntimeException e) {
+            LOG.error("Failed to investigate undisplayable concept (nid={})", nid, e);
+            String summary = "This concept could not be shown in the navigator, and its state could not be "
+                    + "determined (nid=" + nid + ").";
+            return new ConceptDisplayDiagnosis(summary, summary);
+        }
+    }
+
+    /**
+     * <p>Determines whether the given nid is a root of the {@link Navigator}.
+     * @param navigator the {@link Navigator} that holds the dataset
+     * @param nid the nid of the concept
+     * @return true if the nid is one of the navigator's root nids
+     */
+    private static boolean isRoot(Navigator navigator, int nid) {
+        try {
+            return Arrays.stream(navigator.getRootNids()).anyMatch(rootNid -> rootNid == nid);
+        } catch (Exception e) {
+            LOG.error("Exception occurred", e);
+            return false;
+        }
+    }
+
+    /**
+     * <p>Renders an array of nids as a human-readable list of {@code description (nid)} entries.
+     * @param nids the nids to describe
+     * @param viewCalculator the {@link ViewCalculator} used to resolve descriptions
+     * @return a bracketed, comma-separated description of the nids
+     */
+    private static String describeNids(int[] nids, ViewCalculator viewCalculator) {
+        return Arrays.stream(nids)
+                .mapToObj(parentNid -> viewCalculator.getDescriptionTextOrNid(parentNid) + " (" + parentNid + ")")
+                .collect(Collectors.joining(", ", "[", "]"));
     }
 
     /**

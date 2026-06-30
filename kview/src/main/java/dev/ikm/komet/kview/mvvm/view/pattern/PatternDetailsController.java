@@ -40,11 +40,11 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.TitledPaneHelper.putArrowOnRight;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.SEMANTIC;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.view.common.SVGConstants.DUPLICATE_SVG_PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
@@ -78,12 +78,12 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.dnd.DragImageMaker;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLExpandableNodeListControl;
 import dev.ikm.komet.kview.controls.KometIcon;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
@@ -329,12 +329,13 @@ public class PatternDetailsController {
 
     @FXML
     private void initialize() {
-        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
-        // replacing the kview FilterOptionsPopup.
-        setupViewContextMenu(
-                coordinatesMenuButton,
-                detailsOuterBorderPane,
+        // Drive the coordinates menu from the relocated FilterOptionsPopup (ike-issues#661); the popup
+        // writes the window's nodeView override, which the window's KL context + areas resolve through.
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(
                 patternViewModel.getViewProperties(),
+                FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW,
+                detailsOuterBorderPane,
+                coordinatesMenuButton,
                 patternViewModel::refreshForCoordinate
         );
 
@@ -673,13 +674,8 @@ public class PatternDetailsController {
             DragAndDropType dropType = getDragAndDropType(entityFacade);
             node.setUserData(new DragAndDropInfo(dropType, entityFacade.publicId()));
 
-            // Generate the drag image using DragImageMaker
-            DragImageMaker dragImageMaker = new DragImageMaker(node);
-            Image dragImage = dragImageMaker.getDragImage();
-            // Set the drag image on the dragboard
-            if (dragImage != null) {
-                dragboard.setDragView(dragImage);
-            }
+            // Standard-size drag image with canonical cursor placement (right of the identicon).
+            KonceptDragSource.setDragView(dragboard, node);
 
             // Place the content on the dragboard
             dragboard.setContent(content);
@@ -938,9 +934,12 @@ public class PatternDetailsController {
 
         updateStampControlFromViewModel();
 
-        if (patternViewModel.getPropertyValue(MODE).equals(EDIT)) {
-            patternViewModel.setPropertyValue(PUBLISH_PENDING, true);
-        }
+        // When editing an existing pattern the STAMP slideout commits the new
+        // version on submit (StampAddSubmitFormViewModel), so there is nothing
+        // left pending — do not flag PUBLISH_PENDING, which would enable
+        // "Save Pattern" and write a redundant duplicate-status version.
+        // A brand-new pattern still defers its stamp to createPattern() via the
+        // field/description edits that set PUBLISH_PENDING themselves.
 
         stampViewControl.setDisable(true);
     }

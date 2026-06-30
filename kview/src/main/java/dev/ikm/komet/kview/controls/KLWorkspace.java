@@ -132,6 +132,24 @@ public class KLWorkspace extends Control {
     public static final double MAX_WINDOW_HEIGHT = 1032.0;
 
     /**
+     * Property key under which a window panel may advertise an author-specified preferred width
+     * (e.g. the width set in the KL layout editor). When the panel's {@code getProperties()} map
+     * holds a {@link Number} {@code >= 0} under this key, the workspace uses it as the window's
+     * initial width instead of {@link #DEFAULT_WINDOW_WIDTH}. An absent value (or one {@code < 0})
+     * means "Auto" — the workspace decides the width.
+     */
+    public static final String WINDOW_AUTHORED_WIDTH_KEY = "kl-workspace-authored-width";
+
+    /**
+     * Property key under which a window panel may advertise an author-specified preferred height
+     * (e.g. the height set in the KL layout editor). When the panel's {@code getProperties()} map
+     * holds a {@link Number} {@code >= 0} under this key, the workspace honors it as the window's
+     * initial height instead of auto-sizing the window to its content. An absent value (or one
+     * {@code < 0}) means "Auto" — the workspace auto-sizes the height.
+     */
+    public static final String WINDOW_AUTHORED_HEIGHT_KEY = "kl-workspace-authored-height";
+
+    /**
      * Constructs a new KLWorkspace with default style classes and settings.
      */
     public KLWorkspace() {

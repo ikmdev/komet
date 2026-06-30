@@ -7,6 +7,7 @@ module dev.ikm.komet.layout {
     requires dev.ikm.jpms.recordbuilder.core;
     requires java.compiler;
     requires javafx.base;
+    requires javafx.controls;
     requires dev.ikm.tinkar.entity;
     requires dev.ikm.tinkar.terms;
     requires javafx.graphics;
@@ -31,9 +32,13 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout.editor.property;
     exports dev.ikm.komet.layout_engine.blueprint;
     exports dev.ikm.komet.layout_engine.host;
+    exports dev.ikm.komet.layout_engine.window;
+    exports dev.ikm.komet.layout.controls;
 
     opens dev.ikm.komet.layout to javafx.fxml;
     opens dev.ikm.layout.app to javafx.fxml;
+    opens dev.ikm.komet.layout.controls;
+    opens dev.ikm.komet.layout.controls.skin to javafx.controls;
 
     // Pattern semantics factories are provided downstream (knowledge-layout-editor) but discovered
     // and shared here via KlPatternSemanticsFactories, so the lookup lives in one place.

@@ -1,0 +1,9 @@
+# Test-classpath registration of the lifecycle controllers so PrimitiveData.start() can discover
+# and start the providers when the integration tests (*ITestFX) run on the classpath. In a module-path
+# build these come from each provider module's module-info `provides`; on the test classpath only these
+# META-INF/services files are consulted. Lists only the providers framework depends on at test scope
+# (ephemeral data store + entity/stamp + executor) — mirrors tinkar-core/integration's test resources.
+dev.ikm.tinkar.provider.ephemeral.ProviderEphemeral$NewController
+dev.ikm.tinkar.provider.entity.EntityProvider$Controller
+dev.ikm.tinkar.provider.entity.StampProvider$Controller
+dev.ikm.tinkar.provider.executor.ExecutorProvider$Controller

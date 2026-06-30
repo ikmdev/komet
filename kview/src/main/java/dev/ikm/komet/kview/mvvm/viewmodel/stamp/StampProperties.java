@@ -107,9 +107,9 @@ public final class StampProperties {
         // STAMP coordinate properties
         CURRENT_STAMP(Stamp.class),
         STATUS(State.class),
-        AUTHOR(ObservableConcept.class),
-        MODULE(ObservableConcept.class),
-        PATH(ObservableConcept.class),
+        AUTHOR(ConceptEntity.class),
+        MODULE(ConceptEntity.class),
+        PATH(ConceptEntity.class),
         TIME(Long.class),
 
         // Form state properties
@@ -169,7 +169,10 @@ public final class StampProperties {
     /**
      * The author component of the STAMP - who made the change.
      * <p>     * Represents the user or system that created this entity version.
-     * Always an {@link ObservableConcept} representing the author.
+     * Stored as a {@link ConceptEntity} representing the author; this may be a
+     * plain {@code ConceptRecord} (e.g. from the edit coordinate) or an
+     * {@link ObservableConcept} (e.g. resolved from the database) — both are
+     * accepted because every consumer treats it as a {@link ConceptEntity}.
      */
     public static final TypedProperty<ConceptEntity<?>> AUTHOR =
             (TypedProperty<ConceptEntity<?>>) Keys.AUTHOR.property();
@@ -177,7 +180,9 @@ public final class StampProperties {
     /**
      * The module component of the STAMP - organizational context.
      * <p>     * Represents the module or organizational unit responsible for this change.
-     * Always an {@link ObservableConcept} that is a descendant of TinkarTerm.MODULE.
+     * A {@link ConceptEntity} that is a descendant of TinkarTerm.MODULE; accepts
+     * both plain {@code ConceptRecord} (e.g. a combo-box selection) and
+     * {@link ObservableConcept} (e.g. resolved from the database).
      */
     public static final TypedProperty<ConceptEntity<?>> MODULE =
             (TypedProperty<ConceptEntity<?>>) Keys.MODULE.property();
@@ -185,7 +190,9 @@ public final class StampProperties {
     /**
      * The path component of the STAMP - development/classification context.
      * <p>     * Represents the development path or classification branch for this change.
-     * Always an {@link ObservableConcept} that is a descendant of TinkarTerm.PATH.
+     * A {@link ConceptEntity} that is a descendant of TinkarTerm.PATH; accepts
+     * both plain {@code ConceptRecord} (e.g. a combo-box selection) and
+     * {@link ObservableConcept} (e.g. resolved from the database).
      */
     public static final TypedProperty<ConceptEntity<?>> PATH =
             (TypedProperty<ConceptEntity<?>>) Keys.PATH.property();

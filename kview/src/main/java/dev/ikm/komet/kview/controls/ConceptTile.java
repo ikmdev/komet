@@ -1,6 +1,9 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
+import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ObjectProperty;
@@ -157,10 +160,18 @@ public class ConceptTile extends HBox {
                 if (treeItem.getValue() != null && treeItem.getValue().publicId() != null) {
                     clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT,
                             List.<UUID[]>of(treeItem.getValue().publicId().asUuidArray()));
+                    // Also advertise the standard component proxies (ike-issues#638) so a navigator
+                    // concept drops on any standard target — not only the navigator's own format.
+                    clipboardContent.putAll(KometClipboard.forComponent(treeItem.getValue().nid()));
                 }
                 clipboardContent.putString(treeItem.toString());
                 dragboard.setContent(clipboardContent);
-                dragboard.setDragView(ConceptNavigatorUtils.getTileSnapshot(this));
+                // Standard-size drag image with canonical cursor placement (right of the identicon).
+                // Guard the scene first: DragImageMaker shows an error dialog if the node is detached,
+                // where the old getTileSnapshot returned null silently.
+                if (getScene() != null) {
+                    KonceptDragSource.setDragView(dragboard, this);
+                }
                 cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
                 treeViewSkin.setDraggingAllowed(true);
             }

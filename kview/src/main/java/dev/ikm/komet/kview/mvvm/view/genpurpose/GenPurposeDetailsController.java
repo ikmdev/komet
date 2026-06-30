@@ -24,10 +24,10 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -45,7 +45,8 @@ import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ComponentItem;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.kview.controls.KLWorkspace;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KometLabel;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
@@ -88,29 +89,24 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.Separator;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -143,11 +139,6 @@ public class GenPurposeDetailsController {
     private final Map<EditorPatternModel, SectionTitledPane<EntityFacade>> patternReferenceComponentToSectionTitledPane = new HashMap<>();
 
     /**
-     * Given a SectionModel what's its associated GridPane (The GridPane is the container used in the SectionTitledPane).
-     */
-    private final Map<EditorSectionModel, GridPane> sectionModelToTitledPaneGridPane = new HashMap<>();
-
-    /**
      * Given a SectionModel what's its associated SectionTitledPane.
      */
     private final Map<EditorSectionModel, SectionTitledPane<EntityFacade>> sectionModelToTitledPane = new HashMap<>();
@@ -172,8 +163,6 @@ public class GenPurposeDetailsController {
      * so a malformed (cyclic) reference chain can't drive infinite recursion (see komet-desktop #3).
      */
     private final Set<EditorSectionModel> refreshingSections = new HashSet<>();
-
-    private final Tooltip publishTooltip = new Tooltip();
 
     private PatternSemanticsPresenter previousPatternSemanticsInEditMode;
 
@@ -205,9 +194,9 @@ public class GenPurposeDetailsController {
     @FXML
     private PublicIDListControl identifierControl;
     @FXML
-    private Button savePatternButton;
+    private ToggleButton timelineToggleButton;
     @FXML
-    private StackPane publishStackPane;
+    private Separator controlBarSeparator;
     @FXML
     private HBox tabHeader;
     @FXML
@@ -230,17 +219,13 @@ public class GenPurposeDetailsController {
     @FXML
     private void initialize() {
 
-        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
-        // replacing the kview FilterOptionsPopup.
-        setupViewContextMenu(coordinatesMenuButton, detailsOuterBorderPane,
-                genPurposeViewModel.getViewProperties(), this::updateView);
+        // Drive the coordinates menu from the relocated FilterOptionsPopup (ike-issues#661); the popup
+        // writes the window's nodeView override, which the window's KL context + areas resolve through.
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(genPurposeViewModel.getViewProperties(),
+                FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, detailsOuterBorderPane,
+                coordinatesMenuButton, this::updateView);
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
-
-        // Bind the Publish button's disable property to the ViewModel
-        publishTooltip.textProperty().bind(Bindings.when(savePatternButton.disableProperty())
-                .then("Publish: Disabled")
-                .otherwise("Submit"));
 
         // Setup Properties Bump out view
         setupProperties();
@@ -248,9 +233,6 @@ public class GenPurposeDetailsController {
         // When the user submits an edited STAMP from the properties panel, refresh the header STAMP.
         propertiesController.getStampFormViewModel().getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED)
                 .subscribe(isConfirmed -> onStampConfirmedOrSubmitted(isConfirmed));
-
-        // Assign the tooltip to the StackPane (container of Publish button)
-        setupTooltipForDisabledButton(savePatternButton);
 
         Subscriber<GenPurposeEvent> refreshSubscriber = evt -> {
             //Set up the Listener to refresh the details area (After user hits submit button on the right side)
@@ -426,7 +408,18 @@ public class GenPurposeDetailsController {
 
     private void updateStampControl(EntityFacade refConcept) {
         ObservableEntity observableEntity = ObservableEntity.get(refConcept.nid());
-        ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+        ObservableEntitySnapshot observableEntitySnapshot;
+        try {
+            observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
+        } catch (IllegalStateException e) {
+            // No version of the concept passes the current view coordinate (e.g. a status/path filter that
+            // excludes every version); leave the stamp control as-is rather than throwing out of the
+            // coordinate-change listener chain — which would also abort the supplemental areas' re-render
+            // (ike-issues#666).
+            LOG.debug("No latest version for nid {} under the current view coordinate; skipping stamp update",
+                    refConcept.nid());
+            return;
+        }
         Latest<EntityVersion> latestEntityVersion = retrieveCommittedLatestVersion(observableEntitySnapshot);
         latestEntityVersion.ifPresent(latestVersion -> {
             StampEntity stampEntity = latestEntityVersion.get().stamp();
@@ -583,62 +576,6 @@ public class GenPurposeDetailsController {
         }
     }
 
-    @FXML
-    private void saveConceptKL(ActionEvent actionEvent) {
-    }
-
-    private void setupTooltipForDisabledButton(Button button) {
-
-        button.disabledProperty().subscribe(isNowDisabled -> {
-            if (isNowDisabled) {
-                Tooltip.uninstall(button, publishTooltip);
-
-                // Create unique handlers for each button-tooltip pair
-                EventHandler<MouseEvent> showHandler = showTooltipOnDisabledButton(button, publishTooltip);
-                EventHandler<MouseEvent> hideHandler = hideTooltipHandler(publishTooltip);
-
-                // Store handlers on the button's properties for later removal
-                button.getProperties().put("showHandler", showHandler);
-                button.getProperties().put("hideHandler", hideHandler);
-
-                publishStackPane.addEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
-                publishStackPane.addEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
-            } else {
-                Tooltip.install(button, publishTooltip);
-                publishTooltip.hide();
-
-                // Remove handlers if present
-                EventHandler<MouseEvent> showHandler = (EventHandler<MouseEvent>) button.getProperties().get("showHandler");
-                EventHandler<MouseEvent> hideHandler = (EventHandler<MouseEvent>) button.getProperties().get("hideHandler");
-                if (showHandler != null) publishStackPane.removeEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
-                if (hideHandler != null) publishStackPane.removeEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
-            }
-        });
-    }
-
-    private EventHandler<MouseEvent> showTooltipOnDisabledButton(Button button, Tooltip tooltip) {
-        return event -> {
-            if (button.isDisabled()) {
-                Bounds bounds = button.localToScreen(button.getBoundsInLocal());
-                double mouseX = event.getScreenX();
-                double mouseY = event.getScreenY();
-                if (bounds.contains(mouseX, mouseY)) {
-                    if (!tooltip.isShowing()) {
-                        tooltip.show(button, mouseX, mouseY + 10);
-                    }
-                } else {
-                    tooltip.hide();
-                }
-            } else {
-                tooltip.hide();
-            }
-        };
-    }
-
-    private EventHandler<MouseEvent> hideTooltipHandler(Tooltip tooltip) {
-        return event -> tooltip.hide();
-    }
-
     /**
      * Updates draggable behavior for the properties panel based on its open/closed state.
      * <p>     * When opened, adds the properties tabs pane as a draggable node. When closed,
@@ -671,6 +608,9 @@ public class GenPurposeDetailsController {
 
         editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences, viewCalculator, windowTitle);
 
+        // Apply the Window settings authored in the KL editor (this window shares the same model).
+        applyEditorWindowSettings();
+
         EditorSectionModel mainSection = editorWindowModel.getMainSection();
 
         // Main TitledPane
@@ -694,6 +634,48 @@ public class GenPurposeDetailsController {
 
         // Initial view update
         updateView();
+    }
+
+    /**
+     * Applies the Window settings authored in the KL editor — the control-bar options (Coordinate and
+     * Timeline icons) and the Window's view size — to this realized Window. The editor and this Window
+     * share the same {@link EditorWindowModel} instance, so edits made while both are open take effect
+     * live. An "Auto" size ({@link EditorWindowModel#AUTO_SIZE}) leaves the Window's own (workspace)
+     * sizing in charge.
+     */
+    private void applyEditorWindowSettings() {
+        // Control-bar options: show/hide the Coordinate and Timeline icons. The divider between them
+        // only makes sense when both are shown.
+        coordinatesMenuButton.visibleProperty().bind(editorWindowModel.coordinateVisibleProperty());
+        coordinatesMenuButton.managedProperty().bind(editorWindowModel.coordinateVisibleProperty());
+        timelineToggleButton.visibleProperty().bind(editorWindowModel.timelineVisibleProperty());
+        timelineToggleButton.managedProperty().bind(editorWindowModel.timelineVisibleProperty());
+        controlBarSeparator.visibleProperty().bind(
+                Bindings.and(editorWindowModel.coordinateVisibleProperty(), editorWindowModel.timelineVisibleProperty()));
+        controlBarSeparator.managedProperty().bind(controlBarSeparator.visibleProperty());
+
+        // View size: apply an explicit Width/Height. "Auto" (< 0) leaves the workspace's own sizing
+        // alone. The framework sizes this same root pane via setPrefWidth/Height, so we set (not bind) it.
+        // We also advertise the authored size on the pane's properties so the workspace honors it when
+        // placing the window (otherwise its default placement overrides our preferred width/height).
+        editorWindowModel.prefWidthProperty().subscribe(width -> {
+            final double w = width.doubleValue();
+            if (w >= 0) {
+                detailsOuterBorderPane.setPrefWidth(w);
+                detailsOuterBorderPane.getProperties().put(KLWorkspace.WINDOW_AUTHORED_WIDTH_KEY, w);
+            } else {
+                detailsOuterBorderPane.getProperties().remove(KLWorkspace.WINDOW_AUTHORED_WIDTH_KEY);
+            }
+        });
+        editorWindowModel.prefHeightProperty().subscribe(height -> {
+            final double h = height.doubleValue();
+            if (h >= 0) {
+                detailsOuterBorderPane.setPrefHeight(h);
+                detailsOuterBorderPane.getProperties().put(KLWorkspace.WINDOW_AUTHORED_HEIGHT_KEY, h);
+            } else {
+                detailsOuterBorderPane.getProperties().remove(KLWorkspace.WINDOW_AUTHORED_HEIGHT_KEY);
+            }
+        });
     }
 
     /**
@@ -723,19 +705,7 @@ public class GenPurposeDetailsController {
 
         titledPane.getStyleClass().add("pattern-titled-pane");
 
-        GridPane titledPaneGridPane = new GridPane();
-        titledPaneGridPane.getStyleClass().add("section-titled-pane-container");
-
-        sectionModel.numberColumnsProperty().subscribe(newNumberColumns -> {
-            List<ColumnConstraints> columns = new ArrayList<>();
-            for (int i = 0; i < newNumberColumns.intValue(); ++i) {
-                ColumnConstraints columnConstraints = new ColumnConstraints();
-                columnConstraints.setHgrow(Priority.ALWAYS);
-                columnConstraints.setPercentWidth(100 / ((double) newNumberColumns.intValue()));
-                columns.add(columnConstraints);
-            }
-            titledPaneGridPane.getColumnConstraints().setAll(columns);
-        });
+        titledPane.numberColumnsProperty().bind(sectionModel.numberColumnsProperty());
 
         // Section Semantics ComboBox
         List<EntityFacade> semanticsOfPattern = null;
@@ -749,15 +719,10 @@ public class GenPurposeDetailsController {
         titledPane.setReferenceComponentCellFactory(_ -> createSectionSemanticsComboBoxCell(viewProperties));
         titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(viewProperties));
 
-        // Content
-        titledPane.setContent(titledPaneGridPane);
-
         titledPane.setOnEditAction(actionEvent -> onEditAction(actionEvent, sectionModel));
 
         titledPane.editEnabledProperty().bind(sectionModel.referenceComponentProperty().isNull()
                 .or(Bindings.isNotEmpty(titledPane.getReferenceComponents())));
-
-        sectionModelToTitledPaneGridPane.put(sectionModel, titledPaneGridPane);
 
         sectionModelToTitledPane.put(sectionModel, titledPane);
 
@@ -916,14 +881,14 @@ public class GenPurposeDetailsController {
      * concept. This window only delegates.
      */
     private void addSupplementalAreaViewsOfSection(EditorSectionModel section) {
-        GridPane sectionGridPane = sectionModelToTitledPaneGridPane.get(section);
+        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(section);
         EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
-        SupplementalAreaRenderer.renderInto(section, sectionGridPane, viewProperties, refComponent);
+        SupplementalAreaRenderer.renderInto(section, titledPane.getItems(), viewProperties, refComponent);
     }
 
     private void addSinglePatternView(EditorPatternModel editorPatternModel) {
         EditorSectionModel parentSection = editorPatternModel.getParentSection();
-        GridPane sectionGridPane = sectionModelToTitledPaneGridPane.get(parentSection);
+        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(parentSection);
 
 //        VBox patternMainContainer = createPatternContainer(editorPatternModel);
 //
@@ -956,7 +921,7 @@ public class GenPurposeDetailsController {
         // Always expand to fill height of the GridPane
         GridPane.setVgrow(view, Priority.ALWAYS);
 
-        sectionGridPane.getChildren().add(view);
+        titledPane.getItems().add(view);
     }
 
     private PatternSemanticsPresenter addSemanticViews(EditorPatternModel editorPatternModel) {

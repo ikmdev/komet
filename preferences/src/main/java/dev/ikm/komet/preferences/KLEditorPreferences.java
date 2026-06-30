@@ -17,6 +17,26 @@ public class KLEditorPreferences {
     public static final String KL_ADDITIONAL_SECTIONS = "KL-ADDITIONAL-SECTIONS";
 
     /**
+     * Key for the KL Window's preferred (view) width in pixels.
+     */
+    public static final String KL_WINDOW_PREF_WIDTH = "kl-window-pref-width";
+
+    /**
+     * Key for the KL Window's preferred (view) height in pixels.
+     */
+    public static final String KL_WINDOW_PREF_HEIGHT = "kl-window-pref-height";
+
+    /**
+     * Key for whether the Coordinate control-bar icon is shown in the KL Window header.
+     */
+    public static final String KL_WINDOW_COORDINATE_VISIBLE = "kl-window-coordinate-visible";
+
+    /**
+     * Key for whether the Timeline control-bar icon is shown in the KL Window header.
+     */
+    public static final String KL_WINDOW_TIMELINE_VISIBLE = "kl-window-timeline-visible";
+
+    /**
      * Root of KL Editor 'App' preferences.
      */
     public static final String KL_EDITOR_APP = "kl-editor-app";

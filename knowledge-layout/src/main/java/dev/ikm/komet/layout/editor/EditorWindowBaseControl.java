@@ -3,12 +3,9 @@ package dev.ikm.komet.layout.editor;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.css.PseudoClass;
 import javafx.scene.layout.Region;
 
-public abstract class EditorWindowBaseControl extends Region {
-    public static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
-
+public abstract class EditorWindowBaseControl extends Region implements Selectable {
     public static final String DEFAULT_STYLE_CLASS = "editor-window-control";
 
     protected EditorWindowBaseControl() {
@@ -21,7 +18,7 @@ public abstract class EditorWindowBaseControl extends Region {
     private BooleanProperty selected = new SimpleBooleanProperty() {
         @Override
         protected void invalidated() {
-            pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, get());
+            pseudoClassStateChanged(Selectable.SELECTED_PSEUDO_CLASS, get());
         }
     };
     public boolean isSelected() { return selected.get(); }

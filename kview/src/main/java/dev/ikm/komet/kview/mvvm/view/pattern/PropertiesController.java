@@ -17,7 +17,7 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 
 import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
-import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampAddConfirmFormViewModel;
+import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampAddSubmitFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampCreateFormViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -168,13 +168,16 @@ public class PropertiesController {
 
     private Subscriber<StampEvent> createStampSubscriber;
 
-    private StampAddConfirmFormViewModel stampAddConfirmFormViewModel;
+    private StampAddSubmitFormViewModel stampAddSubmitFormViewModel;
     private StampCreateFormViewModel stampCreateFormViewModel;
 
     private EntityFacade patternFacade;
 
     public PropertiesController() {
-        this.stampAddConfirmFormViewModel = new StampAddConfirmFormViewModel(PATTERN);
+        // Editing an existing pattern's STAMP commits on submit, matching the
+        // Concept and Semantic editors (and the identicon menu). The deferred
+        // "confirm" variant is only for the new-pattern wizard (stampCreateFormViewModel).
+        this.stampAddSubmitFormViewModel = new StampAddSubmitFormViewModel(PATTERN);
         this.stampCreateFormViewModel = new StampCreateFormViewModel(PATTERN);
     }
 
@@ -375,7 +378,7 @@ public class PropertiesController {
         // -- add stamp
         addStampSubscriber = evt -> {
             if (evt.getEventType() == StampEvent.ADD_STAMP) {
-                stampJFXNode.controller().init(stampAddConfirmFormViewModel);
+                stampJFXNode.controller().init(stampAddSubmitFormViewModel);
                 contentBorderPane.setCenter(stampJFXNode.node());
             }
         };
@@ -397,8 +400,8 @@ public class PropertiesController {
     public void updateModel(EntityFacade newPattern) {
         this.patternFacade = newPattern;
 
-        if (newPattern != null && stampAddConfirmFormViewModel != null) {
-            setStampFormViewModel(stampAddConfirmFormViewModel);
+        if (newPattern != null && stampAddSubmitFormViewModel != null) {
+            setStampFormViewModel(stampAddSubmitFormViewModel);
         } else if (newPattern == null && stampCreateFormViewModel != null) {
             setStampFormViewModel(stampCreateFormViewModel);
         }

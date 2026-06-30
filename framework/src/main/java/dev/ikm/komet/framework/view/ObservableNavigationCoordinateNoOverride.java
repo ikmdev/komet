@@ -15,15 +15,15 @@
  */
 package dev.ikm.komet.framework.view;
 
-import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinate;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.terms.*;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.set.ImmutableSet;
 
 public class ObservableNavigationCoordinateNoOverride extends ObservableNavigationCoordinateBase {
 
@@ -41,10 +41,10 @@ public class ObservableNavigationCoordinateNoOverride extends ObservableNavigati
     }
 
     @Override
-    protected SimpleEqualityBasedSetProperty<PatternFacade> makeNavigationPatternsProperty(NavigationCoordinate navigationCoordinate) {
-        return new SimpleEqualityBasedSetProperty<>(this,
+    protected SimpleEqualityBasedObjectProperty<ImmutableSet<PatternFacade>> makeNavigationPatternsProperty(NavigationCoordinate navigationCoordinate) {
+        return new SimpleEqualityBasedObjectProperty<>(this,
                 KometTerm.NAVIGATION_CONCEPT_SET.toXmlFragment(),
-                FXCollections.observableSet(navigationCoordinate.navigationPatternNids().mapToSet(PatternFacade::make)));
+                navigationCoordinate.navigationPatternNids().map(PatternFacade::make));
     }
 
     @Override
@@ -59,16 +59,14 @@ public class ObservableNavigationCoordinateNoOverride extends ObservableNavigati
     }
 
     @Override
-    protected ListProperty<PatternFacade> makeVerticesSortPatternListProperty(NavigationCoordinate navigationCoordinate) {
-        return new SimpleEqualityBasedListProperty<>(this, "Vertex Sort Patterns",
-                FXCollections.observableArrayList(
-                        navigationCoordinate.verticesSortPatternNidList().mapToList(EntityProxy.Pattern::make)));
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeVerticesSortPatternListProperty(NavigationCoordinate navigationCoordinate) {
+        return new SimpleEqualityBasedObjectProperty<>(this, "Vertex Sort Patterns",
+                navigationCoordinate.verticesSortPatternNidList().map(PatternFacade::make));
     }
 
     @Override
     protected NavigationCoordinateRecord baseCoordinateChangedListenersRemoved(ObservableValue<? extends NavigationCoordinateRecord> observable, NavigationCoordinateRecord oldValue, NavigationCoordinateRecord newValue) {
-        this.navigationPatternsProperty().setAll(newValue.navigationPatternNids()
-                .map(nid -> (PatternFacade) EntityProxy.Pattern.make(nid)).toSet());
+        this.navigationPatternsProperty().setValue(newValue.navigationPatternNids().map(PatternFacade::make));
         this.vertexStatesProperty().set(newValue.vertexStates());
         return newValue;
     }

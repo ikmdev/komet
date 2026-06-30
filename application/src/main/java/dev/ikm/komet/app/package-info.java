@@ -11,5 +11,11 @@
  * running application. Make the change in the corresponding {@code komet-desktop} class instead.
  * This module is retained only until its remaining responsibilities are migrated, after which it
  * will be deleted.
+ *
+ * @deprecated Legacy module. The shipping desktop application is {@code dev.ikm.ike:komet-desktop}
+ *             (package {@code dev.ikm.komet.desktop}); make all changes there. This package is
+ *             retained only until its remaining responsibilities are migrated, after which it will
+ *             be deleted. See IKE-Network/ike-issues#786.
  */
+@Deprecated(forRemoval = true)
 package dev.ikm.komet.app;

@@ -1,6 +1,6 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
-import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.kleditorapp.view.ControlBrowserItem;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
@@ -69,11 +69,8 @@ public class ControlBrowserCell extends ListCell<ControlBrowserItem> {
             ClipboardContent clipboardContent = new ClipboardContent();
             clipboardContent.put(KL_EDITOR_AREA_FACTORY, currentFactoryClassName);
 
-            DragImageMaker dragImageMaker = new DragImageMaker(this);
-            Image dragImage = dragImageMaker.getDragImage();
-            if (dragImage != null) {
-                dragboard.setDragView(dragImage);
-            }
+            // Standard-size drag image with canonical cursor placement (right of the identicon).
+            KonceptDragSource.setDragView(dragboard, this);
             dragboard.setContent(clipboardContent);
             mouseEvent.consume();
         });

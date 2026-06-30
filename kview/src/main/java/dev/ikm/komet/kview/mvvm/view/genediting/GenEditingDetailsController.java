@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genediting;
 
-import static dev.ikm.komet.kview.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW;
+import static dev.ikm.komet.layout.controls.FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW;
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.events.genediting.GenEditingEvent.PUBLISH;
 import static dev.ikm.komet.kview.events.genediting.PropertyPanelEvent.CLOSE_PANEL;
@@ -29,10 +29,10 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.fxutils.window.DraggableSupport.removeDraggableNodes;
+import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
+import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewContextMenu;
+import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -66,7 +66,7 @@ import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ComponentItem;
-import dev.ikm.komet.kview.controls.FilterOptionsPopup;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
@@ -255,12 +255,13 @@ public class GenEditingDetailsController {
 
     @FXML
     private void initialize() {
-        // Drive the coordinates menu + header from the window's KL ViewContext (ike-issues#660/#661),
-        // replacing the kview FilterOptionsPopup.
-        setupViewContextMenu(
-                coordinatesMenuButton,
-                detailsOuterBorderPane,
+        // Drive the coordinates menu from the relocated FilterOptionsPopup (ike-issues#661); the popup
+        // writes the window's nodeView override, which the window's KL context + areas resolve through.
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(
                 getViewProperties(),
+                FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW,
+                detailsOuterBorderPane,
+                coordinatesMenuButton,
                 this::updateSemanticForPatternInfo
         );
 

@@ -7,11 +7,10 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.concurrent.Callable;
@@ -47,12 +46,11 @@ public class MenuChangeItemsForLanguageTask implements Callable<MenuItem>, Scope
         for (ImmutableList<? extends ConceptFacade> typePreferenceList : FxGet.allowedDescriptionTypeOrder()) {
             CheckMenuItem typeOrderItem = new CheckMenuItem(viewCalculator.toEntityString(typePreferenceList.castToList(), viewCalculator::toEntityStringOrPublicIdAndNid));
             changeTypeOrder.getItems().add(typeOrderItem);
-            typeOrderItem.setSelected(observableCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList.castToList()));
+            typeOrderItem.setSelected(observableCoordinate.descriptionTypePreferenceListProperty().getValue().equals(typePreferenceList));
             typeOrderItem.setDisable(typeOrderItem.isSelected());
             typeOrderItem.setOnAction(event -> {
-                ObservableList<ConceptFacade> prefList = FXCollections.observableArrayList(typePreferenceList.toArray(new ConceptFacade[0]));
                 Platform.runLater(() ->
-                        observableCoordinate.descriptionTypePreferenceListProperty().setValue(prefList)
+                        observableCoordinate.descriptionTypePreferenceListProperty().setValue(Lists.immutable.ofAll(typePreferenceList))
                 );
                 event.consume();
             });
@@ -79,13 +77,12 @@ public class MenuChangeItemsForLanguageTask implements Callable<MenuItem>, Scope
         for (ImmutableList<? extends PatternFacade> dialectPreferenceList : FxGet.allowedDialectTypeOrder()) {
             CheckMenuItem dialectOrderItem = new CheckMenuItem(viewCalculator.toEntityString(dialectPreferenceList.castToList(), viewCalculator::toEntityStringOrPublicIdAndNid));
             changeDialectOrder.getItems().add(dialectOrderItem);
-            dialectOrderItem.setSelected(observableCoordinate.dialectPatternPreferenceListProperty().getValue().equals(dialectPreferenceList.castToList()));
+            dialectOrderItem.setSelected(observableCoordinate.dialectPatternPreferenceListProperty().getValue().equals(dialectPreferenceList));
             if (dialectOrderItem.isSelected()) {
                 dialectOrderItem.setDisable(true);
             }
             dialectOrderItem.setOnAction(event -> {
-                ObservableList<PatternFacade> prefList = FXCollections.observableArrayList(dialectPreferenceList.toArray(new PatternFacade[0]));
-                Platform.runLater(() -> observableCoordinate.dialectPatternPreferenceListProperty().setValue(prefList));
+                Platform.runLater(() -> observableCoordinate.dialectPatternPreferenceListProperty().setValue(Lists.immutable.ofAll(dialectPreferenceList)));
                 event.consume();
             });
         }

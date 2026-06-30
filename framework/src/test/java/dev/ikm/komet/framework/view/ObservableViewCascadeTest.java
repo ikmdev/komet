@@ -64,7 +64,7 @@ class ObservableViewCascadeTest {
         assertFalse(journal.hasOverrides(), "fresh journal has no overrides");
         assertFalse(inner.hasOverrides(), "fresh inner has no overrides");
 
-        // (b) a KB change is seen through journal at inner's non-overridden facet.
+        // (b) a KB change is seen through journal at inner's non-overridden dimension.
         kb.timeProperty().set(2000L);
         assertEquals(2000L, inner.timeProperty().get(), "KB time change should resolve through to inner");
 
@@ -88,5 +88,60 @@ class ObservableViewCascadeTest {
         assertFalse(inner.timeProperty().isOverridden(), "inner reverted");
         assertEquals(journal.timeProperty().get(), inner.timeProperty().get(),
                 "reverted inner tracks journal's effective value");
+    }
+
+    /**
+     * {@code setOverrides} (the re-apply side of persist/restore) pins only the dimensions that differ from
+     * the parent and leaves the matching ones inherited, and a pinned dimension wins over a later parent
+     * change. Exercised on the stamp {@code WithOverride} — the same machinery the view coordinate composes.
+     */
+    @Test
+    void setOverrides_pinsOnlyTheDelta_andPinWinsOverParentChange() {
+        ObservableStampCoordinateNoOverride kb = new ObservableStampCoordinateNoOverride(stampAt(1000L));
+        ObservableStampCoordinateWithOverride child = new ObservableStampCoordinateWithOverride(kb);
+        assertFalse(child.timeProperty().isOverridden(), "a fresh child inherits");
+
+        // Re-apply a coordinate whose only delta from the parent is the time (path + modules match).
+        child.setOverrides(stampAt(5000L));
+        assertTrue(child.timeProperty().isOverridden(), "the differing dimension (time) is pinned");
+        assertEquals(5000L, child.timeProperty().get(), "the pinned time is applied");
+        assertFalse(child.moduleSpecificationsProperty().isOverridden(),
+                "a dimension equal to the parent (empty modules) stays inherited — not spuriously pinned");
+
+        kb.timeProperty().set(2000L);
+        assertEquals(5000L, child.timeProperty().get(), "the pin shields the child from the parent change");
+    }
+
+    /**
+     * {@code setOverrides} applying the parent's own value to a dimension does <em>not</em> pin it — the
+     * dimension keeps tracking the parent (the cascade is preserved for everything not genuinely overridden).
+     */
+    @Test
+    void setOverrides_valueEqualToParentLeavesDimensionInheriting() {
+        ObservableStampCoordinateNoOverride kb = new ObservableStampCoordinateNoOverride(stampAt(1000L));
+        ObservableStampCoordinateWithOverride child = new ObservableStampCoordinateWithOverride(kb);
+
+        child.setOverrides(stampAt(1000L)); // equal to the parent → must not become a pin
+        assertFalse(child.timeProperty().isOverridden(), "a value equal to the parent is not an override");
+
+        kb.timeProperty().set(3000L);
+        assertEquals(3000L, child.timeProperty().get(), "the non-pinned dimension tracks the parent");
+    }
+
+    /**
+     * {@code setOverrides} re-applied with a dimension value equal to the parent clears a pre-existing pin on
+     * that dimension — so re-applying a captured override never strands a stale pin.
+     */
+    @Test
+    void setOverrides_clearsAPreviouslyPinnedDimensionWhenReappliedEqualToParent() {
+        ObservableStampCoordinateNoOverride kb = new ObservableStampCoordinateNoOverride(stampAt(1000L));
+        ObservableStampCoordinateWithOverride child = new ObservableStampCoordinateWithOverride(kb);
+
+        child.timeProperty().set(5000L); // pin the time
+        assertTrue(child.timeProperty().isOverridden(), "time is pinned");
+
+        child.setOverrides(stampAt(1000L)); // re-apply equal to the parent → drops the pin
+        assertFalse(child.timeProperty().isOverridden(), "re-applying the parent value drops the pin");
+        assertEquals(1000L, child.timeProperty().get(), "and the dimension resolves to the parent again");
     }
 }

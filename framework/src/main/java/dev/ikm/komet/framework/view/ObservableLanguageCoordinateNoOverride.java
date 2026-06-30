@@ -19,10 +19,8 @@ import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinate;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import org.eclipse.collections.api.list.ImmutableList;
 
 /**
@@ -59,32 +57,31 @@ public final class ObservableLanguageCoordinateNoOverride
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<PatternFacade> makeDialectPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
-        return new SimpleEqualityBasedListProperty<>(this,
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeDialectPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
+        return new SimpleEqualityBasedObjectProperty<>(this,
                 KometTerm.DIALECT_ASSEMBLAGE_PREFERENCE_LIST_FOR_LANGUAGE_COORDINATE.toXmlFragment(),
-                FXCollections.observableArrayList(languageCoordinate.dialectPatternPreferenceNidList().mapToList(EntityProxy.Pattern::make)));
+                languageCoordinate.dialectPatternPreferenceList());
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<ConceptFacade> makeDescriptionTypePreferenceListProperty(LanguageCoordinate languageCoordinate) {
-        return new SimpleEqualityBasedListProperty<>(this,
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeDescriptionTypePreferenceListProperty(LanguageCoordinate languageCoordinate) {
+        return new SimpleEqualityBasedObjectProperty<>(this,
                 KometTerm.DESCRIPTION_TYPE_PREFERENCE_LIST_FOR_LANGUAGE_COORDINATE.toXmlFragment(),
-                FXCollections.observableArrayList(languageCoordinate.descriptionTypePreferenceNidList().mapToList(EntityProxy.Concept::make)));
+                languageCoordinate.descriptionTypePreferenceList());
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<ConceptFacade> makeModulePreferenceListProperty(LanguageCoordinate languageCoordinate) {
-        ImmutableList<ConceptFacade> modulePreferenceList = languageCoordinate.modulePreferenceListForLanguage();
-        return new SimpleEqualityBasedListProperty<>(this,
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeModulePreferenceListProperty(LanguageCoordinate languageCoordinate) {
+        return new SimpleEqualityBasedObjectProperty<>(this,
                 KometTerm.MODULE_PREFERENCE_LIST_FOR_LANGUAGE_COORDINATE.toXmlFragment(),
-                FXCollections.observableArrayList(modulePreferenceNidListForLanguage().mapToList(EntityProxy.Concept::make)));
+                languageCoordinate.modulePreferenceListForLanguage());
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<PatternFacade> makeDescriptionPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
-        return new SimpleEqualityBasedListProperty<>(this,
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeDescriptionPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
+        return new SimpleEqualityBasedObjectProperty<>(this,
                 "Description pattern list (fix)",
-                FXCollections.observableArrayList(descriptionPatternPreferenceNidList().mapToList(EntityProxy.Pattern::make)));
+                languageCoordinate.descriptionPatternPreferenceNidList().map(PatternFacade::make));
     }
 
     @Override
@@ -98,10 +95,10 @@ public final class ObservableLanguageCoordinateNoOverride
             ObservableValue<? extends LanguageCoordinateRecord> observable,
             LanguageCoordinateRecord oldValue, LanguageCoordinateRecord newValue) {
         this.languageConceptProperty().setValue(newValue.languageConcept());
-        this.descriptionPatternPreferenceListProperty().setAll(newValue.descriptionPatternPreferenceNidList().mapToList(PatternFacade::make));
-        this.dialectPatternPreferenceListProperty().setAll(newValue.dialectPatternPreferenceNidList().mapToList(PatternFacade::make));
-        this.descriptionTypePreferenceListProperty().setAll(newValue.descriptionTypePreferenceNidList().mapToList(ConceptFacade::make));
-        this.modulePreferenceListForLanguageProperty().setAll(newValue.modulePreferenceNidListForLanguage().mapToList(ConceptFacade::make));
+        this.descriptionPatternPreferenceListProperty().setValue(newValue.descriptionPatternPreferenceNidList().map(PatternFacade::make));
+        this.dialectPatternPreferenceListProperty().setValue(newValue.dialectPatternPreferenceList());
+        this.descriptionTypePreferenceListProperty().setValue(newValue.descriptionTypePreferenceList());
+        this.modulePreferenceListForLanguageProperty().setValue(newValue.modulePreferenceListForLanguage());
         return newValue;
     }
 

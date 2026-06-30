@@ -5,6 +5,12 @@
     <artifactId>framework</artifactId>
     <dependencies>
         <!-- Module dependencies -->
+        <!-- ike-docs koncept-core (ike-issues#623): shared, JavaFX-free component-kind + stamp-sigil
+             geometry; version managed by komet-bom (${ike-docs.version}). -->
+        <dependency>
+            <groupId>network.ike.docs</groupId>
+            <artifactId>koncept-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>dev.ikm.tinkar.ext.owl</groupId>
             <artifactId>owl-extension</artifactId>
@@ -234,6 +240,7 @@
                             <!-- Add JavaFX arguments for headless testing -->
                             <argLine>
                                 --enable-preview
+                                --add-modules jdk.incubator.vector
                                 -Dtestfx.headless=true
                                 --add-opens=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED
                                 --add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED

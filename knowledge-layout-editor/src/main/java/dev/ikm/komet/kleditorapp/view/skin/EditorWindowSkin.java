@@ -1,10 +1,8 @@
 package dev.ikm.komet.kleditorapp.view.skin;
 
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
-import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
-import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import javafx.beans.binding.Bindings;
-import javafx.collections.ListChangeListener;
+import javafx.beans.binding.DoubleBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Button;
@@ -22,6 +20,12 @@ import javafx.scene.shape.SVGPath;
 
 public class EditorWindowSkin extends SkinBase<EditorWindowControl> {
 
+    /**
+     * Width an "Auto" window renders at on the editor canvas. This is an editor-only convenience: the
+     * realized window still sizes to its content; here we show a comfortable fixed width to design in.
+     */
+    private static final double EDITOR_AUTO_WIDTH = 550;
+
     private final VBox root = new VBox();
     private Label titleLabel;
 
@@ -29,9 +33,20 @@ public class EditorWindowSkin extends SkinBase<EditorWindowControl> {
         super(control);
 
         root.getStyleClass().add("window");
-        root.setMaxWidth(Control.USE_PREF_SIZE);
-        root.setMinWidth(Control.USE_PREF_SIZE);
-        root.setPrefWidth(600.0);
+
+        // The Window's (view) size is author-controlled via the Window properties pane. Pin the root
+        // to the control's preferred size so editing Width/Height resizes the whole window. On the
+        // editor canvas an "Auto" width (USE_COMPUTED_SIZE) is shown at a fixed EDITOR_AUTO_WIDTH;
+        // height stays content-driven when Auto.
+        DoubleBinding editorWidth = Bindings.createDoubleBinding(
+                () -> control.getPrefWidth() < 0 ? EDITOR_AUTO_WIDTH : control.getPrefWidth(),
+                control.prefWidthProperty());
+        root.minWidthProperty().bind(editorWidth);
+        root.prefWidthProperty().bind(editorWidth);
+        root.maxWidthProperty().bind(editorWidth);
+        root.minHeightProperty().bind(control.prefHeightProperty());
+        root.prefHeightProperty().bind(control.prefHeightProperty());
+        root.maxHeightProperty().bind(control.prefHeightProperty());
 
         buildUI();
 
@@ -75,15 +90,25 @@ public class EditorWindowSkin extends SkinBase<EditorWindowControl> {
         HBox contentContainer = new HBox();
         contentContainer.getStyleClass().add("content-container");
 
+        // Coordinate and Timeline icons are control-bar options toggled from the Window properties pane.
+        VBox coordinateContainer = createIconContainer("coordinate", "Coordinate", null);
+        coordinateContainer.visibleProperty().bind(getSkinnable().coordinateVisibleProperty());
+        coordinateContainer.managedProperty().bind(getSkinnable().coordinateVisibleProperty());
+
+        VBox timelineContainer = createIconContainer("timeline", "Timeline", null);
+        timelineContainer.visibleProperty().bind(getSkinnable().timelineVisibleProperty());
+        timelineContainer.managedProperty().bind(getSkinnable().timelineVisibleProperty());
+
+        // The divider only makes sense when both icons are shown.
+        Separator separator = createSeparator();
+        separator.visibleProperty().bind(Bindings.and(getSkinnable().coordinateVisibleProperty(), getSkinnable().timelineVisibleProperty()));
+        separator.managedProperty().bind(separator.visibleProperty());
+
         // Add icon containers
         contentContainer.getChildren().addAll(
-                createIconContainer("coordinate", "Coordinate", null),
-                createIconContainer(null, "Duplicate", SVGConstants.SAVE_SVG_PATH),
-                createIconContainer(null, "Share", SVGConstants.SHARE_CONCEPT),
-                createIconContainer(null, "Favorite", SVGConstants.FAVORITE),
-                createIconContainer(null, "Reasoner", SVGConstants.REASONER),
-                createSeparator(),
-                createIconContainer("timeline", "Timeliene", null),
+                coordinateContainer,
+                separator,
+                timelineContainer,
                 createSpacer(),
                 createCloseButton()
         );

@@ -37,7 +37,7 @@ public class KlLandingPageController {
     }
 
     @FXML
-    private void mousePressedOnCreateEditableLayout(MouseEvent mouseEvent) {
+    private void mousePressedOnCreateComponentLayout(MouseEvent mouseEvent) {
         createNewKLEditorWindow(mouseEvent);
     }
 

@@ -18,11 +18,28 @@ package dev.ikm.komet.framework.view;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import javafx.beans.property.ListProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class ObservableViewWithOverride extends ObservableViewBase {
+
+    /**
+     * The parent view this override observes. Retained — together with the two listeners below as {@code final}
+     * fields — so they can be removed in {@link #dispose()}. The parent outlives this override (e.g. inner/journal
+     * windows and popups that churn), so without teardown each discarded override leaks via the parent's listener
+     * list (ike-issues#693).
+     */
+    private final ObservableViewBase parentView;
+    private final ChangeListener<ViewCoordinateRecord> overriddenBaseChangedListener = this::overriddenBaseChanged;
+    private final ChangeListener<Boolean> parentListeningListener = (observable, oldValue, newValue) -> {
+        if (newValue) {
+            this.addListeners();
+        } else {
+            this.removeListeners();
+        }
+    };
 
     public ObservableViewWithOverride(ObservableViewBase observableViewBase) {
         this(observableViewBase, null);
@@ -31,14 +48,20 @@ public class ObservableViewWithOverride extends ObservableViewBase {
     public ObservableViewWithOverride(ObservableViewBase observableViewBase, String name) {
         super(observableViewBase, name);
         // Depth-independent override nesting (ike-issues#663): an override may wrap another override.
-        observableViewBase.baseCoordinateProperty().addListener(this::overriddenBaseChanged);
-        observableViewBase.listening.addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                this.addListeners();
-            } else {
-                this.removeListeners();
-            }
-        });
+        this.parentView = observableViewBase;
+        observableViewBase.baseCoordinateProperty().addListener(overriddenBaseChangedListener);
+        observableViewBase.listening.addListener(parentListeningListener);
+    }
+
+    /**
+     * Detaches the two listeners this override registered on its parent view, releasing the reference the parent
+     * otherwise holds to this child for the child's whole lifetime. Call when the override (e.g. a closed inner or
+     * journal window's coordinate, or a dismissed View Options popup's working view) is discarded; otherwise the
+     * parent's listener list accumulates one entry per discarded override over a session (ike-issues#693).
+     */
+    public void dispose() {
+        parentView.baseCoordinateProperty().removeListener(overriddenBaseChangedListener);
+        parentView.listening.removeListener(parentListeningListener);
     }
 
     // TODO when the story is worked to compare the view coordinate change within the child
@@ -97,8 +120,62 @@ public class ObservableViewWithOverride extends ObservableViewBase {
                 this.editCoordinate().getOriginalValue());
     }
 
+    /**
+     * Applies {@code coordinateWithOverrides} as this view's override state by delegating to the
+     * {@code setOverrides} of each constituent coordinate (stamp, language, logic, navigation, edit): every
+     * dimension is set, and {@link OverrideOf#set} pins it only where its value
+     * differs from the inherited parent (clearing the pin where it equals the parent). This is the inverse
+     * of {@link #setExceptOverrides} and the re-apply side of the persist/restore round-trip — a dimension
+     * that matches the parent stays inherited, so the cascade still tracks parent (e.g. journal) changes for
+     * everything that was not genuinely pinned.
+     *
+     * @param coordinateWithOverrides the desired resolved view coordinate
+     */
     public void setOverrides(ViewCoordinateRecord coordinateWithOverrides) {
-        throw new UnsupportedOperationException();
+        stampCoordinate().setOverrides(coordinateWithOverrides.stampCoordinate());
+        setLanguageCoordinatesOverrides(coordinateWithOverrides);
+        navigationCoordinate().setOverrides(coordinateWithOverrides.navigationCoordinate());
+        logicCoordinate().setOverrides(coordinateWithOverrides.logicCoordinate());
+        ((ObservableEditCoordinateWithOverride) editCoordinate())
+                .setOverrides(coordinateWithOverrides.editCoordinate());
+    }
+
+    /// Apply per-language overrides for each language-coordinate position, mirroring setLanguageCoordinatesExceptOverrides.
+    private void setLanguageCoordinatesOverrides(ViewCoordinateRecord updatedCoordinate) {
+        for (int i = 0; i < languageCoordinates.size() && i < updatedCoordinate.languageCoordinates().size(); i++) {
+            ((ObservableLanguageCoordinateWithOverride) languageCoordinates.get(i)).setOverrides(
+                    updatedCoordinate.languageCoordinates().get(i).toLanguageCoordinateRecord());
+        }
+    }
+
+    /**
+     * Re-applies a persisted override as a DELTA against the current parent: each constituent re-pins only the
+     * dimensions that genuinely differed at capture — where {@code resolved} (the captured override) differs from
+     * {@code baseline} (the inherited parent at capture time) — and leaves every merely-inherited dimension
+     * untouched, so it tracks the current (possibly changed) parent rather than freezing at the stale captured
+     * value. This is what lets a restored card-level override survive a journal-coordinate change between
+     * sessions (IKE-Network/ike-issues#745). Inverse of capturing {@code (getValue(), getOriginalValue())}.
+     *
+     * @param resolved the captured resolved view coordinate ({@code getValue()} at capture time)
+     * @param baseline the inherited parent view coordinate at capture ({@code getOriginalValue()} at capture time)
+     */
+    public void setOverridesFromDelta(ViewCoordinateRecord resolved, ViewCoordinateRecord baseline) {
+        stampCoordinate().setOverridesFromDelta(resolved.stampCoordinate(), baseline.stampCoordinate());
+        setLanguageCoordinatesOverridesFromDelta(resolved, baseline);
+        navigationCoordinate().setOverridesFromDelta(resolved.navigationCoordinate(), baseline.navigationCoordinate());
+        logicCoordinate().setOverridesFromDelta(resolved.logicCoordinate(), baseline.logicCoordinate());
+        ((ObservableEditCoordinateWithOverride) editCoordinate())
+                .setOverridesFromDelta(resolved.editCoordinate(), baseline.editCoordinate());
+    }
+
+    /// Apply per-language override deltas for each language-coordinate position, mirroring setLanguageCoordinatesOverrides.
+    private void setLanguageCoordinatesOverridesFromDelta(ViewCoordinateRecord resolved, ViewCoordinateRecord baseline) {
+        for (int i = 0; i < languageCoordinates.size()
+                && i < resolved.languageCoordinates().size() && i < baseline.languageCoordinates().size(); i++) {
+            ((ObservableLanguageCoordinateWithOverride) languageCoordinates.get(i)).setOverridesFromDelta(
+                    resolved.languageCoordinates().get(i).toLanguageCoordinateRecord(),
+                    baseline.languageCoordinates().get(i).toLanguageCoordinateRecord());
+        }
     }
 
     @Override

@@ -2,7 +2,7 @@ package dev.ikm.komet.kleditorapp.view.control;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
-import dev.ikm.komet.framework.dnd.DragImageMaker;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.kleditorapp.view.PatternBrowserItem;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -145,13 +145,8 @@ public class PatternBrowserCell extends ListCell<PatternBrowserItem> {
             ClipboardContent clipboardContent = new ClipboardContent();
             clipboardContent.put(KL_EDITOR_VERSION_PROXY, currentPatternEntityVersion.nid());
 
-            // Generate the drag image using DragImageMaker
-            DragImageMaker dragImageMaker = new DragImageMaker(this);
-            Image dragImage = dragImageMaker.getDragImage();
-            // Set the drag image on the dragboard
-            if (dragImage != null) {
-                dragboard.setDragView(dragImage);
-            }
+            // Standard-size drag image with canonical cursor placement (right of the identicon).
+            KonceptDragSource.setDragView(dragboard, this);
 
             // Place the content on the dragboard
             dragboard.setContent(clipboardContent);

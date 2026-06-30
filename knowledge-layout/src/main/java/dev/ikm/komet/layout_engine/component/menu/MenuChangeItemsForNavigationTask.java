@@ -6,11 +6,10 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableSet;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.List;
@@ -57,8 +56,7 @@ public class MenuChangeItemsForNavigationTask implements Callable<MenuItem>, Sco
             if (!item.isSelected()) {
                 item.setOnAction(event -> {
                     Platform.runLater(() -> {
-                        ObservableSet<PatternFacade> newSet = FXCollections.observableSet(navOption.toArray(new PatternFacade[navOption.size()]));
-                        observableCoordinate.navigationPatternsProperty().setValue(newSet);
+                        observableCoordinate.navigationPatternsProperty().setValue(Sets.immutable.ofAll(navOption));
                     });
                     event.consume();
                 });

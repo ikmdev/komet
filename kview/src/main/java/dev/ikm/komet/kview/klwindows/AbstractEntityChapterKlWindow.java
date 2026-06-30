@@ -240,4 +240,18 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
     public void onShown() {
         // Default implementation does nothing
     }
+
+    /**
+     * Releases this window's coordinate of record when the chapter window is closed (invoked from the journal's
+     * on-close handler). The view returned by {@link #getViewProperties()} is a child override created by
+     * {@link #deriveSourceCoordinate} that registers two listeners on the journal's longer-lived view; without
+     * this teardown each closed chapter window leaks via the journal view's listener list (ike-issues#693, #695).
+     * Tool-area windows share the journal's view rather than owning an override, so they extend
+     * {@link AbstractChapterKlWindow} directly and correctly do not inherit this disposal.
+     */
+    @Override
+    public void delete() {
+        super.delete();
+        getViewProperties().dispose();
+    }
 }

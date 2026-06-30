@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
-import dev.ikm.komet.kview.controls.IconRegion;
+import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.komet.kview.controls.LineageBox;
 import javafx.scene.control.skin.ScrollPaneSkin;
 import javafx.scene.input.MouseButton;

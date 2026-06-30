@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
@@ -20,14 +21,12 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.TreeCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
@@ -38,7 +37,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.transform.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -221,10 +219,9 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 control.setUserData(control.getEntity().publicId());
                 clipboardContent.putString(control.getEntity().toString());
                 dragboard.setContent(clipboardContent);
-                SnapshotParameters p = new SnapshotParameters();
-                p.setTransform(new Scale(10, 10));
-                WritableImage snapshot = control.snapshot(p, null);
-                dragboard.setDragView(scale(snapshot, (int) (snapshot.getWidth() / 10), (int) (snapshot.getHeight() / 10)));
+                // Standard-size drag image with canonical cursor placement (right of the identicon),
+                // so a concept dragged from this field matches the same concept dragged from a card.
+                KonceptDragSource.setDragView(dragboard, control);
             }
             ev.consume();
         });
@@ -572,14 +569,6 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
         selectedConceptContainer.getChildren().add(selectedConcept);
         conceptContainer.setVisible(false);
-    }
-
-    private Image scale(Image source, int targetWidth, int targetHeight) {
-        ImageView imageView = new ImageView(source);
-        imageView.setPreserveRatio(true);
-        imageView.setFitWidth(targetWidth);
-        imageView.setFitHeight(targetHeight);
-        return imageView.snapshot(null, null);
     }
 
     private static String getString(String key) {

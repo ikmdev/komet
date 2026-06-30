@@ -522,6 +522,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         // Get.taxonomyService().addTaxonomyRefreshListener(this);
 
         this.topBorderPane.setOnDragOver(this::dragOver);
+        this.topBorderPane.setOnDragExited(this::dragExited);
         this.topBorderPane.setOnDragDropped(this::dragDropped);
         refreshTaxonomy();
         this.getObservableView().addListener(this.viewChangedListener);
@@ -549,6 +550,11 @@ public class MultiParentGraphViewController implements RefreshListener {
             LOG.atTrace().log("Selected: " + c.getList());
         }
     }
+
+    /** True while a droppable item is over the pane (so the highlight is applied only once). */
+    private boolean dropHighlighted;
+    /** The pane's inline style captured before the drop highlight, restored when the drag leaves. */
+    private String originalStyle;
 
     private void dragDropped(DragEvent event) {
         Dragboard db = event.getDragboard();
@@ -580,6 +586,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         /* let the source know if the dropped item was successfully
          * transferred and used */
         event.setDropCompleted(success);
+        setDropHighlight(false);
 
         event.consume();
     }
@@ -590,9 +597,39 @@ public class MultiParentGraphViewController implements RefreshListener {
         if (event.getGestureSource() != this) {
             /* allow for both copying */
             event.acceptTransferModes(TransferMode.COPY);
+            /* highlight this pane as a valid drop target while a droppable concept/semantic is over it */
+            if (!dropHighlighted && acceptsDrop(event.getDragboard())) {
+                setDropHighlight(true);
+            }
         }
 
         event.consume();
+    }
+
+    private void dragExited(DragEvent event) {
+        setDropHighlight(false);
+        event.consume();
+    }
+
+    /** Whether the dragboard carries something the navigator can navigate to (a concept or semantic). */
+    private static boolean acceptsDrop(Dragboard dragboard) {
+        return KometClipboard.containsAny(dragboard.getContentTypes(), KometClipboard.CONCEPT_TYPES)
+                || KometClipboard.containsAny(dragboard.getContentTypes(), KometClipboard.SEMANTIC_TYPES);
+    }
+
+    /** Toggles a drop-target border on the navigator pane, preserving any existing inline style. */
+    private void setDropHighlight(boolean on) {
+        dropHighlighted = on;
+        if (on) {
+            if (originalStyle == null) {
+                originalStyle = topBorderPane.getStyle();
+            }
+            topBorderPane.setStyle((originalStyle == null ? "" : originalStyle)
+                    + "; -fx-border-color: #00b4d8; -fx-border-width: 3;");
+        } else {
+            topBorderPane.setStyle(originalStyle == null ? "" : originalStyle);
+            originalStyle = null;
+        }
     }
 
     @Override

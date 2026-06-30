@@ -1,4 +1,5 @@
 package dev.ikm.komet.kview.controls;
+import dev.ikm.komet.layout.controls.IconRegion;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;

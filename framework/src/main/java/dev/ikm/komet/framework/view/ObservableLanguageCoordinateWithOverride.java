@@ -23,6 +23,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.value.ObservableValue;
+import org.eclipse.collections.api.list.ImmutableList;
 
 public class ObservableLanguageCoordinateWithOverride extends ObservableLanguageCoordinateBase {
 
@@ -76,67 +77,112 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     }
 
     @Override
-    public ListPropertyWithOverride<ConceptFacade> modulePreferenceListForLanguageProperty() {
-        return (ListPropertyWithOverride<ConceptFacade>) super.modulePreferenceListForLanguageProperty();
+    public OverrideOf<ImmutableList<ConceptFacade>> modulePreferenceListForLanguageProperty() {
+        return (OverrideOf<ImmutableList<ConceptFacade>>) super.modulePreferenceListForLanguageProperty();
     }
 
     @Override
-    public ListPropertyWithOverride<ConceptFacade> descriptionTypePreferenceListProperty() {
-        return (ListPropertyWithOverride<ConceptFacade>) super.descriptionTypePreferenceListProperty();
+    public OverrideOf<ImmutableList<ConceptFacade>> descriptionTypePreferenceListProperty() {
+        return (OverrideOf<ImmutableList<ConceptFacade>>) super.descriptionTypePreferenceListProperty();
     }
 
     @Override
-    public ListPropertyWithOverride<PatternFacade> dialectPatternPreferenceListProperty() {
-        return (ListPropertyWithOverride<PatternFacade>) super.dialectPatternPreferenceListProperty();
+    public OverrideOf<ImmutableList<PatternFacade>> dialectPatternPreferenceListProperty() {
+        return (OverrideOf<ImmutableList<PatternFacade>>) super.dialectPatternPreferenceListProperty();
     }
 
     @Override
-    public ListPropertyWithOverride<PatternFacade> descriptionPatternPreferenceListProperty() {
-        return (ListPropertyWithOverride<PatternFacade>) super.descriptionPatternPreferenceListProperty();
+    public OverrideOf<ImmutableList<PatternFacade>> descriptionPatternPreferenceListProperty() {
+        return (OverrideOf<ImmutableList<PatternFacade>>) super.descriptionPatternPreferenceListProperty();
     }
 
     @Override
-    public ObjectPropertyWithOverride<ConceptFacade> languageConceptProperty() {
-        return (ObjectPropertyWithOverride<ConceptFacade>) super.languageConceptProperty();
+    public OverrideOf<ConceptFacade> languageConceptProperty() {
+        return (OverrideOf<ConceptFacade>) super.languageConceptProperty();
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<PatternFacade> makeDescriptionPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeDescriptionPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
         ObservableLanguageCoordinate overriddenCoordinate = (ObservableLanguageCoordinate) languageCoordinate;
-        return new ListPropertyWithOverride<>(overriddenCoordinate.descriptionPatternPreferenceListProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.descriptionPatternPreferenceListProperty(), this);
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeLanguageProperty(LanguageCoordinate languageCoordinate) {
         ObservableLanguageCoordinate overriddenCoordinate = (ObservableLanguageCoordinate) languageCoordinate;
-        return new ObjectPropertyWithOverride<>(overriddenCoordinate.languageConceptProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.languageConceptProperty(), this);
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<PatternFacade> makeDialectPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeDialectPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
         ObservableLanguageCoordinate overriddenCoordinate = (ObservableLanguageCoordinate) languageCoordinate;
-        return new ListPropertyWithOverride<>(overriddenCoordinate.dialectPatternPreferenceListProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.dialectPatternPreferenceListProperty(), this);
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<ConceptFacade> makeDescriptionTypePreferenceListProperty(LanguageCoordinate languageCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeDescriptionTypePreferenceListProperty(LanguageCoordinate languageCoordinate) {
         ObservableLanguageCoordinate overriddenCoordinate = (ObservableLanguageCoordinate) languageCoordinate;
-        return new ListPropertyWithOverride<>(overriddenCoordinate.descriptionTypePreferenceListProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.descriptionTypePreferenceListProperty(), this);
     }
 
     @Override
-    protected SimpleEqualityBasedListProperty<ConceptFacade> makeModulePreferenceListProperty(LanguageCoordinate languageCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeModulePreferenceListProperty(LanguageCoordinate languageCoordinate) {
         ObservableLanguageCoordinate overriddenCoordinate = (ObservableLanguageCoordinate) languageCoordinate;
-        return new ListPropertyWithOverride<>(overriddenCoordinate.modulePreferenceListForLanguageProperty(), this);
+        return new OverrideOf<>(overriddenCoordinate.modulePreferenceListForLanguageProperty(), this);
+    }
+
+    /**
+     * Applies {@code coordinateWithOverrides} as this coordinate's override state: each dimension is
+     * {@link OverrideOf#set set}, which pins it when the value differs from the inherited parent and clears
+     * the pin (reverting to inheriting) when it equals the parent. Dimensions matching the parent stay
+     * inherited, so cascade tracking is preserved.
+     *
+     * @param coordinateWithOverrides the desired resolved language coordinate
+     */
+    public void setOverrides(LanguageCoordinateRecord coordinateWithOverrides) {
+        languageConceptProperty().setValue(coordinateWithOverrides.languageConcept());
+        descriptionPatternPreferenceListProperty().setValue(
+                coordinateWithOverrides.descriptionPatternPreferenceNidList().map(PatternFacade::make));
+        dialectPatternPreferenceListProperty().setValue(coordinateWithOverrides.dialectPatternPreferenceList());
+        descriptionTypePreferenceListProperty().setValue(coordinateWithOverrides.descriptionTypePreferenceList());
+        modulePreferenceListForLanguageProperty().setValue(coordinateWithOverrides.modulePreferenceListForLanguage());
+    }
+
+    /**
+     * Re-pins only the language dimensions that genuinely differ between {@code resolved} (the captured
+     * override) and {@code baseline} (the inherited parent at capture time), leaving every matching dimension
+     * inherited so it keeps tracking the current parent. The delta-aware inverse of {@link #setOverrides}
+     * (IKE-Network/ike-issues#745).
+     *
+     * @param resolved the captured resolved language coordinate
+     * @param baseline the inherited parent language coordinate at capture time
+     */
+    public void setOverridesFromDelta(LanguageCoordinateRecord resolved, LanguageCoordinateRecord baseline) {
+        if (resolved.languageConceptNid() != baseline.languageConceptNid()) {
+            languageConceptProperty().setValue(resolved.languageConcept());
+        }
+        if (!resolved.descriptionPatternPreferenceNidList().equals(baseline.descriptionPatternPreferenceNidList())) {
+            descriptionPatternPreferenceListProperty().setValue(
+                    resolved.descriptionPatternPreferenceNidList().map(PatternFacade::make));
+        }
+        if (!resolved.dialectPatternPreferenceNidList().equals(baseline.dialectPatternPreferenceNidList())) {
+            dialectPatternPreferenceListProperty().setValue(resolved.dialectPatternPreferenceList());
+        }
+        if (!resolved.descriptionTypePreferenceNidList().equals(baseline.descriptionTypePreferenceNidList())) {
+            descriptionTypePreferenceListProperty().setValue(resolved.descriptionTypePreferenceList());
+        }
+        if (!resolved.modulePreferenceNidListForLanguage().equals(baseline.modulePreferenceNidListForLanguage())) {
+            modulePreferenceListForLanguageProperty().setValue(resolved.modulePreferenceListForLanguage());
+        }
     }
 
     @Override
     public LanguageCoordinateRecord getOriginalValue() {
         return LanguageCoordinateRecord.make(languageConceptProperty().getOriginalValue().nid(),
-                IntIds.list.of(descriptionPatternPreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
-                IntIds.list.of(descriptionTypePreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
-                IntIds.list.of(dialectPatternPreferenceListProperty().getOriginalValue(), EntityFacade::toNid),
-                IntIds.list.of(modulePreferenceListForLanguageProperty().getOriginalValue(), EntityFacade::toNid));
+                IntIds.list.of(descriptionPatternPreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
+                IntIds.list.of(descriptionTypePreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
+                IntIds.list.of(dialectPatternPreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
+                IntIds.list.of(modulePreferenceListForLanguageProperty().getOriginalValue().castToList(), EntityFacade::toNid));
     }
 
     @Override
@@ -148,19 +194,19 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
         }
 
         if (!this.descriptionPatternPreferenceListProperty().isOverridden()) {
-            this.descriptionPatternPreferenceListProperty().setAll(newValue.descriptionPatternPreferenceNidList().mapToList(PatternFacade::make));
+            this.descriptionPatternPreferenceListProperty().setValue(newValue.descriptionPatternPreferenceNidList().map(PatternFacade::make));
         }
 
         if (!this.dialectPatternPreferenceListProperty().isOverridden()) {
-            this.dialectPatternPreferenceListProperty().setAll(newValue.dialectPatternPreferenceNidList().mapToList(PatternFacade::make));
+            this.dialectPatternPreferenceListProperty().setValue(newValue.dialectPatternPreferenceList());
         }
 
         if (!this.descriptionTypePreferenceListProperty().isOverridden()) {
-            this.descriptionTypePreferenceListProperty().setAll(newValue.descriptionTypePreferenceNidList().mapToList(ConceptFacade::make));
+            this.descriptionTypePreferenceListProperty().setValue(newValue.descriptionTypePreferenceList());
         }
 
         if (!this.modulePreferenceListForLanguageProperty().isOverridden()) {
-            this.modulePreferenceListForLanguageProperty().setAll(newValue.modulePreferenceNidListForLanguage().mapToList(ConceptFacade::make));
+            this.modulePreferenceListForLanguageProperty().setValue(newValue.modulePreferenceListForLanguage());
         }
 
         return newValue;

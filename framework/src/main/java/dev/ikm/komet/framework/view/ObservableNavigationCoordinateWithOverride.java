@@ -19,10 +19,11 @@ import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinate;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
-import javafx.beans.property.ListProperty;
 import javafx.beans.value.ObservableValue;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.set.ImmutableSet;
 
 public class ObservableNavigationCoordinateWithOverride extends ObservableNavigationCoordinateBase {
 
@@ -37,8 +38,8 @@ public class ObservableNavigationCoordinateWithOverride extends ObservableNaviga
     }
 
     @Override
-    public SetPropertyWithOverride<PatternFacade> navigationPatternsProperty() {
-        return (SetPropertyWithOverride<PatternFacade>) super.navigationPatternsProperty();
+    public OverrideOf<ImmutableSet<PatternFacade>> navigationPatternsProperty() {
+        return (OverrideOf<ImmutableSet<PatternFacade>>) super.navigationPatternsProperty();
     }
 
     @Override
@@ -51,42 +52,81 @@ public class ObservableNavigationCoordinateWithOverride extends ObservableNaviga
     }
 
     @Override
-    protected SimpleEqualityBasedSetProperty<PatternFacade> makeNavigationPatternsProperty(NavigationCoordinate navigationCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableSet<PatternFacade>> makeNavigationPatternsProperty(NavigationCoordinate navigationCoordinate) {
         ObservableNavigationCoordinate observableNavigationCoordinate = (ObservableNavigationCoordinate) navigationCoordinate;
-        return new SetPropertyWithOverride<>(observableNavigationCoordinate.navigationPatternsProperty(), this);
+        return new OverrideOf<>(observableNavigationCoordinate.navigationPatternsProperty(), this);
     }
 
     @Override
-    public ObjectPropertyWithOverride<StateSet> vertexStatesProperty() {
-        return (ObjectPropertyWithOverride<StateSet>) super.vertexStatesProperty();
+    public OverrideOf<StateSet> vertexStatesProperty() {
+        return (OverrideOf<StateSet>) super.vertexStatesProperty();
     }
 
     @Override
-    protected ObjectPropertyWithOverride<StateSet> makeVertexStatesProperty(NavigationCoordinate navigationCoordinate) {
+    protected OverrideOf<StateSet> makeVertexStatesProperty(NavigationCoordinate navigationCoordinate) {
         ObservableNavigationCoordinate observableNavigationCoordinate = (ObservableNavigationCoordinate) navigationCoordinate;
-        return new ObjectPropertyWithOverride<>(observableNavigationCoordinate.vertexStatesProperty(), this);
+        return new OverrideOf<>(observableNavigationCoordinate.vertexStatesProperty(), this);
     }
 
     @Override
-    public ObjectPropertyWithOverride<Boolean> sortVerticesProperty() {
-        return (ObjectPropertyWithOverride<Boolean>) super.sortVerticesProperty();
+    public OverrideOf<Boolean> sortVerticesProperty() {
+        return (OverrideOf<Boolean>) super.sortVerticesProperty();
     }
 
     @Override
-    protected ObjectPropertyWithOverride<Boolean> makeSortVerticesProperty(NavigationCoordinate navigationCoordinate) {
+    protected OverrideOf<Boolean> makeSortVerticesProperty(NavigationCoordinate navigationCoordinate) {
         ObservableNavigationCoordinate observableNavigationCoordinate = (ObservableNavigationCoordinate) navigationCoordinate;
-        return new ObjectPropertyWithOverride<>(observableNavigationCoordinate.sortVerticesProperty(), this) ;
+        return new OverrideOf<>(observableNavigationCoordinate.sortVerticesProperty(), this) ;
     }
 
     @Override
-    public ListPropertyWithOverride<PatternFacade> verticesSortPatternListProperty() {
-        return (ListPropertyWithOverride<PatternFacade>) super.verticesSortPatternListProperty();
+    public OverrideOf<ImmutableList<PatternFacade>> verticesSortPatternListProperty() {
+        return (OverrideOf<ImmutableList<PatternFacade>>) super.verticesSortPatternListProperty();
     }
 
     @Override
-    protected ListProperty<PatternFacade> makeVerticesSortPatternListProperty(NavigationCoordinate navigationCoordinate) {
+    protected SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeVerticesSortPatternListProperty(NavigationCoordinate navigationCoordinate) {
         ObservableNavigationCoordinate observableNavigationCoordinate = (ObservableNavigationCoordinate) navigationCoordinate;
-        return new ListPropertyWithOverride<>(observableNavigationCoordinate.verticesSortPatternListProperty(), this);
+        return new OverrideOf<>(observableNavigationCoordinate.verticesSortPatternListProperty(), this);
+    }
+
+    /**
+     * Applies {@code coordinateWithOverrides} as this coordinate's override state: each dimension is
+     * {@link OverrideOf#set set}, which pins it when the value differs from the inherited parent and clears
+     * the pin (reverting to inheriting) when it equals the parent. Dimensions matching the parent stay
+     * inherited, so cascade tracking is preserved.
+     *
+     * @param coordinateWithOverrides the desired resolved navigation coordinate
+     */
+    public void setOverrides(NavigationCoordinateRecord coordinateWithOverrides) {
+        navigationPatternsProperty().setValue(coordinateWithOverrides.navigationPatternNids().map(PatternFacade::make));
+        vertexStatesProperty().set(coordinateWithOverrides.vertexStates());
+        sortVerticesProperty().set(coordinateWithOverrides.sortVertices());
+        verticesSortPatternListProperty().setValue(coordinateWithOverrides.verticesSortPatternNidList().map(PatternFacade::make));
+    }
+
+    /**
+     * Re-pins only the navigation dimensions that genuinely differ between {@code resolved} (the captured
+     * override) and {@code baseline} (the inherited parent at capture time), leaving every matching dimension
+     * inherited so it keeps tracking the current parent. The delta-aware inverse of {@link #setOverrides}
+     * (IKE-Network/ike-issues#745).
+     *
+     * @param resolved the captured resolved navigation coordinate
+     * @param baseline the inherited parent navigation coordinate at capture time
+     */
+    public void setOverridesFromDelta(NavigationCoordinateRecord resolved, NavigationCoordinateRecord baseline) {
+        if (!resolved.navigationPatternNids().equals(baseline.navigationPatternNids())) {
+            navigationPatternsProperty().setValue(resolved.navigationPatternNids().map(PatternFacade::make));
+        }
+        if (!resolved.vertexStates().equals(baseline.vertexStates())) {
+            vertexStatesProperty().set(resolved.vertexStates());
+        }
+        if (resolved.sortVertices() != baseline.sortVertices()) {
+            sortVerticesProperty().set(resolved.sortVertices());
+        }
+        if (!resolved.verticesSortPatternNidList().equals(baseline.verticesSortPatternNidList())) {
+            verticesSortPatternListProperty().setValue(resolved.verticesSortPatternNidList().map(PatternFacade::make));
+        }
     }
 
     @Override
@@ -97,11 +137,10 @@ public class ObservableNavigationCoordinateWithOverride extends ObservableNaviga
          boolean sortVertices,
          IntIdList verticesSortPatternNidList
          */
-        return NavigationCoordinateRecord.make(IntIds.set.of(navigationPatternsProperty().getOriginalValue().stream().mapToInt(value -> value.nid()).toArray()),
+        return NavigationCoordinateRecord.make(IntIds.set.of(navigationPatternsProperty().getOriginalValue().castToSet(), EntityFacade::toNid),
                 vertexStatesProperty().getOriginalValue(),
                 sortVerticesProperty().getOriginalValue(),
-                IntIds.list.of(verticesSortPatternListProperty().stream()
-                        .mapToInt(patternFacade -> patternFacade.nid()).toArray())
+                IntIds.list.of(verticesSortPatternListProperty().get().castToList(), EntityFacade::toNid)
                 );
     }
 
@@ -113,8 +152,7 @@ public class ObservableNavigationCoordinateWithOverride extends ObservableNaviga
             NavigationCoordinateRecord newValue) {
 
         if (!this.navigationPatternsProperty().isOverridden()) {
-            this.navigationPatternsProperty().setAll(newValue.navigationPatternNids()
-                    .map(nid -> (PatternFacade) EntityProxy.Pattern.make(nid)).toSet());
+            this.navigationPatternsProperty().setValue(newValue.navigationPatternNids().map(PatternFacade::make));
         }
 
         if (!this.vertexStatesProperty().isOverridden()) {
@@ -126,8 +164,7 @@ public class ObservableNavigationCoordinateWithOverride extends ObservableNaviga
         }
 
         if (!this.verticesSortPatternListProperty().isOverridden()) {
-            this.verticesSortPatternListProperty().setAll(
-                    newValue.verticesSortPatternNidList().map(nid -> EntityProxy.Pattern.make(nid)).castToList());
+            this.verticesSortPatternListProperty().setValue(newValue.verticesSortPatternNidList().map(PatternFacade::make));
         }
 
         return newValue;

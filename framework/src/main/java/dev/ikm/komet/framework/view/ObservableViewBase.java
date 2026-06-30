@@ -213,6 +213,13 @@ public abstract class ObservableViewBase
             languageCoordinate.addListener( this.languageCoordinateChangeListener);
         }
         this.logicCoordinateObservable.addListener(this.logicCoordinateListener);
+        // Edit coordinate is the fifth constituent. Without this registration the editCoordinateListener
+        // (editChanged, which folds an edit change into the composite ViewCoordinateRecord) never fires, so an
+        // edit-coordinate change — e.g. setting the commit author to the logged-in user — never enters the view
+        // record and cannot ride the landing→journal cascade mirror (IKE-Network/ike-issues#750). This registers
+        // the listener only; the edit coordinate remains OUT of getCompositeCoordinates()/hasOverrides() (it is a
+        // set-and-flow-down write concern, not a per-window display override).
+        this.editCoordinateObservable.addListener(this.editCoordinateListener);
         listening.set(true);
     }
 
@@ -226,6 +233,7 @@ public abstract class ObservableViewBase
             languageCoordinate.removeListener( this.languageCoordinateChangeListener);
         }
         this.logicCoordinateObservable.removeListener(this.logicCoordinateListener);
+        this.editCoordinateObservable.removeListener(this.editCoordinateListener);
         listening.set(false);
     }
 

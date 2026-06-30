@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.kview.mvvm.view.JournalNavigationUtils;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -7,14 +8,12 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
@@ -206,10 +205,10 @@ public class ComponentItemNode extends Region {
 
             if (dragImageSupplier.get() != null) {
                 dragboard.setDragView(dragImageSupplier.get().get());
-            } else {
-                SnapshotParameters p = new SnapshotParameters();
-                WritableImage snapshot = snapshot(p, null);
-                dragboard.setDragView(snapshot);
+            } else if (getScene() != null) {
+                // Standard-size drag image with canonical cursor placement (right of the identicon);
+                // the caller-supplied image branch above is left intact.
+                KonceptDragSource.setDragView(dragboard, this);
             }
 
             textLabel.setStyle(previousStyle);

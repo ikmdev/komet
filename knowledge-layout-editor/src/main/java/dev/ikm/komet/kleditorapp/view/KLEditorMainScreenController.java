@@ -119,7 +119,7 @@ public class KLEditorMainScreenController {
         SelectionManager selectionManager = SelectionManager.init(editorWindowControl);
 
         // Properties pane
-        propertiesPane.init(selectionManager);
+        propertiesPane.init(selectionManager, editorWindowModel);
 
         klEditorWindowController.start();
 
