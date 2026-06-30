@@ -1,6 +1,6 @@
 package dev.ikm.komet.kleditorapp.view;
 
-import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
+import dev.ikm.komet.layout.editor.Selectable;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternStandardEditorControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternEditorControlBase;
@@ -8,6 +8,7 @@ import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 
 public class SelectionManager {
@@ -21,6 +22,11 @@ public class SelectionManager {
     public static SelectionManager instance() { return INSTANCE; }
 
     private SelectionManager(EditorWindowControl editorWindowControl) {
+        // The window itself is selectable. Its handler runs only for presses that
+        // aren't consumed by an inner control (sections, patterns, etc.), i.e. clicks on the window
+        // header or empty areas, so clicking inside a section still selects that section.
+        setupListenersForSelection(editorWindowControl);
+
         editorWindowControl.getSectionViews().forEach(this::setupSectionView);
         editorWindowControl.getSectionViews().addListener((ListChangeListener<? super SectionViewControl>) c -> onSectionViewsChanged(c));
     }
@@ -56,28 +62,28 @@ public class SelectionManager {
         }
     }
 
-    private void setupListenersForSelection(EditorWindowBaseControl editorWindowBaseControl) {
-        editorWindowBaseControl.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
-            EditorWindowBaseControl selectedControl = getSelectedControl();
-            if (selectedControl == editorWindowBaseControl) {
+    private <T extends Node & Selectable> void setupListenersForSelection(T selectableControl) {
+        selectableControl.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
+            Selectable selectedControl = getSelectedControl();
+            if (selectedControl == selectableControl) {
                 return;
             }
             if (selectedControl != null) {
                 selectedControl.setSelected(false);
             }
-            setSelectedControl(editorWindowBaseControl);
+            setSelectedControl(selectableControl);
             mouseEvent.consume(); // Consume the event so it doesn't bubble up to the parent
         });
     }
 
     // -- selected Control
-    private final ObjectProperty<EditorWindowBaseControl> selectedControl = new SimpleObjectProperty<>() {
+    private final ObjectProperty<Selectable> selectedControl = new SimpleObjectProperty<>() {
         @Override
         protected void invalidated() {
             get().setSelected(true);
         }
     };
-    public EditorWindowBaseControl getSelectedControl() { return selectedControl.get(); }
-    public ObjectProperty<EditorWindowBaseControl> selectedControlProperty() { return selectedControl; }
-    public void setSelectedControl(EditorWindowBaseControl editorWindowBaseControl) { selectedControl.set(editorWindowBaseControl); }
+    public Selectable getSelectedControl() { return selectedControl.get(); }
+    public ObjectProperty<Selectable> selectedControlProperty() { return selectedControl; }
+    public void setSelectedControl(Selectable selectableControl) { selectedControl.set(selectableControl); }
 }

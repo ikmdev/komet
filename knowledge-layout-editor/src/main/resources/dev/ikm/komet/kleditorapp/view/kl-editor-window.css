@@ -5,11 +5,24 @@
 
     -fx-spacing: 10px;
 
-    -fx-border-color: #999;
-    -fx-border-radius: 6px;
-    -fx-border-style: segments(3, 3);
+    /* Two layered borders: an always-present selection ring (outer) that is transparent until the
+       Window is selected, plus the Window's dashed outline (inner). Keeping the selection ring always
+       present — only changing its color on selection — means showing the selection no longer changes
+       the layout, so the Window doesn't jump. */
+    -fx-border-color: transparent, #999;
+    -fx-border-width: 2px, 1px;
+    -fx-border-style: solid, segments(3, 3);
+    -fx-border-insets: 0, 2px;
+    -fx-border-radius: 6px, 4px;
 
     -fx-padding: 4px;
+}
+
+/* Selection: light up the (always-present) selection ring and hide the dashed outline. Only colors
+   change vs the unselected state, so the border geometry is constant and the Window doesn't jump.
+   The green (#67ba3f) is the same one a selected Section uses (.section-view:selected). */
+.editor-window-control:selected > .window {
+    -fx-border-color: #67ba3f, transparent;
 }
 
 /*******************************************************************************

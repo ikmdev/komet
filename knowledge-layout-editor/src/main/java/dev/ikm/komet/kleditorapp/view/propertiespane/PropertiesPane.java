@@ -3,6 +3,9 @@ package dev.ikm.komet.kleditorapp.view.propertiespane;
 import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.kleditorapp.view.SelectionManager;
 import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
+import dev.ikm.komet.layout.editor.Selectable;
+import dev.ikm.komet.layout.editor.model.EditorWindowModel;
+import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternEditorControlBase;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
@@ -22,6 +25,7 @@ public class PropertiesPane extends Region {
     private final BorderPane mainContainer = new BorderPane();
     private final StackPane controlPropertiesContainer = new StackPane();
 
+    private final WindowPropertiesPane windowPropertiesPane = new WindowPropertiesPane();
     private final SectionPropertiesPane sectionPropertiesPane = new SectionPropertiesPane();
     private final PatternPropertiesPane patternPropertiesPane = new PatternPropertiesPane();
     private final FieldPropertiesPane fieldPropertiesPane = new FieldPropertiesPane();
@@ -41,6 +45,7 @@ public class PropertiesPane extends Region {
 
         mainContainer.setCenter(controlPropertiesContainer);
         controlPropertiesContainer.getChildren().addAll(
+                windowPropertiesPane,
                 sectionPropertiesPane,
                 patternPropertiesPane,
                 fieldPropertiesPane,
@@ -58,9 +63,20 @@ public class PropertiesPane extends Region {
         currentPropertiesPane = controlBasePropertiesPane;
     }
 
-    public void init(SelectionManager selectionManager) {
+    public void init(SelectionManager selectionManager, EditorWindowModel editorWindowModel) {
         selectionManager.selectedControlProperty().subscribe(() -> {
-            EditorWindowBaseControl control = selectionManager.getSelectedControl();
+            Selectable selected = selectionManager.getSelectedControl();
+
+            // The whole Window is selectable too, but it isn't an EditorWindowBaseControl
+            // and its model isn't registered in the control<->model factory map, so handle it directly.
+            if (selected instanceof EditorWindowControl) {
+                setTitle("Window");
+                setCurrentPropertiesPane(windowPropertiesPane);
+                windowPropertiesPane.initControl(editorWindowModel);
+                return;
+            }
+
+            EditorWindowBaseControl control = (EditorWindowBaseControl) selected;
             switch (control) {
                 case SectionViewControl sectionView -> {
                     setTitle(sectionView.getTagText());

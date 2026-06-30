@@ -76,69 +76,7 @@
                                         <Tooltip text="Coordinates"/>
                                     </tooltip>
                                 </MenuButton>
-                                <Rectangle fill="DODGERBLUE" height="26.0" stroke="BLACK" strokeType="INSIDE"
-                                           styleClass="vertical-divider" width="1.0"/>
-                                <HBox fx:id="buttonContainer" alignment="CENTER" spacing="15.0">
-                                    <children>
-                                        <StackPane fx:id="publishStackPane">
-                                            <children>
-                                                <Button fx:id="savePatternButton" mnemonicParsing="false"
-                                                        onAction="#saveConceptKL" text="Publish">
-                                                    <graphic>
-                                                        <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
-                                                            <content>
-                                                                <SVGConstants fx:constant="SAVE_SVG_PATH"/>
-                                                            </content>
-                                                        </SVGPath>
-                                                    </graphic>
-                                                </Button>
-                                            </children>
-                                        </StackPane>
-                                        <Button mnemonicParsing="false" text="Button">
-                                            <graphic>
-                                                <SVGPath fillRule="EVEN_ODD" styleClass="duplicate">
-                                                    <content>
-                                                        <SVGConstants fx:constant="DUPLICATE_SVG_PATH"/>
-                                                    </content>
-                                                </SVGPath>
-                                            </graphic>
-                                            <tooltip>
-                                                <Tooltip text="Duplicate Pattern"/>
-                                            </tooltip>
-                                        </Button>
-                                        <Button mnemonicParsing="false" styleClass="share-concept" text="Button">
-                                            <graphic>
-                                                <Region styleClass="share-icon"/>
-                                            </graphic>
-                                            <tooltip>
-                                                <Tooltip text="Share Pattern"/>
-                                            </tooltip>
-                                        </Button>
-                                        <Button mnemonicParsing="false" styleClass="favorite-concept" text="Button">
-                                            <graphic>
-                                                <Region styleClass="favorite-icon"/>
-                                            </graphic>
-                                            <tooltip>
-                                                <Tooltip text="Favorite Pattern"/>
-                                            </tooltip>
-                                        </Button>
-                                        <ToggleButton fx:id="reasonerToggleButton" mnemonicParsing="false"
-                                                      styleClass="reasoner" text="ToggleButton">
-                                            <graphic>
-                                                <Region prefHeight="200.0" prefWidth="200.0">
-                                                    <styleClass>
-                                                        <String fx:value="icon"/>
-                                                        <String fx:value="reasoner-icon"/>
-                                                    </styleClass>
-                                                </Region>
-                                            </graphic>
-                                            <tooltip>
-                                                <Tooltip text="Reasoner"/>
-                                            </tooltip>
-                                        </ToggleButton>
-                                    </children>
-                                </HBox>
-                                <Separator orientation="VERTICAL" prefHeight="10.0"
+                                <Separator fx:id="controlBarSeparator" orientation="VERTICAL" prefHeight="10.0"
                                            styleClass="thin-vertical-separator"/>
                                 <ToggleButton fx:id="timelineToggleButton" mnemonicParsing="false" styleClass="timeline"
                                               text="ToggleButton">

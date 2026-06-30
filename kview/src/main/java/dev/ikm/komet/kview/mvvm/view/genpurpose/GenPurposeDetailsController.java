@@ -88,20 +88,17 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.Separator;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
@@ -109,7 +106,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -167,8 +163,6 @@ public class GenPurposeDetailsController {
      */
     private final Set<EditorSectionModel> refreshingSections = new HashSet<>();
 
-    private final Tooltip publishTooltip = new Tooltip();
-
     private PatternSemanticsPresenter previousPatternSemanticsInEditMode;
 
     @FXML
@@ -199,9 +193,9 @@ public class GenPurposeDetailsController {
     @FXML
     private PublicIDListControl identifierControl;
     @FXML
-    private Button savePatternButton;
+    private ToggleButton timelineToggleButton;
     @FXML
-    private StackPane publishStackPane;
+    private Separator controlBarSeparator;
     @FXML
     private HBox tabHeader;
     @FXML
@@ -232,20 +226,12 @@ public class GenPurposeDetailsController {
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
-        // Bind the Publish button's disable property to the ViewModel
-        publishTooltip.textProperty().bind(Bindings.when(savePatternButton.disableProperty())
-                .then("Publish: Disabled")
-                .otherwise("Submit"));
-
         // Setup Properties Bump out view
         setupProperties();
 
         // When the user submits an edited STAMP from the properties panel, refresh the header STAMP.
         propertiesController.getStampFormViewModel().getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED)
                 .subscribe(isConfirmed -> onStampConfirmedOrSubmitted(isConfirmed));
-
-        // Assign the tooltip to the StackPane (container of Publish button)
-        setupTooltipForDisabledButton(savePatternButton);
 
         Subscriber<GenPurposeEvent> refreshSubscriber = evt -> {
             //Set up the Listener to refresh the details area (After user hits submit button on the right side)
@@ -589,62 +575,6 @@ public class GenPurposeDetailsController {
         }
     }
 
-    @FXML
-    private void saveConceptKL(ActionEvent actionEvent) {
-    }
-
-    private void setupTooltipForDisabledButton(Button button) {
-
-        button.disabledProperty().subscribe(isNowDisabled -> {
-            if (isNowDisabled) {
-                Tooltip.uninstall(button, publishTooltip);
-
-                // Create unique handlers for each button-tooltip pair
-                EventHandler<MouseEvent> showHandler = showTooltipOnDisabledButton(button, publishTooltip);
-                EventHandler<MouseEvent> hideHandler = hideTooltipHandler(publishTooltip);
-
-                // Store handlers on the button's properties for later removal
-                button.getProperties().put("showHandler", showHandler);
-                button.getProperties().put("hideHandler", hideHandler);
-
-                publishStackPane.addEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
-                publishStackPane.addEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
-            } else {
-                Tooltip.install(button, publishTooltip);
-                publishTooltip.hide();
-
-                // Remove handlers if present
-                EventHandler<MouseEvent> showHandler = (EventHandler<MouseEvent>) button.getProperties().get("showHandler");
-                EventHandler<MouseEvent> hideHandler = (EventHandler<MouseEvent>) button.getProperties().get("hideHandler");
-                if (showHandler != null) publishStackPane.removeEventFilter(MouseEvent.MOUSE_MOVED, showHandler);
-                if (hideHandler != null) publishStackPane.removeEventFilter(MouseEvent.MOUSE_EXITED, hideHandler);
-            }
-        });
-    }
-
-    private EventHandler<MouseEvent> showTooltipOnDisabledButton(Button button, Tooltip tooltip) {
-        return event -> {
-            if (button.isDisabled()) {
-                Bounds bounds = button.localToScreen(button.getBoundsInLocal());
-                double mouseX = event.getScreenX();
-                double mouseY = event.getScreenY();
-                if (bounds.contains(mouseX, mouseY)) {
-                    if (!tooltip.isShowing()) {
-                        tooltip.show(button, mouseX, mouseY + 10);
-                    }
-                } else {
-                    tooltip.hide();
-                }
-            } else {
-                tooltip.hide();
-            }
-        };
-    }
-
-    private EventHandler<MouseEvent> hideTooltipHandler(Tooltip tooltip) {
-        return event -> tooltip.hide();
-    }
-
     /**
      * Updates draggable behavior for the properties panel based on its open/closed state.
      * <p>     * When opened, adds the properties tabs pane as a draggable node. When closed,
@@ -677,6 +607,9 @@ public class GenPurposeDetailsController {
 
         editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences, viewCalculator, windowTitle);
 
+        // Apply the Window settings authored in the KL editor (this window shares the same model).
+        applyEditorWindowSettings();
+
         EditorSectionModel mainSection = editorWindowModel.getMainSection();
 
         // Main TitledPane
@@ -700,6 +633,38 @@ public class GenPurposeDetailsController {
 
         // Initial view update
         updateView();
+    }
+
+    /**
+     * Applies the Window settings authored in the KL editor — the control-bar options (Coordinate and
+     * Timeline icons) and the Window's view size — to this realized Window. The editor and this Window
+     * share the same {@link EditorWindowModel} instance, so edits made while both are open take effect
+     * live. An "Auto" size ({@link EditorWindowModel#AUTO_SIZE}) leaves the Window's own (workspace)
+     * sizing in charge.
+     */
+    private void applyEditorWindowSettings() {
+        // Control-bar options: show/hide the Coordinate and Timeline icons. The divider between them
+        // only makes sense when both are shown.
+        coordinatesMenuButton.visibleProperty().bind(editorWindowModel.coordinateVisibleProperty());
+        coordinatesMenuButton.managedProperty().bind(editorWindowModel.coordinateVisibleProperty());
+        timelineToggleButton.visibleProperty().bind(editorWindowModel.timelineVisibleProperty());
+        timelineToggleButton.managedProperty().bind(editorWindowModel.timelineVisibleProperty());
+        controlBarSeparator.visibleProperty().bind(
+                Bindings.and(editorWindowModel.coordinateVisibleProperty(), editorWindowModel.timelineVisibleProperty()));
+        controlBarSeparator.managedProperty().bind(controlBarSeparator.visibleProperty());
+
+        // View size: apply an explicit Width/Height. "Auto" (< 0) leaves the workspace's own sizing
+        // alone. The framework sizes this same root pane via setPrefWidth/Height, so we set (not bind) it.
+        editorWindowModel.prefWidthProperty().subscribe(width -> {
+            if (width.doubleValue() >= 0) {
+                detailsOuterBorderPane.setPrefWidth(width.doubleValue());
+            }
+        });
+        editorWindowModel.prefHeightProperty().subscribe(height -> {
+            if (height.doubleValue() >= 0) {
+                detailsOuterBorderPane.setPrefHeight(height.doubleValue());
+            }
+        });
     }
 
     /**

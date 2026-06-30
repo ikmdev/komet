@@ -40,6 +40,12 @@ public class KLEditorWindowController {
 
         editorWindowControl.titleProperty().bind(editorWindowModel.titleProperty());
 
+        // Window (view) size and control-bar options are driven by the model (edited via the Window pane).
+        editorWindowControl.prefWidthProperty().bind(editorWindowModel.prefWidthProperty());
+        editorWindowControl.prefHeightProperty().bind(editorWindowModel.prefHeightProperty());
+        editorWindowControl.coordinateVisibleProperty().bind(editorWindowModel.coordinateVisibleProperty());
+        editorWindowControl.timelineVisibleProperty().bind(editorWindowModel.timelineVisibleProperty());
+
         editorWindowControl.setOnAddSectionAction(this::onAddSectionAction);
 
         // Main Section
