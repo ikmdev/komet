@@ -15,9 +15,22 @@
  */
 package dev.ikm.komet.markdown.richtext;
 
+import javafx.geometry.Insets;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextFlow;
 import jfx.incubator.scene.control.richtext.model.RichParagraph;
 import jfx.incubator.scene.control.richtext.model.StyleAttributeMap;
 import org.commonmark.ext.gfm.tables.TableBlock;
+import org.commonmark.ext.gfm.tables.TableBody;
 import org.commonmark.ext.gfm.tables.TableCell;
 import org.commonmark.ext.gfm.tables.TableHead;
 import org.commonmark.ext.gfm.tables.TableRow;
@@ -170,38 +183,222 @@ public final class MarkdownRichTextRenderer {
         }
     }
 
+    /**
+     * Renders a GFM table as a single paragraph holding one inline {@link GridPane} (built lazily
+     * when the paragraph is laid out), with chip-aware {@link TextFlow} cells. The parallel
+     * plain-text projection is the table's GFM serialization, so a RichTextArea copy yields the
+     * #596 interchange format.
+     */
     private void renderTable(TableBlock tb, List<RichParagraph> out, List<String> plain,
                              StyleAttributeMap baseStyle) {
+        out.add(RichParagraph.builder().addInlineNode(() -> buildTableNode(tb)).build());
+        plain.add(GfmTableSerializer.serialize(TableModel.fromCommonMark(tb)));
+    }
+
+    private GridPane buildTableNode(TableBlock tb) {
+        GridPane grid = new GridPane();
+        grid.getStyleClass().add("md-table");
+        grid.setHgap(0);
+        grid.setVgap(0);
+        grid.setMaxWidth(Double.MAX_VALUE);
+
+        int row = 0;
+        int columnCount = 0;
         for (Node section = tb.getFirstChild(); section != null; section = section.getNext()) {
-            boolean header = section instanceof TableHead;
-            StyleAttributeMap rowStyle = header
-                    ? baseStyle.combine(StyleAttributeMap.builder().setBold(true).build())
-                    : baseStyle;
-            for (Node rowNode = section.getFirstChild(); rowNode != null; rowNode = rowNode.getNext()) {
-                if (!(rowNode instanceof TableRow row)) {
+            if (section instanceof TableHead head) {
+                row = renderTableSection(head, grid, row, true);
+                columnCount = Math.max(columnCount, columnsInFirstRow(head));
+            } else if (section instanceof TableBody body) {
+                row = renderTableSection(body, grid, row, false);
+                columnCount = Math.max(columnCount, columnsInFirstRow(body));
+            }
+        }
+        for (int i = 0; i < columnCount; i++) {
+            ColumnConstraints cc = new ColumnConstraints();
+            // SOMETIMES + a fill default lets columns share the available width and lets each
+            // cell's TextFlow wrap rather than overflow a narrow host (e.g. KlSupplementalArea).
+            cc.setHgrow(Priority.SOMETIMES);
+            cc.setFillWidth(true);
+            // Floor every column: a TextFlow cell reports a near-zero min width, so without this a
+            // short-label column sitting next to long-content columns gets starved down to a single
+            // character and wraps its label vertically. The floor only binds in that pathological
+            // case; otherwise columns stay content-proportional.
+            cc.setMinWidth(base * 6);
+            grid.getColumnConstraints().add(cc);
+        }
+        // Right-click → copy the table to the clipboard in the #596 interchange format
+        // (text/plain GFM + text/html), so it pastes losslessly into Zulip/adoc and richly elsewhere.
+        MenuItem copyItem = new MenuItem("Copy table");
+        copyItem.setOnAction(ignored -> TableClipboard.copy(TableModel.fromCommonMark(tb)));
+        ContextMenu menu = new ContextMenu(copyItem);
+        grid.setOnContextMenuRequested(e -> menu.show(grid, e.getScreenX(), e.getScreenY()));
+        return grid;
+    }
+
+    private int renderTableSection(Node section, GridPane grid, int startRow, boolean header) {
+        int row = startRow;
+        for (Node rowNode = section.getFirstChild(); rowNode != null; rowNode = rowNode.getNext()) {
+            if (!(rowNode instanceof TableRow tr)) {
+                continue;
+            }
+            int col = 0;
+            for (Node cellNode = tr.getFirstChild(); cellNode != null; cellNode = cellNode.getNext()) {
+                if (!(cellNode instanceof TableCell tc)) {
                     continue;
                 }
-                RichParagraph.Builder b = RichParagraph.builder();
-                StringBuilder p = new StringBuilder();
-                boolean firstCell = true;
-                for (Node cell = row.getFirstChild(); cell != null; cell = cell.getNext()) {
-                    if (!(cell instanceof TableCell)) {
-                        continue;
+                TextFlow cell = buildCellFlow(tc, header);
+                grid.add(cell, col, row);
+                GridPane.setHgrow(cell, Priority.SOMETIMES);
+                col++;
+            }
+            row++;
+        }
+        return row;
+    }
+
+    private static int columnsInFirstRow(Node section) {
+        int n = 0;
+        for (Node r = section.getFirstChild(); r != null; r = r.getNext()) {
+            if (r instanceof TableRow tr) {
+                for (Node c = tr.getFirstChild(); c != null; c = c.getNext()) {
+                    if (c instanceof TableCell) {
+                        n++;
                     }
-                    if (!firstCell) {
-                        b.addSegment("  |  ", baseStyle);
-                        p.append("  |  ");
-                    }
-                    firstCell = false;
-                    appendInlines(b, cell.getFirstChild(), rowStyle);
-                    p.append(plainOf(cell));
                 }
-                emit(b, p.toString(), out, plain);
-                if (header) {
-                    emit(RichParagraph.builder().addSegment("─".repeat(10), baseStyle),
-                            "─".repeat(10), out, plain);
+                return n;
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Builds a table cell as a wrapping {@link TextFlow} whose text runs and concept chips come
+     * from the same {@link InlineDecorator} used for flowing text — so identicon chips render
+     * inside cells, not as stray text.
+     */
+    private TextFlow buildCellFlow(TableCell tc, boolean header) {
+        TextFlow flow = new TextFlow();
+        flow.getStyleClass().add(header ? "md-table-header" : "md-table-cell");
+        flow.setPadding(new Insets(3, 8, 3, 8));
+        flow.setMaxWidth(Double.MAX_VALUE);
+        flow.setTextAlignment(alignmentOf(tc));
+        // Inline gridlines so the table reads as a grid even without an external stylesheet
+        // (the assistant transcript's RichTextArea doesn't load markdown.css). Adjacent cells'
+        // half-px borders overlap into ~1px rules; the header row gets a light fill.
+        flow.setStyle("-fx-border-color: #d0d7de; -fx-border-width: 0.5;"
+                + (header ? " -fx-background-color: #f6f8fa;" : ""));
+        appendCellInlines(flow, tc.getFirstChild(), new CellStyle(header, false, false, false));
+        return flow;
+    }
+
+    /** Active inline style while walking a table cell (built explicitly to avoid reading back the
+     *  incubator {@code StyleAttributeMap}). */
+    private record CellStyle(boolean bold, boolean italic, boolean strike, boolean mono) {
+        CellStyle withBold() {
+            return new CellStyle(true, italic, strike, mono);
+        }
+
+        CellStyle withItalic() {
+            return new CellStyle(bold, true, strike, mono);
+        }
+
+        CellStyle withMono() {
+            return new CellStyle(bold, italic, strike, true);
+        }
+    }
+
+    private void appendCellInlines(TextFlow flow, Node first, CellStyle style) {
+        for (Node n = first; n != null; n = n.getNext()) {
+            switch (n) {
+                case Text t -> emitCellText(flow, t.getLiteral(), style);
+                case StrongEmphasis s -> appendCellInlines(flow, s.getFirstChild(), style.withBold());
+                case Emphasis e -> appendCellInlines(flow, e.getFirstChild(), style.withItalic());
+                case Code c -> emitCellText(flow, c.getLiteral(), style.withMono());
+                case SoftLineBreak ignored -> flow.getChildren().add(new javafx.scene.text.Text(" "));
+                case HardLineBreak ignored -> flow.getChildren().add(new javafx.scene.text.Text(" "));
+                case Link l -> appendCellInlines(flow, l.getFirstChild(), style);
+                case Image img -> flow.getChildren().add(imageNode(img.getDestination()));
+                default -> emitCellText(flow, plainOf(n), style);
+            }
+        }
+    }
+
+    /**
+     * Routes a cell text run through the decorator, materialising text pieces as styled
+     * {@code Text} nodes and node pieces (chips) directly into the flow. Unlike the flowing-text
+     * path (which can defer a node via {@code addInlineNode}), a {@link TextFlow} cell needs real
+     * child nodes, so node pieces are materialised here — when the table's own {@code GridPane}
+     * supplier runs (already deferred until the table is laid out). A null node (a misbehaving
+     * decorator) is skipped rather than added, since {@code TextFlow} rejects null children.
+     */
+    private void emitCellText(TextFlow flow, String text, CellStyle style) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+        for (InlinePiece piece : decorator.decorate(text, cellStyleAttr(style))) {
+            switch (piece) {
+                case InlinePiece.TextRun tr -> {
+                    if (tr.text() != null && !tr.text().isEmpty()) {
+                        flow.getChildren().add(cellTextNode(tr.text(), style));
+                    }
+                }
+                case InlinePiece.NodeRun nr -> {
+                    javafx.scene.Node node = nr.node().get();
+                    if (node != null) {
+                        flow.getChildren().add(node);
+                    }
                 }
             }
+        }
+    }
+
+    private javafx.scene.text.Text cellTextNode(String text, CellStyle style) {
+        javafx.scene.text.Text t = new javafx.scene.text.Text(text);
+        FontWeight weight = style.bold() ? FontWeight.BOLD : FontWeight.NORMAL;
+        FontPosture posture = style.italic() ? FontPosture.ITALIC : FontPosture.REGULAR;
+        t.setFont(Font.font(style.mono() ? MONO : null, weight, posture, base));
+        t.setStrikethrough(style.strike());
+        return t;
+    }
+
+    private StyleAttributeMap cellStyleAttr(CellStyle style) {
+        StyleAttributeMap.Builder b = StyleAttributeMap.builder().setFontSize(base);
+        if (style.bold()) {
+            b.setBold(true);
+        }
+        if (style.italic()) {
+            b.setItalic(true);
+        }
+        if (style.mono()) {
+            b.setFontFamily(MONO);
+        }
+        return b.build();
+    }
+
+    private static TextAlignment alignmentOf(TableCell tc) {
+        TableCell.Alignment a = tc.getAlignment();
+        if (a == null) {
+            return TextAlignment.LEFT;
+        }
+        return switch (a) {
+            case LEFT -> TextAlignment.LEFT;
+            case CENTER -> TextAlignment.CENTER;
+            case RIGHT -> TextAlignment.RIGHT;
+        };
+    }
+
+    /** A deferred, size-capped inline image; falls back to an empty node if the URL is unusable. */
+    private ImageView imageNode(String url) {
+        try {
+            if (url == null || url.isBlank()) {
+                return new ImageView();
+            }
+            ImageView view = new ImageView(new javafx.scene.image.Image(url, true));
+            view.setPreserveRatio(true);
+            view.setFitWidth(base * 24);
+            return view;
+        } catch (RuntimeException e) {
+            return new ImageView();
         }
     }
 
@@ -246,9 +443,7 @@ public final class MarkdownRichTextRenderer {
                         decorator.emit(b, " (" + l.getDestination() + ")", baseStyle);
                     }
                 }
-                case Image img -> decorator.emit(b, "[image"
-                        + (img.getDestination() == null || img.getDestination().isBlank()
-                        ? "" : ": " + img.getDestination()) + "]", baseStyle);
+                case Image img -> b.addInlineNode(() -> imageNode(img.getDestination()));
                 default -> decorator.emit(b, plainOf(n), baseStyle);
             }
         }
