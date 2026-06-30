@@ -46,6 +46,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLWorkspace;
+import dev.ikm.komet.kview.controls.KlWindowControlToolbar;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.KometLabel;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
@@ -92,14 +93,10 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.Separator;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
@@ -173,11 +170,10 @@ public class GenPurposeDetailsController {
     @FXML
     private BorderPane detailsOuterBorderPane;
     @FXML
-    private ToggleButton propertiesToggleButton;
-    @FXML
-    private MenuButton coordinatesMenuButton;
+    private KlWindowControlToolbar windowControlToolbar;
     /**
-     * popup for the filter coordinates menu, used with coordinatesMenuButton. An instance of FilterOptionsPopup.
+     * popup for the filter coordinates menu, used with the toolbar's coordinates menu button.
+     * An instance of FilterOptionsPopup.
      */
     private FilterOptionsPopup filterOptionsPopup;
     /**
@@ -186,21 +182,13 @@ public class GenPurposeDetailsController {
     @FXML
     private VerticallyFilledPane propertiesSlideoutTrayPane;
     @FXML
-    private ImageView identiconImageView;
-    @FXML
     private ComponentItemNode windowConceptTitle;
     @FXML
     private Tooltip windowConceptTitleTooltip;
     @FXML
     private PublicIDListControl identifierControl;
     @FXML
-    private ToggleButton timelineToggleButton;
-    @FXML
-    private Separator controlBarSeparator;
-    @FXML
     private HBox tabHeader;
-    @FXML
-    private HBox conceptHeaderControlToolBarHbox;
     @FXML
     private Text windowTitleLabel;
     private BorderPane propertiesBorderPane;
@@ -223,7 +211,13 @@ public class GenPurposeDetailsController {
         // writes the window's nodeView override, which the window's KL context + areas resolve through.
         filterOptionsPopup = setupViewCoordinateOptionsPopup(genPurposeViewModel.getViewProperties(),
                 FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, detailsOuterBorderPane,
-                coordinatesMenuButton, this::updateView);
+                windowControlToolbar.getCoordinatesMenuButton(), this::updateView);
+
+        // Wire the toolbar's behaviour: the close button takes an action, while the properties panel
+        // reacts to the toggle's selected state (driven by user clicks or setPropertiesSelected).
+        windowControlToolbar.setOnCloseAction(this::closeConceptWindow);
+        windowControlToolbar.propertiesSelectedProperty()
+                .subscribe((wasSelected, isSelected) -> openPropertiesPanel(isSelected));
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
@@ -290,46 +284,19 @@ public class GenPurposeDetailsController {
                 GenPurposeEvent.class, refreshSubscriber);
 
         // Setup window support with explicit draggable nodes
-        addDraggableNodes(detailsOuterBorderPane, tabHeader, conceptHeaderControlToolBarHbox);
+        addDraggableNodes(detailsOuterBorderPane, tabHeader, windowControlToolbar);
 
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
-        // in that state, the properties bump out will be slid out, therefore firing will perform a slide in
-        closePropertiesPanelEventSubscriber = evt -> propertiesToggleButton.fire();
+        // in that state, the properties bump out will be slid out, therefore toggling will perform a slide in
+        closePropertiesPanelEventSubscriber = evt ->
+                windowControlToolbar.setPropertiesSelected(!windowControlToolbar.isPropertiesSelected());
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
-
-        // Rule-driven + plugin-contributed identicon context menu (e.g. the plugin's
-        // "Post state + history to Zulip"), uniform with the concept identicon via
-        // AddToContextMenu.providers() — so plugins need not touch this controller.
-        // Guard: this window's FXML may not supply an identicon (its header differs from the
-        // concept/pattern windows), in which case the @FXML field is null. Skip wiring rather than fail init.
-        if (identiconImageView != null) {
-            identiconImageView.setOnContextMenuRequested(contextMenuEvent -> {
-                dev.ikm.tinkar.terms.EntityFacade currentEntity =
-                        genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
-                if (currentEntity == null) {
-                    return;
-                }
-                javafx.scene.control.ContextMenu identiconContextMenu = new javafx.scene.control.ContextMenu();
-                javafx.beans.property.SimpleObjectProperty<dev.ikm.tinkar.terms.EntityFacade> focusedEntity =
-                        new javafx.beans.property.SimpleObjectProperty<>(currentEntity);
-                for (dev.ikm.komet.framework.context.AddToContextMenu provider
-                        : dev.ikm.komet.framework.context.AddToContextMenu.providers()) {
-                    provider.addToContextMenu((javafx.scene.control.Control) null, identiconContextMenu,
-                            getViewProperties(), focusedEntity,
-                            new javafx.beans.property.SimpleIntegerProperty(), () -> { });
-                }
-                if (!identiconContextMenu.getItems().isEmpty()) {
-                    identiconContextMenu.show(identiconImageView,
-                            contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
-                }
-            });
-        }
     }
 
     private void openPropertiesPanel() {
-        LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + propertiesToggleButton.isSelected());
+        LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + windowControlToolbar.isPropertiesSelected());
 
-        propertiesToggleButton.setSelected(true);
+        windowControlToolbar.setPropertiesSelected(true);
         if (isClosed(propertiesSlideoutTrayPane)) {
             slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
         }
@@ -338,23 +305,21 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * User is clicking on the Toggle switch to open or close Properties bump out.
+     * Runs when the user toggles the Properties switch to open or close the Properties bump out.
      *
-     * @param event Button click event.
+     * @param selected the new selected state of the properties toggle
      */
-    @FXML
-    private void openPropertiesPanel(ActionEvent event) {
-        ToggleButton propertyToggle = (ToggleButton) event.getSource();
-        EvtType<KLPropertyPanelEvent> eventEvtType = propertyToggle.isSelected() ? KLPropertyPanelEvent.OPEN_PANEL : KLPropertyPanelEvent.CLOSE_PANEL;
+    private void openPropertiesPanel(boolean selected) {
+        EvtType<KLPropertyPanelEvent> eventEvtType = selected ? KLPropertyPanelEvent.OPEN_PANEL : KLPropertyPanelEvent.CLOSE_PANEL;
 
-        updateDraggableNodesForPropertiesPanel(propertyToggle.isSelected());
+        updateDraggableNodesForPropertiesPanel(selected);
 
         // Keep the header STAMP control's selected state in sync with the properties panel toggle.
         isUpdatingStampSelection = true;
-        stampViewControl.setSelected(propertyToggle.isSelected());
+        stampViewControl.setSelected(selected);
         isUpdatingStampSelection = false;
 
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(propertyToggle, eventEvtType));
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(windowControlToolbar, eventEvtType));
     }
 
     public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
@@ -384,9 +349,8 @@ public class GenPurposeDetailsController {
         }
 
         if (stampViewControl.isSelected()) {
-            if (!propertiesToggleButton.isSelected()) {
-                propertiesToggleButton.fire();
-            }
+            windowControlToolbar.setPropertiesSelected(true);
+
             // The reference component always exists in a Knowledge Layout window, so editing its STAMP
             // always adds a new version (ADD_STAMP). Guard against a window opened without one.
             EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
@@ -525,8 +489,8 @@ public class GenPurposeDetailsController {
         // listen for open and close events
         Subscriber<KLPropertyPanelEvent> propertiesEventSubscriber = (evt) -> {
             if (evt.getEventType() == CLOSE_PANEL) {
-                LOG.info("propBumpOutListener - Close Properties bumpout toggle = " + propertiesToggleButton.isSelected());
-                propertiesToggleButton.setSelected(false);
+                LOG.info("propBumpOutListener - Close Properties bumpout toggle = " + windowControlToolbar.isPropertiesSelected());
+                windowControlToolbar.setPropertiesSelected(false);
                 if (isOpen(propertiesSlideoutTrayPane)) {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
@@ -567,8 +531,7 @@ public class GenPurposeDetailsController {
         this.onCloseConceptWindow = onClose;
     }
 
-    @FXML
-    void closeConceptWindow(ActionEvent event) {
+    void closeConceptWindow() {
         LOG.info("Cleanup occurring: Closing Window: " + windowConceptTitle.getComponentItem());
 
         if (this.onCloseConceptWindow != null) {
@@ -644,15 +607,9 @@ public class GenPurposeDetailsController {
      * sizing in charge.
      */
     private void applyEditorWindowSettings() {
-        // Control-bar options: show/hide the Coordinate and Timeline icons. The divider between them
-        // only makes sense when both are shown.
-        coordinatesMenuButton.visibleProperty().bind(editorWindowModel.coordinateVisibleProperty());
-        coordinatesMenuButton.managedProperty().bind(editorWindowModel.coordinateVisibleProperty());
-        timelineToggleButton.visibleProperty().bind(editorWindowModel.timelineVisibleProperty());
-        timelineToggleButton.managedProperty().bind(editorWindowModel.timelineVisibleProperty());
-        controlBarSeparator.visibleProperty().bind(
-                Bindings.and(editorWindowModel.coordinateVisibleProperty(), editorWindowModel.timelineVisibleProperty()));
-        controlBarSeparator.managedProperty().bind(controlBarSeparator.visibleProperty());
+        // Control-bar options: show/hide the Coordinate and Timeline icons.
+        windowControlToolbar.coordinateVisibleProperty().bind(editorWindowModel.coordinateVisibleProperty());
+        windowControlToolbar.timelineVisibleProperty().bind(editorWindowModel.timelineVisibleProperty());
 
         // View size: apply an explicit Width/Height. "Auto" (< 0) leaves the workspace's own sizing
         // alone. The framework sizes this same root pane via setPrefWidth/Height, so we set (not bind) it.
