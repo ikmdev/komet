@@ -62,7 +62,7 @@ public class EditorWindowControl extends Control implements Selectable {
     public void setCoordinateVisible(boolean visible) { coordinateVisible.set(visible); }
 
     // -- timeline icon visible (control bar option)
-    private final BooleanProperty timelineVisible = new SimpleBooleanProperty(this, "timelineVisible", true);
+    private final BooleanProperty timelineVisible = new SimpleBooleanProperty(this, "timelineVisible", false);
     public boolean isTimelineVisible() { return timelineVisible.get(); }
     public BooleanProperty timelineVisibleProperty() { return timelineVisible; }
     public void setTimelineVisible(boolean visible) { timelineVisible.set(visible); }

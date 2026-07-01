@@ -266,7 +266,7 @@ public class EditorWindowModel extends EditorModelBase {
     /**
      * Whether the Timeline control-bar icon is shown in the Window header.
      */
-    private final BooleanProperty timelineVisible = new SimpleBooleanProperty(this, "timelineVisible", true);
+    private final BooleanProperty timelineVisible = new SimpleBooleanProperty(this, "timelineVisible", false);
     public boolean isTimelineVisible() { return timelineVisible.get(); }
     public BooleanProperty timelineVisibleProperty() { return timelineVisible; }
     public void setTimelineVisible(boolean visible) { timelineVisible.set(visible); }
