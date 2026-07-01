@@ -176,8 +176,12 @@ public class WindowPropertiesPane extends ControlBasePropertiesPane<EditorWindow
         if (heightSubscription != null) {
             heightSubscription.unsubscribe();
         }
-        coordinateToggleSwitch.selectedProperty().unbindBidirectional(currentlyShownModel.coordinateVisibleProperty());
-        timelineToggleSwitch.selectedProperty().unbindBidirectional(currentlyShownModel.timelineVisibleProperty());
+        // The Window may never have been selected (so the toggles were never bound to a model). Guard
+        // against a null model before unbinding, mirroring the null check in doInit().
+        if (currentlyShownModel != null) {
+            coordinateToggleSwitch.selectedProperty().unbindBidirectional(currentlyShownModel.coordinateVisibleProperty());
+            timelineToggleSwitch.selectedProperty().unbindBidirectional(currentlyShownModel.timelineVisibleProperty());
+        }
     }
 
     private void commitWidth() {
