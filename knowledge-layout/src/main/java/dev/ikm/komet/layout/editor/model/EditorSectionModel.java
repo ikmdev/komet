@@ -98,7 +98,8 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
     public void loadSectionDetails(KometPreferences sectionPreferences, ViewCalculator viewCalculator) {
         sectionPreferences.getInt(KL_GRID_NUMBER_COLUMNS).ifPresent(this::setNumberColumns);
 
-        sectionPreferences.getInt(KL_REFERENCE_COMPONENT).ifPresent(nid -> setReferenceComponent(new EditorPatternModel(viewCalculator, nid)));
+        sectionPreferences.getEntity(KL_REFERENCE_COMPONENT).ifPresent(referenceComponent ->
+                setReferenceComponent(new EditorPatternModel(viewCalculator, referenceComponent.nid())));
 
         List<EditorPatternModel> editorPatternModels = EditorPatternModel.load(sectionPreferences, viewCalculator);
         getPatterns().setAll(editorPatternModels);
@@ -204,7 +205,7 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
 
         sectionPreferences.putInt(KL_GRID_NUMBER_COLUMNS, getNumberColumns());
         if (getReferenceComponent() != null) {
-            sectionPreferences.putInt(KL_REFERENCE_COMPONENT, getReferenceComponent().getNid());
+            sectionPreferences.putEntity(KL_REFERENCE_COMPONENT, getReferenceComponent().getPatternFacade());
         }
 
         for (EditorPatternModel editorPatternModel : getPatterns()) {
