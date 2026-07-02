@@ -37,11 +37,24 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
 
     public static final String UNTITLED_SECTION_NAME = "Untitled";
 
-    private boolean hasBeenAutonamedFromPatternAdded = false;
+    /** Guards {@link #name} updates made by this class so they aren't mistaken for a manual (user) rename. */
+    private boolean settingNameInternally = false;
+
+    /**
+     * True once the user has manually renamed this Section. A manually assigned name is preserved and is
+     * never auto-reset when the Section is emptied.
+     */
+    private boolean nameManuallyAssigned = false;
 
     public EditorSectionModel() {
         patterns.addListener(this::patternsChanged);
         supplementalAreas.addListener(this::supplementalAreasChanged);
+        // Detect manual (user) renames so they can be preserved; internal auto-naming is guarded.
+        name.subscribe(() -> {
+            if (!settingNameInternally) {
+                nameManuallyAssigned = true;
+            }
+        });
     }
 
     /*******************************************************************************
@@ -128,10 +141,13 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
     private void patternsChanged(ListChangeListener.Change<? extends EditorPatternModel> change) {
         while(change.next()) {
             if (change.wasAdded()) {
-                if (!hasBeenAutonamedFromPatternAdded) {
-                    autoNameSection(change.getAddedSubList());
-                }
+                autoNameSection(change.getAddedSubList());
                 change.getAddedSubList().forEach(pattern -> pattern.setParentSection(this));
+            }
+            // When the Section is emptied, revert an auto-assigned name so the next Pattern added can
+            // name the Section again (see issue #93). A name the user set manually is left untouched.
+            if (change.wasRemoved() && patterns.isEmpty() && !nameManuallyAssigned) {
+                setNameInternally(UNTITLED_SECTION_NAME);
             }
         }
     }
@@ -150,10 +166,20 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
             String newName = patternTitle.endsWith("Pattern")
                     ? patternTitle.substring(0, patternTitle.length() - "Pattern".length()).trim()
                     : patternTitle.stripTrailing();
-            name.set(newName);
+            setNameInternally(newName);
         }
+    }
 
-        hasBeenAutonamedFromPatternAdded = true;
+    /**
+     * Sets the Section name on behalf of the application (auto-naming or reset), without marking the name
+     * as manually assigned by the user.
+     *
+     * @param newName the name to set
+     */
+    private void setNameInternally(String newName) {
+        settingNameInternally = true;
+        name.set(newName);
+        settingNameInternally = false;
     }
 
     private void supplementalAreasChanged(ListChangeListener.Change<? extends EditorSupplementalAreaModel> change) {
