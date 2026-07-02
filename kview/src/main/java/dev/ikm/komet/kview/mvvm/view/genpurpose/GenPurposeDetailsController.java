@@ -217,7 +217,7 @@ public class GenPurposeDetailsController {
         // reacts to the toggle's selected state (driven by user clicks or setPropertiesSelected).
         windowControlToolbar.setOnCloseAction(this::closeConceptWindow);
         windowControlToolbar.propertiesSelectedProperty()
-                .subscribe((wasSelected, isSelected) -> openPropertiesPanel(isSelected));
+                .subscribe((wasSelected, isSelected) -> onPropertiesToggleChanged(isSelected));
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
@@ -305,14 +305,14 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * Runs when the user toggles the Properties switch to open or close the Properties bump out.
+     * Runs when the user toggles the Properties switch. Publishes the matching open/close event, which the
+     * {@code KLPropertyPanelEvent} subscriber turns into the actual slide-out / slide-in (including updating
+     * the draggable nodes), so this method does not perform the slide itself.
      *
      * @param selected the new selected state of the properties toggle
      */
-    private void openPropertiesPanel(boolean selected) {
+    private void onPropertiesToggleChanged(boolean selected) {
         EvtType<KLPropertyPanelEvent> eventEvtType = selected ? KLPropertyPanelEvent.OPEN_PANEL : KLPropertyPanelEvent.CLOSE_PANEL;
-
-        updateDraggableNodesForPropertiesPanel(selected);
 
         // Keep the header STAMP control's selected state in sync with the properties panel toggle.
         isUpdatingStampSelection = true;
