@@ -90,6 +90,18 @@ public class KLEditorPreferences {
         public static String KL_GRID_COLUMN_SPAN = "kl-grid-node-column-span";
     }
 
+    /**
+     * Keys for data properties of things placed in a Section (patterns, supplemental areas, ...) — as
+     * opposed to how they are laid out in the grid.
+     */
+    public class DataPropertyKey {
+        /**
+         * Whether the node is required (must be filled out when the window is opened in the Journal in
+         * create mode).
+         */
+        public static String KL_REQUIRED = "kl-required";
+    }
+
     public class PatternKey {
         public static String PATTERN_TITLE_VISIBLE = "pattern-title-visible";
         public static String PATTERN_SEMANTICS_FACTORY = "pattern-semantics-factory";
