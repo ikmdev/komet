@@ -29,7 +29,6 @@ import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggabl
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 
@@ -61,6 +60,7 @@ import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandardControl;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
+import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
@@ -351,12 +351,18 @@ public class GenPurposeDetailsController {
         if (stampViewControl.isSelected()) {
             windowControlToolbar.setPropertiesSelected(true);
 
-            // The reference component always exists in a Knowledge Layout window, so editing its STAMP
-            // always adds a new version (ADD_STAMP). Guard against a window opened without one.
-            EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
-            if (refComponent != null) {
+            if (genPurposeViewModel.getMode() == FormMode.CREATE) {
+                // Create mode has no reference component; open a STAMP form authored from default values.
                 EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                        new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
+                        new StampEvent(stampViewControl, StampEvent.CREATE_STAMP));
+            } else {
+                // The reference component always exists in a Knowledge Layout window, so editing its STAMP
+                // always adds a new version (ADD_STAMP). Guard against a window opened without one.
+                EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+                if (refComponent != null) {
+                    EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
+                            new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
+                }
             }
         } else {
             EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
@@ -597,6 +603,12 @@ public class GenPurposeDetailsController {
 
         // Initial view update
         updateView();
+
+        // In create mode there's nothing to view yet, so open the STAMP form from the start — authoring
+        // the STAMP is the first step of creating a new component.
+        if (genPurposeViewModel.getMode() == FormMode.CREATE) {
+            stampViewControl.setSelected(true);
+        }
     }
 
     /**
@@ -766,7 +778,7 @@ public class GenPurposeDetailsController {
     }
 
     private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern, EntityFacade refComponent) {
-        genPurposeViewModel.setPropertyValue(ViewModelKey.MODE, CREATE);
+//        genPurposeViewModel.setMode(FormMode.CREATE);
 
         EditorPatternModel editorPatternModel = sectionModelOfPattern.getPatterns().getFirst();
         PatternFacade patternFacade = PatternFacade.make(editorPatternModel.getNid());

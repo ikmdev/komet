@@ -33,6 +33,7 @@ import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
+import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
@@ -87,9 +88,6 @@ import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValue
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createEditableKlField;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.EDIT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.COMPOSER;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.REF_COMPONENT;
@@ -255,8 +253,8 @@ public class GenPurposeFieldsController {
                 KLPropertyPanelEvent.class, propertyEventSubscriber);
 
 
-        genPurposeViewModel.getProperty(MODE).subscribe((mode) -> {
-            if (mode == EDIT) {
+        genPurposeViewModel.modeProperty().subscribe((mode) -> {
+            if (mode == FormMode.EDIT) {
                 clearOrResetFormButton.setText("RESET FORM");
             } else {
                 clearOrResetFormButton.setText("CLEAR FORM");
@@ -308,7 +306,7 @@ public class GenPurposeFieldsController {
                         uncheckedField.setValue(values.get(i));
                     }
                 }
-                if (reloadPatternNavigator && genPurposeViewModel.getPropertyValue(MODE) == CREATE) {
+                if (reloadPatternNavigator && genPurposeViewModel.getMode() == FormMode.CREATE) {
                     // refresh the pattern navigation
                     EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
                             new PatternSavedEvent(this, PatternSavedEvent.PATTERN_CREATION_EVENT));
@@ -373,7 +371,7 @@ public class GenPurposeFieldsController {
             ObservableList<ObservableField.Editable<?>> editables = editableVersion.getEditableFields();
             // Generate UI nodes from editable fields
             for (ObservableField.Editable editableField : editables) {
-                if (genPurposeViewModel.getPropertyValue(MODE) == CREATE && editableField.getValue() instanceof EntityProxy) {
+                if (genPurposeViewModel.getMode() == FormMode.CREATE && editableField.getValue() instanceof EntityProxy) {
                     // Set default blank concept for new semantics
                     @SuppressWarnings("unchecked")
                     ObservableField.Editable<EntityProxy> proxyField = (ObservableField.Editable<EntityProxy>) editableField;
@@ -487,7 +485,7 @@ public class GenPurposeFieldsController {
     @FXML
     private void clearOrResetForm(ActionEvent actionEvent) {
         // if create mode display the confirm clear dialog
-        if (genPurposeViewModel.getPropertyValue(MODE) == CREATE) {
+        if (genPurposeViewModel.getMode() == FormMode.CREATE) {
             ConfirmationDialogController.showConfirmationDialog(this.cancelButton, CONFIRM_CLEAR_TITLE, CONFIRM_CLEAR_MESSAGE)
                     .thenAccept(confirmed -> {
                         if (confirmed) {
@@ -611,12 +609,12 @@ public class GenPurposeFieldsController {
 
                 // Show success message
                 String submitMessage = "Semantic Details %s Successfully!"
-                        .formatted(genPurposeViewModel.getStringProperty(MODE).equals(EDIT) ? "Edited" : "Added");
+                        .formatted(genPurposeViewModel.getMode() == FormMode.EDIT ? "Edited" : "Added");
                 toast().withUndoAction(undoActionEvent -> LOG.info("undo called"))
                         .show(Toast.Status.SUCCESS, submitMessage);
 
                 // Cleanup and reset
-                genPurposeViewModel.setPropertyValue(MODE, EDIT);
+                genPurposeViewModel.setMode(FormMode.EDIT);
                 readyToEditVersion.set(false); // reset change flag when user types older listener will trigger rebind.
             } catch (Exception e) {
                 LOG.error("Error committing semantic changes", e);
