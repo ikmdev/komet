@@ -60,6 +60,8 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_STANDARD_WINDOWS_DIR;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
 import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.PROGRESS_TOPIC;
@@ -84,6 +86,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.layout.KlPeerable;
 import dev.ikm.komet.layout.area.KlToolArea;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.layout_engine.host.KlCardProvider;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.layout.controls.ViewOptionsPopupHelper;
@@ -531,7 +534,12 @@ public class JournalController {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
 
-        List<String> editorWindows = klEditorAppPreferences.getList(KL_EDITOR_WINDOWS);
+        // Seed the standard windows (e.g. "Concept (2)") so their definitions exist on disk before
+        // any of their static "+"-menu entries is used.
+        StandardEditorWindows.ensureStandardWindows(klEditorAppPreferences.node(KL_STANDARD_WINDOWS_DIR),
+                journalViewProperties.calculator());
+
+        List<String> editorWindows = klEditorAppPreferences.node(KL_USER_WINDOWS_DIR).getList(KL_EDITOR_WINDOWS);
 
         addContextMenuSeparator.setVisible(!editorWindows.isEmpty());
         for (String windowTitle : editorWindows) {
@@ -1871,11 +1879,30 @@ public class JournalController {
         createConceptWindow(null, NID_TEXT, null);
     }
 
+    /**
+     * Opens the standard "Concept (2)" window in create mode when triggered from the menu.
+     * <p>
+     * "Concept (2)" is a standard (application-provided) KL window definition stored under
+     * kl-editor-app/standard-windows.
+     *
+     * @param actionEvent The event triggered by selecting the menu item
+     */
+    @FXML
+    public void newCreateConcept2Window(ActionEvent actionEvent) {
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences standardWindowsPreferences =
+                appPreferences.node(KL_EDITOR_APP).node(KL_STANDARD_WINDOWS_DIR);
+
+        StandardEditorWindows.ensureStandardWindows(standardWindowsPreferences, journalViewProperties.calculator());
+
+        createGenPurposeKLWindow(null, standardWindowsPreferences.node(StandardEditorWindows.CONCEPT_WINDOW_2));
+    }
+
     public void newCreateGenPurposeKLWindow(EntityFacade entityFacade, String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+        final KometPreferences userWindowsPreferences = appPreferences.node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR);
 
-        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+        final KometPreferences editorWindowPreferences = userWindowsPreferences.node(windowTitle);
 
         createGenPurposeKLWindow(entityFacade, editorWindowPreferences);
     }
@@ -1905,8 +1932,8 @@ public class JournalController {
      */
     public void newCreateDynamicCardWindow(EntityFacade entityFacade, String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
-        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+        final KometPreferences userWindowsPreferences = appPreferences.node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR);
+        final KometPreferences editorWindowPreferences = userWindowsPreferences.node(windowTitle);
         createDynamicCardWindow(entityFacade, editorWindowPreferences, windowTitle, false);
     }
 
@@ -1919,8 +1946,8 @@ public class JournalController {
      */
     public void newCreateDynamicComponentCardWindow(EntityFacade entityFacade, String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
-        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+        final KometPreferences userWindowsPreferences = appPreferences.node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR);
+        final KometPreferences editorWindowPreferences = userWindowsPreferences.node(windowTitle);
         createDynamicCardWindow(entityFacade, editorWindowPreferences, windowTitle, true);
     }
 

@@ -9,11 +9,11 @@ import dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell;
 import dev.ikm.komet.kleditorapp.view.propertiespane.PropertiesPane;
 import dev.ikm.komet.layout.area.KlSupplementalArea;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.KLEditorWindowCreatedOrRemovedEvent;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -44,7 +44,6 @@ import java.util.Comparator;
 import java.util.function.UnaryOperator;
 
 import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
-import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
 
 public class KLEditorMainScreenController {
     private static final Logger LOG = LoggerFactory.getLogger(KLEditorMainScreenController.class);
@@ -83,15 +82,21 @@ public class KLEditorMainScreenController {
     private EditorWindowModel editorWindowModel;
 
     private WindowSettings windowSettings;
-    private KometPreferences klEditorAppPreferences;
+
+    /**
+     * The windows folder this editor session loads from and saves to: either the user-windows or the
+     * standard-windows folder of the KL editor app preferences.
+     */
+    private KometPreferences windowsPreferences;
 
     private ObservableViewNoOverride windowViewCoordinates;
 
     private ViewCalculator viewCalculator;
     private ObservableList<PatternBrowserItem> patternsList;
 
-    public void init(KometPreferences klEditorAppPreferences, WindowSettings windowSettings, String windowToLoad) {
-        this.klEditorAppPreferences = klEditorAppPreferences;
+    public void init(KometPreferences windowsPreferences, WindowSettings windowSettings, String windowToLoad,
+                     boolean standardWindows) {
+        this.windowsPreferences = windowsPreferences;
         this.windowSettings = windowSettings;
 
         canvasScrollPane.viewportBoundsProperty().subscribe(viewportBounds -> {
@@ -101,6 +106,11 @@ public class KLEditorMainScreenController {
         this.windowViewCoordinates = windowSettings.getView();
 
         viewCalculator = ViewCalculatorWithCache.getCalculator(windowViewCoordinates.toViewCoordinateRecord());
+
+        // When editing a standard view, make sure its definition exists before loading it.
+        if (standardWindows) {
+            StandardEditorWindows.ensureStandardWindows(windowsPreferences, viewCalculator);
+        }
 
         initPatternsList(viewCalculator);
         initControlsList();
@@ -191,7 +201,7 @@ public class KLEditorMainScreenController {
 
     private void loadWindow(String windowTitle) {
         if (windowTitle != null) {
-            final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+            final KometPreferences editorWindowPreferences = windowsPreferences.node(windowTitle);
             editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences, viewCalculator, windowTitle);
         } else {
             editorWindowModel = EditorWindowManager.loadWindowModel(null, viewCalculator, null);
@@ -232,10 +242,7 @@ public class KLEditorMainScreenController {
         // Do last validation on title text before actually saving
         validateTitleText();
 
-        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
-
-        EditorWindowManager.save(klEditorAppPreferences, editorWindowModel);
+        EditorWindowManager.save(windowsPreferences, editorWindowModel);
 
         eventBus.publish(KL_TOPIC,
                 new KLEditorWindowCreatedOrRemovedEvent(saveButton, KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED, editorWindowModel.getTitle()));

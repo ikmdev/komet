@@ -18,6 +18,7 @@ import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
 
 /**
@@ -74,8 +75,8 @@ public class SingleSelectionContextMenu extends ContextMenu {
 
         // Add menu items corresponding to the Window that were created in the KL Editor.
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
-        List<String> editorWindows = klEditorAppPreferences.getList(KL_EDITOR_WINDOWS);
+        final KometPreferences userWindowsPreferences = appPreferences.node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR);
+        List<String> editorWindows = userWindowsPreferences.getList(KL_EDITOR_WINDOWS);
 
         if (!editorWindows.isEmpty()) {
             SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();

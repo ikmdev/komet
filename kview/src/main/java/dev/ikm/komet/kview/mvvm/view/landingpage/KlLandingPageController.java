@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.landingpage;
 
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.kview.events.CreateKLEditorWindowEvent;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.kview.events.KLEditorWindowCreatedOrRemovedEvent;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -21,6 +22,7 @@ import java.util.prefs.BackingStoreException;
 import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 
 public class KlLandingPageController {
     private static final Logger LOG = LoggerFactory.getLogger(KlLandingPageController.class);
@@ -39,6 +41,24 @@ public class KlLandingPageController {
     @FXML
     private void mousePressedOnCreateComponentLayout(MouseEvent mouseEvent) {
         createNewKLEditorWindow(mouseEvent);
+    }
+
+    @FXML
+    private void mousePressedOnConceptView(MouseEvent mouseEvent) {
+        loadStandardKLEditorWindow(mouseEvent, StandardEditorWindows.CONCEPT_WINDOW_2);
+    }
+
+    /**
+     * Opens the KL Editor with a standard (application-provided) window loaded for editing.
+     *
+     * @param event       the mouse event from the landing page card
+     * @param windowTitle the title of the standard window to load
+     */
+    private void loadStandardKLEditorWindow(Event event, String windowTitle) {
+        final PrefX klWindowSettingsObjectMap = PrefX.create();
+        eventBus.publish(KL_TOPIC,
+                new CreateKLEditorWindowEvent(event.getSource(), CreateKLEditorWindowEvent.CREATE_KL_WINDOW,
+                        klWindowSettingsObjectMap, windowTitle, true));
     }
 
     private void createNewKLEditorWindow(Event event) {
@@ -70,9 +90,9 @@ public class KlLandingPageController {
 
     private void loadPreferencesForKLLandingPage() {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+        final KometPreferences userWindowsPreferences = appPreferences.node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR);
 
-        List<String> editorWindows = klEditorAppPreferences.getList(KL_EDITOR_WINDOWS);
+        List<String> editorWindows = userWindowsPreferences.getList(KL_EDITOR_WINDOWS);
 
         for (String windowTitle : editorWindows) {
             createAndAddCard(windowTitle);
@@ -96,14 +116,14 @@ public class KlLandingPageController {
 
         // Remove from preferences
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+        final KometPreferences userWindowsPreferences = appPreferences.node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR);
 
-        List<String> editorWindows = klEditorAppPreferences.getList(KL_EDITOR_WINDOWS);
+        List<String> editorWindows = userWindowsPreferences.getList(KL_EDITOR_WINDOWS);
         editorWindows.remove(windowTitle);
 
-        klEditorAppPreferences.putList(KL_EDITOR_WINDOWS, editorWindows);
+        userWindowsPreferences.putList(KL_EDITOR_WINDOWS, editorWindows);
 
-        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+        final KometPreferences editorWindowPreferences = userWindowsPreferences.node(windowTitle);
         try {
             editorWindowPreferences.removeNode();
         } catch (BackingStoreException e) {
@@ -112,7 +132,7 @@ public class KlLandingPageController {
 
         try {
             editorWindowPreferences.flush();
-            klEditorAppPreferences.flush();
+            userWindowsPreferences.flush();
         } catch (BackingStoreException e) {
             LOG.error("Error deleting  KL Editor Window in preferences", e);
         }

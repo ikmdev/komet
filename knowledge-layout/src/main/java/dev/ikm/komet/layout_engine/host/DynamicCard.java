@@ -42,6 +42,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 
 /**
  * A {@code DynamicCard} is the {@link dev.ikm.komet.layout.KlCard} whose content is <em>dynamic</em>:
@@ -384,7 +385,7 @@ public class DynamicCard extends AbstractHostCard {
                 this.referenceComponent = ProxyFactory.fromXmlFragment(xml));
         preferences().get(EDITOR_LAYOUT_TITLE_KEY).ifPresent(title ->
                 this.editorWindowPreferences = KometPreferencesImpl.getConfigurationRootPreferences()
-                        .node(KL_EDITOR_APP).node(title));
+                        .node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR).node(title));
     }
 
     /*******************************************************************************
