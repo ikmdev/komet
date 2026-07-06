@@ -149,7 +149,6 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
         private final Tooltip tooltip = new Tooltip();
 
         public EditButton(SectionTitledPane titledPane) {
-            separator.setPrefHeight(10);
             separator.setOrientation(Orientation.VERTICAL);
 
             button.getStyleClass().add("add-pencil-button");
@@ -162,6 +161,11 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
 
             tooltip.setText("Edit Fields");
             button.setTooltip(tooltip);
+
+            mainContainer.getStyleClass().add("section-edit-area");
+            // Fill this pane's height (the full title-bar height set by layoutChildren), so the
+            // separator spans top to bottom and the button centers within the title bar.
+            mainContainer.prefHeightProperty().bind(heightProperty());
 
             mainContainer.getChildren().addAll(separator, button);
             getChildren().add(mainContainer);

@@ -4,6 +4,8 @@ import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,4 +58,15 @@ public class GenPurposeViewModel extends FormViewModel {
 //        stampViewModel.setValue(PATH, stamp.path());
 //    }
 
+    // -- mode
+    /**
+     * The window's create/edit mode as a typed property (rather than the stringly-typed cognitive
+     * {@code ViewModelKey.MODE} property). Set from how the window was opened — CREATE from the Journal's
+     * "+" button, EDIT from a component's "Open as ..." — and flipped to EDIT once a semantic is committed.
+     */
+    private final ObjectProperty<FormMode> mode = new SimpleObjectProperty<>(FormMode.EDIT);
+    @Override
+    public FormMode getMode() { return mode.get(); }
+    public ObjectProperty<FormMode> modeProperty() { return mode; }
+    public void setMode(FormMode mode) { this.mode.set(mode); }
 }

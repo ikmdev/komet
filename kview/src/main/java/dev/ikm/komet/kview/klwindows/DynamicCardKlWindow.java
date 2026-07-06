@@ -32,6 +32,7 @@ import java.util.UUID;
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getWindowPreferences;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 
 /**
  * The thin Journal on-ramp for a {@link DynamicCard}: a {@link ChapterKlWindow} that embeds a
@@ -210,7 +211,7 @@ public final class DynamicCardKlWindow extends AbstractChapterKlWindow<Pane> {
             card.setReferenceComponent(entityNid != 0 ? Entity.getFast(entityNid) : null);
             preferences.get(DYNAMIC_CARD_LAYOUT_TITLE).ifPresent(title ->
                     card.setEditorWindowPreferences(KometPreferencesImpl.getConfigurationRootPreferences()
-                            .node(KL_EDITOR_APP).node(title)));
+                            .node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR).node(title)));
             card.setJournalTopic(journalTopic);
         }
 

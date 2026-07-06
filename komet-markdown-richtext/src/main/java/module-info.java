@@ -21,6 +21,8 @@
  */
 module dev.ikm.komet.markdown.richtext {
     requires transitive jfx.incubator.richtext;
+    requires transitive javafx.graphics;
+    requires javafx.controls;
     requires org.commonmark;
     requires org.commonmark.ext.gfm.tables;
 

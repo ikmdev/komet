@@ -200,6 +200,18 @@
 }
 
 /*******************************************************************************
+ * Views inside a Section                                                      *
+ ******************************************************************************/
+
+/* "*" required indicator, overlaid in the top-right corner of any required grid node. */
+.window .section-view .required-indicator {
+    -fx-text-fill: #cc7d74;
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 18px;
+    -fx-padding: 4px 10px 0 0;
+}
+
+/*******************************************************************************
  * Pattern View                                                                *
  ******************************************************************************/
 

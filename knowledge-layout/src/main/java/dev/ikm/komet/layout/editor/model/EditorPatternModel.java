@@ -289,6 +289,13 @@ public class EditorPatternModel extends EditorGridNodeModel {
      */
     public int getNid() { return nid; }
 
+    // -- pattern facade
+    /**
+     * The Pattern's facade. Carries the portable PublicId, so it's what should be persisted (rather than
+     * the machine-local nid) when the Pattern needs to be stored in preferences.
+     */
+    public PatternFacade getPatternFacade() { return patternFacade; }
+
     // -- parent section
     private ReadOnlyObjectWrapper<EditorSectionModel> parentSection = new ReadOnlyObjectWrapper<>();
     public EditorSectionModel getParentSection() { return parentSection.get(); }

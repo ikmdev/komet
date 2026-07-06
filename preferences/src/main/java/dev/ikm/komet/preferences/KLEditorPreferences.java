@@ -42,6 +42,17 @@ public class KLEditorPreferences {
     public static final String KL_EDITOR_APP = "kl-editor-app";
 
     /**
+     * Folder (under {@link #KL_EDITOR_APP}) holding the windows created by the user in the KL Editor.
+     */
+    public static final String KL_USER_WINDOWS_DIR = "user-windows";
+
+    /**
+     * Folder (under {@link #KL_EDITOR_APP}) holding the application-provided standard windows
+     * (Concept Window, Pattern Window, Semantic Window).
+     */
+    public static final String KL_STANDARD_WINDOWS_DIR = "standard-windows";
+
+    /**
      * Section Reference Component
      */
     public static final String KL_REFERENCE_COMPONENT = "kl-reference-component";
@@ -88,6 +99,18 @@ public class KLEditorPreferences {
          * The grid node column span.
          */
         public static String KL_GRID_COLUMN_SPAN = "kl-grid-node-column-span";
+    }
+
+    /**
+     * Keys for data properties of things placed in a Section (patterns, supplemental areas, ...) — as
+     * opposed to how they are laid out in the grid.
+     */
+    public class DataPropertyKey {
+        /**
+         * Whether the node is required (must be filled out when the window is opened in the Journal in
+         * create mode).
+         */
+        public static String KL_REQUIRED = "kl-required";
     }
 
     public class PatternKey {

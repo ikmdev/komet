@@ -257,7 +257,8 @@ public class App extends Application  {
         // Create a subscriber for handling KL Window Event
         Subscriber<CreateKLEditorWindowEvent> createKLEditorWindowEventSubscriber = evt -> {
             final PrefX journalWindowSettingsObjectMap = evt.getWindowSettingsObjectMap();
-            appPages.launchKLEditorViewPage(journalWindowSettingsObjectMap, userProperty.get(), evt.getWindowToLoad());
+            appPages.launchKLEditorViewPage(journalWindowSettingsObjectMap, userProperty.get(), evt.getWindowToLoad(),
+                    evt.isStandardWindow());
         };
 
         // Subscribe the subscriber to the KL_TOPIC

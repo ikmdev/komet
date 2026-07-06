@@ -41,6 +41,7 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
     private final LineageBox lineageBox;
     private final HBox tagBox;
     private double cellHeight, expandedHeight;
+    private List<ConnectionSpec> connectionSpecs = List.of();
 
     /**
      * <p>Creates a new KLConceptNavigatorTreeCellSkin instance.
@@ -207,33 +208,58 @@ public class KLConceptNavigatorTreeCellSkin extends TreeCellSkin<ConceptFacade> 
         if (treeView == null || model == null) {
             return;
         }
-        List<Path> oldPaths = getChildren().stream()
-                .filter(Path.class::isInstance)
-                .map(Path.class::cast)
-                .toList();
         int level = getLevel(model);
         double padding = treeCell.getInsets().getLeft() - 1;
         double indent = getIndent();
-        List<Path> paths = new ArrayList<>();
+        double conceptTileHeight = treeCell.getHeight() - expandedHeight;
+        List<ConnectionSpec> specs = new ArrayList<>();
         int start = treeView.isShowRoot() ? 1 : 0;
         for (int i = start; i < level; i++) {
             double x = 10 + indent * i + padding;
             if (i < level - 1) {
                 ConceptNavigatorTreeItem ancestor = getAncestor(model, i + 1);
                 if (ancestor.nextSibling() != null) {
-                    paths.add(getLine(x, "dashed-line"));
-                    paths.add(getLine(x, "solid-line-" + (i - start)));
+                    specs.add(new ConnectionSpec(false, x, "dashed-line", false, conceptTileHeight, expandedHeight));
+                    specs.add(new ConnectionSpec(false, x, "solid-line-" + (i - start), false, conceptTileHeight, expandedHeight));
                 }
             } else {
-                paths.add(getCurvedLine(x, model.nextSibling() == null, "dashed-curved-line"));
-                paths.add(getLine(x, "solid-line-" + (i - start)));
-                paths.add(getCurvedLine(x, true, "solid-curved-line"));
+                specs.add(new ConnectionSpec(true, x, "dashed-curved-line", model.nextSibling() == null, conceptTileHeight, expandedHeight));
+                specs.add(new ConnectionSpec(false, x, "solid-line-" + (i - start), false, conceptTileHeight, expandedHeight));
+                specs.add(new ConnectionSpec(true, x, "solid-curved-line", true, conceptTileHeight, expandedHeight));
             }
         }
-        if (!oldPaths.equals(paths)) {
-            getChildren().removeAll(oldPaths);
-            getChildren().addAll(paths);
+        // Paths are recreated each pass; comparing the Path nodes themselves is always
+        // false (Node never overrides equals()), so compare on this value-based spec instead
+        // to avoid rebuilding the child list — and re-triggering CSS/layout — every pulse.
+        if (specs.equals(connectionSpecs)) {
+            return;
         }
+        connectionSpecs = specs;
+        List<Path> oldPaths = getChildren().stream()
+                .filter(Path.class::isInstance)
+                .map(Path.class::cast)
+                .toList();
+        List<Path> paths = specs.stream()
+                .map(spec -> spec.curved()
+                        ? getCurvedLine(spec.x(), spec.isLastSibling(), spec.styleClass())
+                        : getLine(spec.x(), spec.styleClass()))
+                .toList();
+        getChildren().removeAll(oldPaths);
+        getChildren().addAll(paths);
+    }
+
+    /**
+     * <p>Value-based description of a connecting line, used to detect whether the set of
+     * lines actually changed between layout passes without relying on {@link Path} identity.
+     * @param curved whether this is a curved connector ({@link #getCurvedLine}) or a straight one ({@link #getLine})
+     * @param x the x coordinate based on the indentation level for this line
+     * @param styleClass the style class to be applied to this line
+     * @param isLastSibling if the treeItem for this cell is the last sibling (curved connectors only)
+     * @param conceptTileHeight the height of the concept tile, used to compute the line's endpoints
+     * @param expandedHeight the height of the {@link LineageBox}, used to compute the line's endpoints
+     */
+    private record ConnectionSpec(boolean curved, double x, String styleClass, boolean isLastSibling,
+                                   double conceptTileHeight, double expandedHeight) {
     }
 
     private ConceptNavigatorTreeItem getAncestor(ConceptNavigatorTreeItem treeItem, int level) {

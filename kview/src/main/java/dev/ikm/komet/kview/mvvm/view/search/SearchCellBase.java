@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.kview.controls.KometIcon.IconValue.KL_EDITABLE_VIEW;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
 
 public abstract class SearchCellBase extends ListCell {
@@ -105,9 +106,9 @@ public abstract class SearchCellBase extends ListCell {
 
         // KL Window Options
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+        final KometPreferences userWindowsPreferences = appPreferences.node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR);
 
-        List<String> editorWindows = klEditorAppPreferences.getList(KL_EDITOR_WINDOWS);
+        List<String> editorWindows = userWindowsPreferences.getList(KL_EDITOR_WINDOWS);
 
         klWindowsMenuSeparator.setVisible(!editorWindows.isEmpty());
 

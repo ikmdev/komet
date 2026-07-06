@@ -114,5 +114,8 @@ public class KlEditorWindowControlFactory {
         gridBaseControl.rowIndexProperty().bindBidirectional(gridNodeModel.rowIndexProperty());
         gridBaseControl.columnSpanProperty().bindBidirectional(gridNodeModel.columnSpanProperty());
         gridBaseControl.rowSpanProperty().bindBidirectional(gridNodeModel.rowSpanProperty());
+
+        // Not related to grid layout but every GridBaseControl that is going to be in a Section has a required flag.
+        gridBaseControl.requiredProperty().bind(gridNodeModel.requiredProperty());
     }
 }

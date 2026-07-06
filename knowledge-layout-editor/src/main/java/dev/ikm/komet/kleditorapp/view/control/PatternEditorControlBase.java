@@ -52,16 +52,8 @@ public abstract class PatternEditorControlBase extends GridBaseControl {
     }
 
     @Override
-    protected void layoutChildren() {
-        double leftInsets = snappedLeftInset();
-        double rightInsets = snappedRightInset();
-        double topInsets = snappedTopInset();
-        double bottomInsets = snappedBottomInset();
-        double width = getWidth();
-        double height = getHeight();
-
-        patternContainer.resizeRelocate(leftInsets, topInsets,
-                width - leftInsets - rightInsets, height - topInsets - bottomInsets);
+    protected void layoutContent(double contentX, double contentY, double contentWidth, double contentHeight) {
+        patternContainer.resizeRelocate(contentX, contentY, contentWidth, contentHeight);
     }
 
     // -- parent section

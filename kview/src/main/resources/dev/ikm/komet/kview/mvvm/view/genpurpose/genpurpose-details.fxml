@@ -1,36 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import dev.ikm.komet.kview.controls.KlWindowControlToolbar?>
 <?import dev.ikm.komet.kview.controls.PublicIDListControl?>
 <?import dev.ikm.komet.kview.controls.StampViewControl?>
-<?import dev.ikm.komet.kview.mvvm.view.common.SVGConstants?>
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
-<?import javafx.scene.Group?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.MenuButton?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TitledPane?>
-<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Ellipse?>
-<?import javafx.scene.shape.Rectangle?>
-<?import javafx.scene.shape.SVGPath?>
-<?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
 <?import javafx.scene.control.SplitPane?>
@@ -45,13 +31,12 @@
                     <children>
                         <FlowPane styleClass="rounded-top">
                             <children>
-                                <HBox fx:id="tabHeader" prefHeight="18.0" spacing="4.0"
-                                      style="-fx-background-color: -Natural-Grey-Main;">
+                                <HBox fx:id="tabHeader">
                                     <styleClass>
                                         <String fx:value="lidr-rounded-tab"/>
                                     </styleClass>
                                     <children>
-                                        <Region prefHeight="12.0" prefWidth="8.4" styleClass="nine-dots-icon"/>
+                                        <Region styleClass="nine-dots-icon"/>
                                         <Text fx:id="windowTitleLabel" strokeType="OUTSIDE" strokeWidth="0.0"
                                               styleClass="lidr-tab-text"/>
                                     </children>
@@ -61,76 +46,7 @@
                                 </HBox>
                             </children>
                         </FlowPane>
-                        <HBox fx:id="conceptHeaderControlToolBarHbox" prefHeight="100.0" prefWidth="762.0"
-                              style="-fx-background-color: -Natural-Grey-Main;">
-                            <children>
-                                <!-- Context-menu anchor for the rule-driven / plugin identicon menu
-                                     (GenPurposeDetailsController). Kept hidden: this window's header has
-                                     no identicon slot like concept/pattern/genediting, and the controller
-                                     does not populate an identicon image. Present so the @FXML field
-                                     injects (avoids an NPE in initialize). -->
-                                <ImageView fx:id="identiconImageView" fitHeight="36.0" fitWidth="36.0" managed="false" pickOnBounds="true" preserveRatio="true" visible="false" />
-                                <MenuButton fx:id="coordinatesMenuButton" contentDisplay="GRAPHIC_ONLY"
-                                            styleClass="coordinate">
-                                    <tooltip>
-                                        <Tooltip text="Coordinates"/>
-                                    </tooltip>
-                                </MenuButton>
-                                <Separator fx:id="controlBarSeparator" orientation="VERTICAL" prefHeight="10.0"
-                                           styleClass="thin-vertical-separator"/>
-                                <ToggleButton fx:id="timelineToggleButton" mnemonicParsing="false" styleClass="timeline"
-                                              text="ToggleButton">
-                                    <graphic>
-                                        <Region prefHeight="200.0" prefWidth="200.0">
-                                            <styleClass>
-                                                <String fx:value="icon"/>
-                                                <String fx:value="timeline-icon"/>
-                                            </styleClass>
-                                        </Region>
-                                    </graphic>
-                                    <tooltip>
-                                        <Tooltip text="Time Travel"/>
-                                    </tooltip>
-                                </ToggleButton>
-                                <Region fx:id="controlBoxRegion2" minWidth="10.0" prefHeight="200.0" prefWidth="200.0"
-                                        HBox.hgrow="ALWAYS"/>
-                                <Text fill="#FFFFFF" strokeType="OUTSIDE" strokeWidth="0.0"
-                                      styleClass="properties-toggle" text="PROPERTY">
-                                    <font>
-                                        <Font name="Open Sans SemiBold" size="13.0"/>
-                                    </font>
-                                </Text>
-                                <ToggleButton fx:id="propertiesToggleButton" mnemonicParsing="false" onAction="#openPropertiesPanel" text="ToggleButton">
-                                    <graphic>
-                                        <Group>
-                                            <children>
-                                                <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE"
-                                                           height="20.0" stroke="BLACK" strokeType="INSIDE"
-                                                           styleClass="toggle-switch-body" width="32.0"/>
-                                                <Ellipse centerX="10.0" centerY="10.0" fill="DODGERBLUE" radiusX="8.0"
-                                                         radiusY="8.0" stroke="BLACK" strokeType="INSIDE"
-                                                         styleClass="property-toggle-switch"/>
-                                            </children>
-                                        </Group>
-                                    </graphic>
-                                </ToggleButton>
-                                <Separator orientation="VERTICAL" prefHeight="10.0"
-                                           styleClass="thin-vertical-separator"/>
-                                <Button fx:id="closeConceptButton" mnemonicParsing="false"
-                                        onAction="#closeConceptWindow" text="Button">
-                                    <graphic>
-                                        <Region prefHeight="200.0" prefWidth="200.0" styleClass="close-window"/>
-                                    </graphic>
-                                </Button>
-                            </children>
-                            <padding>
-                                <Insets left="5.0" right="5.0"/>
-                            </padding>
-                            <styleClass>
-                                <String fx:value="concept-header-control"/>
-                                <String fx:value="rounded-upper-right-only"/>
-                            </styleClass>
-                        </HBox>
+                        <KlWindowControlToolbar fx:id="windowControlToolbar"/>
                     </children>
                 </VBox>
             </top>
@@ -149,45 +65,20 @@
                             <children>
                                 <HBox layoutX="14.0" layoutY="135.0" prefWidth="711.0" VBox.vgrow="ALWAYS">
                                         <SplitPane fx:id="mainContent" orientation="VERTICAL" HBox.hgrow="ALWAYS"/>
-<!--                                        <Pane>-->
-<!--                                            <children>-->
-<!--                                                <HBox layoutX="-32.0">-->
-<!--                                                    <children>-->
-<!--                                                        <Separator orientation="VERTICAL" prefHeight="10.0"-->
-<!--                                                                   styleClass="pattern-vertical-separator">-->
-<!--                                                            <HBox.margin>-->
-<!--                                                                <Insets top="4.0"/>-->
-<!--                                                            </HBox.margin>-->
-<!--                                                        </Separator>-->
-<!--                                                        <Button fx:id="addFieldsButton" mnemonicParsing="false"-->
-<!--                                                                styleClass="add-pencil-button" text="Button">-->
-<!--                                                            <graphic>-->
-<!--                                                                <Region prefHeight="200.0" prefWidth="200.0"-->
-<!--                                                                        styleClass="add-pencil"-->
-<!--                                                                        stylesheets="@../kview.css"/>-->
-<!--                                                            </graphic>-->
-<!--                                                            <tooltip>-->
-<!--                                                                <Tooltip text="Edit Fields"/>-->
-<!--                                                            </tooltip>-->
-<!--                                                            <HBox.margin>-->
-<!--                                                                <Insets top="4.0"/>-->
-<!--                                                            </HBox.margin>-->
-<!--                                                        </Button>-->
-<!--                                                    </children>-->
-<!--                                                </HBox>-->
-<!--                                            </children>-->
-<!--                                        </Pane>-->
                                 </HBox>
                             </children>
                         </VBox>
                     </center>
                     <top>
-                        <BorderPane prefHeight="120.0" prefWidth="894.0" styleClass="concept-detail-banner-background"
+                        <BorderPane prefWidth="894.0" styleClass="concept-detail-banner-background"
                                     BorderPane.alignment="CENTER">
                             <center>
                                 <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-                                          prefHeight="84.0" prefWidth="510.0"
-                                          styleClass="concept-detail-banner-background">
+                                          prefWidth="510.0">
+                                    <styleClass>
+                                        <String fx:value="concept-detail-banner-background"/>
+                                        <String fx:value="window-banner-grid"/>
+                                    </styleClass>
                                     <columnConstraints>
                                         <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="-Infinity"
                                                            prefWidth="42.0"/>
@@ -196,9 +87,8 @@
                                         <ColumnConstraints/>
                                     </columnConstraints>
                                     <rowConstraints>
-                                        <RowConstraints maxHeight="51.0" prefHeight="30.0"
-                                                        vgrow="ALWAYS"/>
-                                        <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="66.0"
+                                        <RowConstraints vgrow="NEVER"/>
+                                        <RowConstraints maxHeight="77.0" minHeight="0.0"
                                                         vgrow="SOMETIMES"/>
                                     </rowConstraints>
                                     <children>
@@ -208,7 +98,7 @@
                                                              GridPane.halignment="LEFT" GridPane.rowIndex="1"
                                                              GridPane.valignment="TOP"/>
                                         <ComponentItemNode fx:id="windowConceptTitle"
-                                                           maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0"
+                                                           maxHeight="1.7976931348623157E308" prefWidth="416.0"
                                                            styleClass="window-main-title"
                                                            wrapText="true" GridPane.columnIndex="0">
                                             <tooltip>
@@ -216,13 +106,10 @@
                                             </tooltip>
                                         </ComponentItemNode>
                                     </children>
-                                    <padding>
-                                        <Insets bottom="8.0" left="12.0" right="8.0" top="8.0"/>
-                                    </padding>
                                 </GridPane>
                             </center>
                             <right>
-                                <StackPane prefHeight="128.0" prefWidth="210.0" BorderPane.alignment="CENTER">
+                                <StackPane prefWidth="210.0" BorderPane.alignment="CENTER">
                                     <BorderPane.margin>
                                         <Insets bottom="5" right="5" top="5"/>
                                     </BorderPane.margin>

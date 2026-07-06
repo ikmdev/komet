@@ -27,6 +27,8 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     private final TextField identifierTextField;
     private final ToggleSwitch titleVisibleTSwitch;
 
+    private final ToggleSwitch requiredTSwitch;
+
     private final ComboBox<KlPatternSemanticsFactory> displayComboBox;
 
     // Factory-specific properties section, rebuilt from the model whenever the factory changes.
@@ -142,9 +144,53 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
                 factoryPropertiesSection
         );
 
+        // Data properties container
+        VBox dataPropertiesContainer = new VBox();
+        dataPropertiesContainer.getStyleClass().addAll("sub-section", "data-properties-container");
+        dataPropertiesContainer.setSpacing(4);
+
+        // "DATA PROPERTIES" label
+        Label dataPropertiesTitleLabel = new Label("DATA PROPERTIES");
+        dataPropertiesTitleLabel.getStyleClass().add("group-title");
+
+        // Data properties GridPane
+        GridPane dataPropertiesGridPane = new GridPane();
+        dataPropertiesGridPane.setHgap(8);
+        dataPropertiesGridPane.setVgap(8);
+
+        ColumnConstraints dataCol1 = new ColumnConstraints();
+        dataCol1.setMinWidth(10);
+        dataCol1.setPrefWidth(100);
+
+        ColumnConstraints dataCol2 = new ColumnConstraints();
+        dataCol2.setMinWidth(10);
+        dataCol2.setHgrow(Priority.ALWAYS);
+
+        dataPropertiesGridPane.getColumnConstraints().addAll(dataCol1, dataCol2);
+
+        Label requiredLabel = new Label("Required");
+        GridPane.setHalignment(requiredLabel, HPos.RIGHT);
+        dataPropertiesGridPane.add(requiredLabel, 0, 0);
+
+        requiredTSwitch = new ToggleSwitch();
+        requiredTSwitch.setSelected(false);
+        requiredTSwitch.getStyleClass().add("required");
+        dataPropertiesGridPane.add(requiredTSwitch, 1, 0);
+
+        dataPropertiesContainer.getChildren().addAll(
+                dataPropertiesTitleLabel,
+                dataPropertiesGridPane
+        );
+
+        // Separator between data properties and positioning
+        Separator dataPropertiesSeparator = new Separator();
+        dataPropertiesSeparator.setPrefWidth(200);
+
         patternMainContainer.getChildren().addAll(
                 titleContainer,
                 separator,
+                dataPropertiesContainer,
+                dataPropertiesSeparator,
                 positioningContainer,
                 separator3,
                 interactionContainer,
@@ -184,6 +230,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
 
         if (previouslyShownModel != null) {
             titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.titleVisibleProperty());
+            requiredTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.requiredProperty());
             displayComboBox.valueProperty().unbindBidirectional(previouslyShownModel.factoryProperty());
 
             if (factoryPropertiesSubscription != null) {
@@ -193,6 +240,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
 
         titleTextField.setText(currentlyShownModel.getTitle());
         titleVisibleTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.titleVisibleProperty());
+        requiredTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.requiredProperty());
 
         // Identifier
         identifierTextField.textProperty().bindBidirectional(currentlyShownModel.identifierProperty());
