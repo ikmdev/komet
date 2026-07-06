@@ -1303,7 +1303,7 @@ selected(active) - dark black
  */
 .kl-window-control-toolbar > .concept-header-control {
     -fx-background-color: -Natural-Grey-Main;
-    -fx-padding: 0 5 0 5;
+    -fx-padding: 0 5 0 12;
 }
 
 .kl-window-control-toolbar .properties-toggle {
@@ -6392,6 +6392,56 @@ Styling a context menu for kview ui/ux controls
  *                                                                             *
  ******************************************************************************/
 
+/* Window chrome: darker tab chip with rounder top corners; the drag-dots icon and the
+   window title are centered on the same line, with breathing room around them. */
+.gen-purpose-window .lidr-rounded-tab {
+    -fx-background-color: #4A4A4C;
+    -fx-background-radius: 8 8 0 0;
+    -fx-border-radius: 8 8 0 0;
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+    -fx-padding: 7 16 7 12;
+}
+
+.gen-purpose-window .lidr-rounded-tab .nine-dots-icon {
+    icon-width: 11px;
+    icon-height: 10px;
+
+    -fx-min-width: icon-width;
+    -fx-min-height: icon-height;
+    -fx-pref-width: icon-width;
+    -fx-pref-height: icon-height;
+    -fx-max-width: icon-width;
+    -fx-max-height: icon-height;
+
+    -fx-background-color: #ddd;
+}
+
+/* Frameless white body: no grey border around the content, rounded bottom corners.
+   The bottom padding is the strip the container paints itself, so the rounded corners
+   are not overpainted by the square-cornered content above. */
+.gen-purpose-window.concept-detail-pane .main-center-container {
+    -fx-background-color: white;
+    -fx-background-radius: 0 0 10px 10px;
+    -fx-padding: 0 0 10px 0;
+}
+
+/* No border line between the header banner and the sections. */
+.gen-purpose-window.concept-detail-pane .main-center-container .section-titled-pane {
+    -fx-border-width: 0;
+}
+
+/* Header banner grid (identicon + title + Komet ID): left inset is the shared 12px content
+   gutter that the section titles, field content and toolbar crosshair align to. */
+.gen-purpose-window .window-banner-grid {
+    -fx-padding: 14 8 8 12;
+    -fx-vgap: 8;
+}
+
+.gen-purpose-window .public-id .public-id-label {
+    -fx-text-fill: -Grey-8;
+}
+
  .window-main-title .label {
      -fx-font-family: "Noto Sans";
      -fx-font-size: 18px;
@@ -6420,7 +6470,31 @@ Styling a context menu for kview ui/ux controls
 
 /* Sections */
 .gen-purpose-window .section-titled-pane .section-titled-pane-container {
-    -fx-padding: 10px 8px 4 8px;
+    /* 12px sides = the shared content gutter (same inset as the banner title / Komet ID) */
+    -fx-padding: 8px 12px 8px 12px;
+}
+
+/* Section header: a smaller, muted expand/collapse chevron, kept off the window edge,
+   with a clear gap between it and the title text. */
+.gen-purpose-window.concept-detail-pane .main-center-container .section-titled-pane > .title {
+    -fx-padding: 8 4 8 6;
+    -fx-pref-height: 36;
+}
+
+.gen-purpose-window .section-titled-pane > .title > .arrow-button {
+    -fx-padding: 0 5 0 0;
+}
+
+/* Edit affordance in the section header: the pencil centers vertically in the title bar;
+   the separator before it stretches the bar's full height (HBox fill-height). */
+.gen-purpose-window .section-titled-pane .section-edit-area {
+    -fx-alignment: center;
+}
+
+.gen-purpose-window .section-titled-pane > .title > .arrow-button .arrow {
+    -width-size: 9px;
+    -height-size: 5px;
+    -fx-background-color: -Grey-7;
 }
 
 .gen-purpose-window .gen-purpose-pattern-title {

@@ -31,13 +31,12 @@
                     <children>
                         <FlowPane styleClass="rounded-top">
                             <children>
-                                <HBox fx:id="tabHeader" prefHeight="18.0" spacing="4.0"
-                                      style="-fx-background-color: -Natural-Grey-Main;">
+                                <HBox fx:id="tabHeader">
                                     <styleClass>
                                         <String fx:value="lidr-rounded-tab"/>
                                     </styleClass>
                                     <children>
-                                        <Region prefHeight="12.0" prefWidth="8.4" styleClass="nine-dots-icon"/>
+                                        <Region styleClass="nine-dots-icon"/>
                                         <Text fx:id="windowTitleLabel" strokeType="OUTSIDE" strokeWidth="0.0"
                                               styleClass="lidr-tab-text"/>
                                     </children>
@@ -71,12 +70,15 @@
                         </VBox>
                     </center>
                     <top>
-                        <BorderPane prefHeight="120.0" prefWidth="894.0" styleClass="concept-detail-banner-background"
+                        <BorderPane prefWidth="894.0" styleClass="concept-detail-banner-background"
                                     BorderPane.alignment="CENTER">
                             <center>
                                 <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-                                          prefHeight="84.0" prefWidth="510.0"
-                                          styleClass="concept-detail-banner-background">
+                                          prefWidth="510.0">
+                                    <styleClass>
+                                        <String fx:value="concept-detail-banner-background"/>
+                                        <String fx:value="window-banner-grid"/>
+                                    </styleClass>
                                     <columnConstraints>
                                         <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="-Infinity"
                                                            prefWidth="42.0"/>
@@ -85,9 +87,8 @@
                                         <ColumnConstraints/>
                                     </columnConstraints>
                                     <rowConstraints>
-                                        <RowConstraints maxHeight="51.0" prefHeight="30.0"
-                                                        vgrow="ALWAYS"/>
-                                        <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="66.0"
+                                        <RowConstraints vgrow="NEVER"/>
+                                        <RowConstraints maxHeight="77.0" minHeight="0.0"
                                                         vgrow="SOMETIMES"/>
                                     </rowConstraints>
                                     <children>
@@ -97,7 +98,7 @@
                                                              GridPane.halignment="LEFT" GridPane.rowIndex="1"
                                                              GridPane.valignment="TOP"/>
                                         <ComponentItemNode fx:id="windowConceptTitle"
-                                                           maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0"
+                                                           maxHeight="1.7976931348623157E308" prefWidth="416.0"
                                                            styleClass="window-main-title"
                                                            wrapText="true" GridPane.columnIndex="0">
                                             <tooltip>
@@ -105,13 +106,10 @@
                                             </tooltip>
                                         </ComponentItemNode>
                                     </children>
-                                    <padding>
-                                        <Insets bottom="8.0" left="12.0" right="8.0" top="8.0"/>
-                                    </padding>
                                 </GridPane>
                             </center>
                             <right>
-                                <StackPane prefHeight="128.0" prefWidth="210.0" BorderPane.alignment="CENTER">
+                                <StackPane prefWidth="210.0" BorderPane.alignment="CENTER">
                                     <BorderPane.margin>
                                         <Insets bottom="5" right="5" top="5"/>
                                     </BorderPane.margin>
