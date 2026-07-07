@@ -19,8 +19,8 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.geometry.HPos;
+import javafx.geometry.VPos;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
@@ -68,7 +68,6 @@ public class ComponentItemNode extends Region {
         textLabel.setGraphic(iconImageView);
 
         textLabel.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(textLabel, Priority.ALWAYS);
 
         textLabel.tooltipProperty().bind(tooltipProperty());
         textLabel.wrapTextProperty().bind(wrapTextProperty());
@@ -276,6 +275,19 @@ public class ComponentItemNode extends Region {
     protected double computeMinHeight(double width) {
         // Make the min height be the same as the pref height
         return super.computePrefHeight(width);
+    }
+
+    @Override
+    protected void layoutChildren() {
+        // Stretch the label to fill the available width, so its hover/edit-mode highlight spans
+        // the whole row — but never below its preferred width: when a parent squeezes this node,
+        // the label keeps its preferred size and overflows (Region's default behavior) instead of
+        // wrapping or truncating.
+        double contentWidth = getWidth() - snappedLeftInset() - snappedRightInset();
+        double contentHeight = getHeight() - snappedTopInset() - snappedBottomInset();
+        double labelWidth = Math.max(textLabel.prefWidth(-1), contentWidth);
+        layoutInArea(textLabel, snappedLeftInset(), snappedTopInset(), labelWidth, contentHeight,
+                -1, HPos.LEFT, VPos.CENTER);
     }
 
     /*=========================================================================*
