@@ -71,7 +71,7 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         spacer.setMinWidth(10);
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Text propertyLabel = new Text("PROPERTY");
+        Text propertyLabel = new Text("PROPERTIES");
         propertyLabel.setStrokeType(StrokeType.OUTSIDE);
         propertyLabel.setStrokeWidth(0.0);
         propertyLabel.getStyleClass().add("properties-toggle");

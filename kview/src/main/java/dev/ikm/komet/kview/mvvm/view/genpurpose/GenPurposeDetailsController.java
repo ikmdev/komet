@@ -553,12 +553,12 @@ public class GenPurposeDetailsController {
      * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
      */
     private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
-        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+        if (propertiesController != null && propertiesController.getPropertiesTabs() != null) {
             if (isOpen) {
-                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabs());
                 LOG.debug("Added properties nodes as draggable");
             } else {
-                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabs());
                 LOG.debug("Removed properties nodes from draggable");
             }
         }
