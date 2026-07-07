@@ -105,15 +105,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.loader.NamedVm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -482,13 +477,8 @@ public class GenPurposeDetailsController {
     }
 
     private void setupProperties() {
-        URL genpurposePropertiesFXML = GenPurposeDetailsController.class.getResource("genpurpose-properties.fxml");
-        Config config = new Config(genpurposePropertiesFXML)
-                .addNamedViewModel(new NamedVm("genPurposeViewModel", genPurposeViewModel));
-
-        JFXNode<BorderPane, GenPurposePropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
-        this.propertiesBorderPane = propsFXMLLoader.node();
-        this.propertiesController = propsFXMLLoader.controller();
+        this.propertiesController = new GenPurposePropertiesController(genPurposeViewModel);
+        this.propertiesBorderPane = this.propertiesController.getNode();
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
 
         // open the panel, allow the state machine to determine which panel to show

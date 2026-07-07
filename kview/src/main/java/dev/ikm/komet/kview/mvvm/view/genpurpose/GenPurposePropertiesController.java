@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose;
 import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
+import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
 import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
 import dev.ikm.komet.kview.mvvm.view.genediting.ReferenceComponentController;
@@ -35,12 +36,11 @@ import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.BooleanProperty;
-import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
 import org.slf4j.Logger;
@@ -62,27 +62,20 @@ import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
 import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
 
 public class GenPurposePropertiesController {
-
     private static final Logger LOG = LoggerFactory.getLogger(GenPurposePropertiesController.class);
-    private static final String EDIT_FIELD = "Edit Field";
-    private static final String ADD_FIELD = "Add Field";
 
-    @FXML
-    private PropertiesTabsControl propertiesTabs;
+    private final BorderPane propertiesPane = new BorderPane();
 
-    @FXML
-    private BorderPane contentBorderPane;
+    private final PropertiesTabsControl propertiesTabs = new PropertiesTabsControl();
 
-    private EntityFacade newSemantic;
+    private final BorderPane contentBorderPane = new BorderPane();
 
-    /////////// Private variables
     /**
      * Show the current edit window.
      */
     public enum PaneProperties {
         PROPERTY_PANE_OPEN,
     }
-    private Pane currentEditPane;
 
     private Pane closePropsPane;
 
@@ -92,8 +85,7 @@ public class GenPurposePropertiesController {
 
     private JFXNode<Pane, StampFormController> stampJFXNode;
 
-    @InjectViewModel
-    private GenPurposeViewModel genPurposeViewModel;
+    private final GenPurposeViewModel genPurposeViewModel;
 
     private Subscriber<KLPropertyPanelEvent> showPanelSubscriber;
 
@@ -105,23 +97,35 @@ public class GenPurposePropertiesController {
 
     private JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
 
-    private JFXNode<Pane, ReferenceComponentController> referenceComponentJfxNode;
+    public GenPurposePropertiesController(GenPurposeViewModel genPurposeViewModel) {
+        this.genPurposeViewModel = genPurposeViewModel;
 
-    public GenPurposePropertiesController() {
         // The header STAMP belongs to the window's reference component, which is a Concept.
         this.stampAddSubmitFormViewModel = new StampAddSubmitFormViewModel(CONCEPT);
         this.stampCreateFormViewModel = new StampCreateFormViewModel(CONCEPT);
-    }
 
-    @FXML
-    private void initialize() {
-        clearView();
-
-        propertiesTabs.getTabs().setAll(Tab.ADD_EDIT, Tab.COMMENTS);
+        buildView();
 
         setupShowingStampForm();
         setupShowingPanelHandlers();
-//        setupShowReferencePanelHandlers();
+    }
+
+    private void buildView() {
+        propertiesTabs.getTabs().setAll(Tab.ADD_EDIT, Tab.COMMENTS);
+        propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
+
+        contentBorderPane.getStyleClass().add("properties-tab-container-content");
+
+        // "properties-tab-outer-container" carries the gen purpose window's left divider border
+        // and bottom padding (see kview.css); the historical inner/outer nesting is collapsed
+        // into this single pane.
+        propertiesPane.getStyleClass().addAll("properties-tab-outer-container", "properties-tab-container");
+        propertiesPane.getStylesheets().add(CssHelper.defaultStyleSheet());
+        propertiesPane.setMinHeight(300);
+        propertiesPane.setPrefWidth(518);
+        propertiesPane.setTop(propertiesTabs);
+        BorderPane.setAlignment(propertiesTabs, Pos.CENTER);
+        propertiesPane.setCenter(contentBorderPane);
     }
 
     private void setupShowingStampForm() {
@@ -166,13 +170,6 @@ public class GenPurposePropertiesController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, createStampSubscriber);
     }
-
-    //Refers to Add Reference Component
-//    private void setupShowReferencePanelHandlers() {
-//        Config addReferenceConfig = new Config(this.getClass().getResource("reference-component.fxml"))
-//                .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel));
-//        referenceComponentJfxNode = FXMLMvvmLoader.make(addReferenceConfig);
-//    }
 
     private void setupShowingPanelHandlers() {
         Config config = new Config(this.getClass().getResource("genpurpose-edit-fields.fxml"))
@@ -231,40 +228,11 @@ public class GenPurposePropertiesController {
                 KLPropertyPanelEvent.class, showPanelSubscriber);
     }
 
-
-    public String selectedView() {
-        Tab tab = propertiesTabs.getSelectedTab();
-        if (tab == null) {
-            return "NONE";
-        }
-        return switch (tab) {
-            case ADD_EDIT -> "EDIT";
-            case HIERARCHY -> "HIERARCHY";
-            case INSTANCES -> "INSTANCES";
-            case HISTORY -> "HISTORY";
-            case COMMENTS -> "COMMENTS";
-        };
-    }
-
-    public void restoreSelectedView(String selectedView) {
-        LOG.info("restore selected Pattern view with " + selectedView);
-        switch (selectedView) {
-            case "EDIT" -> {
-                propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
-                contentBorderPane.setCenter(currentEditPane);
-            }
-            case "HIERARCHY" -> propertiesTabs.setSelectedTab(Tab.HIERARCHY); // TODO: hook up nodes once implemented
-            case "INSTANCES" -> propertiesTabs.setSelectedTab(Tab.INSTANCES); // TODO: hook up nodes once implemented
-            case "HISTORY" -> propertiesTabs.setSelectedTab(Tab.HISTORY); // TODO: hook up nodes once implemented
-            case "COMMENTS" -> propertiesTabs.setSelectedTab(Tab.COMMENTS); // TODO: hook up nodes once implemented
-            default -> {
-                propertiesTabs.setSelectedTab(null);
-                contentBorderPane.setCenter(closePropsPane);
-            }
-        }
-    }
-
-    public void clearView() {
+    /**
+     * Returns the root node of the properties panel, to be attached to the window's slideout tray.
+     */
+    public BorderPane getNode() {
+        return propertiesPane;
     }
 
     /**
