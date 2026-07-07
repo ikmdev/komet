@@ -255,9 +255,9 @@ public class GenPurposeFieldsController {
 
         genPurposeViewModel.modeProperty().subscribe((mode) -> {
             if (mode == FormMode.EDIT) {
-                clearOrResetFormButton.setText("RESET FORM");
+                clearOrResetFormButton.setText("Reset form");
             } else {
-                clearOrResetFormButton.setText("CLEAR FORM");
+                clearOrResetFormButton.setText("Clear form");
             }
         });
 

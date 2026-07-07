@@ -6567,6 +6567,126 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: #111;
 }
 
+/*******************************************************************************
+ * Properties bump out (right panel)                                           *
+ ******************************************************************************/
+
+/* White panel flush with the window; the tray paints the rounded bottom-right corner
+   strip itself (same trick as the main content), and the hairline divider against the
+   details area sits on the panel's left edge. */
+.gen-purpose-window .main-right-container {
+    -fx-background-color: white;
+    -fx-background-radius: 0 0 10px 0;
+}
+
+.gen-purpose-window .main-right-container .properties-tab-outer-container {
+    -fx-padding: 0 0 10px 0;
+    -fx-border-color: transparent transparent transparent -Grey-3;
+    -fx-border-width: 0 0 0 1;
+}
+
+.gen-purpose-window .properties-tabs {
+    -fx-background-color: white;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent transparent -Grey-3 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.gen-purpose-window.concept-detail-pane .main-right-container .properties-tab-container-content {
+    -fx-background-color: white;
+    -fx-border-width: 0;
+}
+
+/* Tabs: quiet icon-over-label toggles; the active tab is blue with a 2px underline. */
+.gen-purpose-window .properties-tab.toggle-button {
+    -fx-background-color: transparent;
+    -fx-font-size: 10px;
+    -fx-text-fill: -Grey-8;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
+}
+
+.gen-purpose-window .properties-tab.toggle-button .svg-tab {
+    -fx-fill: -Grey-8;
+    -fx-background-color: transparent;
+}
+
+.gen-purpose-window .properties-tab.toggle-button:hover {
+    -fx-background-color: #4A7AD215;
+    -fx-text-fill: -Secondary-05;
+}
+
+.gen-purpose-window .properties-tab.toggle-button:hover .svg-tab {
+    -fx-fill: -Secondary-05;
+    -fx-background-color: transparent;
+}
+
+.gen-purpose-window .properties-tab.toggle-button:selected {
+    -fx-background-color: transparent;
+    -fx-text-fill: -Secondary-05;
+    -fx-border-color: transparent transparent -Secondary-05 transparent;
+}
+
+.gen-purpose-window .properties-tab.toggle-button:selected .svg-tab {
+    -fx-fill: -Secondary-05;
+    -fx-background-color: transparent;
+}
+
+/* Edit-fields form chrome (title bar + footer); the field controls themselves keep
+   their existing styling. */
+.gen-purpose-window .sub-container {
+    -fx-background-color: white;
+}
+
+.gen-purpose-window .fields-title-bar {
+    -fx-alignment: center-left;
+    /* left inset 12 = the form content's inset (the ScrollPane margin), so the title
+       lines up with the field labels below */
+    -fx-padding: 14 12 0 12;
+}
+
+/* Same voice as the section headers on the left ("Data Type Test"). */
+.gen-purpose-window .fields-title-bar .lidr-device-title-label {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 16px;
+    -fx-text-fill: -Grey-11;
+}
+
+.gen-purpose-window .sub-container .button-bar {
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+    -fx-padding: 12 16 12 16;
+    -fx-border-color: -Grey-3 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.gen-purpose-window .sub-container .button-bar .button {
+    -fx-background-color: white;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: -Grey-5;
+    -fx-text-fill: -Grey-10;
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-padding: 7 14 7 14;
+}
+
+.gen-purpose-window .sub-container .button-bar .button:hover {
+    -fx-background-color: -Grey-1;
+}
+
+.gen-purpose-window .sub-container .button-bar .primary.button {
+    -fx-background-color: -Secondary-05;
+    -fx-border-color: -Secondary-05;
+    -fx-text-fill: white;
+}
+
+.gen-purpose-window .sub-container .button-bar .primary.button:hover {
+    -fx-background-color: derive(-Secondary-05, -10%);
+}
+
+/********************************************************************/
+
 /* ComboBox popup */
 .gen-purpose-window .combo-box-popup > .list-view {
     -fx-padding: 8px 0px;
