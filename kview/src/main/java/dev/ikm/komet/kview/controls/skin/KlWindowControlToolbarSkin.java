@@ -67,6 +67,11 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         timelineToggleButton.managedProperty().bind(control.timelineVisibleProperty());
         timelineToggleButton.selectedProperty().bindBidirectional(control.timelineSelectedProperty());
 
+        // The leading buttons get their own container so the gap between them can be styled
+        // (via -fx-spacing) independently of the bar's own spacing.
+        HBox leadingButtonsContainer = new HBox(coordinatesMenuButton, timelineToggleButton);
+        leadingButtonsContainer.getStyleClass().add("leading-buttons-container");
+
         Region spacer = new Region();
         spacer.setMinWidth(10);
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -108,8 +113,7 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         HBox container = new HBox();
         container.getStyleClass().addAll("concept-header-control", "rounded-upper-right-only");
         container.getChildren().addAll(
-                coordinatesMenuButton,
-                timelineToggleButton,
+                leadingButtonsContainer,
                 spacer,
                 propertyLabel,
                 propertiesToggleButton,

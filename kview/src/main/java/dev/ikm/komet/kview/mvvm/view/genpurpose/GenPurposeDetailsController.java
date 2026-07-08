@@ -57,6 +57,7 @@ import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandardControl;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
@@ -426,6 +427,27 @@ public class GenPurposeDetailsController {
         });
     }
 
+    /**
+     * Populates the header STAMP control from the edit coordinate — the author, module and path a
+     * newly created component will be committed with, and the Active status it will be committed
+     * as. Used in create mode, where no committed STAMP exists yet to read those values from.
+     */
+    private void populateStampFromEditCoordinate() {
+        var editCoordinate = getViewProperties().nodeView().editCoordinate();
+
+        stampViewControl.setStatus(getViewProperties().calculator()
+                .getPreferredDescriptionTextWithFallbackOrNid(State.ACTIVE.nid()));
+
+        ConceptFacade author = editCoordinate.getAuthorForChanges();
+        stampViewControl.setAuthor(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(author, getViewProperties()));
+
+        ConceptFacade module = editCoordinate.defaultModuleProperty().get();
+        stampViewControl.setModule(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(module, getViewProperties()));
+
+        ConceptFacade path = editCoordinate.defaultPathProperty().get();
+        stampViewControl.setPath(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(path, getViewProperties()));
+    }
+
     private void updateWindowTitle(EntityFacade refConcept) {
         // Follow the view coordinate's description-type preference (FQN vs preferred), like the axiom
         // badges, so the header tracks the coordinate too (ike-issues#660).
@@ -568,11 +590,13 @@ public class GenPurposeDetailsController {
 
         editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences, viewCalculator, windowTitle);
 
-        // The standard Concept window gets the classic concept window's blue chrome — see
-        // .concept-window-theme in kview.css. User-created Semantics Windows and the other
-        // standard windows keep the default grey chrome.
+        // The standard Concept window gets the classic concept window's blue chrome (see
+        // .concept-window-theme in kview.css) and its own set of properties tabs. User-created
+        // Semantics Windows and the other standard windows keep the default grey chrome and tabs.
         if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT) {
             detailsOuterBorderPane.getStyleClass().add("concept-window-theme");
+            propertiesController.getPropertiesTabs().getTabs().setAll(
+                    Tab.ADD_EDIT, Tab.HIERARCHY, Tab.HISTORY, Tab.COMMENTS);
         }
 
         // Apply the Window settings authored in the KL editor (this window shares the same model).
@@ -602,10 +626,8 @@ public class GenPurposeDetailsController {
         // Initial view update
         updateView();
 
-        // In create mode there's nothing to view yet, so open the STAMP form from the start — authoring
-        // the STAMP is the first step of creating a new component.
         if (genPurposeViewModel.getMode() == FormMode.CREATE) {
-            stampViewControl.setSelected(true);
+            populateStampFromEditCoordinate();
         }
     }
 
