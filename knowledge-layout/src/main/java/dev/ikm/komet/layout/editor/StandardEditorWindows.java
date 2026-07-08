@@ -2,6 +2,7 @@ package dev.ikm.komet.layout.editor;
 
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
+import dev.ikm.komet.layout.editor.model.EditorWindowType;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -9,6 +10,7 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import java.util.List;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_WINDOW_TYPE;
 
 /**
  * Seeds the standard (application-provided) KL Windows into the standard-windows folder of the
@@ -37,6 +39,12 @@ public final class StandardEditorWindows {
         if (!standardWindows.contains(CONCEPT_WINDOW_2)) {
             saveConceptWindow2(standardWindowsPreferences, viewCalculator);
         }
+
+        // Windows seeded before the window type was persisted lack the type key — stamp it.
+        KometPreferences conceptWindowPreferences = standardWindowsPreferences.node(CONCEPT_WINDOW_2);
+        if (conceptWindowPreferences.get(KL_WINDOW_TYPE).isEmpty()) {
+            conceptWindowPreferences.put(KL_WINDOW_TYPE, EditorWindowType.STANDARD_CONCEPT.name());
+        }
     }
 
     /**
@@ -47,6 +55,7 @@ public final class StandardEditorWindows {
                                            ViewCalculator viewCalculator) {
         EditorWindowModel window = new EditorWindowModel();
         window.setTitle(CONCEPT_WINDOW_2);
+        window.setWindowType(EditorWindowType.STANDARD_CONCEPT);
 
         EditorPatternModel descriptionPattern =
                 new EditorPatternModel(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN.nid());

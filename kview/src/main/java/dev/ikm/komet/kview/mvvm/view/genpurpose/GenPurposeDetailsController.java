@@ -68,6 +68,7 @@ import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
+import dev.ikm.komet.layout.editor.model.EditorWindowType;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -566,6 +567,13 @@ public class GenPurposeDetailsController {
         windowTitleLabel.setText(lastDirName.substring(0, 1).toUpperCase() + lastDirName.substring(1));
 
         editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences, viewCalculator, windowTitle);
+
+        // The standard Concept window gets the classic concept window's blue chrome — see
+        // .concept-window-theme in kview.css. User-created Semantics Windows and the other
+        // standard windows keep the default grey chrome.
+        if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT) {
+            detailsOuterBorderPane.getStyleClass().add("concept-window-theme");
+        }
 
         // Apply the Window settings authored in the KL editor (this window shares the same model).
         applyEditorWindowSettings();

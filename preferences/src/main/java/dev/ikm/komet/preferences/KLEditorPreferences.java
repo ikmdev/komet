@@ -37,6 +37,12 @@ public class KLEditorPreferences {
     public static final String KL_WINDOW_TIMELINE_VISIBLE = "kl-window-timeline-visible";
 
     /**
+     * Key for the KL Window's type (an {@code EditorWindowType} name): one of the three standard
+     * windows or a user-created Semantics Window.
+     */
+    public static final String KL_WINDOW_TYPE = "kl-window-type";
+
+    /**
      * Root of KL Editor 'App' preferences.
      */
     public static final String KL_EDITOR_APP = "kl-editor-app";
