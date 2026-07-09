@@ -35,6 +35,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableComposer;
+import dev.ikm.komet.framework.observable.ObservableConcept;
+import dev.ikm.komet.framework.observable.ObservableConceptVersion;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
@@ -214,7 +216,7 @@ public class GenPurposeDetailsController {
         // reacts to the toggle's selected state (driven by user clicks or setPropertiesSelected).
         windowControlToolbar.setOnCloseAction(this::closeConceptWindow);
         windowControlToolbar.propertiesSelectedProperty()
-                .subscribe((wasSelected, isSelected) -> onPropertiesToggleChanged(isSelected));
+                .subscribe((w) -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
 
         stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
 
@@ -266,6 +268,14 @@ public class GenPurposeDetailsController {
 
                 composer = null;
                 initializeComposer();
+
+                // In create mode that commit also finalized the window's lazily created reference
+                // concept (see createUncommitedReferenceConcept) — the window is now editing a
+                // real component, so refresh the banner/identifier/STAMP from the committed entity.
+                if (genPurposeViewModel.getMode() == FormMode.CREATE) {
+                    genPurposeViewModel.setMode(FormMode.EDIT);
+                    updateView();
+                }
 
                 reloadSemanticViews(semantic);
             }
@@ -497,6 +507,26 @@ public class GenPurposeDetailsController {
                 });
 
         return newSemantic.get();
+    }
+
+    /**
+     * Creates the window's reference component as a new, uncommitted concept — used in create mode,
+     * where the window was opened without one. The concept joins the composer's current transaction,
+     * so it gets committed together with the semantic whose creation triggered it.
+     *
+     * @return the new uncommitted concept, already set as the window's reference component
+     */
+    private EntityFacade createUncommitedReferenceConcept() {
+        initializeComposer();
+
+        ObservableComposer.EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> conceptComposer =
+                composer.composeConcept(PublicIds.newRandom());
+
+        conceptComposer.save(); // Save to create an uncommitted version
+
+        EntityFacade newConcept = conceptComposer.getEntity();
+        genPurposeViewModel.setPropertyValue(ViewModelKey.REF_COMPONENT, newConcept);
+        return newConcept;
     }
 
     private void setupProperties() {
@@ -753,35 +783,44 @@ public class GenPurposeDetailsController {
             refComponent = sectionTitledPane.getSelectedReferenceComponent();
         }
 
-        if (refComponent == null) {
+        // In create mode the standard Concept window has no reference component yet — the new
+        // concept is created lazily when the user authors the first semantic (see onCreateSemantic),
+        // so the popup still opens, offering only "Create Semantic".
+        boolean canCreateReferenceComponent = sectionModel.getReferenceComponent() == null
+                && genPurposeViewModel.getMode() == FormMode.CREATE
+                && editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT;
+
+        if (refComponent == null && !canCreateReferenceComponent) {
             // No reference concept to edit against — nothing to populate.
             return;
         }
 
-        // Populate the Popup
-        EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
-                sectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
-                    KometLabel semanticLabel = new KometLabel(semantic, viewProperties);
-                    semanticLabel.setShowTooltip(true);
+        if (refComponent != null) {
+            // Populate the Popup
+            EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
+                    sectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
+                        KometLabel semanticLabel = new KometLabel(semantic, viewProperties);
+                        semanticLabel.setShowTooltip(true);
 
-                    semanticLabel.setOnMouseClicked(_ -> {
-                        initializeComposer();
-                        showEditSemanticFieldsPanel(actionEvent, semantic);
-                        popup.hide();
+                        semanticLabel.setOnMouseClicked(_ -> {
+                            initializeComposer();
+                            showEditSemanticFieldsPanel(actionEvent, semantic);
+                            popup.hide();
+                        });
+
+                        semanticLabel.hoverProperty().subscribe(() -> {
+                            PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
+
+                            if (semanticLabel.isHover()) {
+                                patternSemanticsPresenter.setPreviewingSemantic(semantic);
+                            } else {
+                                patternSemanticsPresenter.setPreviewingSemantic(null);
+                            }
+                        });
+
+                        popup.getItems().add(semanticLabel);
                     });
-
-                    semanticLabel.hoverProperty().subscribe(() -> {
-                        PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
-
-                        if (semanticLabel.isHover()) {
-                            patternSemanticsPresenter.setPreviewingSemantic(semantic);
-                        } else {
-                            patternSemanticsPresenter.setPreviewingSemantic(null);
-                        }
-                    });
-
-                    popup.getItems().add(semanticLabel);
-                });
+        }
 
         popup.setOnCreateSemanticAction(() -> {
             initializeComposer();
@@ -798,7 +837,12 @@ public class GenPurposeDetailsController {
     }
 
     private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern, EntityFacade refComponent) {
-//        genPurposeViewModel.setMode(FormMode.CREATE);
+        // Lazy reference-component creation: in create mode the window has no component yet — the
+        // first semantic the user authors brings the new concept into existence with it. Both join
+        // the composer's transaction, so submitting the semantic commits them together.
+        if (refComponent == null) {
+            refComponent = createUncommitedReferenceConcept();
+        }
 
         EditorPatternModel editorPatternModel = sectionModelOfPattern.getPatterns().getFirst();
         PatternFacade patternFacade = PatternFacade.make(editorPatternModel.getNid());
