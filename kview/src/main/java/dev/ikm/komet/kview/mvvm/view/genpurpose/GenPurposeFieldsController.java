@@ -607,6 +607,10 @@ public class GenPurposeFieldsController {
                         new GenPurposeEvent(actionEvent.getSource(), PUBLISH, fieldValues, currentEditingSemantic)
                 );
 
+                // Submitting finishes the create/edit flow, so close the properties bumpout.
+                EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+                        new KLPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+
                 // Show success message
                 String submitMessage = "Semantic Details %s Successfully!"
                         .formatted(genPurposeViewModel.getMode() == FormMode.EDIT ? "Edited" : "Added");
