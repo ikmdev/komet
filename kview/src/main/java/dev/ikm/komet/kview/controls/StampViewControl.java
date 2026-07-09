@@ -90,4 +90,14 @@ public class StampViewControl extends Control {
     public boolean isSelected() { return selected.get(); }
     public BooleanProperty selectedProperty() { return selected; }
     public void setSelected(boolean value) { selected.set(value); }
+
+    // -- selectable
+    /**
+     * Whether the control can be selected by clicking it. When false the control is view-only:
+     * mouse presses no longer toggle the {@link #selectedProperty() selected} state.
+     */
+    private final BooleanProperty selectable = new SimpleBooleanProperty(this, "selectable", true);
+    public boolean isSelectable() { return selectable.get(); }
+    public BooleanProperty selectableProperty() { return selectable; }
+    public void setSelectable(boolean value) { selectable.set(value); }
 }

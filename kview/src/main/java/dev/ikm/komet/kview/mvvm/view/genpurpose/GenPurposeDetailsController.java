@@ -28,9 +28,7 @@ import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
-import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
@@ -56,7 +54,6 @@ import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
@@ -193,7 +190,6 @@ public class GenPurposeDetailsController {
     private BorderPane propertiesBorderPane;
     private GenPurposePropertiesController propertiesController;
     private EditorWindowModel editorWindowModel;
-    private boolean isUpdatingStampSelection = false;
     private ViewProperties viewProperties;
     @InjectViewModel
     private GenPurposeViewModel genPurposeViewModel;
@@ -218,14 +214,12 @@ public class GenPurposeDetailsController {
         windowControlToolbar.propertiesSelectedProperty()
                 .subscribe((w) -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
 
-        stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
+        // The header STAMP is view-only in this window — clicking it must not select it or open
+        // the STAMP form.
+        stampViewControl.setSelectable(false);
 
         // Setup Properties Bump out view
         setupProperties();
-
-        // When the user submits an edited STAMP from the properties panel, refresh the header STAMP.
-        propertiesController.getStampFormViewModel().getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED)
-                .subscribe(isConfirmed -> onStampConfirmedOrSubmitted(isConfirmed));
 
         Subscriber<GenPurposeEvent> refreshSubscriber = evt -> {
             //Set up the Listener to refresh the details area (After user hits submit button on the right side)
@@ -321,11 +315,6 @@ public class GenPurposeDetailsController {
     private void onPropertiesToggleChanged(boolean selected) {
         EvtType<KLPropertyPanelEvent> eventEvtType = selected ? KLPropertyPanelEvent.OPEN_PANEL : KLPropertyPanelEvent.CLOSE_PANEL;
 
-        // Keep the header STAMP control's selected state in sync with the properties panel toggle.
-        isUpdatingStampSelection = true;
-        stampViewControl.setSelected(selected);
-        isUpdatingStampSelection = false;
-
         EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(windowControlToolbar, eventEvtType));
     }
 
@@ -348,33 +337,6 @@ public class GenPurposeDetailsController {
         // so that when we resize the window the content in the slide out pane
         // aligns with the details view
         contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
-    }
-
-    private void onStampSelectionChanged() {
-        if (isUpdatingStampSelection) {
-            return;
-        }
-
-        if (stampViewControl.isSelected()) {
-            windowControlToolbar.setPropertiesSelected(true);
-
-            if (genPurposeViewModel.getMode() == FormMode.CREATE) {
-                // Create mode has no reference component; open a STAMP form authored from default values.
-                EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                        new StampEvent(stampViewControl, StampEvent.CREATE_STAMP));
-            } else {
-                // The reference component always exists in a Knowledge Layout window, so editing its STAMP
-                // always adds a new version (ADD_STAMP). Guard against a window opened without one.
-                EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
-                if (refComponent != null) {
-                    EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                            new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
-                }
-            }
-        } else {
-            EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                    new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
-        }
     }
 
     /// Show the public ID
@@ -557,19 +519,6 @@ public class GenPurposeDetailsController {
         };
 //        subscriberList.add(propertiesEventSubscriber);
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), KLPropertyPanelEvent.class, propertiesEventSubscriber);
-    }
-
-    private void onStampConfirmedOrSubmitted(boolean isSubmittedOrConfirmed) {
-        if (!isSubmittedOrConfirmed) {
-            return;
-        }
-
-        // A new STAMP version was committed for the reference component; refresh the header from the
-        // committed latest version. The control stays enabled so the STAMP can be edited again.
-        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
-        if (refComponent != null) {
-            updateStampControl(refComponent);
-        }
     }
 
     public ViewProperties getViewProperties() {

@@ -86,6 +86,9 @@ public class StampViewControlSkin extends SkinBase<StampViewControl> {
     }
 
     private void onMousePressedOnStamp(MouseEvent mouseEvent) {
+        if (!getSkinnable().isSelectable()) {
+            return;
+        }
         getSkinnable().setSelected(!getSkinnable().isSelected());
     }
 }

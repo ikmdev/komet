@@ -15,26 +15,18 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
-import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.CssHelper;
-import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
 import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
 import dev.ikm.komet.kview.mvvm.view.genediting.ReferenceComponentController;
 import dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampAddSubmitFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampCreateFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
@@ -55,11 +47,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.Confi
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELD_INDEX;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.REF_COMPONENT;
-import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
-import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
 
 public class GenPurposePropertiesController {
     private static final Logger LOG = LoggerFactory.getLogger(GenPurposePropertiesController.class);
@@ -79,34 +67,19 @@ public class GenPurposePropertiesController {
 
     private Pane closePropsPane;
 
-    private StampAddSubmitFormViewModel stampAddSubmitFormViewModel;
-
-    private StampCreateFormViewModel stampCreateFormViewModel;
-
-    private JFXNode<Pane, StampFormController> stampJFXNode;
-
     private final GenPurposeViewModel genPurposeViewModel;
 
     private Subscriber<KLPropertyPanelEvent> showPanelSubscriber;
 
     private Subscriber<GenEditingEvent> genEditingEventSubscriber;
 
-    private Subscriber<StampEvent> addStampSubscriber;
-
-    private Subscriber<StampEvent> createStampSubscriber;
-
     private JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
 
     public GenPurposePropertiesController(GenPurposeViewModel genPurposeViewModel) {
         this.genPurposeViewModel = genPurposeViewModel;
 
-        // The header STAMP belongs to the window's reference component, which is a Concept.
-        this.stampAddSubmitFormViewModel = new StampAddSubmitFormViewModel(CONCEPT);
-        this.stampCreateFormViewModel = new StampCreateFormViewModel(CONCEPT);
-
         buildView();
 
-        setupShowingStampForm();
         setupShowingPanelHandlers();
     }
 
@@ -126,49 +99,6 @@ public class GenPurposePropertiesController {
         propertiesPane.setTop(propertiesTabs);
         BorderPane.setAlignment(propertiesTabs, Pos.CENTER);
         propertiesPane.setCenter(contentBorderPane);
-    }
-
-    private void setupShowingStampForm() {
-        // Load Stamp add View Panel (FXML & Controller)
-        Config stampConfig = new Config(StampFormController.class.getResource(StampFormController.STAMP_FORM_FXML_FILE));
-        stampJFXNode = FXMLMvvmLoader.make(stampConfig);
-
-        // -- add stamp: edit the STAMP of the window's reference component (which always exists in a
-        //    Knowledge Layout window), adding a new committed version. There is no CREATE flow here
-        //    because the reference component is never created from this window.
-        addStampSubscriber = evt -> {
-            if (evt.getEventType() == ADD_STAMP) {
-                EntityFacade refComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
-                if (refComponent == null) {
-                    return;
-                }
-                stampJFXNode.controller().init(stampAddSubmitFormViewModel);
-                stampAddSubmitFormViewModel.update(refComponent,
-                        genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), genPurposeViewModel.getViewProperties());
-
-                contentBorderPane.setCenter(stampJFXNode.node());
-
-                propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
-            }
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, addStampSubscriber);
-
-        // -- create stamp: open an editable STAMP form for the new component being created. Create mode has
-        //    no reference component, so the form starts from default values rather than an existing STAMP.
-        //    update() first so the view properties and module/path lists are populated before defaults.
-        createStampSubscriber = evt -> {
-            if (evt.getEventType() == CREATE_STAMP) {
-                stampCreateFormViewModel.update(genPurposeViewModel.getPropertyValue(REF_COMPONENT),
-                        genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), genPurposeViewModel.getViewProperties());
-                stampCreateFormViewModel.populateDefaults();
-                stampJFXNode.controller().init(stampCreateFormViewModel);
-
-                contentBorderPane.setCenter(stampJFXNode.node());
-
-                propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
-            }
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, createStampSubscriber);
     }
 
     private void setupShowingPanelHandlers() {
@@ -243,17 +173,4 @@ public class GenPurposePropertiesController {
         return propertiesTabs;
     }
 
-    /***************************************************************************
-     *                                                                         *
-     * Properties                                                              *
-     *                                                                         *
-     **************************************************************************/
-
-    /**
-     * The STAMP form view model used to edit the reference component's STAMP. The details controller
-     * reads this to refresh the header STAMP once the user submits a new version.
-     */
-    public StampFormViewModelBase getStampFormViewModel() {
-        return genPurposeViewModel.getMode() == FormMode.CREATE ? stampCreateFormViewModel : stampAddSubmitFormViewModel;
-    }
 }
