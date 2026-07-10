@@ -6423,6 +6423,105 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: -Secondary-06;
 }
 
+/*******************************************************************************
+ * Create Mode                                                                 *
+ ******************************************************************************/
+
+/* Ghost window while in create mode: the window frames a component that doesn't exist yet
+   (it's committed when the user submits, which flips the window back to edit mode). The
+   chrome dims to a washed-out version of the window blue and the window's outside edges get
+   a dashed outline: dark-blue stitching on the tab and toolbar (a light dash reads as a
+   white fringe against their blue fills), light stitching around the white body frame —
+   which also wraps the slideout trays, so an open properties bumpout stays inside the
+   dashes. The header STAMP fades to read as tentative, and a DRAFT chip + hint line name
+   the state. Driven by the :create-mode pseudo-class toggled from the mode property in
+   GenPurposeDetailsController. */
+.gen-purpose-window.concept-window-theme:create-mode .lidr-rounded-tab {
+    -fx-background-color: #5C74A0; /* dimmed derive(-Secondary-06, -25%), hue kept */
+}
+
+.gen-purpose-window.concept-window-theme:create-mode .kl-window-control-toolbar > .concept-header-control {
+    -fx-background-color: #7E95BC; /* dimmed -Secondary-06, hue kept */
+}
+
+.gen-purpose-window:create-mode .lidr-rounded-tab {
+    /* midway between the window blue and the body frame's #97A6C0: dark enough not to read
+       as a white fringe on the blue chrome, light enough to sit with the body dashes */
+    -fx-border-color: #6881AD;
+    -fx-border-width: 2 2 0 2;
+    /* negative insets draw the border just outside the bounds, so toggling create mode
+       contributes no layout insets and the tab content doesn't shift */
+    -fx-border-insets: -2 -2 0 -2;
+    -fx-border-style: segments(6, 5);
+}
+
+/* Dark dashes around the toolbar: top edge (visible to the right of the tab — the tab row
+   paints above via -fx-view-order and covers the rest) and the sides, with the top-right
+   corner following the toolbar's rounded-upper-right-only radius. */
+.gen-purpose-window:create-mode .kl-window-control-toolbar > .concept-header-control {
+    -fx-border-color: #6881AD; /* same midway blue as the tab's dashes */
+    -fx-border-width: 2 2 0 2;
+    -fx-border-insets: -2 -2 0 -2; /* drawn outside: no layout shift */
+    -fx-border-style: segments(6, 5);
+    -fx-border-radius: 0 10 0 0;
+}
+
+/* Paint the tab row above the toolbar so the tab covers the toolbar's outside-top dash
+   running underneath it. */
+.gen-purpose-window:create-mode > .rounded-top {
+    -fx-view-order: -1;
+}
+
+.gen-purpose-window:create-mode .window-body-frame {
+    -fx-border-color: transparent #97A6C0 #97A6C0 #97A6C0;
+    -fx-border-width: 0 2 2 2;
+    /* MUST stay layout-neutral (negative insets = drawn outside the bounds): the slideout
+       tray content's prefHeight is bound to the tray's actual height (addPaneToTray), so
+       this pane's pref height derives from its own height. Border insets inside that cycle
+       compound with pixel snapping and make the window grow indefinitely. */
+    -fx-border-insets: 0 -2 -2 -2;
+    -fx-border-style: segments(6, 5);
+    -fx-border-radius: 0 0 10px 10px;
+}
+
+/* Tentative STAMP: the values are the edit coordinate's defaults, not a committed STAMP.
+   Lightened via explicit text colors rather than -fx-opacity so the glyphs stay crisp. */
+.gen-purpose-window:create-mode .stamp-view-control .stamp-container .stamp-label {
+    -fx-text-fill: #9B9573;
+}
+
+.gen-purpose-window:create-mode .stamp-view-control .stamp-container .stamp-text {
+    -fx-text-fill: #A8A28B;
+}
+
+.gen-purpose-window .lidr-rounded-tab .draft-chip {
+    -fx-text-fill: white;
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 9px;
+    -fx-border-color: #FFFFFFBF;
+    -fx-border-style: segments(3, 2);
+    -fx-border-radius: 4;
+    -fx-padding: 0 5 0 5;
+}
+
+.gen-purpose-window .create-mode-hint {
+    -fx-background-color: #F4F6FA;
+    -fx-text-fill: #5D6B84;
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 12px;
+    -fx-padding: 6 14 6 14;
+    -fx-graphic-text-gap: 8;
+    /* solid hairline closing the strip below; the dashed frame is on .window-lower-frame */
+    -fx-border-color: transparent transparent #E6EAF1 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.gen-purpose-window .create-mode-hint .create-mode-hint-icon {
+    -fx-fill: #5D6B84;
+}
+
+/******************************************************************************/
+
 .gen-purpose-window .lidr-rounded-tab .nine-dots-icon {
     icon-width: 11px;
     icon-height: 10px;

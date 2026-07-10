@@ -89,11 +89,13 @@ import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
@@ -125,6 +127,12 @@ import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 public class GenPurposeDetailsController {
 
     private static final Logger LOG = LoggerFactory.getLogger(GenPurposeDetailsController.class);
+
+    /**
+     * Active while the window is in create mode, i.e. framing a component that doesn't exist yet.
+     * Drives the "ghost window" styling in kview.css (dimmed blue chrome, dashed frame, dimmed STAMP).
+     */
+    private static final PseudoClass CREATE_MODE = PseudoClass.getPseudoClass("create-mode");
 
     /**
      * Given a Pattern what is the Section that has it as its Reference Component.
@@ -187,6 +195,10 @@ public class GenPurposeDetailsController {
     private HBox tabHeader;
     @FXML
     private Text windowTitleLabel;
+    @FXML
+    private Label draftChip;
+    @FXML
+    private Label createModeHintLabel;
     private BorderPane propertiesBorderPane;
     private GenPurposePropertiesController propertiesController;
     private EditorWindowModel editorWindowModel;
@@ -217,6 +229,18 @@ public class GenPurposeDetailsController {
         // The header STAMP is view-only in this window — clicking it must not select it or open
         // the STAMP form.
         stampViewControl.setSelectable(false);
+
+        // Ghost-window styling while in create mode: the window frames a component that doesn't
+        // exist yet, so the chrome dims and the frame dashes (see :create-mode in kview.css) and
+        // the DRAFT chip + hint appear. Submitting flips the mode to EDIT, which clears all of it.
+        genPurposeViewModel.modeProperty().subscribe(mode -> {
+            boolean creating = mode == FormMode.CREATE;
+            detailsOuterBorderPane.pseudoClassStateChanged(CREATE_MODE, creating);
+            draftChip.setVisible(creating);
+            draftChip.setManaged(creating);
+            createModeHintLabel.setVisible(creating);
+            createModeHintLabel.setManaged(creating);
+        });
 
         // Setup Properties Bump out view
         setupProperties();
@@ -577,6 +601,15 @@ public class GenPurposeDetailsController {
             propertiesController.getPropertiesTabs().getTabs().setAll(
                     Tab.ADD_EDIT, Tab.HIERARCHY, Tab.HISTORY, Tab.COMMENTS);
         }
+
+        // The create-mode hint names the kind of component this window will create.
+        String componentKind = switch (editorWindowModel.getWindowType()) {
+            case STANDARD_CONCEPT -> "Concept";
+            case STANDARD_PATTERN -> "Pattern";
+            case STANDARD_SEMANTIC, SEMANTICS -> "Semantic";
+        };
+        createModeHintLabel.setText("This " + componentKind
+                + " doesn't exist yet - it's created when you fill out the required semantics and submit.");
 
         // Apply the Window settings authored in the KL editor (this window shares the same model).
         applyEditorWindowSettings();
