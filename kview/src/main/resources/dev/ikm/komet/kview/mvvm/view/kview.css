@@ -1302,7 +1302,7 @@ selected(active) - dark black
  * Knowledge Layout Window Toolbar                                             *
  ******************************************************************************/
 
-.kl-window-control-toolbar > .concept-header-control {
+.kl-window-control-toolbar .concept-header-control {
     -fx-background-color: -Natural-Grey-Main;
     -fx-padding: 0 5 0 12;
 }
@@ -6419,7 +6419,7 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: derive(-Secondary-06, -25%);
 }
 
-.gen-purpose-window.concept-window-theme .kl-window-control-toolbar > .concept-header-control {
+.gen-purpose-window.concept-window-theme .kl-window-control-toolbar .concept-header-control {
     -fx-background-color: -Secondary-06;
 }
 
@@ -6440,7 +6440,7 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: #5C74A0; /* dimmed derive(-Secondary-06, -25%), hue kept */
 }
 
-.gen-purpose-window.concept-window-theme:create-mode .kl-window-control-toolbar > .concept-header-control {
+.gen-purpose-window.concept-window-theme:create-mode .kl-window-control-toolbar .concept-header-control {
     -fx-background-color: #7E95BC; /* dimmed -Secondary-06, hue kept */
 }
 
@@ -6458,7 +6458,7 @@ Styling a context menu for kview ui/ux controls
 /* Dark dashes around the toolbar: top edge (visible to the right of the tab — the tab row
    paints above via -fx-view-order and covers the rest) and the sides, with the top-right
    corner following the toolbar's rounded-upper-right-only radius. */
-.gen-purpose-window:create-mode .kl-window-control-toolbar > .concept-header-control {
+.gen-purpose-window:create-mode .kl-window-control-toolbar .concept-header-control {
     -fx-border-color: #6881AD; /* same midway blue as the tab's dashes */
     -fx-border-width: 2 2 0 2;
     -fx-border-insets: -2 -2 0 -2; /* drawn outside: no layout shift */
@@ -6466,9 +6466,10 @@ Styling a context menu for kview ui/ux controls
     -fx-border-radius: 0 10 0 0;
 }
 
-/* Paint the tab row above the toolbar so the tab covers the toolbar's outside-top dash
+/* Paint the tab row above the toolbar's control row (both live inside the
+   KlWindowControlToolbar skin) so the tab covers the control row's outside-top dash
    running underneath it. */
-.gen-purpose-window:create-mode > .rounded-top {
+.gen-purpose-window:create-mode .kl-window-control-toolbar .rounded-top {
     -fx-view-order: -1;
 }
 

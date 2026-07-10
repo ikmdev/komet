@@ -17,35 +17,65 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KlWindowControlToolbar;
 import javafx.geometry.Orientation;
+import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Text;
 
 /**
- * Default skin for {@link KlWindowControlToolbar}. Builds the whole control bar — the coordinate menu
- * and timeline toggle on the leading edge, a growing spacer, then the {@code PROPERTY} label, properties
- * toggle, a vertical separator and the close button on the trailing edge — and binds each piece to the
- * control's state and action hooks.
+ * Default skin for {@link KlWindowControlToolbar}. Builds the whole control bar as two stacked rows:
+ * the title tab on top (the drag-dots icon, the window title and the DRAFT chip), and below it the
+ * control row — the coordinate menu and timeline toggle on the leading edge, a growing spacer, then
+ * the {@code PROPERTY} label, properties toggle, a vertical separator and the close button on the
+ * trailing edge — and binds each piece to the control's state and action hooks.
  * <p>
- * All visuals come from CSS (see the {@code .kl-window-control-toolbar} and {@code .concept-header-control}
- * rules in {@code kview.css}); the skin sets only style classes and layout constraints, never inline style.
+ * All visuals come from CSS (see the {@code .kl-window-control-toolbar}, {@code .lidr-rounded-tab} and
+ * {@code .concept-header-control} rules in {@code kview.css}); the skin sets only style classes and
+ * layout constraints, never inline style.
  */
 public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar> {
 
     public KlWindowControlToolbarSkin(KlWindowControlToolbar control) {
         super(control);
+
+        // Title tab: drag-dots icon, window title and DRAFT chip. The tab sizes to its content
+        // (the FlowPane row keeps it from stretching across the full width) and shows the
+        // closed-hand cursor since it doubles as the window's drag handle.
+        Region nineDotsIcon = new Region();
+        nineDotsIcon.getStyleClass().add("nine-dots-icon");
+
+        Text titleText = new Text();
+        titleText.setStrokeType(StrokeType.OUTSIDE);
+        titleText.setStrokeWidth(0.0);
+        titleText.getStyleClass().add("lidr-tab-text");
+        titleText.textProperty().bind(control.titleProperty());
+
+        Label draftChip = new Label("DRAFT");
+        draftChip.getStyleClass().add("draft-chip");
+        draftChip.visibleProperty().bind(control.draftVisibleProperty());
+        draftChip.managedProperty().bind(control.draftVisibleProperty());
+
+        HBox tab = new HBox(nineDotsIcon, titleText, draftChip);
+        tab.getStyleClass().add("lidr-rounded-tab");
+        tab.setCursor(Cursor.CLOSED_HAND);
+
+        FlowPane tabRow = new FlowPane(tab);
+        tabRow.getStyleClass().add("rounded-top");
 
         // Coordinate menu button
         MenuButton coordinatesMenuButton = control.getCoordinatesMenuButton();
@@ -120,6 +150,6 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
                 separator,
                 closeButton);
 
-        getChildren().add(container);
+        getChildren().add(new VBox(tabRow, container));
     }
 }

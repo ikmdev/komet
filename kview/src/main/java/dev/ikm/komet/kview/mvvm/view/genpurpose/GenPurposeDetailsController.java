@@ -103,11 +103,9 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.text.Text;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,12 +190,6 @@ public class GenPurposeDetailsController {
     @FXML
     private PublicIDListControl identifierControl;
     @FXML
-    private HBox tabHeader;
-    @FXML
-    private Text windowTitleLabel;
-    @FXML
-    private Label draftChip;
-    @FXML
     private Label createModeHintLabel;
     private BorderPane propertiesBorderPane;
     private GenPurposePropertiesController propertiesController;
@@ -236,8 +228,7 @@ public class GenPurposeDetailsController {
         genPurposeViewModel.modeProperty().subscribe(mode -> {
             boolean creating = mode == FormMode.CREATE;
             detailsOuterBorderPane.pseudoClassStateChanged(CREATE_MODE, creating);
-            draftChip.setVisible(creating);
-            draftChip.setManaged(creating);
+            windowControlToolbar.setDraftVisible(creating);
             createModeHintLabel.setVisible(creating);
             createModeHintLabel.setManaged(creating);
         });
@@ -308,8 +299,9 @@ public class GenPurposeDetailsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                 GenPurposeEvent.class, refreshSubscriber);
 
-        // Setup window support with explicit draggable nodes
-        addDraggableNodes(detailsOuterBorderPane, tabHeader, windowControlToolbar);
+        // Setup window support with explicit draggable nodes. The toolbar's own title tab is
+        // part of the toolbar control, so it drags the window through the toolbar handle.
+        addDraggableNodes(detailsOuterBorderPane, windowControlToolbar);
 
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore toggling will perform a slide in
@@ -589,7 +581,7 @@ public class GenPurposeDetailsController {
         Path path = Paths.get(absolutePath);
         String lastDirName = path.getFileName().toString();
         String windowTitle = lastDirName;
-        windowTitleLabel.setText(lastDirName.substring(0, 1).toUpperCase() + lastDirName.substring(1));
+        windowControlToolbar.setTitle(lastDirName.substring(0, 1).toUpperCase() + lastDirName.substring(1));
 
         editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences, viewCalculator, windowTitle);
 

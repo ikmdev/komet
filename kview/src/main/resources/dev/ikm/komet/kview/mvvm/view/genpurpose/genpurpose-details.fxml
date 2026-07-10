@@ -6,50 +6,26 @@
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
-<?import javafx.scene.text.Text?>
 
 <?import javafx.scene.control.SplitPane?>
 <?import dev.ikm.komet.kview.controls.ComponentItemNode?>
 <BorderPane fx:id="detailsOuterBorderPane" maxHeight="Infinity" maxWidth="Infinity" prefWidth="727.0"
             stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="dev.ikm.komet.kview.mvvm.view.genpurpose.GenPurposeDetailsController">
-    <top>
-        <FlowPane styleClass="rounded-top">
-            <children>
-                <HBox fx:id="tabHeader">
-                    <styleClass>
-                        <String fx:value="lidr-rounded-tab"/>
-                    </styleClass>
-                    <children>
-                        <Region styleClass="nine-dots-icon"/>
-                        <Text fx:id="windowTitleLabel" strokeType="OUTSIDE" strokeWidth="0.0"
-                              styleClass="lidr-tab-text"/>
-                        <Label fx:id="draftChip" styleClass="draft-chip" text="DRAFT"
-                               visible="false" managed="false"/>
-                    </children>
-                    <cursor>
-                        <Cursor fx:constant="CLOSED_HAND"/>
-                    </cursor>
-                </HBox>
-            </children>
-        </FlowPane>
-    </top>
     <center>
         <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
             <top>
+                <!-- The toolbar also carries the window's title tab on its top row -->
                 <KlWindowControlToolbar fx:id="windowControlToolbar"/>
             </top>
             <center>
