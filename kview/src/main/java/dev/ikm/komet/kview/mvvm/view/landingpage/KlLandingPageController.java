@@ -16,6 +16,7 @@ import javafx.scene.layout.FlowPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 
@@ -29,6 +30,10 @@ public class KlLandingPageController {
 
     private final EvtBus eventBus = EvtBusFactory.getDefaultEvtBus();
 
+    private Subscriber<KLEditorWindowCreatedOrRemovedEvent> windowCreatedSubscriber;
+
+    private final List<KLLandingPageCardControl> landingPageCards = new ArrayList<>();
+
     @FXML
     private FlowPane customViewsContainer;
 
@@ -36,6 +41,22 @@ public class KlLandingPageController {
     public void initialize() {
         // Load the preferences for the KLEditor Landing page
         loadPreferencesForKLLandingPage();
+
+        // Subscribe to KL Windows being saved. The editor fires KL_EDITOR_WINDOW_CREATED on
+        // every save, including re-saves of existing windows, so only add a card when there
+        // isn't one for that title yet.
+        windowCreatedSubscriber = evt -> {
+            if (evt.getEventType() == KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED
+                    && !cardExists(evt.getWindowTitle())) {
+                createAndAddCard(evt.getWindowTitle());
+            }
+        };
+        eventBus.subscribe(KL_TOPIC, KLEditorWindowCreatedOrRemovedEvent.class, windowCreatedSubscriber);
+    }
+
+    private boolean cardExists(String windowTitle) {
+        return landingPageCards.stream()
+                .anyMatch(card -> card.getTitle().equals(windowTitle));
     }
 
     @FXML
@@ -68,14 +89,6 @@ public class KlLandingPageController {
         eventBus.publish(KL_TOPIC,
                 new CreateKLEditorWindowEvent(event.getSource(), CreateKLEditorWindowEvent.CREATE_KL_WINDOW, klWindowSettingsObjectMap, null));
 
-        // Subscribe to new KL Windows being created
-        Subscriber<KLEditorWindowCreatedOrRemovedEvent> windowCreatedSubscriber = evt -> {
-            if (evt.getEventType() == KLEditorWindowCreatedOrRemovedEvent.KL_EDITOR_WINDOW_CREATED) {
-                createAndAddCard(evt.getWindowTitle());
-            }
-        };
-        eventBus.subscribe(KL_TOPIC, KLEditorWindowCreatedOrRemovedEvent.class, windowCreatedSubscriber);
-
         LOG.info("KL EDITOR WINDOW LAUNCHED");
     }
 
@@ -106,10 +119,12 @@ public class KlLandingPageController {
         card.setOnDeleteAction(() -> onDeleteCard(card));
         card.setTitle(windowTitle);
 
+        landingPageCards.add(card);
         customViewsContainer.getChildren().add(card);
     }
 
     private void onDeleteCard(KLLandingPageCardControl card) {
+        landingPageCards.remove(card);
         customViewsContainer.getChildren().remove(card);
 
         String windowTitle = card.getTitle();
