@@ -58,4 +58,14 @@ public final class SmallCapsFonts {
         }
         return family;
     }
+
+    /**
+     * Test hook: drops the memoised resolution so a test that registers the bundled family
+     * <em>after</em> an earlier test already resolved {@code null} can re-resolve. Production code
+     * must never call this — the family registry only grows at startup ({@link LoadFonts}).
+     */
+    static void reset() {
+        resolved = false;
+        family = null;
+    }
 }

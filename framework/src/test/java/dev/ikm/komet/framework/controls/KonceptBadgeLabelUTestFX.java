@@ -117,4 +117,19 @@ class KonceptBadgeLabelUTestFX {
         assertFalse(name.getText().contains("̶"),
                 "the U+0336 combining-stroke overlay hack is retired");
     }
+
+    @Test
+    void theNameFontIsResolverDrivenAndSurvivesKometCss() {
+        // The font is set in code (SC family at 12, else the all-caps fallback at 11). Assert it
+        // AFTER komet.css is applied: JavaFX author stylesheets outrank code-set values, so a
+        // .koncept-label font rule creeping back into komet.css would silently beat setFont —
+        // exactly the regression this locks out, along with a dropped setFont (default ~13px).
+        Text name = styledName(new Probe());
+        double expectedSize = SmallCapsFonts.family() == null ? 11 : 12;
+        assertEquals(expectedSize, name.getFont().getSize(), 0.01,
+                "the code-set, resolver-driven size survives komet.css");
+        if (SmallCapsFonts.family() != null) {
+            assertEquals(SmallCapsFonts.family(), name.getFont().getFamily());
+        }
+    }
 }

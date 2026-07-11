@@ -74,7 +74,8 @@ import java.util.Locale;
  * <p>The badge is a drag source (copy) carrying the component on a {@link KometClipboard}, and
  * exposes the full grounded identity (name, optional SCTID, UUID, nid) on hover. It is the shared
  * atom for the refreshed axiom tree (ike-issues#639) and the recursive semantic viewer
- * (ike-issues#641); it does not truncate the concept label.
+ * (ike-issues#641); it never applies policy truncation to the concept label — only width-driven
+ * ellipsis when a host constrains it, with the full name preserved on the identity tooltip.
  */
 public class KonceptBadge extends HBox {
 

@@ -21,6 +21,8 @@ import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
+import java.text.BreakIterator;
+
 /**
  * A single-line {@link Text} that ellipsises to the width layout allocates it — the overrun a
  * {@code Label} provides, for a {@code Text} node. A {@code Label} cannot strike through (there is
@@ -176,17 +178,30 @@ public final class EllipsisText extends Region {
      * Truncates {@code text} to fit {@code maxWidth} in {@code font}, appending an ellipsis — the
      * width bound a {@code Label}'s {@code OverrunStyle} would apply, done by hand for a
      * {@link Text} node (which has no overrun). A string that already fits is returned unchanged.
+     * The cut never lands inside a grapheme cluster (a surrogate pair, or a base character and its
+     * combining marks), so a truncated name never ends in a lone-surrogate replacement glyph.
      *
-     * @param text     the string to fit
+     * @param text     the string to fit; {@code null} is treated as empty
      * @param font     the font the string is measured in
      * @param maxWidth the maximum width in px
-     * @return {@code text} if it fits, else its longest prefix (plus {@code …}) that does
+     * @return {@code text} if it fits; its longest grapheme-boundary prefix (plus {@code …}) that
+     *         does; or the empty string when not even the ellipsis fits (matching a {@code Label},
+     *         which renders nothing at such widths — this region does not clip, so an overflowing
+     *         ellipsis would paint outside its bounds)
      */
     public static String fitToWidth(String text, Font font, double maxWidth) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
         Text probe = new Text(text);
         probe.setFont(font);
         if (probe.getLayoutBounds().getWidth() <= maxWidth) {
             return text;
+        }
+        Text ellipsisProbe = new Text(ELLIPSIS);
+        ellipsisProbe.setFont(font);
+        if (ellipsisProbe.getLayoutBounds().getWidth() > maxWidth) {
+            return "";
         }
         int lo = 0;
         int hi = text.length();
@@ -198,6 +213,13 @@ public final class EllipsisText extends Region {
                 lo = mid;
             } else {
                 hi = mid - 1;
+            }
+        }
+        if (lo > 0) {
+            BreakIterator graphemes = BreakIterator.getCharacterInstance();
+            graphemes.setText(text);
+            if (!graphemes.isBoundary(lo)) {
+                lo = graphemes.preceding(lo);
             }
         }
         return text.substring(0, lo) + ELLIPSIS;

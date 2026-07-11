@@ -22,6 +22,8 @@ import javafx.scene.text.Text;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.text.BreakIterator;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -98,5 +100,44 @@ class EllipsisTextUTestFX {
         Text probe = new Text(fitted);
         probe.setFont(font);
         assertTrue(probe.getLayoutBounds().getWidth() <= 60, "the fitted string honours the bound");
+    }
+
+    @Test
+    void belowTheEllipsisWidthNothingRenders() {
+        // Matching Label's OverrunStyle: when not even "…" fits, render nothing — the region does
+        // not clip, so an overflowing ellipsis would paint outside its bounds into the host.
+        Font font = Font.font(12);
+        assertEquals("", EllipsisText.fitToWidth(NAME, font, 2), "narrower than the ellipsis glyph");
+        assertEquals("", EllipsisText.fitToWidth(NAME, font, 0), "zero width");
+        assertEquals("", EllipsisText.fitToWidth("", font, -1), "negative width, empty string");
+        assertEquals("", EllipsisText.fitToWidth(null, font, 100), "null is treated as empty");
+    }
+
+    @Test
+    void fitToWidthNeverCutsInsideAGraphemeCluster() {
+        Font font = Font.font(12);
+        // A supplementary-plane character (surrogate pair) and a decomposed base + combining mark
+        // (an explicit e + \u0301, never precomposed): sweep the width range so some cut lands
+        // mid-cluster if the implementation allows it.
+        String[] names = {"AB😀 chronic sinusitis with polyps", "Cafe\u0301 au lait spots (finding)"};
+        BreakIterator graphemes = BreakIterator.getCharacterInstance();
+        for (String name : names) {
+            for (double width = 4; width <= 120; width += 0.5) {
+                String fitted = EllipsisText.fitToWidth(name, font, width);
+                for (int i = 0; i < fitted.length(); i++) {
+                    if (Character.isHighSurrogate(fitted.charAt(i))) {
+                        assertTrue(i + 1 < fitted.length() && Character.isLowSurrogate(fitted.charAt(i + 1)),
+                                "lone high surrogate at " + i + " in \"" + fitted + "\" (width " + width + ")");
+                    }
+                }
+                if (fitted.endsWith("…")) {
+                    String prefix = fitted.substring(0, fitted.length() - 1);
+                    graphemes.setText(name);
+                    assertTrue(graphemes.isBoundary(prefix.length()),
+                            "cut inside a grapheme cluster at " + prefix.length()
+                                    + " for width " + width + ": \"" + fitted + "\"");
+                }
+            }
+        }
     }
 }

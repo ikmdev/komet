@@ -20,7 +20,9 @@ import dev.ikm.komet.framework.controls.EllipsisText;
 import dev.ikm.komet.framework.graphics.SmallCapsFonts;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.EntityVersion;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -276,7 +278,7 @@ public final class KonceptDragGlyph {
             return false;
         }
         try {
-            var latest = viewCalc.stampCalculator().latest(nid);
+            Latest<EntityVersion> latest = viewCalc.stampCalculator().latest(nid);
             return latest.isPresent() && latest.get().inactive();
         } catch (RuntimeException e) {
             return false;
