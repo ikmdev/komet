@@ -601,6 +601,11 @@ public class GenPurposeFieldsController {
 //                processCommittedValues();
 //                enableDisableButtons();
 
+                // In create mode this submit is the one that brings the window's reference concept
+                // into existence (it commits together with the semantic). The PUBLISH event below is
+                // handled synchronously and flips a CREATE window to EDIT, so capture the mode first.
+                boolean createdConcept = genPurposeViewModel.getMode() == FormMode.CREATE;
+
                 // Publish event to refresh details area
                 EvtBusFactory.getDefaultEvtBus().publish(
                         genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
@@ -612,8 +617,9 @@ public class GenPurposeFieldsController {
                         new KLPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
 
                 // Show success message
-                String submitMessage = "Semantic Details %s Successfully!"
-                        .formatted(genPurposeViewModel.getMode() == FormMode.EDIT ? "Edited" : "Added");
+                String submitMessage = createdConcept
+                        ? "Concept created"
+                        : "Semantic Details Edited Successfully!";
                 toast().withUndoAction(undoActionEvent -> LOG.info("undo called"))
                         .show(Toast.Status.SUCCESS, submitMessage);
 
