@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.framework.dnd.KometClipboard;
-import dev.ikm.komet.framework.dnd.KonceptDragSource;
+import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -166,11 +166,13 @@ public class ConceptTile extends HBox {
                 }
                 clipboardContent.putString(treeItem.toString());
                 dragboard.setContent(clipboardContent);
-                // Standard-size drag image with canonical cursor placement (right of the identicon).
-                // Guard the scene first: DragImageMaker shows an error dialog if the node is detached,
-                // where the old getTileSnapshot returned null silently.
-                if (getScene() != null) {
-                    KonceptDragSource.setDragView(dragboard, this);
+                // The canonical concept drag glyph, built from the concept's identity (identicon +
+                // small-caps name) rather than a snapshot of this tile — which has no identicon, so a
+                // snapshot could never be the pill (ike-issues#854). Built off a throwaway scene, so
+                // it needs no attached-scene guard.
+                if (treeItem.getValue() != null) {
+                    KonceptDragGlyph.setDragView(dragboard, treeItem.getValue().nid(),
+                            treeView.getNavigator().getViewCalculator());
                 }
                 cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
                 treeViewSkin.setDraggingAllowed(true);

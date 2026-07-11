@@ -27,7 +27,9 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WI
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.tinkar.events.FrameworkTopics.SEARCH_SORT_TOPIC;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.komet.framework.search.HighlightedSegments;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -419,8 +421,16 @@ public class NextGenSearchController {
             // Here, KometClipboard is used to encapsulate the entity's unique identifier (nid)
             KometClipboard content = new KometClipboard(EntityFacade.make(entity.nid()));
 
-            // Standard-size drag image with canonical cursor placement (right of the identicon).
-            KonceptDragSource.setDragView(dragboard, node);
+            // A concept result drags as the canonical koncept pill, built from its identity, so it
+            // matches the same concept dragged anywhere else (ike-issues#854); a semantic or pattern
+            // result keeps the node snapshot.
+            if (dropType == DragAndDropType.CONCEPT) {
+                // Resolve name (fully-qualified first) and inactive through the default view — the
+                // same overload the navigators use — so the glyph is identical from every source.
+                KonceptDragGlyph.setDragView(dragboard, entity.nid(), Calculators.View.Default());
+            } else {
+                KonceptDragSource.setDragView(dragboard, node);
+            }
 
             // Place the content on the dragboard
             dragboard.setContent(content);

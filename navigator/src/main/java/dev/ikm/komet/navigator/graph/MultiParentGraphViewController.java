@@ -25,6 +25,9 @@ import dev.ikm.komet.framework.alerts.AlertPanel;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.dnd.ClipboardHelper;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
+import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.temp.FxGet;
 import dev.ikm.komet.framework.view.ObservableView;
@@ -286,7 +289,7 @@ public class MultiParentGraphViewController implements RefreshListener {
             // Create and configure drag operation
             Dragboard dragboard = initiateDragOperation(draggedItemIds);
             if (dragboard != null) {
-                attachDragSnapshot(dragboard);
+                attachCanonicalGlyph(dragboard, draggedItemIds);
             }
 
             event.consume();
@@ -306,9 +309,33 @@ public class MultiParentGraphViewController implements RefreshListener {
         if (dragboard != null) {
             ClipboardContent clipboardContent = new ClipboardContent();
             clipboardContent.put(MULTI_PARENT_GRAPH_DRAG_FORMAT, draggedItemIds);
+            // Also advertise the standard multi-concept format (ike-issues#854) so any target — the
+            // assistant compose box, another list — can read all dragged concepts.
+            int[] nids = draggedItemIds.stream()
+                    .mapToInt(uuids -> PrimitiveData.nid(PublicIds.of(uuids)))
+                    .toArray();
+            KometClipboard.putConcepts(clipboardContent, nids);
             dragboard.setContent(clipboardContent);
         }
         return dragboard;
+    }
+
+    /**
+     * The canonical concept drag glyph (identity-built) for single- and multi-select — the lead
+     * concept's pill, with a count badge when several are dragged (ike-issues#854), replacing the
+     * tile snapshot. Falls back to the tile snapshot if the lead concept cannot be resolved.
+     *
+     * @param dragboard      the active dragboard
+     * @param draggedItemIds the dragged concepts' ids, in order (non-empty)
+     */
+    private void attachCanonicalGlyph(Dragboard dragboard, List<UUID[]> draggedItemIds) {
+        try {
+            int leadNid = PrimitiveData.nid(PublicIds.of(draggedItemIds.get(0)));
+            KonceptDragGlyph.setMultiDragView(dragboard, leadNid,
+                    this.viewProperties.calculator(), draggedItemIds.size());
+        } catch (RuntimeException e) {
+            attachDragSnapshot(dragboard);
+        }
     }
 
     /**

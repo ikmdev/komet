@@ -1,7 +1,9 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
@@ -15,6 +17,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.ActionEvent;
@@ -219,9 +222,16 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 control.setUserData(control.getEntity().publicId());
                 clipboardContent.putString(control.getEntity().toString());
                 dragboard.setContent(clipboardContent);
-                // Standard-size drag image with canonical cursor placement (right of the identicon),
-                // so a concept dragged from this field matches the same concept dragged from a card.
-                KonceptDragSource.setDragView(dragboard, control);
+                // A concept drags as the canonical koncept pill, built from its identity, so it
+                // matches the same concept dragged from a card or navigator (ike-issues#854); a
+                // non-concept component keeps the field-node snapshot.
+                if (control.getEntity() instanceof ConceptFacade concept) {
+                    // Resolve name (fully-qualified first) and inactive through the default view — the
+                    // same overload the navigators use — so the glyph is identical from every source.
+                    KonceptDragGlyph.setDragView(dragboard, concept.nid(), Calculators.View.Default());
+                } else {
+                    KonceptDragSource.setDragView(dragboard, control);
+                }
             }
             ev.consume();
         });

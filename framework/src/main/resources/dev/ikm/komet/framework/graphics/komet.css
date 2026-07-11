@@ -1390,13 +1390,17 @@ modena.css is the default css.
     -fx-alignment: center-left;
 }
 
+/* The name is a Text node (-fx-fill, not -fx-text-fill); its font is set in code
+   (KonceptBadge + SmallCapsFonts) — only code can ask whether the bundled true
+   small-caps family registered and size the all-caps fallback accordingly (#855). */
 .koncept-label {
-    -fx-text-fill: #2a5a8a;
-    -fx-font-size: 11px;
+    -fx-fill: #2a5a8a;
 }
 
+/* Retired: the red strikethrough on the name is the dedicated inactive signal (#586). */
 .koncept-chip:inactive .koncept-label {
-    -fx-text-fill: #b00020;
+    -fx-fill: #b00020;
+    -fx-strikethrough: true;
 }
 
 .koncept-status {

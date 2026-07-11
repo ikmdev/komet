@@ -15,9 +15,11 @@
  */
 
 /**
- * Shared CommonMark → incubator-RichTextArea renderer with an injectable inline-decorator
- * hook. Generic and tinkar-free; consumers inject inline nodes (e.g. concept chips) through
- * {@link dev.ikm.komet.markdown.richtext.InlineDecorator}.
+ * Shared CommonMark → incubator-RichTextArea renderer with injectable render-dispatch hooks.
+ * Generic and tinkar-free; consumers inject inline nodes (e.g. concept chips) through
+ * {@link dev.ikm.komet.markdown.richtext.InlineDecorator}, and block-level node renderers keyed
+ * on a fenced block's info string (e.g. a concept tree) through
+ * {@link dev.ikm.komet.markdown.richtext.BlockRenderer}.
  */
 module dev.ikm.komet.markdown.richtext {
     requires transitive jfx.incubator.richtext;

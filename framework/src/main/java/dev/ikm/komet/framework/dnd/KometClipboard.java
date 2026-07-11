@@ -42,6 +42,8 @@ import java.util.stream.Collectors;
 public class KometClipboard extends ClipboardContent {
     public static final DataFormat MULTI_PARENT_GRAPH_DRAG_FORMAT = new DataFormat("application/multi-parent-graph-format");
     public static final DataFormat KOMET_PROXY_LIST = new DataFormat("application/komet-proxy-list");
+    /** A drag of several concepts at once: each concept's {@code PublicId} as a {@code UUID[]}, in order. */
+    public static final DataFormat KOMET_CONCEPT_LIST = new DataFormat("application/komet-concept-list");
     public static final DataFormat KOMET_CONCEPT_PROXY = new DataFormat("application/komet-concept-proxy");
     public static final DataFormat KOMET_PATTERN_PROXY = new DataFormat("application/komet-pattern-proxy");
     public static final DataFormat KOMET_SEMANTIC_PROXY = new DataFormat("application/komet-semantic-proxy");
@@ -358,6 +360,41 @@ public class KometClipboard extends ClipboardContent {
             }
         }
         return OptionalInt.empty();
+    }
+
+    /**
+     * Advertises several concepts on {@code content} as the {@link #KOMET_CONCEPT_LIST} format, in
+     * order — the drag-source side of a multi-concept drag, read back by {@link #conceptNidsFrom}.
+     *
+     * @param content the clipboard content being assembled
+     * @param nids    the concept nids to carry, in the order the drop should see them
+     */
+    public static void putConcepts(ClipboardContent content, int[] nids) {
+        List<UUID[]> ids = new ArrayList<>(nids.length);
+        for (int nid : nids) {
+            ids.add(PrimitiveData.publicId(nid).asUuidArray());
+        }
+        content.put(KOMET_CONCEPT_LIST, ids);
+    }
+
+    /**
+     * The concept nids a multi-concept drag carries, in order, or an empty array when the dragboard
+     * has no {@link #KOMET_CONCEPT_LIST} content — the drop-side reader for a multi-concept drag.
+     * A malformed entry is skipped rather than throwing.
+     *
+     * @param dragboard the drag-and-drop content; may be {@code null}
+     * @return the dropped concept nids in order, possibly empty
+     */
+    public static int[] conceptNidsFrom(Dragboard dragboard) {
+        if (dragboard == null || !dragboard.hasContent(KOMET_CONCEPT_LIST)) {
+            return new int[0];
+        }
+        @SuppressWarnings("unchecked")
+        List<UUID[]> ids = (List<UUID[]>) dragboard.getContent(KOMET_CONCEPT_LIST);
+        return ids.stream()
+                .filter(uuids -> uuids != null && uuids.length > 0)
+                .mapToInt(uuids -> PrimitiveData.nid(PublicIds.of(uuids)))
+                .toArray();
     }
 
     /**

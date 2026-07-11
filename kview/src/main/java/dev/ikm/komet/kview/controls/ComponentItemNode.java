@@ -1,6 +1,9 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.komet.kview.mvvm.view.JournalNavigationUtils;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -205,9 +208,17 @@ public class ComponentItemNode extends Region {
             if (dragImageSupplier.get() != null) {
                 dragboard.setDragView(dragImageSupplier.get().get());
             } else if (getScene() != null) {
-                // Standard-size drag image with canonical cursor placement (right of the identicon);
-                // the caller-supplied image branch above is left intact.
-                KonceptDragSource.setDragView(dragboard, this);
+                // A concept drags as the canonical koncept pill, built from its identity
+                // (ike-issues#854); a non-concept component keeps the node snapshot.
+                ComponentItem item = componentItem.get();
+                if (item != null && item.isConcept() && item.getPublicId() != null) {
+                    // Resolve name (fully-qualified first) and inactive through the default view — the
+                    // same overload the navigators use — so the glyph is identical from every source.
+                    KonceptDragGlyph.setDragView(dragboard,
+                            PrimitiveData.nid(item.getPublicId()), Calculators.View.Default());
+                } else {
+                    KonceptDragSource.setDragView(dragboard, this);
+                }
             }
 
             textLabel.setStyle(previousStyle);
