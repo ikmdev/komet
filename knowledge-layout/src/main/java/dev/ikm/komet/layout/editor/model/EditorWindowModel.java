@@ -94,7 +94,22 @@ public class EditorWindowModel extends EditorModelBase {
         List<EditorSectionModel> editorSectionModels = EditorSectionModel.load(editorWindowPreferences, viewCalculator);
         editorWindowModel.getAdditionalSections().setAll(editorSectionModels);
 
+        // Resolve the sections' reference components to the pattern instances loaded above. A reference
+        // can point at a pattern in any section, so this can only run once all sections have loaded.
+        editorWindowModel.resolveReferenceComponents();
+
         return editorWindowModel;
+    }
+
+    /**
+     * Returns all Patterns in this Window, across the main Section and the additional Sections.
+     */
+    public List<EditorPatternModel> getAllPatterns() {
+        List<EditorPatternModel> allPatterns = new ArrayList<>(mainSection.getPatterns());
+        for (EditorSectionModel section : additionalSections) {
+            allPatterns.addAll(section.getPatterns());
+        }
+        return allPatterns;
     }
 
     /**
@@ -149,6 +164,15 @@ public class EditorWindowModel extends EditorModelBase {
      * Private API                                                                 *
      *                                                                             *
      ******************************************************************************/
+
+    private void resolveReferenceComponents() {
+        List<EditorPatternModel> allPatterns = getAllPatterns();
+
+        mainSection.resolveReferenceComponent(allPatterns);
+        for (EditorSectionModel section : additionalSections) {
+            section.resolveReferenceComponent(allPatterns);
+        }
+    }
 
     private void loadMainSection(KometPreferences editorWindowPreferences, ViewCalculator viewCalculator) {
         Optional<String> mainSectionName = editorWindowPreferences.get(KL_MAIN_SECTION);

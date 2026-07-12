@@ -57,14 +57,6 @@ public class EditorPatternModel extends EditorGridNodeModel {
     private final PatternFacade patternFacade;
     private final int nid;
 
-    /**
-     * Clears the existing patterns list. This is called internally by the KLEditorSession. It's an implementation detail.
-     * It shouldn't be called by outside users.
-     */
-    public static void impl_cleanUpExistingPatternsList() {
-        existingPatterns.clear();
-    }
-
     /*=============================================================================*
      *                                                                             *
      * Constructors                                                                *
@@ -108,8 +100,6 @@ public class EditorPatternModel extends EditorGridNodeModel {
             });
         });
 
-        existingPatterns.add(this);
-
         parentGridProperty().bind(parentSectionProperty());
 
         // Refresh the factory-specific property set whenever the factory changes. Fires immediately
@@ -121,11 +111,6 @@ public class EditorPatternModel extends EditorGridNodeModel {
             factoryProperties.set(propertySet);
         });
     }
-
-    // -- existing patterns
-    private static ObservableList<EditorPatternModel> existingPatterns = FXCollections.observableArrayList();
-    private static final ObservableList<EditorPatternModel> readonlyExistingPatterns = FXCollections.unmodifiableObservableList(existingPatterns);
-    public static ObservableList<EditorPatternModel> getExistingPatterns() { return readonlyExistingPatterns; }
 
     private void fieldsChanged(ListChangeListener.Change<? extends EditorFieldModel> change) {
         while (change.next()) {
@@ -252,7 +237,6 @@ public class EditorPatternModel extends EditorGridNodeModel {
     @Override
     public void delete() {
         getParentSection().getPatterns().remove(this);
-        existingPatterns.remove(this);
     }
 
     /*=============================================================================*
