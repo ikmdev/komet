@@ -37,7 +37,8 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.provider.grpc.GrpcSearchService;
+import dev.ikm.tinkar.common.service.RemoteConceptSearchService;
+import dev.ikm.tinkar.common.service.ServiceLifecycleManager;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import org.slf4j.Logger;
@@ -96,8 +97,8 @@ public class SortResultConceptEntryController extends AbstractBasicController {
 
     private Entity<EntityVersion> entity;
 
-    /** Public UUIDs carried from a gRPC search result when no local entity is available. */
-    private List<UUID> grpcPublicIds;
+    /** Public UUIDs carried from a remote search result when no local entity is available. */
+    private List<UUID> remotePublicIds;
 
     private ObservableViewNoOverride windowView;
 
@@ -120,10 +121,10 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                                 conceptEntity));
                     } else if (entity instanceof PatternEntity patternEntity) {
                         eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakePatternWindowEvent(this, MakePatternWindowEvent.OPEN_PATTERN, patternEntity, getViewProperties()));
-                    } else if (grpcPublicIds != null && !grpcPublicIds.isEmpty()) {
-                        // gRPC mode: fetch full entity graph from server, load into ephemeral store,
-                        // then open the concept window as normal.
-                        openGrpcConcept();
+                    } else if (remotePublicIds != null && !remotePublicIds.isEmpty()) {
+                        // Remote-backed result: fetch full entity graph from the server, load into
+                        // ephemeral store, then open the concept window as normal.
+                        openRemoteConcept();
                     }
                 }
             }
@@ -209,23 +210,27 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     }
 
     /**
-     * Sets the public UUIDs from a gRPC search result. Used when no local entity is
-     * available (gRPC mode) so that double-click can fetch the full concept from the server.
+     * Sets the public UUIDs from a remote search result. Used when no local entity is
+     * available so that double-click can fetch the full concept from the remote backend.
      */
-    public void setGrpcPublicIds(List<UUID> publicIds) {
-        this.grpcPublicIds = publicIds;
+    public void setRemotePublicIds(List<UUID> publicIds) {
+        this.remotePublicIds = publicIds;
     }
 
     /**
-     * Background-fetches the concept entity graph via gRPC, loads it into the local
-     * ephemeral entity store, then fires {@link MakeConceptWindowEvent} on the UI thread.
+     * Background-fetches the concept entity graph from the active {@link RemoteConceptSearchService},
+     * loads it into the local ephemeral entity store, then fires {@link MakeConceptWindowEvent}
+     * on the UI thread.
      */
-    private void openGrpcConcept() {
-        List<UUID> ids = List.copyOf(grpcPublicIds);
+    private void openRemoteConcept() {
+        List<UUID> ids = List.copyOf(remotePublicIds);
         UUID journalTopic = searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
         Thread.ofVirtual().start(() -> {
             try {
-                int nid = GrpcSearchService.get().loadConceptWithSemantics(ids);
+                RemoteConceptSearchService remote = ServiceLifecycleManager.get()
+                        .getRunningService(RemoteConceptSearchService.class)
+                        .orElseThrow(() -> new IllegalStateException("RemoteConceptSearchService not available"));
+                int nid = remote.loadConceptWithSemantics(ids);
                 Entity<?> loaded = Entity.getFast(nid);
                 if (loaded instanceof ConceptEntity loadedConcept) {
                     Platform.runLater(() ->
@@ -237,7 +242,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                     LOG.warn("Loaded entity for {} is not a ConceptEntity: {}", ids, loaded);
                 }
             } catch (Exception ex) {
-                LOG.warn("Failed to load concept details from gRPC for {}: {}", ids, ex.getMessage());
+                LOG.warn("Failed to load concept details from remote backend for {}: {}", ids, ex.getMessage());
             }
         });
     }

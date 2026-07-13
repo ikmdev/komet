@@ -21,7 +21,6 @@ module dev.ikm.komet.kview {
     requires transitive dev.ikm.komet.framework;
     requires dev.ikm.komet.search;
     requires dev.ikm.tinkar.provider.search;
-    requires dev.ikm.tinkar.provider.grpc;
     requires dev.ikm.komet.navigator;
     requires dev.ikm.komet.classification;
     requires dev.ikm.komet.progress;

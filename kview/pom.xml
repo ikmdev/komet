@@ -26,10 +26,6 @@
         </dependency>
         <dependency>
             <groupId>dev.ikm.tinkar</groupId>
-            <artifactId>grpc-search-provider</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>composer</artifactId>
         </dependency>
         <dependency>

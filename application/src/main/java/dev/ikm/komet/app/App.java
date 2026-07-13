@@ -18,12 +18,11 @@ package dev.ikm.komet.app;
 import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
 import static dev.ikm.komet.app.AppState.LOGIN;
 import static dev.ikm.komet.app.AppState.RUNNING;
+import static dev.ikm.komet.app.AppState.SELECTED_DATA_SOURCE;
 import static dev.ikm.komet.app.AppState.SELECT_DATA_SOURCE;
 import static dev.ikm.komet.app.AppState.SHUTDOWN;
 import static dev.ikm.komet.app.AppState.STARTING;
 import static dev.ikm.komet.app.LoginFeatureFlag.ENABLED_WEB_ONLY;
-import dev.ikm.tinkar.provider.grpc.GrpcSearchClient;
-import dev.ikm.tinkar.provider.grpc.GrpcSearchService;
 import static dev.ikm.komet.app.util.CssFile.KOMET_CSS;
 import static dev.ikm.komet.app.util.CssFile.KVIEW_CSS;
 import static dev.ikm.komet.app.util.CssUtils.addStylesheets;
@@ -51,6 +50,7 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
+import dev.ikm.tinkar.common.service.NoLocalUserStore;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.events.Evt;
@@ -195,12 +195,8 @@ public class App extends Application  {
             LOG.info("Starting shutdown hook");
 
             try {
-                if (!GrpcSearchClient.isAvailable()) {
-                    PrimitiveData.save();
-                    PrimitiveData.stop();
-                } else {
-                    GrpcSearchClient.get().close();
-                }
+                PrimitiveData.save();
+                PrimitiveData.stop();
             } catch (Exception e) {
                 LOG.error("Error during shutdown hook execution", e);
             }
@@ -339,18 +335,20 @@ public class App extends Application  {
     /**
      * Handles the login feature based on the provided {@link LoginFeatureFlag} and platform.
      * <p>
-     * When the system property {@code komet.grpc.port} is set, the application starts in
-     * <em>gRPC mode</em>: datasource selection and author login are skipped, and concept
-     * searches are routed to the running tinkar-core service instead of a local provider.
-     * Use {@code komet.grpc.host} to override the hostname (default: {@code localhost}).
+     * When the system property {@code komet.datastore.controller} is set, the application
+     * auto-selects the named {@link dev.ikm.tinkar.common.service.DataServiceController}
+     * (matched by exact name, then by case-insensitive substring) instead of showing the
+     * datasource-selection screen. Author login is still skipped or shown afterward based on
+     * whether the selected provider implements {@link NoLocalUserStore} — see
+     * {@link #appStateChangeListener}.
      *
      * @param loginFeatureFlag the current state of the login feature
      * @param stage            the current application stage
      */
     public void handleLoginFeature(LoginFeatureFlag loginFeatureFlag, Stage stage) {
-        String grpcPortProp = System.getProperty("komet.grpc.port");
-        if (grpcPortProp != null && !grpcPortProp.isBlank()) {
-            startGrpcMode(stage, grpcPortProp);
+        String datastoreControllerProp = System.getProperty("komet.datastore.controller");
+        if (datastoreControllerProp != null && !datastoreControllerProp.isBlank()) {
+            startWithNamedDataSource(stage, datastoreControllerProp);
             return;
         }
         switch (loginFeatureFlag) {
@@ -374,49 +372,31 @@ public class App extends Application  {
     }
 
     /**
-     * Initialises the gRPC client and moves the application directly to {@link AppState#RUNNING},
-     * bypassing datasource selection and author login.
+     * Auto-selects a named data store controller and feeds it through the same
+     * {@link AppState#SELECTED_DATA_SOURCE} → {@link LoadDataSourceTask} → {@link AppState#SELECT_USER}
+     * pipeline that manual datasource selection uses, instead of showing the selection screen.
      *
-     * @param stage       the primary stage
-     * @param grpcPortProp value of the {@code komet.grpc.port} system property
+     * @param stage          the primary stage
+     * @param controllerName value of the {@code komet.datastore.controller} system property
      */
-    private void startGrpcMode(Stage stage, String grpcPortProp) {
-        String host = System.getProperty("komet.grpc.host", "localhost");
-        int port;
-        try {
-            port = Integer.parseInt(grpcPortProp.strip());
-        } catch (NumberFormatException e) {
-            LOG.error("Invalid komet.grpc.port value '{}', falling back to datasource selection", grpcPortProp);
+    private void startWithNamedDataSource(Stage stage, String controllerName) {
+        var controllers = PrimitiveData.getControllerOptions();
+        var match = controllers.stream()
+                .filter(c -> c.controllerName().equalsIgnoreCase(controllerName))
+                .findFirst()
+                .or(() -> controllers.stream()
+                        .filter(c -> c.controllerName().toLowerCase().contains(controllerName.toLowerCase()))
+                        .findFirst());
+        if (match.isEmpty()) {
+            LOG.error("No data store controller matching '{}'; available: {}", controllerName,
+                    controllers.stream().map(c -> c.controllerName()).toList());
             startSelectDataSource(stage);
             return;
         }
-
-        GrpcSearchService.initialize(host, port);
-
-        // Start GrpcPrimitiveDataService so that all PrimitiveData.get().* call sites
-        // (entity bytes, NID resolution, iteration) work without a local dataset.
-        // getControllerOptions() triggers ServiceLifecycleManager.discoverServices().
-        try {
-            var controllers = PrimitiveData.getControllerOptions();
-            var providerOpt = controllers.stream()
-                    .filter(c -> c.controllerName().toLowerCase().contains("grpc"))
-                    .findFirst();
-            if (providerOpt.isPresent()) {
-                PrimitiveData.selectControllerByName(providerOpt.get().controllerName());
-                PrimitiveData.start();
-                LOG.info("PrimitiveData started for gRPC mode (controller: {})",
-                        providerOpt.get().controllerName());
-            } else {
-                LOG.warn("No gRPC data provider found; available: {}",
-                        controllers.stream().map(c -> c.controllerName()).toList());
-            }
-        } catch (Exception e) {
-            LOG.error("Failed to start data provider for gRPC mode", e);
-        }
-
-        LOG.info("gRPC mode active → {}:{}", host, port);
+        PrimitiveData.selectControllerByName(match.get().controllerName());
+        LOG.info("Auto-selected data store controller: {}", match.get().controllerName());
         state.addListener(this::appStateChangeListener);
-        state.set(RUNNING);
+        state.set(SELECTED_DATA_SOURCE);
     }
 
     /**
@@ -560,8 +540,9 @@ public class App extends Application  {
                     TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
                 }
                 case SELECT_USER -> {
-                    // gRPC mode has no local user store — skip author login and go straight to RUNNING
-                    if (GrpcSearchService.isActive()) {
+                    // Providers with no local author/STAMP store (e.g. a remote-backed provider)
+                    // skip login and go straight to RUNNING.
+                    if (PrimitiveData.get() instanceof NoLocalUserStore) {
                         Platform.runLater(() -> state.set(RUNNING));
                     } else {
                         appPages.launchLoginAuthor(primaryStage);
@@ -588,13 +569,8 @@ public class App extends Application  {
         saveJournalWindowsToPreferences();
         LOG.info(">>> Saved journal windows to preferences");
 
-        if (GrpcSearchClient.isAvailable()) {
-            GrpcSearchClient.get().close();
-            LOG.info(">>> gRPC client closed");
-        } else {
-            PrimitiveData.stop();
-            LOG.info(">>> PrimitiveData stopped");
-        }
+        PrimitiveData.stop();
+        LOG.info(">>> PrimitiveData stopped");
 
         Preferences.stop();
         LOG.info(">>> Preferences stopped");

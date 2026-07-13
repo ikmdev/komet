@@ -126,12 +126,12 @@ public class SearchCellTopComponent extends SearchCellBase {
 
                     setGraphic(parentPane);
                 } else if (!nidTextRecord.publicIds().isEmpty()) {
-                    // gRPC mode: no local entity, render using data carried in NidTextRecord
+                    // Remote-backed result: no local entity, render using data carried in NidTextRecord
                     UUID[] uuids = nidTextRecord.publicIds().toArray(new UUID[0]);
                     controller.setIdenticon(Identicon.generateIdenticonImage(PublicIds.of(uuids)));
                     controller.setWindowView(observableViewNoOverride);
                     controller.setData(null);
-                    controller.setGrpcPublicIds(nidTextRecord.publicIds());
+                    controller.setRemotePublicIds(nidTextRecord.publicIds());
                     controller.setComponentText(nidTextRecord.text());
                     controller.getDescriptionListViewItems().setAll(mapEntry.getValue());
                     if (nidTextRecord.active()) {

@@ -114,6 +114,21 @@
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>changeset-writer-provider</artifactId>
         </dependency>
+        <dependency>
+            <groupId>dev.ikm.ike</groupId>
+            <artifactId>rocks-kb-engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>network.ike.komet</groupId>
+            <artifactId>komet-claude-plugin</artifactId>
+            <version>1-SNAPSHOT</version>
+        </dependency>
+        <!-- RocksDB platform-specific natives; classifier set by OS profile below -->
+        <dependency>
+            <groupId>dev.ikm.jpms</groupId>
+            <artifactId>rocksdbjni</artifactId>
+            <classifier>${rocksdbjni.classifier}</classifier>
+        </dependency>
 
     <!-- Start JPro related dependencies -->
         <dependency>
@@ -185,38 +200,12 @@
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>events</artifactId>
         </dependency>
+        <!-- gRPC datastore/search plugin — lives outside the komet repo, mirroring
+             komet-claude-plugin. Owns all gRPC-specific deps (grpc-stub, grpc-protobuf,
+             perfmark-api, etc); application only needs this one artifact + module requires. -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>grpc-provider</artifactId>
-        </dependency>
-        <!-- Runtime gRPC transport deps needed by dev.ikm.tinkar.provider.grpc (add-reads pattern) -->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-stub</artifactId>
-            <version>1.78.0</version>
-            <scope>runtime</scope>
-            <exclusions>
-                <exclusion><groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId></exclusion>
-                <exclusion><groupId>com.google.code.findbugs</groupId><artifactId>jsr305</artifactId></exclusion>
-                <exclusion><groupId>javax.annotation</groupId><artifactId>javax.annotation-api</artifactId></exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-protobuf</artifactId>
-            <version>1.78.0</version>
-            <scope>runtime</scope>
-            <exclusions>
-                <exclusion><groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId></exclusion>
-                <exclusion><groupId>com.google.code.findbugs</groupId><artifactId>jsr305</artifactId></exclusion>
-                <exclusion><groupId>javax.annotation</groupId><artifactId>javax.annotation-api</artifactId></exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.perfmark</groupId>
-            <artifactId>perfmark-api</artifactId>
-            <version>0.27.0</version>
-            <scope>runtime</scope>
+            <groupId>network.ike.komet</groupId>
+            <artifactId>komet-grpc-plugin</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -280,10 +269,6 @@
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <!--
-                    Top-level configuration applies to CLI-invoked goals (javafx:run).
-                    Execution-level configurations apply to lifecycle-bound goals (jlink).
-                -->
                 <configuration>
                     <mainClass>dev.ikm.komet.application/dev.ikm.komet.app.App</mainClass>
                     <options>
@@ -297,9 +282,6 @@
                         <option>--add-exports</option>
                         <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
                         <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
-                        <!-- Forward gRPC connection properties from Maven -D flags to the app JVM -->
-                        <option>-Dkomet.grpc.port=${komet.grpc.port}</option>
-                        <option>-Dkomet.grpc.host=${komet.grpc.host}</option>
                     </options>
                 </configuration>
                 <executions>
@@ -327,16 +309,42 @@
                                 <option>--add-exports</option>
                                 <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
                                 <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
-                                <!-- Forward gRPC connection properties from Maven -D flags to the app JVM -->
+                                <!-- Forward datastore auto-select + gRPC connection properties from Maven -D flags to the app JVM -->
+                                <option>-Dkomet.datastore.controller=${komet.datastore.controller}</option>
                                 <option>-Dkomet.grpc.port=${komet.grpc.port}</option>
                                 <option>-Dkomet.grpc.host=${komet.grpc.host}</option>
                                 <!--
-                                    Allow grpc-provider (named module) to access grpc-api classes
+                                    Allow the gRPC plugin (named module) to access grpc-api classes
                                     from the unnamed module (classpath). grpc-netty-shaded transitively
                                     pulls grpc-api onto the classpath; add-reads grants access.
                                 -->
                                 <option>--add-reads</option>
                                 <option>dev.ikm.tinkar.provider.grpc=ALL-UNNAMED</option>
+                                <!--
+                                    Reverse direction: grpc-netty-shaded/grpc-core/grpc-util (on the
+                                    classpath, unnamed module) reference classes shaded into
+                                    dev.ikm.tinkar.provider.grpc from grpc-api/guava — extend, in
+                                    NettyChannelProvider's case. A named module's packages are invisible
+                                    to the unnamed module unless explicitly exported to it. List
+                                    confirmed exhaustively via `jdeps -verbose:package` against every
+                                    classpath-resident gRPC jar.
+                                -->
+                                <option>--add-exports</option>
+                                <option>dev.ikm.tinkar.provider.grpc/io.grpc=ALL-UNNAMED</option>
+                                <option>--add-exports</option>
+                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.base=ALL-UNNAMED</option>
+                                <option>--add-exports</option>
+                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.collect=ALL-UNNAMED</option>
+                                <option>--add-exports</option>
+                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.io=ALL-UNNAMED</option>
+                                <option>--add-exports</option>
+                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.math=ALL-UNNAMED</option>
+                                <option>--add-exports</option>
+                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.util.concurrent=ALL-UNNAMED</option>
+                                <option>--add-exports</option>
+                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.hash=ALL-UNNAMED</option>
+                                <option>--add-exports</option>
+                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.primitives=ALL-UNNAMED</option>
                             </options>
                         </configuration>
                     </execution>
@@ -523,6 +531,7 @@
                 <jpackage.type>PKG</jpackage.type>
                 <jpackage.icon>src/main/resources/icons/KOMET.icns</jpackage.icon>
                 <jpackage.resourceDir>installer_resources/resourceDir_unix</jpackage.resourceDir>
+                <rocksdbjni.classifier>osx</rocksdbjni.classifier>
             </properties>
         </profile>
         <profile>
@@ -537,6 +546,7 @@
                 <jpackage.type>RPM</jpackage.type>
                 <jpackage.icon>src/main/resources/icons/Komet.png</jpackage.icon>
                 <jpackage.resourceDir>installer_resources/resourceDir_unix</jpackage.resourceDir>
+                <rocksdbjni.classifier>linux64</rocksdbjni.classifier>
             </properties>
         </profile>
         <profile>

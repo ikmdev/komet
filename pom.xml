@@ -70,13 +70,17 @@
         <subproject>kview</subproject>
         <subproject>sync</subproject>
         <subproject>knowledge-layout-editor</subproject>
-        <subproject>grpc-provider</subproject>
         <subproject>application</subproject>
     </subprojects>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jpackage.version>1.7.3</jpackage.version>
-        <!-- gRPC mode: overridable via -Dkomet.grpc.port=9090 and -Dkomet.grpc.host=myhost -->
+        <!-- Auto-selects a named DataServiceController at startup instead of showing the
+             datasource-selection screen, e.g. -Dkomet.datastore.controller=grpc -->
+        <komet.datastore.controller></komet.datastore.controller>
+        <!-- gRPC mode: overridable via -Dkomet.grpc.port=9090 and -Dkomet.grpc.host=myhost.
+             Read directly by GrpcPrimitiveDataService.Controller (komet-grpc-plugin); only
+             meaningful when that controller is selected. -->
         <komet.grpc.port></komet.grpc.port>
         <komet.grpc.host>localhost</komet.grpc.host>
         <maven.github-flow.version>1.21.1-r11</maven.github-flow.version>
@@ -107,14 +111,9 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>dev.ikm.komet</groupId>
-                <artifactId>grpc-provider</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>dev.ikm.tinkar</groupId>
-                <artifactId>grpc-search-provider</artifactId>
-                <version>1.127.2-SNAPSHOT</version>
+                <groupId>network.ike.komet</groupId>
+                <artifactId>komet-grpc-plugin</artifactId>
+                <version>1-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

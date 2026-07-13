@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.mvvm.view.search;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.search.HighlightedSegments;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
@@ -76,7 +77,7 @@ public class SearchCellDescriptionSemantic extends SearchCellBase {
                     SemanticEntityVersion semantic = latestVersionSearchResult.latestVersion().get();
 
                     controller.setIdenticon(Identicon.generateIdenticonImage(semantic.publicId()));
-                    controller.setSemanticText(formatHighlightedString(latestVersionSearchResult.highlightedString()));
+                    controller.setSemanticText(HighlightedSegments.stripMarkup(latestVersionSearchResult.highlightedString()).replaceAll("\\s+", " "));
                     controller.setWindowView(observableViewNoOverride);
                     Entity entity = Entity.getConceptForSemantic(semantic.nid()).get();
                     controller.setData(entity);
@@ -92,7 +93,7 @@ public class SearchCellDescriptionSemantic extends SearchCellBase {
                     setGraphic(content);
                 } else {
                     // gRPC mode: no local entity, render text only
-                    controller.setSemanticText(formatHighlightedString(latestVersionSearchResult.highlightedString()));
+                    controller.setSemanticText(HighlightedSegments.stripMarkup(latestVersionSearchResult.highlightedString()).replaceAll("\\s+", " "));
                     controller.setWindowView(observableViewNoOverride);
                     setGraphic(content);
                 }

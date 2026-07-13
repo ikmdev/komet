@@ -246,7 +246,11 @@ public class EditorPatternModel extends EditorGridNodeModel {
     private String retrieveDisplayName(PatternFacade patternFacade) {
         Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
         Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
-        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
+        // Neither may be present — e.g. a remote-backed provider whose local entity store
+        // doesn't have this pattern's descriptions loaded — so fall back to the nid rather
+        // than throw NoSuchElementException.
+        return optionalStringRegularName.or(() -> optionalStringFQN)
+                .orElseGet(() -> "Pattern [nid=" + patternFacade.nid() + "]");
     }
 
     @Override

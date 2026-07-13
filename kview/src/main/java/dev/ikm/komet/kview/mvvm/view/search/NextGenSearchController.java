@@ -30,7 +30,8 @@ import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.search.HighlightedSegments;
 import dev.ikm.komet.framework.search.SearchPanelController;
-import dev.ikm.tinkar.provider.grpc.GrpcSearchService;
+import dev.ikm.tinkar.common.service.RemoteConceptSearchService;
+import dev.ikm.tinkar.common.service.ServiceLifecycleManager;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
@@ -92,6 +93,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -286,6 +288,8 @@ public class NextGenSearchController {
         clearView();
         String queryText = searchField.getText().strip();
         currentQueryText = queryText;
+        Optional<RemoteConceptSearchService> remoteSearch =
+                ServiceLifecycleManager.get().getRunningService(RemoteConceptSearchService.class);
         try {
             if (queryText.startsWith("-") && parseInt(queryText).isPresent()) {
                 addComponentFromNid(queryText);
@@ -299,21 +303,22 @@ public class NextGenSearchController {
                 UuidUtil.getUUID(queryText).ifPresent(uuid -> {
                     addComponentFromNid(PrimitiveData.nid(PublicIds.of(uuid)));
                 });
-            } else if (GrpcSearchService.isActive()) {
-                final String grpcQuery = queryText;
-                GrpcSearchService.SortOption sortOption = switch (sortByButton.getText()) {
-                    case BUTTON_TEXT_TOP_COMPONENT_ALPHA -> GrpcSearchService.SortOption.TOP_COMPONENT_ALPHA;
-                    case BUTTON_TEXT_DESCRIPTION_SEMANTIC -> GrpcSearchService.SortOption.SEMANTIC;
-                    case BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA -> GrpcSearchService.SortOption.SEMANTIC_ALPHA;
-                    default -> GrpcSearchService.SortOption.TOP_COMPONENT;
+            } else if (remoteSearch.isPresent()) {
+                RemoteConceptSearchService remote = remoteSearch.get();
+                final String remoteQuery = queryText;
+                RemoteConceptSearchService.SortOption sortOption = switch (sortByButton.getText()) {
+                    case BUTTON_TEXT_TOP_COMPONENT_ALPHA -> RemoteConceptSearchService.SortOption.TOP_COMPONENT_ALPHA;
+                    case BUTTON_TEXT_DESCRIPTION_SEMANTIC -> RemoteConceptSearchService.SortOption.SEMANTIC;
+                    case BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA -> RemoteConceptSearchService.SortOption.SEMANTIC_ALPHA;
+                    default -> RemoteConceptSearchService.SortOption.TOP_COMPONENT;
                 };
-                boolean isSemanticMode = sortOption == GrpcSearchService.SortOption.SEMANTIC
-                        || sortOption == GrpcSearchService.SortOption.SEMANTIC_ALPHA;
+                boolean isSemanticMode = sortOption == RemoteConceptSearchService.SortOption.SEMANTIC
+                        || sortOption == RemoteConceptSearchService.SortOption.SEMANTIC_ALPHA;
                 if (isSemanticMode) {
                     setCurrentSearchResultType(SearchResultType.DESCRIPTION_SEMANTICS);
-                    List<GrpcSearchService.SemanticResult> results =
-                            GrpcSearchService.get().searchFlat(grpcQuery, MAX_RESULT_SIZE, sortOption);
-                    LOG.info("{} gRPC flat results returned for query: {} sortBy: {}", results.size(), grpcQuery, sortOption);
+                    List<RemoteConceptSearchService.SemanticResult> results =
+                            remote.searchFlat(remoteQuery, MAX_RESULT_SIZE, sortOption);
+                    LOG.info("{} remote flat results returned for query: {} sortBy: {}", results.size(), remoteQuery, sortOption);
                     List<LatestVersionSearchResult> converted = results.stream()
                             .map(r -> new LatestVersionSearchResult(
                                     new Latest<>(SemanticEntityVersion.class),
@@ -324,9 +329,9 @@ public class NextGenSearchController {
                     searchResultsListView.getItems().setAll(converted);
                 } else {
                     setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
-                    List<GrpcSearchService.GroupedResult> results =
-                            GrpcSearchService.get().searchGrouped(grpcQuery, MAX_RESULT_SIZE, sortOption);
-                    LOG.info("{} gRPC grouped results returned for query: {} sortBy: {}", results.size(), grpcQuery, sortOption);
+                    List<RemoteConceptSearchService.GroupedResult> results =
+                            remote.searchGrouped(remoteQuery, MAX_RESULT_SIZE, sortOption);
+                    LOG.info("{} remote grouped results returned for query: {} sortBy: {}", results.size(), remoteQuery, sortOption);
                     List<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>> entries =
                             results.stream().map(g -> {
                                 List<UUID> uuids = g.publicId().stream().map(UUID::fromString).toList();
