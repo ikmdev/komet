@@ -118,6 +118,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
@@ -237,40 +238,18 @@ public class GenPurposeDetailsController {
         setupProperties();
 
         Subscriber<GenPurposeEvent> refreshSubscriber = evt -> {
-            //Set up the Listener to refresh the details area (After user hits submit button on the right side)
-//            ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
-//            if (semanticProperty.isNull().get()) {
-//                // If the window is in creation mode ignore the refresh event
-//                return;
-//            }
-//            if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
-//                observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-//                // populate the semantic and its observable fields once saved
-//                semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
-//            }
-            // TODO update identicon and identifier fields.
-
             SemanticEntity<SemanticEntityVersion> semantic = evt.getSemantic();
 
             if (evt.getEventType() == GenPurposeEvent.PUBLISH) {
-//                if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
-//                    // get the latest value for the semantic created.
-//                    observableSemantic = ObservableEntityHandle.getSemanticOrThrow(finalSemantic);
-//                    // populate the semantic and its observable fields once saved
-//                    semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
-//                    // clear out the temporary placeholders
-//                    semanticDetailsVBox.getChildren().clear();
-//                    nodes.clear();
-//                    // set up the real observables now that the semantic has been created
-//                    populateSemanticDetails();
-//                    // change the mode from CREATE to EDIT
-//                    genEditingViewModel.setPropertyValue(MODE, EDIT);
-//                    // Update STAMP control and STAMP form
-//                    StampFormViewModelBase stampFormViewModelBase = propertiesController.getStampFormViewModel();
-//                    stampFormViewModelBase.update(semanticEntityVersionLatest.get().entity(),
-//                            genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
-//                    updateUIStamp(stampFormViewModelBase);
-//                }
+                // In create mode the component only truly gets created once every required
+                // pattern has at least one semantic. Until then, skip the commit — the submitted
+                // semantic stays uncommitted in the composer's open transaction (alongside the
+                // lazily created reference concept) and commits together with it later. The details
+                // area still refreshes so the submitted (still uncommitted) field values show.
+                if (genPurposeViewModel.getMode() == FormMode.CREATE && !allRequiredPatternsSatisfied()) {
+                    reloadSemanticViews(semantic);
+                    return;
+                }
 
                 // Commit transaction, finalizing all impending changes
                 composer.commit();
@@ -288,14 +267,7 @@ public class GenPurposeDetailsController {
 
                 reloadSemanticViews(semantic);
             }
-
-//            semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
-//            //Set and Update STAMP values
-//            semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-//                updateUIStamp(semanticEntityVersion.stamp().lastVersion());
-//            });
         };
-//        subscriberList.add(refreshSubscriber);
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                 GenPurposeEvent.class, refreshSubscriber);
 
@@ -1078,12 +1050,30 @@ public class GenPurposeDetailsController {
     /**
      * Visits every section in this window (the main section and all additional sections).
      */
-    private void forEachSection(Consumer<EditorSectionModel> action) {
+    private void forEachSectionInWindow(Consumer<EditorSectionModel> action) {
         if (editorWindowModel == null) {
             return;
         }
         action.accept(editorWindowModel.getMainSection());
         editorWindowModel.getAdditionalSections().forEach(action);
+    }
+
+    /**
+     * Whether every pattern marked Required in the KL editor has at least one semantic against
+     * its section's resolved reference component. In create mode this gates the actual creation
+     * (commit) of the window's component: uncommitted semantics count, since they are found by
+     * the entity service once saved.
+     */
+    private boolean allRequiredPatternsSatisfied() {
+        AtomicBoolean satisfied = new AtomicBoolean(true);
+        forEachSectionInWindow(section -> {
+            for (EditorPatternModel pattern : section.getPatterns()) {
+                if (pattern.isRequired() && getSemanticsOfPattern(pattern).isEmpty()) {
+                    satisfied.set(false);
+                }
+            }
+        });
+        return satisfied.get();
     }
 
     /**
@@ -1093,7 +1083,7 @@ public class GenPurposeDetailsController {
      * depth (see komet-desktop #3).
      */
     private void refreshSectionsAnchoredOn(EditorSectionModel changedSection) {
-        forEachSection(section -> {
+        forEachSectionInWindow(section -> {
             EditorPatternModel referencePattern = section.getReferenceComponent();
             if (referencePattern != null && referencePattern.getParentSection() == changedSection) {
                 refreshSectionReferenceComponents(section);
