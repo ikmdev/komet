@@ -6521,6 +6521,28 @@ Styling a context menu for kview ui/ux controls
     -fx-fill: #5D6B84;
 }
 
+/***********************  Required Chip  ******************************/
+
+/* Required-pattern chip after the section title (create mode only): dashed amber REQUIRED
+   while the section's required pattern has no semantic yet, echoing the window's DRAFT chip
+   language; flips to a solid green "✓ REQUIREMENT MET" once the requirement is satisfied. */
+.gen-purpose-window .section-titled-pane .required-chip {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #C05621;
+    -fx-border-color: #C05621;
+    -fx-border-width: 1;
+    -fx-border-style: segments(3, 2);
+    -fx-border-radius: 3;
+    -fx-padding: 1 5 1 5;
+}
+
+.gen-purpose-window .section-titled-pane .required-chip:satisfied {
+    -fx-text-fill: #2F855A;
+    -fx-border-color: #2F855A;
+    -fx-border-style: solid;
+}
+
 /******************************************************************************/
 
 .gen-purpose-window .lidr-rounded-tab .nine-dots-icon {

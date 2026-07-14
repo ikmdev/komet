@@ -233,6 +233,7 @@ public class GenPurposeDetailsController {
             windowControlToolbar.setDraftVisible(creating);
             createModeHintLabel.setVisible(creating);
             createModeHintLabel.setManaged(creating);
+            updateRequiredChips();
         });
 
         // Setup Properties Bump out view
@@ -249,6 +250,9 @@ public class GenPurposeDetailsController {
                 // area still refreshes so the submitted (still uncommitted) field values show.
                 if (genPurposeViewModel.getMode() == FormMode.CREATE && !allRequiredPatternsSatisfied()) {
                     reloadSemanticViews(semantic);
+                    // The submitted semantic now shows in the details area — flip its section's
+                    // chip to MET.
+                    updateRequiredChips();
                     return;
                 }
 
@@ -611,6 +615,9 @@ public class GenPurposeDetailsController {
         if (genPurposeViewModel.getMode() == FormMode.CREATE) {
             populateStampFromEditCoordinate();
         }
+
+        // Sections exist now — show the required-pattern chips (create mode only).
+        updateRequiredChips();
     }
 
     /**
@@ -1065,6 +1072,28 @@ public class GenPurposeDetailsController {
     }
 
     /**
+     * Refreshes each section's required-pattern chip (see the REQUIRED / "✓ REQUIREMENT MET"
+     * chip in the section title bar): shown in create mode on sections hosting a required
+     * pattern, flipping
+     * to satisfied once every required pattern in the section has at least one semantic — the
+     * same check that gates the component's creation on submit.
+     */
+    private void updateRequiredChips() {
+        boolean createMode = genPurposeViewModel.getMode() == FormMode.CREATE;
+        sectionModelToTitledPane.forEach((section, titledPane) -> {
+            List<EditorPatternModel> requiredPatterns = section.getPatterns().stream()
+                    .filter(EditorPatternModel::isRequired)
+                    .toList();
+            boolean chipVisible = createMode && !requiredPatterns.isEmpty();
+            titledPane.setRequiredChipVisible(chipVisible);
+            if (chipVisible) {
+                titledPane.setRequiredSatisfied(requiredPatterns.stream()
+                        .noneMatch(pattern -> getSemanticsOfPattern(pattern).isEmpty()));
+            }
+        });
+    }
+
+    /**
      * Whether every pattern marked Required in the KL editor has at least one semantic against
      * its section's resolved reference component. In create mode this gates the actual creation
      * (commit) of the window's component: uncommitted semantics count, since they are found by
@@ -1150,6 +1179,7 @@ public class GenPurposeDetailsController {
 
                     mainContent.getItems().add(titledPane);
                 }
+                updateRequiredChips();
             }
         }
     }
