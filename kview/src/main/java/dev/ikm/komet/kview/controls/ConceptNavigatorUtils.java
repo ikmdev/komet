@@ -408,6 +408,10 @@ public class ConceptNavigatorUtils {
                 item.getChildren().clear();
             }
         });
+        // Force a full CSS pass so .root looked-up color variables (-Grey-11, -Secondary-05, etc.)
+        // are resolved and cached before any subsequent expansion reveals new TreeCell graphics
+        // (JDK-8093516; see IKE-Network/ike-komet-wsr#3).
+        treeView.applyCss();
     }
 
     /**
