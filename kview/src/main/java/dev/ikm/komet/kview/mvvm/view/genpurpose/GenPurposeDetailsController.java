@@ -69,6 +69,7 @@ import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
+import dev.ikm.komet.layout_engine.window.WindowSupport;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -270,6 +271,11 @@ public class GenPurposeDetailsController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                 GenPurposeEvent.class, refreshSubscriber);
+
+        // This window opts out of WindowSupport's hover/resize outline: the edge resize cursors
+        // are the resize affordance. Must be set before addDraggableNodes below creates the
+        // window support.
+        detailsOuterBorderPane.getProperties().put(WindowSupport.HIGHLIGHT_DISABLED_KEY, Boolean.TRUE);
 
         // Setup window support with explicit draggable nodes. The toolbar's own title tab is
         // part of the toolbar control, so it drags the window through the toolbar handle.
